@@ -1,0 +1,17 @@
+# Rust / Cargo
+/target
+**/*.rs.bk
+
+# Logs & dumps
+*.log
+*.tmp
+
+# OS
+.DS_Store
+
+# VSCode / IntelliJ
+.vscode/
+.idea/
+
+# Datasets locaux (si trop lourds ou sensibles)
+datasets/telemetry/*.csv

@@ -1,0 +1,12 @@
+[workspace]
+members = [
+    "crates/pitgun-core",
+    "crates/pitgun-cli",
+    "crates/pitgun-emulator",
+]
+resolver = "2"
+
+[workspace.package]
+edition = "2025"
+authors = ["Loïc Bélec <contact@loicbelec.com>"]
+license = "MIT"
