@@ -1,4 +1,4 @@
-# Pitgun
+# Pitgun 🏎️
 
 Pitgun is a modular Rust workspace for telemetry and high-frequency data processing.
 
@@ -8,7 +8,7 @@ Pitgun is a modular Rust workspace for telemetry and high-frequency data process
 - **pitgun-emulator**: UDP emitter that replays CSV datasets (e.g. telemetry channels) with optional pacing
 
 ## Current features
-- Read simple CSV datasets (`Timestamp, ChannelValue`)
+- Read simple CSV datasets (`Timestamp, Value`)
 - Emit UDP packets at configurable pace (replay real-time or as fast as possible)
 - Minimal binary frame format: `[len_channel:u16][channel][ts_csv:u128 LE][value:f64 LE]`
 

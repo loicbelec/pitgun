@@ -1,4 +1,4 @@
-# Pitgun 🏎️ 
+# Pitgun Dev Journal 🏎️ 
 
 ## Table of Contents
 - [Introduction](#introduction)
@@ -10,18 +10,19 @@
 
 ## Introduction
 
-**Pitgun** is my personal journey into building a **modular telemetry and data processing framework in Rust**.  
-The project explores how to ingest, emulate, and analyze **high-frequency data streams** - similar to those used in **Formula 1 telemetry systems** - while applying modern Rust concepts and patterns.
+**Pitgun** is my personal journey into building a modular telemetry and data processing framework in Rust. 
+
+The project explores how to ingest, emulate, and analyze high-frequency data streams - similar to those used in Formula 1 telemetry systems - while applying modern Rust concepts and patterns.
 
 ### 🎯 Goals  
-- Learn and apply **modern Rust** in a real-world, performance-critical context  
-- Build a **modular, low-latency data pipeline**  
-- Experiment with **UDP streaming, parallel ingestion, and high-frequency emulation**  
+- Learn and apply modern Rust in a real-world, performance-critical context  
+- Build a modular, low-latency data pipeline  
+- Experiment with UDP streaming, parallel ingestion, and high-frequency emulation  
 - Bridge **Formula 1 telemetry** with **High-Frequency Trading (HFT)** paradigms - both domains where *latency and precision decide winners*  
 
 
 ## Project structure
-Pitgun is organized as a **Rust workspace** composed of several crates:
+Pitgun is organized as a Rust workspace composed of several crates:
 
 | Crate | Purpose |
 |-------|----------|
