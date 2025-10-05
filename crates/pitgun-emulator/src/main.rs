@@ -132,8 +132,7 @@ fn make_udp_socket(target: &SocketAddr, mcast_ttl: u32) -> Result<Socket> {
 
 /// Read CSV Timestamp,ChannelValue → Vec<Row>
 /// Timestamp parsing rules:
-/// - If numeric: auto-scale → seconds/ms/µs/ns (heuristics by magnitude)
-/// - Else: try RFC3339 → ns since UNIX epoch
+/// - If numeric: auto-scale → ns since today
 fn read_csv(path: &PathBuf) -> Result<Vec<Row>> {
     let file = File::open(path)?;
     let mut rdr = ReaderBuilder::new()
@@ -164,46 +163,12 @@ fn read_csv(path: &PathBuf) -> Result<Vec<Row>> {
     Ok(out)
 }
 
+/// Minimal timestamp parser: expect integer nanoseconds
 fn parse_timestamp_to_ns(s: &str) -> Result<u128> {
-    // numeric?
-    if let Ok(x) = s.parse::<f64>() {
-        let abs = x.abs();
-        // seconds (e.g. 12.345) → ns
-        if abs < 1e6 {
-            return Ok((x * 1e9) as u128);
-        }
-        // milliseconds (e.g. 12_345) → ns
-        if abs < 1e12 {
-            return Ok((x * 1e6) as u128);
-        }
-        // microseconds (e.g. 12_345_678) → ns
-        if abs < 1e15 {
-            return Ok((x * 1e3) as u128);
-        }
-        // assume already nanoseconds
-        return Ok(x as u128);
-    }
-
-    // RFC3339 ?
-    if let Ok(t) = time::OffsetDateTime::parse(
-        s,
-        &time::format_description::well_known::Rfc3339,
-    ) {
-        let ns = t.unix_timestamp_nanos();
-        return Ok(ns as u128);
-    }
-
-    // Try a looser ISO format (YYYY-MM-DD HH:MM:SS.sss)
-    if let Ok(fmt) = time::format_description::parse(
-        "[year]-[month]-[day] [hour]:[minute]:[second].[subsecond]",
-    ) {
-        if let Ok(t) = time::PrimitiveDateTime::parse(s, &fmt) {
-            let odt = t.assume_utc();
-            return Ok(odt.unix_timestamp_nanos() as u128);
-        }
-    }
-
-    anyhow::bail!("unsupported timestamp format: {}", s);
+    let val = s.trim().parse::<u128>()
+        .context("invalid nanosecond timestamp")?;
+    anyhow::ensure!(val > 1_000_000_000, "timestamp too small, expected ns");
+    Ok(val)
 }
 
 /// Minimal wire-encoding:
