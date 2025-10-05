@@ -21,7 +21,7 @@ By combining insights from **Formula 1 telemetry** and **High-Frequency Trading*
 - [Project Structure](#project-structure)
 - [Roadmap](#roadmap)
 - [Step 1 - First Emulator](#step-1---first-emulator)
-- Step 2 - Parallel Processing (WIP)
+- [Step 2 - Parallel Processing (WIP)](#step-2---parallel-processing)
 
 ## Project structure
 Pitgun is organized as a Rust workspace composed of several crates:
@@ -91,9 +91,14 @@ pitgun-emulator \
 ### Minimal wire framing
 Each telemetry frame sent by the emulator follows a compact binary layout:
 
-```
-[len_channel:u16][channel:bytes][ts_csv_ns:u128 LE][value:f64 LE]
-```
+```mermaid
+flowchart LR
+    FRAME["📦 Frame"]
+    FRAME --> LEN["len_channel : u16"]
+    FRAME --> CH["channel : [u8]"]
+    FRAME --> TS["ts_csv_ns : u128 (LE)"]
+    FRAME --> VAL["value : f64 (LE)"]
+````
 
 | Field | Type | Size (bytes) | Endianness | Description |
 |-------|------|--------------|-------------|--------------|
@@ -160,3 +165,5 @@ fn encode_frame(channel: &str, ts_csv_ns: u128, value: f64) -> Vec<u8> {
 - Introduce session metadata (car, stint, lap) and timebase alignment across channels.
 - Add a receiver tool to validate packet loss, latency, and decryption correctness.
 - Prepare a binary packet format (header + payload) for versioning and backward compatibility.
+
+## Step 2 - Parallel Processing
