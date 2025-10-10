@@ -1,4 +1,4 @@
-# Pitgun 🏎️
+![Pitgun banner](docs/pitgun.png)
 
 Pitgun is a modular Rust workspace for telemetry and high-frequency data processing.
 
