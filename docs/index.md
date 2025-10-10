@@ -92,22 +92,14 @@ pitgun-emulator \
 Each telemetry frame sent by the emulator follows a compact binary layout:
 
 ```mermaid
-flowchart LR
-    FRAME["📦 Frame"]
-    FRAME --> LEN["len_channel : u16"]
-    FRAME --> CH["channel : [u8]"]
-    FRAME --> TS["ts_csv_ns : u128 (LE)"]
-    FRAME --> VAL["value : f64 (LE)"]
+packet
+title Pitgun UDP Packet
+
++16: "Channel length"
+16-79: "Channel name"
++128: "Timestamp in nanoseconds"
++64: "Channel value"
 ````
-
-| Field | Type | Size (bytes) | Endianness | Description |
-|-------|------|--------------|-------------|--------------|
-| `len_channel` | `u16` | 2 | Little-Endian | Length of the channel name in bytes |
-| `channel` | UTF-8 string | variable | — | Channel name, e.g. `"FIA-nEngine"` |
-| `ts_csv_ns` | `u128` | 16 | Little-Endian | Timestamp from the CSV (in nanoseconds) |
-| `value` | `f64` | 8 | Little-Endian | Channel value |
-
-#### 🧠 Example
 
 For a frame where:
 - `channel = "FIA-nEngine"`
@@ -121,7 +113,7 @@ the serialized bytes look like this:
 ║  Field             │ Bytes (hex)                                       ║
 ╟────────────────────┼───────────────────────────────────────────────────╢
 ║ len_channel (11)   │ 0B 00                                             ║
-║ channel ("FIA-nEngine") │ 46 49 41 3A 6E 45 6E 67 69 6E 65             ║
+║ "FIA-nEngine"      │ 46 49 41 3A 6E 45 6E 67 69 6E 65             ║
 ║ ts_csv_ns          │ 00 C0 5F 73 63 00 00 00 00 00 00 00 00 00 00 00   ║
 ║ value (1234.5)     │ 00 00 00 00 00 49 93 40                           ║
 ╚════════════════════════════════════════════════════════════════════════╝
