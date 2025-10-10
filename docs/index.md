@@ -16,12 +16,12 @@ This repository is a **learning log**. I’m documenting not just the code, but 
 
 By combining insights from **Formula 1 telemetry** and **High-Frequency Trading**, Pitgun is my sandbox to experiment with ultra-low-latency data systems.
 
-## Table of Contents
+## Table of contents
 - [Introduction](#introduction)
 - [Project Structure](#project-structure)
 - [Roadmap](#roadmap)
-- [Step 1 - First Emulator](#step-1---first-emulator)
-- [Step 2 - Parallel Processing (WIP)](#step-2---parallel-processing)
+- [1 - Emitting data from a single channel over UDP](#1---emitting-data-from-a-single-channel-over-udp)
+- [2 - Parallel processing (WIP)](#2---parallel-processing)
 
 ## Project structure
 Pitgun is organized as a Rust workspace composed of several crates:
@@ -42,7 +42,7 @@ Pitgun is organized as a Rust workspace composed of several crates:
 - [ ] Study parallels with HFT market data (UDP multicast, order books, latency profiling)  
 - [ ] Publish crates on [crates.io](https://crates.io) when stable 
 
-## Step 1 - First Emulator
+## 1 - Emitting data from a single channel over UDP
 
 ### Context
 
@@ -95,7 +95,9 @@ pitgun-emulator \
 ```
 
 ### Minimal wire framing
-Each telemetry frame sent by the emulator follows a compact binary layout:
+Each telemetry frame emitted by the emulator is encoded into a compact binary structure designed for low-latency transmission over UDP.
+
+The layout prioritizes simplicity and deterministic parsing - no headers, padding, or delimiters beyond what’s strictly necessary.
 
 ```mermaid
 packet
@@ -107,10 +109,13 @@ title Pitgun UDP Packet
 +64: "Numeric value of the channel"
 ````
 
-For a frame where:
-- `channel = "FIA-nEngine"`
-- `ts_csv_ns = 62076104000000`
-- `value = 1234.5`
+For example, if:
+
+```
+channel    = "FIA-nEngine"
+ts_csv_ns  = 62076104000000
+value      = 1234.5
+```
 
 the serialized bytes look like this:
 
@@ -125,9 +130,13 @@ the serialized bytes look like this:
 ╚════════════════════════════════════════════════════════════════════════╝
 ```
 
-The code is as following.
+*(All fields use **little-endian** encoding to align with Rust’s native layout on x86 platforms.)*
+
+#### Reference implementation
+
 ```rust
-/// [len_channel:u16][channel][ts_csv_ns:u128 LE][value:f64 LE]
+/// Binary frame layout:
+/// [len_channel: u16][channel][ts_csv_ns: u128 LE][value: f64 LE]
 fn encode_frame(channel: &str, ts_csv_ns: u128, value: f64) -> Vec<u8> {
     let name = channel.as_bytes();
     let mut buf = Vec::with_capacity(2 + name.len() + 16 + 8);
@@ -140,28 +149,27 @@ fn encode_frame(channel: &str, ts_csv_ns: u128, value: f64) -> Vec<u8> {
 }
 ```
 
-### Architecture Notes
+#### Notes
+- The frame is **self-delimiting**: the first two bytes define the length of the channel name.  
+- No CRC or sequence number is included — Pitgun assumes reliable transmission within local or simulated networks.  
+- This layout is minimal by design: easy to deserialize, endian-safe, and ideal for high-frequency telemetry streams.
 
-- **Layered design:** ingestion (CSV) → processing (pacing, framing, crypto) → transport (UDP).
-- **Channel abstraction:** each source file maps to a telemetry channel (e.g., `FIA-nEngine`, `Arbitrator-rThrottlePedal`).
-- **Network realism:** multicast group join, packet sizing, and low-latency send path.
-- **Security stub:** pluggable crypto module so the XOR can be swapped for stronger schemes later.
+### Architecture notes
 
-### Learnings
+The emulator follows a layered architecture that mirrors a real telemetry stack.  
+Data first flows from CSV ingestion, where raw samples are read and timestamped, into a processing layer that handles pacing, frame encoding, and optional cryptographic operations. The resulting binary frames are then transmitted over UDP, completing the transport stage.  
 
-- A static CSV becomes a live stream once you respect timing and framing.
-- Multicast + lightweight encryption gives a realistic trackside feel without overengineering.
-- Clear separation of concerns makes it easy to:
-  - Add parallel channels,
-  - Swap encryption,
-  - Change transport (e.g., QUIC/UDP, NATS) without touching business logic.
+Each input file represents an independent telemetry channel - for example, `FIA-nEngine` or `Arbitrator-rThrottlePedal` - allowing multiple streams to coexist and simulate distributed sensors.  
 
+The network layer aims for realism: it supports multicast group joins, dynamic packet sizing, and a low-latency send path to emulate real-time behavior. A lightweight security stub is also included, providing a pluggable crypto module so that the current XOR cipher can later be replaced by stronger encryption schemes without changing the framing logic.
 
-### What’s Next (Bridge to Step 2)
+### What’s next?
 
-- Expand to multi-channel replay (engine speed, throttle, gear) with parallel workers.
-- Introduce session metadata (car, stint, lap) and timebase alignment across channels.
-- Add a receiver tool to validate packet loss, latency, and decryption correctness.
-- Prepare a binary packet format (header + payload) for versioning and backward compatibility.
+- Extend to multi-channel replay with parallel workers.  
+- Add session context (car, stint, lap) and synchronize timestamps.  
+- Build a receiver tool to monitor packet loss and latency.  
+- Define a versioned binary format for future compatibility.
 
-## Step 2 - Parallel Processing
+## 2 - Parallel processing
+
+Work in progress...
