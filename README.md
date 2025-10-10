@@ -1,4 +1,6 @@
-![Pitgun banner](docs/pitgun.png)
+<p align="center">
+  <img src="docs/pitgun_large.png" alt="Pitgun banner" style="width:70%; border-radius:12px;">
+</p>
 
 Pitgun is a modular Rust workspace for telemetry and high-frequency data processing.
 
