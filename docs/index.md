@@ -71,19 +71,25 @@ Timestamp,ChannelValue
 62076105000000,1235.2
 ```
 
-**Conventions & CLI:**
-- Channel name is inferred from the filename, e.g. `FIA-nEngine.csv`.
-- Each row is replayed over UDP; by default as fast as possible, or **paced** with `--pace` to respect inter-sample deltas.
-- Flags (draft):
-  - `--file <path>`: CSV file to replay
-  - `--multicast <addr:port>`: UDP multicast target
-  - `--pace`: enable pacing using CSV timestamps
-  - `--key <hex>`: enable simple XOR encryption with provided key
-  - `--loop`: continuous loop over the dataset
+**Conventions & CLI**
 
-```text
+The channel name is inferred from the CSV filename, e.g. `FIA-nEngine.csv` → channel `FIA-nEngine`. Each row in the CSV is replayed over UDP: by default as fast as possible, or paced with `--pace` to reproduce real sample intervals based on the `Timestamp` column.
+
+**Command-line flags:**
+
+| Flag | Type | Default | Description |
+|:-----|:------|:---------|:-------------|
+| `--target <HOST:PORT>` | `String` | *(required)* | Target address, e.g. `239.10.0.1:5001` for multicast or `127.0.0.1:5001` for unicast. |
+| `--csv <PATH>` | `Path` | *(required)* | Path to the input CSV file (with headers `Timestamp,ChannelValue`). |
+| `--pace` | `bool` | `false` | Respect CSV timing (pacing based on timestamp deltas). If not set, the file is replayed as fast as possible. |
+| `--channel <STRING>` | `Option<String>` | *(default = filename stem)* | Override the default channel name derived from the CSV filename. |
+| `--mcast-ttl <u32>` | `1` | Time-to-Live value for multicast packets. Ignored for unicast targets. |
+
+**Example usage:**
+
+```bash
 pitgun-emulator \
-  --target 127.0.0.1:5001 \
+  --target 239.10.0.1:5001 \
   --csv datasets/telemetry/FIA-nEngine.csv \
   --pace
 ```
@@ -95,10 +101,10 @@ Each telemetry frame sent by the emulator follows a compact binary layout:
 packet
 title Pitgun UDP Packet
 
-+16: "Channel length"
++16: "Length of the channel name"
 16-79: "Channel name"
-+128: "Timestamp in nanoseconds"
-+64: "Channel value"
++128: "Timestamp in nanoseconds since epoch"
++64: "Numeric value of the channel"
 ````
 
 For a frame where:
@@ -113,7 +119,7 @@ the serialized bytes look like this:
 ║  Field             │ Bytes (hex)                                       ║
 ╟────────────────────┼───────────────────────────────────────────────────╢
 ║ len_channel (11)   │ 0B 00                                             ║
-║ "FIA-nEngine"      │ 46 49 41 3A 6E 45 6E 67 69 6E 65             ║
+║ "FIA-nEngine"      │ 46 49 41 3A 6E 45 6E 67 69 6E 65                  ║
 ║ ts_csv_ns          │ 00 C0 5F 73 63 00 00 00 00 00 00 00 00 00 00 00   ║
 ║ value (1234.5)     │ 00 00 00 00 00 49 93 40                           ║
 ╚════════════════════════════════════════════════════════════════════════╝
