@@ -65,11 +65,13 @@ Here are the design goals:
 - **Encryption:** lightweight XOR-style scrambling (placeholder for proprietary ciphers).
 - **Replay pacing:** optional pacing to preserve timing between samples.
 
+[![nEngine synthetic data](img/nEngine.png)](https://pitgun.loicbelec.com)
+
 Example dataset for this channel:
 ```csv
 Timestamp,ChannelValue
-62076104000000,1234.5
-62076105000000,1235.2
+62076104000000,12034.5
+62076105000000,12035.2
 ```
 
 The channel name is inferred from the CSV filename, e.g. `FIA-nEngine.csv` → channel `FIA-nEngine`. Each row in the CSV is replayed over UDP: by default as fast as possible, or paced with `--pace` to reproduce real sample intervals based on the `Timestamp` column.
