@@ -1,4 +1,6 @@
-# Pitgun Dev Journal 🏎️ 
+[![Pitgun](img/pitgun_small.png)](https://pitgun.loicbelec.com)
+
+# Pitgun development journal
 
 ## Introduction
 
@@ -35,8 +37,7 @@ Pitgun is organized as a Rust workspace composed of several crates:
 ## Roadmap
 - [x] Create Rust workspace with `core`, `cli`, `emulator`  
 - [x] Implement UDP emission from CSV datasets  
-- [ ] Add sequence numbers and loss detection  
-- [ ] Implement a `pitgun-listener` crate for packet decoding  
+- [ ] Add sequence numbers and loss detection
 - [ ] Explore sinks: Parquet, Kafka, Arrow  
 - [ ] Add benchmarks and performance profiling  
 - [ ] Study parallels with HFT market data (UDP multicast, order books, latency profiling)  
@@ -52,30 +53,28 @@ Telemetry is split into several channels. One stream is sent directly to the FIA
 
 ### Objective
 
-Reproduce a minimalistic version of this system - a first step toward a modular telemetry framework capable of emulating real F1 data flow with synthetic data.
+My first objective is to reproduce a minimalistic version of this system - a first step toward a modular telemetry framework capable of emulating real F1 data flow with synthetic data.
 
 ### Implementation
 
-The first channel emulated is the engine speed, known under the Atlas namespace as `FIA-nEngine`.
+The first channel I picked to emulate is the engine speed, known under the Atlas namespace as `FIA-nEngine`.
 
-**Design goals:**
+Here are the design goals:
 - **Data source:** simple CSV time series.
-- **Transport:** **UDP multicast** to mimic trackside broadcast patterns.
+- **Transport:** UDP multicast to mimic trackside broadcast patterns.
 - **Encryption:** lightweight XOR-style scrambling (placeholder for proprietary ciphers).
 - **Replay pacing:** optional pacing to preserve timing between samples.
 
-**Example dataset:**
+Example dataset for this channel:
 ```csv
 Timestamp,ChannelValue
 62076104000000,1234.5
 62076105000000,1235.2
 ```
 
-**Conventions & CLI**
-
 The channel name is inferred from the CSV filename, e.g. `FIA-nEngine.csv` → channel `FIA-nEngine`. Each row in the CSV is replayed over UDP: by default as fast as possible, or paced with `--pace` to reproduce real sample intervals based on the `Timestamp` column.
 
-**Command-line flags:**
+#### Command-line flags
 
 | Flag | Type | Default | Description |
 |:-----|:------|:---------|:-------------|
@@ -85,7 +84,7 @@ The channel name is inferred from the CSV filename, e.g. `FIA-nEngine.csv` → c
 | `--channel <STRING>` | `Option<String>` | *(default = filename stem)* | Override the default channel name derived from the CSV filename. |
 | `--mcast-ttl <u32>` | `1` | Time-to-Live value for multicast packets. Ignored for unicast targets. |
 
-**Example usage:**
+#### Example usage
 
 ```bash
 pitgun-emulator \
@@ -94,7 +93,7 @@ pitgun-emulator \
   --pace
 ```
 
-### Minimal wire framing
+### Pitgun UDP packet
 Each telemetry frame emitted by the emulator is encoded into a compact binary structure designed for low-latency transmission over UDP.
 
 The layout prioritizes simplicity and deterministic parsing - no headers, padding, or delimiters beyond what’s strictly necessary.
@@ -172,4 +171,49 @@ The network layer aims for realism: it supports multicast group joins, dynamic p
 
 ## 2 - Parallel processing
 
-Work in progress...
+### Context
+
+This treemap illustrates the internal structure of the Formula 1 Engine Control Unit (ECU) based on telemetry channel volume.
+Each block represents a logical subsystem within the ECU - from real-time control loops to data logging and chassis coordination.
+
+The Controller and TAG320BIOS dominate, handling nearly half of all runtime signals: the former executes the ECU scheduler and control logic, while the latter manages low-level logging, BIOS states, and diagnostic coverage. Around them, the Chassis, Coordinator, PSUF1, and BrakeControl modules form the backbone of vehicle dynamics and safety. Finally, smaller application layers such as APP6/APP9 and regulatory interfaces like FIA complete the overall architecture.
+
+Together, these components show how a modern F1 ECU combines control, orchestration, and observability into a single embedded platform.
+
+```mermaid
+treemap-beta
+"Engine Control Unit"
+    "TAG320BIOS"
+        "# Channels": 11000
+    "Controller"
+        "# Channels": 11000
+    "Chassis"
+        "# Channels": 7000
+    "Coordinator"
+        "# Channels": 2000
+    "PSUF1"
+        "# Channels": 2000
+    "FIA"
+        "# Channels": 1000
+    "BrakeControl"
+        "# Channels": 1000
+    "APP9"
+        "# Channels": 1000
+    "APP6"
+        "# Channels": 800
+```
+
+The ECU exposes tens of thousands of channels. Many are **low-frequency “slow raw”** signals, but a critical subset runs at **high frequency** (e.g., engine speed). To get closer to real track conditions, we now emit multiple high-frequency channels in parallel.
+
+Alongside the engine speed, we introduce the throttle pedal amplitude: `rThrottlePedal`. The goal is to simulate at least two high-frequency streams over UDP with realistic pacing and clean separation by channel.
+
+### Objective
+
+My objective is to emit **2 high-frequency channels** (e.g., `nEngine`, `rThrottlePedal`) from CSVs.
+
+I will maintain the minimal wire format from the first chapter:
+```
+[len_channel:u16][channel][ts_csv_ns:u128 LE][value:f64 LE]
+```
+
+To be continued...
