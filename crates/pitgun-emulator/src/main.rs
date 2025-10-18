@@ -10,7 +10,7 @@ use std::path::PathBuf;
 use std::thread::sleep;
 use std::time::{Duration, Instant};
 
-/// UDP telemetry emitter reading multiple 2-col CSVs: Timestamp,Value
+/// UDP telemetry emitter reading multiple 2-col CSVs: Timestamp,ChannelValue
 #[derive(Parser, Debug)]
 #[command(name="pitgun-emulator", version, about="Emit telemetry from CSV over UDP")]
 struct Args {

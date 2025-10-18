@@ -313,3 +313,31 @@ loop {
 ```
 
 This minimal loop encapsulates Pitgun’s design principles: concurrency through independent cursors, deterministic ordering through k-way merging, and controlled real-time pacing for accurate telemetry replay.
+
+### Architecture notes
+
+The current version of Pitgun introduces a clear and modular architecture.
+Each component has a focused role. The core handles data and timing logic, while dedicated adapters (`pitgun-source`, `pitgun-sink`) deal with I/O like UDP, gRPC, or Parquet.
+This separation makes it easy to extend the system later without rewriting the core.
+
+The replay engine itself is deterministic: it merges multiple telemetry channels using a k-way merge, ensuring that data from all sensors is emitted in correct chronological order.
+Timing accuracy is preserved, and the optional pacing mode reproduces real-time playback.
+
+Memory usage stays low since only one row per channel is buffered, which scales well even when replaying many channels at once.
+The result is a lightweight and predictable system that behaves like a real telemetry feed.
+
+With this foundation, Pitgun now moves from a simple file replayer toward a full telemetry platform  capable of streaming, recording, and analyzing data consistently across different environments.
+
+### What’s next?
+
+- ~~Extend to multi-channel replay with parallel workers.~~ ✅  
+- ~~Add session context (car, stint, lap) and synchronize timestamps.~~ ✅ 
+- Build a receiver tool to monitor packet loss and latency.    
+- Implement a gRPC streaming interface (`pitgun-proto`) to allow remote clients to subscribe to telemetry.  
+- Add a Kafka adapter (`pitgun-source-kafka`) for distributed replay and persistence.  
+- Introduce a Parquet sink for offline storage and analysis.  
+- Expose Prometheus metrics for rate, latency, and packet loss.  
+- Support declarative configuration files (YAML/TOML) for complex sessions.  
+
+> The goal is to evolve *Pitgun* from a standalone emulator into a modular telemetry platform —  
+> capable of streaming, recording, and analyzing real-time and historical data in a consistent way.
