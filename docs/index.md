@@ -178,31 +178,27 @@ The network layer aims for realism: it supports multicast group joins, dynamic p
 This treemap illustrates the internal structure of the Formula 1 Engine Control Unit (ECU) based on telemetry channel volume.
 Each block represents a logical subsystem within the ECU - from real-time control loops to data logging and chassis coordination.
 
-The Controller and TAG320BIOS dominate, handling nearly half of all runtime signals: the former executes the ECU scheduler and control logic, while the latter manages low-level logging, BIOS states, and diagnostic coverage. Around them, the Chassis, Coordinator, PSUF1, and BrakeControl modules form the backbone of vehicle dynamics and safety. Finally, smaller application layers such as APP6/APP9 and regulatory interfaces like FIA complete the overall architecture.
+The Controller and TAG320BIOS dominate, handling nearly half of all runtime signals: the former executes the ECU scheduler and control logic, while the latter manages low-level logging, BIOS states, and diagnostic coverage. Around them, the Chassis, Coordinator, and BrakeControl modules form the backbone of vehicle dynamics and safety. Finally, smaller application layers such as Dash and regulatory interfaces like FIA complete the overall architecture.
 
 Together, these components show how a modern F1 ECU combines control, orchestration, and observability into a single embedded platform.
 
 ```mermaid
 treemap-beta
 "Engine Control Unit"
-    "TAG320BIOS"
-        "# Channels": 11000
-    "Controller"
-        "# Channels": 11000
-    "Chassis"
-        "# Channels": 7000
-    "Coordinator"
-        "# Channels": 2000
-    "PSUF1"
-        "# Channels": 2000
+    "SECU SUPPLIER"
+        "BIOS": 11000
     "FIA"
-        "# Channels": 1000
-    "BrakeControl"
-        "# Channels": 1000
-    "APP9"
-        "# Channels": 1000
-    "APP6"
-        "# Channels": 800
+        "FIA": 1200
+        "Chassis": 6600
+        "Arbitrator": 400
+    "TEAM"
+        "TeamMath": 500
+        "Dash": 800
+        "BrakeControl": 1100
+    "PU SUPPLIER"
+        "PUMath": 500
+        "Coordinator": 2300
+        "Controller": 11000
 ```
 
 The ECU exposes tens of thousands of channels. Many are **low-frequency “slow raw”** signals, but a critical subset runs at **high frequency** (e.g., engine speed). To get closer to real track conditions, we now emit multiple high-frequency channels in parallel.
