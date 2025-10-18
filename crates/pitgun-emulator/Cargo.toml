@@ -6,6 +6,7 @@ license = "MIT"
 
 [dependencies]
 anyhow = "1"
+serde = { version = "1", features = ["derive"] }
 clap = { version = "4", features = ["derive"] }
 csv = "1"
 socket2 = "0.5"

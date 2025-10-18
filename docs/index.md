@@ -214,4 +214,102 @@ I will maintain the minimal wire format from the first chapter:
 [len_channel:u16][channel][ts_csv_ns:u128 LE][value:f64 LE]
 ```
 
-To be continued...
+### Implementation
+
+#### K-Way merge for telemetry streams
+
+The [k-way merge](https://en.wikipedia.org/wiki/K-way_merge_algorithm) is a classic algorithmic pattern used to merge several already-sorted input streams into a single globally-sorted output stream. Here, k denotes the number of channels (CSV files) being merged.
+
+Each telemetry file in Pitgun - for example `FIA-nEngine.csv`, `Arbitrator-rThrottlePedal.csv`, or `Chassis-NGear.csv` - is sorted by timestamp.
+The emulator opens one cursor per file, each cursor holding the next unread row.
+At every iteration, it picks the cursor with the **smallest pending timestamp**, emits that sample, and then advances only that cursor.
+
+This produces a monotonically increasing global timeline across all channels:
+
+| Timestamp (ns) | Channel | Value |
+|:-----|:------|:---------|
+| 0 | nEngine | 1200 |
+| 0 | rThrottlePedal | 0.0 |
+| 2 000 000 | rThrottlePedal | 10.5 |
+| 5 000 000 | nEngine | 3500 |
+| 9 000 000 | rThrottlePedal | 67.0 |
+| 12 000 000 | nEngine | 8200 |
+
+Algorithmically, this behaves like the merge step in a multi-way mergesort and runs in $O(N*log(k))$ time with $O(k)$ memory. It is an essential pattern for real-time telemetry replay, ensuring deterministic ordering and synchronized pacing across multiple sensor or ECU channels.
+
+#### Unicast vs multicast networking modes
+
+The emulator supports both unicast and multicast UDP transmission, which define who receives the datagrams.
+
+##### Unicast - Point-to-Point
+
+*“Send to one specific host.”*
+
+The target is a regular IPv4 address, such as `127.0.0.1:5001` or `192.168.1.42:5001`. Packets are delivered to exactly one receiver. This mode is ideal for local testing or one-to-one communication between the emulator and a single analysis tool.
+
+##### Multicast - One-to-Many
+
+*“Broadcast to everyone listening on a group address.”*
+
+The target lies in the multicast address range `224.0.0.0` - `239.255.255.255`, for example `239.10.0.1:5001`. Any host that has joined this multicast group will receive the same packets simultaneously. This is the standard model for motorsport telemetry distribution where multiple engineering clients subscribe to identical real-time feeds (strategy, power-unit, simulation etc.).
+
+In Pitgun, the socket layer automatically detects whether the destination is multicast (first octet 224–239) and adjusts its configuration: `set_multicast_ttl_v4(ttl)` and `set_multicast_loop_v4(false)` ensure proper propagation and prevent echoing packets back to the sender.
+
+#### Example usage
+
+```bash
+pitgun-emulator \
+  --target 239.10.0.1:5001 \
+  --input nEngine=datasets/telemetry/RUN-001/FIA-nEngine.csv \
+  --input throttle=datasets/telemetry/RUN-001/Controller-rThrottleR.csv \
+  --pace
+```
+
+#### Reference implementation
+
+The following code shows the core of Pitgun’s multi-channel telemetry replay loop. Each input CSV represents an independent telemetry stream. The loop maintains one cursor per channel, performs a k-way merge based on timestamps, and emits synchronized frames in real time over UDP.
+
+```rust
+// --- Reference implementation: multi-channel replay loop ---
+let mut cursors = open_all_channels(args.input)?;
+let t0_ns = cursors
+    .iter()
+    .filter_map(|c| c.next.as_ref().map(|r| r.ts))
+    .min()
+    .expect("no data");
+let start = Instant::now();
+
+loop {
+    // Pick the next record globally (k-way merge)
+    let Some(i) = cursors
+        .iter()
+        .enumerate()
+        .filter_map(|(i, c)| c.next.as_ref().map(|r| (i, r.ts)))
+        .min_by_key(|(_, ts)| *ts)
+        .map(|(i, _)| i)
+    else { break };
+
+    let (channel, ts, val) = {
+        let c = &mut cursors[i];
+        let row = c.next.take().unwrap();
+        (c.channel.clone(), row.ts, row.val)
+    };
+
+    // Optional pacing: wait until real time catches up
+    if args.pace {
+        let delay = Duration::from_nanos((ts - t0_ns) as u64);
+        if let Some(rem) = delay.checked_sub(start.elapsed()) {
+            std::thread::sleep(rem);
+        }
+    }
+
+    // Encode and emit the frame
+    let frame = encode_frame(&channel, ts, val);
+    sock.send(&frame)?;
+
+    // Advance this channel
+    cursors[i].next = cursors[i].it.next().transpose()?;
+}
+```
+
+This minimal loop encapsulates Pitgun’s design principles: concurrency through independent cursors, deterministic ordering through k-way merging, and controlled real-time pacing for accurate telemetry replay.

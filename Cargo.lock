@@ -518,6 +518,7 @@ dependencies = [
  "anyhow",
  "clap",
  "csv",
+ "serde",
  "socket2",
  "time",
 ]

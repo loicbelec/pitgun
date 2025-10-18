@@ -14,4 +14,4 @@
 .idea/
 
 # Datasets locaux (si trop lourds ou sensibles)
-datasets/telemetry/*.csv
+datasets/*
