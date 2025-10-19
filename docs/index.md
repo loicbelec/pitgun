@@ -226,14 +226,16 @@ At every iteration, it picks the cursor with the **smallest pending timestamp**,
 
 This produces a monotonically increasing global timeline across all channels:
 
-| Timestamp (ns) | Channel | Value |
-|:-----|:------|:---------|
-| 0 | nEngine | 1200 |
-| 0 | rThrottlePedal | 0.0 |
-| 2 000 000 | rThrottlePedal | 10.5 |
-| 5 000 000 | nEngine | 3500 |
-| 9 000 000 | rThrottlePedal | 67.0 |
-| 12 000 000 | nEngine | 8200 |
+```mermaid
+timeline
+    ts = 653 004 000 : nEngine = 0
+        : rThrottlePedal = 0.6
+    ts = 654 004 000 : nEngine = 0
+    ts = X : nEngine = Y
+    ts = 662 004 000 : nEngine = 0
+    ts = 663 004 000 : nEngine = 0
+        : rThrottlePedal = 0.6
+````
 
 Algorithmically, this behaves like the merge step in a multi-way mergesort and runs in $O(N*log(k))$ time with $O(k)$ memory. It is an essential pattern for real-time telemetry replay, ensuring deterministic ordering and synchronized pacing across multiple sensor or ECU channels.
 
