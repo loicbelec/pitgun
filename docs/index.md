@@ -343,3 +343,152 @@ With this foundation, Pitgun now moves from a simple file replayer toward a full
 
 > The goal is to evolve *Pitgun* from a standalone emulator into a modular telemetry platform —  
 > capable of streaming, recording, and analyzing real-time and historical data in a consistent way.
+
+## 3 - Definition of events
+
+#### Channels
+
+Let a set of **sensor channels**
+
+$$
+\mathcal{C} = \{ C_1, C_2, \dots, C_n \}
+$$
+
+where each channel \( C_i : \mathbb{R} \to \mathbb{R} \) is a function of time \(t\) (sampled in practice).
+
+**Examples:**
+
+$$
+C_1(t) = n_\text{Engine}(t), \quad
+C_2(t) = v_\text{Car}(t), \quad
+C_3(t) = R_\text{Throttle}(t)
+$$
+
+#### Predicate (Condition)
+
+A **predicate** is a logical expression applied to one or more channels:
+
+$$
+\varphi : \mathbb{R}^n \to \{ \text{True}, \text{False} \}
+$$
+
+**Examples:**
+
+$$
+\begin{aligned}
+\varphi_1(x_1,x_2) &: x_1 > 12000 \quad &&\text{(high engine speed)} \\
+\varphi_2(x_1,x_2) &: x_2 < 50 \quad &&\text{(vehicle speed below 50 km/h)} \\
+\varphi_3(x_1,x_2,x_3) &: (x_1 > 9000) \land (x_3 > 0.8) \quad &&\text{(high revs AND high throttle)}
+\end{aligned}
+$$
+
+#### Elementary Event
+
+An **elementary event** associated with a predicate \( \varphi \) is the Boolean signal:
+
+$$
+E_\varphi(t) =
+\begin{cases}
+1 & \text{if } \varphi(C_1(t), C_2(t), \dots, C_n(t)) \text{ is true},\\[4pt]
+0 & \text{otherwise.}
+\end{cases}
+$$
+
+Compact notation:
+
+$$
+E_\varphi(t) = \mathbf{1}\{\varphi(\mathbf{C}(t))\}
+$$
+
+Hence \(E_\varphi : \mathbb{R} \to \{0,1\}\) is a **Boolean time series**.
+
+#### Edges and active intervals
+
+Define the **rising** and **falling** edges of \(E_\varphi(t)\):
+
+$$
+\begin{aligned}
+t_i^{\uparrow} &= \{ t \mid E_\varphi(t^-) = 0, \; E_\varphi(t^+) = 1 \}, \\
+t_i^{\downarrow} &= \{ t \mid E_\varphi(t^-) = 1, \; E_\varphi(t^+) = 0 \}.
+\end{aligned}
+$$
+
+Each pair \([t_i^{\uparrow}, t_i^{\downarrow})\) defines a **time segment** during which the event is active:
+
+$$
+\mathcal{S}_\varphi = \bigcup_i [t_i^{\uparrow},\, t_i^{\downarrow})
+$$
+
+#### Duration and frequency
+
+- **Total active duration**
+
+  $$
+  T_\varphi = \sum_i (t_i^{\downarrow} - t_i^{\uparrow})
+  $$
+
+- **Number of occurrences**
+
+  $$
+  N_\varphi = |\mathcal{S}_\varphi|
+  $$
+
+- **Duty ratio (occupancy)**
+
+  $$
+  \rho_\varphi = \frac{T_\varphi}{T_\text{total}}
+  $$
+
+#### Composite Events
+
+Events can be **combined** with logical operators:
+
+$$
+\begin{aligned}
+E_{\varphi_1 \land \varphi_2}(t) &= E_{\varphi_1}(t) \cdot E_{\varphi_2}(t) \\
+E_{\varphi_1 \lor \varphi_2}(t) &= \max(E_{\varphi_1}(t), E_{\varphi_2}(t)) \\
+E_{\neg \varphi_1}(t) &= 1 - E_{\varphi_1}(t)
+\end{aligned}
+$$
+
+These operations allow **composite rules**, such as  
+*“high rpm AND high throttle”*, *“boost AND brake”*, etc.
+
+#### Example
+
+Let
+
+$$
+\varphi_1: n_\text{Engine} > 10000, \qquad
+\varphi_2: T_\text{Throttle} > 0.8
+$$
+
+Then
+
+$$
+E_{\varphi_1}(t) = \mathbf{1}\{ n_\text{Engine}(t) > 10000 \}, \quad
+E_{\varphi_2}(t) = \mathbf{1}\{ T_\text{Throttle}(t) > 0.8 \}
+$$
+
+and
+
+$$
+E_\text{PowerRun}(t) = E_{\varphi_1}(t) \land E_{\varphi_2}(t)
+$$
+
+The active intervals \( \mathcal{S}_\text{PowerRun} \) correspond to periods with **high engine speed and high load**.
+
+#### Compact summary
+
+$$
+\boxed{
+\begin{aligned}
+\text{Channels:} & \quad \mathbf{C}(t) = (C_1(t), ..., C_n(t)) \in \mathbb{R}^n \\[4pt]
+\text{Predicate:} & \quad \varphi : \mathbb{R}^n \to \{0,1\} \\[4pt]
+\text{Event signal:} & \quad E_\varphi(t) = \mathbf{1}\{ \varphi(\mathbf{C}(t)) \} \\[4pt]
+\text{Active set:} & \quad \mathcal{S}_\varphi = \{ t \in \mathbb{R} \mid E_\varphi(t) = 1 \} \\[4pt]
+\text{Segments:} & \quad \mathcal{S}_\varphi = \bigcup_i [t_i^{\uparrow}, t_i^{\downarrow}) \\[4pt]
+\text{Duration:} & \quad T_\varphi = \sum_i (t_i^{\downarrow} - t_i^{\uparrow})
+\end{aligned}
+}
+$$
