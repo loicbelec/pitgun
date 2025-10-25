@@ -348,16 +348,18 @@ With this foundation, Pitgun now moves from a simple file replayer toward a full
 
 ### Context
 
-Before diving into channel processing, it is essential to introduce the concept of events. An event is a **logical condition applied to one or more acquisition channels** and is widely used in motorsport to compute metrics within specific operating contexts.
+Before diving into channel processing, it is essential to introduce the concept of events. An event is a **logical condition applied to one or more channels** and is widely used in motorsport to compute metrics within specific operating contexts.
 
 A context describes the situation the car is in. For example, *the car is entering the pitlane*. We can express this as a condition on a spatial signal:
+
 $$
-s_{\text{Pitlane}}(t) > 0
+s_{\mathrm{Pitlane}}(t) > 0
 $$
 
 In that context, *the engine speed within the pitlane* is then interpreted as:
+
 $$
-n_{\text{Engine}}(s_{\text{Pitlane}})
+n_{\mathrm{Engine}}\big(s_{\mathrm{Pitlane}}\big)
 $$
 
 #### Applications of event-gated data
@@ -378,12 +380,10 @@ Event gating lets you analyze signals only within relevant operational windows. 
 Channels often differ in sampling rate and latency, so you must **align** them when applying events. Two common strategies:
 
 1) **Direct gating (no interpolation)**  
-   Use only samples that fall inside active event intervals.  
-   → Maximizes temporal fidelity, data may be sparse.
+   Use only samples that fall inside active event intervals → maximizes temporal fidelity, data may be sparse.
 
 2) **Interpolated/resampled gating**  
-   Interpolate or resample channels so the event mask and signals align on a common grid.  
-   → Maximizes continuity, introduces interpolation assumptions.
+   Interpolate or resample channels so the event mask and signals align on a common grid → maximizes continuity, introduces interpolation assumptions.
 
 | Strategy            | Pros                               | Cons                              |
 |---------------------|------------------------------------|-----------------------------------|
@@ -415,7 +415,7 @@ $$
 A predicate is a logical expression applied to one or more channels:
 
 $$
-\varphi : \mathbb{R}^n \to \{ True, False \}
+\varphi : \mathbb{R}^n \to \lbrace \mathrm{True}, \mathrm{False} \rbrace
 $$
 
 **Examples:**
@@ -515,7 +515,7 @@ E_{\varphi_1}(t) = \mathbf{1}\{ n_\text{Engine}(t) > 10000 \}, \quad
 E_{\varphi_2}(t) = \mathbf{1}\{ T_\text{Throttle}(t) > 0.8 \}
 $$
 
-and
+And
 
 $$
 E_\text{PowerRun}(t) = E_{\varphi_1}(t) \land E_{\varphi_2}(t)
