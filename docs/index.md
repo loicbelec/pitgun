@@ -415,7 +415,7 @@ $$
 A predicate is a logical expression applied to one or more channels:
 
 $$
-\varphi : \mathbb{R}^n \to \{ \text{True}, \text{False} \}
+\varphi : \mathbb{R}^n \to \{ True, False \}
 $$
 
 **Examples:**
