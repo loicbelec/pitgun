@@ -346,15 +346,61 @@ With this foundation, Pitgun now moves from a simple file replayer toward a full
 
 ## 3 - Definition of events
 
+### Context
+
+Before diving into channel processing, it is essential to introduce the concept of events. An event is a **logical condition applied to one or more acquisition channels** and is widely used in motorsport to compute metrics within specific operating contexts.
+
+A context describes the situation the car is in. For example, *the car is entering the pitlane*. We can express this as a condition on a spatial signal:
+$$
+s_{\text{Pitlane}}(t) > 0
+$$
+
+In that context, *the engine speed within the pitlane* is then interpreted as:
+$$
+n_{\text{Engine}}(s_{\text{Pitlane}})
+$$
+
+#### Applications of event-gated data
+
+Event gating lets you analyze signals only within relevant operational windows. Typical applications include:
+
+- **Energy management** - isolating power flows between battery, MGUs (kinetic/thermal), and ICE.  
+- **Component wear / damage estimation** - assessing stress or fatigue under specific loads.  
+- **Performance analysis** - comparing driver inputs during accel/brake/lift phases.  
+- **Calibration validation** - monitoring control parameters in defined modes (pit limiter, safety car, full-load).  
+- **Thermal management** - gating by coolant/oil temperature windows.  
+- **Fuel consumption modeling** - gating steady-state cruise vs. transient.  
+
+> 💬 Note à moi-même : ajouter des cas supplémentaires
+
+#### Practical Considerations
+
+Channels often differ in sampling rate and latency, so you must **align** them when applying events. Two common strategies:
+
+1) **Direct gating (no interpolation)**  
+   Use only samples that fall inside active event intervals.  
+   → Maximizes temporal fidelity, data may be sparse.
+
+2) **Interpolated/resampled gating**  
+   Interpolate or resample channels so the event mask and signals align on a common grid.  
+   → Maximizes continuity, introduces interpolation assumptions.
+
+| Strategy            | Pros                               | Cons                              |
+|---------------------|------------------------------------|-----------------------------------|
+| Direct gating       | Exact timestamps; no assumptions   | Irregular samples; gaps possible  |
+| Interp./resampled   | Smooth, aligned arrays for metrics | Interpolation bias/phase risks    |
+
+### Mathematical definition
+
 #### Channels
 
-Let a set of **sensor channels**
+Let a set of channels
 
 $$
 \mathcal{C} = \{ C_1, C_2, \dots, C_n \}
 $$
 
-where each channel \( C_i : \mathbb{R} \to \mathbb{R} \) is a function of time \(t\) (sampled in practice).
+where each channel $C_i : \mathbb{R} \to \mathbb{R}$ is a function of time $t$ (sampled in practice).
 
 **Examples:**
 
@@ -364,9 +410,9 @@ C_2(t) = v_\text{Car}(t), \quad
 C_3(t) = R_\text{Throttle}(t)
 $$
 
-#### Predicate (Condition)
+#### Predicate or condition
 
-A **predicate** is a logical expression applied to one or more channels:
+A predicate is a logical expression applied to one or more channels:
 
 $$
 \varphi : \mathbb{R}^n \to \{ \text{True}, \text{False} \}
@@ -384,7 +430,7 @@ $$
 
 #### Elementary Event
 
-An **elementary event** associated with a predicate \( \varphi \) is the Boolean signal:
+An elementary event associated with a predicate $φ$ is the Boolean signal:
 
 $$
 E_\varphi(t) =
@@ -400,11 +446,11 @@ $$
 E_\varphi(t) = \mathbf{1}\{\varphi(\mathbf{C}(t))\}
 $$
 
-Hence \(E_\varphi : \mathbb{R} \to \{0,1\}\) is a **Boolean time series**.
+Hence, $E_\varphi : \mathbb{R} \to \{0,1\}$ is a Boolean time series.
 
 #### Edges and active intervals
 
-Define the **rising** and **falling** edges of \(E_\varphi(t)\):
+Define the **rising** and **falling** edges of $E_\varphi(t)$:
 
 $$
 \begin{aligned}
@@ -413,7 +459,7 @@ t_i^{\downarrow} &= \{ t \mid E_\varphi(t^-) = 1, \; E_\varphi(t^+) = 0 \}.
 \end{aligned}
 $$
 
-Each pair \([t_i^{\uparrow}, t_i^{\downarrow})\) defines a **time segment** during which the event is active:
+Each pair $[t_i^{↑}, t_i^{↓})$ defines a time segment during which the event is active:
 
 $$
 \mathcal{S}_\varphi = \bigcup_i [t_i^{\uparrow},\, t_i^{\downarrow})
@@ -423,21 +469,21 @@ $$
 
 - **Total active duration**
 
-  $$
-  T_\varphi = \sum_i (t_i^{\downarrow} - t_i^{\uparrow})
-  $$
+$$
+T_\varphi = \sum_i (t_i^{\downarrow} - t_i^{\uparrow})
+$$
 
 - **Number of occurrences**
 
-  $$
-  N_\varphi = |\mathcal{S}_\varphi|
-  $$
+$$
+N_\varphi = |\mathcal{S}_\varphi|
+$$
 
 - **Duty ratio (occupancy)**
 
-  $$
-  \rho_\varphi = \frac{T_\varphi}{T_\text{total}}
-  $$
+$$
+\rho_\varphi = \frac{T_\varphi}{T_\text{total}}
+$$
 
 #### Composite Events
 
@@ -451,8 +497,7 @@ E_{\neg \varphi_1}(t) &= 1 - E_{\varphi_1}(t)
 \end{aligned}
 $$
 
-These operations allow **composite rules**, such as  
-*“high rpm AND high throttle”*, *“boost AND brake”*, etc.
+These operations allow composite rules, such as *“high rpm AND high throttle”*, *“boost AND brake”*, etc.
 
 #### Example
 
@@ -476,19 +521,4 @@ $$
 E_\text{PowerRun}(t) = E_{\varphi_1}(t) \land E_{\varphi_2}(t)
 $$
 
-The active intervals \( \mathcal{S}_\text{PowerRun} \) correspond to periods with **high engine speed and high load**.
-
-#### Compact summary
-
-$$
-\boxed{
-\begin{aligned}
-\text{Channels:} & \quad \mathbf{C}(t) = (C_1(t), ..., C_n(t)) \in \mathbb{R}^n \\[4pt]
-\text{Predicate:} & \quad \varphi : \mathbb{R}^n \to \{0,1\} \\[4pt]
-\text{Event signal:} & \quad E_\varphi(t) = \mathbf{1}\{ \varphi(\mathbf{C}(t)) \} \\[4pt]
-\text{Active set:} & \quad \mathcal{S}_\varphi = \{ t \in \mathbb{R} \mid E_\varphi(t) = 1 \} \\[4pt]
-\text{Segments:} & \quad \mathcal{S}_\varphi = \bigcup_i [t_i^{\uparrow}, t_i^{\downarrow}) \\[4pt]
-\text{Duration:} & \quad T_\varphi = \sum_i (t_i^{\downarrow} - t_i^{\uparrow})
-\end{aligned}
-}
-$$
+The active intervals correspond to periods with *"high engine speed AND high load"*.
