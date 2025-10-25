@@ -525,9 +525,11 @@ The active intervals correspond to periods with *"high engine speed AND high loa
 
 ### Pratical use cases
 
-Consider a simple use case: the event is triggered when the engine speed rises above *10,000 rpm*. The corresponding Boolean signal takes the value true during this period. When this condition is combined with a throttle ratio *exceeding 0.9*, the resulting event is illustrated in the graph on the right.
+Consider a simple use case: the event is triggered when the engine speed rises above *10,000 rpm*. The corresponding Boolean signal takes the value true during this period. When this condition is combined with a throttle ratio *exceeding 0.8*, the resulting event is illustrated in the graph on the right.
 
-<img src="img/simple_event.png" alt="Simple engine event diagram" width="300"> <img src="img/combination.png" alt="Simple engine event diagram" width="320">
+| Simple event | Combined conditions |
+|:-------------:|:-------------------:|
+| ![Simple event](img/simple_event.png) | ![Combined event](img/combination.png) |
 
 Obtaining such an event unlocks many possibilities for advanced data processing and physical interpretation.
 
