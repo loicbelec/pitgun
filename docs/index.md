@@ -524,7 +524,18 @@ $$
 The active intervals correspond to periods with *"high engine speed AND high load"*.
 
 ### Pratical use cases
-#### Simple event
-Here is a simple event. The engine speed over 8000 rpm.
 
-![engine speed over 8000 rpm](img/simple_event.png)
+Consider a simple use case: the event is triggered when the engine speed rises above *10,000 rpm*. The corresponding Boolean signal takes the value true during this period. When this condition is combined with a throttle ratio *exceeding 0.9*, the resulting event is illustrated in the graph on the right.
+
+<img src="img/simple_event.png" alt="Simple engine event diagram" width="300"> <img src="img/combination.png" alt="Simple engine event diagram" width="320">
+
+Obtaining such an event unlocks many possibilities for advanced data processing and physical interpretation.
+
+From a thermodynamic or energy-management perspective, isolating time intervals where specific operating conditions occur enables you to quantify the power flow and energy exchange between the Power Unit components. This is essential when analyzing how mechanical, electrical, and thermal subsystems interact during high-load phases of the lap.
+
+Depending on the working hypothesis, several approaches can be adopted. If your goal is to map these events spatially, you can project them along the circuit’s curvilinear abscissa ($sLap$). This requires a reliable positional reference, typically derived from GPS, distance sensors, or integrated wheel-speed estimation.
+
+Alternatively, you can infer the vehicle’s “position state” dynamically from physical observables such as lateral acceleration, steering angle, or gear selection, which correlate with specific track segments. This indirect inference becomes particularly useful when GPS telemetry is noisy, incomplete, or unavailable.
+
+In both cases, the key insight is that an event acts as a temporal mask applied to raw telemetry, allowing focused analysis of energy balance, transient behavior, or efficiency metrics within targeted operating windows.
+
