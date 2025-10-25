@@ -435,7 +435,7 @@ An elementary event associated with a predicate $φ$ is the Boolean signal:
 $$
 E_\varphi(t) =
 \begin{cases}
-1 & \text{if } \varphi(C_1(t), C_2(t), \dots, C_n(t)) \text{ is true},\\[4pt]
+1 & \text{if } \varphi(C_1(t), C_2(t), \dots, C_n(t)) \text{ is true},\\
 0 & \text{otherwise.}
 \end{cases}
 $$
@@ -522,3 +522,9 @@ E_\text{PowerRun}(t) = E_{\varphi_1}(t) \land E_{\varphi_2}(t)
 $$
 
 The active intervals correspond to periods with *"high engine speed AND high load"*.
+
+### Pratical use cases
+#### Simple event
+Here is a simple event. The engine speed over 8000 rpm.
+
+![engine speed over 8000 rpm](img/simple_event.png)
