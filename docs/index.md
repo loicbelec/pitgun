@@ -8,7 +8,7 @@
 
 The project explores how to ingest, emulate, and analyze high-frequency data streams - similar to those used in Formula 1 telemetry systems - while applying modern Rust concepts and patterns.
 
-### 🎯 Goals  
+### Goals  
 - Learn and apply modern Rust in a real-world, performance-critical context  
 - Build a modular, low-latency data pipeline  
 - Experiment with UDP streaming, parallel ingestion, and high-frequency emulation  
@@ -23,7 +23,8 @@ By combining insights from **Formula 1 telemetry** and **High-Frequency Trading*
 - [Project Structure](#project-structure)
 - [Roadmap](#roadmap)
 - [1 - Emitting data from a single channel over UDP](#1---emitting-data-from-a-single-channel-over-udp)
-- [2 - Parallel processing (WIP)](#2---parallel-processing)
+- [2 - Parallel processing](#2---parallel-processing)
+- [3 - Definition of events (WIP)](#3---definition-of-events)
 
 ## Project structure
 Pitgun is organized as a Rust workspace composed of several crates:
@@ -59,22 +60,22 @@ My first objective is to reproduce a minimalistic version of this system - a fir
 
 The first channel I picked to emulate is the engine speed, known under the Atlas namespace as `FIA-nEngine`.
 
+<img src="img/nEngine.png" alt="nEngine data" style="width:400px;">
+
 Here are the design goals:
 - **Data source:** simple CSV time series.
 - **Transport:** UDP multicast to mimic trackside broadcast patterns.
 - **Encryption:** lightweight XOR-style scrambling (placeholder for proprietary ciphers).
 - **Replay pacing:** optional pacing to preserve timing between samples.
 
-[![nEngine synthetic data](img/nEngine.png)](https://pitgun.loicbelec.com)
+The channel name is inferred from a CSV filename, e.g. `FIA-nEngine.csv` → channel `FIA-nEngine`. Each row in the CSV is replayed over UDP: by default as fast as possible, or paced with `--pace` to reproduce real sample intervals based on the `Timestamp` column.
 
-Example dataset for this channel:
+#### Example dataset
 ```csv
 Timestamp,ChannelValue
 62076104000000,12034.5
 62076105000000,12035.2
 ```
-
-The channel name is inferred from the CSV filename, e.g. `FIA-nEngine.csv` → channel `FIA-nEngine`. Each row in the CSV is replayed over UDP: by default as fast as possible, or paced with `--pace` to reproduce real sample intervals based on the `Timestamp` column.
 
 #### Command-line flags
 
@@ -341,8 +342,7 @@ With this foundation, Pitgun now moves from a simple file replayer toward a full
 - Expose Prometheus metrics for rate, latency, and packet loss.  
 - Support declarative configuration files (YAML/TOML) for complex sessions.  
 
-> The goal is to evolve *Pitgun* from a standalone emulator into a modular telemetry platform —  
-> capable of streaming, recording, and analyzing real-time and historical data in a consistent way.
+> The goal is to evolve *Pitgun* from a standalone emulator into a modular telemetry platform - capable of streaming, recording, and analyzing real-time and historical data in a consistent way.
 
 ## 3 - Definition of events
 
@@ -373,7 +373,7 @@ Event gating lets you analyze signals only within relevant operational windows. 
 - **Thermal management** - gating by coolant/oil temperature windows.  
 - **Fuel consumption modeling** - gating steady-state cruise vs. transient.  
 
-> 💬 Note à moi-même : ajouter des cas supplémentaires
+> Other use cases will be added later!
 
 #### Practical Considerations
 
@@ -391,6 +391,7 @@ Channels often differ in sampling rate and latency, so you must **align** them w
 | Interp./resampled   | Smooth, aligned arrays for metrics | Interpolation bias/phase risks    |
 
 ### Mathematical definition
+The following section presents the mathematical derivation and formal definition of events in the Pitgun framework. This theoretical groundwork serves to ensure consistency, traceability, and extensibility across all modules that depend on event-driven logic. Since events are a fundamental abstraction in Pitgun, a clear formalization is essential to guarantee robustness in future implementations.
 
 #### Channels
 
