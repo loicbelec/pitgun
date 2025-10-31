@@ -60,7 +60,7 @@ My first objective is to reproduce a minimalistic version of this system - a fir
 
 The first channel I picked to emulate is the engine speed, known under the Atlas namespace as `FIA-nEngine`.
 
-<img src="img/nEngine.png" alt="nEngine data" style="width:400px;">
+<img src="img/nEngine.png" alt="nEngine data" style="width:600px;">
 
 Here are the design goals:
 - **Data source:** simple CSV time series.
@@ -342,7 +342,7 @@ With this foundation, Pitgun now moves from a simple file replayer toward a full
 - Expose Prometheus metrics for rate, latency, and packet loss.  
 - Support declarative configuration files (YAML/TOML) for complex sessions.  
 
-> The goal is to evolve *Pitgun* from a standalone emulator into a modular telemetry platform - capable of streaming, recording, and analyzing real-time and historical data in a consistent way.
+> The goal is to evolve Pitgun from a standalone emulator into a modular telemetry platform - capable of streaming, recording, and analyzing real-time and historical data in a consistent way.
 
 ## 3 - Definition of events
 
@@ -542,3 +542,72 @@ Alternatively, you can infer the vehicle’s “position state” dynamically fr
 
 In both cases, the key insight is that an event acts as a temporal mask applied to raw telemetry, allowing focused analysis of energy balance, transient behavior, or efficiency metrics within targeted operating windows.
 
+## 4 - The orchestrator
+
+**Pitgun CLI** is the central orchestrator of the Pitgun ecosystem. It acts as the bridge between the future different crates, providing a unified interface for engineers to observe, validate, and manipulate telemetry streams in real time.
+
+Initially designed as a lightweight receiver for UDP frames, Pitgun CLI will evolve into a full-featured command-line toolkit capable of interfacing with any transport supported by the platform whether UDP, gRPC, or later Kafka. It ensures interoperability between the emulator, the stream server, and future sinks such as Parquet.
+
+### Core responsibilities
+
+Pitgun CLI plays several key roles in the Pitgun architecture:
+
+1.	**Unified telemetry subscriber :** It can subscribe to telemetry data over multiple protocols (UDP, gRPC, Kafka) and decode it into structured telemetry events shared across the project (Event, EventBatch from pitgun-core).
+2.	**Monitoring and Diagnostics :** The CLI continuously reports throughput, packet rate, channel statistics, gaps, and basic latency metrics acting as a real-time probe of system health. This makes it ideal for testing new transports, debugging network issues, or validating encoder/decoder consistency.
+3.	**Recording and Replay Support :** It can optionally record incoming telemetry into CSV or Parquet files, allowing reproducible analysis and offline comparison with other runs.
+4.	**Protocol-Oriented Abstraction Layer :** Instead of embedding logic directly, Pitgun CLI delegates low-level work to specialized crates:
+    - `pitgun-source-udp` for UDP reception
+    - `pitgun-source-grpc` for gRPC subscriptions
+    - ``pitgun-core`` for decoding and normalization
+5.	**Human-Readable Frontend :** It provides formatted output modes, making telemetry analysis and data visualization straightforward even without external tools.
+
+#### Example usage
+
+##### Listening to UDP telemetry
+
+```bash
+pitgun-cli \
+  -- subscribe \
+  --bind 127.0.0.1:5001 \
+  --json
+```
+
+This mode receives frames directly from `pitgun-emulator` or any compatible UDP emitter. Each frame is decoded using Pitgun’s wire format `([len:u16][channel][ts:u128][value:f64])` and converted into structured telemetry events.
+
+##### Subscribing to gRPC telemetry
+
+```bash
+pitgun-cli \
+  -- subscribe \
+  --grpc-endpoint http://127.0.0.1:50051 \
+  --stats-interval 1
+```
+
+In this configuration, the CLI connects to pitgun-streamd, the gRPC broker that relays telemetry batches published from UDP or other sources. The CLI treats both sources (UDP and gRPC) uniformly, using the same internal model and statistics engine.
+
+ ### Internal Architecture
+
+ At runtime, Pitgun CLI instantiates a source adapter according to the selected transport:
+
+```mermaid
+flowchart TD
+  %% Pitgun CLI – Internal Architecture (parsable)
+
+cli["`pitgun-cli 
+command line orchestrator`"]
+core["`pitgun-core
+unified telemetry representation`"]
+ 
+%% Version avec IDs et animations
+cli == UDP stream ==> pitgun-source-udp
+cli == gRPC stream ==> pitgun-source-grpc
+cli == Kafka stream ==> pitgun-source-kafka
+pitgun-source-udp e1@==> core
+e1@{ animate: true }
+pitgun-source-grpc e2@==> core
+e2@{ animate: true }
+pitgun-source-kafka e3@==> core
+e3@{ animate: true }
+```
+
+This abstraction allows the CLI to remain consistent regardless of the input source, ensuring that downstream sinks (CSV, Parquet) can consume data without caring about the transport layer.
