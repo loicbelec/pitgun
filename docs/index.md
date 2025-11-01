@@ -1,6 +1,10 @@
-[![Pitgun](img/pitgun_small.png)](https://pitgun.loicbelec.com)
+<p align="center">
+  <a href="https://pitgun.loicbelec.com">
+    <img src="img/pitgun_transparent.png" alt="Pitgun">
+  </a>
+</p>
 
-# Pitgun development journal
+# Development journal
 
 ## Introduction
 
@@ -12,22 +16,23 @@ The project explores how to ingest, emulate, and analyze high-frequency data str
 - Learn and apply modern Rust in a real-world, performance-critical context  
 - Build a modular, low-latency data pipeline  
 - Experiment with UDP streaming, parallel ingestion, and high-frequency emulation  
-- Bridge **Formula 1 telemetry** with **High-Frequency Trading (HFT)** paradigms - both domains where *latency and precision decide winners*  
+- Bridge **Formula 1 telemetry** with **High-Frequency Trading (HFT)** paradigms - both domains where latency and precision prevail  
 
-This repository is a **learning log**. I’m documenting not just the code, but the thought process, mistakes, and lessons along the way.  
+This repository is a learning log. I’m documenting not just the code, but the thought process, mistakes, and lessons along the way.  
 
-By combining insights from **Formula 1 telemetry** and **High-Frequency Trading**, Pitgun is my sandbox to experiment with ultra-low-latency data systems.
+By combining insights from Formula 1 telemetry and High-Frequency Trading, Pitgun is my sandbox to experiment with ultra-low-latency data systems.
 
 ## Table of contents
 - [Introduction](#introduction)
 - [Project Structure](#project-structure)
 - [Roadmap](#roadmap)
-- [1 - Emitting data from a single channel over UDP](#1---emitting-data-from-a-single-channel-over-udp)
+- [1 - Emitting data over UDP](#1---emitting-data-over-udp)
 - [2 - Parallel processing](#2---parallel-processing)
-- [3 - Definition of events (WIP)](#3---definition-of-events)
+- [3 - Definition of events](#3---definition-of-events)
+- [4 - The orchestrator](#4---the-orchestrator)
 
 ## Project structure
-Pitgun is organized as a Rust workspace composed of several crates:
+Initially, Pitgun was organized as a Rust workspace composed of three main crates:
 
 | Crate | Purpose |
 |-------|----------|
@@ -35,16 +40,17 @@ Pitgun is organized as a Rust workspace composed of several crates:
 | `pitgun-cli` | Command-line interface: ingest, transform, export |
 | `pitgun-emulator` | UDP emitter: replays CSV datasets at configurable pace |
 
+Originally composed of *core, cli, and emulator,* the Pitgun workspace now expands with new crates reflecting domain boundaries (source, proto, event…).
+
 ## Roadmap
-- [x] Create Rust workspace with `core`, `cli`, `emulator`  
-- [x] Implement UDP emission from CSV datasets  
-- [ ] Add sequence numbers and loss detection
-- [ ] Explore sinks: Parquet, Kafka, Arrow  
-- [ ] Add benchmarks and performance profiling  
+- [x] Create Rust workspace with `core`, `cli`, `emulator`
+- [x] Implement UDP emission from CSV datasets
+- [ ] Explore sinks: Parquet, Kafka, Arrow
+- [ ] Add benchmarks and performance profiling
 - [ ] Study parallels with HFT market data (UDP multicast, order books, latency profiling)  
 - [ ] Publish crates on [crates.io](https://crates.io) when stable 
 
-## 1 - Emitting data from a single channel over UDP
+## 1 - Emitting data over UDP
 
 ### Context
 
@@ -167,10 +173,10 @@ The network layer aims for realism: it supports multicast group joins, dynamic p
 
 ### What’s next?
 
-- Extend to multi-channel replay with parallel workers.  
-- Add session context (car, stint, lap) and synchronize timestamps.  
-- Build a receiver tool to monitor packet loss and latency.  
+- Extend to multi-channel replay with parallel workers.
+- Build a receiver tool to monitor packet loss and latency.
 - Define a versioned binary format for future compatibility.
+- Add session context (car, stint, lap) and synchronize timestamps.
 
 ## 2 - Parallel processing
 
@@ -333,16 +339,17 @@ With this foundation, Pitgun now moves from a simple file replayer toward a full
 
 ### What’s next?
 
+> This list keeps growing as I advance in the project.
+> The goal is to evolve Pitgun from a standalone emulator into a modular telemetry platform - capable of streaming, recording, and analyzing real-time and historical data in a consistent way.
+
 - ~~Extend to multi-channel replay with parallel workers.~~ ✅  
-- ~~Add session context (car, stint, lap) and synchronize timestamps.~~ ✅ 
-- Build a receiver tool to monitor packet loss and latency.    
+- ~~Build a receiver tool to monitor packet loss and latency.~~  ✅ 
+- Add session context (car, stint, lap) and synchronize timestamps.
 - Implement a gRPC streaming interface (`pitgun-proto`) to allow remote clients to subscribe to telemetry.  
 - Add a Kafka adapter (`pitgun-source-kafka`) for distributed replay and persistence.  
 - Introduce a Parquet sink for offline storage and analysis.  
 - Expose Prometheus metrics for rate, latency, and packet loss.  
 - Support declarative configuration files (YAML/TOML) for complex sessions.  
-
-> The goal is to evolve Pitgun from a standalone emulator into a modular telemetry platform - capable of streaming, recording, and analyzing real-time and historical data in a consistent way.
 
 ## 3 - Definition of events
 
