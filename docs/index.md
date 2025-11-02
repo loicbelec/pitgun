@@ -27,7 +27,7 @@ By combining insights from Formula 1 telemetry and High-Frequency Trading, Pitgu
 - [Project Structure](#project-structure)
 - [Roadmap](#roadmap)
 - [1 - Emitting data over UDP](#1---emitting-data-over-udp)
-- [2 - Parallel processing](#2---parallel-processing)
+- [2 - Concurrent emission](#2---concurrent-emission)
 - [3 - Definition of events](#3---definition-of-events)
 - [4 - The orchestrator](#4---the-orchestrator)
 
@@ -178,7 +178,7 @@ The network layer aims for realism: it supports multicast group joins, dynamic p
 - Define a versioned binary format for future compatibility.
 - Add session context (car, stint, lap) and synchronize timestamps.
 
-## 2 - Parallel processing
+## 2 - Concurrent emission
 
 ### Context
 
@@ -380,9 +380,9 @@ Event gating lets you analyze signals only within relevant operational windows. 
 - **Thermal management** - gating by coolant/oil temperature windows.  
 - **Fuel consumption modeling** - gating steady-state cruise vs. transient.  
 
-> Other use cases will be added later!
+> Just a reminder to add other use cases...
 
-#### Practical Considerations
+#### Practical considerations
 
 Channels often differ in sampling rate and latency, so you must **align** them when applying events. Two common strategies:
 

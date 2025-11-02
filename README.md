@@ -1,4 +1,4 @@
-[![Pitgun](docs/img/pitgun_small.png)](https://pitgun.loicbelec.com)
+[![Pitgun](docs/img/pitgun_transparent.png)](https://pitgun.loicbelec.com)
 
 ## What is Pitgun?
 Pitgun is a modular Rust workspace for telemetry and high-frequency data processing.
