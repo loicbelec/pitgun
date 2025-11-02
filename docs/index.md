@@ -32,7 +32,7 @@ By combining insights from Formula 1 telemetry and High-Frequency Trading, Pitgu
 - [4 - The orchestrator](#4---the-orchestrator)
 
 ## Project structure
-Initially, Pitgun was organized as a Rust workspace composed of three main crates:
+Pitgun is organized as a Rust workspace composed of three main crates:
 
 | Crate | Purpose |
 |-------|----------|
@@ -40,12 +40,20 @@ Initially, Pitgun was organized as a Rust workspace composed of three main crate
 | `pitgun-cli` | Command-line interface: ingest, transform, export |
 | `pitgun-emulator` | UDP emitter: replays CSV datasets at configurable pace |
 
-Originally composed of *core, cli, and emulator,* the Pitgun workspace now expands with new crates reflecting domain boundaries (source, proto, event…).
 
 ## Roadmap
 - [x] Create Rust workspace with `core`, `cli`, `emulator`
-- [x] Implement UDP emission from CSV datasets
-- [ ] Explore sinks: Parquet, Kafka, Arrow
+- [x] Implement UDP emission from datasets
+- [x] Implement concurrent UDP emission
+- [ ] Explore sources
+  - [x] UDP
+  - [ ] gRPC
+  - [ ] Kafka
+- [ ] Explore sinks
+  - [ ] Parquet
+  - [ ] Arrow
+  - [ ] Kafka
+- [ ] Explore FFI with Python
 - [ ] Add benchmarks and performance profiling
 - [ ] Study parallels with HFT market data (UDP multicast, order books, latency profiling)  
 - [ ] Publish crates on [crates.io](https://crates.io) when stable 
@@ -551,15 +559,15 @@ In both cases, the key insight is that an event acts as a temporal mask applied 
 
 ## 4 - The orchestrator
 
-**Pitgun CLI** is the central orchestrator of the Pitgun ecosystem. It acts as the bridge between the future different crates, providing a unified interface for engineers to observe, validate, and manipulate telemetry streams in real time.
+`pitgun-cli` is the central orchestrator of the Pitgun ecosystem. It acts as the bridge between the future different crates, providing a unified interface for engineers to observe, validate, and manipulate telemetry streams in real time.
 
-Initially designed as a lightweight receiver for UDP frames, Pitgun CLI will evolve into a full-featured command-line toolkit capable of interfacing with any transport supported by the platform whether UDP, gRPC, or later Kafka. It ensures interoperability between the emulator, the stream server, and future sinks such as Parquet.
+Initially designed as a lightweight receiver for UDP frames, `pitgun-cli` will evolve into a full-featured command-line toolkit capable of interfacing with any transport supported by the platform whether UDP, gRPC, or later Kafka. It ensures interoperability between the emulator, the stream server, and future sinks such as Parquet.
 
 ### Core responsibilities
 
-Pitgun CLI plays several key roles in the Pitgun architecture:
+`pitgun-cli` plays several key roles in the Pitgun architecture:
 
-1.	**Unified telemetry subscriber :** It can subscribe to telemetry data over multiple protocols (UDP, gRPC, Kafka) and decode it into structured telemetry events shared across the project (Event, EventBatch from pitgun-core).
+1.	**Unified telemetry subscriber :** It can subscribe to telemetry data over multiple protocols (UDP, gRPC, Kafka) and decode it into structured telemetry events shared across the project (Event, EventBatch from `pitgun-core`).
 2.	**Monitoring and Diagnostics :** The CLI continuously reports throughput, packet rate, channel statistics, gaps, and basic latency metrics acting as a real-time probe of system health. This makes it ideal for testing new transports, debugging network issues, or validating encoder/decoder consistency.
 3.	**Recording and Replay Support :** It can optionally record incoming telemetry into CSV or Parquet files, allowing reproducible analysis and offline comparison with other runs.
 4.	**Protocol-Oriented Abstraction Layer :** Instead of embedding logic directly, Pitgun CLI delegates low-level work to specialized crates:
@@ -594,7 +602,7 @@ In this configuration, the CLI connects to pitgun-streamd, the gRPC broker that 
 
  ### Internal Architecture
 
- At runtime, Pitgun CLI instantiates a source adapter according to the selected transport:
+ At runtime, `pitgun-cli` instantiates a source adapter according to the selected transport:
 
 ```mermaid
 flowchart TD
@@ -618,3 +626,31 @@ e3@{ animate: true }
 ```
 
 This abstraction allows the CLI to remain consistent regardless of the input source, ensuring that downstream sinks (CSV, Parquet) can consume data without caring about the transport layer.
+
+
+## Integration with the core layer
+
+`ptigun-core` is the backbone of the whole Pitgun ecosystem. It defines the shared data model and streaming contracts that every crate: CLI, emulator, or stream server relies on to communicate consistently. Through its generic interfaces, it abstracts the mechanics of telemetry transport, so that the logic of reading, decoding, and recording data can evolve independently.
+
+At runtime, `pitgun-cli` doesn’t manipulate UDP packets or files directly. Instead, it instantiates a `Source` and a set of `Sinks` defined in `pitgun-core`.
+This separation ensures that the orchestration logic in the CLI remains transport-agnostic. The same code can read telemetry from UDP, gRPC, Kafka, or even a file replay and feed the same downstream processing pipeline.
+
+### The core as a shared semantic layers
+
+The `pitgun-core` crate defines two fundamental abstractions:
+- Source - a trait representing any telemetry provider (UDP socket, gRPC stream, Kafka consumer, CSV reader, etc.).
+- Sink - a trait representing any consumer of processed events (CSV writer, Parquet exporter, metrics publisher, etc.).
+
+Together, they form a simple pattern:
+```mermaid
+flowchart LR
+    A["Transport"] --> B["Source"]
+    B --> C["EventBatch"]
+    C --> D["Sink"]
+    D --> E["Storage"]
+```
+
+Each piece of the Pitgun ecosystem simply plugs into this flow by implementing one of these traits.
+
+The shared data structures (Event, EventBatch, SessionMeta, Quality) provide a universal language between all components.
+No matter the transport, every telemetry point is represented with the same timestamped event model.
