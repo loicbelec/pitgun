@@ -14,3 +14,6 @@ python scripts/recv_pitgun.py
 cargo run --bin pitgun-cli -- subscribe \
   --bind 127.0.0.1:5001 \
   --json
+
+## Dummy Pitgun
+cargo run -p pitgun-cli -- subscribe --config pitgun.yaml

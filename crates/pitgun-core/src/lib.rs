@@ -1,5 +1,5 @@
-pub mod types;
 pub mod io;
+pub mod types;
 
-pub use types::*;
 pub use io::*;
+pub use types::*;

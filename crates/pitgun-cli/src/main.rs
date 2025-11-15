@@ -1,14 +1,18 @@
 use anyhow::Result;
 use clap::{Parser, Subcommand, ValueEnum};
-use futures_util::StreamExt;
-use pitgun_core::{Source, SourceConfig, Sink};
+use pitgun_core::{
+    ChannelFilterProcessor, ConsoleSink, Pipeline, Processor, Sink, StatsProcessor, UdpSource,
+};
 
-mod source_udp;
+mod manifest;
 mod sinks;
 
 #[derive(Parser, Debug)]
 #[command(name = "pitgun-cli", version, about = "Pitgun CLI tools")]
-struct Cli { #[command(subcommand)] cmd: Cmd }
+struct Cli {
+    #[command(subcommand)]
+    cmd: Cmd,
+}
 
 #[derive(Subcommand, Debug)]
 enum Cmd {
@@ -17,7 +21,9 @@ enum Cmd {
 }
 
 #[derive(ValueEnum, Clone, Debug)]
-enum Transport { Udp /*, Grpc, Kafka */ }
+enum Transport {
+    Udp, /*, Grpc, Kafka */
+}
 
 #[derive(clap::Args, Debug)]
 struct SubscribeArgs {
@@ -52,48 +58,138 @@ struct SubscribeArgs {
     /// Optional channel filters (repeatable)
     #[arg(long)]
     channel: Vec<String>,
+
+    /// Optional YAML manifest controlling the pipeline
+    #[arg(long)]
+    config: Option<std::path::PathBuf>,
 }
 
-#[tokio::main]
-async fn main() -> Result<()> {
+fn main() -> Result<()> {
     let cli = Cli::parse();
     match cli.cmd {
-        Cmd::Subscribe(args) => run_subscribe(args).await,
+        Cmd::Subscribe(args) => run_subscribe(args),
     }
 }
 
-async fn run_subscribe(args: SubscribeArgs) -> Result<()> {
-    // 1) Construire la Source (UDP pour l’instant)
-    let source_cfg = SourceConfig {
-        channels: if args.channel.is_empty() { None } else { Some(args.channel.clone()) },
-        batch_max_len: 1024,
-        batch_max_ns:  50_000_000, // 50ms
-    };
-
-    let source: Box<dyn Source<Error=anyhow::Error> + Send + Sync> = match args.transport {
-        Transport::Udp => {
-            let bind: std::net::SocketAddr = args.bind.parse()?;
-            Box::new(source_udp::UdpSource::new(bind, args.mcast, args.iface))
-        }
-        // Transport::Grpc => un jour: Box::new(source_grpc::GrpcSource::new(...)),
-        // Transport::Kafka => ...
-    };
-
-    // 2) Brancher les sinks (CSV / JSON / Stats)
-    let mut sink_list: Vec<Box<dyn Sink<Error=anyhow::Error> + Send + Sync>> = vec![];
-    if let Some(dir) = &args.write_csv {
-        sink_list.push(Box::new(sinks::CsvSink::new(dir.clone())?));
-    }
-    if args.json { sink_list.push(Box::new(sinks::JsonSink)); }
-    sink_list.push(Box::new(sinks::StatsSink::new(args.stats_interval)));
-
-    // 3) Exécuter le pipeline
-    let mut stream = source.stream(source_cfg).await?;
-    while let Some(batch) = stream.next().await {
-        let batch = batch?;
-        for s in sink_list.iter() {
-            s.write(batch.clone()).await?;
+fn run_subscribe(args: SubscribeArgs) -> Result<()> {
+    if let Some(config_path) = &args.config {
+        let path = config_path.to_string_lossy().to_string();
+        let manifest = match manifest::load_manifest_from_path(&path) {
+            Ok(manifest) => manifest,
+            Err(err) => {
+                eprintln!("failed to load manifest '{}': {}", path, err);
+                std::process::exit(1);
+            }
+        };
+        let mut pipeline = build_pipeline_from_manifest(manifest);
+        loop {
+            pipeline.run_once();
         }
     }
-    Ok(())
+
+    let bind: std::net::SocketAddr = args.bind.parse()?;
+    let source = match args.transport {
+        Transport::Udp => UdpSource::new(bind, args.mcast, args.iface, 1024, 50_000_000)?,
+    };
+
+    let processors: Vec<Box<dyn Processor>> = vec![
+        Box::new(ChannelFilterProcessor::new(args.channel.clone())),
+        Box::new(StatsProcessor::new(args.stats_interval)),
+    ];
+
+    let mut sink = CompositeSink::default();
+    if let Some(dir) = args.write_csv {
+        sink.push(Box::new(sinks::CsvSink::new(dir)?));
+    }
+    sink.push(Box::new(ConsoleSink::new(args.json)));
+
+    let mut pipeline = Pipeline {
+        source,
+        processors,
+        sink,
+    };
+
+    loop {
+        pipeline.run_once();
+    }
+}
+
+fn build_pipeline_from_manifest(manifest: manifest::Manifest) -> Pipeline<UdpSource, ConsoleSink> {
+    let source = match manifest.source.r#type.as_str() {
+        "udp" => {
+            let addr = format!("{}:{}", manifest.source.bind_addr, manifest.source.port);
+            let socket_addr: std::net::SocketAddr = match addr.parse() {
+                Ok(addr) => addr,
+                Err(err) => {
+                    eprintln!("invalid UDP bind address '{}': {}", addr, err);
+                    std::process::exit(1);
+                }
+            };
+            match UdpSource::new(
+                socket_addr,
+                None,
+                std::net::Ipv4Addr::UNSPECIFIED,
+                1024,
+                50_000_000,
+            ) {
+                Ok(source) => source,
+                Err(err) => {
+                    eprintln!("failed to initialize UDP source: {}", err);
+                    std::process::exit(1);
+                }
+            }
+        }
+        other => {
+            eprintln!("unsupported source type '{}'; expected 'udp'", other);
+            std::process::exit(1);
+        }
+    };
+
+    let mut processors: Vec<Box<dyn Processor>> = Vec::new();
+    for processor_cfg in manifest.processors {
+        match processor_cfg.r#type.as_str() {
+            "channel_filter" => {
+                let channels = processor_cfg.channels.unwrap_or_default();
+                processors.push(Box::new(ChannelFilterProcessor::new(channels)));
+            }
+            "stats" => processors.push(Box::new(StatsProcessor::new(1))),
+            other => {
+                eprintln!("unsupported processor type '{}'", other);
+                std::process::exit(1);
+            }
+        }
+    }
+
+    let sink = match manifest.sink.r#type.as_str() {
+        "console" => ConsoleSink::new(true),
+        other => {
+            eprintln!("unsupported sink type '{}'; expected 'console'", other);
+            std::process::exit(1);
+        }
+    };
+
+    Pipeline {
+        source,
+        processors,
+        sink,
+    }
+}
+
+#[derive(Default)]
+struct CompositeSink {
+    sinks: Vec<Box<dyn Sink>>,
+}
+
+impl CompositeSink {
+    fn push(&mut self, sink: Box<dyn Sink>) {
+        self.sinks.push(sink);
+    }
+}
+
+impl Sink for CompositeSink {
+    fn write(&mut self, batch: &pitgun_core::EventBatch) {
+        for sink in self.sinks.iter_mut() {
+            sink.write(batch);
+        }
+    }
 }

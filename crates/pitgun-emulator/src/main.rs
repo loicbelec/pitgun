@@ -12,10 +12,14 @@ use std::time::{Duration, Instant};
 
 /// UDP telemetry emitter reading multiple 2-col CSVs: Timestamp,ChannelValue
 #[derive(Parser, Debug)]
-#[command(name="pitgun-emulator", version, about="Emit telemetry from CSV over UDP")]
+#[command(
+    name = "pitgun-emulator",
+    version,
+    about = "Emit telemetry from CSV over UDP"
+)]
 struct Args {
     /// Target address, e.g. 239.10.0.1:5001 (multicast) or 127.0.0.1:5001 (unicast)
-    #[arg(long, value_name="HOST:PORT")]
+    #[arg(long, value_name = "HOST:PORT")]
     target: String,
 
     /// Repeatable: CHANNEL=PATH (e.g. --input nEngine=... --input throttle=...)
@@ -39,7 +43,7 @@ fn parse_input(s: &str) -> Result<(String, PathBuf), String> {
 #[derive(Debug, Deserialize)]
 struct Row {
     #[serde(rename = "Timestamp")]
-    ts: u128,   // ns
+    ts: u128, // ns
     #[serde(rename = "ChannelValue", alias = "Value")]
     val: f64,
 }
@@ -58,14 +62,19 @@ fn open_cursor(channel: String, path: PathBuf) -> anyhow::Result<Cursor> {
         .trim(csv::Trim::All)
         .from_reader(BufReader::new(file));
     let mut it = rdr.into_deserialize::<Row>();
-    let next = it.next().transpose()
+    let next = it
+        .next()
+        .transpose()
         .with_context(|| format!("reading first row of {:?}", path))?;
     Ok(Cursor { channel, it, next })
 }
 
 fn main() -> Result<()> {
     let args = Args::parse();
-    anyhow::ensure!(!args.input.is_empty(), "provide at least one --input CHANNEL=PATH");
+    anyhow::ensure!(
+        !args.input.is_empty(),
+        "provide at least one --input CHANNEL=PATH"
+    );
 
     // ---- Resolve and prepare UDP socket (already connected)
     let target = resolve_target(&args.target)?;
@@ -74,7 +83,8 @@ fn main() -> Result<()> {
     let std_sock: std::net::UdpSocket = sock.into();
 
     // ---- Open one cursor per channel
-    let mut cursors: Vec<Cursor> = args.input
+    let mut cursors: Vec<Cursor> = args
+        .input
         .into_iter()
         .map(|(ch, p)| open_cursor(ch, p))
         .collect::<Result<_, _>>()?;
@@ -93,7 +103,9 @@ fn main() -> Result<()> {
     // ---- K-way merge by timestamp
     let mut sent: usize = 0;
     loop {
-        let Some(i) = pick_min_index(&cursors) else { break }; // all exhausted
+        let Some(i) = pick_min_index(&cursors) else {
+            break;
+        }; // all exhausted
         let (channel, row_ts, row_val) = {
             let c = &mut cursors[i];
             let row = c.next.take().expect("pick_min_index guaranteed Some");
@@ -109,7 +121,10 @@ fn main() -> Result<()> {
         sent += 1;
 
         // advance cursor i
-        cursors[i].next = cursors[i].it.next().transpose()
+        cursors[i].next = cursors[i]
+            .it
+            .next()
+            .transpose()
             .with_context(|| format!("reading next row for channel '{}'", channel))?;
 
         if sent % 1_000 == 0 {
@@ -185,7 +200,10 @@ fn pick_min_index(cursors: &[Cursor]) -> Option<usize> {
 
 /// Smallest available timestamp across all cursors
 fn min_ts_across(cursors: &[Cursor]) -> Option<u128> {
-    cursors.iter().filter_map(|c| c.next.as_ref().map(|r| r.ts)).min()
+    cursors
+        .iter()
+        .filter_map(|c| c.next.as_ref().map(|r| r.ts))
+        .min()
 }
 
 /// Sleep until simulated time catches up (1x speed)

@@ -657,3 +657,29 @@ Each piece of the Pitgun ecosystem simply plugs into this flow by implementing o
 
 The shared data structures (Event, EventBatch, SessionMeta, Quality) provide a universal language between all components.
 No matter the transport, every telemetry point is represented with the same timestamped event model.
+
+```json
+{"channel":"throttle","ts_ns":37325891000000,"value":0.64}
+{"channel":"nEngine","ts_ns":37325892000000,"value":0}
+{"channel":"nEngine","ts_ns":37325893000000,"value":0}
+{"channel":"nEngine","ts_ns":37325894000000,"value":0}
+{"channel":"nEngine","ts_ns":37325895000000,"value":0}
+{"channel":"nEngine","ts_ns":37325896000000,"value":0}
+{"channel":"nEngine","ts_ns":37325897000000,"value":0}
+{"channel":"nEngine","ts_ns":37325898000000,"value":0}
+{"channel":"nEngine","ts_ns":37325899000000,"value":0}
+{"channel":"nEngine","ts_ns":37325900000000,"value":0}
+{"channel":"nEngine","ts_ns":37325901000000,"value":0}
+{"channel":"throttle","ts_ns":37325901000000,"value":0.64}
+{"channel":"nEngine","ts_ns":37325902000000,"value":0}
+{"channel":"nEngine","ts_ns":37325903000000,"value":0}
+{"channel":"nEngine","ts_ns":37325904000000,"value":0}
+{"channel":"nEngine","ts_ns":37325905000000,"value":0}
+{"channel":"nEngine","ts_ns":37325906000000,"value":0}
+{"channel":"nEngine","ts_ns":37325907000000,"value":0}
+{"channel":"nEngine","ts_ns":37325908000000,"value":0}
+{"channel":"nEngine","ts_ns":37325909000000,"value":0}
+{"channel":"nEngine","ts_ns":37325910000000,"value":0}
+{"channel":"nEngine","ts_ns":37325911000000,"value":0}
+frames=27941 rate=448.4 fps gaps=0 chans=2  nEngine:25401  throttle:2540
+```
