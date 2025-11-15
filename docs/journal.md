@@ -33,6 +33,8 @@ By combining insights from Formula 1 telemetry and High-Frequency Trading, Pitgu
 - [2 - Concurrent emission](#2---concurrent-emission)
 - [3 - Definition of events](#3---definition-of-events)
 - [4 - The orchestrator](#4---the-orchestrator)
+- [5 - Integration with the core layer](#5---integration-with-the-core-layer)
+- [6 - Introducing the pipeline manifest](#6---introducing-the-pipeline-manifest)
 
 ## Project structure
 Pitgun is organized as a Rust workspace composed of three main crates:
@@ -658,28 +660,114 @@ Each piece of the Pitgun ecosystem simply plugs into this flow by implementing o
 The shared data structures (Event, EventBatch, SessionMeta, Quality) provide a universal language between all components.
 No matter the transport, every telemetry point is represented with the same timestamped event model.
 
-```json
-{"channel":"throttle","ts_ns":37325891000000,"value":0.64}
-{"channel":"nEngine","ts_ns":37325892000000,"value":0}
-{"channel":"nEngine","ts_ns":37325893000000,"value":0}
-{"channel":"nEngine","ts_ns":37325894000000,"value":0}
-{"channel":"nEngine","ts_ns":37325895000000,"value":0}
-{"channel":"nEngine","ts_ns":37325896000000,"value":0}
-{"channel":"nEngine","ts_ns":37325897000000,"value":0}
-{"channel":"nEngine","ts_ns":37325898000000,"value":0}
-{"channel":"nEngine","ts_ns":37325899000000,"value":0}
-{"channel":"nEngine","ts_ns":37325900000000,"value":0}
-{"channel":"nEngine","ts_ns":37325901000000,"value":0}
-{"channel":"throttle","ts_ns":37325901000000,"value":0.64}
-{"channel":"nEngine","ts_ns":37325902000000,"value":0}
-{"channel":"nEngine","ts_ns":37325903000000,"value":0}
-{"channel":"nEngine","ts_ns":37325904000000,"value":0}
-{"channel":"nEngine","ts_ns":37325905000000,"value":0}
-{"channel":"nEngine","ts_ns":37325906000000,"value":0}
-{"channel":"nEngine","ts_ns":37325907000000,"value":0}
-{"channel":"nEngine","ts_ns":37325908000000,"value":0}
-{"channel":"nEngine","ts_ns":37325909000000,"value":0}
-{"channel":"nEngine","ts_ns":37325910000000,"value":0}
-{"channel":"nEngine","ts_ns":37325911000000,"value":0}
-frames=27941 rate=448.4 fps gaps=0 chans=2  nEngine:25401  throttle:2540
+## 6 - Introducing the pipeline manifest
+### Context
+
+As Pitgun grows from a simple UDP replayer into a modular telemetry platform, one architectural requirement becomes increasingly important: the ability to reconfigure the runtime without recompiling the code.
+
+Until now, pitgun-cli wired its pipeline directly in Rust:
+
 ```
+UdpSource → ChannelFilterProcessor → StatsProcessor → ConsoleSink
+```
+
+This was fine for early prototyping, but not scalable as the number of processors, sinks, and protocols increases (filtering, CSV sinks, bundle processors, gRPC, Kafka…).
+
+Pitgun now supports a **YAML-driven pipeline manifest**, allowing declarative configuration of runtime behavior.
+
+### Objective
+
+The goal is simple: introduce a minimal YAML pipeline manifest that configures the source, processors, and sink without touching pitgun-core and without breaking the existing CLI behavior.
+
+This turns Pitgun into a real, configurable data pipeline instead of a hard-coded test harness.
+
+### Implementation
+
+The manifest lives in `pitgun-cli` under `manifest.rs` and is deserialized using `serde_yaml`.
+
+The minimal schema currently supports:
+- source selection (UDP: bind address, port)
+- processors (channel filtering, statistics)
+- sink (console output)
+
+Example:
+```yaml
+source:
+  type: udp
+  bind_addr: "0.0.0.0"
+  port: 5000
+
+processors:
+  - type: channel_filter
+    channels: ["nEngine", "throttle"]
+  - type: stats
+
+sink:
+  type: console
+```
+
+Thanks to this manifest, the CLI can now construct the entire pipeline dynamically. The internal Rust wiring becomes something the user controls externally, like a configuration file in *OpenTelemetry Collector* or *Datadog Agent YAML*.
+
+### Default vs manifest mode
+
+A key design constraint was non-disruptive evolution:
+Pitgun must behave exactly as before if no manifest is provided.
+
+This is now the case:
+
+- If the user runs:
+```bash
+pitgun-cli subscribe
+```
+The original hard-coded UDP pipeline is used.
+
+- If the user provides:
+```bash
+pitgun-cli subscribe --config manifests/dummy-pitgun.yaml
+```
+The pipeline is entirely assembled from the YAML file.
+
+This makes the CLI flexible without forcing configuration on early users or tests.
+
+### Architecture notes
+
+This addition clarifies an important architectural boundary:
+- `pitgun-core` remains the runtime engine
+(Source, Processor, Sink, Pipeline, UdpSource, StatsProcessor, etc.)
+- `pitgun-cli` becomes the orchestrator, responsible for:
+    - loading manifests
+    - instantiating processors
+    - connecting sources and sinks
+    - managing runtime behavior
+
+By keeping all manifest logic inside the CLI, the core stays clean, generic, and portable.
+This separation mirrors patterns found in modern streaming systems: `Collector` vs `Engine`, `Controller` vs `Runtime`.
+
+### Example usage
+```bash
+pitgun-cli \
+  subscribe \
+  --config manifests/dummy/pitgun.yaml
+```
+
+This runs a filtered + statted pipeline derived entirely from YAML.
+
+The console again prints high-frequency events from `nEngine` and `throttle`, with the StatsProcessor reporting rates at periodic intervals (depending on its internal threshold).
+
+### What this unlocks
+
+The pipeline manifest iss a structural milestone.
+
+It sets the stage for:
+- Bundle manifests (inputs, derived metrics, formula evaluation)
+- Source profiles (ECU v3/v4 channel definitions)
+- Advanced processors (smoothing, windowing, quality filters)
+- Multi-sink pipelines (console + CSV + Parquet + gRPC)
+- Test harnesses with reproducible declarative setups
+- Complex telemetry sessions without recompilation
+
+Pitgun now moves decisively from a prototype toward a real telemetry processing engine.
+
+### Example directory layout
+
+A new `manifests/` folder was created to store example pipelines.
