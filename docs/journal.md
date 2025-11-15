@@ -47,21 +47,46 @@ Pitgun is organized as a Rust workspace composed of three main crates:
 
 
 ## Roadmap
-- [x] Create Rust workspace with `core`, `cli`, `emulator`
-- [x] Implement UDP emission from datasets
-- [x] Implement concurrent UDP emission
-- [ ] Explore sources
-  - [x] UDP
-  - [ ] gRPC
-  - [ ] Kafka
-- [ ] Explore sinks
-  - [ ] Parquet
-  - [ ] Arrow
-  - [ ] Kafka
-- [ ] Explore FFI with Python
-- [ ] Add benchmarks and performance profiling
-- [ ] Study parallels with HFT market data (UDP multicast, order books, latency profiling)  
-- [ ] Publish crates on [crates.io](https://crates.io) when stable 
+
+> This roadmap evolves as Pitgun grows.  
+> The goal is to transform Pitgun from a simple UDP replay tool into a modular telemetry platform capable of ingesting, transforming, storing, and analyzing real-time and historical data.
+
+- **Core engine and workspace**
+  - [x] Create Rust workspace (`core`, `cli`, `emulator`)
+  - [x] Introduce unified event model (`Event`, `EventBatch`)
+  - [x] Define core abstractions (Source → Processor → Sink → Pipeline)
+  - [x] Add pipeline manifest (YAML) for configuration
+
+- **Sources**
+  - [x] UDP Source (live telemetry or replay)
+  - [ ] gRPC Source (`pitgun-source-grpc`)
+  - [ ] Kafka Source (`pitgun-source-kafka`)
+  - [ ] File/Replay Source (CSV / Parquet)
+
+- **Sinks**
+  - [x] Console Sink  
+  - [ ] CSV / Parquet Sink  
+  - [ ] Arrow / IPC Sink  
+  - [ ] Kafka Sink  
+  - [ ] Prometheus metrics exporter
+
+- **Processing layer**
+  - [x] Channel filtering  
+  - [x] Runtime stats (frame count, rate)  
+  - [ ] Simple processors (`scale`, `offset`, `rename`)  
+  - [ ] BundleProcessor (inputs, derived metrics, expr engine, windows)  
+  - [ ] Quality checks & tests (NaN handling, bounds, plausibility)
+
+- **Platform and integration**
+  - [ ] FFI with Python (via PyO3)  
+  - [ ] Publish crates on [crates.io](https://crates.io)
+  - [ ] Benchmarks and performance profiling  
+  - [ ] Compare telemetry patterns with HFT (market data feeds, UDP multicast)  
+
+- **Session and data model**
+  - [ ] Add session context (car, stint, lap)  
+  - [ ] Timestamp normalization & drift handling  
+  - [ ] Structured metadata for datasets & replays  
 
 ## 1 - Emitting data over UDP
 
@@ -172,7 +197,7 @@ fn encode_frame(channel: &str, ts_csv_ns: u128, value: f64) -> Vec<u8> {
 
 #### Notes
 - The frame is **self-delimiting**: the first two bytes define the length of the channel name.  
-- No CRC or sequence number is included — Pitgun assumes reliable transmission within local or simulated networks.  
+- No CRC or sequence number is included - Pitgun assumes reliable transmission within local or simulated networks.  
 - This layout is minimal by design: easy to deserialize, endian-safe, and ideal for high-frequency telemetry streams.
 
 ### Architecture notes
@@ -350,21 +375,10 @@ The result is a lightweight and predictable system that behaves like a real tele
 
 With this foundation, Pitgun now moves from a simple file replayer toward a full telemetry platform  capable of streaming, recording, and analyzing data consistently across different environments.
 
-### What’s next?
-
-> This list keeps growing as I advance in the project.
-> The goal is to evolve Pitgun from a standalone emulator into a modular telemetry platform - capable of streaming, recording, and analyzing real-time and historical data in a consistent way.
-
-- ~~Extend to multi-channel replay with parallel workers.~~ ✅  
-- ~~Build a receiver tool to monitor packet loss and latency.~~  ✅ 
-- Add session context (car, stint, lap) and synchronize timestamps.
-- Implement a gRPC streaming interface (`pitgun-proto`) to allow remote clients to subscribe to telemetry.  
-- Add a Kafka adapter (`pitgun-source-kafka`) for distributed replay and persistence.  
-- Introduce a Parquet sink for offline storage and analysis.  
-- Expose Prometheus metrics for rate, latency, and packet loss.  
-- Support declarative configuration files (YAML/TOML) for complex sessions.  
-
 ## 3 - Definition of events
+
+> This chapter is intentionally more theoretical than the rest of the journal.
+I wrote it to clarify for myself how telemetry signals behave, how automotive/F1 ECUs emit data, and why an event-based mental model is essential for building Pitgun.
 
 ### Context
 
@@ -771,3 +785,7 @@ Pitgun now moves decisively from a prototype toward a real telemetry processing 
 ### Example directory layout
 
 A new `manifests/` folder was created to store example pipelines.
+
+## 7 - First computed values
+
+To be continued...
