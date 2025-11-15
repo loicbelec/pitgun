@@ -13,5 +13,8 @@
 .vscode/
 .idea/
 
-# Datasets locaux (si trop lourds ou sensibles)
+# Datasets locaux
 datasets/*
+
+# Notes
+docs/.notes/*
