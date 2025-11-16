@@ -761,7 +761,7 @@ This separation mirrors patterns found in modern streaming systems: `Collector` 
 ```bash
 pitgun-cli \
   subscribe \
-  --config manifests/dummy/pitgun.yaml
+  --config manifests/dummy-pitgun.yaml
 ```
 
 This runs a filtered + statted pipeline derived entirely from YAML.
@@ -788,4 +788,110 @@ A new `manifests/` folder was created to store example pipelines.
 
 ## 7 - First computed values
 
-To be continued...
+At this stage, Pitgun can ingest UDP telemetry, decode the incoming frames into structured values, and route them through the early pipeline stages (filtering, statistics). The full Event/EventBatch model is not implemented yet, but the pipeline is now stable enough to support the next step: actual data transformation.
+
+This chapter introduces the first experiment in modifying the data stream inside the pipeline. The goal is intentionally modest: validate that the processing layer can detect selected channels, update their values, and propagate the modified results downstream.
+
+### Why this matters
+
+Many future features depend on Pitgun’s ability to transform raw telemetry into richer signals:
+- `omega_engine = rpm * 2π/60`
+- `power_engine = torque * omega`
+- `windowed moving averages`
+- `plausibility or quality checks`
+
+All of these require a pipeline capable of changing the data, not just forwarding it. Before introducing expressions, windows, dependencies, or units, the processing layer must prove it can perform even the simplest mutation. This chapter acts as that milestone: confirming that Pitgun can alter the data stream in flight.
+
+### A micro-processor called ScaleProcessor
+
+A minimal processor provides the smallest possible test of mutation:
+```
+value' = value * factor
+```
+It targets one channel, applies a constant multiplier, and outputs the updated value. This is the groundwork for more complex processors—derived metrics.
+
+### Extending the manifest
+
+To keep the system declarative, the new processor is exposed through the pipeline manifest.
+
+A new processor type is added:
+```yaml
+processors:
+  - type: scale
+    channel: "nEngine"
+    factor: 2.0
+```
+
+This describes a simple rule:
+- select the channel called nEngine
+- multiply its value by 2.0
+- forward the updated sample to the next stage
+
+No additional syntax or DSL is required at this point; the manifest simply instructs the CLI how to assemble the pipeline.
+
+To support this, the *ProcessorConfig* structure gains two optional fields:
+```rust
+pub struct ProcessorConfig {
+    pub r#type: String,
+    pub channels: Option<Vec<String>>,
+    pub channel: Option<String>,
+    pub factor: Option<f64>,
+}
+```
+
+This keeps the configuration minimal while leaving room for more advanced processors later.
+
+### Minimal implementation
+
+The processor itself follows the same pattern as the existing ones: a *struct* holding its configuration, and a process method mutating the incoming batch.
+```rust
+pub struct ScaleProcessor {
+    channel: String,
+    factor: f64,
+}
+
+impl Processor for ScaleProcessor {
+    fn process(&mut self, batch: &mut EventBatch) {
+        for event in &mut batch.events {
+            if event.channel == self.channel {
+                event.value *= self.factor;
+            }
+        }
+    }
+}
+```
+
+### Example
+With the processor enabled in the manifest, nEngine samples are transformed on the fly.
+
+For example:
+
+Before:
+```json
+{"channel":"nEngine", "value":3500}
+```
+After scale:
+```json
+{"channel":"nEngine", "value":7000}
+```
+
+Everything else in the batch remains untouched. Filtering, stats, and sinks continue to operate normally.
+
+This small transformation demonstrates that:
+1) processors can identify the channels they care about
+2) they can mutate values without breaking the flow
+3) the manifest can drive computation declaratively
+4) the pipeline correctly forwards modified data
+
+### Foundation for future computation
+
+Although trivial, this processor is an important step.
+It validates the mechanisms that will later support:
+- multi-step formulas
+- dependencies between channels
+- temporal windows
+- units and conversions
+- plausibility constraints
+- derived metrics defined in bundle manifests
+
+ScaleProcessor confirms that Pitgun’s pipeline is ready for the next chapter: a proper BundleProcessor, capable of evaluating more expressive operations and producing new signals from the raw telemetry stream.
