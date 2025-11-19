@@ -35,6 +35,7 @@ By combining insights from Formula 1 telemetry and High-Frequency Trading, Pitgu
 - [4 - The orchestrator](#4---the-orchestrator)
 - [5 - Integration with the core layer](#5---integration-with-the-core-layer)
 - [6 - Introducing the pipeline manifest](#6---introducing-the-pipeline-manifest)
+- [7 - First computed values](#7---first-computed-values)
 
 ## Project structure
 Pitgun is organized as a Rust workspace composed of three main crates:
@@ -578,11 +579,16 @@ In both cases, the key insight is that an event acts as a temporal mask applied 
 
 ## 4 - The orchestrator
 
+### Context
+
 `pitgun-cli` is the central orchestrator of the Pitgun ecosystem. It acts as the bridge between the future different crates, providing a unified interface for engineers to observe, validate, and manipulate telemetry streams in real time.
+
+### Objective
 
 Initially designed as a lightweight receiver for UDP frames, `pitgun-cli` will evolve into a full-featured command-line toolkit capable of interfacing with any transport supported by the platform whether UDP, gRPC, or later Kafka. It ensures interoperability between the emulator, the stream server, and future sinks such as Parquet.
 
-### Core responsibilities
+
+#### Core responsibilities
 
 `pitgun-cli` plays several key roles in the Pitgun architecture:
 
@@ -619,7 +625,7 @@ pitgun-cli \
 
 In this configuration, the CLI connects to pitgun-streamd, the gRPC broker that relays telemetry batches published from UDP or other sources. The CLI treats both sources (UDP and gRPC) uniformly, using the same internal model and statistics engine.
 
- ### Internal Architecture
+ ### Architecture notes
 
  At runtime, `pitgun-cli` instantiates a source adapter according to the selected transport:
 
@@ -696,6 +702,7 @@ The goal is simple: introduce a minimal YAML pipeline manifest that configures t
 This turns Pitgun into a real, configurable data pipeline instead of a hard-coded test harness.
 
 ### Implementation
+#### YAML manifest
 
 The manifest lives in `pitgun-cli` under `manifest.rs` and is deserialized using `serde_yaml`.
 
@@ -704,7 +711,7 @@ The minimal schema currently supports:
 - processors (channel filtering, statistics)
 - sink (console output)
 
-Example:
+Template example:
 ```yaml
 source:
   type: udp
@@ -722,7 +729,7 @@ sink:
 
 Thanks to this manifest, the CLI can now construct the entire pipeline dynamically. The internal Rust wiring becomes something the user controls externally, like a configuration file in *OpenTelemetry Collector* or *Datadog Agent YAML*.
 
-### Default vs manifest mode
+#### Exemple usage
 
 A key design constraint was non-disruptive evolution:
 Pitgun must behave exactly as before if no manifest is provided.
@@ -740,8 +747,11 @@ The original hard-coded UDP pipeline is used.
 pitgun-cli subscribe --config manifests/dummy-pitgun.yaml
 ```
 The pipeline is entirely assembled from the YAML file.
+This runs a filtered + statted pipeline derived entirely from YAML.
 
-This makes the CLI flexible without forcing configuration on early users or tests.
+The console again prints high-frequency events from `nEngine` and `throttle`, with the StatsProcessor reporting rates at periodic intervals (depending on its internal threshold).
+
+> A new `manifests/` folder was created to store example pipelines.
 
 ### Architecture notes
 
@@ -757,17 +767,6 @@ This addition clarifies an important architectural boundary:
 By keeping all manifest logic inside the CLI, the core stays clean, generic, and portable.
 This separation mirrors patterns found in modern streaming systems: `Collector` vs `Engine`, `Controller` vs `Runtime`.
 
-### Example usage
-```bash
-pitgun-cli \
-  subscribe \
-  --config manifests/dummy-pitgun.yaml
-```
-
-This runs a filtered + statted pipeline derived entirely from YAML.
-
-The console again prints high-frequency events from `nEngine` and `throttle`, with the StatsProcessor reporting rates at periodic intervals (depending on its internal threshold).
-
 ### What this unlocks
 
 The pipeline manifest iss a structural milestone.
@@ -782,17 +781,13 @@ It sets the stage for:
 
 Pitgun now moves decisively from a prototype toward a real telemetry processing engine.
 
-### Example directory layout
-
-A new `manifests/` folder was created to store example pipelines.
-
 ## 7 - First computed values
-
+### Context
 At this stage, Pitgun can ingest UDP telemetry, decode the incoming frames into structured values, and route them through the early pipeline stages (filtering, statistics). The full Event/EventBatch model is not implemented yet, but the pipeline is now stable enough to support the next step: actual data transformation.
 
 This chapter introduces the first experiment in modifying the data stream inside the pipeline. The goal is intentionally modest: validate that the processing layer can detect selected channels, update their values, and propagate the modified results downstream.
 
-### Why this matters
+### Objective
 
 Many future features depend on Pitgun’s ability to transform raw telemetry into richer signals:
 - `omega_engine = rpm * 2π/60`
@@ -802,7 +797,7 @@ Many future features depend on Pitgun’s ability to transform raw telemetry int
 
 All of these require a pipeline capable of changing the data, not just forwarding it. Before introducing expressions, windows, dependencies, or units, the processing layer must prove it can perform even the simplest mutation. This chapter acts as that milestone: confirming that Pitgun can alter the data stream in flight.
 
-### A micro-processor called ScaleProcessor
+### Implementation of ScaleProcessor
 
 A minimal processor provides the smallest possible test of mutation:
 ```
@@ -810,7 +805,7 @@ value' = value * factor
 ```
 It targets one channel, applies a constant multiplier, and outputs the updated value. This is the groundwork for more complex processors—derived metrics.
 
-### Extending the manifest
+#### Extending the manifest
 
 To keep the system declarative, the new processor is exposed through the pipeline manifest.
 
@@ -841,7 +836,7 @@ pub struct ProcessorConfig {
 
 This keeps the configuration minimal while leaving room for more advanced processors later.
 
-### Minimal implementation
+#### Reference implementation
 
 The processor itself follows the same pattern as the existing ones: a *struct* holding its configuration, and a process method mutating the incoming batch.
 ```rust
@@ -861,7 +856,7 @@ impl Processor for ScaleProcessor {
 }
 ```
 
-### Example
+#### Example usage
 With the processor enabled in the manifest, nEngine samples are transformed on the fly.
 
 For example:
@@ -894,4 +889,4 @@ It validates the mechanisms that will later support:
 - plausibility constraints
 - derived metrics defined in bundle manifests
 
-ScaleProcessor confirms that Pitgun’s pipeline is ready for the next chapter: a proper BundleProcessor, capable of evaluating more expressive operations and producing new signals from the raw telemetry stream.
+`ScaleProcessor` confirms that Pitgun’s pipeline is ready for the next chapter: a proper `BundleProcessor`, capable of evaluating more expressive operations and producing new signals from the raw telemetry stream.
