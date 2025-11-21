@@ -52,42 +52,114 @@ Pitgun is organized as a Rust workspace composed of three main crates:
 > This roadmap evolves as Pitgun grows.  
 > The goal is to transform Pitgun from a simple UDP replay tool into a modular telemetry platform capable of ingesting, transforming, storing, and analyzing real-time and historical data.
 
-- **Core engine and workspace**
-  - [x] Create Rust workspace (`core`, `cli`, `emulator`)
-  - [x] Introduce unified event model (`Event`, `EventBatch`)
-  - [x] Define core abstractions (Source → Processor → Sink → Pipeline)
-  - [x] Add pipeline manifest (YAML) for configuration
+### Core engine & workspace
+- [x] Create Rust workspace (`pitgun-core`, `pitgun-cli`, `pitgun-emulator`)
+- [x] Introduce unified event model (`Event`, `EventBatch`)
+- [x] Define core abstractions (`Source → Processor → Sink → Pipeline`)
+- [x] Add pipeline manifest (YAML-driven configuration)
+- [ ] Internal testing framework for pipeline stages
+- [ ] Pipeline DAG builder (for multi-stage formula execution)
 
-- **Sources**
-  - [x] UDP Source (live telemetry or replay)
-  - [ ] gRPC Source (`pitgun-source-grpc`)
-  - [ ] Kafka Source (`pitgun-source-kafka`)
-  - [ ] File/Replay Source (CSV / Parquet)
+### Sources
+- [x] UDP Source (live telemetry or replay)
+- [ ] gRPC Source (`pitgun-source-grpc`)
+- [ ] Kafka Source (`pitgun-source-kafka`)
+- [ ] File Source (CSV replay)
+- [ ] File Source (Parquet replay)
+- [ ] Simulated Source (synthetic channels for testing)
 
-- **Sinks**
-  - [x] Console Sink  
-  - [ ] CSV / Parquet Sink  
-  - [ ] Arrow / IPC Sink  
-  - [ ] Kafka Sink  
-  - [ ] Prometheus metrics exporter
+### Sinks
+- [x] Console Sink  
+- [ ] CSV Sink  
+- [ ] Parquet Sink  
+- [ ] Arrow / IPC Sink  
+- [ ] Kafka Sink  
+- [ ] Prometheus metrics exporter  
+- [ ] Bolt-based “debug sink” (emit intermediate formula values)
 
-- **Processing layer**
-  - [x] Channel filtering  
-  - [x] Runtime stats (frame count, rate)  
-  - [ ] Simple processors (`scale`, `offset`, `rename`)  
-  - [ ] BundleProcessor (inputs, derived metrics, expr engine, windows)  
-  - [ ] Quality checks & tests (NaN handling, bounds, plausibility)
+### Processing layer
 
-- **Platform and integration**
-  - [ ] FFI with Python (via PyO3)  
-  - [ ] Publish crates on [crates.io](https://crates.io)
-  - [ ] Benchmarks and performance profiling  
-  - [ ] Compare telemetry patterns with HFT (market data feeds, UDP multicast)  
+#### Primitive processors
+- [x] Channel filtering  
+- [x] Runtime stats (frame count, rate)  
+- [x] `ScaleProcessor`  
+- [ ] `OffsetProcessor`  
+- [ ] `RenameProcessor`  
 
-- **Session and data model**
-  - [ ] Add session context (car, stint, lap)  
-  - [ ] Timestamp normalization & drift handling  
-  - [ ] Structured metadata for datasets & replays  
+#### Formula & computation
+- [x] JSON AST evaluation path  
+- [x] AST → `Expr` internal representation  
+- [x] `FormulaProcessor` (evaluate AST per batch)  
+- [ ] Dependency extractor (detect required channels)  
+- [ ] Evaluation DAG (ordering of expressions)  
+- [ ] Window processors (moving averages, FIR/IIR, smoothing)  
+- [ ] Event-based gating (`event(t)` → gated formulas)  
+- [ ] Multi-stage metrics (chained formulas and intermediates)
+
+#### Quality & safety
+- [ ] NaN handling  
+- [ ] Bounds checks  
+- [ ] Channel presence & fallback logic  
+- [ ] Plausibility filters
+
+### Bolt ecosystem
+
+#### Bolt format
+- [ ] Bolt manifest definition (`.bolt`)  
+- [ ] Bolt loader in `pitgun-cli`  
+- [ ] Bolt → `Expr` compilation (grouped ASTs)  
+- [ ] Bolt versioning & metadata
+
+#### Bolt bytecode
+- [ ] `.boltbc` format (compiled AST)  
+- [ ] Bytecode interpreter  
+- [ ] Bytecode optimizer (optional)  
+- [ ] Local Bolt Repository (`~/.pitgun/bolt/`)  
+- [ ] Bytecode cache invalidation & compatibility checks
+
+#### Toolboxes
+- [ ] Toolbox structure (collection of bolts)  
+- [ ] Toolbox manifest  
+- [ ] Toolbox installation logic  
+- [ ] Toolbox examples (engine, aero, tyres, …)
+
+### Registry & API
+
+#### Pitgun Registry (`pitgun.io`)
+- [ ] Bolt registry API  
+- [ ] Toolbox registry API  
+- [ ] Search & discovery (by domain, tags, version)  
+- [ ] Versioning & semantic releases  
+- [ ] Documentation hosting for bolts/toolboxes
+
+#### API / Integration
+- [x] LLM API generating JSON AST (Codex → AST)  
+- [ ] Endpoint for validating expressions  
+- [ ] Endpoint for converting text → bolt manifest  
+- [ ] Endpoint for bundling bolts  
+- [ ] Registry authentication (tokens, scoped access)
+
+### Platform & integration
+- [ ] FFI with Python (via PyO3)  
+- [ ] Publish crates on [crates.io](https://crates.io)  
+- [ ] Benchmarks and performance profiling  
+- [ ] Compare telemetry patterns with HFT (market data feeds, UDP multicast)  
+- [ ] GitHub Actions CI (lint, tests, build)  
+- [ ] Reproducible examples & demos
+
+### Session & data model
+- [ ] Add session context (car, stint, lap)  
+- [ ] Timestamp normalization & drift handling  
+- [ ] Multi-channel alignment policies (interpolation, forward-fill, zero-fill)  
+- [ ] Structured metadata for datasets & replays  
+- [ ] Track context (sLap, GPS, sectors)
+
+### Developer experience
+- [ ] `pitgun new bolt <name>` scaffold command  
+- [ ] `pitgun debug` to inspect batches and channels  
+- [ ] Diagnostics & logging improvements  
+- [ ] REPL mode for evaluating small AST expressions  
+- [ ] Config validator for manifests, bolts, and toolboxes 
 
 ## 1 - Emitting data over UDP
 
@@ -924,7 +996,7 @@ With the pipeline manifest in place and the `ScaleProcessor` proving that Pitgun
 
 Up to now, all transformations have been hard-coded and primitive: scaling a value, filtering channels, tracking statistics.
 
-Pitgun must evaluate expressions, understand formulas, and compute new signals. It needs to move from: *“What is the value of this channel?”* to *“What is the value of this formula expressed using channels?”*.
+Pitgun must evaluate expressions, understand formulas, and compute new signals. It needs to move from: *"what is the value of this channel?"* to *"what is the value of this formula expressed using channels?"*.
 
 In this chapter, we are going to tackle the following topics:
 - scaled channels like engine speed in rad/s (omega = rpm * 2π/60)
@@ -938,8 +1010,8 @@ To reach this, we need a processor capable of evaluating an AST (Abstract Syntax
 ### Objective
 
 This chapter introduces a new processor, `FormulaProcessor`, capable of:
-1. Parsing an AST structure (pre-computed or loaded from .bolt files later).
-2. Extracting dependent channels from the incoming EventBatch.
+1. Parsing an AST structure.
+2. Extracting dependent channels from the incoming `EventBatch`.
 3. Evaluating the expression with the sample values available at each timestamp.
 4. Outputting a new channel into the batch (e.g., "power_engine").
 5. Integrating smoothly with the pipeline manifest (declarative runtime).
