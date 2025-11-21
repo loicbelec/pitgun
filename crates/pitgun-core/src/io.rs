@@ -254,6 +254,27 @@ impl Processor for ChannelFilterProcessor {
     }
 }
 
+pub struct ScaleProcessor {
+    channel: String,
+    factor: f64,
+}
+
+impl ScaleProcessor {
+    pub fn new(channel: String, factor: f64) -> Self {
+        Self { channel, factor }
+    }
+}
+
+impl Processor for ScaleProcessor {
+    fn process(&mut self, batch: &mut EventBatch) {
+        for event in &mut batch.events {
+            if event.channel == self.channel {
+                event.value *= self.factor;
+            }
+        }
+    }
+}
+
 pub struct ConsoleSink {
     print_events: bool,
 }

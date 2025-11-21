@@ -1,7 +1,8 @@
 use anyhow::Result;
 use clap::{Parser, Subcommand, ValueEnum};
 use pitgun_core::{
-    ChannelFilterProcessor, ConsoleSink, Pipeline, Processor, Sink, StatsProcessor, UdpSource,
+    ChannelFilterProcessor, ConsoleSink, Pipeline, Processor, ScaleProcessor, Sink, StatsProcessor,
+    UdpSource,
 };
 
 mod manifest;
@@ -151,6 +152,17 @@ fn build_pipeline_from_manifest(manifest: manifest::Manifest) -> Pipeline<UdpSou
             "channel_filter" => {
                 let channels = processor_cfg.channels.unwrap_or_default();
                 processors.push(Box::new(ChannelFilterProcessor::new(channels)));
+            }
+            "scale" => {
+                let channel = processor_cfg.channel.clone().unwrap_or_else(|| {
+                    eprintln!("scale processor requires 'channel'");
+                    std::process::exit(1);
+                });
+                let factor = processor_cfg.factor.unwrap_or_else(|| {
+                    eprintln!("scale processor requires 'factor'");
+                    std::process::exit(1);
+                });
+                processors.push(Box::new(ScaleProcessor::new(channel, factor)));
             }
             "stats" => processors.push(Box::new(StatsProcessor::new(1))),
             other => {

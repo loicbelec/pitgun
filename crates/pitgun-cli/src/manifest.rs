@@ -20,6 +20,8 @@ pub struct ProcessorConfig {
     #[serde(rename = "type")]
     pub r#type: String,
     pub channels: Option<Vec<String>>,
+    pub channel: Option<String>,
+    pub factor: Option<f64>,
 }
 
 #[derive(Debug, Deserialize)]

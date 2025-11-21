@@ -7,6 +7,10 @@ processors:
   - type: channel_filter
     channels: ["nEngine", "throttle"]
 
+  - type: scale
+    channel: "nEngine"
+    factor: 2.0
+
   - type: stats
 
 sink:
