@@ -127,7 +127,7 @@ fn main() -> Result<()> {
             .transpose()
             .with_context(|| format!("reading next row for channel '{}'", channel))?;
 
-        if sent % 1_000 == 0 {
+        if sent.is_multiple_of(1_000) {
             let rate = (sent as f64 / start_monotonic.elapsed().as_secs_f64().max(1e-6)).round();
             eprintln!("sent={} rate≈{} fps", sent, rate);
         }
@@ -209,7 +209,7 @@ fn min_ts_across(cursors: &[Cursor]) -> Option<u128> {
 /// Sleep until simulated time catches up (1x speed)
 fn pace_realtime(ts_ns: u128, ts0: u128, t0: Instant) {
     let sim_ns = ts_ns.saturating_sub(ts0);
-    let due = Duration::from_nanos((sim_ns as u64).min(u64::MAX));
+    let due = Duration::from_nanos(sim_ns as u64);
     if let Some(rem) = due.checked_sub(t0.elapsed()) {
         sleep(rem);
     }
