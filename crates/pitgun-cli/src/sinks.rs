@@ -20,7 +20,7 @@ impl CsvSink {
         let path = self.dir.join(format!("{}.csv", channel));
         match csv::Writer::from_path(path) {
             Ok(mut writer) => {
-                if writer.write_record(&["Timestamp", "ChannelValue"]).is_err() {
+                if writer.write_record(["Timestamp", "ChannelValue"]).is_err() {
                     eprintln!(
                         "pitgun-cli: failed to write CSV header for channel {}",
                         channel
