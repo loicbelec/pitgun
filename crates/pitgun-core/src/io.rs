@@ -197,8 +197,7 @@ impl Processor for StatsProcessor {
         for event in &batch.events {
             batch_total += 1;
             *self.per_channel.entry(event.channel.clone()).or_default() += 1;
-            if let Some(prev) = 
-                self.last_ts.insert(event.channel.clone(), event.ts_ns)
+            if let Some(prev) = self.last_ts.insert(event.channel.clone(), event.ts_ns)
                 && event.ts_ns <= prev
             {
                 self.gaps += 1;
