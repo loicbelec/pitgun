@@ -22,6 +22,8 @@ pub struct ProcessorConfig {
     pub channels: Option<Vec<String>>,
     pub channel: Option<String>,
     pub factor: Option<f64>,
+    pub output: Option<String>,
+    pub ast: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]

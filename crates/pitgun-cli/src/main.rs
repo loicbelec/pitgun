@@ -1,8 +1,8 @@
 use anyhow::Result;
 use clap::{Parser, Subcommand, ValueEnum};
 use pitgun_core::{
-    ChannelFilterProcessor, ConsoleSink, Pipeline, Processor, ScaleProcessor, Sink, StatsProcessor,
-    UdpSource,
+    ChannelFilterProcessor, ConsoleSink, Expr, FormulaProcessor, Pipeline, Processor,
+    ScaleProcessor, Sink, StatsProcessor, UdpSource,
 };
 
 mod manifest;
@@ -163,6 +163,31 @@ fn build_pipeline_from_manifest(manifest: manifest::Manifest) -> Pipeline<UdpSou
                     std::process::exit(1);
                 });
                 processors.push(Box::new(ScaleProcessor::new(channel, factor)));
+            }
+            "formula" => {
+                let output = processor_cfg.output.clone().unwrap_or_else(|| {
+                    eprintln!("formula processor requires 'output'");
+                    std::process::exit(1);
+                });
+                let ast_path = processor_cfg.ast.clone().unwrap_or_else(|| {
+                    eprintln!("formula processor requires 'ast' pointing to JSON file");
+                    std::process::exit(1);
+                });
+                let ast_contents = match std::fs::read_to_string(&ast_path) {
+                    Ok(s) => s,
+                    Err(err) => {
+                        eprintln!("failed to read ast file '{}': {}", ast_path, err);
+                        std::process::exit(1);
+                    }
+                };
+                let expr: Expr = match serde_json::from_str(&ast_contents) {
+                    Ok(expr) => expr,
+                    Err(err) => {
+                        eprintln!("failed to parse ast json '{}': {}", ast_path, err);
+                        std::process::exit(1);
+                    }
+                };
+                processors.push(Box::new(FormulaProcessor::new(output, expr)));
             }
             "stats" => processors.push(Box::new(StatsProcessor::new(1))),
             other => {
