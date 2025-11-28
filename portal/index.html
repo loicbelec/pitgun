@@ -145,81 +145,93 @@
 
     <nav class="w-full py-6 px-4 md:px-8 max-w-7xl mx-auto flex flex-wrap justify-between items-center gap-y-4 border-b-2 border-pit-dark/10">
         <div class="text-3xl md:text-4xl font-display uppercase tracking-wider text-pit-rust select-none drop-shadow-sm">
-            Pitgun<span class="text-pit-dark">.io</span>
+            <a href="index.html">Pitgun<span class="text-pit-dark">.io</span></a>
         </div>
         <div class="flex gap-4 items-center font-bold text-sm md:text-base font-mono">
-            <a href="README.md" class="hover:text-pit-rust transition-colors uppercase tracking-tight decoration-2 underline-offset-4 hover:underline">Docs</a>
-            <a href="#registry" class="hover:text-pit-rust transition-colors uppercase tracking-tight decoration-2 underline-offset-4 hover:underline">Registry</a>
+            <a href="docs.html" class="hover:text-pit-rust transition-colors uppercase tracking-tight decoration-2 underline-offset-4 hover:underline">Docs</a>
             <a href="https://github.com/loicbelec/pitgun" class="bg-pit-dark text-pit-cream px-5 py-2 border-2 border-pit-dark shadow-hard-sm hover:shadow-hard hover:-translate-y-0.5 active:translate-y-1 active:shadow-hard-active transition-all">
                 GitHub
             </a>
         </div>
     </nav>
 
-    <header class="max-w-7xl mx-auto px-4 md:px-8 py-16 md:py-24">
-        <div class="flex flex-col md:flex-row items-center gap-12">
-            
-            <div class="w-full md:w-1/2 space-y-8">
-                <div class="inline-block bg-pit-rust text-white text-xs font-bold px-3 py-1.5 uppercase tracking-[0.2em] border-2 border-pit-dark shadow-hard-sm transform -rotate-1">
-                    Open Source Framework
+    <header class="max-w-7xl mx-auto px-4 md:px-8 py-16 md:py-20">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
+            <div class="space-y-6">
+                <div class="inline-block bg-pit-rust text-white text-[11px] font-bold px-3 py-1.5 uppercase tracking-[0.24em] border-2 border-pit-dark shadow-hard-sm transform -rotate-1">
+                    Rust telemetry
                 </div>
-                
-                <h1 class="text-6xl md:text-8xl font-display uppercase leading-[0.85] text-pit-petrol text-shadow-retro mb-4">
-                    Rust telemetry<br>that computes<span class="text-pit-rust">.</span>
+                <h1 class="text-6xl md:text-7xl font-display uppercase leading-[0.9] text-pit-petrol text-shadow-retro">
+                    Rust telemetry<br><span class="text-pit-rust">that computes.</span>
                 </h1>
-                
-                <p class="text-xl md:text-2xl text-pit-dark/90 font-medium border-l-4 border-pit-rust pl-6 py-1">
-                    Pitgun ingests telemetry from UDP, gRPC, or Kafka, processes it through declarative pipelines, and generates new signals in real time — forged under F1-grade constraints.
+                <p class="text-lg md:text-xl text-pit-dark/90 font-medium border-l-4 border-pit-rust pl-5 md:pl-6 py-1">
+                    Pitgun ingests telemetry from UDP, applies manifest-driven processors, and emits engineered signals in real time under F1-grade constraints.
                 </p>
-
-                <div class="pt-6 flex flex-wrap gap-5">
-                    <a href="#pipeline" class="bg-pit-rust text-white text-lg font-display uppercase tracking-wide px-8 py-4 border-2 border-pit-dark shadow-hard hover:shadow-hard-hover hover:-translate-y-1 active:translate-y-1 active:shadow-hard-active transition-all inline-flex items-center justify-center">
-                        See the pipeline
+                <div class="flex flex-wrap gap-4">
+                    <a href="docs.html" class="bg-pit-rust text-white font-display uppercase tracking-wide px-6 py-3 border-2 border-pit-dark shadow-hard hover:shadow-hard-hover hover:-translate-y-1 active:translate-y-1 active:shadow-hard-active transition-all inline-flex items-center justify-center">
+                        Read Documentation
                     </a>
-                    <a href="README.md" class="bg-pit-cream px-8 py-4 font-bold uppercase tracking-wide border-2 border-pit-dark shadow-hard hover:shadow-hard-hover hover:-translate-y-1 active:translate-y-1 active:shadow-hard-active transition-all inline-flex items-center justify-center">
-                        Read the manual
+                    <a href="https://github.com/loicbelec/pitgun" class="bg-pit-cream px-6 py-3 font-bold uppercase tracking-wide border-2 border-pit-dark shadow-hard hover:shadow-hard-hover hover:-translate-y-1 active:translate-y-1 active:shadow-hard-active transition-all inline-flex items-center justify-center">
+                        View on GitHub
                     </a>
+                </div>
+                <div class="flex flex-wrap gap-3 text-xs md:text-sm font-mono text-pit-dark/80">
+                    <span class="px-3 py-2 border-2 border-pit-dark bg-pit-cream shadow-hard-sm">UDP source</span>
+                    <span class="px-3 py-2 border-2 border-pit-dark bg-pit-cream shadow-hard-sm">Processors: channel_filter · scale · formula · stats</span>
+                    <span class="px-3 py-2 border-2 border-pit-dark bg-pit-cream shadow-hard-sm">Sinks: console JSON · CSV (CLI)</span>
                 </div>
             </div>
-
-            <div class="w-full md:w-1/2 flex justify-center relative group">
-                <div class="absolute inset-0 bg-pit-rust rounded-full opacity-10 scale-90 blur-3xl z-0 group-hover:scale-100 transition-transform duration-700"></div>
-                <div class="relative z-10 border-4 border-pit-dark bg-pit-cream p-2 shadow-hard rotate-2 group-hover:rotate-0 transition-transform duration-500">
-                    <div class="border border-pit-dark/20">
-                        <img src="pitgun.png" alt="Pitgun framework logo illustration" class="w-full max-w-md block mix-blend-multiply">
+            <div class="relative">
+                <div class="absolute inset-0 rounded-full bg-pit-rust opacity-10 blur-3xl scale-95 lg:scale-100"></div>
+                <div class="relative bg-pit-petrol text-pit-cream border-4 border-pit-dark shadow-hard overflow-hidden rotate-1 hover:rotate-0 transition-transform duration-500">
+                    <div class="absolute inset-0 opacity-10" style="background-image: linear-gradient(#F2E6D6 1px, transparent 1px), linear-gradient(90deg, #F2E6D6 1px, transparent 1px); background-size: 20px 20px;"></div>
+                    <div class="relative p-6 space-y-4">
+                        <div class="flex items-center gap-3">
+                            <div class="h-10 w-10 bg-pit-cream text-pit-petrol font-display text-2xl flex items-center justify-center border-2 border-pit-dark shadow-hard-sm">PG</div>
+                            <div>
+                                <div class="text-xs uppercase tracking-[0.28em] text-pit-accent font-bold">Pipeline ready</div>
+                                <div class="text-2xl font-display uppercase">Telemetry that computes</div>
+                            </div>
+                        </div>
+                        <div class="bg-pit-dark text-pit-cream border-2 border-pit-cream/40 shadow-hard-sm p-4 font-mono text-sm leading-6">
+<span class="text-pit-rust select-none">$</span> cargo run -p pitgun-cli -- subscribe --config manifests/dummy-pitgun.yaml
+                        </div>
+                        <p class="text-sm text-pit-cream/90 leading-relaxed">
+                            Deterministic pipeline with manifest-controlled processors and JSON or CSV sinks.
+                        </p>
                     </div>
                 </div>
             </div>
         </div>
     </header>
 
-    <section class="bg-pit-petrol border-y-4 border-pit-dark py-24 relative overflow-hidden">
+    <section id="toolkit" class="bg-pit-petrol border-y-4 border-pit-dark py-20 relative overflow-hidden">
         <div class="absolute inset-0 opacity-10" style="background-image: linear-gradient(#F2E6D6 1px, transparent 1px), linear-gradient(90deg, #F2E6D6 1px, transparent 1px); background-size: 20px 20px;"></div>
 
         <div class="max-w-7xl mx-auto px-4 md:px-8 relative z-10">
-            <div class="flex items-center justify-center mb-16 gap-4">
+            <div class="flex items-center justify-center mb-14 gap-4">
                 <div class="h-1 w-12 bg-pit-rust"></div>
-                <h2 class="text-pit-cream text-5xl md:text-6xl font-display uppercase tracking-wider text-center">The Toolkit</h2>
+                <h2 class="text-pit-cream text-4xl md:text-5xl font-display uppercase tracking-wider text-center">The Toolkit</h2>
                 <div class="h-1 w-12 bg-pit-rust"></div>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <div class="bg-pit-cream border-4 border-pit-dark p-8 shadow-hard hover:shadow-hard-hover hover:-translate-y-2 transition-all duration-300 relative group overflow-hidden">
-                    <div class="absolute -right-4 -top-6 text-[150px] font-display text-pit-petrol opacity-5 select-none group-hover:text-pit-rust transition-colors">1</div>
+                    <div class="absolute -right-4 -top-6 text-[120px] font-display text-pit-petrol opacity-5 select-none group-hover:text-pit-rust transition-colors">1</div>
                     <div class="h-12 w-12 bg-pit-petrol flex items-center justify-center border-2 border-pit-dark mb-6 text-pit-cream font-mono text-xl font-bold group-hover:bg-pit-rust transition-colors">01</div>
                     <h3 class="text-2xl font-display uppercase text-pit-petrol mb-3 border-b-2 border-pit-dark/10 pb-2">Core Library</h3>
                     <p class="text-sm font-medium text-pit-dark/80">Trait-based pipeline with sources, processors, and sinks. Includes channel filters, scaling, statistics, and formula evaluation via AST JSON.</p>
                 </div>
 
                 <div class="bg-pit-cream border-4 border-pit-dark p-8 shadow-hard hover:shadow-hard-hover hover:-translate-y-2 transition-all duration-300 relative group overflow-hidden">
-                    <div class="absolute -right-4 -top-6 text-[150px] font-display text-pit-petrol opacity-5 select-none group-hover:text-pit-rust transition-colors">2</div>
+                    <div class="absolute -right-4 -top-6 text-[120px] font-display text-pit-petrol opacity-5 select-none group-hover:text-pit-rust transition-colors">2</div>
                     <div class="h-12 w-12 bg-pit-petrol flex items-center justify-center border-2 border-pit-dark mb-6 text-pit-cream font-mono text-xl font-bold group-hover:bg-pit-rust transition-colors">02</div>
                     <h3 class="text-2xl font-display uppercase text-pit-petrol mb-3 border-b-2 border-pit-dark/10 pb-2">UDP Emulator</h3>
                     <p class="text-sm font-medium text-pit-dark/80">Replay multiple CSV time series over UDP with optional pacing and multicast settings.</p>
                 </div>
 
                 <div class="bg-pit-cream border-4 border-pit-dark p-8 shadow-hard hover:shadow-hard-hover hover:-translate-y-2 transition-all duration-300 relative group overflow-hidden">
-                    <div class="absolute -right-4 -top-6 text-[150px] font-display text-pit-petrol opacity-5 select-none group-hover:text-pit-rust transition-colors">3</div>
+                    <div class="absolute -right-4 -top-6 text-[120px] font-display text-pit-petrol opacity-5 select-none group-hover:text-pit-rust transition-colors">3</div>
                     <div class="h-12 w-12 bg-pit-petrol flex items-center justify-center border-2 border-pit-dark mb-6 text-pit-cream font-mono text-xl font-bold group-hover:bg-pit-rust transition-colors">03</div>
                     <h3 class="text-2xl font-display uppercase text-pit-petrol mb-3 border-b-2 border-pit-dark/10 pb-2">Pitgun CLI</h3>
                     <p class="text-sm font-medium text-pit-dark/80">Subscribe to UDP streams, assemble pipelines from YAML manifests, emit derived channels, and record to console or per-channel CSV.</p>
@@ -228,107 +240,25 @@
         </div>
     </section>
 
-    <section id="pipeline" class="max-w-6xl mx-auto px-4 md:px-8 py-24">
-        <div class="flex flex-col items-center">
-            <h2 class="text-4xl md:text-5xl font-display uppercase text-pit-dark mb-6 text-center">Pipeline in Practice</h2>
-
-            <p class="max-w-3xl text-center text-pit-dark/80 mb-10 text-sm md:text-base">
-                Pitgun turns raw data frames into engineered signals through a deterministic Rust pipeline.
-                Sources, processors and sinks are fully declarative: you describe the flow in YAML, Pitgun handles
-                decoding, filtering, scaling, formulas and statistics at F1-style data rates.
-            </p>
-
-            <div class="w-full max-w-4xl mb-12">
-                <div class="pipeline-track h-2 rounded-full bg-pit-accent/60 border border-pit-dark/20">
-                    <div class="pipeline-flow rounded-full"></div>
-                </div>
-                <div class="flex justify-between mt-4 text-[10px] md:text-xs font-mono text-pit-dark/80 uppercase tracking-widest">
-                    <div class="flex flex-col items-start gap-1 text-center">
-                        <span class="px-2 py-0.5 rounded-full bg-pit-cream border border-pit-dark/20">Source</span>
-                        <span class="text-[10px] md:text-[11px] text-pit-dark/70">UDP<br />gRPC<br />Kafka<br />and more</span>
-                    </div>
-                    <div class="flex flex-col items-center gap-1 text-center">
-                        <span class="px-2 py-0.5 rounded-full bg-pit-cream border border-pit-dark/20">Processors</span>
-                        <span class="text-[10px] md:text-[11px] text-pit-dark/70">filters<br />scaling<br />formulas<br />stats</span>
-                    </div>
-                    <div class="flex flex-col items-end gap-1 text-center">
-                        <span class="px-2 py-0.5 rounded-full bg-pit-cream border border-pit-dark/20">Sink</span>
-                        <span class="text-[10px] md:text-[11px] text-pit-dark/70">console<br />CSV<br />Parquet<br />and more</span>
-                    </div>
-                </div>
+    <section id="pipeline" class="max-w-6xl mx-auto px-4 md:px-8 py-16">
+        <div class="bg-pit-cream border-4 border-pit-dark shadow-hard p-8 md:p-10">
+            <div class="flex items-center gap-3 mb-6">
+                <div class="h-1 w-10 bg-pit-rust"></div>
+                <h2 class="text-3xl md:text-4xl font-display uppercase text-pit-petrol">Source → Processors → Sink</h2>
             </div>
-            
-            <div class="w-full bg-[#1e1e1e] rounded-lg overflow-hidden shadow-hard border-4 border-pit-dark relative">
-                <div class="absolute inset-0 crt-scanline opacity-20 pointer-events-none z-10"></div>
-                
-                <div class="bg-[#2A2A2A] px-4 py-3 flex items-center justify-between border-b border-gray-700">
-                    <div class="flex items-center gap-2">
-                        <div class="w-3 h-3 rounded-full bg-pit-rust border border-black"></div>
-                        <div class="w-3 h-3 rounded-full bg-yellow-600 border border-black"></div>
-                        <div class="w-3 h-3 rounded-full bg-green-700 border border-black"></div>
-                    </div>
-                    <span class="font-mono text-xs text-gray-400 uppercase tracking-widest">manifests/dummy-pitgun.yaml</span>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="border-2 border-pit-dark bg-white p-5 shadow-hard-sm">
+                    <div class="text-xs uppercase tracking-[0.2em] text-pit-rust font-bold mb-2">Source</div>
+                    <p class="text-sm text-pit-dark/80">UDP ingest with optional multicast join, small binary frames, and bounded batching.</p>
                 </div>
-                
-                <div class="p-6 overflow-x-auto relative z-0">
-<pre class="font-mono text-sm md:text-base text-gray-300 leading-7"><span class="text-gray-500 italic"># Declarative pipeline configuration</span>
-<span class="text-pit-rust">source:</span>
-  <span class="text-purple-400">type:</span> udp
-  <span class="text-purple-400">bind_addr:</span> "0.0.0.0"
-  <span class="text-purple-400">port:</span> 5000
-
-<span class="text-pit-rust">processors:</span>
-  - <span class="text-purple-400">type:</span> channel_filter
-    <span class="text-purple-400">channels:</span> [<span class="text-green-400">"nEngine"</span>, <span class="text-green-400">"rThrottle"</span>]
-  - <span class="text-purple-400">type:</span> scale
-    <span class="text-purple-400">channel:</span> "nEngine"
-    <span class="text-purple-400">factor:</span> 2.0
-  - <span class="text-purple-400">type:</span> formula
-    <span class="text-purple-400">output:</span> "omega_engine"
-    <span class="text-purple-400">ast:</span> "manifests/omega_engine.json" <span class="text-gray-500"># rpm * 2 * PI / 60</span>
-  - <span class="text-purple-400">type:</span> stats
-
-<span class="text-pit-rust">sink:</span>
-  <span class="text-purple-400">type:</span> console
-</pre>
+                <div class="border-2 border-pit-dark bg-white p-5 shadow-hard-sm">
+                    <div class="text-xs uppercase tracking-[0.2em] text-pit-rust font-bold mb-2">Processors</div>
+                    <p class="text-sm text-pit-dark/80">Declarative order defined in manifests.</p>
                 </div>
-            </div>
-
-            <div class="w-full mt-8 grid gap-4">
-                <div class="relative">
-                    <div class="absolute -top-3 left-4 bg-pit-rust text-white text-[10px] font-bold px-2 py-0.5 uppercase tracking-widest border border-pit-dark">Run Emulator</div>
-                    <div class="bg-pit-dark text-pit-cream p-4 font-mono text-sm rounded-sm border-2 border-pit-dark shadow-hard-sm">
-                        <span class="text-pit-rust select-none">$</span> cargo run -p pitgun-emulator -- --target 127.0.0.1:5000 \ <br>
-                        &nbsp;&nbsp;&nbsp;&nbsp;--input nEngine=datasets/telemetry/nEngine.csv \ <br>
-                        &nbsp;&nbsp;&nbsp;&nbsp;--input rThrottle=datasets/telemetry/rThrottle.csv --pace
-                    </div>
+                <div class="border-2 border-pit-dark bg-white p-5 shadow-hard-sm">
+                    <div class="text-xs uppercase tracking-[0.2em] text-pit-rust font-bold mb-2">Sink</div>
+                    <p class="text-sm text-pit-dark/80">Console JSON output by default; CSV recording available via CLI composite sink.</p>
                 </div>
-
-                <div class="relative">
-                     <div class="absolute -top-3 left-4 bg-pit-petrol text-white text-[10px] font-bold px-2 py-0.5 uppercase tracking-widest border border-pit-dark">Start Engine</div>
-                    <div class="bg-pit-dark text-pit-cream p-4 font-mono text-sm rounded-sm border-2 border-pit-dark shadow-hard-sm group cursor-pointer hover:bg-black transition-colors">
-                        <span class="text-pit-rust select-none">$</span> cargo run -p pitgun-cli -- subscribe --config manifests/dummy-pitgun.yaml<span class="animate-pulse">_</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="w-full mt-12 bg-pit-cream border-2 border-pit-dark/20 shadow-hard-sm p-6 md:p-8">
-                <h3 class="text-lg md:text-xl font-display uppercase text-pit-petrol mb-3">
-                    Why Pitgun’s pipeline is different
-                </h3>
-                <p class="text-sm text-pit-dark/80 mb-4">
-                    Pitgun is not a generic data toy. It is designed from real telemetry workloads:
-                    high-frequency signals, tight latency budgets, deterministic behaviour — the kind of constraints
-                    you normally see around race cars and test benches.
-                </p>
-                <ul class="grid md:grid-cols-2 gap-2 text-sm text-pit-dark/90 list-disc list-inside">
-                    <li>Rust-powered, low-latency, memory-safe processing.</li>
-                    <li>Manifest-driven pipelines: declarative, shareable, versioned.</li>
-                    <li>Formula engine backed by JSON AST bundles, LLM-ready.</li>
-                    <li>Telemetry-native: channels, sampling rates, plausibility checks.</li>
-                    <li>Extensible traits for custom processors and sinks.</li>
-                    <li>Built and battle-tested with F1-style data constraints in mind.</li>
-                </ul>
             </div>
         </div>
     </section>
@@ -356,7 +286,7 @@
             <div class="flex gap-8 md:gap-16 font-mono text-sm">
                 <div class="flex flex-col gap-3">
                     <span class="text-pit-rust uppercase tracking-wider font-bold text-xs">Project</span>
-                    <a href="README.md" class="text-gray-400 hover:text-white hover:underline transition-colors">Documentation</a>
+                    <a href="docs.html" class="text-gray-400 hover:text-white hover:underline transition-colors">Documentation</a>
                     <a href="https://github.com/loicbelec/pitgun/releases" class="text-gray-400 hover:text-white hover:underline transition-colors">Changelog</a>
                     <a href="https://github.com/loicbelec/pitgun/blob/main/LICENSE" class="text-gray-400 hover:text-white hover:underline transition-colors">License (MIT)</a>
                 </div>
