@@ -7,7 +7,7 @@
         "left": {
           "BinaryOp": {
             "op": "Mul",
-            "left": { "Var": "rpm" },
+            "left": { "Var": "nEngine" },
             "right": { "Literal": 2.0 }
           }
         },
