@@ -66,8 +66,26 @@ fn load_channel(path: &str, channel: &str, max_rows: usize) -> Vec<Event> {
         .join("..")
         .join("..")
         .join(path);
-    let rdr = csv::Reader::from_path(&base)
-        .unwrap_or_else(|e| panic!("failed to open {}: {}", base.display(), e));
+
+    let rdr = match csv::Reader::from_path(&base) {
+        Ok(rdr) => rdr,
+        Err(err) => {
+            eprintln!(
+                "bench fixture {} missing ({}), falling back to synthetic data",
+                base.display(),
+                err
+            );
+            // Fallback: generate synthetic telemetry
+            return (0..max_rows)
+                .map(|i| Event {
+                    channel: channel.to_string(),
+                    ts_ns: i as u64 * 1_000_000,    // 1 ms step, par ex.
+                    value: (i as f64 * 0.01).sin(), // n'importe quel pattern déterministe
+                })
+                .collect();
+        }
+    };
+
     rdr.into_deserialize::<CsvRow>()
         .take(max_rows)
         .enumerate()
