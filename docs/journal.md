@@ -1183,7 +1183,7 @@ This expresses longitudinal acceleration as a normalized value by dividing by gr
 
 ##### Math formula
 $$
-\text{norm\_acc} = \frac{\lvert a_x \rvert}{g \cdot 1.5}
+\mathrm{norm}_{\mathrm{acc}} = \frac{\lvert a_x \rvert}{g \cdot 1.5}
 $$
 
 ##### AST JSON
@@ -1213,7 +1213,9 @@ This derived metric combines steering angle dynamics and the logarithmic respons
 
 ##### Math formula
 $$
-\text{weird\_metric} = \sin(\text{steer\_angle}) \cdot \ln(\text{speed} + 1)
+\text{weird}_{\text{metric}}
+    = \sin(\text{steer}_{\text{angle}})
+    \cdot \ln(\text{speed} + 1)
 $$
 
 ##### AST JSON
