@@ -16,5 +16,8 @@
 # Datasets locaux
 datasets/*
 
+# Benchmarks
+benchmarks/*
+
 # Notes
 docs/.notes/*

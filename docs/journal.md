@@ -37,6 +37,7 @@ By combining insights from Formula 1 telemetry and High-Frequency Trading, Pitgu
 - [6 - Introducing the pipeline manifest](#6---introducing-the-pipeline-manifest)
 - [7 - First computed values](#7---first-computed-values)
 - [8 - Declarative formulas](#8---declarative-formulas)
+- [9 - Performance baseline](#9---performance-baseline)
 
 ## Project structure
 Pitgun is organized as a Rust workspace composed of three main crates:
@@ -1102,12 +1103,12 @@ Below are several manifest configurations representative of common patterns used
 #### Engine speed in rad/s
 This formula converts engine speed from revolutions per minute (rpm) to angular velocity in radians per second, a standard physical unit for rotational systems.
 
-##### Math formula
+**Math formula**
 $$
 \omega = 2 \pi \cdot n / 60
 $$
 
-##### AST JSON
+**AST JSON**
 ```yaml
 {
   "type": "binary_op",
@@ -1137,12 +1138,12 @@ $$
 #### Aerodynamic lift coefficient
 This computes the aerodynamic lift coefficient based on measured lift force, air density, velocity, and reference area, normalizing the physical forces into a dimensionless metric.
 
-##### Math formula
+**Math formula**
 $$
 C_L = \frac{\text{Lift}}{0.5 \, \rho \, v^2 \, S}
 $$
 
-##### AST JSON
+**AST JSON**
 ```json
 {
   "type": "binary_op",
@@ -1181,12 +1182,12 @@ $$
 #### Normalized longitudinal acceleration
 This expresses longitudinal acceleration as a normalized value by dividing by gravitational acceleration, making it easier to compare load levels across different conditions.
 
-##### Math formula
+**Math formula**
 $$
 \mathrm{norm}_{\mathrm{acc}} = \frac{\lvert a_x \rvert}{g \cdot 1.5}
 $$
 
-##### AST JSON
+**AST JSON**
 ```json
 {
   "type": "binary_op",
@@ -1211,14 +1212,14 @@ $$
 #### Trig + log combination
 This derived metric combines steering angle dynamics and the logarithmic response of speed, highlighting situations where small changes in speed have amplified analytical significance.
 
-##### Math formula
+**Math formula**
 $$
 \text{weird}_{\text{metric}}
     = \sin(\text{steer}_{\text{angle}})
     \cdot \ln(\text{speed} + 1)
 $$
 
-##### AST JSON
+**AST JSON**
 ```json
 {
   "type": "binary_op",
@@ -1249,12 +1250,12 @@ $$
 #### Batch-local z-score
 The z-score normalizes a value by subtracting the batch mean and dividing by the batch standard deviation, providing a standardized measure of deviation within the current batch.
 
-##### Math formula
+**Math formula**
 $$
 z = \frac{x - \mu_x}{\sigma_x}
 $$
 
-##### AST JSON
+**AST JSON**
 ```json
 {
   "type": "binary_op",
@@ -1311,3 +1312,84 @@ The developments that follow naturally build on this foundation:
 Every one of these upcoming features depends on a correct and robust FormulaEngine.
 This chapter is the point where Pitgun transitions from a data pipeline into a real computational platform.
 -->
+
+## 9 - Performance baseline
+
+I introduced Criterion benchmarks for the `pitgun-core` crate to establish an initial performance baseline for FormulaProcessor v1.  
+The benches use real telemetry-like CSV inputs and three scenarios:
+
+- `single_formula_small`
+- `multi_formula_medium`
+- `stress_many_formulas`
+
+Each scenario records mean, p95, p99 latencies (in nanoseconds) and an effective throughput in events per second, and writes a JSON report.
+
+### Scenarios
+
+**1. single_formula_small**
+
+- `iterations`: 5000  
+- `dataset_events`: 512  
+- `formulas`: 1  
+
+Results (local run):
+
+- `mean_ns` ≈ **15_966 ns** → ~**16 µs** per batch  
+- `p95_ns` ≈ **17_334 ns**  
+- `p99_ns` ≈ **20_583 ns**  
+- `throughput_eps` ≈ **19.45 M events/s**
+
+Approximate cost per evaluation:
+
+- 16_000 ns / (512 × 1) ≈ **~30 ns / eval**
+
+**2. multi_formula_medium**
+
+- `iterations`: 2000  
+- `dataset_events`: 4096  
+- `formulas`: 4  
+- Total evaluations per batch: 4096 × 4 = 16_384
+
+Results (local run):
+
+- `mean_ns` ≈ **418_691 ns** → ~**0.42 ms** per batch  
+- `p95_ns` ≈ **438_041 ns**  
+- `p99_ns` ≈ **454_709 ns**  
+- `throughput_eps` ≈ **8.21 M events/s**
+
+Approximate cost per evaluation:
+
+- 418_691 ns / 16_384 ≈ **~25–26 ns / eval**
+
+**3. stress_many_formulas**
+
+- `iterations`: 500  
+- `dataset_events`: 16_000  
+- `formulas`: 32  
+- Total evaluations per batch: 16_000 × 32 = 512_000
+
+Results (local run):
+
+- `mean_ns` ≈ **15_156_416 ns** → ~**15.2 ms** per batch  
+- `p95_ns` ≈ **15_618_459 ns**  
+- `p99_ns` ≈ **15_789_500 ns**  
+- `throughput_eps` ≈ **1.04 M events/s**
+
+Approximate cost per evaluation:
+
+- 15_156_416 ns / 512_000 ≈ **~29–30 ns / eval**
+
+### Interpretation
+
+Across all three scenarios, FormulaProcessor v1 stays in the **~25–30 ns per eval** range, even under stress (large dataset, many formulas). This is a comfortable order of magnitude for high-frequency telemetry (F1-like 1 kHz streams) and HFT-like workloads, assuming a reasonable number of formulas per channel.
+
+### Baseline SLOs (v1)
+
+For future changes to FormulaProcessor:
+
+- Keep `mean_ns_per_eval < 50 ns` on all three scenarios.
+- Keep `p99_ns_per_eval < 100 ns`.
+- For the stress scenario, keep batch time `< 20 ms`.
+
+The JSON files generated by the benches are **not committed** to the repository.  
+They are used locally and as CI artifacts to detect performance regressions.
