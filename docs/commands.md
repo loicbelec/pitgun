@@ -17,3 +17,6 @@ cargo run --bin pitgun-cli -- subscribe \
 
 ## Dummy Pitgun
 cargo run -p pitgun-cli -- subscribe --config pitgun.yaml
+
+## Benchmark
+cargo bench -p pitgun-core --bench formula_processor_bench
