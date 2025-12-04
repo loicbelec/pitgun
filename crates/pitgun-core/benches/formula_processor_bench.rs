@@ -1,9 +1,9 @@
 use std::cmp::Ordering;
 use std::path::PathBuf;
 use std::sync::{Mutex, OnceLock};
-use std::time::{Duration, Instant};
+use std::time::Instant;
 
-use criterion::{black_box, BatchSize, Criterion};
+use criterion::{BatchSize, Criterion, black_box};
 use pitgun_core::{BinaryOp, Event, EventBatch, Expr, FormulaProcessor, Processor};
 use serde::Serialize;
 
@@ -43,9 +43,7 @@ impl Fixtures {
     }
 
     fn interleaved_batch(&self, limit_each: usize) -> EventBatch {
-        let available = limit_each
-            .min(self.n_engine.len())
-            .min(self.throttle.len());
+        let available = limit_each.min(self.n_engine.len()).min(self.throttle.len());
         let mut events = Vec::with_capacity(available * 2);
         for i in 0..available {
             events.push(self.n_engine[i].clone());
@@ -68,7 +66,7 @@ fn load_channel(path: &str, channel: &str, max_rows: usize) -> Vec<Event> {
         .join("..")
         .join("..")
         .join(path);
-    let mut rdr = csv::Reader::from_path(&base)
+    let rdr = csv::Reader::from_path(&base)
         .unwrap_or_else(|e| panic!("failed to open {}: {}", base.display(), e));
     rdr.into_deserialize::<CsvRow>()
         .take(max_rows)
@@ -247,12 +245,7 @@ fn build_stress_formulas(count: usize) -> Vec<FormulaProcessor> {
 
 fn bench_single_formula(c: &mut Criterion, fixtures: &Fixtures) {
     let batch = fixtures.interleaved_batch(256);
-    let metrics = run_scenario(
-        "single_formula_small",
-        &batch,
-        5_000,
-        || build_single_formula(),
-    );
+    let metrics = run_scenario("single_formula_small", &batch, 5_000, build_single_formula);
     record_metrics(metrics);
 
     let mut procs = build_single_formula();
@@ -272,12 +265,9 @@ fn bench_single_formula(c: &mut Criterion, fixtures: &Fixtures) {
 
 fn bench_multi_formula(c: &mut Criterion, fixtures: &Fixtures) {
     let batch = fixtures.interleaved_batch(2_048);
-    let metrics = run_scenario(
-        "multi_formula_medium",
-        &batch,
-        2_000,
-        || build_medium_formulas(),
-    );
+    let metrics = run_scenario("multi_formula_medium", &batch, 2_000, || {
+        build_medium_formulas()
+    });
     record_metrics(metrics);
 
     let mut procs = build_medium_formulas();
@@ -298,8 +288,9 @@ fn bench_multi_formula(c: &mut Criterion, fixtures: &Fixtures) {
 fn bench_stress(c: &mut Criterion, fixtures: &Fixtures) {
     let batch = fixtures.interleaved_batch(8_000);
     let stress_formulas = build_stress_formulas(32);
-    let metrics =
-        run_scenario("stress_many_formulas", &batch, 500, || build_stress_formulas(32));
+    let metrics = run_scenario("stress_many_formulas", &batch, 500, || {
+        build_stress_formulas(32)
+    });
     record_metrics(metrics);
 
     let mut procs = stress_formulas;
