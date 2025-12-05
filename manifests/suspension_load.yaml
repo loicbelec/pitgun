@@ -1,0 +1,16 @@
+source:
+  type: udp
+  bind_addr: "0.0.0.0"
+  port: 5001
+
+processors:
+  - type: channel_filter
+    channels:
+      - "ChassisMaths-FPushRodFL"
+      - "ChassisMaths-FPushRodFR"
+      - "Chassis-FPushRodRR"
+      - "Chassis-FPushRodRL"
+  - type: stats
+
+sink:
+  type: console
