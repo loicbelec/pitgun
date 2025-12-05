@@ -3,11 +3,11 @@
 ## Emulator
 cargo run --bin pitgun-emulator -- \
   --target 127.0.0.1:5001 \
-  --input nEngine=datasets/telemetry/RUN-001/FIA-nEngine.csv \
-  --input throttle=datasets/telemetry/RUN-001/Controller-rThrottleR.csv \
+  --input nEngine=datasets/telemetry/FIA-nEngine.csv \
+  --input rThrottleR=datasets/telemetry/Controller-rThrottleR.csv \
   --pace
 
-## Python receiver
+## Python emulator receiver
 python scripts/recv_pitgun.py       
 
 ## CLI receiver
@@ -20,3 +20,12 @@ cargo run -p pitgun-cli -- subscribe --config pitgun.yaml
 
 ## Benchmark
 cargo bench -p pitgun-core --bench formula_processor_bench
+
+# Suspension load
+cargo run -p pitgun-emulator --release -- \
+  --target 127.0.0.1:5001 \
+  --input ChassisMaths-FPushRodFL=datasets/telemetry/ChassisMaths-FPushRodFL.csv \
+  --input ChassisMaths-FPushRodFR=datasets/telemetry/ChassisMaths-FPushRodFR.csv \
+  --input Chassis-FPushRodRR=datasets/telemetry/Chassis-FPushRodRR.csv \
+  --input Chassis-FPushRodRL=datasets/telemetry/Chassis-FPushRodRL.csv \
+  --pace

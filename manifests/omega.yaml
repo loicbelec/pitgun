@@ -5,10 +5,11 @@ source:
 
 processors:
   - type: channel_filter
-    channels: ["nEngine", "throttle"]
+    channels:
+      - "nEngine"
   - type: formula
-    output: "omega_engine"
-    ast: "manifests/omega_engine.json"
+    output: "omega"
+    ast: "manifests/omega.json"
   - type: stats
 
 sink:
