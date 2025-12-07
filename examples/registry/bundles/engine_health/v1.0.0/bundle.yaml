@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=https://pitgun.io/schemas/bundle-manifest/v1
+
+manifest_version: 1
+
+bundle:
+  name: engine_health
+  version: "1.0.0"
+  description: "Core engine stress and cooling metrics"
+  tags: ["f1", "power_unit", "safety"]
+
+bolts:
+  - id: engine_stress_index
+    ast: "engine_stress_index.ast.json"
+    inputs: ["engine_speed", "throttle"]
+    output: "engine_stress_index"
+
+  - id: cooling_margin
+    ast: "cooling_margin.ast.json"
+    inputs: ["water_temp", "oil_temp"]
+    output: "cooling_margin"
+
+  - id: overrev_events
+    ast: "overrev_events.ast.json"
+    inputs: ["engine_speed"]
+    output: "overrev_count"
+    params:
+      rpm_limit: 17200
