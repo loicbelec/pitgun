@@ -1476,3 +1476,159 @@ This allows VS Code and other editors to perform autocompletion and validation v
 ```yaml
 # yaml-language-server: $schema=https://pitgun.io/schemas/analysis-manifest/v1
 ```
+
+## 11 - From F1-specific dictionary to a canonical multi-domain telemetry model
+
+Over the last development cycle, I introduced a complete workflow to programmatically create and populate a canonical dictionary through the Pitgun API. We moved away from an F1-centric dictionary and embraced a canonical, multi-domain telemetry model capable of absorbing signals from any ecosystem - motorsport, energy, finance, medical systems, industrial acquisition pipelines, etc.
+
+### Why the former dictionary was too limiting
+
+Originally, Pitgun’s data dictionary was built from the ATLAS telemetry system used in Formula One:
+- naming conventions
+- formatting
+- metadata (Format, Family, Tags…)
+- signal density and categories
+
+This approach worked for bootstrapping the project, but it quickly revealed several limitations:
+1.	**ATLAS is only one acquisition system among many.** Other motorsport tools (Wintax, MoTeC, Pi, Magneti Marelli) use different naming, sampling, scaling, and metadata conventions.
+2. **Cross-domain ingestion becomes impossible.** Energy sector telemetry (SCADA, PMU streams), finance (market data, FIX feeds), or healthcare (ECG, accelerometry) don’t follow ATLAS semantics.
+3.	**ATLAS-specific fields cluttered the dictionary.** Many fields (“Family”, “Format”, “IsPremium”, UI-driven attributes) don’t reflect physical meaning — they reflect ATLAS the software, not telemetry as a concept.
+4.	**LLM reasoning requires universals, not vendor-specific signals.** The LLM can infer canonical physical properties only if the upstream schema is structured and consistent.
+
+This is why I shifted the project to a canonical dictionary.
+
+### The canonical dictionary: a universal model
+
+The new canonical dictionary defines the physical identity of a signal, independent of its origin.
+
+A canonical channel describes:
+-  its domain (motorsport, finance, energy, medical…)
+-  its dimension (angular_velocity, pressure, electrical_power, volatility…)
+-  its unit (rpm, bar, kW, %, m/s², V…)
+-  its sampling_family (low_rate, medium_rate, high_rate, ultra_high_rate)
+-  its min_value / max_value (physical constraints)
+-  its tags (semantic grouping)
+
+This structure is source-agnostic, meaning:
+-  `nEngine` from ATLAS
+-  `RPM_ENGINE` from Wintax
+-  `rpm_engine` from a dyno
+-  or even a synthetic channel from simulation
+
+All map to one canonical channel: `engine_speed`.
+
+This is crucial because it unifies heterogeneous datasets, enables *LLM-assisted* merging, allows domain extensions (finance, energy etc.), and strengthens semantic consistency across all ingestion pipelines.
+
+
+### Impact on the architecture
+
+This change crystallizes a new architectural layer in Pitgun:
+
+Old model:
+> telemetry dictionary tied to a single vendor, a single naming scheme.
+
+New model:
+> vendor-agnostic canonical representation that unifies all telemetry inputs.
+
+It solves:
+-  multi-source unification
+-  interoperability across motorsport tools
+-  future expansion to entirely different industries
+-  multi-modal LLM reasoning on physical signals
+
+It also enables:
+-  deterministic writes
+-  human-supervised refinement
+-  partial overrides of LLM choices
+-  external ingestion pipelines that populate the canonical graph
+
+The mapping model can be summarized as:
+-  each source system (ATLAS, Wintax, NASDAQ feed, SCADA, etc.) has its own native channels,
+-  each source channel can map to exactly one canonical channel,
+-  a canonical channel can receive mappings from multiple systems.
+
+```mermaid
+graph LR
+    subgraph Source
+        A[ATLAS<br>FIA-nEngine<br>Controller-rThrottlePedal]
+        B[Wintax<br>RPM_ENGINE<br>THROTTLE_RAW]
+        C[NASDAQ feed<br>LAST_PRICE]
+    end
+
+    subgraph Dictionary
+        CC1[engine_speed]
+        CC2[throttle_position]
+        CC3[last_traded_price]
+    end
+
+    A -->|FIA-nEngine| CC1
+    A -->|Controller-rThrottlePedal| CC2
+
+    B -->|RPM_ENGINE| CC1
+    B -->|THROTTLE_RAW ÷ 100| CC2
+
+    C -->|LAST_PRICE| CC3
+```
+
+### What this enables next
+-  Enriching canonical dimensions and units across domains
+-  Building cross-industry bundles (motorsport + energy + industrial IoT)
+-  Unified semantic search across all telemetry systems
+-  Advanced physical modeling (constraints, transforms, normalization)
+-  RAG pipelines on canonical signals rather than raw, vendor-specific names
+-  Extending Pitgun toward semantic telemetry computing, not just ingestion
+
+## 12 – Switching Gemini for Qwen
+
+The Pitgun API initially relied on the Gemini API to generate AST JSON structures and infer canonical channels from raw, unmapped signals. This setup worked well during the early exploration phase: fast iteration, minimal infrastructure, and decent reasoning quality for schema-driven generation tasks.
+
+That balance broke the day quota limits became a constraint rather than a guardrail.
+
+At that point, the issue was no longer about model quality, but about **control**. A system meant to automate large parts of a data modeling workflow cannot depend on an external service whose availability, limits, and pricing are moving targets. Pitgun is a long-term project; the inference layer had to follow the same philosophy.
+
+### From hosted inference to local autonomy
+
+Rather than upgrading to a paid Gemini tier, I decided to explore local inference. The goal was explicit:
+
+- regain full control over inference throughput,
+- remove quota-driven design constraints,
+- and validate that Pitgun could operate in a partially disconnected or offline mode.
+
+I am running these experiments on a MacBook Pro M4, using **MLX** as the inference framework and **Qwen** as the model family. MLX turned out to be a natural choice on Apple Silicon: minimal friction, native performance, and a developer-friendly workflow.
+
+The first tests were immediately encouraging. While raw latency cannot compete with large hosted models, the **determinism**, **repeatability**, and **cost profile** completely changed the equation. For AST generation and canonical reasoning tasks, Qwen performs well enough — and more importantly, predictably.
+
+### A hybrid inference strategy
+
+At this stage, Pitgun does not “switch off” Gemini entirely. The architecture now supports **dual routing**:
+
+- Gemini remains available for complex or exploratory inference.
+- Qwen handles local, repeatable, high-volume tasks.
+
+This split is intentional. Pitgun does not aim to be dogmatic about models. It aims to be **model-agnostic**, with inference treated as an interchangeable component rather than a hard dependency.
+
+This shift forced a useful architectural clarification: prompts had to be tightened, outputs more strictly validated, and assumptions made explicit. In practice, this improved the overall robustness of the system.
+
+### Freezing the canonical surface (for now)
+
+One important decision followed naturally: I temporarily froze the **canonical channel surface** used for formula generation.
+
+Instead of continuously expanding the canonical dictionary in real time, I selected a **stable subset of canonical channels** sufficient to generate meaningful formulas — combinations of signals that can be assembled into bundles.
+
+This serves two purposes:
+
+1. It keeps formula generation deterministic and testable.
+2. It decouples bundle production from the long-running task of canonical database expansion.
+
+The population of the full canonical database continues in the background. It is no longer a blocking step. Right now, the selected canonical set is “good enough” — and that is exactly the point.
+
+### A quiet but structural shift
+
+Switching from Gemini to Qwen was not just a tooling change. It marked a transition from experimentation to **ownership**.
+
+Pitgun no longer assumes infinite cloud inference. It assumes constrained environments, local execution, and explicit trade-offs. Ironically, those constraints made the system clearer, cleaner, and easier to reason about.
+
+This chapter is not about abandoning hosted AI.  
+It is about **earning the right not to depend on it**.
+
+The next steps will focus on tightening validation around locally generated ASTs and progressively increasing the share of inference handled off-cloud. Not because it is fashionable — but because it aligns with what Pitgun is becoming: a serious, autonomous framework, built to last.
