@@ -17,6 +17,7 @@ Pitgun is a modular Rust workspace for telemetry and high-frequency data process
 - Processors:
   - `channel_filter` (whitelist channels)
   - `scale` (multiply one channel by a factor)
+  - `segment_aggregate` (window by segment key with mean/max/min/stddev/count/sum)
   - `stats` (print per-channel counts/gaps)
 - Sinks:
   - Console JSON printer

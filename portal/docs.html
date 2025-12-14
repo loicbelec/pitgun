@@ -119,7 +119,7 @@
                 </div>
                 <div class="flex flex-wrap gap-3 text-xs md:text-sm font-mono text-pit-dark/80">
                     <span class="px-3 py-2 border-2 border-pit-dark bg-pit-cream shadow-hard-sm">UDP ingestion (unicast/multicast join)</span>
-                    <span class="px-3 py-2 border-2 border-pit-dark bg-pit-cream shadow-hard-sm">Processors: channel_filter · scale · formula · stats</span>
+                    <span class="px-3 py-2 border-2 border-pit-dark bg-pit-cream shadow-hard-sm">Processors: channel_filter · scale · formula · stats · segment_aggregate</span>
                     <span class="px-3 py-2 border-2 border-pit-dark bg-pit-cream shadow-hard-sm">Sinks: console JSON · per-channel CSV (CLI)</span>
                 </div>
             </div>
@@ -188,7 +188,7 @@
                         <span class="font-display uppercase text-pit-petrol text-xl">Pipeline Model</span>
                         <span class="text-[11px] font-mono bg-pit-dark text-pit-cream px-2 py-1 border border-pit-dark">Draft</span>
                     </div>
-                    <p class="text-sm text-pit-dark/80 leading-relaxed">Sources (UDP), processors (channel_filter, scale, formula, stats), and sinks (console, CSV) as traits.</p>
+                    <p class="text-sm text-pit-dark/80 leading-relaxed">Sources (UDP), processors (channel_filter, scale, formula, stats, segment_aggregate), and sinks (console, CSV) as traits.</p>
                 </a>
                 <a href="#manifest" class="group bg-pit-cream border-4 border-pit-dark p-5 shadow-hard hover:shadow-hard-hover hover:-translate-y-2 transition-all duration-300">
                     <div class="flex items-center justify-between mb-3">
@@ -202,7 +202,7 @@
                         <span class="font-display uppercase text-pit-petrol text-xl">Processors</span>
                         <span class="text-[11px] font-mono bg-pit-dark text-pit-cream px-2 py-1 border border-pit-dark">Draft</span>
                     </div>
-                    <p class="text-sm text-pit-dark/80 leading-relaxed">Reference for channel_filter, scale, formula (AST JSON), and stats including required keys.</p>
+                    <p class="text-sm text-pit-dark/80 leading-relaxed">Reference for channel_filter, scale, formula (AST JSON), stats (gap detection), and segment_aggregate (window-by-key metrics).</p>
                 </a>
                 <a href="#sinks" class="group bg-pit-cream border-4 border-pit-dark p-5 shadow-hard hover:shadow-hard-hover hover:-translate-y-2 transition-all duration-300">
                     <div class="flex items-center justify-between mb-3">
@@ -270,7 +270,7 @@
                 </div>
                 <div class="bg-white border-2 border-pit-dark p-4 shadow-hard-sm">
                     <div class="text-pit-rust uppercase text-xs font-bold">Processors</div>
-                    <p class="mt-1 leading-relaxed">channel_filter, scale, formula (supports +, -, *, /, negation, trig/exp/log funcs), stats (rates, per-channel counts, gap detection).</p>
+                    <p class="mt-1 leading-relaxed">channel_filter, scale, formula (supports +, -, *, /, negation, trig/exp/log funcs), stats (rates, per-channel counts, gap detection), segment_aggregate (window-by-key mean/min/max/stddev/count/sum).</p>
                 </div>
                 <div class="bg-white border-2 border-pit-dark p-4 shadow-hard-sm">
                     <div class="text-pit-rust uppercase text-xs font-bold">Sinks</div>

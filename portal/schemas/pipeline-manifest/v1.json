@@ -55,6 +55,7 @@
               "channel_filter",
               "scale",
               "stats",
+              "segment_aggregate",
               "map",
               "throttle",
               "other"
@@ -63,6 +64,38 @@
           "id": {
             "type": "string",
             "description": "Optional processor identifier"
+          },
+          "segment_key": {
+            "type": "string",
+            "description": "Channel whose value defines the active segment/window; a change closes the current segment and opens a new one"
+          },
+          "targets": {
+            "type": "array",
+            "description": "Channels to aggregate within each segment and the metrics to compute",
+            "items": {
+              "type": "object",
+              "required": ["channel"],
+              "properties": {
+                "channel": {
+                  "type": "string"
+                },
+                "metrics": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": ["count", "min", "max", "mean", "sum", "stddev"]
+                  }
+                }
+              }
+            }
+          },
+          "emit_on_change": {
+            "type": "boolean",
+            "description": "When true, emit an aggregate row as soon as the segment key changes"
+          },
+          "emit_last_segment_on_eof": {
+            "type": "boolean",
+            "description": "Emit the final open segment when the source reports end-of-stream"
           }
         }
       }

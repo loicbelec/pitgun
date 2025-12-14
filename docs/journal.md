@@ -39,6 +39,9 @@ By combining insights from Formula 1 telemetry and High-Frequency Trading, Pitgu
 - [8 - Declarative formulas](#8---declarative-formulas)
 - [9 - Performance baseline](#9---performance-baseline)
 - [10 - A story of manifests](#10---a-story-of-manifests)
+- [11 - From F1-specific dictionary to a canonical multi-domain telemetry model](#11---from-f1-specific-dictionary-to-a-canonical-multi-domain-telemetry-model)
+- [12 – Switching Gemini for Qwen (and back, partially)](#12--switching-gemini-for-qwen-and-back-partially)
+- [13 - Segment aggregation (window-by-key)](#13---segment-aggregation-window-by-key)
 
 ## Project structure
 Pitgun is organized as a Rust workspace composed of three main crates:
@@ -1578,57 +1581,148 @@ graph LR
 -  RAG pipelines on canonical signals rather than raw, vendor-specific names
 -  Extending Pitgun toward semantic telemetry computing, not just ingestion
 
-## 12 – Switching Gemini for Qwen
+## 12 – Switching Gemini for Qwen (and back, partially)
 
-The Pitgun API initially relied on the Gemini API to generate AST JSON structures and infer canonical channels from raw, unmapped signals. This setup worked well during the early exploration phase: fast iteration, minimal infrastructure, and decent reasoning quality for schema-driven generation tasks.
+The Pitgun API initially relied on the Gemini API to generate AST JSON structures and infer canonical channels from raw, unmapped signals. This approach worked well during early experimentation: fast iteration, strong reasoning capabilities, and a model able to hold large contextual graphs in memory.
 
-That balance broke the day quota limits became a constraint rather than a guardrail.
+However, recent quota limitations forced me to explore an alternative path. Rather than immediately upgrading to a paid tier, I chose to experiment with local inference using **Qwen**, running on a MacBook Pro M4 via the **MLX** framework.
 
-At that point, the issue was no longer about model quality, but about **control**. A system meant to automate large parts of a data modeling workflow cannot depend on an external service whose availability, limits, and pricing are moving targets. Pitgun is a long-term project; the inference layer had to follow the same philosophy.
+The objective was clear: regain control over inference, remove quota-driven friction, and evaluate how far local models could be pushed in a real, structured system like Pitgun.
 
-### From hosted inference to local autonomy
+### What worked well with local Qwen
 
-Rather than upgrading to a paid Gemini tier, I decided to explore local inference. The goal was explicit:
+The first results were promising — but only within a clearly bounded scope.
 
-- regain full control over inference throughput,
-- remove quota-driven design constraints,
-- and validate that Pitgun could operate in a partially disconnected or offline mode.
+Qwen performs well when the task is:
+- local,
+- deterministic,
+- and tightly specified.
 
-I am running these experiments on a MacBook Pro M4, using **MLX** as the inference framework and **Qwen** as the model family. MLX turned out to be a natural choice on Apple Silicon: minimal friction, native performance, and a developer-friendly workflow.
+In practice, this makes it a good fit for **AST JSON generation**. Given a well-scoped prompt, a fixed schema, and limited surrounding context, Qwen is perfectly capable of emitting valid, structured ASTs. Latency is acceptable, cost is zero, and repeatability is excellent.
 
-The first tests were immediately encouraging. While raw latency cannot compete with large hosted models, the **determinism**, **repeatability**, and **cost profile** completely changed the equation. For AST generation and canonical reasoning tasks, Qwen performs well enough — and more importantly, predictably.
+For this class of problems, local inference is not just viable — it is desirable.
 
-### A hybrid inference strategy
+### Where the approach breaks down
 
-At this stage, Pitgun does not “switch off” Gemini entirely. The architecture now supports **dual routing**:
+The limitations became evident when I tried to extend Qwen’s role beyond pure structure generation.
 
-- Gemini remains available for complex or exploratory inference.
-- Qwen handles local, repeatable, high-volume tasks.
+Canonical channels are not isolated entities. They form a **coherent semantic graph**: units, dimensions, domains, dependencies, naming conventions, historical constraints, and cross-domain reuse all interact. Generating or extending a canonical channel index requires holding *a lot* of context simultaneously — and reasoning consistently across it.
 
-This split is intentional. Pitgun does not aim to be dogmatic about models. It aims to be **model-agnostic**, with inference treated as an interchangeable component rather than a hard dependency.
+This is where local models like Qwen hit a wall.
 
-This shift forced a useful architectural clarification: prompts had to be tightened, outputs more strictly validated, and assumptions made explicit. In practice, this improved the overall robustness of the system.
+Despite prompt engineering and schema constraints, Qwen lacks the depth and context window required to:
+- reason globally over the canonical dictionary,
+- maintain long-range coherence across channel families,
+- or propose meaningful, non-contradictory extensions to the model.
 
-### Freezing the canonical surface (for now)
+This is not a failure of the model. It is a mismatch between **cognitive load** and **model capacity**.
 
-One important decision followed naturally: I temporarily froze the **canonical channel surface** used for formula generation.
+### Reframing the architecture: model specialization
 
-Instead of continuously expanding the canonical dictionary in real time, I selected a **stable subset of canonical channels** sufficient to generate meaningful formulas — combinations of signals that can be assembled into bundles.
+The conclusion is not “Qwen doesn’t work”.  
+The conclusion is: **one model cannot do everything well**.
 
-This serves two purposes:
+Pitgun now follows a clearer separation of responsibilities:
 
-1. It keeps formula generation deterministic and testable.
-2. It decouples bundle production from the long-running task of canonical database expansion.
+- **Large hosted models (GPT / Gemini)**  
+  Used for high-level reasoning tasks:
+  - building and evolving the canonical channel index,
+  - reasoning across domains and historical constraints,
+  - ensuring semantic consistency at scale.
 
-The population of the full canonical database continues in the background. It is no longer a blocking step. Right now, the selected canonical set is “good enough” — and that is exactly the point.
+- **Local models (Qwen via MLX)**  
+  Used for bounded, mechanical tasks:
+  - generating AST JSON from well-defined inputs,
+  - expanding formulas once the canonical surface is fixed,
+  - enabling offline or quota-free workflows.
 
-### A quiet but structural shift
+This is no longer about replacing cloud inference. It is about **assigning the right cognitive weight to the right model**.
 
-Switching from Gemini to Qwen was not just a tooling change. It marked a transition from experimentation to **ownership**.
+### A more realistic form of autonomy
 
-Pitgun no longer assumes infinite cloud inference. It assumes constrained environments, local execution, and explicit trade-offs. Ironically, those constraints made the system clearer, cleaner, and easier to reason about.
+True autonomy is not running everything locally.  
+It is knowing **what must remain centralized and context-heavy**, and **what can be pushed to the edge**.
 
-This chapter is not about abandoning hosted AI.  
-It is about **earning the right not to depend on it**.
+Qwen stays in the loop — but as a specialist, not as a generalist. Hosted models remain essential — not as crutches, but as the only tools capable of sustaining the semantic coherence Pitgun requires.
 
-The next steps will focus on tightening validation around locally generated ASTs and progressively increasing the share of inference handled off-cloud. Not because it is fashionable — but because it aligns with what Pitgun is becoming: a serious, autonomous framework, built to last.
+This chapter marks a shift from “can we do it locally?” to a more mature question:
+
+> *Which parts of the system deserve global intelligence, and which only need local execution?*
+
+That distinction will shape the next iterations of Pitgun far more than the choice of any single model.
+
+## 13 - Segment aggregation (window-by-key)
+
+Pitgun now supports segment/window aggregation driven by a *segment key* channel. The feature is domain-agnostic: the key can represent laps, auction IDs, trade IDs, session IDs, minute buckets, etc.
+
+### Why
+- Needed per-segment metrics (avg/max/min/stddev/count/sum) without baking “lap” into the core.
+- Keep segmentation in the pipeline manifest (runtime orchestration), not in analysis/bolt manifests, to avoid semantic duplication.
+
+### Semantics
+- The `segment_key` channel is treated as a scalar that must stay constant inside a segment. Any change (increase or decrease) closes the current segment and starts a new one.
+- Metrics are computed with Welford’s online algorithm (population stddev). `stddev` is `0.0` for a single sample.
+- Non-finite values (NaN/±inf) on either the key channel or any target are skipped with a warning; targets with no samples in a segment return `count=0` and `null` for the other metrics.
+- `start_ts_ns`/`end_ts_ns` track the earliest/latest timestamps seen for the segment.
+- `emit_on_change` controls whether a segment is emitted immediately when the key changes. `emit_last_segment_on_eof` flushes any open segment when the source marks `end_of_stream` (file-based sources, tests, or controlled replay).
+
+### Minimal manifest snippet
+```yaml
+- type: segment_aggregate
+  segment_key: "segment_id_channel"
+  targets:
+    - channel: "value_channel"
+      metrics: ["mean", "max", "min", "stddev", "count", "sum"]
+  emit_on_change: true
+  emit_last_segment_on_eof: true
+```
+
+### Motorsport example (NLap + nEngine)
+`examples/manifests/pipeline/segment_aggregate_engine.yaml` configures:
+```yaml
+- type: segment_aggregate
+  segment_key: "NLap"
+  targets:
+    - channel: "nEngine"
+      metrics: ["count", "min", "max", "mean", "sum", "stddev"]
+```
+
+Quick demo with the synthetic replay:
+```bash
+cargo run -p pitgun-emulator -- \
+  --target 127.0.0.1:5001 \
+  --input NLap=datasets/synthetic/NLap-demo.csv \
+  --input nEngine=datasets/synthetic/nEngine-demo.csv \
+  --pace
+
+cargo run -p pitgun-cli -- subscribe \
+  --bind 127.0.0.1:5001 \
+  --config examples/manifests/pipeline/segment_aggregate_engine.yaml
+```
+Console output will emit one JSON line per segment with the segment key, start/end timestamps, and the requested metrics.
+
+### HFT-style example
+```yaml
+- type: segment_aggregate
+  segment_key: "auction_id"
+  targets:
+    - channel: "last_price"
+      metrics: ["mean", "max", "min", "stddev", "count"]
+    - channel: "size"
+      metrics: ["sum", "count"]
+  emit_on_change: true
+  emit_last_segment_on_eof: true
+```
+
+### Testing notes
+- Synthetic regression: key sequence `1,1,1,2,2,3` with values `1000…6000` → three aggregates with expected mean/stddev (population).
+- Unit coverage lives in the processor module; integration test spans multiple batches.
+
+### Integration notes
+- Aggregates are printed by the console sink before raw events; if you only want aggregates, add a flag/filter later to suppress events.
+- Segment timestamps derive from first/last event seen in that segment.
+
+### Open items
+- Optional time-based flush for long-running segments that don’t change keys.
+- Multi-target examples across domains (e.g., price/size per auction in HFT) to broaden docs.
+- Sink-specific formatting (CSV/Parquet) for aggregates when new sinks arrive.

@@ -1,64 +1,24 @@
-# yaml-language-server: $schema=https://pitgun.io/schemas/analysis-manifest/v1
+# yaml-language-server: $schema=https://pitgun.io/schemas/analysis-manifest/v2
+manifest_version: 2
 
-manifest_version: 1
+analysis:
+  id: engine_health_v1
+  description: "Engine health analysis using Power Unit bundle."
+  domain: motorsport
 
-run:
-  id: "2025_bahrain_fp2_car_02"
-  domain: "motorsport"
-  environment: "backtest"
+datasets:
+  - id: live_udp
+    kind: stream
 
-entities:
-  - id: "A525-02"
-    roles: ["primary"]
+plan:
+  - use_bundle:
+      name: power-unit-health
+      version: "1.0.0"
+      bolts:
+        - id: engine_stress_index
+          params:
+            rpm_min: 8000
+            rpm_max: 18000
 
-input:
-  mode: "historical"
-  datasets:
-    - id: "main_ts"
-      kind: "timeseries"
-      storage:
-        format: "parquet"
-        location: "datasets/2025/bahrain/fp2/A525-02.parquet"
-      channels:
-        - engine_speed
-        - throttle
-        - gear
-        - oil_temp
-        - water_temp
-        - speed
-        - brake_pressure
-
-segmentation:
-  primary:
-    type: time_window
-    size_ms: 1000
-    step_ms: 1000
-
-  secondary:
-    type: event_window
-    event_channel: lap_trigger
-
-bundles:
-  - name: engine_health
-    version: "1.0.0"
-    target:
-      entity: "A525-02"
-      dataset: "main_ts"
-      segmentation: "primary"
-    params:
-      rpm_warning_threshold: 17000
-      cooling_delta_threshold: 8.0
-
-  - name: driver_shift_style
-    version: "0.3.0"
-    target:
-      entity: "A525-02"
-      dataset: "main_ts"
-      segmentation: "secondary"
-    params:
-      upshift_rpm_min: 11500
-      upshift_rpm_max: 12800
-
-output:
-  format: parquet
-  location: "results/2025/bahrain/fp2/A525-02/engine-analysis/"
+outputs:
+  - engine_stress_index
