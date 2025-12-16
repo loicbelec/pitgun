@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=https://pitgun.io/schemas/bolt-manifest/v1
+manifest_version: 1
+
+bolt:
+  id: engine_stress_index
+  description: "Compute a normalized engine stress index from engine speed and throttle."
+  ast: "engine_stress_index.ast.json"
+
+  inputs:
+    - nEngine
+    - Throttle
+
+  output: engine_stress_index
+
+  params:
+    rpm_min: 8000
+    rpm_max: 18000
+
+  tags:
+    - motorsport
+    - power_unit
+    - stress
+    - safety

@@ -1,0 +1,63 @@
+# yaml-language-server: $schema=https://pitgun.io/schemas/analysis-manifest/v1
+
+manifest_version: 1
+
+run:
+  id: "nasdaq_2025_12_05"
+  domain: "finance"
+  environment: "backtest"
+
+entities:
+  - id: "AAPL"
+    roles: ["instrument"]
+
+input:
+  mode: "historical"
+  datasets:
+    - id: "orderflow"
+      kind: "orderbook"
+      storage:
+        format: "parquet"
+        location: "datasets/nasdaq/2025-12-05/AAPL_orderflow.parquet"
+      channels:
+        - best_bid
+        - best_ask
+        - last_price
+        - bid_size
+        - ask_size
+        - trade_size
+
+segmentation:
+  primary:
+    type: time_window
+    size_ms: 200
+    step_ms: 200
+
+  secondary:
+    type: event_window
+    event_channel: auction_open
+
+bundles:
+  - name: microstructure_volatility
+    version: "1.0.0"
+    target:
+      entity: "AAPL"
+      dataset: "orderflow"
+      segmentation: "primary"
+    params:
+      window_ms: 200
+      zscore_threshold: 4.0
+
+  - name: anomaly_detection
+    version: "0.2.0"
+    target:
+      entity: "AAPL"
+      dataset: "orderflow"
+      segmentation: "primary"
+    params:
+      min_points: 50
+      zscore_threshold: 5.0
+
+output:
+  format: parquet
+  location: "results/nasdaq/2025-12-05/AAPL/micro-volatility/"

@@ -7,6 +7,17 @@ cargo run --bin pitgun-emulator -- \
   --input rThrottleR=datasets/telemetry/Controller-rThrottleR.csv \
   --pace
 
+## Segment aggregation demo (NLap + nEngine)
+cargo run -p pitgun-emulator --release -- \
+  --target 127.0.0.1:5001 \
+  --input NLap=datasets/synthetic/NLap-demo.csv \
+  --input nEngine=datasets/synthetic/nEngine-demo.csv \
+  --pace
+
+cargo run -p pitgun-cli -- subscribe \
+  --bind 127.0.0.1:5001 \
+  --config examples/manifests/pipeline/segment_aggregate_engine.yaml
+
 ## Python emulator receiver
 python scripts/recv_pitgun.py       
 
@@ -29,3 +40,16 @@ cargo run -p pitgun-emulator --release -- \
   --input Chassis-FPushRodRR=datasets/telemetry/Chassis-FPushRodRR.csv \
   --input Chassis-FPushRodRL=datasets/telemetry/Chassis-FPushRodRL.csv \
   --pace
+
+
+# Emulator (replays NLap and nEngine)
+cargo run -p pitgun-emulator --release -- \
+  --target 127.0.0.1:5001 \
+  --input NLap=datasets/telemetry/Chassis-NLap.csv \
+  --input nEngine=datasets/telemetry/FIA-nEngine.csv \
+  --pace
+
+# CLI
+  cargo run -p pitgun-cli -- subscribe \
+  --bind 127.0.0.1:5001 \
+  --config examples/manifests/pipeline/segment_aggregate_engine.yaml

@@ -1,0 +1,14 @@
+{
+  "type": "Mul",
+  "left": {
+    "type": "Normalize",
+    "value": { "type": "Ref", "name": "engine_speed" },
+    "min": 8000,
+    "max": 18000
+  },
+  "right": {
+    "type": "Weight",
+    "value": { "type": "Ref", "name": "throttle" },
+    "factor": 0.3
+  }
+}

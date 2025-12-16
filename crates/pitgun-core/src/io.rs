@@ -100,7 +100,11 @@ impl Source for UdpSource {
                     if self.should_flush() && !self.pending.is_empty() {
                         self.last_flush = Instant::now();
                         let events = std::mem::take(&mut self.pending);
-                        return Some(EventBatch { events });
+                        return Some(EventBatch {
+                            events,
+                            aggregates: Vec::new(),
+                            end_of_stream: false,
+                        });
                     }
                 }
                 Err(err) => {
@@ -287,6 +291,13 @@ impl ConsoleSink {
 
 impl Sink for ConsoleSink {
     fn write(&mut self, batch: &EventBatch) {
+        for aggregate in &batch.aggregates {
+            match serde_json::to_string(aggregate) {
+                Ok(json) => println!("{json}"),
+                Err(err) => eprintln!("pitgun-core: failed to print aggregate: {err}"),
+            }
+        }
+
         if !self.print_events {
             return;
         }

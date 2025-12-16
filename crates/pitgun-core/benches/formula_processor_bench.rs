@@ -49,7 +49,11 @@ impl Fixtures {
             events.push(self.n_engine[i].clone());
             events.push(self.throttle[i].clone());
         }
-        EventBatch { events }
+        EventBatch {
+            events,
+            aggregates: Vec::new(),
+            end_of_stream: false,
+        }
     }
 }
 

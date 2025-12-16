@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pitgun.io/schemas/bolt-manifest/v1",
+  "title": "Pitgun Bolt Manifest v1",
+  "type": "object",
+  "additionalProperties": false,
+
+  "required": ["manifest_version", "bolt"],
+  "properties": {
+    "manifest_version": {
+      "type": "integer",
+      "enum": [1]
+    },
+
+    "bolt": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "ast"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Bolt/formula identifier"
+        },
+
+        "description": {
+          "type": "string",
+          "description": "Human-readable description of the bolt"
+        },
+
+        "ast": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Relative path to the AST JSON file"
+        },
+
+        "inputs": {
+          "type": "array",
+          "items": { "type": "string" },
+          "uniqueItems": true,
+          "description": "Channels or metrics required for this bolt"
+        },
+
+        "output": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Name of the generated metric"
+        },
+
+        "params": {
+          "type": "object",
+          "description": "Optional bolt-level parameters (key/value)",
+          "additionalProperties": true
+        },
+
+        "tags": {
+          "type": "array",
+          "items": { "type": "string" },
+          "uniqueItems": true,
+          "description": "Optional tags for discovery / registry"
+        }
+      }
+    }
+  }
+}
