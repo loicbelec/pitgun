@@ -145,11 +145,11 @@ impl SegmentAggregateProcessor {
             return;
         }
 
-        if let Some(state) = &self.current {
-            if value != state.key_value {
-                self.start_new_segment(value, ts, batch);
-                return;
-            }
+        if let Some(state) = &self.current
+            && value != state.key_value
+        {
+            self.start_new_segment(value, ts, batch);
+            return;
         }
 
         match self.current.as_mut() {
