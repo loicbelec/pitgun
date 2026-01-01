@@ -3,6 +3,7 @@ members = [
     "crates/pitgun-core",
     "crates/pitgun-cli",
     "crates/pitgun-emulator",
+    "crates/pitgun-telemetryd",
 ]
 resolver = "2"
 
