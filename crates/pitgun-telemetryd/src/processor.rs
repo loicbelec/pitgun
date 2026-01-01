@@ -20,14 +20,17 @@ pub struct IngestMetadata {
     pub user_agent: Option<String>,
 }
 
+#[derive(Debug)]
 pub struct IngestMessage {
+    pub session_id: Option<String>,
+    pub sent_at_ms: Option<i64>,
     pub batch: EventBatch,
     pub meta: IngestMetadata,
 }
 
 #[async_trait]
 pub trait TelemetryProcessor: Send + Sync {
-    async fn process(&self, batch: EventBatch, meta: IngestMetadata) -> anyhow::Result<()>;
+    async fn process(&self, msg: IngestMessage) -> anyhow::Result<()>;
 }
 
 pub struct DefaultProcessor {
@@ -43,8 +46,8 @@ impl DefaultProcessor {
 
 #[async_trait]
 impl TelemetryProcessor for DefaultProcessor {
-    async fn process(&self, batch: EventBatch, meta: IngestMetadata) -> anyhow::Result<()> {
-        self.writer.append(batch, meta).await?;
+    async fn process(&self, msg: IngestMessage) -> anyhow::Result<()> {
+        self.writer.append(msg).await?;
 
         // TODO: forward to Pitgun pipeline entrypoint when available.
 
@@ -67,6 +70,8 @@ struct Envelope {
     received_at_ms: u64,
     remote_ip: Option<String>,
     user_agent: Option<String>,
+    session_id: Option<String>,
+    sent_at_ms: Option<i64>,
     batch: EventBatchDto,
 }
 
@@ -86,7 +91,7 @@ impl NdjsonWriter {
         })
     }
 
-    async fn append(&self, batch: EventBatch, meta: IngestMetadata) -> anyhow::Result<()> {
+    async fn append(&self, msg: IngestMessage) -> anyhow::Result<()> {
         let mut guard = self.inner.lock().await;
         let now = time::OffsetDateTime::now_utc();
 
@@ -99,9 +104,11 @@ impl NdjsonWriter {
         let timestamp_ms = (now.unix_timestamp_nanos() / 1_000_000).max(0_i128) as u64;
         let envelope = Envelope {
             received_at_ms: timestamp_ms,
-            remote_ip: meta.remote_ip,
-            user_agent: meta.user_agent,
-            batch: EventBatchDto::from(&batch),
+            remote_ip: msg.meta.remote_ip,
+            user_agent: msg.meta.user_agent,
+            session_id: msg.session_id,
+            sent_at_ms: msg.sent_at_ms,
+            batch: EventBatchDto::from(&msg.batch),
         };
 
         let line = serde_json::to_vec(&envelope)?;

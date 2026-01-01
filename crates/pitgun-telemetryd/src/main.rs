@@ -107,7 +107,7 @@ async fn process_queue<P: TelemetryProcessor + 'static>(
     mut rx: mpsc::Receiver<IngestMessage>,
 ) {
     while let Some(msg) = rx.recv().await {
-        if let Err(err) = processor.process(msg.batch, msg.meta).await {
+        if let Err(err) = processor.process(msg).await {
             error!(?err, "failed to process telemetry batch");
         }
     }
@@ -125,15 +125,15 @@ async fn beacon(
     headers: HeaderMap,
     body: Bytes,
 ) -> impl IntoResponse {
-    match json::deserialize_event_batch(&body) {
-        Ok(batch) => {
+    match json::deserialize_session_envelope(&body) {
+        Ok(envelope) => {
             let meta = build_metadata(&headers, peer);
-            enqueue_batch(&state, batch, meta);
-            StatusCode::ACCEPTED
+            enqueue_envelope(&state, envelope, meta);
+            StatusCode::ACCEPTED.into_response()
         }
         Err(err) => {
             warn!(?err, "failed to decode beacon payload");
-            StatusCode::BAD_REQUEST
+            (StatusCode::BAD_REQUEST, err.to_string()).into_response()
         }
     }
 }
@@ -153,12 +153,12 @@ async fn handle_socket(socket: WebSocket, state: AppState, meta: IngestMetadata)
 
     while let Some(message) = socket.recv().await {
         match message {
-            Ok(Message::Text(text)) => match json::deserialize_event_batch(text.as_bytes()) {
-                Ok(batch) => enqueue_batch(&state, batch, meta.clone()),
+            Ok(Message::Text(text)) => match json::deserialize_session_envelope(text.as_bytes()) {
+                Ok(envelope) => enqueue_envelope(&state, envelope, meta.clone()),
                 Err(err) => warn!(?err, "invalid JSON payload over websocket"),
             },
             Ok(Message::Binary(bytes)) => match proto::decode_event_batch(&bytes) {
-                Ok(batch) => enqueue_batch(&state, batch, meta.clone()),
+                Ok(batch) => enqueue_protobuf_batch(&state, batch, meta.clone()),
                 Err(err) => warn!(?err, "invalid protobuf payload over websocket"),
             },
             Ok(Message::Ping(payload)) => {
@@ -179,8 +179,35 @@ async fn handle_socket(socket: WebSocket, state: AppState, meta: IngestMetadata)
     info!("websocket connection closed");
 }
 
-fn enqueue_batch(state: &AppState, batch: EventBatch, meta: IngestMetadata) {
-    match state.tx.try_send(IngestMessage { batch, meta }) {
+fn enqueue_envelope(state: &AppState, envelope: json::SessionEnvelopeIn, meta: IngestMetadata) {
+    debug_assert_eq!(
+        envelope.schema_version,
+        json::SESSION_ENVELOPE_SCHEMA_VERSION
+    );
+
+    let msg = IngestMessage {
+        session_id: Some(envelope.session_id),
+        sent_at_ms: envelope.sent_at_ms,
+        batch: envelope.batch,
+        meta,
+    };
+
+    enqueue_message(state, msg);
+}
+
+fn enqueue_protobuf_batch(state: &AppState, batch: EventBatch, meta: IngestMetadata) {
+    let msg = IngestMessage {
+        session_id: None,
+        sent_at_ms: None,
+        batch,
+        meta,
+    };
+
+    enqueue_message(state, msg);
+}
+
+fn enqueue_message(state: &AppState, msg: IngestMessage) {
+    match state.tx.try_send(msg) {
         Ok(_) => {}
         Err(TrySendError::Full(_)) => {
             warn!("ingestion queue full; dropping batch");
