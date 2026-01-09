@@ -9,9 +9,17 @@ Telemetry ingestion daemon that sits behind Caddy (`telemetry.pitgun.com` -> `12
 
 ## Configuration
 - `PITGUN_TELEMETRY_BIND` (default `127.0.0.1:8080`) – bind address; must stay on loopback.
+- `PITGUN_TELEMETRY_ALLOW_NON_LOOPBACK` (default disabled) – set to `1` or `true` to allow non-loopback bind (e.g., Docker/Traefik); logs a warning and disables the safety guard.
 - `PITGUN_TELEMETRY_DATA_DIR` (default `/opt/pitgun/telemetry/data`) – NDJSON sink root.
 - `RUST_LOG` – tracing filter, e.g. `info,axum=info`.
 - Enable protobuf decoding with `--features protobuf` when building.
+
+Example for containerized deployments (bind on all interfaces behind Traefik):
+```bash
+PITGUN_TELEMETRY_BIND=0.0.0.0:8080 \
+PITGUN_TELEMETRY_ALLOW_NON_LOOPBACK=1 \
+cargo run -p pitgun-telemetryd --release
+```
 
 ## Local checks
 ```bash

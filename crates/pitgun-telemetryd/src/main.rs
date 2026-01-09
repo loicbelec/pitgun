@@ -33,6 +33,28 @@ struct AppState {
     tx: mpsc::Sender<IngestMessage>,
 }
 
+fn allow_non_loopback_enabled(raw: Option<String>) -> bool {
+    raw.map(|value| value == "1" || value.eq_ignore_ascii_case("true"))
+        .unwrap_or(false)
+}
+
+fn validate_bind_addr(addr: SocketAddr, allow_non_loopback: bool) -> anyhow::Result<()> {
+    if !addr.ip().is_loopback() {
+        if allow_non_loopback {
+            warn!(
+                bind = %addr,
+                "allowing non-loopback bind; PITGUN_TELEMETRY_ALLOW_NON_LOOPBACK is set and the loopback safety guard is disabled"
+            );
+        } else {
+            anyhow::bail!(
+                "pitgun-telemetryd must bind to a loopback address unless PITGUN_TELEMETRY_ALLOW_NON_LOOPBACK=1 is set; got {addr}"
+            );
+        }
+    }
+
+    Ok(())
+}
+
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     let log_filter = tracing_subscriber::EnvFilter::try_from_default_env()
@@ -44,14 +66,14 @@ async fn main() -> anyhow::Result<()> {
         std::env::var("PITGUN_TELEMETRY_BIND").unwrap_or_else(|_| DEFAULT_BIND_ADDR.to_string());
     let data_dir =
         std::env::var("PITGUN_TELEMETRY_DATA_DIR").unwrap_or_else(|_| DEFAULT_DATA_DIR.to_string());
+    let allow_non_loopback =
+        allow_non_loopback_enabled(std::env::var("PITGUN_TELEMETRY_ALLOW_NON_LOOPBACK").ok());
 
     let addr: SocketAddr = bind_addr
         .parse()
         .map_err(|err| anyhow::anyhow!("invalid PITGUN_TELEMETRY_BIND: {err}"))?;
 
-    if !addr.ip().is_loopback() {
-        anyhow::bail!("pitgun-telemetryd must bind to a loopback address; got {addr}");
-    }
+    validate_bind_addr(addr, allow_non_loopback)?;
 
     let processor = Arc::new(DefaultProcessor::new(&data_dir).await?);
     let (tx, rx) = mpsc::channel(INGEST_QUEUE_SIZE);
@@ -243,5 +265,36 @@ fn build_metadata(headers: &HeaderMap, peer: SocketAddr) -> IngestMetadata {
     IngestMetadata {
         remote_ip,
         user_agent,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{allow_non_loopback_enabled, validate_bind_addr};
+    use std::net::SocketAddr;
+
+    #[test]
+    fn non_loopback_fails_without_flag() {
+        let addr: SocketAddr = "0.0.0.0:8080".parse().unwrap();
+        let err = validate_bind_addr(addr, false).unwrap_err();
+
+        assert_eq!(
+            err.to_string(),
+            "pitgun-telemetryd must bind to a loopback address unless PITGUN_TELEMETRY_ALLOW_NON_LOOPBACK=1 is set; got 0.0.0.0:8080"
+        );
+    }
+
+    #[test]
+    fn non_loopback_allowed_with_flag() {
+        let addr: SocketAddr = "0.0.0.0:8080".parse().unwrap();
+        assert!(validate_bind_addr(addr, true).is_ok());
+    }
+
+    #[test]
+    fn parses_allow_non_loopback_values() {
+        assert!(allow_non_loopback_enabled(Some("1".to_string())));
+        assert!(allow_non_loopback_enabled(Some("TRUE".to_string())));
+        assert!(!allow_non_loopback_enabled(Some("yes".to_string())));
+        assert!(!allow_non_loopback_enabled(None));
     }
 }
