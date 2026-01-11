@@ -1,10 +1,13 @@
 use anyhow::Result;
 use clap::{Parser, Subcommand, ValueEnum};
+use pitgun_codec_udp::UdpWireFormat;
 use pitgun_core::{
     ChannelFilterProcessor, ConsoleSink, Expr, FormulaProcessor, Pipeline, Processor,
-    ScaleProcessor, SegmentAggregateProcessor, SegmentMetric, SegmentTarget, Sink, StatsProcessor,
-    UdpSource,
+    ScaleProcessor, SegmentAggregateProcessor, SegmentMetric, SegmentTarget, Sink, Source,
+    StatsProcessor,
 };
+use pitgun_source_udp::UdpSource;
+use pitgun_source_ws::WsSource;
 
 mod manifest;
 mod sinks;
@@ -24,7 +27,8 @@ enum Cmd {
 
 #[derive(ValueEnum, Clone, Debug)]
 enum Transport {
-    Udp, /*, Grpc, Kafka */
+    Udp,
+    Ws, /*, Grpc, Kafka */
 }
 
 #[derive(clap::Args, Debug)]
@@ -49,6 +53,10 @@ struct SubscribeArgs {
     #[arg(long, default_value_t = 1)]
     stats_interval: u64,
 
+    /// WebSocket URL (e.g. ws://127.0.0.1:8080/ws)
+    #[arg(long, value_name = "URL")]
+    ws_url: Option<String>,
+
     /// Optional directory to write per-channel CSV recording
     #[arg(long)]
     write_csv: Option<std::path::PathBuf>,
@@ -64,6 +72,22 @@ struct SubscribeArgs {
     /// Optional YAML manifest controlling the pipeline
     #[arg(long)]
     config: Option<std::path::PathBuf>,
+}
+
+type UdpV1Source = UdpSource<UdpWireFormat>;
+
+enum SubscribeSource {
+    Udp(UdpV1Source),
+    Ws(WsSource),
+}
+
+impl Source for SubscribeSource {
+    fn next_batch(&mut self) -> Option<pitgun_core::EventBatch> {
+        match self {
+            SubscribeSource::Udp(source) => source.next_batch(),
+            SubscribeSource::Ws(source) => source.next_batch(),
+        }
+    }
 }
 
 fn main() -> Result<()> {
@@ -89,9 +113,25 @@ fn run_subscribe(args: SubscribeArgs) -> Result<()> {
         }
     }
 
-    let bind: std::net::SocketAddr = args.bind.parse()?;
     let source = match args.transport {
-        Transport::Udp => UdpSource::new(bind, args.mcast, args.iface, 1024, 50_000_000)?,
+        Transport::Udp => {
+            let bind: std::net::SocketAddr = args.bind.parse()?;
+            SubscribeSource::Udp(UdpSource::new(
+                bind,
+                args.mcast,
+                args.iface,
+                1024,
+                50_000_000,
+                UdpWireFormat::PitgunV1,
+            )?)
+        }
+        Transport::Ws => {
+            let url = args.ws_url.as_deref().unwrap_or_else(|| {
+                eprintln!("--ws-url is required when --transport ws is set");
+                std::process::exit(1);
+            });
+            SubscribeSource::Ws(WsSource::connect(url)?)
+        }
     };
 
     let processors: Vec<Box<dyn Processor>> = vec![
@@ -116,7 +156,9 @@ fn run_subscribe(args: SubscribeArgs) -> Result<()> {
     }
 }
 
-fn build_pipeline_from_manifest(manifest: manifest::Manifest) -> Pipeline<UdpSource, ConsoleSink> {
+fn build_pipeline_from_manifest(
+    manifest: manifest::Manifest,
+) -> Pipeline<UdpV1Source, ConsoleSink> {
     let source = match manifest.source.r#type.as_str() {
         "udp" => {
             let addr = format!("{}:{}", manifest.source.bind_addr, manifest.source.port);
@@ -133,6 +175,7 @@ fn build_pipeline_from_manifest(manifest: manifest::Manifest) -> Pipeline<UdpSou
                 std::net::Ipv4Addr::UNSPECIFIED,
                 1024,
                 50_000_000,
+                UdpWireFormat::PitgunV1,
             ) {
                 Ok(source) => source,
                 Err(err) => {

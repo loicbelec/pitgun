@@ -1,0 +1,11 @@
+[package]
+name = "pitgun-source-ws"
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+
+[dependencies]
+pitgun-core = { path = "../pitgun-core" }
+pitgun-codec-json = { path = "../pitgun-codec-json" }
+tungstenite = "0.21"
+url = "2"

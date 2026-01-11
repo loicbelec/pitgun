@@ -6,10 +6,16 @@ Pitgun is a modular Rust workspace for telemetry and high-frequency data process
 ## ⚠️ WARNING
  This repository is **under active development**. Interfaces may change.
 
-## 🧱 Crates
+## 🧱 Framework crates
 - **pitgun-core**: core library with domain types, parsers, processors, and sinks
-- **pitgun-cli**: command-line interface to ingest, transform, and export telemetry data (manifest-driven or flags)
+- **pitgun-codec-udp**: Pitgun UDP v1 decoding
+- **pitgun-source-udp**: UDP transport source (codec-agnostic)
+- **pitgun-codec-json**: SessionEnvelope JSON codec
+- **pitgun-source-ws**: WebSocket client source
 - **pitgun-emulator**: UDP emitter that replays CSV datasets (multi-channel) with optional pacing
+
+## 🧰 Apps
+- **pitgun-cli**: command-line interface to ingest, transform, and export telemetry data (manifest-driven or flags)
 
 ## ⚙️ Current features
 - Emit UDP packets from CSV datasets (`Timestamp, ChannelValue`) at configurable pace (real-time or as fast as possible)

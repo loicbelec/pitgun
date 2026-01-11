@@ -1,12 +1,17 @@
 [workspace]
 members = [
     "crates/*",
+    "apps/*",
     "services/*",
 ]
 default-members = [
     "crates/pitgun-core",
+    "crates/pitgun-codec-udp",
+    "crates/pitgun-source-udp",
+    "crates/pitgun-codec-json",
+    "crates/pitgun-source-ws",
     "crates/pitgun-emulator",
-    "crates/pitgun-cli",
+    "apps/pitgun-cli",
 ]
 resolver = "2"
 
