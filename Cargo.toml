@@ -1,9 +1,12 @@
 [workspace]
 members = [
+    "crates/*",
+    "services/*",
+]
+default-members = [
     "crates/pitgun-core",
-    "crates/pitgun-cli",
     "crates/pitgun-emulator",
-    "crates/pitgun-telemetryd",
+    "crates/pitgun-cli",
 ]
 resolver = "2"
 
