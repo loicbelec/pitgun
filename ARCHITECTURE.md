@@ -98,6 +98,9 @@ pitgun/
     pitgun-cli/        # CLI for running manifests locally
     pitgun-emulator/   # dataset playback and synthetic channels (optional)
     pitgun-registry/   # local view of bundles & bolts (optional / future)
+  services/
+    pitgun-telemetryd/ # telemetry ingestion service (reference implementation)
+    pitgun-configd/    # config authority service (reference implementation)
   examples/
     manifests/
       pipeline/
@@ -132,6 +135,11 @@ Responsibilities:
 -  Load recorded datasets (CSV, Parquet…).
 -  Replay them at configurable speed (real-time, xN, as-fast-as-possible).
 -  Provide synthetic/sandbox channels to test formulas and manifests locally.
+
+### 4.4 Services (reference implementations)
+
+Deployable binaries live under `services/`, separate from reusable crates. These
+are intentionally thin wrappers around `pitgun-core` and future APIs.
 
 ## 5. Canonical Dictionary & SAT JSON
 

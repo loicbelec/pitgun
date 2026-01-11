@@ -13,7 +13,7 @@ protobuf = ["prost"]
 anyhow = "1"
 async-trait = "0.1"
 axum = { version = "0.7", features = ["ws"] }
-pitgun-core = { path = "../pitgun-core" }
+pitgun-core = { path = "../../crates/pitgun-core" }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 time = { version = "0.3", features = ["formatting", "macros"] }
