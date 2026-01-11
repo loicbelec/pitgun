@@ -100,7 +100,11 @@ impl Source for UdpSource {
                     if self.should_flush() && !self.pending.is_empty() {
                         self.last_flush = Instant::now();
                         let events = std::mem::take(&mut self.pending);
-                        return Some(EventBatch { events });
+                        return Some(EventBatch {
+                            events,
+                            aggregates: Vec::new(),
+                            end_of_stream: false,
+                        });
                     }
                 }
                 Err(err) => {
@@ -197,10 +201,11 @@ impl Processor for StatsProcessor {
         for event in &batch.events {
             batch_total += 1;
             *self.per_channel.entry(event.channel.clone()).or_default() += 1;
-            if let Some(prev) = self.last_ts.insert(event.channel.clone(), event.ts_ns)
-                && event.ts_ns <= prev
-            {
-                self.gaps += 1;
+            #[allow(clippy::collapsible_if)]
+            if let Some(prev) = self.last_ts.insert(event.channel.clone(), event.ts_ns) {
+                if event.ts_ns <= prev {
+                    self.gaps += 1;
+                }
             }
         }
         self.total += batch_total;
@@ -287,6 +292,13 @@ impl ConsoleSink {
 
 impl Sink for ConsoleSink {
     fn write(&mut self, batch: &EventBatch) {
+        for aggregate in &batch.aggregates {
+            match serde_json::to_string(aggregate) {
+                Ok(json) => println!("{json}"),
+                Err(err) => eprintln!("pitgun-core: failed to print aggregate: {err}"),
+            }
+        }
+
         if !self.print_events {
             return;
         }

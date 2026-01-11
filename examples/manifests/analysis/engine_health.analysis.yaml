@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=https://pitgun.io/schemas/analysis-manifest/v2
+manifest_version: 2
+
+analysis:
+  id: engine_health_v1
+  description: "Engine health analysis using Power Unit bundle."
+  domain: motorsport
+
+datasets:
+  - id: live_udp
+    kind: stream
+
+plan:
+  - use_bundle:
+      name: power-unit-health
+      version: "1.0.0"
+      bolts:
+        - id: engine_stress_index
+          params:
+            rpm_min: 8000
+            rpm_max: 18000
+
+outputs:
+  - engine_stress_index

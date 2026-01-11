@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=https://pitgun.io/schemas/bundle-manifest/v1
+manifest_version: 1
+
+bundle:
+  name: "power-unit-health"
+  version: "1.0.0"
+  description: "Motorsport power unit health signals (stress, cooling, limits)."
+  tags:
+    - motorsport
+    - telemetry
+    - power_unit
+
+bolts:
+  - id: engine_stress_index
+    ast: "engine_stress_index.ast.json"
+    inputs:
+      - nEngine
+      - Throttle
+    output: engine_stress_index
+    params:
+      rpm_min: 8000
+      rpm_max: 18000

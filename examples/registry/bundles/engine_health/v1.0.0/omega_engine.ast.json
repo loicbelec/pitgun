@@ -1,0 +1,19 @@
+{
+  "BinaryOp": {
+    "op": "Div",
+    "left": {
+      "BinaryOp": {
+        "op": "Mul",
+        "left": {
+          "BinaryOp": {
+            "op": "Mul",
+            "left": { "Var": "nEngine" },
+            "right": { "Literal": 2.0 }
+          }
+        },
+        "right": { "Literal": 3.141592653589793 }
+      }
+    },
+    "right": { "Literal": 60.0 }
+  }
+}

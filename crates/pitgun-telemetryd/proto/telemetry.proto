@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package telemetry;
+
+message Event {
+  string channel = 1;
+  uint64 ts_ns = 2;
+  double value = 3;
+}
+
+message EventBatch {
+  repeated Event events = 1;
+  bool end_of_stream = 2;
+}

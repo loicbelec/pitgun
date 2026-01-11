@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth"> <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pitgun | Modular Telemetry Framework</title>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    
+    <link rel="canonical" href="https://pitgun.io/" />
+
+    <meta name="description" content="Modular telemetry and data processing framework in Rust. High-frequency, deterministic, F1-grade pipeline for UDP, Kafka and gRPC.">
+    <meta name="keywords" content="Rust, Telemetry, Framework, UDP, Data Processing, Pipeline, Embedded, F1">
+    <meta name="author" content="Loic Belec">
+    
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://pitgun.io/">
+    <meta property="og:title" content="Pitgun | High Speed Rust Telemetry">
+    <meta property="og:description" content="Modular pipeline for high-frequency data. Build F1-grade data pipeline in Rust.">
+    <meta property="og:image" content="https://pitgun.io/pitgun_large.png">
+
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://pitgun.io/">
+    <meta property="twitter:title" content="Pitgun | High Speed Rust Telemetry">
+    <meta property="twitter:description" content="Modular pipeline for high-frequency data. Build F1-grade data pipeline in Rust.">
+    <meta property="twitter:image" content="https://pitgun.io/pitgun_large.png">
+    
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Pitgun",
+      "operatingSystem": "Cross-platform",
+      "applicationCategory": "DeveloperApplication",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "description": "Modular telemetry and data processing framework in Rust. Includes a CLI, a core library, and an emulator.",
+      "softwareRequirements": "Rust"
+    }
+    </script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Changa+One&family=Fira+Code:wght@400;600&family=Roboto+Slab:wght@400;700&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'pit-cream': '#F2E6D6',
+                        'pit-rust': '#C44D29',
+                        'pit-petrol': '#2F4858',
+                        'pit-dark': '#1A1A1A',
+                        'pit-accent': '#E5D5C0',
+                    },
+                    fontFamily: {
+                        'display': ['"Changa One"', 'cursive'],
+                        'body': ['"Roboto Slab"', 'serif'],
+                        'mono': ['"Fira Code"', 'monospace'],
+                    },
+                    boxShadow: {
+                        'hard': '6px 6px 0px 0px rgba(26,26,26,1)',
+                        'hard-sm': '3px 3px 0px 0px rgba(26,26,26,1)',
+                        'hard-hover': '8px 8px 0px 0px rgba(26,26,26,1)',
+                        'hard-active': '0px 0px 0px 0px rgba(26,26,26,1)',
+                    },
+                    backgroundImage: {
+                        'tech-grid': "linear-gradient(to right, #2F485810 1px, transparent 1px), linear-gradient(to bottom, #2F485810 1px, transparent 1px)",
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Smooth Scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Base Texture */
+        body {
+            background-color: #F2E6D6;
+            position: relative;
+        }
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.08'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: -2;
+        }
+        body::after {
+            content: "";
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-size: 40px 40px;
+            background-image: linear-gradient(to right, rgba(47, 72, 88, 0.05) 1px, transparent 1px),
+                              linear-gradient(to bottom, rgba(47, 72, 88, 0.05) 1px, transparent 1px);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .text-shadow-retro {
+            text-shadow: 3px 3px 0px #F2E6D6, 6px 6px 0px #1A1A1A;
+        }
+        
+        .crt-scanline {
+            background: linear-gradient(
+                to bottom,
+                rgba(255,255,255,0),
+                rgba(255,255,255,0) 50%,
+                rgba(0,0,0,0.1) 50%,
+                rgba(0,0,0,0.1)
+            );
+            background-size: 100% 4px;
+            pointer-events: none;
+        }
+
+        @keyframes pipeline-flow {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .pipeline-track {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .pipeline-flow {
+            position: absolute;
+            top: 0; left: 0; height: 100%; width: 45%;
+            background: linear-gradient(to right, #F2E6D6, #C44D29, #F2E6D6);
+            opacity: 0.9;
+            animation: pipeline-flow 2.8s linear infinite;
+        }
+    </style>
+</head>
+<body class="text-pit-dark font-body leading-relaxed selection:bg-pit-rust selection:text-white">
+
+    <nav class="w-full py-6 px-4 md:px-8 max-w-7xl mx-auto flex flex-wrap justify-between items-center gap-y-4 border-b-2 border-pit-dark/10">
+        <div class="flex items-center gap-3 text-3xl md:text-4xl font-display uppercase tracking-wider text-pit-rust select-none drop-shadow-sm">
+            <img src="favicon.png" alt="Pitgun favicon" class="h-10 w-10">
+            <a href="index.html">Pitgun<span class="text-pit-dark">.io</span></a>
+        </div>
+        <div class="flex gap-4 items-center font-bold text-sm md:text-base font-mono">
+            <a href="docs.html" class="hover:text-pit-rust transition-colors uppercase tracking-tight decoration-2 underline-offset-4 hover:underline">Docs</a>
+            <a href="https://github.com/loicbelec/pitgun" class="bg-pit-dark text-pit-cream px-5 py-2 border-2 border-pit-dark shadow-hard-sm hover:shadow-hard hover:-translate-y-0.5 active:translate-y-1 active:shadow-hard-active transition-all">
+                GitHub
+            </a>
+        </div>
+    </nav>
+
+    <header class="max-w-7xl mx-auto px-4 md:px-8 py-16 md:py-20">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
+            <div class="space-y-6">
+                <div class="inline-block bg-pit-rust text-white text-[11px] font-bold px-3 py-1.5 uppercase tracking-[0.24em] border-2 border-pit-dark shadow-hard-sm transform -rotate-1">
+                    Rust telemetry
+                </div>
+                <h1 class="text-6xl md:text-7xl font-display uppercase leading-[0.9] text-pit-petrol text-shadow-retro">
+                    Rust telemetry<br><span class="text-pit-rust">that computes.</span>
+                </h1>
+                <p class="text-lg md:text-xl text-pit-dark/90 font-medium border-l-4 border-pit-rust pl-5 md:pl-6 py-1">
+                    Pitgun ingests telemetry from UDP, applies manifest-driven processors, and emits engineered signals in real time under F1-grade constraints.
+                </p>
+                <div class="flex flex-wrap gap-4">
+                    <a href="docs.html" class="bg-pit-rust text-white font-display uppercase tracking-wide px-6 py-3 border-2 border-pit-dark shadow-hard hover:shadow-hard-hover hover:-translate-y-1 active:translate-y-1 active:shadow-hard-active transition-all inline-flex items-center justify-center">
+                        Read Documentation
+                    </a>
+                    <a href="https://github.com/loicbelec/pitgun" class="bg-pit-cream px-6 py-3 font-bold uppercase tracking-wide border-2 border-pit-dark shadow-hard hover:shadow-hard-hover hover:-translate-y-1 active:translate-y-1 active:shadow-hard-active transition-all inline-flex items-center justify-center">
+                        View on GitHub
+                    </a>
+                </div>
+                <div class="flex flex-wrap gap-3 text-xs md:text-sm font-mono text-pit-dark/80">
+                    <span class="px-3 py-2 border-2 border-pit-dark bg-pit-cream shadow-hard-sm">UDP source</span>
+                    <span class="px-3 py-2 border-2 border-pit-dark bg-pit-cream shadow-hard-sm">Processors: channel_filter · scale · formula · stats · segment_aggregate</span>
+                    <span class="px-3 py-2 border-2 border-pit-dark bg-pit-cream shadow-hard-sm">Sinks: console JSON · CSV (CLI)</span>
+                </div>
+            </div>
+            <div class="relative">
+                <div class="absolute inset-0 rounded-full bg-pit-rust opacity-10 blur-3xl scale-95 lg:scale-100"></div>
+                <div class="relative bg-pit-petrol text-pit-cream border-4 border-pit-dark shadow-hard overflow-hidden rotate-1 hover:rotate-0 transition-transform duration-500">
+                    <div class="absolute inset-0 opacity-10" style="background-image: linear-gradient(#F2E6D6 1px, transparent 1px), linear-gradient(90deg, #F2E6D6 1px, transparent 1px); background-size: 20px 20px;"></div>
+                    <div class="relative p-6 space-y-4">
+                        <div class="flex items-center gap-3">
+                            <div class="h-10 w-10 bg-pit-cream text-pit-petrol font-display text-2xl flex items-center justify-center border-2 border-pit-dark shadow-hard-sm">PG</div>
+                            <div>
+                                <div class="text-xs uppercase tracking-[0.28em] text-pit-accent font-bold">Pipeline ready</div>
+                                <div class="text-2xl font-display uppercase">Telemetry that computes</div>
+                            </div>
+                        </div>
+                        <div class="bg-pit-dark text-pit-cream border-2 border-pit-cream/40 shadow-hard-sm p-4 font-mono text-sm leading-6">
+<span class="text-pit-rust select-none">$</span> cargo run -p pitgun-cli -- subscribe --config manifests/dummy-pitgun.yaml
+                        </div>
+                        <p class="text-sm text-pit-cream/90 leading-relaxed">
+                            Deterministic pipeline with manifest-controlled processors and JSON or CSV sinks.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <section id="toolkit" class="bg-pit-petrol border-y-4 border-pit-dark py-20 relative overflow-hidden">
+        <div class="absolute inset-0 opacity-10" style="background-image: linear-gradient(#F2E6D6 1px, transparent 1px), linear-gradient(90deg, #F2E6D6 1px, transparent 1px); background-size: 20px 20px;"></div>
+
+        <div class="max-w-7xl mx-auto px-4 md:px-8 relative z-10">
+            <div class="flex items-center justify-center mb-14 gap-4">
+                <div class="h-1 w-12 bg-pit-rust"></div>
+                <h2 class="text-pit-cream text-4xl md:text-5xl font-display uppercase tracking-wider text-center">The Toolkit</h2>
+                <div class="h-1 w-12 bg-pit-rust"></div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="bg-pit-cream border-4 border-pit-dark p-8 shadow-hard hover:shadow-hard-hover hover:-translate-y-2 transition-all duration-300 relative group overflow-hidden">
+                    <div class="absolute -right-4 -top-6 text-[120px] font-display text-pit-petrol opacity-5 select-none group-hover:text-pit-rust transition-colors">1</div>
+                    <div class="h-12 w-12 bg-pit-petrol flex items-center justify-center border-2 border-pit-dark mb-6 text-pit-cream font-mono text-xl font-bold group-hover:bg-pit-rust transition-colors">01</div>
+                    <h3 class="text-2xl font-display uppercase text-pit-petrol mb-3 border-b-2 border-pit-dark/10 pb-2">Core Library</h3>
+                    <p class="text-sm font-medium text-pit-dark/80">Trait-based pipeline with sources, processors, and sinks. Includes channel filters, scaling, statistics, and formula evaluation via AST JSON.</p>
+                </div>
+
+                <div class="bg-pit-cream border-4 border-pit-dark p-8 shadow-hard hover:shadow-hard-hover hover:-translate-y-2 transition-all duration-300 relative group overflow-hidden">
+                    <div class="absolute -right-4 -top-6 text-[120px] font-display text-pit-petrol opacity-5 select-none group-hover:text-pit-rust transition-colors">2</div>
+                    <div class="h-12 w-12 bg-pit-petrol flex items-center justify-center border-2 border-pit-dark mb-6 text-pit-cream font-mono text-xl font-bold group-hover:bg-pit-rust transition-colors">02</div>
+                    <h3 class="text-2xl font-display uppercase text-pit-petrol mb-3 border-b-2 border-pit-dark/10 pb-2">UDP Emulator</h3>
+                    <p class="text-sm font-medium text-pit-dark/80">Replay multiple CSV time series over UDP with optional pacing and multicast settings.</p>
+                </div>
+
+                <div class="bg-pit-cream border-4 border-pit-dark p-8 shadow-hard hover:shadow-hard-hover hover:-translate-y-2 transition-all duration-300 relative group overflow-hidden">
+                    <div class="absolute -right-4 -top-6 text-[120px] font-display text-pit-petrol opacity-5 select-none group-hover:text-pit-rust transition-colors">3</div>
+                    <div class="h-12 w-12 bg-pit-petrol flex items-center justify-center border-2 border-pit-dark mb-6 text-pit-cream font-mono text-xl font-bold group-hover:bg-pit-rust transition-colors">03</div>
+                    <h3 class="text-2xl font-display uppercase text-pit-petrol mb-3 border-b-2 border-pit-dark/10 pb-2">Pitgun CLI</h3>
+                    <p class="text-sm font-medium text-pit-dark/80">Subscribe to UDP streams, assemble pipelines from YAML manifests, emit derived channels, and record to console or per-channel CSV.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="pipeline" class="max-w-6xl mx-auto px-4 md:px-8 py-16">
+        <div class="bg-pit-cream border-4 border-pit-dark shadow-hard p-8 md:p-10">
+            <div class="flex items-center gap-3 mb-6">
+                <div class="h-1 w-10 bg-pit-rust"></div>
+                <h2 class="text-3xl md:text-4xl font-display uppercase text-pit-petrol">Source → Processors → Sink</h2>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="border-2 border-pit-dark bg-white p-5 shadow-hard-sm">
+                    <div class="text-xs uppercase tracking-[0.2em] text-pit-rust font-bold mb-2">Source</div>
+                    <p class="text-sm text-pit-dark/80">UDP ingest with optional multicast join, small binary frames, and bounded batching.</p>
+                </div>
+                <div class="border-2 border-pit-dark bg-white p-5 shadow-hard-sm">
+                    <div class="text-xs uppercase tracking-[0.2em] text-pit-rust font-bold mb-2">Processors</div>
+                    <p class="text-sm text-pit-dark/80">Declarative order defined in manifests.</p>
+                </div>
+                <div class="border-2 border-pit-dark bg-white p-5 shadow-hard-sm">
+                    <div class="text-xs uppercase tracking-[0.2em] text-pit-rust font-bold mb-2">Sink</div>
+                    <p class="text-sm text-pit-dark/80">Console JSON output by default; CSV recording available via CLI composite sink.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="bg-pit-dark text-pit-cream pt-16 pb-12 border-t-8 border-pit-rust relative overflow-hidden">
+        <div class="absolute bottom-0 right-0 text-[120px] leading-none font-display text-white opacity-[0.03] select-none pointer-events-none">
+            PITGUN
+        </div>
+
+        <div class="max-w-7xl mx-auto px-4 md:px-8 flex flex-col md:flex-row justify-between items-start gap-12 relative z-10">
+            <div class="flex flex-col gap-4">
+                <div class="flex items-center gap-2">
+                     <div class="h-6 w-6 bg-pit-rust rounded-full border-2 border-pit-cream"></div>
+                     <span class="font-display text-3xl tracking-widest text-pit-cream">PITGUN</span>
+                </div>
+                <p class="text-sm text-gray-500 max-w-xs">
+                    Modular telemetry for the modern age.<br>
+                    Built with 🔧 and Rust.
+                </p>
+                <div class="text-xs text-gray-600 font-mono mt-4">
+                    © 2025 Open Source Project
+                </div>
+            </div>
+            
+            <div class="flex gap-8 md:gap-16 font-mono text-sm">
+                <div class="flex flex-col gap-3">
+                    <span class="text-pit-rust uppercase tracking-wider font-bold text-xs">Project</span>
+                    <a href="docs.html" class="text-gray-400 hover:text-white hover:underline transition-colors">Documentation</a>
+                    <a href="https://github.com/loicbelec/pitgun/releases" class="text-gray-400 hover:text-white hover:underline transition-colors">Changelog</a>
+                    <a href="https://github.com/loicbelec/pitgun/blob/main/LICENSE" class="text-gray-400 hover:text-white hover:underline transition-colors">License (MIT)</a>
+                </div>
+                <div class="flex flex-col gap-3">
+                    <span class="text-pit-rust uppercase tracking-wider font-bold text-xs">Community</span>
+                    <a href="https://github.com/loicbelec/pitgun" class="text-gray-400 hover:text-white hover:underline transition-colors">GitHub</a>
+                    <a href="https://crates.io/crates/pitgun" class="text-gray-400 hover:text-white hover:underline transition-colors">Crates.io</a>
+                    <a href="#" class="text-gray-400 hover:text-white hover:underline transition-colors">Discord</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>

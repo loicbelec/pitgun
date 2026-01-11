@@ -1,7 +1,8 @@
 use anyhow::Result;
 use clap::{Parser, Subcommand, ValueEnum};
 use pitgun_core::{
-    ChannelFilterProcessor, ConsoleSink, Pipeline, Processor, ScaleProcessor, Sink, StatsProcessor,
+    ChannelFilterProcessor, ConsoleSink, Expr, FormulaProcessor, Pipeline, Processor,
+    ScaleProcessor, SegmentAggregateProcessor, SegmentMetric, SegmentTarget, Sink, StatsProcessor,
     UdpSource,
 };
 
@@ -164,7 +165,90 @@ fn build_pipeline_from_manifest(manifest: manifest::Manifest) -> Pipeline<UdpSou
                 });
                 processors.push(Box::new(ScaleProcessor::new(channel, factor)));
             }
+            "formula" => {
+                let output = processor_cfg.output.clone().unwrap_or_else(|| {
+                    eprintln!("formula processor requires 'output'");
+                    std::process::exit(1);
+                });
+                let ast_path = processor_cfg.ast.clone().unwrap_or_else(|| {
+                    eprintln!("formula processor requires 'ast' pointing to JSON file");
+                    std::process::exit(1);
+                });
+                let ast_contents = match std::fs::read_to_string(&ast_path) {
+                    Ok(s) => s,
+                    Err(err) => {
+                        eprintln!("failed to read ast file '{}': {}", ast_path, err);
+                        std::process::exit(1);
+                    }
+                };
+                let expr: Expr = match serde_json::from_str(&ast_contents) {
+                    Ok(expr) => expr,
+                    Err(err) => {
+                        eprintln!("failed to parse ast json '{}': {}", ast_path, err);
+                        std::process::exit(1);
+                    }
+                };
+                processors.push(Box::new(FormulaProcessor::new(output, expr)));
+            }
             "stats" => processors.push(Box::new(StatsProcessor::new(1))),
+            "segment_aggregate" => {
+                let segment_key = processor_cfg.segment_key.clone().unwrap_or_else(|| {
+                    eprintln!("segment_aggregate processor requires 'segment_key'");
+                    std::process::exit(1);
+                });
+                let targets_cfg = processor_cfg.targets.clone().unwrap_or_else(|| {
+                    eprintln!("segment_aggregate processor requires 'targets'");
+                    std::process::exit(1);
+                });
+                let mut targets = Vec::new();
+                for target in targets_cfg {
+                    let metrics_raw = target.metrics.unwrap_or_else(|| {
+                        vec![
+                            "count".into(),
+                            "min".into(),
+                            "max".into(),
+                            "mean".into(),
+                            "sum".into(),
+                            "stddev".into(),
+                        ]
+                    });
+                    let mut metrics = Vec::new();
+                    for m in metrics_raw {
+                        match SegmentMetric::parse(&m) {
+                            Some(metric) => metrics.push(metric),
+                            None => {
+                                eprintln!(
+                                    "segment_aggregate: unsupported metric '{}'. Allowed: count,min,max,mean,sum,stddev",
+                                    m
+                                );
+                                std::process::exit(1);
+                            }
+                        }
+                    }
+                    if metrics.is_empty() {
+                        metrics.extend([
+                            SegmentMetric::Count,
+                            SegmentMetric::Min,
+                            SegmentMetric::Max,
+                            SegmentMetric::Mean,
+                            SegmentMetric::Sum,
+                            SegmentMetric::Stddev,
+                        ]);
+                    }
+                    targets.push(SegmentTarget {
+                        channel: target.channel,
+                        metrics,
+                    });
+                }
+                let emit_on_change = processor_cfg.emit_on_change.unwrap_or(true);
+                let emit_last = processor_cfg.emit_last_segment_on_eof.unwrap_or(true);
+                processors.push(Box::new(SegmentAggregateProcessor::new(
+                    segment_key,
+                    targets,
+                    emit_on_change,
+                    emit_last,
+                )));
+            }
             other => {
                 eprintln!("unsupported processor type '{}'", other);
                 std::process::exit(1);

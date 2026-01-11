@@ -9,12 +9,15 @@
 # OS
 .DS_Store
 
-# VSCode / IntelliJ
+# VSCode
 .vscode/
-.idea/
+.venv/
 
 # Datasets locaux
 datasets/*
+
+# Benchmarks
+benchmarks/*
 
 # Notes
 docs/.notes/*
