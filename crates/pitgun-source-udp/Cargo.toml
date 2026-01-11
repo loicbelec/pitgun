@@ -1,0 +1,9 @@
+[package]
+name = "pitgun-source-udp"
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+
+[dependencies]
+pitgun-core = { path = "../pitgun-core" }
+pitgun-codec-udp = { path = "../pitgun-codec-udp" }

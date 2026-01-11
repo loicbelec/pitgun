@@ -1,6 +1,7 @@
 use anyhow::{Context, Result};
 use clap::Parser;
 use csv::ReaderBuilder;
+use pitgun_codec_udp::encode_pitgun_v1;
 use serde::Deserialize;
 use socket2::{Domain, Protocol, Socket, Type};
 use std::fs::File;
@@ -116,7 +117,7 @@ fn main() -> Result<()> {
             pace_realtime(row_ts, t0_ns, start_monotonic);
         }
 
-        let frame = encode_frame(&channel, row_ts, row_val);
+        let frame = encode_pitgun_v1(&channel, row_ts, row_val);
         std_sock.send(&frame)?;
         sent += 1;
 
@@ -213,17 +214,4 @@ fn pace_realtime(ts_ns: u128, ts0: u128, t0: Instant) {
     if let Some(rem) = due.checked_sub(t0.elapsed()) {
         sleep(rem);
     }
-}
-
-/// Minimal wire-encoding:
-/// [len_channel:u16][channel][ts_csv:u128 LE][value:f64 LE]
-fn encode_frame(channel: &str, ts_csv_ns: u128, value: f64) -> Vec<u8> {
-    let name = channel.as_bytes();
-    let mut buf = Vec::with_capacity(2 + name.len() + 16 + 8);
-    let len = u16::try_from(name.len()).unwrap_or(u16::MAX);
-    buf.extend_from_slice(&len.to_le_bytes());
-    buf.extend_from_slice(name);
-    buf.extend_from_slice(&ts_csv_ns.to_le_bytes());
-    buf.extend_from_slice(&value.to_le_bytes());
-    buf
 }

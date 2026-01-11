@@ -95,9 +95,14 @@ pitgun/
   README.md
   crates/
     pitgun-core/       # formula engine, manifests, canonical model
-    pitgun-cli/        # CLI for running manifests locally
     pitgun-emulator/   # dataset playback and synthetic channels (optional)
+    pitgun-codec-udp/  # UDP wire decoding (Pitgun v1)
+    pitgun-source-udp/ # UDP transport source
+    pitgun-codec-json/ # SessionEnvelope JSON codec
+    pitgun-source-ws/  # WebSocket client source
     pitgun-registry/   # local view of bundles & bolts (optional / future)
+  apps/
+    pitgun-cli/        # CLI for running manifests locally
   services/
     pitgun-telemetryd/ # telemetry ingestion service (reference implementation)
     pitgun-configd/    # config authority service (reference implementation)
