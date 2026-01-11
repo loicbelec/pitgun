@@ -25,7 +25,7 @@ use tokio::{
 use tracing::{error, info, warn};
 
 const DEFAULT_BIND_ADDR: &str = "127.0.0.1:8080";
-const DEFAULT_DATA_DIR: &str = "/opt/pitgun/telemetry/data";
+const DEFAULT_DATA_DIR: &str = "./telemetry/data";
 const INGEST_QUEUE_SIZE: usize = 1024;
 
 #[derive(Clone)]
