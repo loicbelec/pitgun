@@ -1,0 +1,146 @@
+version: tuning.v1
+
+meta:
+  description: "Pitgun tuning policy V1. Link Upgrades -> Physics Parameters."
+  determinism:
+    numeric: fixed_q16_16
+    tick_hz: 60
+  signing:
+    contract_type: SimulationContractV1
+    fields_to_sign: [version, parameters, derived_constraints]
+
+parameters:
+  aero:
+    front_wing_angle:
+      type: float
+      unit: deg
+      range: { min: 8.0, max: 35.0, step: 0.5 }
+      default: 18.0
+      unlock: "era >= 1"
+      effects: { downforce: "high", drag: "medium" }
+
+    rear_wing_angle:
+      type: float
+      unit: deg
+      range: { min: 10.0, max: 45.0, step: 0.5 }
+      default: 22.0
+      unlock: "era >= 1"
+      effects: { downforce: "very_high", drag: "very_high" }
+
+    drs_profile:
+      type: enum
+      values: [standard, aggressive, low_drag]
+      default: standard
+      unlock: "has_upgrade('e4_active_aero')"
+      meaning: "Changes how aggressively the wing opens. Aggressive = faster on straights but slower re-attachment (instability on braking)."
+
+  powertrain:
+    gear_ratio_final:
+      type: float
+      unit: ratio
+      range: { min: 3.2, max: 5.0, step: 0.1 }
+      default: 4.0
+      unlock: "mech_lvl >= 5"
+      meaning: "Short (high val) = Accel. Long (low val) = Top Speed."
+
+    turbo_boost_pressure:
+      type: float
+      unit: bar
+      range: { min: 1.0, max: 3.5, step: 0.1 }
+      default: 1.5
+      unlock: "has_upgrade('e2_turbocharger')"
+      meaning: "Direct power multiplier. Exponentially increases engine temp and failure risk above 2.8 bar."
+
+    fuel_mixture:
+      type: enum
+      values: [lean, standard, rich, strat_qualif]
+      default: standard
+      unlock: "era >= 2"
+      meaning: "Rich = Power+Cooling but Fuel heavy. Lean = Hotter but Fuel saving."
+
+    ers_deployment_map:
+      type: enum
+      values: [linear, top_speed_bias, acceleration_bias, balanced]
+      default: balanced
+      unlock: "has_upgrade('e2_hybrid_sys')"
+      meaning: "Where to dump the energy? Linear = predictable. Accel = out of corners."
+
+  chassis:
+    tyre_compound:
+      type: enum
+      values: [C1_Hard, C2_Medium, C3_Soft]
+      default: C2_Medium
+      unlock: "era >= 1"
+      meaning: "Soft = High Grip/High Wear. Hard = Low Grip/Low Wear."
+
+    tyre_pressure:
+      type: float
+      unit: psi
+      range: { min: 18.0, max: 28.0, step: 0.5 }
+      default: 22.0
+      unlock: "testing_lvl >= 10"
+      meaning: "Low = Grip/Heat. High = Stability/Less Drag."
+
+    suspension_stiffness:
+      type: float
+      unit: pct
+      range: { min: 0.0, max: 100.0, step: 1.0 }
+      default: 50.0
+      unlock: "manufacturing_lvl >= 15"
+      meaning: "Stiff = Aero stability but bad over bumps (kerbs). Soft = Mech grip but aero inconsistent."
+
+    active_suspension_mode:
+      type: enum
+      values: [static, rake_control, anti_dive, full_active]
+      default: static
+      unlock: "has_upgrade('e4_active_suspension')"
+      meaning: "Full Active keeps ride height perfect -> Max Aero, but consumes ERS energy."
+
+  electronics:
+    traction_control_slip:
+      type: float
+      unit: ratio
+      range: { min: 0.05, max: 0.25, step: 0.01 }
+      default: 0.15
+      unlock: "it_systems_lvl >= 20"
+      meaning: "Allowed slip before cutting power. Low = Safe/Slow. High = Fast/Dangerous."
+
+    ai_line_optimization:
+      type: float
+      unit: pct
+      range: { min: 0.0, max: 100.0, step: 5.0 }
+      default: 0.0
+      unlock: "has_upgrade('e7_precognition')"
+      meaning: "Allows the car to deviate from the geometric line to find grip. High value = massive pace gain but huge computation cost (instability)."
+
+derived_constraints:
+  - name: wing_balance
+    rule: "abs(parameters.aero.front_wing_angle - parameters.aero.rear_wing_angle) <= 12.0"
+    error_msg: "Aero balance extremely unstable."
+
+  - name: turbo_lean_protection
+    rule: "if parameters.powertrain.turbo_boost_pressure > 2.5 then parameters.powertrain.fuel_mixture != 'lean'"
+    error_msg: "Cannot run high boost with lean mixture (Detonation risk)."
+
+  - name: active_suspension_energy
+    rule: "if parameters.chassis.active_suspension_mode == 'full_active' then parameters.powertrain.ers_deployment_map != 'acceleration_bias'"
+    error_msg: "Full active suspension requires too much power to allow aggressive acceleration bias."
+
+telemetry_schema_hint:
+  channels:
+    - speed_kph
+    - rpm
+    - gear_index
+    - throttle_pct
+    - brake_pct
+    - steering_angle_deg
+    - g_lat
+    - g_long
+    - boost_pressure_bar
+    - ers_soc_pct
+    - suspension_travel_fl
+    - tyre_slip_ratio_fl
+    - engine_temp_c
+    - current_drag_n
+    - current_downforce_n
+    - instability_index
