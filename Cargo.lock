@@ -1076,6 +1076,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "pitgun-source-physics-wasm"
+version = "0.1.0"
+dependencies = [
+ "js-sys",
+ "pitgun-contract",
+ "pitgun-core",
+ "pitgun-signing",
+ "pitgun-source-physics",
+ "serde",
+ "serde-wasm-bindgen",
+ "serde_json",
+ "wasm-bindgen",
+]
+
+[[package]]
 name = "pitgun-source-udp"
 version = "0.1.0"
 dependencies = [
@@ -1438,6 +1453,17 @@ checksum = "80ece43fc6fbed4eb5392ab50c07334d3e577cbf40997ee896fe7af40bba4245"
 dependencies = [
  "serde_core",
  "serde_derive",
+]
+
+[[package]]
+name = "serde-wasm-bindgen"
+version = "0.6.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8302e169f0eddcc139c70f139d19d6467353af16f9fce27e8c30158036a1e16b"
+dependencies = [
+ "js-sys",
+ "serde",
+ "wasm-bindgen",
 ]
 
 [[package]]

@@ -12,8 +12,8 @@ pub mod validate;
 
 pub use error::PolicyError;
 pub use schema::{
-    DerivedConstraint, DeterminismMeta, FloatRange, ParameterSpecV1, SigningMeta, TelemetrySchemaHint,
-    TuningMeta, TuningPolicyV1,
+    DerivedConstraint, DeterminismMeta, FloatRange, ParameterSpecV1, SigningMeta,
+    TelemetrySchemaHint, TuningMeta, TuningPolicyV1,
 };
 
 pub const TUNING_POLICY_V1_VERSION: &str = "tuning.v1";

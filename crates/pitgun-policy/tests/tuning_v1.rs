@@ -167,9 +167,7 @@ fn constraint_rejects_wing_balance() {
     };
 
     let canonical = policy.canonicalize(&ctx, &req).expect("canonicalize");
-    let err = policy
-        .validate_constraints(&ctx, &canonical)
-        .unwrap_err();
+    let err = policy.validate_constraints(&ctx, &canonical).unwrap_err();
     match err {
         PolicyError::InvalidField { path, reason } => {
             assert_eq!(path, "derived_constraints.wing_balance");
@@ -193,13 +191,14 @@ fn constraint_rejects_turbo_lean_protection() {
     };
 
     let canonical = policy.canonicalize(&ctx, &req).expect("canonicalize");
-    let err = policy
-        .validate_constraints(&ctx, &canonical)
-        .unwrap_err();
+    let err = policy.validate_constraints(&ctx, &canonical).unwrap_err();
     match err {
         PolicyError::InvalidField { path, reason } => {
             assert_eq!(path, "derived_constraints.turbo_lean_protection");
-            assert_eq!(reason, "Cannot run high boost with lean mixture (Detonation risk).");
+            assert_eq!(
+                reason,
+                "Cannot run high boost with lean mixture (Detonation risk)."
+            );
         }
         other => panic!("unexpected error: {other:?}"),
     }
@@ -217,9 +216,7 @@ fn constraint_rejects_active_suspension_energy() {
     };
 
     let canonical = policy.canonicalize(&ctx, &req).expect("canonicalize");
-    let err = policy
-        .validate_constraints(&ctx, &canonical)
-        .unwrap_err();
+    let err = policy.validate_constraints(&ctx, &canonical).unwrap_err();
     match err {
         PolicyError::InvalidField { path, reason } => {
             assert_eq!(path, "derived_constraints.active_suspension_energy");

@@ -1,0 +1,36 @@
+{
+  "contract": {
+    "version": "SimulationContractV1",
+    "issued_at_ms": 1710000000000,
+    "expires_at_ms": 4102444800000,
+    "era": 3,
+    "category_levels": {
+      "mech_lvl": 5,
+      "testing_lvl": 10
+    },
+    "owned_upgrades": [
+      "e2_hybrid_sys",
+      "e2_turbocharger"
+    ],
+    "parameters": {
+      "aero": {
+        "front_wing_angle": 18.0,
+        "rear_wing_angle": 22.0
+      },
+      "chassis": {
+        "active_suspension_mode": "static"
+      },
+      "electronics": {
+        "traction_control_slip": 0.15
+      },
+      "powertrain": {
+        "ers_deployment_map": "balanced",
+        "fuel_mixture": "rich",
+        "gear_ratio_final": 4.1,
+        "turbo_boost_pressure": 1.6
+      }
+    },
+    "policy_hash": "deadbeef"
+  },
+  "signature": "d077fdc5e1b0aedc5fb1b5d2349d243df18a9d7ed01467a71be06009400cd770"
+}

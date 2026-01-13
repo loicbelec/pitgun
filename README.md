@@ -50,6 +50,12 @@ cargo run -p pitgun-cli -- subscribe --config manifests/dummy-pitgun.yaml
 ```
 `dummy-pitgun.yaml` includes a channel filter, a scale processor, and stats + console sink.
 
+## Branching model
+
+- `main`: stable, tagged milestones
+- `feature/*`: active development
+- `dev`: reserved for future integration needs (currently unused)
+
 ## 🧭 Backlog
 
 - **Event reliability**  

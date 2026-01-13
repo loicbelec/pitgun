@@ -19,15 +19,17 @@ fn main() {
         std::process::exit(1);
     });
     let reader = BufReader::new(file);
-    let signed: SignedSimulationContractV1 = serde_json::from_reader(reader).unwrap_or_else(|err| {
-        eprintln!("invalid contract JSON: {err}");
-        std::process::exit(1);
-    });
+    let signed: SignedSimulationContractV1 =
+        serde_json::from_reader(reader).unwrap_or_else(|err| {
+            eprintln!("invalid contract JSON: {err}");
+            std::process::exit(1);
+        });
 
-    let config = PhysicsSourceConfig::from_signed_simulation_contract(&signed).unwrap_or_else(|err| {
-        eprintln!("contract error: {err}");
-        std::process::exit(1);
-    });
+    let config =
+        PhysicsSourceConfig::from_signed_simulation_contract(&signed).unwrap_or_else(|err| {
+            eprintln!("contract error: {err}");
+            std::process::exit(1);
+        });
 
     println!("signature_ok=true");
     println!("expired=false");

@@ -7,7 +7,7 @@
 //! Determinism scope: best-effort with `f64` math; expect stable results within
 //! a single build and platform. A fixed-point implementation can replace the
 //! floating-point model later.
-use pitgun_contract::SignedSimulationContractV1;
+use pitgun_contract::{SignedSimulationContractV1, SimulationContractV1};
 use pitgun_core::{Event, EventBatch, Source};
 use pitgun_signing::SigningKey;
 use serde_json::Value as JsonValue;
@@ -252,22 +252,49 @@ impl PhysicsSourceConfig {
     pub fn from_signed_simulation_contract(
         signed: &SignedSimulationContractV1,
     ) -> Result<Self, ContractError> {
+        let key =
+            SigningKey::from_env().map_err(|err| ContractError::SigningSecret(err.to_string()))?;
+        Self::from_signed_simulation_contract_with_key(signed, &key)
+    }
+
+    pub fn from_signed_simulation_contract_with_key(
+        signed: &SignedSimulationContractV1,
+        key: &SigningKey,
+    ) -> Result<Self, ContractError> {
+        Self::from_signed_simulation_contract_with_key_at(signed, key, now_ms())
+    }
+
+    pub fn from_signed_simulation_contract_with_key_at(
+        signed: &SignedSimulationContractV1,
+        key: &SigningKey,
+        now_ms: i64,
+    ) -> Result<Self, ContractError> {
         let bytes = signed
             .contract
             .signing_bytes()
             .map_err(|err| ContractError::InvalidJson(err.to_string()))?;
-        let key = SigningKey::from_env()
-            .map_err(|err| ContractError::SigningSecret(err.to_string()))?;
         if !key.verify(&bytes, &signed.signature) {
             return Err(ContractError::InvalidSignature);
         }
 
-        let now_ms = now_ms();
-        if now_ms > signed.contract.expires_at_ms {
+        Self::from_simulation_contract_at(&signed.contract, now_ms)
+    }
+
+    pub fn from_simulation_contract(
+        contract: &SimulationContractV1,
+    ) -> Result<Self, ContractError> {
+        Self::from_simulation_contract_at(contract, now_ms())
+    }
+
+    pub fn from_simulation_contract_at(
+        contract: &SimulationContractV1,
+        now_ms: i64,
+    ) -> Result<Self, ContractError> {
+        if now_ms > contract.expires_at_ms {
             return Err(ContractError::Expired);
         }
 
-        let params = &signed.contract.parameters;
+        let params = &contract.parameters;
         let front_wing = get_required_f64(params, &["aero", "front_wing_angle"])?;
         let rear_wing = get_required_f64(params, &["aero", "rear_wing_angle"])?;
         let gear_ratio = get_required_f64(params, &["powertrain", "gear_ratio_final"])?;
@@ -275,26 +302,27 @@ impl PhysicsSourceConfig {
         let ers_map = get_required_str(params, &["powertrain", "ers_deployment_map"])?;
         let turbo_boost = get_optional_f64(params, &["powertrain", "turbo_boost_pressure"])?;
         let traction_control_slip =
-            get_optional_f64(params, &["electronics", "traction_control_slip"])?
-                .unwrap_or(0.15);
+            get_optional_f64(params, &["electronics", "traction_control_slip"])?.unwrap_or(0.15);
         let suspension_mode =
-            get_optional_str(params, &["chassis", "active_suspension_mode"])?
-                .unwrap_or("static");
+            get_optional_str(params, &["chassis", "active_suspension_mode"])?.unwrap_or("static");
 
         let fuel_mixture = FuelMixture::from_str("powertrain.fuel_mixture", fuel_mixture)?;
-        let ers_deployment_map = ErsDeploymentMap::from_str("powertrain.ers_deployment_map", ers_map)?;
+        let ers_deployment_map =
+            ErsDeploymentMap::from_str("powertrain.ers_deployment_map", ers_map)?;
         let active_suspension_mode =
             ActiveSuspensionMode::from_str("chassis.active_suspension_mode", suspension_mode)?;
 
-        let mut config = PhysicsSourceConfig::default();
-        config.aero_front_wing_angle_deg = front_wing;
-        config.aero_rear_wing_angle_deg = rear_wing;
-        config.gear_ratio_final = gear_ratio;
-        config.turbo_boost_pressure_bar = turbo_boost;
-        config.fuel_mixture = fuel_mixture;
-        config.ers_deployment_map = ers_deployment_map;
-        config.traction_control_slip = traction_control_slip;
-        config.active_suspension_mode = active_suspension_mode;
+        let config = PhysicsSourceConfig {
+            aero_front_wing_angle_deg: front_wing,
+            aero_rear_wing_angle_deg: rear_wing,
+            gear_ratio_final: gear_ratio,
+            turbo_boost_pressure_bar: turbo_boost,
+            fuel_mixture,
+            ers_deployment_map,
+            traction_control_slip,
+            active_suspension_mode,
+            ..Default::default()
+        };
 
         if config.tick_hz == 0 {
             return Err(ContractError::OutOfRange {
@@ -341,9 +369,7 @@ fn get_required_value<'a>(
 fn get_optional_value<'a>(value: &'a JsonValue, path: &[&str]) -> Option<&'a JsonValue> {
     let mut current = value;
     for key in path {
-        let Some(next) = current.as_object().and_then(|map| map.get(*key)) else {
-            return None;
-        };
+        let next = current.as_object().and_then(|map| map.get(*key))?;
         current = next;
     }
     Some(current)
@@ -381,9 +407,9 @@ fn get_optional_f64(value: &JsonValue, path: &[&str]) -> Result<Option<f64>, Con
 
 fn get_required_str<'a>(value: &'a JsonValue, path: &[&str]) -> Result<&'a str, ContractError> {
     let value = get_required_value(value, path)?;
-    value.as_str().ok_or_else(|| {
-        ContractError::InvalidJson(format!("{} must be a string", path.join(".")))
-    })
+    value
+        .as_str()
+        .ok_or_else(|| ContractError::InvalidJson(format!("{} must be a string", path.join("."))))
 }
 
 fn get_optional_str<'a>(
@@ -556,10 +582,7 @@ impl PhysicsSource {
             self.aero_forces(speed_prev);
         let turbo_multiplier = 1.0 + boost * 0.18;
         let power_multiplier = self.config.fuel_mixture.power_multiplier()
-            * self
-                .config
-                .ers_deployment_map
-                .accel_multiplier(speed_prev)
+            * self.config.ers_deployment_map.accel_multiplier(speed_prev)
             * turbo_multiplier;
         let throttle_force = (throttle_pct / 100.0) * BASE_POWER_KPH_PER_S * power_multiplier;
         let brake_force = (brake_pct / 100.0) * BASE_BRAKE_KPH_PER_S;
@@ -570,11 +593,10 @@ impl PhysicsSource {
         let speed_mps_prev = speed_prev / 3.6;
         let speed_mps_now = self.speed_kph / 3.6;
         let g_long = (speed_mps_now - speed_mps_prev) / self.dt_s / GRAVITY_MPS2;
-        let g_lat = ((steering_angle_deg / MAX_STEER_DEG) * (speed_mps_now / 25.0))
-            .clamp(-2.5, 2.5);
+        let g_lat =
+            ((steering_angle_deg / MAX_STEER_DEG) * (speed_mps_now / 25.0)).clamp(-2.5, 2.5);
 
-        let (drag_n, downforce_n, _drag_kph_per_s, suspension) =
-            self.aero_forces(self.speed_kph);
+        let (drag_n, downforce_n, _drag_kph_per_s, suspension) = self.aero_forces(self.speed_kph);
         self.update_engine_temp(throttle_pct, self.speed_kph, boost);
         self.update_instability(
             throttle_pct,
@@ -630,9 +652,19 @@ impl Source for PhysicsSource {
                 .start_ts_ns
                 .saturating_add(self.tick.saturating_mul(self.dt_ns));
             let values = self.tick_values();
-            push_event(&mut events, &self.channels.speed_kph, ts_ns, values.speed_kph);
+            push_event(
+                &mut events,
+                &self.channels.speed_kph,
+                ts_ns,
+                values.speed_kph,
+            );
             push_event(&mut events, &self.channels.rpm, ts_ns, values.rpm);
-            push_event(&mut events, &self.channels.gear_index, ts_ns, values.gear_index);
+            push_event(
+                &mut events,
+                &self.channels.gear_index,
+                ts_ns,
+                values.gear_index,
+            );
             push_event(
                 &mut events,
                 &self.channels.throttle_pct,
@@ -677,10 +709,10 @@ impl Source for PhysicsSource {
                 ts_ns,
                 values.instability_index,
             );
-            if let Some(boost) = values.boost_pressure_bar {
-                if let Some(channel) = &self.channels.boost_pressure_bar {
-                    push_event(&mut events, channel, ts_ns, boost);
-                }
+            if let (Some(boost), Some(channel)) =
+                (values.boost_pressure_bar, &self.channels.boost_pressure_bar)
+            {
+                push_event(&mut events, channel, ts_ns, boost);
             }
             self.tick += 1;
         }
@@ -753,9 +785,9 @@ impl PhysicsChannels {
     }
 }
 
-fn push_event(events: &mut Vec<Event>, channel: &String, ts_ns: u64, value: f64) {
+fn push_event(events: &mut Vec<Event>, channel: &str, ts_ns: u64, value: f64) {
     events.push(Event {
-        channel: channel.clone(),
+        channel: channel.to_owned(),
         ts_ns,
         value,
     });
@@ -911,10 +943,9 @@ mod tests {
     fn config_from_signed_contract_maps_fields() {
         let expires_at_ms = now_ms() + 60_000;
         let signed = signed_contract(b"unit-test-secret", expires_at_ms);
-        let config = with_signing_env("unit-test-secret", || {
-            PhysicsSourceConfig::from_signed_simulation_contract(&signed)
-                .expect("contract should map")
-        });
+        let key = SigningKey::from_secret(b"unit-test-secret").expect("secret should be valid");
+        let config = PhysicsSourceConfig::from_signed_simulation_contract_with_key(&signed, &key)
+            .expect("contract should map");
 
         assert_eq!(config.aero_front_wing_angle_deg, 18.0);
         assert_eq!(config.aero_rear_wing_angle_deg, 22.0);

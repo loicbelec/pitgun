@@ -7,10 +7,23 @@ pub(crate) enum Expr {
     Number(f64),
     String(String),
     Var(VarPath),
-    Unary { op: UnOp, expr: Box<Expr> },
-    Binary { op: BinOp, left: Box<Expr>, right: Box<Expr> },
-    IfThen { cond: Box<Expr>, then_expr: Box<Expr> },
-    Call { name: String, args: Vec<Expr> },
+    Unary {
+        op: UnOp,
+        expr: Box<Expr>,
+    },
+    Binary {
+        op: BinOp,
+        left: Box<Expr>,
+        right: Box<Expr>,
+    },
+    IfThen {
+        cond: Box<Expr>,
+        then_expr: Box<Expr>,
+    },
+    Call {
+        name: String,
+        args: Vec<Expr>,
+    },
 }
 
 #[derive(Clone, Debug)]
@@ -239,7 +252,9 @@ impl Parser {
                         match self.next() {
                             Some(Token::Ident(segment)) => segments.push(segment),
                             other => {
-                                return Err(format!("expected identifier after '.', found {other:?}"))
+                                return Err(format!(
+                                    "expected identifier after '.', found {other:?}"
+                                ));
                             }
                         }
                         if !self.consume(Token::Dot) {
@@ -436,12 +451,12 @@ pub(crate) fn validate_expression(
             VarPath::Parameter(segments) => {
                 if let ExprMode::Unlock = mode {
                     return Err(
-                        "parameter references are not allowed in unlock expressions".to_string(),
+                        "parameter references are not allowed in unlock expressions".to_string()
                     );
                 }
                 if segments.len() < 2 {
                     return Err(
-                        "parameter path must include subsystem and parameter name".to_string(),
+                        "parameter path must include subsystem and parameter name".to_string()
                     );
                 }
                 let key = format!("parameters.{}", segments.join("."));
@@ -609,7 +624,11 @@ fn eval(expr: &Expr, ctx: &EvalContext<'_>) -> Result<Value, String> {
                     (Value::Bool(lhs), Value::Bool(rhs)) => lhs == rhs,
                     _ => return Err("equality expects matching types".to_string()),
                 };
-                let result = if matches!(op, BinOp::Ne) { !result } else { result };
+                let result = if matches!(op, BinOp::Ne) {
+                    !result
+                } else {
+                    result
+                };
                 Ok(Value::Bool(result))
             }
         },
