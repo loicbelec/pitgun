@@ -21,3 +21,6 @@ benchmarks/*
 
 # Notes
 docs/.notes/*
+
+# Temp files
+/tmp/
