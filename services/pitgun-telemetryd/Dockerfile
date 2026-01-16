@@ -8,11 +8,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     pkg-config libssl-dev ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
+# Build from repo root: docker build -f services/pitgun-telemetryd/Dockerfile .
 # Copie du workspace complet
 COPY . .
 
 # Choix du binaire à compiler
-ARG BIN_NAME
+ARG BIN_NAME=pitgun-telemetryd
 RUN cargo build --release -p ${BIN_NAME}
 
 # =====================
@@ -23,7 +24,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-ARG BIN_NAME
+ARG BIN_NAME=pitgun-telemetryd
 COPY --from=builder /app/target/release/${BIN_NAME} /usr/local/bin/${BIN_NAME}
 
 EXPOSE 8080

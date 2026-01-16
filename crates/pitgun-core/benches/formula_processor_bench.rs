@@ -7,8 +7,8 @@ use criterion::{BatchSize, Criterion, black_box};
 use pitgun_core::{BinaryOp, Event, EventBatch, Expr, FormulaProcessor, Processor};
 use serde::Serialize;
 
-const ENGINE_PATH: &str = "datasets/telemetry/FIA-nEngine.csv";
-const THROTTLE_PATH: &str = "datasets/telemetry/Controller-rThrottleR.csv";
+const ENGINE_PATH: &str = "data/inputs/telemetry/FIA-nEngine.csv";
+const THROTTLE_PATH: &str = "data/inputs/telemetry/Controller-rThrottleR.csv";
 
 static REPORT: OnceLock<Mutex<Vec<ScenarioMetrics>>> = OnceLock::new();
 

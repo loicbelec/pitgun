@@ -7,18 +7,22 @@ Pitgun is a modular Rust workspace for telemetry and high-frequency data process
  This repository is **under active development**. Interfaces may change.
 
 ## 🧱 Framework crates
-- **pitgun-core**: core library with domain types, parsers, processors, and sinks
-- **pitgun-codec-udp**: Pitgun UDP v1 decoding
+- **pitgun-contract**: shared SimulationRequest/Result contract types
+- **pitgun-core**: core library with domain types, processors, and sinks
+- **pitgun-source-physics**: deterministic physics engine and telemetry generator
+- **pitgun-source-physics-wasm**: WASM wrapper for browser/client usage
+- **pitgun-codec-udp**: Pitgun UDP v1 encoding/decoding
 - **pitgun-source-udp**: UDP transport source (codec-agnostic)
-- **pitgun-codec-json**: SessionEnvelope JSON codec
+- **pitgun-codec-json**: SessionEnvelope JSON codec + SimulationRequest/Result JSON helpers
 - **pitgun-source-ws**: WebSocket client source
-- **pitgun-emulator**: UDP emitter that replays CSV datasets (multi-channel) with optional pacing
+- **pitgun-emulator**: UDP emitter that replays CSV telemetry with optional pacing
 
 ## 🧰 Apps
 - **pitgun-cli**: command-line interface to ingest, transform, and export telemetry data (manifest-driven or flags)
 
 ## ⚙️ Current features
-- Emit UDP packets from CSV datasets (`Timestamp, ChannelValue`) at configurable pace (real-time or as fast as possible)
+- Game/physics simulation source (`pitgun-source-physics`) with deterministic telemetry output
+- Emit UDP packets from CSV datasets (real-time or as fast as possible)
 - Subscribe over UDP and route through a pipeline of processors/sinks
 - Processors:
   - `channel_filter` (whitelist channels)
@@ -35,12 +39,19 @@ Pitgun is a modular Rust workspace for telemetry and high-frequency data process
 ```
 
 ## 🚀 Quickstart
+Recommended local data layout:
+```
+data/
+  inputs/   # CSV sources, synthetic datasets
+  ingest/   # telemetryd NDJSON outputs
+```
+
 1) Emit telemetry from CSV:
 ```bash
 cargo run -p pitgun-emulator -- \
   --target 127.0.0.1:5001 \
-  --input nEngine=datasets/telemetry/nEngine.csv \
-  --input throttle=datasets/telemetry/rThrottle.csv \
+  --input nEngine=data/inputs/telemetry/nEngine.csv \
+  --input throttle=data/inputs/telemetry/rThrottle.csv \
   --pace
 ```
 

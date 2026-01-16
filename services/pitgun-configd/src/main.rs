@@ -1,10 +1,4 @@
-use std::{
-    collections::{BTreeMap, BTreeSet},
-    fs,
-    net::SocketAddr,
-    path::PathBuf,
-    time::{SystemTime, UNIX_EPOCH},
-};
+use std::net::SocketAddr;
 
 use axum::{
     Json, Router,
@@ -13,45 +7,29 @@ use axum::{
     response::{IntoResponse, Response},
     routing::{get, post},
 };
-use pitgun_contract::{SignedSimulationContractV1, SimulationContractV1};
-use pitgun_policy::{
-    PlayerTuningRequest, TuningEvalContext, TuningPolicyV1, default_policy_path,
-    load_tuning_v1_from_str,
+use pitgun_contract::game::v1::{
+    GameSimulationContractPayloadV1, GameSimulationContractV1, GameSimulationRequestV1,
 };
-use pitgun_signing::SigningKey;
-use serde_json::Value as JsonValue;
-use sha2::{Digest, Sha256};
+use pitgun_policy::{PolicyError, TuningPolicyV1};
+use pitgun_signing::{SigningKey, sign_game_contract_v1_with_key};
 use tokio::net::TcpListener;
 use tracing::{error, info, warn};
+use uuid::Uuid;
 
 const DEFAULT_BIND_ADDR: &str = "0.0.0.0:8080";
-const DEFAULT_SIM_TTL_SECS: u64 = 300;
+const DEFAULT_TTL_MS: u64 = 600_000;
 
 #[derive(Clone)]
 struct AppState {
     signing_key: Option<SigningKey>,
     tuning_policy: TuningPolicyV1,
-    policy_hash: String,
-    config: ServiceConfig,
-}
-
-#[derive(Clone)]
-struct ServiceConfig {
-    simulation_contract_ttl_secs: u64,
+    ttl_ms: u64,
 }
 
 #[derive(serde::Serialize)]
 struct ErrorResponse {
     error: String,
     details: String,
-}
-
-#[derive(serde::Deserialize, Clone)]
-struct SimulationContractRequest {
-    era: u32,
-    category_levels: BTreeMap<String, i64>,
-    owned_upgrades: Vec<String>,
-    parameters: JsonValue,
 }
 
 #[derive(Debug)]
@@ -101,147 +79,67 @@ async fn deprecated_validate_config() -> (StatusCode, Json<ErrorResponse>) {
         StatusCode::GONE,
         Json(ErrorResponse {
             error: "deprecated".to_string(),
-            details: "/v1/config/validate has been removed; use /v1/contracts/simulation"
+            details: "/v1/config/validate has been removed; use /v1/requests/game"
                 .to_string(),
         }),
     )
 }
 
-async fn create_simulation_contract(
+async fn create_game_request(
     State(state): State<AppState>,
-    Json(request): Json<SimulationContractRequest>,
+    Json(request): Json<GameSimulationRequestV1>,
 ) -> Response {
-    match build_signed_simulation_contract(now_ms(), &state, request) {
+    match build_signed_game_request(&state, request) {
         Ok(response) => (StatusCode::OK, Json(response)).into_response(),
         Err(err) => err.into_response(),
     }
 }
 
-fn build_signed_simulation_contract(
-    now_ms: i64,
+fn build_signed_game_request(
     state: &AppState,
-    request: SimulationContractRequest,
-) -> Result<SignedSimulationContractV1, ContractError> {
-    let signing_key =
-        SigningKey::from_env().map_err(|err| ContractError::Internal(err.to_string()))?;
-
-    let mut category_levels = BTreeMap::new();
-    for (key, value) in request.category_levels {
-        let trimmed = key.trim();
-        if trimmed.is_empty() {
-            return Err(ContractError::BadRequest(
-                "category_levels keys must be non-empty strings".to_string(),
-            ));
-        }
-        category_levels.insert(trimmed.to_string(), value);
-    }
-
-    let mut owned_upgrades = BTreeSet::new();
-    for upgrade in request.owned_upgrades {
-        let trimmed = upgrade.trim();
-        if trimmed.is_empty() {
-            continue;
-        }
-        owned_upgrades.insert(trimmed.to_string());
-    }
-
-    let ctx = TuningEvalContext {
-        era: request.era,
-        category_levels: category_levels.clone(),
-        owned_upgrades: owned_upgrades.clone(),
-    };
-    let player_request = PlayerTuningRequest {
-        parameters: request.parameters,
-    };
-
-    let canonical = state
-        .tuning_policy
-        .canonicalize(&ctx, &player_request)
-        .map_err(|err| ContractError::BadRequest(err.to_string()))?;
-    state
-        .tuning_policy
-        .validate_constraints(&ctx, &canonical)
-        .map_err(|err| ContractError::BadRequest(err.to_string()))?;
-
-    let derived_constraints = state
-        .tuning_policy
-        .derived_constraints
+    mut request: GameSimulationRequestV1,
+) -> Result<GameSimulationContractV1, ContractError> {
+    let key = state
+        .signing_key
         .as_ref()
-        .map(|constraints| {
-            let mut names: Vec<String> = constraints.iter().map(|item| item.name.clone()).collect();
-            names.sort();
-            names
-        })
-        .filter(|names| !names.is_empty());
+        .ok_or_else(|| ContractError::Internal("signing key unavailable".to_string()))?;
 
-    let issued_at_ms = now_ms;
-    let ttl_ms = (state
-        .config
-        .simulation_contract_ttl_secs
-        .saturating_mul(1_000)) as i64;
-    let contract = SimulationContractV1 {
-        version: "SimulationContractV1".to_string(),
-        policy_hash: state.policy_hash.clone(),
+    let trimmed_track = request.track_id.trim();
+    if trimmed_track.is_empty() {
+        return Err(ContractError::BadRequest(
+            "track_id must be a non-empty string".to_string(),
+        ));
+    }
+    request.track_id = trimmed_track.to_string();
+
+    if !request.hz.is_finite() || request.hz <= 0.0 {
+        return Err(ContractError::BadRequest(
+            "hz must be finite and > 0".to_string(),
+        ));
+    }
+
+    request.tuning = state
+        .tuning_policy
+        .normalize(request.tuning)
+        .map_err(|err| ContractError::BadRequest(policy_error_message(err)))?;
+
+    let issued_at_ms = now_ms();
+    let expires_at_ms = issued_at_ms
+        .checked_add(state.ttl_ms)
+        .ok_or_else(|| ContractError::Internal("contract TTL overflow".to_string()))?;
+    let payload = GameSimulationContractPayloadV1 {
+        request,
         issued_at_ms,
-        expires_at_ms: issued_at_ms.saturating_add(ttl_ms),
-        era: request.era,
-        category_levels,
-        owned_upgrades: owned_upgrades.into_iter().collect(),
-        parameters: canonical.parameters,
-        derived_constraints,
+        expires_at_ms,
+        nonce: Uuid::new_v4().to_string(),
     };
 
-    let bytes = contract.signing_bytes().map_err(|err| {
-        error!(?err, "failed to serialize simulation contract payload");
-        ContractError::Internal("failed to serialize contract payload".to_string())
-    })?;
-    let signature = signing_key.sign(&bytes);
-
-    Ok(SignedSimulationContractV1 {
-        contract,
-        signature,
-    })
+    sign_game_contract_v1_with_key(&payload, key)
+        .map_err(|err| ContractError::Internal(err.to_string()))
 }
 
-fn now_ms() -> i64 {
-    let now = SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .unwrap_or_default();
-    now.as_millis() as i64
-}
-
-fn load_config() -> ServiceConfig {
-    ServiceConfig {
-        simulation_contract_ttl_secs: parse_env_u64(
-            "PITGUN_SIM_CONTRACT_TTL_SECONDS",
-            DEFAULT_SIM_TTL_SECS,
-        ),
-    }
-}
-
-fn parse_env_u64(var: &str, default: u64) -> u64 {
-    std::env::var(var)
-        .ok()
-        .and_then(|value| value.parse().ok())
-        .unwrap_or(default)
-}
-
-fn load_tuning_policy(path: PathBuf) -> Result<(TuningPolicyV1, String), String> {
-    let bytes = fs::read(&path).map_err(|err| format!("failed to read policy: {err}"))?;
-    let policy_hash = sha256_hex(&bytes);
-    let contents =
-        String::from_utf8(bytes).map_err(|err| format!("policy must be valid UTF-8: {err}"))?;
-    let policy =
-        load_tuning_v1_from_str(&contents).map_err(|err| format!("invalid policy: {err}"))?;
-    policy
-        .validate_static()
-        .map_err(|err| format!("policy validation failed: {err}"))?;
-    Ok((policy, policy_hash))
-}
-
-fn sha256_hex(bytes: &[u8]) -> String {
-    let digest = Sha256::digest(bytes);
-    hex::encode(digest)
+fn policy_error_message(err: PolicyError) -> String {
+    err.to_string()
 }
 
 #[tokio::main]
@@ -250,7 +148,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         .unwrap_or_else(|_| tracing_subscriber::EnvFilter::new("info"));
     tracing_subscriber::fmt().with_env_filter(log_filter).init();
 
-    let config = load_config();
     let signing_key = match SigningKey::from_env() {
         Ok(key) => Some(key),
         Err(err) => {
@@ -258,26 +155,18 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
             None
         }
     };
-    let policy_path = default_policy_path();
-    let (tuning_policy, policy_hash) = load_tuning_policy(policy_path.clone()).map_err(|err| {
-        format!(
-            "failed to load tuning.v1 policy at {}: {err}",
-            policy_path.display()
-        )
-    })?;
 
     let app_state = AppState {
         signing_key,
-        tuning_policy,
-        policy_hash,
-        config,
+        tuning_policy: TuningPolicyV1::default(),
+        ttl_ms: read_ttl_ms(),
     };
 
     let app = Router::new()
         .route("/healthz", get(healthz))
         .route("/readyz", get(readyz))
         .route("/v1/config/validate", post(deprecated_validate_config))
-        .route("/v1/contracts/simulation", post(create_simulation_contract))
+        .route("/v1/requests/game", post(create_game_request))
         .with_state(app_state);
 
     let bind_addr =
@@ -294,101 +183,63 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     Ok(())
 }
 
+fn read_ttl_ms() -> u64 {
+    std::env::var("PITGUN_CONTRACT_TTL_MS")
+        .ok()
+        .and_then(|raw| raw.parse::<u64>().ok())
+        .unwrap_or(DEFAULT_TTL_MS)
+}
+
+fn now_ms() -> u64 {
+    use std::time::{SystemTime, UNIX_EPOCH};
+    let duration = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap_or_default();
+    duration.as_millis() as u64
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pitgun_signing::SIGNING_SECRET_ENV;
-    use serde_json::json;
-    use std::sync::Mutex;
+    use pitgun_contract::game::v1::GamePlayerTuningV1;
 
     fn test_state() -> AppState {
-        let policy_path =
-            PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../policies/tuning.v1.yaml");
-        let (tuning_policy, policy_hash) =
-            load_tuning_policy(policy_path).expect("policy should load");
-
         AppState {
             signing_key: Some(
                 SigningKey::from_secret(b"unit-test-secret").expect("secret should be valid"),
             ),
-            tuning_policy,
-            policy_hash,
-            config: ServiceConfig {
-                simulation_contract_ttl_secs: 300,
+            tuning_policy: TuningPolicyV1::default(),
+            ttl_ms: 600_000,
+        }
+    }
+
+    fn base_request() -> GameSimulationRequestV1 {
+        GameSimulationRequestV1 {
+            tuning: GamePlayerTuningV1 {
+                aero_points: 10,
+                chassis_points: 10,
+                engine_points: 10,
+                cooling_points: 10,
+                downforce_slider: 0.5,
+                gear_ratio_slider: 0.5,
             },
-        }
-    }
-
-    fn base_request(parameters: JsonValue) -> SimulationContractRequest {
-        SimulationContractRequest {
-            era: 3,
-            category_levels: BTreeMap::from([
-                ("mech_lvl".to_string(), 5),
-                ("testing_lvl".to_string(), 10),
-                ("manufacturing_lvl".to_string(), 15),
-                ("it_systems_lvl".to_string(), 20),
-            ]),
-            owned_upgrades: Vec::new(),
-            parameters,
-        }
-    }
-
-    fn with_signing_env<T>(secret: &str, action: impl FnOnce() -> T) -> T {
-        static ENV_LOCK: Mutex<()> = Mutex::new(());
-        let _guard = ENV_LOCK.lock().expect("env lock");
-        let previous = std::env::var(SIGNING_SECRET_ENV).ok();
-        unsafe {
-            std::env::set_var(SIGNING_SECRET_ENV, secret);
-        }
-        let result = action();
-        unsafe {
-            match previous {
-                Some(value) => std::env::set_var(SIGNING_SECRET_ENV, value),
-                None => std::env::remove_var(SIGNING_SECRET_ENV),
-            }
-        }
-        result
-    }
-
-    #[test]
-    fn unlock_rejection_is_bad_request() {
-        let state = test_state();
-        let mut request = base_request(json!({
-            "powertrain": {
-                "turbo_boost_pressure": 2.0
-            }
-        }));
-        request.owned_upgrades = vec![];
-
-        let err = with_signing_env("unit-test-secret", || {
-            build_signed_simulation_contract(1_710_000_000_000, &state, request)
-                .expect_err("should reject")
-        });
-        match err {
-            ContractError::BadRequest(message) => {
-                assert!(message.contains("unlock condition not met"));
-            }
-            ContractError::Internal(message) => panic!("unexpected internal error: {message}"),
+            track_id: "demo-oval".to_string(),
+            hz: 60.0,
+            seed: Some(1),
+            engine_version: Some("0.1.0".to_string()),
         }
     }
 
     #[test]
-    fn constraint_violation_is_bad_request() {
+    fn invalid_points_are_bad_request() {
         let state = test_state();
-        let request = base_request(json!({
-            "aero": {
-                "front_wing_angle": 8.0,
-                "rear_wing_angle": 30.0
-            }
-        }));
+        let mut request = base_request();
+        request.tuning.aero_points = 99;
 
-        let err = with_signing_env("unit-test-secret", || {
-            build_signed_simulation_contract(1_710_000_000_000, &state, request)
-                .expect_err("should reject")
-        });
+        let err = build_signed_game_request(&state, request).expect_err("should reject");
         match err {
             ContractError::BadRequest(message) => {
-                assert!(message.contains("Aero balance"));
+                assert!(message.contains("aero_points"));
             }
             ContractError::Internal(message) => panic!("unexpected internal error: {message}"),
         }
@@ -397,22 +248,14 @@ mod tests {
     #[test]
     fn happy_path_returns_signature() {
         let state = test_state();
-        let mut request = base_request(json!({
-            "powertrain": {
-                "turbo_boost_pressure": 1.6
-            }
-        }));
-        request.owned_upgrades = vec!["e2_turbocharger".to_string(), "e2_hybrid_sys".to_string()];
+        let request = base_request();
 
-        let response = with_signing_env("unit-test-secret", || {
-            build_signed_simulation_contract(1_710_000_000_000, &state, request)
-                .expect("should succeed")
-        });
+        let response = build_signed_game_request(&state, request).expect("should succeed");
         assert!(!response.signature.is_empty());
-        assert_eq!(response.contract.version, "SimulationContractV1");
-        assert_eq!(response.contract.policy_hash, state.policy_hash);
+        assert!(response.payload.expires_at_ms >= response.payload.issued_at_ms);
+
         let bytes = response
-            .contract
+            .payload
             .signing_bytes()
             .expect("payload should serialize");
         let key = SigningKey::from_secret(b"unit-test-secret").expect("secret should be valid");
@@ -426,7 +269,7 @@ mod tests {
         assert_eq!(body.error, "deprecated");
         assert_eq!(
             body.details,
-            "/v1/config/validate has been removed; use /v1/contracts/simulation"
+            "/v1/config/validate has been removed; use /v1/requests/game"
         );
     }
 }

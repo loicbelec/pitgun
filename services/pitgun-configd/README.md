@@ -1,27 +1,34 @@
 # pitgun-configd
 
-## Simulation contract endpoint
+## Game simulation request endpoint
 
-`POST /v1/contracts/simulation`
+`POST /v1/requests/game`
 
-The service loads `policies/tuning.v1.yaml` (override with `PITGUN_TUNING_POLICY_PATH`),
-canonicalizes the tuning request, validates derived constraints, and returns a
-signed `SimulationContractV1` payload. The signature is computed over the JSON
-serialization of the `contract` object.
+The service normalizes the six tuning parameters, validates basic bounds, and
+returns a signed `GameSimulationContractV1` containing the request plus
+issued/expires metadata. The signature is computed over a canonical binary
+representation of the contract payload to ensure stable verification.
+
+TTL is controlled by `PITGUN_CONTRACT_TTL_MS` (default: `600000`).
 
 Example:
 
 ```sh
-curl -sS -X POST http://127.0.0.1:8080/v1/contracts/simulation \
+curl -sS -X POST http://127.0.0.1:8080/v1/requests/game \
   -H 'content-type: application/json' \
   -d '{
-    "era": 3,
-    "category_levels": {"mech_lvl": 5, "testing_lvl": 10, "manufacturing_lvl": 15, "it_systems_lvl": 20},
-    "owned_upgrades": ["e2_turbocharger", "e2_hybrid_sys"],
-    "parameters": {
-      "aero": {"front_wing_angle": 18.0, "rear_wing_angle": 22.0},
-      "powertrain": {"turbo_boost_pressure": 1.6}
-    }
+    "track_id": "demo-oval",
+    "hz": 60.0,
+    "tuning": {
+      "aero_points": 10,
+      "chassis_points": 10,
+      "engine_points": 10,
+      "cooling_points": 10,
+      "downforce_slider": 0.5,
+      "gear_ratio_slider": 0.5
+    },
+    "seed": 1,
+    "engine_version": "0.1.0"
   }'
 ```
 
@@ -29,25 +36,23 @@ Example response:
 
 ```json
 {
-  "contract": {
-    "version": "SimulationContractV1",
-    "issued_at_ms": 1710000000000,
-    "expires_at_ms": 1710000300000,
-    "era": 3,
-    "category_levels": {
-      "mech_lvl": 5,
-      "testing_lvl": 10,
-      "manufacturing_lvl": 15,
-      "it_systems_lvl": 20
+  "request": {
+    "track_id": "demo-oval",
+    "hz": 60.0,
+    "tuning": {
+      "aero_points": 10,
+      "chassis_points": 10,
+      "engine_points": 10,
+      "cooling_points": 10,
+      "downforce_slider": 0.5,
+      "gear_ratio_slider": 0.5
     },
-    "owned_upgrades": ["e2_turbocharger", "e2_hybrid_sys"],
-    "parameters": {
-      "aero": { "front_wing_angle": 18.0, "rear_wing_angle": 22.0 },
-      "powertrain": { "turbo_boost_pressure": 1.6 }
-    },
-    "derived_constraints": ["wing_balance", "turbo_lean_protection", "active_suspension_energy"],
-    "policy_hash": "hex_sha256"
+    "seed": 1,
+    "engine_version": "0.1.0"
   },
+  "issued_at_ms": 1710000000123,
+  "expires_at_ms": 1710000600123,
+  "nonce": "2c8a1b96-7f53-4d0e-9b3d-9dce255a1c32",
   "signature": "hex_hmac_sha256"
 }
 ```

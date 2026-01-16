@@ -10,7 +10,7 @@ Telemetry ingestion daemon that sits behind Caddy (`telemetry.pitgun.com` -> `12
 ## Configuration
 - `PITGUN_TELEMETRY_BIND` (default `127.0.0.1:8080`) – bind address; must stay on loopback.
 - `PITGUN_TELEMETRY_ALLOW_NON_LOOPBACK` (default disabled) – set to `1` or `true` to allow non-loopback bind (e.g., Docker/Traefik); logs a warning and disables the safety guard.
-- `PITGUN_TELEMETRY_DATA_DIR` (default `./telemetry/data`) – NDJSON sink root.
+- `PITGUN_TELEMETRY_DATA_DIR` (default `./data/ingest`) – NDJSON sink root.
   - In Docker: typically set to `/data`
   - On host: e.g. `/opt/volumes/pitgun/telemetryd/data`
 - `RUST_LOG` – tracing filter, e.g. `info,axum=info`.
@@ -19,6 +19,7 @@ Telemetry ingestion daemon that sits behind Caddy (`telemetry.pitgun.com` -> `12
 ### Local run (non-containerized)
 ```bash
 PITGUN_TELEMETRY_BIND=127.0.0.1:8080 \
+PITGUN_TELEMETRY_DATA_DIR=./data/ingest \
 cargo run -p pitgun-telemetryd --release
 ```
 

@@ -139,7 +139,7 @@
                         <div class="bg-pit-dark text-pit-cream border-2 border-pit-cream/40 shadow-hard-sm p-4 font-mono text-sm leading-6">
 <span class="text-pit-rust select-none">$</span> cargo run -p pitgun-cli -- subscribe --bind 0.0.0.0:5001 --json<br>
 <span class="text-pit-rust select-none">$</span> cargo run -p pitgun-emulator -- --target 127.0.0.1:5001 \<br>
-&nbsp;&nbsp;--input nEngine=datasets/telemetry/nEngine.csv --pace
+&nbsp;&nbsp;--input nEngine=data/inputs/telemetry/nEngine.csv --pace
                         </div>
                         <p class="text-sm text-pit-cream/90 leading-relaxed">
                             Optimized for deterministic, frame-based telemetry: small binary frames, processor traits, and a manifest that stays under version control.
@@ -285,8 +285,8 @@
                 </div>
                 <div class="bg-pit-dark border-2 border-pit-cream/40 shadow-hard-sm p-4 font-mono text-xs md:text-sm leading-6 crt-scanline relative overflow-hidden">
 <span class="text-pit-rust select-none">$</span> cargo run -p pitgun-emulator -- --target 127.0.0.1:5000 \<br>
-&nbsp;&nbsp;--input nEngine=datasets/telemetry/nEngine.csv \<br>
-&nbsp;&nbsp;--input throttle=datasets/telemetry/rThrottle.csv --pace<br>
+&nbsp;&nbsp;--input nEngine=data/inputs/telemetry/nEngine.csv \<br>
+&nbsp;&nbsp;--input throttle=data/inputs/telemetry/rThrottle.csv --pace<br>
 <span class="text-pit-rust select-none">$</span> cargo run -p pitgun-cli -- subscribe --bind 0.0.0.0:5000 --json
                 </div>
             </div>

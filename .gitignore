@@ -13,8 +13,18 @@
 .vscode/
 .venv/
 
+# Node
+**/node_modules/
+**/package-lock.json
+
 # Datasets locaux
 datasets/*
+
+# Local data layout
+data/inputs/*
+data/ingest/*
+!data/inputs/.gitkeep
+!data/ingest/.gitkeep
 
 # Benchmarks
 benchmarks/*

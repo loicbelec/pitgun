@@ -1,7 +1,8 @@
 # pitgun-source-physics-wasm
 
-WASM wrapper around `pitgun-source-physics` that validates a signed simulation
-contract and emits deterministic event batches.
+WASM wrapper around the Pitgun physics engine. It accepts a
+`GameSimulationRequestV1` JSON payload and returns a `GameSimulationResultV1`
+JSON payload.
 
 ## Build
 
@@ -9,37 +10,29 @@ contract and emits deterministic event batches.
 wasm-pack build crates/pitgun-source-physics-wasm --target web
 ```
 
-## Smoke test (Node)
-
-```
-PITGUN_SIGNING_SECRET=unit-test-secret \
-  wasm-pack build --target nodejs crates/pitgun-source-physics-wasm
-node crates/pitgun-source-physics-wasm/examples/node_smoke.js
-```
-
-## Environment
-
-Environment variables are not accessible inside WASM modules. For Node/dev
-verification, read `PITGUN_SIGNING_SECRET` in JS and pass it to
-`PhysicsWasm.new_with_secret`. Browser usage should call `new()` without
-signature verification.
-
 ## Minimal JS usage
 
 ```js
-import init, { PhysicsWasm } from "./pkg/pitgun_source_physics_wasm.js";
+import init, { simulate } from "./pkg/pitgun_source_physics_wasm.js";
 
 await init();
-const sim = new PhysicsWasm(signedContractJson);
-const batch = sim.next_batch();
-console.log(batch.end_of_stream, batch.events.length);
-```
 
-```js
-import init, { PhysicsWasm } from "./pkg/pitgun_source_physics_wasm.js";
+const request = {
+  track_id: "demo-oval",
+  hz: 60,
+  tuning: {
+    aero_points: 10,
+    chassis_points: 10,
+    engine_points: 10,
+    cooling_points: 10,
+    downforce_slider: 0.5,
+    gear_ratio_slider: 0.5,
+  },
+  seed: 1,
+  engine_version: "0.1.0",
+};
 
-await init();
-const sim = PhysicsWasm.new_with_secret(signedContractJson, signingSecret);
-const batch = sim.next_batch();
-console.log(batch.end_of_stream, batch.events.length);
+const resultJson = simulate(JSON.stringify(request));
+const result = JSON.parse(resultJson);
+console.log(result.lap_time_s, result.summary.max_speed_kph);
 ```

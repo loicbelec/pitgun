@@ -11,4 +11,3 @@ clap = { version = "4", features = ["derive"] }
 csv = "1"
 pitgun-codec-udp = { path = "../pitgun-codec-udp" }
 socket2 = "0.5"
-time = { version = "0.3", features = ["parsing", "formatting"] }

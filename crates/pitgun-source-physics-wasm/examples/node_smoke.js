@@ -1,41 +1,33 @@
-const fs = require("fs");
-const path = require("path");
-
-const signingSecret = process.env.PITGUN_SIGNING_SECRET;
-if (!signingSecret) {
-  console.error(
-    "Missing PITGUN_SIGNING_SECRET. Set it to the signing secret used for the fixture."
-  );
-  process.exit(1);
-}
-
-const contractPath = path.join(
-  __dirname,
-  "..",
-  "tests",
-  "fixtures",
-  "sim_contract.json"
-);
-const contractJson = fs.readFileSync(contractPath, "utf8");
-
 const wasm = require("../pkg/pitgun_source_physics_wasm.js");
 
-const sim = wasm.PhysicsWasm.new_with_secret(contractJson, signingSecret);
-const batch = sim.next_batch();
+const request = {
+  track_id: "demo-oval",
+  hz: 60,
+  tuning: {
+    aero_points: 10,
+    chassis_points: 10,
+    engine_points: 10,
+    cooling_points: 10,
+    downforce_slider: 0.5,
+    gear_ratio_slider: 0.5,
+  },
+  seed: 1,
+  engine_version: "0.1.0",
+};
 
-if (!batch || !Array.isArray(batch.events)) {
-  throw new Error("expected events array in batch");
-}
-if (batch.events.length === 0) {
-  throw new Error("expected non-empty events");
+const resultJson = wasm.simulate(JSON.stringify(request));
+const result = JSON.parse(resultJson);
+
+if (!result.telemetry || result.telemetry.length === 0) {
+  throw new Error("expected telemetry array");
 }
 
-const channels = new Set(batch.events.map((event) => event.channel));
-if (!channels.has("speed_kph") || !channels.has("rpm")) {
-  throw new Error("expected speed_kph and rpm channels");
+const first = result.telemetry[0];
+if (typeof first.speed_kph !== "number" || typeof first.rpm !== "number") {
+  throw new Error("expected speed_kph and rpm fields");
 }
 
 console.log("ok", {
-  end_of_stream: batch.end_of_stream,
-  events: batch.events.length,
+  lap_time_s: result.lap_time_s,
+  points: result.telemetry.length,
 });

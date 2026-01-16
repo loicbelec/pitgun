@@ -129,7 +129,8 @@ fn main() -> Result<()> {
             .with_context(|| format!("reading next row for channel '{}'", channel))?;
 
         if sent.is_multiple_of(1_000) {
-            let rate = (sent as f64 / start_monotonic.elapsed().as_secs_f64().max(1e-6)).round();
+            let rate =
+                (sent as f64 / start_monotonic.elapsed().as_secs_f64().max(1e-6)).round();
             eprintln!("sent={} rate≈{} fps", sent, rate);
         }
     }

@@ -1,992 +1,417 @@
-//! Deterministic synthetic telemetry source for local testing and tooling.
-//!
-//! The source emits `pitgun_core::EventBatch` values with integer nanosecond
-//! timestamps derived from `tick_hz`. For each tick, all channels share the
-//! same `ts_ns` and a batch contains `batch_ticks` consecutive ticks.
-//!
-//! Determinism scope: best-effort with `f64` math; expect stable results within
-//! a single build and platform. A fixed-point implementation can replace the
-//! floating-point model later.
-use pitgun_contract::{SignedSimulationContractV1, SimulationContractV1};
-use pitgun_core::{Event, EventBatch, Source};
-use pitgun_signing::SigningKey;
-use serde_json::Value as JsonValue;
-use std::f64::consts::TAU;
-use std::time::{SystemTime, UNIX_EPOCH};
+use anyhow::{ensure, Context, Result};
+use serde::Deserialize;
+use std::path::Path;
 
-const GRAVITY_MPS2: f64 = 9.81;
-const MAX_STEER_DEG: f64 = 6.0;
-const BASE_POWER_KPH_PER_S: f64 = 55.0;
-const BASE_BRAKE_KPH_PER_S: f64 = 85.0;
+pub mod game;
 
-#[derive(Debug)]
-pub enum ContractError {
-    InvalidJson(String),
-    MissingField(String),
-    InvalidEnum { field: String, value: String },
-    InvalidSignature,
-    Expired,
-    SigningSecret(String),
-    OutOfRange { field: String, value: f64 },
+pub use pitgun_contract::game::v1::{
+    GamePlayerTuningV1 as PlayerTuning, GameTelemetryPointV1 as TelemetryPoint,
+};
+
+#[derive(Debug, Clone)]
+pub struct VehicleParams {
+    pub m: f32,
+    pub rho: f32,
+    pub g: f32,
+    pub r_wheel: f32,
+    pub mu: f32,
+    pub c_rr: f32,
+    pub cda_x: f32,
+    pub cda_z: f32,
+    pub cla_x: f32,
+    pub cla_z: f32,
+    pub n_idle: f32,
+    pub n_max: f32,
+    pub g1_total: f32,
+    pub g8_total: f32,
+    pub n_upshift: f32,
+    pub n_downshift: f32,
+    pub t_amb: f32,
+    pub t_init: f32,
+    pub t_soft: f32,
+    pub c_th: f32,
+    pub alpha_heat: f32,
+    pub p_cool0: f32,
+    pub k_cool: f32,
+    pub beta_derate: f32,
 }
 
-impl std::fmt::Display for ContractError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            ContractError::InvalidJson(message) => write!(f, "invalid JSON: {message}"),
-            ContractError::MissingField(field) => write!(f, "missing field: {field}"),
-            ContractError::InvalidEnum { field, value } => {
-                write!(f, "invalid enum value for {field}: {value}")
-            }
-            ContractError::InvalidSignature => write!(f, "invalid signature"),
-            ContractError::Expired => write!(f, "contract is expired"),
-            ContractError::SigningSecret(message) => {
-                write!(f, "signing secret error: {message}")
-            }
-            ContractError::OutOfRange { field, value } => {
-                write!(f, "out of range {field}: {value}")
-            }
-        }
-    }
-}
-
-impl std::error::Error for ContractError {}
-
-#[derive(Clone, Copy, Debug)]
-pub enum FuelMixture {
-    Lean,
-    Standard,
-    Rich,
-    StratQualif,
-}
-
-impl FuelMixture {
-    fn power_multiplier(self) -> f64 {
-        match self {
-            FuelMixture::Lean => 0.98,
-            FuelMixture::Standard => 1.0,
-            FuelMixture::Rich => 1.04,
-            FuelMixture::StratQualif => 1.08,
-        }
-    }
-
-    fn cooling_multiplier(self) -> f64 {
-        match self {
-            FuelMixture::Lean => 0.92,
-            FuelMixture::Standard => 1.0,
-            FuelMixture::Rich => 1.06,
-            FuelMixture::StratQualif => 0.95,
-        }
-    }
-
-    fn from_str(field: &str, value: &str) -> Result<Self, ContractError> {
-        match value {
-            "lean" => Ok(FuelMixture::Lean),
-            "standard" => Ok(FuelMixture::Standard),
-            "rich" => Ok(FuelMixture::Rich),
-            "strat_qualif" => Ok(FuelMixture::StratQualif),
-            other => Err(ContractError::InvalidEnum {
-                field: field.to_string(),
-                value: other.to_string(),
-            }),
-        }
-    }
-}
-
-#[derive(Clone, Copy, Debug)]
-pub enum ErsDeploymentMap {
-    Linear,
-    TopSpeedBias,
-    AccelerationBias,
-    Balanced,
-}
-
-impl ErsDeploymentMap {
-    fn accel_multiplier(self, speed_kph: f64) -> f64 {
-        match self {
-            ErsDeploymentMap::Linear => 1.0,
-            ErsDeploymentMap::Balanced => 1.02,
-            ErsDeploymentMap::TopSpeedBias => {
-                if speed_kph >= 250.0 {
-                    1.08
-                } else {
-                    0.96
-                }
-            }
-            ErsDeploymentMap::AccelerationBias => {
-                if speed_kph <= 180.0 {
-                    1.08
-                } else {
-                    0.98
-                }
-            }
-        }
-    }
-
-    fn aggression(self) -> f64 {
-        match self {
-            ErsDeploymentMap::Linear => 0.4,
-            ErsDeploymentMap::Balanced => 0.5,
-            ErsDeploymentMap::TopSpeedBias => 0.6,
-            ErsDeploymentMap::AccelerationBias => 0.7,
-        }
-    }
-
-    fn from_str(field: &str, value: &str) -> Result<Self, ContractError> {
-        match value {
-            "linear" => Ok(ErsDeploymentMap::Linear),
-            "top_speed_bias" => Ok(ErsDeploymentMap::TopSpeedBias),
-            "acceleration_bias" => Ok(ErsDeploymentMap::AccelerationBias),
-            "balanced" => Ok(ErsDeploymentMap::Balanced),
-            other => Err(ContractError::InvalidEnum {
-                field: field.to_string(),
-                value: other.to_string(),
-            }),
-        }
-    }
-}
-
-#[derive(Clone, Copy, Debug)]
-pub enum ActiveSuspensionMode {
-    Static,
-    RakeControl,
-    AntiDive,
-    FullActive,
-}
-
-#[derive(Clone, Copy, Debug)]
-struct SuspensionFactors {
-    drag_multiplier: f64,
-    downforce_multiplier: f64,
-    stability_bias: f64,
-}
-
-impl ActiveSuspensionMode {
-    fn factors(self) -> SuspensionFactors {
-        match self {
-            ActiveSuspensionMode::Static => SuspensionFactors {
-                drag_multiplier: 1.0,
-                downforce_multiplier: 1.0,
-                stability_bias: 0.7,
-            },
-            ActiveSuspensionMode::RakeControl => SuspensionFactors {
-                drag_multiplier: 1.03,
-                downforce_multiplier: 1.06,
-                stability_bias: 0.9,
-            },
-            ActiveSuspensionMode::AntiDive => SuspensionFactors {
-                drag_multiplier: 1.01,
-                downforce_multiplier: 1.03,
-                stability_bias: 1.0,
-            },
-            ActiveSuspensionMode::FullActive => SuspensionFactors {
-                drag_multiplier: 1.04,
-                downforce_multiplier: 1.1,
-                stability_bias: 1.2,
-            },
-        }
-    }
-
-    fn from_str(field: &str, value: &str) -> Result<Self, ContractError> {
-        match value {
-            "static" => Ok(ActiveSuspensionMode::Static),
-            "rake_control" => Ok(ActiveSuspensionMode::RakeControl),
-            "anti_dive" => Ok(ActiveSuspensionMode::AntiDive),
-            "full_active" => Ok(ActiveSuspensionMode::FullActive),
-            other => Err(ContractError::InvalidEnum {
-                field: field.to_string(),
-                value: other.to_string(),
-            }),
-        }
-    }
-}
-
-#[derive(Clone, Debug)]
-pub struct PhysicsSourceConfig {
-    /// Simulation tick rate in Hz.
-    pub tick_hz: u32,
-    /// Timestamp (ns) for tick 0.
-    pub start_ts_ns: u64,
-    /// Number of ticks per emitted batch.
-    pub batch_ticks: u32,
-    /// Total number of ticks to emit before end-of-stream.
-    pub duration_ticks: u64,
-    /// Front wing angle (deg) used for aero coefficients.
-    pub aero_front_wing_angle_deg: f64,
-    /// Rear wing angle (deg) used for aero coefficients.
-    pub aero_rear_wing_angle_deg: f64,
-    /// Optional turbo boost pressure (bar).
-    pub turbo_boost_pressure_bar: Option<f64>,
-    /// Final drive ratio for RPM derivation.
-    pub gear_ratio_final: f64,
-    /// Fuel mixture choice influencing power and cooling.
-    pub fuel_mixture: FuelMixture,
-    /// ERS deployment map used to bias acceleration.
-    pub ers_deployment_map: ErsDeploymentMap,
-    /// Traction control slip threshold (ratio).
-    pub traction_control_slip: f64,
-    /// Active suspension mode affecting drag and stability.
-    pub active_suspension_mode: ActiveSuspensionMode,
-}
-
-impl Default for PhysicsSourceConfig {
+impl Default for VehicleParams {
     fn default() -> Self {
         Self {
-            tick_hz: 60,
-            start_ts_ns: 0,
-            batch_ticks: 10,
-            duration_ticks: 600,
-            aero_front_wing_angle_deg: 18.0,
-            aero_rear_wing_angle_deg: 22.0,
-            turbo_boost_pressure_bar: None,
-            gear_ratio_final: 4.0,
-            fuel_mixture: FuelMixture::Standard,
-            ers_deployment_map: ErsDeploymentMap::Balanced,
-            traction_control_slip: 0.15,
-            active_suspension_mode: ActiveSuspensionMode::Static,
+            m: 768.0,
+            rho: 1.225,
+            g: 9.81,
+            r_wheel: 0.36,
+            mu: 1.7,
+            c_rr: 0.015,
+            cda_x: 0.85,
+            cda_z: 1.50,
+            cla_x: 2.6,
+            cla_z: 4.13,
+            n_idle: 4000.0,
+            n_max: 15000.0,
+            g1_total: 14.0,
+            g8_total: 4.7,
+            n_upshift: 12300.0,
+            n_downshift: 5500.0,
+            t_amb: 35.0,
+            t_init: 90.0,
+            t_soft: 110.0,
+            c_th: 500000.0,
+            alpha_heat: 0.45,
+            p_cool0: 15000.0,
+            k_cool: 1100.0,
+            beta_derate: 0.004,
         }
     }
 }
 
-impl PhysicsSourceConfig {
-    pub fn from_signed_simulation_contract(
-        signed: &SignedSimulationContractV1,
-    ) -> Result<Self, ContractError> {
-        let key =
-            SigningKey::from_env().map_err(|err| ContractError::SigningSecret(err.to_string()))?;
-        Self::from_signed_simulation_contract_with_key(signed, &key)
+#[derive(Debug, Deserialize)]
+pub struct TrackPoint {
+    pub s_m: f32,
+    pub x_m: f32,
+    pub y_m: f32,
+    pub z_m: f32,
+    pub heading_rad: f32,
+    pub curvature_radpm: f32,
+    pub slope_pct: f32,
+}
+
+pub fn load_track_from_csv_bytes(bytes: &[u8]) -> Result<Vec<TrackPoint>> {
+    let mut rdr = csv::Reader::from_reader(bytes);
+    let mut track = Vec::new();
+    for result in rdr.deserialize() {
+        track.push(result?);
+    }
+    Ok(track)
+}
+
+pub fn load_track_from_csv_path(path: impl AsRef<Path>) -> Result<Vec<TrackPoint>> {
+    let path = path.as_ref();
+    let mut rdr = csv::Reader::from_path(path)
+        .with_context(|| format!("Failed to read track file {path:?}"))?;
+    let mut track = Vec::new();
+    for result in rdr.deserialize() {
+        track.push(result?);
+    }
+    Ok(track)
+}
+
+// ============================================================================
+// 2. MATH HELPERS
+// ============================================================================
+
+fn lerp(a: f32, b: f32, t: f32) -> f32 {
+    a + (b - a) * t
+}
+
+fn interp_1d(x_val: f32, xp: &[f32], fp: &[f32]) -> f32 {
+    if x_val <= xp[0] {
+        return fp[0];
+    }
+    if x_val >= *xp.last().unwrap() {
+        return *fp.last().unwrap();
     }
 
-    pub fn from_signed_simulation_contract_with_key(
-        signed: &SignedSimulationContractV1,
-        key: &SigningKey,
-    ) -> Result<Self, ContractError> {
-        Self::from_signed_simulation_contract_with_key_at(signed, key, now_ms())
+    let idx = xp.partition_point(|&x| x < x_val).saturating_sub(1);
+    let x0 = xp[idx];
+    let x1 = xp[idx + 1];
+    let t = (x_val - x0) / (x1 - x0);
+    lerp(fp[idx], fp[idx + 1], t)
+}
+
+fn moving_average(data: &[f32], window: usize) -> Vec<f32> {
+    if window < 2 {
+        return data.to_vec();
     }
-
-    pub fn from_signed_simulation_contract_with_key_at(
-        signed: &SignedSimulationContractV1,
-        key: &SigningKey,
-        now_ms: i64,
-    ) -> Result<Self, ContractError> {
-        let bytes = signed
-            .contract
-            .signing_bytes()
-            .map_err(|err| ContractError::InvalidJson(err.to_string()))?;
-        if !key.verify(&bytes, &signed.signature) {
-            return Err(ContractError::InvalidSignature);
-        }
-
-        Self::from_simulation_contract_at(&signed.contract, now_ms)
+    let mut out = vec![0.0; data.len()];
+    let half = window / 2;
+    for (i, out_val) in out.iter_mut().enumerate() {
+        let start = i.saturating_sub(half);
+        let end = (i + half + 1).min(data.len());
+        let slice = &data[start..end];
+        let sum: f32 = slice.iter().sum();
+        *out_val = sum / slice.len() as f32;
     }
+    out
+}
 
-    pub fn from_simulation_contract(
-        contract: &SimulationContractV1,
-    ) -> Result<Self, ContractError> {
-        Self::from_simulation_contract_at(contract, now_ms())
+fn gradient(y: &[f32], x: &[f32]) -> Vec<f32> {
+    let n = y.len();
+    let mut out = vec![0.0; n];
+    if n < 2 {
+        return out;
     }
+    out[0] = (y[1] - y[0]) / (x[1] - x[0]);
+    for i in 1..n - 1 {
+        out[i] = (y[i + 1] - y[i - 1]) / (x[i + 1] - x[i - 1]);
+    }
+    out[n - 1] = (y[n - 1] - y[n - 2]) / (x[n - 1] - x[n - 2]);
+    out
+}
 
-    pub fn from_simulation_contract_at(
-        contract: &SimulationContractV1,
-        now_ms: i64,
-    ) -> Result<Self, ContractError> {
-        if now_ms > contract.expires_at_ms {
-            return Err(ContractError::Expired);
-        }
+// ============================================================================
+// 3. PHYSICS CORE
+// ============================================================================
 
-        let params = &contract.parameters;
-        let front_wing = get_required_f64(params, &["aero", "front_wing_angle"])?;
-        let rear_wing = get_required_f64(params, &["aero", "rear_wing_angle"])?;
-        let gear_ratio = get_required_f64(params, &["powertrain", "gear_ratio_final"])?;
-        let fuel_mixture = get_required_str(params, &["powertrain", "fuel_mixture"])?;
-        let ers_map = get_required_str(params, &["powertrain", "ers_deployment_map"])?;
-        let turbo_boost = get_optional_f64(params, &["powertrain", "turbo_boost_pressure"])?;
-        let traction_control_slip =
-            get_optional_f64(params, &["electronics", "traction_control_slip"])?.unwrap_or(0.15);
-        let suspension_mode =
-            get_optional_str(params, &["chassis", "active_suspension_mode"])?.unwrap_or("static");
+fn power_curve(rpm: f32, tuning: &PlayerTuning) -> f32 {
+    let rpm = rpm.clamp(0.0, 15000.0);
+    let base_peak = 750_000.0;
+    let engine_bonus = 1.0 + 0.20 * (tuning.engine_points as f32 / 20.0);
+    let peak = base_peak * engine_bonus;
 
-        let fuel_mixture = FuelMixture::from_str("powertrain.fuel_mixture", fuel_mixture)?;
-        let ers_deployment_map =
-            ErsDeploymentMap::from_str("powertrain.ers_deployment_map", ers_map)?;
-        let active_suspension_mode =
-            ActiveSuspensionMode::from_str("chassis.active_suspension_mode", suspension_mode)?;
-
-        let config = PhysicsSourceConfig {
-            aero_front_wing_angle_deg: front_wing,
-            aero_rear_wing_angle_deg: rear_wing,
-            gear_ratio_final: gear_ratio,
-            turbo_boost_pressure_bar: turbo_boost,
-            fuel_mixture,
-            ers_deployment_map,
-            traction_control_slip,
-            active_suspension_mode,
-            ..Default::default()
-        };
-
-        if config.tick_hz == 0 {
-            return Err(ContractError::OutOfRange {
-                field: "tick_hz".to_string(),
-                value: config.tick_hz as f64,
-            });
-        }
-        if config.batch_ticks == 0 {
-            return Err(ContractError::OutOfRange {
-                field: "batch_ticks".to_string(),
-                value: config.batch_ticks as f64,
-            });
-        }
-        if config.duration_ticks == 0 {
-            return Err(ContractError::OutOfRange {
-                field: "duration_ticks".to_string(),
-                value: config.duration_ticks as f64,
-            });
-        }
-
-        Ok(config)
+    if rpm < 4000.0 {
+        0.10 * peak * (rpm / 4000.0)
+    } else if rpm < 11500.0 {
+        let x = (rpm - 4000.0) / (11500.0 - 4000.0);
+        peak * (0.25 + 0.75 * x.powf(0.9))
+    } else {
+        let x = (rpm - 11500.0) / (15000.0 - 11500.0);
+        peak * (1.0 - 0.18 * x)
     }
 }
 
-fn get_required_value<'a>(
-    value: &'a JsonValue,
-    path: &[&str],
-) -> Result<&'a JsonValue, ContractError> {
-    let mut current = value;
-    let mut full_path = String::new();
-    for (idx, key) in path.iter().enumerate() {
-        if idx > 0 {
-            full_path.push('.');
-        }
-        full_path.push_str(key);
-        let Some(next) = current.as_object().and_then(|map| map.get(*key)) else {
-            return Err(ContractError::MissingField(full_path));
-        };
-        current = next;
-    }
-    Ok(current)
+fn apply_tuning(base: VehicleParams, tuning: &PlayerTuning) -> VehicleParams {
+    let mut p = base;
+    let df = tuning.downforce_slider.clamp(0.0, 1.0);
+    let gr = tuning.gear_ratio_slider.clamp(0.0, 1.0);
+    let aero_k = 1.0 + 0.10 * (tuning.aero_points as f32 / 20.0);
+
+    let drag_blend = 0.85 + 0.30 * df;
+    let df_blend = 0.75 + 0.55 * df;
+
+    p.cda_x *= aero_k * drag_blend * 0.95;
+    p.cda_z *= aero_k * drag_blend * 1.05;
+    p.cla_x *= aero_k * df_blend * 0.95;
+    p.cla_z *= aero_k * df_blend * 1.05;
+
+    p.mu *= 1.0 + 0.08 * (tuning.chassis_points as f32 / 20.0);
+
+    let cool_k = 1.0 + 0.35 * (tuning.cooling_points as f32 / 20.0);
+    p.p_cool0 *= cool_k;
+    p.k_cool *= cool_k;
+
+    let scale = 1.10 - 0.20 * gr;
+    p.g1_total *= scale;
+    p.g8_total *= scale;
+
+    p
 }
 
-fn get_optional_value<'a>(value: &'a JsonValue, path: &[&str]) -> Option<&'a JsonValue> {
-    let mut current = value;
-    for key in path {
-        let next = current.as_object().and_then(|map| map.get(*key))?;
-        current = next;
-    }
-    Some(current)
+fn generate_gear_ratios(p: &VehicleParams) -> Vec<f32> {
+    (0..8)
+        .map(|k| p.g1_total * (p.g8_total / p.g1_total).powf(k as f32 / 7.0))
+        .collect()
 }
 
-fn get_required_f64(value: &JsonValue, path: &[&str]) -> Result<f64, ContractError> {
-    let value = get_required_value(value, path)?;
-    let number = value.as_f64().ok_or_else(|| {
-        ContractError::InvalidJson(format!("{} must be a number", path.join(".")))
-    })?;
-    if !number.is_finite() {
-        return Err(ContractError::InvalidJson(format!(
-            "{} must be finite",
-            path.join(".")
-        )));
-    }
-    Ok(number)
-}
+pub fn run_simulation(
+    track: &[TrackPoint],
+    tuning: PlayerTuning,
+    hz: f32,
+) -> Result<Vec<TelemetryPoint>> {
+    let p = apply_tuning(VehicleParams::default(), &tuning);
+    let n = track.len();
+    ensure!(n >= 2, "track must contain at least 2 points");
+    ensure!(hz.is_finite() && hz > 0.0, "hz must be finite and > 0");
 
-fn get_optional_f64(value: &JsonValue, path: &[&str]) -> Result<Option<f64>, ContractError> {
-    let Some(value) = get_optional_value(value, path) else {
-        return Ok(None);
+    // --- 1. Forward Pass (Speed Profile) ---
+    let mut v_fwd: Vec<f32> = vec![0.0; n];
+    let mut v_corner: Vec<f32> = vec![0.0; n];
+    v_fwd[0] = 30.0;
+
+    let ds = if n > 1 {
+        track[1].s_m - track[0].s_m
+    } else {
+        1.0
     };
-    let number = value.as_f64().ok_or_else(|| {
-        ContractError::InvalidJson(format!("{} must be a number", path.join(".")))
-    })?;
-    if !number.is_finite() {
-        return Err(ContractError::InvalidJson(format!(
-            "{} must be finite",
-            path.join(".")
-        )));
-    }
-    Ok(Some(number))
-}
 
-fn get_required_str<'a>(value: &'a JsonValue, path: &[&str]) -> Result<&'a str, ContractError> {
-    let value = get_required_value(value, path)?;
-    value
-        .as_str()
-        .ok_or_else(|| ContractError::InvalidJson(format!("{} must be a string", path.join("."))))
-}
-
-fn get_optional_str<'a>(
-    value: &'a JsonValue,
-    path: &[&str],
-) -> Result<Option<&'a str>, ContractError> {
-    let Some(value) = get_optional_value(value, path) else {
-        return Ok(None);
-    };
-    let text = value.as_str().ok_or_else(|| {
-        ContractError::InvalidJson(format!("{} must be a string", path.join(".")))
-    })?;
-    Ok(Some(text))
-}
-
-fn now_ms() -> i64 {
-    let now = SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .unwrap_or_default();
-    now.as_millis() as i64
-}
-
-pub struct PhysicsSource {
-    config: PhysicsSourceConfig,
-    channels: PhysicsChannels,
-    tick: u64,
-    speed_kph: f64,
-    engine_temp_c: f64,
-    instability: f64,
-    dt_s: f64,
-    dt_ns: u64,
-    channels_per_tick: usize,
-    end_emitted: bool,
-}
-
-impl PhysicsSource {
-    pub fn new(mut config: PhysicsSourceConfig) -> Self {
-        if config.tick_hz == 0 {
-            config.tick_hz = 1;
-        }
-        if config.batch_ticks == 0 {
-            config.batch_ticks = 1;
-        }
-        let dt_s = 1.0 / config.tick_hz as f64;
-        // Note: integer division can drift vs. dt_s for non-divisible tick_hz.
-        let dt_ns = 1_000_000_000u64 / config.tick_hz as u64;
-        let channels = PhysicsChannels::new(config.turbo_boost_pressure_bar.is_some());
-        let channels_per_tick = channels.len();
-        Self {
-            config,
-            channels,
-            tick: 0,
-            speed_kph: 0.0,
-            engine_temp_c: 90.0,
-            instability: 5.0,
-            dt_s,
-            dt_ns,
-            channels_per_tick,
-            end_emitted: false,
-        }
-    }
-
-    /// Deterministic driver profile: throttle ramps over 2s, then periodic
-    /// lift/brake pulses, with a smooth sinusoidal steering input.
-    fn driver_inputs(&self, time_s: f64) -> (f64, f64, f64) {
-        let ramp = if time_s < 2.0 { time_s / 2.0 } else { 1.0 };
-        let mut throttle = 100.0 * ramp;
-        let mut brake: f64 = 0.0;
-
-        if time_s >= 2.0 {
-            let cycle = (time_s - 2.0) % 5.0;
-            if cycle < 0.35 {
-                throttle *= 0.85;
-            } else if cycle < 0.65 {
-                brake = 10.0;
-                throttle *= 0.75;
-            } else if (3.1..3.4).contains(&cycle) {
-                brake = 6.0;
-                throttle *= 0.88;
-            }
-        }
-
-        let steering_angle_deg = MAX_STEER_DEG * (TAU * time_s / 7.0).sin();
-        (
-            throttle.clamp(0.0, 100.0),
-            brake.clamp(0.0, 100.0),
-            steering_angle_deg,
-        )
-    }
-
-    fn aero_forces(&self, speed_kph: f64) -> (f64, f64, f64, SuspensionFactors) {
-        let speed_mps = speed_kph / 3.6;
-        let wing_drag = self.config.aero_front_wing_angle_deg * 0.012
-            + self.config.aero_rear_wing_angle_deg * 0.015;
-        let wing_downforce = self.config.aero_front_wing_angle_deg * 0.02
-            + self.config.aero_rear_wing_angle_deg * 0.03;
-        let suspension = self.config.active_suspension_mode.factors();
-        let drag_multiplier = (1.0 + wing_drag) * suspension.drag_multiplier;
-        let downforce_multiplier = (1.0 + wing_downforce) * suspension.downforce_multiplier;
-        let drag_n = 12.0 * drag_multiplier * speed_mps * speed_mps;
-        let downforce_n = 24.0 * downforce_multiplier * speed_mps * speed_mps;
-        let drag_kph_per_s = drag_n * 0.00018;
-        (drag_n, downforce_n, drag_kph_per_s, suspension)
-    }
-
-    fn gear_for_speed(speed_kph: f64) -> u8 {
-        if speed_kph < 25.0 {
-            1
-        } else if speed_kph < 50.0 {
-            2
-        } else if speed_kph < 80.0 {
-            3
-        } else if speed_kph < 120.0 {
-            4
-        } else if speed_kph < 170.0 {
-            5
-        } else if speed_kph < 220.0 {
-            6
-        } else if speed_kph < 270.0 {
-            7
+    for i in 0..n {
+        let k_val = track[i].curvature_radpm.abs();
+        let mut v = 70.0;
+        if k_val < 1e-5 {
+            v = 400.0;
         } else {
-            8
-        }
-    }
-
-    fn rpm_for_speed(&self, speed_kph: f64) -> f64 {
-        let rpm = speed_kph * self.config.gear_ratio_final * 18.0 + 2800.0;
-        rpm.clamp(3000.0, 13_000.0)
-    }
-
-    fn update_engine_temp(&mut self, throttle_pct: f64, speed_kph: f64, boost: f64) {
-        let heat = (throttle_pct / 100.0) * (8.0 + boost * 4.0);
-        let cooling = (4.0 + speed_kph / 80.0) * self.config.fuel_mixture.cooling_multiplier();
-        self.engine_temp_c += (heat - cooling) * self.dt_s;
-        self.engine_temp_c = self.engine_temp_c.clamp(70.0, 140.0);
-    }
-
-    fn update_instability(
-        &mut self,
-        throttle_pct: f64,
-        brake_pct: f64,
-        speed_kph: f64,
-        boost: f64,
-        downforce_n: f64,
-        suspension: SuspensionFactors,
-    ) {
-        let speed_term = (speed_kph / 350.0).clamp(0.0, 1.4);
-        let tc_slip = self.config.traction_control_slip.clamp(0.05, 0.25);
-        let tc_penalty = tc_slip * 30.0;
-        let tc_help = (0.25 - tc_slip).max(0.0) * 12.0;
-        let downforce_help = (downforce_n / 160_000.0).clamp(0.0, 1.0) * 2.0;
-        let rise = 2.2 * speed_term
-            + boost * 1.8
-            + self.config.ers_deployment_map.aggression()
-            + (throttle_pct / 100.0) * 0.8
-            + (brake_pct / 100.0) * 0.6
-            + tc_penalty;
-        let drop = suspension.stability_bias + downforce_help + tc_help;
-        self.instability += (rise - drop) * self.dt_s * 6.0;
-        self.instability = self.instability.clamp(0.0, 100.0);
-    }
-
-    fn tick_values(&mut self) -> TickValues {
-        let time_s = self.tick as f64 * self.dt_s;
-        let (throttle_pct, brake_pct, steering_angle_deg) = self.driver_inputs(time_s);
-        let boost = self.config.turbo_boost_pressure_bar.unwrap_or(0.0);
-
-        let speed_prev = self.speed_kph;
-        let (_drag_n_prev, _downforce_prev, drag_kph_per_s, _susp_prev) =
-            self.aero_forces(speed_prev);
-        let turbo_multiplier = 1.0 + boost * 0.18;
-        let power_multiplier = self.config.fuel_mixture.power_multiplier()
-            * self.config.ers_deployment_map.accel_multiplier(speed_prev)
-            * turbo_multiplier;
-        let throttle_force = (throttle_pct / 100.0) * BASE_POWER_KPH_PER_S * power_multiplier;
-        let brake_force = (brake_pct / 100.0) * BASE_BRAKE_KPH_PER_S;
-        let accel_kph_per_s = throttle_force - brake_force - drag_kph_per_s;
-
-        self.speed_kph = (speed_prev + accel_kph_per_s * self.dt_s).max(0.0);
-
-        let speed_mps_prev = speed_prev / 3.6;
-        let speed_mps_now = self.speed_kph / 3.6;
-        let g_long = (speed_mps_now - speed_mps_prev) / self.dt_s / GRAVITY_MPS2;
-        let g_lat =
-            ((steering_angle_deg / MAX_STEER_DEG) * (speed_mps_now / 25.0)).clamp(-2.5, 2.5);
-
-        let (drag_n, downforce_n, _drag_kph_per_s, suspension) = self.aero_forces(self.speed_kph);
-        self.update_engine_temp(throttle_pct, self.speed_kph, boost);
-        self.update_instability(
-            throttle_pct,
-            brake_pct,
-            self.speed_kph,
-            boost,
-            downforce_n,
-            suspension,
-        );
-
-        let rpm = self.rpm_for_speed(self.speed_kph);
-        let gear_index = Self::gear_for_speed(self.speed_kph) as f64;
-
-        TickValues {
-            speed_kph: self.speed_kph,
-            rpm,
-            gear_index,
-            throttle_pct,
-            brake_pct,
-            steering_angle_deg,
-            g_lat,
-            g_long,
-            engine_temp_c: self.engine_temp_c,
-            current_drag_n: drag_n,
-            current_downforce_n: downforce_n,
-            instability_index: self.instability,
-            boost_pressure_bar: self.config.turbo_boost_pressure_bar,
-        }
-    }
-}
-
-impl Source for PhysicsSource {
-    fn next_batch(&mut self) -> Option<EventBatch> {
-        if self.end_emitted {
-            return None;
-        }
-        if self.tick >= self.config.duration_ticks {
-            self.end_emitted = true;
-            return Some(EventBatch {
-                events: Vec::new(),
-                aggregates: Vec::new(),
-                end_of_stream: true,
-            });
-        }
-
-        let remaining = self.config.duration_ticks - self.tick;
-        let ticks_this_batch = (self.config.batch_ticks as u64).min(remaining);
-        let mut events = Vec::with_capacity(ticks_this_batch as usize * self.channels_per_tick);
-
-        for _ in 0..ticks_this_batch {
-            let ts_ns = self
-                .config
-                .start_ts_ns
-                .saturating_add(self.tick.saturating_mul(self.dt_ns));
-            let values = self.tick_values();
-            push_event(
-                &mut events,
-                &self.channels.speed_kph,
-                ts_ns,
-                values.speed_kph,
-            );
-            push_event(&mut events, &self.channels.rpm, ts_ns, values.rpm);
-            push_event(
-                &mut events,
-                &self.channels.gear_index,
-                ts_ns,
-                values.gear_index,
-            );
-            push_event(
-                &mut events,
-                &self.channels.throttle_pct,
-                ts_ns,
-                values.throttle_pct,
-            );
-            push_event(
-                &mut events,
-                &self.channels.brake_pct,
-                ts_ns,
-                values.brake_pct,
-            );
-            push_event(
-                &mut events,
-                &self.channels.steering_angle_deg,
-                ts_ns,
-                values.steering_angle_deg,
-            );
-            push_event(&mut events, &self.channels.g_lat, ts_ns, values.g_lat);
-            push_event(&mut events, &self.channels.g_long, ts_ns, values.g_long);
-            push_event(
-                &mut events,
-                &self.channels.engine_temp_c,
-                ts_ns,
-                values.engine_temp_c,
-            );
-            push_event(
-                &mut events,
-                &self.channels.current_drag_n,
-                ts_ns,
-                values.current_drag_n,
-            );
-            push_event(
-                &mut events,
-                &self.channels.current_downforce_n,
-                ts_ns,
-                values.current_downforce_n,
-            );
-            push_event(
-                &mut events,
-                &self.channels.instability_index,
-                ts_ns,
-                values.instability_index,
-            );
-            if let (Some(boost), Some(channel)) =
-                (values.boost_pressure_bar, &self.channels.boost_pressure_bar)
-            {
-                push_event(&mut events, channel, ts_ns, boost);
+            for _ in 0..5 {
+                let q = 0.5 * p.rho * v * v;
+                let downforce = q * p.cla_z;
+                let a_lat_max = p.mu * (p.g + downforce / p.m);
+                v = (a_lat_max / k_val).sqrt().max(0.1);
             }
-            self.tick += 1;
         }
-
-        Some(EventBatch {
-            events,
-            aggregates: Vec::new(),
-            end_of_stream: false,
-        })
-    }
-}
-
-struct TickValues {
-    speed_kph: f64,
-    rpm: f64,
-    gear_index: f64,
-    throttle_pct: f64,
-    brake_pct: f64,
-    steering_angle_deg: f64,
-    g_lat: f64,
-    g_long: f64,
-    engine_temp_c: f64,
-    current_drag_n: f64,
-    current_downforce_n: f64,
-    instability_index: f64,
-    boost_pressure_bar: Option<f64>,
-}
-
-struct PhysicsChannels {
-    speed_kph: String,
-    rpm: String,
-    gear_index: String,
-    throttle_pct: String,
-    brake_pct: String,
-    steering_angle_deg: String,
-    g_lat: String,
-    g_long: String,
-    engine_temp_c: String,
-    current_drag_n: String,
-    current_downforce_n: String,
-    instability_index: String,
-    boost_pressure_bar: Option<String>,
-}
-
-impl PhysicsChannels {
-    fn new(include_boost: bool) -> Self {
-        Self {
-            speed_kph: "speed_kph".to_string(),
-            rpm: "rpm".to_string(),
-            gear_index: "gear_index".to_string(),
-            throttle_pct: "throttle_pct".to_string(),
-            brake_pct: "brake_pct".to_string(),
-            steering_angle_deg: "steering_angle_deg".to_string(),
-            g_lat: "g_lat".to_string(),
-            g_long: "g_long".to_string(),
-            engine_temp_c: "engine_temp_c".to_string(),
-            current_drag_n: "current_drag_n".to_string(),
-            current_downforce_n: "current_downforce_n".to_string(),
-            instability_index: "instability_index".to_string(),
-            boost_pressure_bar: include_boost.then(|| "boost_pressure_bar".to_string()),
-        }
+        v_corner[i] = v.min(400.0);
     }
 
-    fn len(&self) -> usize {
-        let mut count = 12;
-        if self.boost_pressure_bar.is_some() {
-            count += 1;
-        }
-        count
-    }
-}
+    for i in 0..n - 1 {
+        let v_curr = v_fwd[i].min(v_corner[i]);
+        let mode_z = track[i].curvature_radpm.abs() > 0.001;
 
-fn push_event(events: &mut Vec<Event>, channel: &str, ts_ns: u64, value: f64) {
-    events.push(Event {
-        channel: channel.to_owned(),
-        ts_ns,
-        value,
-    });
-}
+        let q = 0.5 * p.rho * v_curr * v_curr;
+        let cda = if mode_z { p.cda_z } else { p.cda_x };
+        let cla = if mode_z { p.cla_z } else { p.cla_x };
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use pitgun_contract::SimulationContractV1;
-    use pitgun_signing::SIGNING_SECRET_ENV;
-    use serde_json::json;
-    use std::collections::BTreeMap;
-    use std::sync::Mutex;
+        let d_force = q * cda;
+        let roll = p.c_rr * (p.m * p.g + q * cla);
+        let slope = p.m * p.g * track[i].slope_pct;
 
-    #[test]
-    fn determinism_first_batch() {
-        let config = PhysicsSourceConfig::default();
-        let mut left = PhysicsSource::new(config.clone());
-        let mut right = PhysicsSource::new(config);
+        let pwr = power_curve(p.n_upshift - 1000.0, &tuning);
+        let f_eng_max = pwr / v_curr.max(10.0);
+        let f_drive = f_eng_max.min(p.mu * (p.m * p.g + q * cla));
 
-        let left_batch = left.next_batch().expect("expected first batch");
-        let right_batch = right.next_batch().expect("expected first batch");
-
-        assert_eq!(left_batch.events.len(), right_batch.events.len());
-        for (l, r) in left_batch.events.iter().zip(right_batch.events.iter()) {
-            assert_eq!(l.channel, r.channel);
-            assert_eq!(l.ts_ns, r.ts_ns);
-            assert_f64_close(l.value, r.value, 1e-9);
-        }
-        assert_eq!(left_batch.end_of_stream, right_batch.end_of_stream);
+        let a = (f_drive - d_force - roll - slope) / p.m;
+        v_fwd[i + 1] = (v_curr.powi(2) + 2.0 * a * ds).max(0.0).sqrt();
     }
 
-    #[test]
-    fn end_of_stream_after_duration() {
-        let config = PhysicsSourceConfig {
-            duration_ticks: 3,
-            batch_ticks: 2,
-            ..PhysicsSourceConfig::default()
+    // --- 2. Backward Pass (Braking) ---
+    let mut v_bwd: Vec<f32> = v_fwd.clone();
+    for i in (0..n - 1).rev() {
+        let v_target = v_bwd[i + 1];
+        let q = 0.5 * p.rho * v_target * v_target;
+        let d_force = q * p.cda_z;
+        let l_force = q * p.cla_z;
+        let roll = p.c_rr * (p.m * p.g + l_force);
+        let slope = p.m * p.g * track[i].slope_pct;
+
+        let grip_avail = p.mu * (p.m * p.g + l_force);
+        let f_lat_req = p.m * v_target.powi(2) * track[i].curvature_radpm.abs();
+
+        let f_brake_max = if f_lat_req >= grip_avail {
+            0.0
+        } else {
+            (grip_avail.powi(2) - f_lat_req.powi(2)).sqrt()
         };
-        let mut source = PhysicsSource::new(config);
+        let a_decel = ((f_brake_max + d_force + roll + slope) / p.m).min(6.0 * p.g);
 
-        let first = source.next_batch().expect("expected batch 1");
-        assert!(!first.end_of_stream);
-        assert_eq!(distinct_ts(&first.events), 2);
-        let second = source.next_batch().expect("expected batch 2");
-        assert!(!second.end_of_stream);
-        assert_eq!(distinct_ts(&second.events), 1);
-        let eos = source.next_batch().expect("expected eos batch");
-        assert!(eos.end_of_stream);
-        assert!(eos.events.is_empty());
-        assert!(source.next_batch().is_none());
-    }
-
-    #[test]
-    fn timestamps_monotonic_and_spaced() {
-        let config = PhysicsSourceConfig {
-            tick_hz: 50,
-            batch_ticks: 4,
-            duration_ticks: 4,
-            ..PhysicsSourceConfig::default()
-        };
-        let mut source = PhysicsSource::new(config);
-        let batch = source.next_batch().expect("expected batch");
-        let dt_ns = 1_000_000_000u64 / 50;
-
-        let mut unique_ts = Vec::new();
-        let mut last_ts = 0u64;
-        for event in &batch.events {
-            assert!(event.ts_ns >= last_ts);
-            if unique_ts.last().copied() != Some(event.ts_ns) {
-                unique_ts.push(event.ts_ns);
-            }
-            last_ts = event.ts_ns;
-        }
-
-        assert_eq!(unique_ts.len(), 4);
-        assert_eq!(unique_ts[0], 0);
-        for window in unique_ts.windows(2) {
-            assert_eq!(window[1] - window[0], dt_ns);
+        let v_max_braking = (v_target.powi(2) + 2.0 * a_decel * ds).sqrt();
+        if v_bwd[i] > v_max_braking {
+            v_bwd[i] = v_max_braking;
         }
     }
 
-    fn assert_f64_close(left: f64, right: f64, eps: f64) {
-        let diff = (left - right).abs();
-        assert!(
-            diff <= eps,
-            "expected {left} ~= {right} (diff={diff}, eps={eps})"
-        );
+    // --- 3. Integration ---
+    let v_final: Vec<f32> = v_fwd
+        .iter()
+        .zip(v_bwd.iter())
+        .zip(v_corner.iter())
+        .map(|((f, b), c)| f.min(*b).min(*c).max(1.0))
+        .collect();
+
+    let mut t: Vec<f32> = vec![0.0; n];
+    for i in 1..n {
+        let v_avg = 0.5 * (v_final[i] + v_final[i - 1]);
+        t[i] = t[i - 1] + ds / v_avg;
     }
 
-    fn distinct_ts(events: &[Event]) -> usize {
-        let mut unique = Vec::new();
-        for event in events {
-            if unique.last().copied() != Some(event.ts_ns) {
-                unique.push(event.ts_ns);
-            }
-        }
-        unique.len()
-    }
+    // --- 4. Resampling (Telemetry) ---
+    let t_total = *t.last().unwrap();
+    let num_frames = (t_total * hz).ceil() as usize;
+    let dt_hz = 1.0 / hz;
 
-    fn with_signing_env<T>(secret: &str, action: impl FnOnce() -> T) -> T {
-        static ENV_LOCK: Mutex<()> = Mutex::new(());
-        let _guard = ENV_LOCK.lock().expect("env lock");
-        let previous = std::env::var(SIGNING_SECRET_ENV).ok();
-        unsafe {
-            std::env::set_var(SIGNING_SECRET_ENV, secret);
-        }
-        let result = action();
-        unsafe {
-            match previous {
-                Some(value) => std::env::set_var(SIGNING_SECRET_ENV, value),
-                None => std::env::remove_var(SIGNING_SECRET_ENV),
+    // Sources
+    let s_source: Vec<f32> = track.iter().map(|p| p.s_m).collect();
+    let x_source: Vec<f32> = track.iter().map(|p| p.x_m).collect();
+    let y_source: Vec<f32> = track.iter().map(|p| p.y_m).collect();
+    let h_source: Vec<f32> = track.iter().map(|p| p.heading_rad).collect();
+    let k_source: Vec<f32> = track.iter().map(|p| p.curvature_radpm).collect();
+
+    let mut telemetry = Vec::with_capacity(num_frames);
+    let mut temp = p.t_init;
+    let mut current_gear: usize = 1;
+    let mut last_shift_time = -1.0;
+    let ratios = generate_gear_ratios(&p);
+
+    let mut raw_v = vec![0.0; num_frames];
+    let mut raw_throttle = vec![0.0; num_frames];
+    let mut raw_brake = vec![0.0; num_frames];
+
+    for i in 0..num_frames {
+        let t_curr = i as f32 * dt_hz;
+
+        let s_curr = interp_1d(t_curr, &t, &s_source);
+        let v_curr = interp_1d(t_curr, &t, &v_final);
+        raw_v[i] = v_curr;
+
+        // Gearbox
+        let gear_ratio = ratios[current_gear - 1];
+        let rpm_curr = (v_curr * 60.0 * gear_ratio)
+            / (2.0 * std::f32::consts::PI * p.r_wheel);
+
+        if (t_curr - last_shift_time) > 0.5 {
+            if rpm_curr > (p.n_upshift + 200.0) && current_gear < 8 {
+                current_gear += 1;
+                last_shift_time = t_curr;
+            } else if rpm_curr < (p.n_downshift - 200.0) && current_gear > 1 {
+                current_gear -= 1;
+                last_shift_time = t_curr;
             }
         }
-        result
-    }
+        let gear_ratio_final = ratios[current_gear - 1];
+        let rpm_final = ((v_curr * 60.0 * gear_ratio_final)
+            / (2.0 * std::f32::consts::PI * p.r_wheel))
+            .clamp(p.n_idle, p.n_max);
 
-    fn signed_contract(secret: &[u8], expires_at_ms: i64) -> SignedSimulationContractV1 {
-        let contract = SimulationContractV1 {
-            version: "SimulationContractV1".to_string(),
-            issued_at_ms: 1_710_000_000_000,
-            expires_at_ms,
-            era: 3,
-            category_levels: BTreeMap::from([
-                ("mech_lvl".to_string(), 5),
-                ("testing_lvl".to_string(), 10),
-            ]),
-            owned_upgrades: vec!["e2_turbocharger".to_string(), "e2_hybrid_sys".to_string()],
-            parameters: json!({
-                "aero": {
-                    "front_wing_angle": 18.0,
-                    "rear_wing_angle": 22.0
-                },
-                "powertrain": {
-                    "gear_ratio_final": 4.1,
-                    "turbo_boost_pressure": 1.6,
-                    "fuel_mixture": "rich",
-                    "ers_deployment_map": "balanced"
-                }
-            }),
-            derived_constraints: None,
-            policy_hash: "deadbeef".to_string(),
-        };
-        let bytes = contract.signing_bytes().expect("payload should serialize");
-        let key = SigningKey::from_secret(secret).expect("secret should be valid");
-        SignedSimulationContractV1 {
-            contract,
-            signature: key.sign(&bytes),
+        // Pedals
+        let v_prev = if i > 0 { raw_v[i - 1] } else { v_curr };
+        let a_long = (v_curr - v_prev) / dt_hz;
+
+        if a_long >= 0.0 {
+            raw_brake[i] = 0.0;
+            raw_throttle[i] = (a_long / 5.0).clamp(0.0, 1.0);
+        } else {
+            raw_throttle[i] = 0.0;
+            raw_brake[i] = (-a_long / 5.0).clamp(0.0, 1.0);
         }
-    }
 
-    #[test]
-    fn config_from_signed_contract_maps_fields() {
-        let expires_at_ms = now_ms() + 60_000;
-        let signed = signed_contract(b"unit-test-secret", expires_at_ms);
-        let key = SigningKey::from_secret(b"unit-test-secret").expect("secret should be valid");
-        let config = PhysicsSourceConfig::from_signed_simulation_contract_with_key(&signed, &key)
-            .expect("contract should map");
+        // State temp
+        let p_theo = power_curve(rpm_final, &tuning);
+        let mut derate = 1.0;
+        if temp > p.t_soft {
+            derate = (1.0 - (temp - p.t_soft) * p.beta_derate).max(0.2);
+        }
+        let p_act = p_theo * derate;
+        let heat = p.alpha_heat * p_act * raw_throttle[i];
+        let cool = p.p_cool0 + p.k_cool * v_curr;
+        temp += (heat - cool) / p.c_th * dt_hz;
 
-        assert_eq!(config.aero_front_wing_angle_deg, 18.0);
-        assert_eq!(config.aero_rear_wing_angle_deg, 22.0);
-        assert_eq!(config.gear_ratio_final, 4.1);
-        assert_eq!(config.turbo_boost_pressure_bar, Some(1.6));
-        assert!(matches!(config.fuel_mixture, FuelMixture::Rich));
-        assert!(matches!(
-            config.ers_deployment_map,
-            ErsDeploymentMap::Balanced
-        ));
-        assert_eq!(config.traction_control_slip, 0.15);
-        assert!(matches!(
-            config.active_suspension_mode,
-            ActiveSuspensionMode::Static
-        ));
-    }
-
-    #[test]
-    fn invalid_signature_is_rejected() {
-        let expires_at_ms = now_ms() + 60_000;
-        let signed = signed_contract(b"unit-test-secret", expires_at_ms);
-        let result = with_signing_env("wrong-secret", || {
-            PhysicsSourceConfig::from_signed_simulation_contract(&signed)
+        telemetry.push(TelemetryPoint {
+            time_s: t_curr,
+            s_m: s_curr,
+            x_m: 0.0,
+            y_m: 0.0,
+            heading_rad: 0.0,
+            speed_kph: v_curr * 3.6,
+            rpm: rpm_final,
+            gear: current_gear as i32,
+            throttle_pct: 0.0,
+            brake_pct: 0.0,
+            g_lat: 0.0,
+            g_long: 0.0,
+            engine_temp_c: temp,
+            engine_power_w: p_act * raw_throttle[i],
         });
-
-        match result {
-            Err(ContractError::InvalidSignature) => {}
-            other => panic!("unexpected result: {other:?}"),
-        }
     }
 
-    #[test]
-    fn expired_contract_is_rejected() {
-        let signed = signed_contract(b"unit-test-secret", 0);
-        let result = with_signing_env("unit-test-secret", || {
-            PhysicsSourceConfig::from_signed_simulation_contract(&signed)
-        });
+    // Post-Processing
+    let smooth_throttle = moving_average(&raw_throttle, 15);
+    let smooth_brake = moving_average(&raw_brake, 20);
+    let smooth_v = moving_average(&raw_v, 5);
+    let a_long_vec = gradient(
+        &smooth_v,
+        &telemetry.iter().map(|p| p.time_s).collect::<Vec<f32>>(),
+    );
 
-        match result {
-            Err(ContractError::Expired) => {}
-            other => panic!("unexpected result: {other:?}"),
-        }
+    for i in 0..num_frames {
+        let s_val = telemetry[i].s_m;
+        telemetry[i].x_m = interp_1d(s_val, &s_source, &x_source);
+        telemetry[i].y_m = interp_1d(s_val, &s_source, &y_source);
+        telemetry[i].heading_rad = interp_1d(s_val, &s_source, &h_source);
+
+        let k_curr = interp_1d(s_val, &s_source, &k_source);
+        telemetry[i].g_lat = (raw_v[i].powi(2) * k_curr) / 9.81;
+        telemetry[i].g_long = a_long_vec[i] / 9.81;
+        telemetry[i].throttle_pct = smooth_throttle[i] * 100.0;
+        telemetry[i].brake_pct = smooth_brake[i] * 100.0;
     }
+
+    Ok(telemetry)
 }

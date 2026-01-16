@@ -215,7 +215,7 @@ Timestamp,ChannelValue
 ```bash
 pitgun-emulator \
   --target 239.10.0.1:5001 \
-  --csv datasets/telemetry/FIA-nEngine.csv \
+  --csv data/inputs/telemetry/FIA-nEngine.csv \
   --pace
 ```
 
@@ -386,8 +386,8 @@ In Pitgun, the socket layer automatically detects whether the destination is mul
 ```bash
 pitgun-emulator \
   --target 239.10.0.1:5001 \
-  --input nEngine=datasets/telemetry/RUN-001/FIA-nEngine.csv \
-  --input throttle=datasets/telemetry/RUN-001/Controller-rThrottleR.csv \
+  --input nEngine=data/inputs/telemetry/RUN-001/FIA-nEngine.csv \
+  --input throttle=data/inputs/telemetry/RUN-001/Controller-rThrottleR.csv \
   --pace
 ```
 
@@ -1691,8 +1691,8 @@ Quick demo with the synthetic replay:
 ```bash
 cargo run -p pitgun-emulator -- \
   --target 127.0.0.1:5001 \
-  --input NLap=datasets/synthetic/NLap-demo.csv \
-  --input nEngine=datasets/synthetic/nEngine-demo.csv \
+  --input NLap=data/inputs/synthetic/NLap-demo.csv \
+  --input nEngine=data/inputs/synthetic/nEngine-demo.csv \
   --pace
 
 cargo run -p pitgun-cli -- subscribe \

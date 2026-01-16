@@ -13,7 +13,7 @@ RestartSec=2s
 User=pitgun
 Group=pitgun
 Environment=PITGUN_TELEMETRY_BIND=127.0.0.1:8080
-Environment=PITGUN_TELEMETRY_DATA_DIR=/opt/pitgun/telemetry/data
+Environment=PITGUN_TELEMETRY_DATA_DIR=/opt/pitgun/data/ingest
 # Example logging level (uses tracing-subscriber env filter)
 Environment=RUST_LOG=info
 
@@ -22,5 +22,5 @@ WantedBy=multi-user.target
 
 # Notes:
 # - TLS is terminated by Caddy; keep PITGUN_TELEMETRY_BIND on localhost.
-# - Ensure /opt/pitgun/telemetry/data is writable by the service user.
+# - Ensure /opt/pitgun/data/ingest is writable by the service user.
 # - Repo is expected at /opt/pitgun/pitgun with release binary in target/release/.

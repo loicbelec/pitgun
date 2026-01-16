@@ -54,3 +54,24 @@ stable IDs and must not be repurposed for different layouts.
 - `ts_ns` can be a number or a numeric string; decoders treat both as u64.
 - `batch.aggregates[]` is ignored on ingestion.
 
+## telemetry-channels-v1
+
+Canonical mapping from `GameTelemetryPointV1` to channel names when emitting UDP or
+WebSocket events.
+
+| GameTelemetryPointV1 field | Channel name |
+| --- | --- |
+| time_s | sim.time_s |
+| s_m | sim.s_m |
+| x_m | sim.x_m |
+| y_m | sim.y_m |
+| heading_rad | sim.heading_rad |
+| speed_kph | sim.speed_kph |
+| rpm | sim.rpm |
+| gear | sim.gear |
+| throttle_pct | sim.throttle_pct |
+| brake_pct | sim.brake_pct |
+| g_lat | sim.g_lat |
+| g_long | sim.g_long |
+| engine_temp_c | sim.engine_temp_c |
+| engine_power_w | sim.engine_power_w |

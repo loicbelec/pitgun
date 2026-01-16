@@ -34,8 +34,8 @@ Quick demo with the synthetic replay:
 ```bash
 cargo run -p pitgun-emulator -- \
   --target 127.0.0.1:5001 \
-  --input NLap=datasets/synthetic/NLap-demo.csv \
-  --input nEngine=datasets/synthetic/nEngine-demo.csv \
+  --input NLap=data/inputs/synthetic/NLap-demo.csv \
+  --input nEngine=data/inputs/synthetic/nEngine-demo.csv \
   --pace
 
 cargo run -p pitgun-cli -- subscribe \
