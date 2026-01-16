@@ -1,0 +1,14 @@
+{
+  "track_id": "demo-oval",
+  "hz": 60.0,
+  "tuning": {
+    "aero_points": 18,
+    "chassis_points": 4,
+    "engine_points": 20,
+    "cooling_points": 2,
+    "downforce_slider": 0.85,
+    "gear_ratio_slider": 0.2
+  },
+  "seed": 2,
+  "engine_version": "0.1.0"
+}

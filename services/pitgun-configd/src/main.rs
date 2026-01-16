@@ -79,8 +79,7 @@ async fn deprecated_validate_config() -> (StatusCode, Json<ErrorResponse>) {
         StatusCode::GONE,
         Json(ErrorResponse {
             error: "deprecated".to_string(),
-            details: "/v1/config/validate has been removed; use /v1/requests/game"
-                .to_string(),
+            details: "/v1/config/validate has been removed; use /v1/requests/game".to_string(),
         }),
     )
 }

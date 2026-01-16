@@ -1,12 +1,14 @@
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
+pub mod events;
 pub mod json;
+pub mod summary;
 pub mod udp;
 
 use pitgun_contract::game::v1::{
-    DEFAULT_HZ, GameSimulationRequestV1, GameSimulationResultV1, GameTelemetryPointV1,
-    GameTelemetrySummaryV1,
+    GameSimulationRequestV1, GameSimulationResultV1, GameTelemetryPointV1, GameTelemetrySummaryV1,
+    DEFAULT_HZ,
 };
 
 use crate::{load_track_from_csv_bytes, load_track_from_csv_path, run_simulation, TrackPoint};
@@ -169,7 +171,9 @@ pub fn summarize_telemetry(telemetry: &[GameTelemetryPointV1]) -> GameTelemetryS
     }
 }
 
-pub fn load_track_from_path(path: impl AsRef<Path>) -> Result<Vec<TrackPoint>, GameSimulationError> {
+pub fn load_track_from_path(
+    path: impl AsRef<Path>,
+) -> Result<Vec<TrackPoint>, GameSimulationError> {
     load_track_from_csv_path(path).map_err(|err| GameSimulationError::TrackLoad(err.to_string()))
 }
 

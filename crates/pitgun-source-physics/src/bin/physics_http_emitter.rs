@@ -3,19 +3,19 @@ use clap::Parser;
 use pitgun_codec_json::EventBatchDto;
 use pitgun_contract::game::v1::GameSimulationRequestV1;
 use pitgun_core::{Event, EventBatch};
-use pitgun_signing::{GameContractVerification, SigningKey, verify_game_contract_v1_with_key};
+use pitgun_signing::{verify_game_contract_v1_with_key, GameContractVerification, SigningKey};
+use pitgun_source_physics::game::events::telemetry_point_to_events;
 use pitgun_source_physics::game::json::{
     deserialize_game_simulation_contract_v1, deserialize_game_simulation_request_v1,
     extract_game_simulation_request_v1,
 };
-use pitgun_source_physics::game::udp::telemetry_point_to_events;
 use pitgun_source_physics::game::simulate_request;
 use reqwest::blocking::Client;
 use serde::Serialize;
 use std::fs;
 use std::path::PathBuf;
 use std::time::{SystemTime, UNIX_EPOCH};
-use tungstenite::{Message, connect};
+use tungstenite::{connect, Message};
 use url::Url;
 
 #[derive(Parser, Debug)]
@@ -129,12 +129,11 @@ fn load_request(
     let mut verification = None;
     let mut request = if let Some(path) = &args.contract_json {
         let raw = fs::read(path).with_context(|| format!("reading contract JSON at {path:?}"))?;
-        let contract = deserialize_game_simulation_contract_v1(&raw)
-            .context("invalid contract JSON")?;
+        let contract =
+            deserialize_game_simulation_contract_v1(&raw).context("invalid contract JSON")?;
         if args.verify_signature {
-            let key = SigningKey::from_env().map_err(|err| {
-                anyhow::anyhow!("signature verification requested but {err}")
-            })?;
+            let key = SigningKey::from_env()
+                .map_err(|err| anyhow::anyhow!("signature verification requested but {err}"))?;
             let result = verify_game_contract_v1_with_key(&contract, &key)
                 .context("failed to verify contract signature")?;
             verification = Some(result);
@@ -150,13 +149,9 @@ fn load_request(
         }
         extract_game_simulation_request_v1(&contract).clone()
     } else {
-        let path = args
-            .request_json
-            .as_ref()
-            .expect("request_json checked");
+        let path = args.request_json.as_ref().expect("request_json checked");
         let raw = fs::read(path).with_context(|| format!("reading request JSON at {path:?}"))?;
-        deserialize_game_simulation_request_v1(&raw)
-            .map_err(|err| anyhow::anyhow!("{err}"))?
+        deserialize_game_simulation_request_v1(&raw).map_err(|err| anyhow::anyhow!("{err}"))?
     };
 
     if let Some(hz) = args.hz {

@@ -33,4 +33,5 @@ benchmarks/*
 docs/.notes/*
 
 # Temp files
-/tmp/
+/tmp/*
+!/tmp/.gitkeep

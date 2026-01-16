@@ -44,7 +44,11 @@ fn main() -> Result<()> {
 
     let start = std::time::Instant::now();
     let telemetry = run_simulation(&track, tuning, args.hz)?;
-    println!("Simulated {} frames in {:.2?}", telemetry.len(), start.elapsed());
+    println!(
+        "Simulated {} frames in {:.2?}",
+        telemetry.len(),
+        start.elapsed()
+    );
 
     let mut wtr = csv::Writer::from_path(&args.out_csv)?;
     for point in telemetry {

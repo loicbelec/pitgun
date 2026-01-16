@@ -2,7 +2,7 @@ use anyhow::{Context, Result};
 use clap::Parser;
 use pitgun_codec_udp::encode_pitgun_v1;
 use pitgun_contract::game::v1::GameSimulationRequestV1;
-use pitgun_source_physics::game::udp::telemetry_point_to_events;
+use pitgun_source_physics::game::events::telemetry_point_to_events;
 use pitgun_source_physics::game::{simulate_request_with_registry, TrackRegistry};
 use socket2::{Domain, Protocol, Socket, Type};
 use std::fs;
@@ -49,8 +49,12 @@ fn main() -> Result<()> {
 
     let raw = fs::read_to_string(&args.request_json)
         .with_context(|| format!("reading request JSON at {:?}", args.request_json))?;
-    let request: GameSimulationRequestV1 = serde_json::from_str(&raw)
-        .with_context(|| format!("invalid GameSimulationRequestV1 JSON at {:?}", args.request_json))?;
+    let request: GameSimulationRequestV1 = serde_json::from_str(&raw).with_context(|| {
+        format!(
+            "invalid GameSimulationRequestV1 JSON at {:?}",
+            args.request_json
+        )
+    })?;
 
     let mut registry = TrackRegistry::default();
     if let Some(track_csv) = args.track_csv {

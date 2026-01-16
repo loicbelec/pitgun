@@ -8,8 +8,7 @@ fn main() {
         .expect("usage: verify_sim <signed_request.json>");
     let raw = fs::read_to_string(&path).expect("read json");
 
-    let contract: GameSimulationContractV1 =
-        serde_json::from_str(&raw).expect("parse contract");
+    let contract: GameSimulationContractV1 = serde_json::from_str(&raw).expect("parse contract");
     let key = SigningKey::from_env().expect("PITGUN_SIGNING_SECRET");
     let result = verify_game_contract_v1_with_key(&contract, &key).expect("verify");
 

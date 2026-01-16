@@ -333,8 +333,7 @@ pub fn run_simulation(
 
         // Gearbox
         let gear_ratio = ratios[current_gear - 1];
-        let rpm_curr = (v_curr * 60.0 * gear_ratio)
-            / (2.0 * std::f32::consts::PI * p.r_wheel);
+        let rpm_curr = (v_curr * 60.0 * gear_ratio) / (2.0 * std::f32::consts::PI * p.r_wheel);
 
         if (t_curr - last_shift_time) > 0.5 {
             if rpm_curr > (p.n_upshift + 200.0) && current_gear < 8 {
