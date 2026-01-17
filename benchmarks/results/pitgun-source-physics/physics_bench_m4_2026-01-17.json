@@ -1,0 +1,30 @@
+{
+  "machine": "MacBook Pro M4",
+  "date": "2026-01-17",
+  "benchmarks": [
+    {
+      "name": "physics_only/demo-oval_default",
+      "median_us": 23.167
+    },
+    {
+      "name": "physics_only/demo-oval_extreme",
+      "median_us": 22.203
+    },
+    {
+      "name": "physics_to_batches/demo-oval_default",
+      "median_us": 337.52
+    },
+    {
+      "name": "physics_to_batches/demo-oval_extreme",
+      "median_us": 308.65
+    },
+    {
+      "name": "physics_to_batches_json/demo-oval_default",
+      "median_us": 723.37
+    },
+    {
+      "name": "physics_to_batches_json/demo-oval_extreme",
+      "median_us": 681.08
+    }
+  ]
+}

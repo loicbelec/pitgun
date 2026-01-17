@@ -1,4 +1,4 @@
-[![Pitgun](docs/img/pitgun_transparent.png)](https://pitgun.loicbelec.com)
+[![Pitgun](docs/img/pitgun_transparent.png)](https://pitgun.io)
 
 ## What is Pitgun?
 Pitgun is a modular Rust workspace for telemetry and high-frequency data processing.
@@ -32,34 +32,27 @@ Pitgun is a modular Rust workspace for telemetry and high-frequency data process
 - Sinks:
   - Console JSON printer
   - Per-channel CSV recording (optional)
-- Declarative YAML manifest to assemble the pipeline (see `manifests/dummy-pitgun.yaml`)
+- Declarative YAML manifest to assemble the pipeline (see `examples/manifests/udp_minimal.yaml`)
 - Minimal binary frame format:
 ```
 [len_channel:u16][channel][ts_csv:u128 LE][value:f64 LE]
 ```
 
 ## 🚀 Quickstart
-Recommended local data layout:
-```
-data/
-  inputs/   # CSV sources, synthetic datasets
-  ingest/   # telemetryd NDJSON outputs
-```
-
 1) Emit telemetry from CSV:
 ```bash
 cargo run -p pitgun-emulator -- \
   --target 127.0.0.1:5001 \
-  --input nEngine=data/inputs/telemetry/nEngine.csv \
-  --input throttle=data/inputs/telemetry/rThrottle.csv \
+  --input nEngine=data/inputs/f1/FIA-nEngine.csv \
+  --input rThrottle=data/inputs/f1/Chassis-rThrottle.csv \
   --pace
 ```
 
 2) Subscribe with a manifest-driven pipeline:
 ```bash
-cargo run -p pitgun-cli -- subscribe --config manifests/dummy-pitgun.yaml
+cargo run -p pitgun-cli -- subscribe --config examples/manifests/udp_minimal.yaml
 ```
-`dummy-pitgun.yaml` includes a channel filter, a scale processor, and stats + console sink.
+`udp_minimal.yaml` includes a channel filter, a scale processor, and stats + console sink.
 
 ## Branching model
 

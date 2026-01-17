@@ -1,0 +1,35 @@
+{
+  "runner": "formula_processor_v1",
+  "scenarios": [
+    {
+      "name": "single_formula_small",
+      "iterations": 5000,
+      "dataset_events": 512,
+      "formulas": 1,
+      "mean_ns": 15945.6376,
+      "p95_ns": 18042.0,
+      "p99_ns": 19250.0,
+      "throughput_eps": 19322070.28638472
+    },
+    {
+      "name": "multi_formula_medium",
+      "iterations": 2000,
+      "dataset_events": 4096,
+      "formulas": 4,
+      "mean_ns": 419228.7265,
+      "p95_ns": 436458.0,
+      "p99_ns": 447084.0,
+      "throughput_eps": 8179635.439753251
+    },
+    {
+      "name": "stress_many_formulas",
+      "iterations": 500,
+      "dataset_events": 16000,
+      "formulas": 32,
+      "mean_ns": 15227054.436,
+      "p95_ns": 15626375.000000002,
+      "p99_ns": 15819250.0,
+      "throughput_eps": 1030251.5030137844
+    }
+  ]
+}

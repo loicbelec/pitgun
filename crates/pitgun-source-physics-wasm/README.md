@@ -1,38 +1,43 @@
 # pitgun-source-physics-wasm
 
-WASM wrapper around the Pitgun physics engine. It accepts a
-`GameSimulationRequestV1` JSON payload and returns a `GameSimulationResultV1`
-JSON payload.
+Minimal WASM wrapper for the physics engine. Exposes a single function:
+
+- `simulate_batches(request_json: &str) -> String`
+
+It accepts a `GameSimulationRequestV1` JSON payload and returns a JSON array of
+SessionEnvelope objects (compatible with `pitgun-telemetryd` /beacon and /ws).
 
 ## Build
-
+```bash
+wasm-pack build --target nodejs crates/pitgun-source-physics-wasm
 ```
-wasm-pack build crates/pitgun-source-physics-wasm --target web
+
+## MVP usage
+1) Build the WASM package:
+```bash
+wasm-pack build --target nodejs crates/pitgun-source-physics-wasm
 ```
 
-## Minimal JS usage
+2) Simulate batches and print basic stats:
+```bash
+node crates/pitgun-source-physics-wasm/examples/node_simulate_batches.js
+```
 
-```js
-import init, { simulate } from "./pkg/pitgun_source_physics_wasm.js";
+3) Ingest over WebSocket (requires telemetryd + ws):
+```bash
+PITGUN_TELEMETRY_BIND=127.0.0.1:8080 \
+PITGUN_TELEMETRY_DATA_DIR=/tmp/pitgun-telemetry-data \
+cargo run -p pitgun-telemetryd --release
+```
 
-await init();
+```bash
+npm install --prefix crates/pitgun-source-physics-wasm
+node crates/pitgun-source-physics-wasm/examples/node_ws_ingest_batches.js
+```
 
-const request = {
-  track_id: "demo-oval",
-  hz: 60,
-  tuning: {
-    aero_points: 10,
-    chassis_points: 10,
-    engine_points: 10,
-    cooling_points: 10,
-    downforce_slider: 0.5,
-    gear_ratio_slider: 0.5,
-  },
-  seed: 1,
-  engine_version: "0.1.0",
-};
+Canonical local E2E workflow (native): see `justfile` in the repo root.
 
-const resultJson = simulate(JSON.stringify(request));
-const result = JSON.parse(resultJson);
-console.log(result.lap_time_s, result.summary.max_speed_kph);
+## Tests
+```bash
+wasm-pack test --node crates/pitgun-source-physics-wasm
 ```

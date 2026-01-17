@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
+pub mod batching;
 pub mod events;
 pub mod json;
 pub mod summary;

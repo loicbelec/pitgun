@@ -1,0 +1,9 @@
+{
+  "name": "pitgun-source-physics-wasm",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Minimal WASM wrapper for pitgun-source-physics",
+  "dependencies": {
+    "ws": "^8.18.3"
+  }
+}

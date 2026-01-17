@@ -16,18 +16,17 @@
 # Node
 **/node_modules/
 **/package-lock.json
-
-# Datasets locaux
-datasets/*
+crates/pitgun-source-physics-wasm/pkg/
 
 # Local data layout
-data/inputs/*
-data/ingest/*
-!data/inputs/.gitkeep
-!data/ingest/.gitkeep
+data/*
 
 # Benchmarks
-benchmarks/*
+/target/criterion/
+/benchmarks/**
+!/benchmarks/README.md
+!/benchmarks/results/
+!/benchmarks/results/**
 
 # Notes
 docs/.notes/*

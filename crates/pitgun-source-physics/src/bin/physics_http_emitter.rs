@@ -2,9 +2,9 @@ use anyhow::{bail, Context, Result};
 use clap::Parser;
 use pitgun_codec_json::EventBatchDto;
 use pitgun_contract::game::v1::GameSimulationRequestV1;
-use pitgun_core::{Event, EventBatch};
+use pitgun_core::EventBatch;
 use pitgun_signing::{verify_game_contract_v1_with_key, GameContractVerification, SigningKey};
-use pitgun_source_physics::game::events::telemetry_point_to_events;
+use pitgun_source_physics::game::batching::telemetry_to_event_batches;
 use pitgun_source_physics::game::json::{
     deserialize_game_simulation_contract_v1, deserialize_game_simulation_request_v1,
     extract_game_simulation_request_v1,
@@ -86,9 +86,11 @@ fn main() -> Result<()> {
     let simulation = simulate_request(&request).map_err(|err| anyhow::anyhow!("{err}"))?;
 
     let telemetry = simulation.telemetry.unwrap_or_default();
-    let (events, first_ts, last_ts) = events_from_telemetry(&telemetry);
-    let total_events = events.len();
-    let batches = build_event_batches(events, args.batch_events);
+    let batch_summary = telemetry_to_event_batches(&telemetry, args.batch_events);
+    let total_events = batch_summary.total_events;
+    let first_ts = batch_summary.first_ts_ns;
+    let last_ts = batch_summary.last_ts_ns;
+    let batches = batch_summary.batches;
     let total_batches = batches.len();
 
     if !args.dry_run {
@@ -159,56 +161,6 @@ fn load_request(
     }
 
     Ok((request, verification))
-}
-
-fn events_from_telemetry(
-    telemetry: &[pitgun_contract::game::v1::GameTelemetryPointV1],
-) -> (Vec<Event>, Option<u64>, Option<u64>) {
-    let mut events = Vec::with_capacity(telemetry.len() * 14);
-    let mut first_ts = None;
-    let mut last_ts = None;
-
-    for point in telemetry {
-        let ts_ns = (point.time_s * 1_000_000_000.0) as u64;
-        if first_ts.is_none() {
-            first_ts = Some(ts_ns);
-        }
-        last_ts = Some(ts_ns);
-        let mut point_events = telemetry_point_to_events(point, ts_ns);
-        events.append(&mut point_events);
-    }
-
-    (events, first_ts, last_ts)
-}
-
-fn build_event_batches(events: Vec<Event>, batch_events: usize) -> Vec<EventBatch> {
-    let mut batches = Vec::new();
-    let mut current = Vec::with_capacity(batch_events);
-
-    for event in events {
-        current.push(event);
-        if current.len() >= batch_events {
-            batches.push(EventBatch {
-                events: std::mem::take(&mut current),
-                aggregates: Vec::new(),
-                end_of_stream: false,
-            });
-        }
-    }
-
-    if !current.is_empty() {
-        batches.push(EventBatch {
-            events: current,
-            aggregates: Vec::new(),
-            end_of_stream: false,
-        });
-    }
-
-    if let Some(last) = batches.last_mut() {
-        last.end_of_stream = true;
-    }
-
-    batches
 }
 
 fn now_ms() -> i64 {
@@ -328,8 +280,8 @@ mod tests {
             },
         ];
 
-        let (events, _, _) = events_from_telemetry(&telemetry);
-        let batches = build_event_batches(events, 10);
+        let batch_summary = telemetry_to_event_batches(&telemetry, 10);
+        let batches = batch_summary.batches;
 
         assert!(!batches.is_empty());
         for batch in batches.iter().take(batches.len().saturating_sub(1)) {

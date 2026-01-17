@@ -1,5 +1,23 @@
 # Pitgun command log
 
+## Golden path (preferred)
+```
+just telemetryd
+just configd
+just contract
+just emit-http   # or: just emit-ws
+just e2e-http    # or: just e2e-ws
+```
+
+Fallback without `just`:
+```
+scripts/telemetryd.sh
+scripts/configd.sh
+scripts/contract.sh
+scripts/emit_http.sh   # or: scripts/emit_ws.sh
+scripts/e2e_http.sh    # or: scripts/e2e_ws.sh
+```
+
 ## Emulator
 ```
 cargo run -p pitgun-emulator -- \
