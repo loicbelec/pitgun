@@ -1,7 +1,7 @@
 use pitgun_codec_json::{EventBatchDto, SESSION_ENVELOPE_SCHEMA_VERSION};
 use pitgun_contract::game::v1::GameSimulationRequestV1;
 use pitgun_source_physics::game::batching::telemetry_to_event_batches;
-use pitgun_source_physics::game::simulate_request;
+use pitgun_source_physics::game::{list_tracks, simulate_request, simulate_session};
 use serde::Serialize;
 use wasm_bindgen::prelude::*;
 
@@ -25,6 +25,19 @@ pub fn simulate_batches(request_json: &str) -> String {
     }
 }
 
+#[wasm_bindgen]
+pub fn simulate_session_json(session_request_json: String) -> String {
+    match simulate_session_json_inner(&session_request_json) {
+        Ok(payload) => payload,
+        Err(err) => serde_json::json!({"error": err}).to_string(),
+    }
+}
+
+#[wasm_bindgen]
+pub fn list_tracks_json() -> String {
+    serde_json::to_string(list_tracks()).unwrap_or_else(|_| "[]".to_string())
+}
+
 fn simulate_batches_inner(request_json: &str) -> Result<String, String> {
     let request: GameSimulationRequestV1 =
         serde_json::from_str(request_json).map_err(|err| format!("invalid request JSON: {err}"))?;
@@ -44,4 +57,13 @@ fn simulate_batches_inner(request_json: &str) -> Result<String, String> {
         .collect();
 
     serde_json::to_string(&envelopes).map_err(|err| format!("failed to serialize batches: {err}"))
+}
+
+fn simulate_session_json_inner(request_json: &str) -> Result<String, String> {
+    let request: pitgun_source_physics::game::session::GameSessionRequestV1 =
+        serde_json::from_str(request_json)
+            .map_err(|err| format!("invalid session request JSON: {err}"))?;
+    let result = simulate_session(&request).map_err(|err| format!("session failed: {err}"))?;
+    serde_json::to_string(&result)
+        .map_err(|err| format!("failed to serialize session result: {err}"))
 }

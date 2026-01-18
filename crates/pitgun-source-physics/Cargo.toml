@@ -8,6 +8,7 @@ serde = { version = "1", features = ["derive"] }
 anyhow = "1"
 csv = "1"
 serde_json = "1"
+pitgun-codec-json = { path = "../pitgun-codec-json" }
 pitgun-contract = { path = "../pitgun-contract" }
 pitgun-core = { path = "../pitgun-core" }
 
@@ -16,7 +17,6 @@ criterion = { version = "0.5", features = ["html_reports"] }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 clap = { version = "4.4", features = ["derive"] }
-pitgun-codec-json = { path = "../pitgun-codec-json" }
 pitgun-codec-udp = { path = "../pitgun-codec-udp" }
 pitgun-signing = { path = "../pitgun-signing" }
 reqwest = { version = "0.11", features = ["blocking", "json"] }

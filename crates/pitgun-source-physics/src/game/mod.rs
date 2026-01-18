@@ -2,8 +2,10 @@ use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
 pub mod batching;
+pub mod competitors;
 pub mod events;
 pub mod json;
+pub mod session;
 pub mod summary;
 pub mod udp;
 
@@ -14,8 +16,15 @@ use pitgun_contract::game::v1::{
 
 use crate::{load_track_from_csv_bytes, load_track_from_csv_path, run_simulation, TrackPoint};
 
+pub use competitors::{generate_competitors, CompetitorArchetype, CompetitorProfile};
+pub use session::{simulate_session, GameSessionRequestV1, GameSessionResultV1};
+
 pub const DEFAULT_TRACK_ID: &str = "demo-oval";
+pub const TRACK_IDS: [&str; 3] = ["demo-oval", "spa", "suzuka"];
+
 const DEFAULT_TRACK_CSV: &str = include_str!("../../assets/tracks/demo-oval.csv");
+const SPA_TRACK_CSV: &str = include_str!("../../assets/tracks/spa.csv");
+const SUZUKA_TRACK_CSV: &str = include_str!("../../assets/tracks/suzuka.csv");
 
 #[derive(Debug)]
 pub enum GameSimulationError {
@@ -57,6 +66,8 @@ impl Default for TrackRegistry {
             tracks: HashMap::new(),
         };
         registry.insert_embedded(DEFAULT_TRACK_ID, DEFAULT_TRACK_CSV);
+        registry.insert_embedded("spa", SPA_TRACK_CSV);
+        registry.insert_embedded("suzuka", SUZUKA_TRACK_CSV);
         registry
     }
 }
@@ -84,6 +95,15 @@ impl TrackRegistry {
                 .map_err(|err| GameSimulationError::TrackLoad(err.to_string())),
         }
     }
+}
+
+pub fn load_track(track_id: &str) -> Result<Vec<TrackPoint>, GameSimulationError> {
+    let registry = TrackRegistry::default();
+    registry.load(track_id)
+}
+
+pub fn list_tracks() -> &'static [&'static str] {
+    &TRACK_IDS
 }
 
 pub fn simulate_request(
