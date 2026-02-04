@@ -34,7 +34,7 @@ mod f1;
 // Re-export codec implementations
 pub use ecubridge::{
     DataTypeCode, EcuBridgeCodec, EcuBridgePacketBuilder, PacketFlags, PacketHeader,
-    ECUBRIDGE_HEADER_SIZE, ECUBRIDGE_MAGIC, ECUBRIDGE_PACKET_SIZE,
+    ECUBRIDGE_MAGIC, ECUBRIDGE_MIN_SIZE, ECUBRIDGE_PACKET_SIZE,
 };
 pub use f1::{
     param_ids as f1_params, F1Header, F1PacketType, F1UdpCodec, F1_HEADER_SIZE,

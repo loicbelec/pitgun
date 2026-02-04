@@ -183,10 +183,11 @@ impl PhysicsStats {
 /// Async physics telemetry source
 pub struct AsyncPhysicsSource {
     config: AsyncPhysicsConfig,
+    source_config: SourceConfig,
     state: Arc<RwLock<SourceState>>,
     stats: Arc<PhysicsStats>,
     start_time: Instant,
-    frame_tx: broadcast::Sender<TelemetryFrame>,
+    frame_tx: Option<mpsc::UnboundedSender<TelemetryFrame>>,
     shutdown_tx: mpsc::Sender<()>,
     shutdown_rx: Option<mpsc::Receiver<()>>,
 }
@@ -194,15 +195,15 @@ pub struct AsyncPhysicsSource {
 impl AsyncPhysicsSource {
     /// Creates a new async physics source
     pub fn new(config: AsyncPhysicsConfig) -> Self {
-        let (frame_tx, _) = broadcast::channel(config.channel_capacity);
         let (shutdown_tx, shutdown_rx) = mpsc::channel(1);
 
         Self {
+            source_config: SourceConfig::default(),
             config,
-            state: Arc::new(RwLock::new(SourceState::Stopped)),
+            state: Arc::new(RwLock::new(SourceState::Idle)),
             stats: Arc::new(PhysicsStats::default()),
             start_time: Instant::now(),
-            frame_tx,
+            frame_tx: None,
             shutdown_tx,
             shutdown_rx: Some(shutdown_rx),
         }
@@ -262,7 +263,7 @@ impl AsyncPhysicsSource {
         config: AsyncPhysicsConfig,
         state: Arc<RwLock<SourceState>>,
         stats: Arc<PhysicsStats>,
-        frame_tx: broadcast::Sender<TelemetryFrame>,
+        frame_tx: mpsc::UnboundedSender<TelemetryFrame>,
         mut shutdown_rx: mpsc::Receiver<()>,
     ) {
         use pitgun_core::Source;
@@ -330,43 +331,54 @@ impl TelemetrySource for AsyncPhysicsSource {
         &self.config.source_id
     }
 
+    fn source_id(&self) -> &str {
+        &self.config.source_id
+    }
+
     fn source_type(&self) -> SourceType {
         SourceType::Physics
     }
 
-    fn metadata(&self) -> SourceMetadata {
-        SourceMetadata {
-            id: self.config.source_id.clone(),
-            name: format!("Physics Source ({}Hz)", self.config.physics.tick_hz),
-            source_type: SourceType::Physics,
-            version: Some(env!("CARGO_PKG_VERSION").into()),
-            description: Some(format!(
-                "Deterministic physics simulation at {}Hz",
-                self.config.physics.tick_hz
-            )),
-            capabilities: vec!["deterministic".into(), "simulation".into()],
-            tags: vec!["physics".into(), "simulation".into()],
-        }
+    fn state(&self) -> SourceState {
+        self.state.try_read().map(|s| *s).unwrap_or(SourceState::Idle)
     }
 
-    async fn start(&mut self) -> SourceResult<()> {
-        let current_state = *self.state.read().await;
+    fn metadata(&self) -> SourceMetadata {
+        SourceMetadata::new(
+            &self.config.source_id,
+            &format!("Physics Source ({}Hz)", self.config.physics.tick_hz),
+            SourceType::Physics,
+        )
+    }
+
+    fn stats(&self) -> SourceStats {
+        self.stats
+            .to_source_stats(self.start_time, self.config.physics.tick_hz)
+    }
+
+    fn config(&self) -> &SourceConfig {
+        &self.source_config
+    }
+
+    async fn start(&mut self, tx: mpsc::UnboundedSender<TelemetryFrame>) -> SourceResult<()> {
+        let current_state = self.state();
         if matches!(current_state, SourceState::Running) {
-            return Err(SourceError::invalid_state("already running"));
+            return Err(SourceError::AlreadyRunning);
         }
 
         let shutdown_rx = self
             .shutdown_rx
             .take()
-            .ok_or_else(|| SourceError::invalid_state("source already started"))?;
+            .ok_or_else(|| SourceError::AlreadyRunning)?;
 
-        *self.state.write().await = SourceState::Starting;
+        *self.state.write().await = SourceState::Connecting;
         self.start_time = Instant::now();
+        self.frame_tx = Some(tx.clone());
 
         let config = self.config.clone();
         let state = Arc::clone(&self.state);
         let stats = Arc::clone(&self.stats);
-        let frame_tx = self.frame_tx.clone();
+        let frame_tx = tx;
 
         tokio::spawn(async move {
             Self::simulation_loop(config, state, stats, frame_tx, shutdown_rx).await;
@@ -375,12 +387,12 @@ impl TelemetrySource for AsyncPhysicsSource {
         // Wait for running state
         for _ in 0..50 {
             tokio::time::sleep(Duration::from_millis(10)).await;
-            if matches!(*self.state.read().await, SourceState::Running) {
+            if matches!(self.state(), SourceState::Running) {
                 return Ok(());
             }
         }
 
-        Err(SourceError::Timeout("start timed out".into()))
+        Err(SourceError::Timeout(Duration::from_millis(500)))
     }
 
     async fn stop(&mut self) -> SourceResult<()> {
@@ -388,50 +400,12 @@ impl TelemetrySource for AsyncPhysicsSource {
 
         for _ in 0..50 {
             tokio::time::sleep(Duration::from_millis(10)).await;
-            if matches!(*self.state.read().await, SourceState::Stopped) {
+            if matches!(self.state(), SourceState::Stopped) {
                 return Ok(());
             }
         }
 
-        Err(SourceError::Timeout("stop timed out".into()))
-    }
-
-    async fn state(&self) -> SourceState {
-        *self.state.read().await
-    }
-
-    async fn stats(&self) -> SourceStats {
-        self.stats
-            .to_source_stats(self.start_time, self.config.physics.tick_hz)
-    }
-
-    fn subscribe(&self) -> mpsc::Receiver<TelemetryFrame> {
-        let (tx, rx) = mpsc::channel(self.config.channel_capacity);
-        let mut broadcast_rx = self.frame_tx.subscribe();
-
-        tokio::spawn(async move {
-            while let Ok(frame) = broadcast_rx.recv().await {
-                if tx.send(frame).await.is_err() {
-                    break;
-                }
-            }
-        });
-
-        rx
-    }
-
-    async fn configure(&mut self, config: SourceConfig) -> SourceResult<()> {
-        if let Some(tick_hz_str) = config.options.get("tick_hz") {
-            self.config.physics.tick_hz = tick_hz_str
-                .parse()
-                .map_err(|_| SourceError::config("invalid tick_hz"))?;
-        }
-
-        if let Some(real_time_str) = config.options.get("real_time") {
-            self.config.real_time = real_time_str == "true";
-        }
-
-        Ok(())
+        Err(SourceError::Timeout(Duration::from_millis(500)))
     }
 }
 

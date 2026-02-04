@@ -292,7 +292,7 @@ impl PipelineBuilder {
     /// For full source instantiation, use `build_with_factory`.
     pub fn build(self) -> SourceResult<(TelemetryPipeline, Vec<(String, SourceConfig)>)> {
         if self.sources.is_empty() {
-            return Err(SourceError::config("no sources configured"));
+            return Err(SourceError::InvalidConfig("no sources configured".into()));
         }
 
         let pipeline = if let Some(registry) = self.registry {
@@ -317,7 +317,7 @@ impl PipelineBuilder {
         Fut: std::future::Future<Output = SourceResult<Box<dyn pitgun_contract::TelemetrySource + Send>>>,
     {
         if self.sources.is_empty() {
-            return Err(SourceError::config("no sources configured"));
+            return Err(SourceError::InvalidConfig("no sources configured".into()));
         }
 
         let mut pipeline = if let Some(registry) = self.registry {
@@ -328,7 +328,7 @@ impl PipelineBuilder {
 
         for (name, config) in self.sources {
             let source = factory(name.clone(), config).await?;
-            pipeline.add_source(&name, source)?;
+            pipeline.add_source_boxed(&name, source)?;
         }
 
         Ok(pipeline)

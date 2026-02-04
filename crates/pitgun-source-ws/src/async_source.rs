@@ -104,12 +104,8 @@ impl WsSourceConfig {
 }
 
 impl From<WsSourceConfig> for SourceConfig {
-    fn from(cfg: WsSourceConfig) -> Self {
-        SourceConfig::new("websocket", &cfg.source_id)
-            .with_option("url", cfg.url)
-            .with_option("reconnect", cfg.reconnect.to_string())
-            .with_option("reconnect_delay_ms", cfg.reconnect_delay.as_millis().to_string())
-            .with_option("channel_capacity", cfg.channel_capacity.to_string())
+    fn from(_cfg: WsSourceConfig) -> Self {
+        SourceConfig::default()
     }
 }
 
@@ -127,37 +123,29 @@ struct WsStats {
 
 impl WsStats {
     fn to_source_stats(&self, start_time: Instant) -> SourceStats {
-        let samples = self.samples_produced.load(Ordering::Relaxed);
+        let frames = self.frames_produced.load(Ordering::Relaxed);
         let elapsed = start_time.elapsed().as_secs_f64();
-        let rate = if elapsed > 0.0 {
-            samples as f64 / elapsed
+        let fps = if elapsed > 0.0 {
+            frames as f64 / elapsed
         } else {
             0.0
         };
 
         SourceStats {
-            frames_produced: self.frames_produced.load(Ordering::Relaxed),
-            samples_produced: samples,
-            bytes_processed: self.bytes_received.load(Ordering::Relaxed),
-            errors: self.decode_errors.load(Ordering::Relaxed),
-            sample_rate_hz: rate,
-            uptime: start_time.elapsed(),
-            custom: [
-                (
-                    "messages_received".into(),
-                    self.messages_received.load(Ordering::Relaxed) as f64,
-                ),
-                (
-                    "messages_decoded".into(),
-                    self.messages_decoded.load(Ordering::Relaxed) as f64,
-                ),
-                (
-                    "reconnect_count".into(),
-                    self.reconnect_count.load(Ordering::Relaxed) as f64,
-                ),
-            ]
-            .into_iter()
-            .collect(),
+            frames_received: frames,
+            bytes_received: self.bytes_received.load(Ordering::Relaxed),
+            frames_dropped: 0,
+            decode_errors: self.decode_errors.load(Ordering::Relaxed),
+            connection_errors: 0,
+            current_fps: fps,
+            average_fps: fps,
+            peak_fps: fps,
+            avg_latency_us: 0,
+            p99_latency_us: 0,
+            last_frame_at_us: None,
+            started_at_us: None,
+            uptime_secs: elapsed,
+            reconnect_count: self.reconnect_count.load(Ordering::Relaxed) as u32,
         }
     }
 }
@@ -165,10 +153,11 @@ impl WsStats {
 /// Async WebSocket telemetry source
 pub struct AsyncWsSource {
     config: WsSourceConfig,
+    source_config: SourceConfig,
     state: Arc<RwLock<SourceState>>,
     stats: Arc<WsStats>,
     start_time: Instant,
-    frame_tx: broadcast::Sender<TelemetryFrame>,
+    frame_tx: Option<mpsc::UnboundedSender<TelemetryFrame>>,
     shutdown_tx: mpsc::Sender<()>,
     shutdown_rx: Option<mpsc::Receiver<()>>,
 }
@@ -176,15 +165,15 @@ pub struct AsyncWsSource {
 impl AsyncWsSource {
     /// Creates a new async WebSocket source
     pub fn new(config: WsSourceConfig) -> Self {
-        let (frame_tx, _) = broadcast::channel(config.channel_capacity);
         let (shutdown_tx, shutdown_rx) = mpsc::channel(1);
 
         Self {
+            source_config: SourceConfig::default(),
             config,
-            state: Arc::new(RwLock::new(SourceState::Stopped)),
+            state: Arc::new(RwLock::new(SourceState::Idle)),
             stats: Arc::new(WsStats::default()),
             start_time: Instant::now(),
-            frame_tx,
+            frame_tx: None,
             shutdown_tx,
             shutdown_rx: Some(shutdown_rx),
         }
@@ -203,6 +192,7 @@ impl AsyncWsSource {
                     parameter_id: i as u16,
                     value: SampleValue::F64(e.value),
                     quality: SignalQuality::Good,
+                    timestamp_offset_us: None,
                 })
                 .collect();
 
@@ -218,34 +208,6 @@ impl AsyncWsSource {
             }
         }
 
-        // Try to parse as generic JSON telemetry
-        if let Ok(json) = serde_json::from_str::<serde_json::Value>(text) {
-            if let Some(obj) = json.as_object() {
-                let samples: Vec<Sample> = obj
-                    .iter()
-                    .enumerate()
-                    .filter_map(|(i, (_, v))| {
-                        v.as_f64().map(|val| Sample {
-                            parameter_id: i as u16,
-                            value: SampleValue::F64(val),
-                            quality: SignalQuality::Good,
-                        })
-                    })
-                    .collect();
-
-                if !samples.is_empty() {
-                    *sequence += 1;
-                    return Some(
-                        TelemetryFrameBuilder::new()
-                            .source_id(source_id)
-                            .sequence(*sequence)
-                            .samples(samples)
-                            .build(),
-                    );
-                }
-            }
-        }
-
         None
     }
 
@@ -254,13 +216,13 @@ impl AsyncWsSource {
         config: WsSourceConfig,
         state: Arc<RwLock<SourceState>>,
         stats: Arc<WsStats>,
-        frame_tx: broadcast::Sender<TelemetryFrame>,
+        frame_tx: mpsc::UnboundedSender<TelemetryFrame>,
         mut shutdown_rx: mpsc::Receiver<()>,
     ) {
         let url = match Url::parse(&config.url) {
             Ok(u) => u,
-            Err(e) => {
-                *state.write().await = SourceState::Error(format!("invalid URL: {}", e));
+            Err(_e) => {
+                *state.write().await = SourceState::Error;
                 return;
             }
         };
@@ -270,7 +232,7 @@ impl AsyncWsSource {
 
         loop {
             // Try to connect
-            *state.write().await = SourceState::Starting;
+            *state.write().await = SourceState::Connecting;
 
             let ws_stream = match connect_async(&url).await {
                 Ok((stream, _)) => stream,
@@ -291,7 +253,7 @@ impl AsyncWsSource {
                         reconnect_delay = std::cmp::min(reconnect_delay * 2, config.max_reconnect_delay);
                         continue;
                     } else {
-                        *state.write().await = SourceState::Error(format!("connection failed: {}", e));
+                        *state.write().await = SourceState::Error;
                         return;
                     }
                 }
@@ -359,7 +321,7 @@ impl AsyncWsSource {
             }
 
             stats.reconnect_count.fetch_add(1, Ordering::Relaxed);
-            *state.write().await = SourceState::Starting;
+            *state.write().await = SourceState::Reconnecting;
         }
     }
 }
@@ -370,43 +332,53 @@ impl TelemetrySource for AsyncWsSource {
         &self.config.source_id
     }
 
+    fn source_id(&self) -> &str {
+        &self.config.source_id
+    }
+
     fn source_type(&self) -> SourceType {
         SourceType::WebSocket
     }
 
-    fn metadata(&self) -> SourceMetadata {
-        SourceMetadata {
-            id: self.config.source_id.clone(),
-            name: format!("WebSocket Source ({})", self.config.url),
-            source_type: SourceType::WebSocket,
-            version: Some(env!("CARGO_PKG_VERSION").into()),
-            description: Some(format!(
-                "WebSocket telemetry source connected to {}",
-                self.config.url
-            )),
-            capabilities: vec!["decode".into(), "reconnect".into()],
-            tags: vec!["websocket".into(), "json".into()],
-        }
+    fn state(&self) -> SourceState {
+        self.state.try_read().map(|s| *s).unwrap_or(SourceState::Idle)
     }
 
-    async fn start(&mut self) -> SourceResult<()> {
-        let current_state = *self.state.read().await;
+    fn metadata(&self) -> SourceMetadata {
+        SourceMetadata::new(
+            &self.config.source_id,
+            &format!("WebSocket Source ({})", self.config.url),
+            SourceType::WebSocket,
+        )
+    }
+
+    fn stats(&self) -> SourceStats {
+        self.stats.to_source_stats(self.start_time)
+    }
+
+    fn config(&self) -> &SourceConfig {
+        &self.source_config
+    }
+
+    async fn start(&mut self, tx: mpsc::UnboundedSender<TelemetryFrame>) -> SourceResult<()> {
+        let current_state = self.state();
         if matches!(current_state, SourceState::Running) {
-            return Err(SourceError::invalid_state("already running"));
+            return Err(SourceError::AlreadyRunning);
         }
 
         let shutdown_rx = self
             .shutdown_rx
             .take()
-            .ok_or_else(|| SourceError::invalid_state("source already started"))?;
+            .ok_or_else(|| SourceError::AlreadyRunning)?;
 
-        *self.state.write().await = SourceState::Starting;
+        *self.state.write().await = SourceState::Connecting;
         self.start_time = Instant::now();
+        self.frame_tx = Some(tx.clone());
 
         let config = self.config.clone();
         let state = Arc::clone(&self.state);
         let stats = Arc::clone(&self.stats);
-        let frame_tx = self.frame_tx.clone();
+        let frame_tx = tx;
 
         tokio::spawn(async move {
             Self::receive_loop(config, state, stats, frame_tx, shutdown_rx).await;
@@ -415,14 +387,14 @@ impl TelemetrySource for AsyncWsSource {
         // Wait for running or error state
         for _ in 0..100 {
             tokio::time::sleep(Duration::from_millis(10)).await;
-            match *self.state.read().await {
+            match self.state() {
                 SourceState::Running => return Ok(()),
-                SourceState::Error(ref e) => return Err(SourceError::connection(e.clone())),
+                SourceState::Error => return Err(SourceError::ConnectionFailed("connection failed".into())),
                 _ => {}
             }
         }
 
-        Err(SourceError::Timeout("start timed out".into()))
+        Err(SourceError::Timeout(Duration::from_secs(1)))
     }
 
     async fn stop(&mut self) -> SourceResult<()> {
@@ -430,49 +402,12 @@ impl TelemetrySource for AsyncWsSource {
 
         for _ in 0..50 {
             tokio::time::sleep(Duration::from_millis(10)).await;
-            if matches!(*self.state.read().await, SourceState::Stopped) {
+            if matches!(self.state(), SourceState::Stopped) {
                 return Ok(());
             }
         }
 
-        Err(SourceError::Timeout("stop timed out".into()))
-    }
-
-    async fn state(&self) -> SourceState {
-        *self.state.read().await
-    }
-
-    async fn stats(&self) -> SourceStats {
-        self.stats.to_source_stats(self.start_time)
-    }
-
-    fn subscribe(&self) -> mpsc::Receiver<TelemetryFrame> {
-        let (tx, rx) = mpsc::channel(self.config.channel_capacity);
-        let mut broadcast_rx = self.frame_tx.subscribe();
-
-        tokio::spawn(async move {
-            while let Ok(frame) = broadcast_rx.recv().await {
-                if tx.send(frame).await.is_err() {
-                    break;
-                }
-            }
-        });
-
-        rx
-    }
-
-    async fn configure(&mut self, config: SourceConfig) -> SourceResult<()> {
-        if let Some(reconnect_str) = config.options.get("reconnect") {
-            self.config.reconnect = reconnect_str == "true";
-        }
-
-        if let Some(delay_str) = config.options.get("reconnect_delay_ms") {
-            if let Ok(ms) = delay_str.parse::<u64>() {
-                self.config.reconnect_delay = Duration::from_millis(ms);
-            }
-        }
-
-        Ok(())
+        Err(SourceError::Timeout(Duration::from_millis(500)))
     }
 }
 

@@ -27,7 +27,7 @@
 //! let converted = converter.convert(42, 1200.0)?; // Returns 80.0
 //! ```
 
-use pitgun_contract::{ParameterRegistry, TelemetryFrame, TelemetrySample};
+use pitgun_contract::{ParameterId, ParameterRegistry, Sample, SampleValue, TelemetryFrame, TelemetryFrameBuilder};
 use std::collections::HashMap;
 
 /// Conversion method for a parameter
@@ -162,7 +162,7 @@ impl ConversionMethod {
 /// Converter service for parameter value conversion
 #[derive(Default)]
 pub struct ConverterService {
-    conversions: HashMap<u32, ConversionMethod>,
+    conversions: HashMap<ParameterId, ConversionMethod>,
 }
 
 impl ConverterService {
@@ -179,13 +179,13 @@ impl ConverterService {
 
         // Iterate through registry and extract conversions
         // This assumes the registry has conversion info stored
-        for (id, def) in registry.iter() {
+        for param in registry.iter() {
             // Check for conversion metadata
             // Default to identity if no conversion defined
-            if def.unit.is_some() {
+            if !param.unit.is_empty() {
                 // If there's a unit, the parameter might need conversion
                 // For now, register identity - real impl would parse conversion from def
-                service.register(*id, ConversionMethod::Identity);
+                service.register(param.id, ConversionMethod::Identity);
             }
         }
 
@@ -193,60 +193,75 @@ impl ConverterService {
     }
 
     /// Registers a conversion method for a parameter
-    pub fn register(&mut self, parameter_id: u32, method: ConversionMethod) {
+    pub fn register(&mut self, parameter_id: ParameterId, method: ConversionMethod) {
         self.conversions.insert(parameter_id, method);
     }
 
     /// Unregisters a conversion method
-    pub fn unregister(&mut self, parameter_id: u32) -> Option<ConversionMethod> {
+    pub fn unregister(&mut self, parameter_id: ParameterId) -> Option<ConversionMethod> {
         self.conversions.remove(&parameter_id)
     }
 
     /// Checks if a parameter has a conversion registered
-    pub fn has_conversion(&self, parameter_id: u32) -> bool {
+    pub fn has_conversion(&self, parameter_id: ParameterId) -> bool {
         self.conversions.contains_key(&parameter_id)
     }
 
     /// Gets the conversion method for a parameter
-    pub fn get(&self, parameter_id: u32) -> Option<&ConversionMethod> {
+    pub fn get(&self, parameter_id: ParameterId) -> Option<&ConversionMethod> {
         self.conversions.get(&parameter_id)
     }
 
     /// Converts a single value
-    pub fn convert(&self, parameter_id: u32, value: f64) -> f64 {
+    pub fn convert(&self, parameter_id: ParameterId, value: f64) -> f64 {
         match self.conversions.get(&parameter_id) {
             Some(method) => method.apply(value),
             None => value, // Pass through if no conversion
         }
     }
 
-    /// Converts a telemetry sample in place
-    pub fn convert_sample(&self, sample: &mut TelemetrySample) {
+    /// Converts a telemetry sample, returning the converted f64 value
+    pub fn convert_sample(&self, sample: &Sample) -> Option<f64> {
+        let raw_value = sample.as_f64()?;
         if let Some(method) = self.conversions.get(&sample.parameter_id) {
-            sample.value = method.apply(sample.value);
+            Some(method.apply(raw_value))
+        } else {
+            Some(raw_value)
         }
     }
 
     /// Converts all samples in a frame
     ///
-    /// Returns a new frame with converted values.
+    /// Returns a new frame with converted values stored as F64.
     pub fn convert_frame(&self, frame: &TelemetryFrame) -> TelemetryFrame {
         let mut converted_samples = Vec::with_capacity(frame.sample_count());
 
-        for sample in frame.samples() {
-            let mut new_sample = sample.clone();
-            if let Some(method) = self.conversions.get(&sample.parameter_id) {
-                new_sample.value = method.apply(sample.value);
+        for sample in &frame.samples {
+            if let Some(raw_value) = sample.as_f64() {
+                let converted_value = if let Some(method) = self.conversions.get(&sample.parameter_id) {
+                    method.apply(raw_value)
+                } else {
+                    raw_value
+                };
+                converted_samples.push(Sample {
+                    parameter_id: sample.parameter_id,
+                    value: SampleValue::F64(converted_value),
+                    quality: sample.quality,
+                    timestamp_offset_us: sample.timestamp_offset_us,
+                });
+            } else {
+                // Keep non-numeric samples as-is
+                converted_samples.push(sample.clone());
             }
-            converted_samples.push(new_sample);
         }
 
-        TelemetryFrame::new(
-            frame.source_id(),
-            frame.sequence(),
-            frame.timestamp(),
-            converted_samples,
-        )
+        TelemetryFrameBuilder::new()
+            .session_id(frame.session_id)
+            .sequence(frame.sequence)
+            .timestamp_us(frame.timestamp_us)
+            .source_id(&frame.source_id)
+            .samples(converted_samples)
+            .build()
     }
 
     /// Returns the number of registered conversions
@@ -260,7 +275,7 @@ impl ConverterService {
     }
 
     /// Returns an iterator over parameter IDs with conversions
-    pub fn parameter_ids(&self) -> impl Iterator<Item = &u32> {
+    pub fn parameter_ids(&self) -> impl Iterator<Item = &ParameterId> {
         self.conversions.keys()
     }
 }
@@ -281,7 +296,7 @@ impl BatchConverter {
     }
 
     /// Converts a batch of values for a single parameter
-    pub fn convert_batch(&mut self, parameter_id: u32, values: &[f64]) -> &[f64] {
+    pub fn convert_batch(&mut self, parameter_id: ParameterId, values: &[f64]) -> &[f64] {
         self.buffer.clear();
         self.buffer.reserve(values.len());
 
@@ -297,7 +312,7 @@ impl BatchConverter {
     }
 
     /// Converts values in place
-    pub fn convert_in_place(&self, parameter_id: u32, values: &mut [f64]) {
+    pub fn convert_in_place(&self, parameter_id: ParameterId, values: &mut [f64]) {
         if let Some(method) = self.service.get(parameter_id) {
             for value in values {
                 *value = method.apply(*value);

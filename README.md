@@ -1,41 +1,70 @@
 [![Pitgun](docs/img/pitgun_transparent.png)](https://pitgun.loicbelec.com)
 
 ## What is Pitgun?
-Pitgun is a modular Rust workspace for telemetry and high-frequency data processing.
+Pitgun is a modular Rust workspace for telemetry and high-frequency data processing. It ingests raw signals from multiple sources, applies manifest-driven processing, and emits channels and metrics in real time.
 
 ## ⚠️ WARNING
- This repository is **under active development**. Interfaces may change.
+This repository is **under active development**. Interfaces may change.
 
-## 🧱 Framework crates
-- **pitgun-core**: core library with domain types, parsers, processors, and sinks
-- **pitgun-codec-udp**: Pitgun UDP v1 decoding
-- **pitgun-source-udp**: UDP transport source (codec-agnostic)
-- **pitgun-codec-json**: SessionEnvelope JSON codec
-- **pitgun-source-ws**: WebSocket client source
-- **pitgun-emulator**: UDP emitter that replays CSV datasets (multi-channel) with optional pacing
+## 🧱 Crates
+
+### Contract & Core
+| Crate | Description |
+|-------|-------------|
+| **pitgun-contract** | `TelemetrySource` trait, `TelemetryFrame` model, `ParameterRegistry` |
+| **pitgun-core** | Formula engine, multi-source pipeline, converter service, manifests |
+| **pitgun-policy** | Access control, rate limiting, JWT verification |
+| **pitgun-signing** | Cryptographic signing utilities |
+
+### Codecs
+| Crate | Description |
+|-------|-------------|
+| **pitgun-codec-udp** | UDP binary wire format decoding |
+| **pitgun-codec-json** | SessionEnvelope JSON codec |
+
+### Sources
+All sources implement the `TelemetrySource` trait from `pitgun-contract`.
+
+| Crate | Transport | Use Case |
+|-------|-----------|----------|
+| **pitgun-source-udp** | UDP unicast/multicast | Binary telemetry, sensors |
+| **pitgun-source-ws** | WebSocket | Games, web apps, JSON streams |
+| **pitgun-source-kafka** | Kafka | High-volume data platforms |
+| **pitgun-source-mqtt** | MQTT | IoT devices, pub/sub |
+| **pitgun-source-physics** | In-process | Simulated/computed channels |
+
+### Optional
+| Crate | Description |
+|-------|-------------|
+| **pitgun-emulator** | Dataset playback and synthetic channels |
 
 ## 🧰 Apps
-- **pitgun-cli**: command-line interface to ingest, transform, and export telemetry data (manifest-driven or flags)
+- **pitgun-cli**: Command-line interface to ingest, transform, and export telemetry data
 
-## ⚙️ Current features
-- Emit UDP packets from CSV datasets (`Timestamp, ChannelValue`) at configurable pace (real-time or as fast as possible)
-- Subscribe over UDP and route through a pipeline of processors/sinks
-- Processors:
-  - `channel_filter` (whitelist channels)
-  - `scale` (multiply one channel by a factor)
-  - `segment_aggregate` (window by segment key with mean/max/min/stddev/count/sum)
-  - `stats` (print per-channel counts/gaps)
-- Sinks:
-  - Console JSON printer
-  - Per-channel CSV recording (optional)
-- Declarative YAML manifest to assemble the pipeline (see `manifests/dummy-pitgun.yaml`)
-- Minimal binary frame format:
-```
-[len_channel:u16][channel][ts_csv:u128 LE][value:f64 LE]
-```
+## ⚙️ Features
+
+### Multi-Source Pipeline
+- Ingest from UDP, WebSocket, Kafka, MQTT simultaneously
+- Unified `TelemetryFrame` format across all sources
+- Parameter registry with YAML definitions
+
+### Processors
+- `channel_filter` - whitelist channels
+- `scale` - multiply channel by a factor
+- `segment_aggregate` - window by segment key (mean/max/min/stddev/count/sum)
+- `stats` - per-channel counts and gaps
+
+### Sinks
+- Console JSON printer
+- Per-channel CSV recording
+
+### Wire Formats
+- **UDP v1**: Binary format `[len_channel:u16][channel][ts_ns:u128 LE][value:f64 LE]`
+- **JSON**: SessionEnvelope with schema versioning
 
 ## 🚀 Quickstart
-1) Emit telemetry from CSV:
+
+**1) Emit telemetry from CSV:**
 ```bash
 cargo run -p pitgun-emulator -- \
   --target 127.0.0.1:5001 \
@@ -44,25 +73,20 @@ cargo run -p pitgun-emulator -- \
   --pace
 ```
 
-2) Subscribe with a manifest-driven pipeline:
+**2) Subscribe with a manifest-driven pipeline:**
 ```bash
 cargo run -p pitgun-cli -- subscribe --config manifests/dummy-pitgun.yaml
 ```
-`dummy-pitgun.yaml` includes a channel filter, a scale processor, and stats + console sink.
 
-## 🧭 Backlog
+## 📚 Documentation
 
-- **Event reliability**  
-  Sequence numbers, loss detection, and consistent semantics across sources.
+- [ARCHITECTURE.md](ARCHITECTURE.md) - Core architecture and crate layout
+- [docs/WIRE_FORMATS.md](docs/WIRE_FORMATS.md) - Wire protocol specifications
+- [docs/segment_aggregation.md](docs/segment_aggregation.md) - Window aggregation feature
 
-- **Typed & shared wire format**  
-  Unified serialization crate for sources, processors, and sinks.
+## 🧭 Roadmap
 
-- **Ecosystem expansion**  
-  New sinks (Parquet, Kafka, Arrow), gRPC source, and manifest-driven pipelines.
-
-- **Developer experience**  
-  Bundle/Toolbox registry, improved CLI ergonomics, LLM-assisted manifest generation.
-
-- **Performance & robustness**  
-  Benchmarks, stress tests, memory profiling, and throughput optimisation.
+- **Event reliability**: Sequence numbers, loss detection
+- **Typed wire format**: Unified serialization across all components
+- **Ecosystem**: Parquet sink, Arrow integration
+- **Performance**: Benchmarks, memory profiling, throughput optimization

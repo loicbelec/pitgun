@@ -139,7 +139,7 @@ impl PipelineStats {
 struct SourceHandle {
     name: String,
     source: Box<dyn TelemetrySource + Send>,
-    receiver: Option<mpsc::Receiver<TelemetryFrame>>,
+    receiver: Option<mpsc::UnboundedReceiver<TelemetryFrame>>,
 }
 
 /// Multi-source telemetry pipeline
@@ -186,8 +186,17 @@ impl TelemetryPipeline {
     where
         S: TelemetrySource + Send + 'static,
     {
+        self.add_source_boxed(name, Box::new(source))
+    }
+
+    /// Adds a boxed telemetry source to the pipeline
+    pub fn add_source_boxed(
+        &mut self,
+        name: impl Into<String>,
+        source: Box<dyn TelemetrySource + Send>,
+    ) -> SourceResult<()> {
         if self.sources.len() >= self.config.max_sources {
-            return Err(SourceError::config(format!(
+            return Err(SourceError::InvalidConfig(format!(
                 "maximum sources ({}) exceeded",
                 self.config.max_sources
             )));
@@ -195,7 +204,7 @@ impl TelemetryPipeline {
 
         self.sources.push(SourceHandle {
             name: name.into(),
-            source: Box::new(source),
+            source,
             receiver: None,
         });
 
@@ -213,10 +222,10 @@ impl TelemetryPipeline {
     }
 
     /// Gets statistics for a specific source
-    pub async fn source_stats(&self, name: &str) -> Option<SourceStats> {
+    pub fn source_stats(&self, name: &str) -> Option<SourceStats> {
         for handle in &self.sources {
             if handle.name == name {
-                return Some(handle.source.stats().await);
+                return Some(handle.source.stats());
             }
         }
         None
@@ -247,27 +256,28 @@ impl TelemetryPipeline {
     pub async fn start(&mut self) -> SourceResult<()> {
         let current_state = *self.state.read().await;
         if matches!(current_state, SourceState::Running) {
-            return Err(SourceError::invalid_state("pipeline already running"));
+            return Err(SourceError::AlreadyRunning);
         }
 
         if self.sources.is_empty() {
-            return Err(SourceError::config("no sources configured"));
+            return Err(SourceError::InvalidConfig("no sources configured".into()));
         }
 
-        *self.state.write().await = SourceState::Starting;
+        *self.state.write().await = SourceState::Connecting;
         self.start_time = Instant::now();
 
         // Start all sources and collect their receivers
         for handle in &mut self.sources {
-            handle.source.start().await?;
-            handle.receiver = Some(handle.source.subscribe());
+            let (tx, rx) = mpsc::unbounded_channel();
+            handle.source.start(tx).await?;
+            handle.receiver = Some(rx);
         }
 
         // Take the shutdown receiver
         let shutdown_rx = self
             .shutdown_rx
             .take()
-            .ok_or_else(|| SourceError::invalid_state("pipeline already started"))?;
+            .ok_or_else(|| SourceError::AlreadyRunning)?;
 
         // Spawn the merge loop
         let stats = Arc::clone(&self.stats);
@@ -320,7 +330,7 @@ impl TelemetryPipeline {
 
     /// The merge loop that combines frames from all sources
     async fn merge_loop(
-        mut receivers: Vec<mpsc::Receiver<TelemetryFrame>>,
+        mut receivers: Vec<mpsc::UnboundedReceiver<TelemetryFrame>>,
         output_tx: broadcast::Sender<TelemetryFrame>,
         stats: Arc<PipelineStats>,
         state: Arc<RwLock<SourceState>>,
@@ -396,7 +406,7 @@ impl ValidationProcessor {
 impl FrameProcessor for ValidationProcessor {
     async fn process(&self, frame: TelemetryFrame) -> Option<TelemetryFrame> {
         // Validate each sample's parameter_id exists in registry
-        for sample in frame.samples() {
+        for sample in &frame.samples {
             if self.registry.get(sample.parameter_id).is_none() {
                 // Unknown parameter - could log or filter
             }
@@ -426,9 +436,9 @@ impl FrameProcessor for LoggingProcessor {
         eprintln!(
             "{}: seq={} samples={} source={}",
             self.prefix,
-            frame.sequence(),
+            frame.sequence,
             frame.sample_count(),
-            frame.source_id()
+            &frame.source_id
         );
         Some(frame)
     }

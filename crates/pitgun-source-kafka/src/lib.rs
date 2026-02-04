@@ -38,6 +38,7 @@
 //! ```
 
 use async_trait::async_trait;
+use futures::StreamExt;
 use pitgun_contract::{
     Sample, SampleValue, SignalQuality, SourceConfig, SourceError, SourceMetadata, SourceResult,
     SourceState, SourceStats, SourceType, TelemetryFrame, TelemetryFrameBuilder, TelemetrySource,
@@ -52,7 +53,7 @@ use std::collections::HashMap;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Arc;
 use std::time::{Duration, Instant};
-use tokio::sync::{broadcast, mpsc, RwLock};
+use tokio::sync::{mpsc, RwLock};
 
 /// Configuration for the Kafka source
 #[derive(Clone, Debug)]
@@ -166,14 +167,8 @@ impl KafkaSourceConfig {
 }
 
 impl From<KafkaSourceConfig> for SourceConfig {
-    fn from(cfg: KafkaSourceConfig) -> Self {
-        SourceConfig::new("kafka", &cfg.source_id)
-            .with_option("bootstrap_servers", cfg.bootstrap_servers)
-            .with_option("group_id", cfg.group_id)
-            .with_option("topics", cfg.topics.join(","))
-            .with_option("auto_offset_reset", cfg.auto_offset_reset)
-            .with_option("enable_auto_commit", cfg.enable_auto_commit.to_string())
-            .with_option("channel_capacity", cfg.channel_capacity.to_string())
+    fn from(_cfg: KafkaSourceConfig) -> Self {
+        SourceConfig::default()
     }
 }
 
@@ -191,37 +186,29 @@ struct KafkaStats {
 
 impl KafkaStats {
     fn to_source_stats(&self, start_time: Instant) -> SourceStats {
-        let samples = self.samples_produced.load(Ordering::Relaxed);
+        let frames = self.frames_produced.load(Ordering::Relaxed);
         let elapsed = start_time.elapsed().as_secs_f64();
-        let rate = if elapsed > 0.0 {
-            samples as f64 / elapsed
+        let fps = if elapsed > 0.0 {
+            frames as f64 / elapsed
         } else {
             0.0
         };
 
         SourceStats {
-            frames_produced: self.frames_produced.load(Ordering::Relaxed),
-            samples_produced: samples,
-            bytes_processed: self.bytes_received.load(Ordering::Relaxed),
-            errors: self.decode_errors.load(Ordering::Relaxed),
-            sample_rate_hz: rate,
-            uptime: start_time.elapsed(),
-            custom: [
-                (
-                    "messages_received".into(),
-                    self.messages_received.load(Ordering::Relaxed) as f64,
-                ),
-                (
-                    "messages_decoded".into(),
-                    self.messages_decoded.load(Ordering::Relaxed) as f64,
-                ),
-                (
-                    "partitions_assigned".into(),
-                    self.partitions_assigned.load(Ordering::Relaxed) as f64,
-                ),
-            ]
-            .into_iter()
-            .collect(),
+            frames_received: frames,
+            bytes_received: self.bytes_received.load(Ordering::Relaxed),
+            frames_dropped: 0,
+            decode_errors: self.decode_errors.load(Ordering::Relaxed),
+            connection_errors: 0,
+            current_fps: fps,
+            average_fps: fps,
+            peak_fps: fps,
+            avg_latency_us: 0,
+            p99_latency_us: 0,
+            last_frame_at_us: None,
+            started_at_us: None,
+            uptime_secs: elapsed,
+            reconnect_count: 0,
         }
     }
 }
@@ -229,10 +216,11 @@ impl KafkaStats {
 /// Kafka telemetry source
 pub struct KafkaSource {
     config: KafkaSourceConfig,
+    source_config: SourceConfig,
     state: Arc<RwLock<SourceState>>,
     stats: Arc<KafkaStats>,
     start_time: Instant,
-    frame_tx: broadcast::Sender<TelemetryFrame>,
+    frame_tx: Option<mpsc::UnboundedSender<TelemetryFrame>>,
     shutdown_tx: mpsc::Sender<()>,
     shutdown_rx: Option<mpsc::Receiver<()>>,
 }
@@ -240,15 +228,16 @@ pub struct KafkaSource {
 impl KafkaSource {
     /// Creates a new Kafka source
     pub fn new(config: KafkaSourceConfig) -> SourceResult<Self> {
-        let (frame_tx, _) = broadcast::channel(config.channel_capacity);
+        let source_config = SourceConfig::default();
         let (shutdown_tx, shutdown_rx) = mpsc::channel(1);
 
         Ok(Self {
             config,
-            state: Arc::new(RwLock::new(SourceState::Stopped)),
+            source_config,
+            state: Arc::new(RwLock::new(SourceState::Idle)),
             stats: Arc::new(KafkaStats::default()),
             start_time: Instant::now(),
-            frame_tx,
+            frame_tx: None,
             shutdown_tx,
             shutdown_rx: Some(shutdown_rx),
         })
@@ -274,6 +263,7 @@ impl KafkaSource {
                         parameter_id: i as u16,
                         value: SampleValue::F64(val),
                         quality: SignalQuality::Good,
+                        timestamp_offset_us: None,
                     })
                 })
                 .collect()
@@ -308,9 +298,9 @@ impl KafkaSource {
 
         // Add Kafka metadata
         builder = builder
-            .with_metadata("topic", topic)
-            .with_metadata("partition", &partition.to_string())
-            .with_metadata("offset", &offset.to_string());
+            .meta("topic", topic)
+            .meta("partition", &partition.to_string())
+            .meta("offset", &offset.to_string());
 
         Some(builder.build())
     }
@@ -320,16 +310,16 @@ impl KafkaSource {
         config: KafkaSourceConfig,
         state: Arc<RwLock<SourceState>>,
         stats: Arc<KafkaStats>,
-        frame_tx: broadcast::Sender<TelemetryFrame>,
+        frame_tx: mpsc::UnboundedSender<TelemetryFrame>,
         mut shutdown_rx: mpsc::Receiver<()>,
     ) {
-        use futures_util::StreamExt;
 
         // Create consumer
         let consumer: StreamConsumer = match config.build_client_config().create() {
             Ok(c) => c,
             Err(e) => {
-                *state.write().await = SourceState::Error(format!("failed to create consumer: {}", e));
+                eprintln!("Failed to create Kafka consumer: {}", e);
+                *state.write().await = SourceState::Error;
                 return;
             }
         };
@@ -337,7 +327,8 @@ impl KafkaSource {
         // Subscribe to topics
         let topics: Vec<&str> = config.topics.iter().map(String::as_str).collect();
         if let Err(e) = consumer.subscribe(&topics) {
-            *state.write().await = SourceState::Error(format!("failed to subscribe: {}", e));
+            eprintln!("Failed to subscribe to topics: {}", e);
+            *state.write().await = SourceState::Error;
             return;
         }
 
@@ -403,59 +394,69 @@ impl TelemetrySource for KafkaSource {
         &self.config.source_id
     }
 
+    fn source_id(&self) -> &str {
+        &self.config.source_id
+    }
+
     fn source_type(&self) -> SourceType {
         SourceType::Kafka
     }
 
-    fn metadata(&self) -> SourceMetadata {
-        SourceMetadata {
-            id: self.config.source_id.clone(),
-            name: format!("Kafka Source ({})", self.config.bootstrap_servers),
-            source_type: SourceType::Kafka,
-            version: Some(env!("CARGO_PKG_VERSION").into()),
-            description: Some(format!(
-                "Kafka consumer for topics: {}",
-                self.config.topics.join(", ")
-            )),
-            capabilities: vec!["consumer-group".into(), "multi-topic".into()],
-            tags: vec!["kafka".into(), self.config.group_id.clone()],
-        }
+    fn state(&self) -> SourceState {
+        self.state.try_read().map(|s| *s).unwrap_or(SourceState::Idle)
     }
 
-    async fn start(&mut self) -> SourceResult<()> {
-        let current_state = *self.state.read().await;
+    fn metadata(&self) -> SourceMetadata {
+        SourceMetadata::new(
+            &self.config.source_id,
+            format!("Kafka Source ({})", self.config.bootstrap_servers),
+            SourceType::Kafka,
+        )
+        .with_endpoint(&self.config.bootstrap_servers)
+        .with_tag("kafka")
+        .with_tag(&self.config.group_id)
+    }
+
+    fn stats(&self) -> SourceStats {
+        self.stats.to_source_stats(self.start_time)
+    }
+
+    fn config(&self) -> &SourceConfig {
+        &self.source_config
+    }
+
+    async fn start(&mut self, tx: mpsc::UnboundedSender<TelemetryFrame>) -> SourceResult<()> {
+        let current_state = self.state();
         if matches!(current_state, SourceState::Running) {
-            return Err(SourceError::invalid_state("already running"));
+            return Err(SourceError::AlreadyRunning);
         }
 
         let shutdown_rx = self
             .shutdown_rx
             .take()
-            .ok_or_else(|| SourceError::invalid_state("source already started"))?;
+            .ok_or_else(|| SourceError::AlreadyRunning)?;
 
-        *self.state.write().await = SourceState::Starting;
+        *self.state.write().await = SourceState::Connecting;
         self.start_time = Instant::now();
+        self.frame_tx = Some(tx.clone());
 
         let config = self.config.clone();
         let state = Arc::clone(&self.state);
         let stats = Arc::clone(&self.stats);
-        let frame_tx = self.frame_tx.clone();
 
         tokio::spawn(async move {
-            Self::consumer_loop(config, state, stats, frame_tx, shutdown_rx).await;
+            Self::consumer_loop(config, state, stats, tx, shutdown_rx).await;
         });
 
-        // Wait for running or error state
+        // Wait for running state
         for _ in 0..100 {
             tokio::time::sleep(Duration::from_millis(50)).await;
-            match *self.state.read().await {
-                SourceState::Running => return Ok(()),
-                SourceState::Error(ref e) => return Err(SourceError::connection(e.clone())),
-                _ => {}
+            if matches!(self.state(), SourceState::Running) {
+                return Ok(());
             }
         }
 
-        Err(SourceError::Timeout("start timed out".into()))
+        Err(SourceError::Timeout(Duration::from_secs(5)))
     }
 
     async fn stop(&mut self) -> SourceResult<()> {
@@ -463,59 +464,15 @@ impl TelemetrySource for KafkaSource {
 
         for _ in 0..50 {
             tokio::time::sleep(Duration::from_millis(10)).await;
-            if matches!(*self.state.read().await, SourceState::Stopped) {
+            if matches!(self.state(), SourceState::Stopped) {
                 return Ok(());
             }
         }
 
-        Err(SourceError::Timeout("stop timed out".into()))
-    }
-
-    async fn state(&self) -> SourceState {
-        *self.state.read().await
-    }
-
-    async fn stats(&self) -> SourceStats {
-        self.stats.to_source_stats(self.start_time)
-    }
-
-    fn subscribe(&self) -> mpsc::Receiver<TelemetryFrame> {
-        let (tx, rx) = mpsc::channel(self.config.channel_capacity);
-        let mut broadcast_rx = self.frame_tx.subscribe();
-
-        tokio::spawn(async move {
-            while let Ok(frame) = broadcast_rx.recv().await {
-                if tx.send(frame).await.is_err() {
-                    break;
-                }
-            }
-        });
-
-        rx
-    }
-
-    async fn configure(&mut self, config: SourceConfig) -> SourceResult<()> {
-        if let Some(topics_str) = config.options.get("topics") {
-            self.config.topics = topics_str.split(',').map(String::from).collect();
-        }
-
-        if let Some(group_id) = config.options.get("group_id") {
-            self.config.group_id = group_id.clone();
-        }
-
-        if let Some(offset_reset) = config.options.get("auto_offset_reset") {
-            self.config.auto_offset_reset = offset_reset.clone();
-        }
-
-        Ok(())
+        Err(SourceError::Timeout(Duration::from_millis(500)))
     }
 }
 
-// Re-export types
-pub use pitgun_contract::{
-    SourceConfig, SourceError, SourceMetadata, SourceState, SourceStats, SourceType,
-    TelemetrySource,
-};
 
 #[cfg(test)]
 mod tests {

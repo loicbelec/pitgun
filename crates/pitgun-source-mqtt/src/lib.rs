@@ -44,7 +44,7 @@ use rumqttc::{AsyncClient, Event, EventLoop, MqttOptions, Packet};
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Arc;
 use std::time::{Duration, Instant};
-use tokio::sync::{broadcast, mpsc, RwLock};
+use tokio::sync::{mpsc, RwLock};
 
 /// MQTT Quality of Service levels
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
@@ -206,15 +206,8 @@ impl MqttSourceConfig {
 }
 
 impl From<MqttSourceConfig> for SourceConfig {
-    fn from(cfg: MqttSourceConfig) -> Self {
-        let topics: Vec<String> = cfg.subscriptions.iter().map(|s| s.topic.clone()).collect();
-        SourceConfig::new("mqtt", &cfg.source_id)
-            .with_option("host", cfg.host)
-            .with_option("port", cfg.port.to_string())
-            .with_option("client_id", cfg.client_id)
-            .with_option("topics", topics.join(","))
-            .with_option("clean_session", cfg.clean_session.to_string())
-            .with_option("channel_capacity", cfg.channel_capacity.to_string())
+    fn from(_cfg: MqttSourceConfig) -> Self {
+        SourceConfig::default()
     }
 }
 
@@ -232,37 +225,29 @@ struct MqttStats {
 
 impl MqttStats {
     fn to_source_stats(&self, start_time: Instant) -> SourceStats {
-        let samples = self.samples_produced.load(Ordering::Relaxed);
+        let frames = self.frames_produced.load(Ordering::Relaxed);
         let elapsed = start_time.elapsed().as_secs_f64();
-        let rate = if elapsed > 0.0 {
-            samples as f64 / elapsed
+        let fps = if elapsed > 0.0 {
+            frames as f64 / elapsed
         } else {
             0.0
         };
 
         SourceStats {
-            frames_produced: self.frames_produced.load(Ordering::Relaxed),
-            samples_produced: samples,
-            bytes_processed: self.bytes_received.load(Ordering::Relaxed),
-            errors: self.decode_errors.load(Ordering::Relaxed),
-            sample_rate_hz: rate,
-            uptime: start_time.elapsed(),
-            custom: [
-                (
-                    "messages_received".into(),
-                    self.messages_received.load(Ordering::Relaxed) as f64,
-                ),
-                (
-                    "messages_decoded".into(),
-                    self.messages_decoded.load(Ordering::Relaxed) as f64,
-                ),
-                (
-                    "reconnect_count".into(),
-                    self.reconnect_count.load(Ordering::Relaxed) as f64,
-                ),
-            ]
-            .into_iter()
-            .collect(),
+            frames_received: frames,
+            bytes_received: self.bytes_received.load(Ordering::Relaxed),
+            frames_dropped: 0,
+            decode_errors: self.decode_errors.load(Ordering::Relaxed),
+            connection_errors: 0,
+            current_fps: fps,
+            average_fps: fps,
+            peak_fps: fps,
+            avg_latency_us: 0,
+            p99_latency_us: 0,
+            last_frame_at_us: None,
+            started_at_us: None,
+            uptime_secs: elapsed,
+            reconnect_count: self.reconnect_count.load(Ordering::Relaxed) as u32,
         }
     }
 }
@@ -270,10 +255,11 @@ impl MqttStats {
 /// MQTT telemetry source
 pub struct MqttSource {
     config: MqttSourceConfig,
+    source_config: SourceConfig,
     state: Arc<RwLock<SourceState>>,
     stats: Arc<MqttStats>,
     start_time: Instant,
-    frame_tx: broadcast::Sender<TelemetryFrame>,
+    frame_tx: Option<mpsc::UnboundedSender<TelemetryFrame>>,
     shutdown_tx: mpsc::Sender<()>,
     shutdown_rx: Option<mpsc::Receiver<()>>,
 }
@@ -282,18 +268,19 @@ impl MqttSource {
     /// Creates a new MQTT source
     pub fn new(config: MqttSourceConfig) -> SourceResult<Self> {
         if config.subscriptions.is_empty() {
-            return Err(SourceError::config("no topics configured"));
+            return Err(SourceError::InvalidConfig("no topics configured".into()));
         }
 
-        let (frame_tx, _) = broadcast::channel(config.channel_capacity);
+        let source_config: SourceConfig = config.clone().into();
         let (shutdown_tx, shutdown_rx) = mpsc::channel(1);
 
         Ok(Self {
             config,
-            state: Arc::new(RwLock::new(SourceState::Stopped)),
+            source_config,
+            state: Arc::new(RwLock::new(SourceState::Idle)),
             stats: Arc::new(MqttStats::default()),
             start_time: Instant::now(),
-            frame_tx,
+            frame_tx: None,
             shutdown_tx,
             shutdown_rx: Some(shutdown_rx),
         })
@@ -317,6 +304,7 @@ impl MqttSource {
                         parameter_id: i as u16,
                         value: SampleValue::F64(val),
                         quality: SignalQuality::Good,
+                        timestamp_offset_us: None,
                     })
                 })
                 .collect()
@@ -348,7 +336,7 @@ impl MqttSource {
             .sequence(*sequence)
             .timestamp_us(timestamp_us)
             .samples(samples)
-            .with_metadata("topic", topic)
+            .meta("topic", topic)
             .build();
 
         Some(frame)
@@ -359,7 +347,7 @@ impl MqttSource {
         config: MqttSourceConfig,
         state: Arc<RwLock<SourceState>>,
         stats: Arc<MqttStats>,
-        frame_tx: broadcast::Sender<TelemetryFrame>,
+        frame_tx: mpsc::UnboundedSender<TelemetryFrame>,
         mut shutdown_rx: mpsc::Receiver<()>,
     ) {
         let mqtt_options = config.build_mqtt_options();
@@ -430,60 +418,70 @@ impl TelemetrySource for MqttSource {
         &self.config.source_id
     }
 
+    fn source_id(&self) -> &str {
+        &self.config.source_id
+    }
+
     fn source_type(&self) -> SourceType {
         SourceType::Mqtt
     }
 
-    fn metadata(&self) -> SourceMetadata {
-        let topics: Vec<String> = self.config.subscriptions.iter().map(|s| s.topic.clone()).collect();
-        SourceMetadata {
-            id: self.config.source_id.clone(),
-            name: format!("MQTT Source ({}:{})", self.config.host, self.config.port),
-            source_type: SourceType::Mqtt,
-            version: Some(env!("CARGO_PKG_VERSION").into()),
-            description: Some(format!(
-                "MQTT subscriber for topics: {}",
-                topics.join(", ")
-            )),
-            capabilities: vec!["wildcards".into(), "qos".into(), "auto-reconnect".into()],
-            tags: vec!["mqtt".into(), self.config.client_id.clone()],
-        }
+    fn state(&self) -> SourceState {
+        // Use try_read to avoid blocking, fallback to Idle
+        self.state.try_read().map(|s| *s).unwrap_or(SourceState::Idle)
     }
 
-    async fn start(&mut self) -> SourceResult<()> {
-        let current_state = *self.state.read().await;
+    fn metadata(&self) -> SourceMetadata {
+        SourceMetadata::new(
+            &self.config.source_id,
+            format!("MQTT Source ({}:{})", self.config.host, self.config.port),
+            SourceType::Mqtt,
+        )
+        .with_endpoint(format!("mqtt://{}:{}", self.config.host, self.config.port))
+        .with_tag("mqtt")
+        .with_tag(&self.config.client_id)
+    }
+
+    fn stats(&self) -> SourceStats {
+        self.stats.to_source_stats(self.start_time)
+    }
+
+    fn config(&self) -> &SourceConfig {
+        &self.source_config
+    }
+
+    async fn start(&mut self, tx: mpsc::UnboundedSender<TelemetryFrame>) -> SourceResult<()> {
+        let current_state = self.state();
         if matches!(current_state, SourceState::Running) {
-            return Err(SourceError::invalid_state("already running"));
+            return Err(SourceError::AlreadyRunning);
         }
 
         let shutdown_rx = self
             .shutdown_rx
             .take()
-            .ok_or_else(|| SourceError::invalid_state("source already started"))?;
+            .ok_or_else(|| SourceError::AlreadyRunning)?;
 
-        *self.state.write().await = SourceState::Starting;
+        *self.state.write().await = SourceState::Connecting;
         self.start_time = Instant::now();
+        self.frame_tx = Some(tx.clone());
 
         let config = self.config.clone();
         let state = Arc::clone(&self.state);
         let stats = Arc::clone(&self.stats);
-        let frame_tx = self.frame_tx.clone();
 
         tokio::spawn(async move {
-            Self::event_loop(config, state, stats, frame_tx, shutdown_rx).await;
+            Self::event_loop(config, state, stats, tx, shutdown_rx).await;
         });
 
-        // Wait for running or error state
+        // Wait for running state
         for _ in 0..100 {
             tokio::time::sleep(Duration::from_millis(50)).await;
-            match *self.state.read().await {
-                SourceState::Running => return Ok(()),
-                SourceState::Error(ref e) => return Err(SourceError::connection(e.clone())),
-                _ => {}
+            if matches!(self.state(), SourceState::Running) {
+                return Ok(());
             }
         }
 
-        Err(SourceError::Timeout("start timed out".into()))
+        Err(SourceError::Timeout(Duration::from_secs(5)))
     }
 
     async fn stop(&mut self) -> SourceResult<()> {
@@ -491,58 +489,15 @@ impl TelemetrySource for MqttSource {
 
         for _ in 0..50 {
             tokio::time::sleep(Duration::from_millis(10)).await;
-            if matches!(*self.state.read().await, SourceState::Stopped) {
+            if matches!(self.state(), SourceState::Stopped) {
                 return Ok(());
             }
         }
 
-        Err(SourceError::Timeout("stop timed out".into()))
-    }
-
-    async fn state(&self) -> SourceState {
-        *self.state.read().await
-    }
-
-    async fn stats(&self) -> SourceStats {
-        self.stats.to_source_stats(self.start_time)
-    }
-
-    fn subscribe(&self) -> mpsc::Receiver<TelemetryFrame> {
-        let (tx, rx) = mpsc::channel(self.config.channel_capacity);
-        let mut broadcast_rx = self.frame_tx.subscribe();
-
-        tokio::spawn(async move {
-            while let Ok(frame) = broadcast_rx.recv().await {
-                if tx.send(frame).await.is_err() {
-                    break;
-                }
-            }
-        });
-
-        rx
-    }
-
-    async fn configure(&mut self, config: SourceConfig) -> SourceResult<()> {
-        if let Some(topics_str) = config.options.get("topics") {
-            self.config.subscriptions = topics_str
-                .split(',')
-                .map(|t| TopicSubscription::new(t, QoS::AtLeastOnce))
-                .collect();
-        }
-
-        if let Some(client_id) = config.options.get("client_id") {
-            self.config.client_id = client_id.clone();
-        }
-
-        Ok(())
+        Err(SourceError::Timeout(Duration::from_millis(500)))
     }
 }
 
-// Re-export types
-pub use pitgun_contract::{
-    SourceConfig, SourceError, SourceMetadata, SourceState, SourceStats, SourceType,
-    TelemetrySource,
-};
 
 #[cfg(test)]
 mod tests {

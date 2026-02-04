@@ -38,7 +38,7 @@ use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 use tokio::net::UdpSocket;
-use tokio::sync::{broadcast, mpsc, RwLock};
+use tokio::sync::{mpsc, RwLock};
 
 /// Codec types supported by the UDP source
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
@@ -147,24 +147,8 @@ impl UdpSourceConfig {
 }
 
 impl From<UdpSourceConfig> for SourceConfig {
-    fn from(cfg: UdpSourceConfig) -> Self {
-        let mut config = SourceConfig::new("udp", &cfg.source_id)
-            .with_option("bind_addr", cfg.bind_addr.to_string())
-            .with_option("codec", cfg.codec.name().to_string())
-            .with_option("buffer_size", cfg.buffer_size.to_string())
-            .with_option("channel_capacity", cfg.channel_capacity.to_string());
-
-        if let Some(group) = cfg.multicast_group {
-            config = config
-                .with_option("multicast_group", group.to_string())
-                .with_option("multicast_interface", cfg.multicast_interface.to_string());
-        }
-
-        if let Some(timeout) = cfg.recv_timeout {
-            config = config.with_option("recv_timeout_ms", timeout.as_millis().to_string());
-        }
-
-        config
+    fn from(_cfg: UdpSourceConfig) -> Self {
+        SourceConfig::default()
     }
 }
 
@@ -230,45 +214,29 @@ struct UdpStats {
 
 impl UdpStats {
     fn to_source_stats(&self, start_time: Instant) -> SourceStats {
-        let samples = self.samples_produced.load(Ordering::Relaxed);
+        let frames = self.frames_produced.load(Ordering::Relaxed);
         let elapsed = start_time.elapsed().as_secs_f64();
-        let rate = if elapsed > 0.0 {
-            samples as f64 / elapsed
+        let fps = if elapsed > 0.0 {
+            frames as f64 / elapsed
         } else {
             0.0
         };
 
         SourceStats {
-            frames_produced: self.frames_produced.load(Ordering::Relaxed),
-            samples_produced: samples,
-            bytes_processed: self.bytes_received.load(Ordering::Relaxed),
-            errors: self.decode_errors.load(Ordering::Relaxed),
-            sample_rate_hz: rate,
-            uptime: start_time.elapsed(),
-            custom: [
-                (
-                    "packets_received".into(),
-                    self.packets_received.load(Ordering::Relaxed) as f64,
-                ),
-                (
-                    "packets_decoded".into(),
-                    self.packets_decoded.load(Ordering::Relaxed) as f64,
-                ),
-                (
-                    "packets_skipped".into(),
-                    self.packets_skipped.load(Ordering::Relaxed) as f64,
-                ),
-                (
-                    "packets_lost".into(),
-                    self.sequence_tracker.packets_lost() as f64,
-                ),
-                (
-                    "packets_out_of_order".into(),
-                    self.sequence_tracker.out_of_order() as f64,
-                ),
-            ]
-            .into_iter()
-            .collect(),
+            frames_received: frames,
+            bytes_received: self.bytes_received.load(Ordering::Relaxed),
+            frames_dropped: 0,
+            decode_errors: self.decode_errors.load(Ordering::Relaxed),
+            connection_errors: 0,
+            current_fps: fps,
+            average_fps: fps,
+            peak_fps: fps,
+            avg_latency_us: 0,
+            p99_latency_us: 0,
+            last_frame_at_us: None,
+            started_at_us: None,
+            uptime_secs: elapsed,
+            reconnect_count: 0,
         }
     }
     
@@ -280,10 +248,11 @@ impl UdpStats {
 /// Async UDP telemetry source
 pub struct AsyncUdpSource {
     config: UdpSourceConfig,
+    source_config: SourceConfig,
     state: Arc<RwLock<SourceState>>,
     stats: Arc<UdpStats>,
     start_time: Instant,
-    frame_tx: broadcast::Sender<TelemetryFrame>,
+    frame_tx: Option<mpsc::UnboundedSender<TelemetryFrame>>,
     shutdown_tx: mpsc::Sender<()>,
     shutdown_rx: Option<mpsc::Receiver<()>>,
 }
@@ -291,15 +260,15 @@ pub struct AsyncUdpSource {
 impl AsyncUdpSource {
     /// Creates a new async UDP source
     pub fn new(config: UdpSourceConfig) -> Self {
-        let (frame_tx, _) = broadcast::channel(config.channel_capacity);
         let (shutdown_tx, shutdown_rx) = mpsc::channel(1);
 
         Self {
+            source_config: SourceConfig::default(),
             config,
-            state: Arc::new(RwLock::new(SourceState::Stopped)),
+            state: Arc::new(RwLock::new(SourceState::Idle)),
             stats: Arc::new(UdpStats::default()),
             start_time: Instant::now(),
-            frame_tx,
+            frame_tx: None,
             shutdown_tx,
             shutdown_rx: Some(shutdown_rx),
         }
@@ -310,13 +279,13 @@ impl AsyncUdpSource {
         // Validate the bind address by attempting to bind
         let socket = UdpSocket::bind(config.bind_addr)
             .await
-            .map_err(|e| SourceError::connection(format!("failed to bind: {}", e)))?;
+            .map_err(|e| SourceError::ConnectionFailed(format!("failed to bind: {}", e)))?;
 
         // Join multicast if configured
         if let Some(group) = config.multicast_group {
             socket
                 .join_multicast_v4(group, config.multicast_interface)
-                .map_err(|e| SourceError::connection(format!("failed to join multicast: {}", e)))?;
+                .map_err(|e| SourceError::ConnectionFailed(format!("failed to join multicast: {}", e)))?;
         }
 
         drop(socket); // Close the test socket, will rebind in start()
@@ -379,6 +348,7 @@ impl AsyncUdpSource {
                                 parameter_id: i as u16,
                                 value: SampleValue::F64(e.value),
                                 quality: SignalQuality::Good,
+                                timestamp_offset_us: None,
                             })
                             .collect();
 
@@ -405,7 +375,7 @@ impl AsyncUdpSource {
         config: UdpSourceConfig,
         state: Arc<RwLock<SourceState>>,
         stats: Arc<UdpStats>,
-        frame_tx: broadcast::Sender<TelemetryFrame>,
+        frame_tx: mpsc::UnboundedSender<TelemetryFrame>,
         mut shutdown_rx: mpsc::Receiver<()>,
     ) {
         // Bind socket
@@ -413,7 +383,7 @@ impl AsyncUdpSource {
             Ok(s) => s,
             Err(e) => {
                 eprintln!("Failed to bind UDP socket: {}", e);
-                *state.write().await = SourceState::Error(e.to_string());
+                *state.write().await = SourceState::Error;
                 return;
             }
         };
@@ -422,7 +392,7 @@ impl AsyncUdpSource {
         if let Some(group) = config.multicast_group {
             if let Err(e) = socket.join_multicast_v4(group, config.multicast_interface) {
                 eprintln!("Failed to join multicast: {}", e);
-                *state.write().await = SourceState::Error(e.to_string());
+                *state.write().await = SourceState::Error;
                 return;
             }
         }
@@ -500,6 +470,7 @@ impl AsyncUdpSource {
                                                         parameter_id: i as u16,
                                                         value: SampleValue::F64(e.value),
                                                         quality: SignalQuality::Good,
+                                                        timestamp_offset_us: None,
                                                     })
                                                     .collect();
 
@@ -527,7 +498,7 @@ impl AsyncUdpSource {
                                     stats.samples_produced.fetch_add(frame.sample_count() as u64, Ordering::Relaxed);
                                     
                                     // Track sequence for packet loss detection
-                                    stats.track_sequence(frame.sequence());
+                                    stats.track_sequence(frame.sequence);
 
                                     // Broadcast frame (ignore if no receivers)
                                     let _ = frame_tx.send(frame);
@@ -543,7 +514,7 @@ impl AsyncUdpSource {
                                 Ok(DecodeOutput::Skipped(_)) => {
                                     stats.packets_skipped.fetch_add(1, Ordering::Relaxed);
                                 }
-                                Ok(DecodeOutput::NoOutput) => {
+                                Ok(DecodeOutput::NoOutput) | Ok(DecodeOutput::NeedMoreData(_)) => {
                                     stats.packets_skipped.fetch_add(1, Ordering::Relaxed);
                                 }
                                 Err(_) => {
@@ -570,46 +541,55 @@ impl TelemetrySource for AsyncUdpSource {
         &self.config.source_id
     }
 
+    fn source_id(&self) -> &str {
+        &self.config.source_id
+    }
+
     fn source_type(&self) -> SourceType {
         SourceType::Udp
     }
 
-    fn metadata(&self) -> SourceMetadata {
-        SourceMetadata {
-            id: self.config.source_id.clone(),
-            name: format!("UDP Source ({})", self.config.bind_addr),
-            source_type: SourceType::Udp,
-            version: Some(env!("CARGO_PKG_VERSION").into()),
-            description: Some(format!(
-                "UDP telemetry source listening on {} with {} codec",
-                self.config.bind_addr,
-                self.config.codec.name()
-            )),
-            capabilities: vec!["decode".into(), "multicast".into()],
-            tags: vec!["udp".into(), self.config.codec.name().into()],
-        }
+    fn state(&self) -> SourceState {
+        self.state.try_read().map(|s| *s).unwrap_or(SourceState::Idle)
     }
 
-    async fn start(&mut self) -> SourceResult<()> {
-        let current_state = *self.state.read().await;
+    fn metadata(&self) -> SourceMetadata {
+        SourceMetadata::new(
+            &self.config.source_id,
+            &format!("UDP Source ({})", self.config.bind_addr),
+            SourceType::Udp,
+        )
+    }
+
+    fn stats(&self) -> SourceStats {
+        self.stats.to_source_stats(self.start_time)
+    }
+
+    fn config(&self) -> &SourceConfig {
+        &self.source_config
+    }
+
+    async fn start(&mut self, tx: mpsc::UnboundedSender<TelemetryFrame>) -> SourceResult<()> {
+        let current_state = self.state();
         if matches!(current_state, SourceState::Running) {
-            return Err(SourceError::invalid_state("already running"));
+            return Err(SourceError::AlreadyRunning);
         }
 
         // Take the shutdown receiver
         let shutdown_rx = self
             .shutdown_rx
             .take()
-            .ok_or_else(|| SourceError::invalid_state("source already started"))?;
+            .ok_or_else(|| SourceError::AlreadyRunning)?;
 
-        *self.state.write().await = SourceState::Starting;
+        *self.state.write().await = SourceState::Connecting;
         self.start_time = Instant::now();
+        self.frame_tx = Some(tx.clone());
 
         // Spawn receive loop
         let config = self.config.clone();
         let state = Arc::clone(&self.state);
         let stats = Arc::clone(&self.stats);
-        let frame_tx = self.frame_tx.clone();
+        let frame_tx = tx;
 
         tokio::spawn(async move {
             Self::receive_loop(config, state, stats, frame_tx, shutdown_rx).await;
@@ -618,15 +598,15 @@ impl TelemetrySource for AsyncUdpSource {
         // Wait for running state
         for _ in 0..50 {
             tokio::time::sleep(Duration::from_millis(10)).await;
-            if matches!(*self.state.read().await, SourceState::Running) {
+            if matches!(self.state(), SourceState::Running) {
                 return Ok(());
             }
-            if let SourceState::Error(ref e) = *self.state.read().await {
-                return Err(SourceError::connection(e.clone()));
+            if matches!(self.state(), SourceState::Error) {
+                return Err(SourceError::ConnectionFailed("failed to start".into()));
             }
         }
 
-        Err(SourceError::Timeout("start timed out".into()))
+        Err(SourceError::Timeout(Duration::from_millis(500)))
     }
 
     async fn stop(&mut self) -> SourceResult<()> {
@@ -635,56 +615,12 @@ impl TelemetrySource for AsyncUdpSource {
         // Wait for stopped state
         for _ in 0..50 {
             tokio::time::sleep(Duration::from_millis(10)).await;
-            if matches!(*self.state.read().await, SourceState::Stopped) {
+            if matches!(self.state(), SourceState::Stopped) {
                 return Ok(());
             }
         }
 
-        Err(SourceError::Timeout("stop timed out".into()))
-    }
-
-    async fn state(&self) -> SourceState {
-        *self.state.read().await
-    }
-
-    async fn stats(&self) -> SourceStats {
-        self.stats.to_source_stats(self.start_time)
-    }
-
-    fn subscribe(&self) -> tokio::sync::mpsc::Receiver<TelemetryFrame> {
-        let (tx, rx) = tokio::sync::mpsc::channel(self.config.channel_capacity);
-        let mut broadcast_rx = self.frame_tx.subscribe();
-
-        tokio::spawn(async move {
-            while let Ok(frame) = broadcast_rx.recv().await {
-                if tx.send(frame).await.is_err() {
-                    break;
-                }
-            }
-        });
-
-        rx
-    }
-
-    async fn configure(&mut self, config: SourceConfig) -> SourceResult<()> {
-        // Parse configuration options
-        if let Some(codec_str) = config.options.get("codec") {
-            self.config.codec = match codec_str.as_str() {
-                "ecubridge" => UdpCodecType::EcuBridge,
-                "f1-udp" | "f1" => UdpCodecType::F1,
-                "pitgun-v1" | "pitgun" => UdpCodecType::PitgunV1,
-                "auto" => UdpCodecType::Auto,
-                _ => return Err(SourceError::config(format!("unknown codec: {}", codec_str))),
-            };
-        }
-
-        if let Some(buf_size) = config.options.get("buffer_size") {
-            self.config.buffer_size = buf_size
-                .parse()
-                .map_err(|_| SourceError::config("invalid buffer_size"))?;
-        }
-
-        Ok(())
+        Err(SourceError::Timeout(Duration::from_millis(500)))
     }
 }
 
