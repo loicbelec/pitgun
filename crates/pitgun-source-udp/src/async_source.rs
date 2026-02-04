@@ -168,6 +168,53 @@ impl From<UdpSourceConfig> for SourceConfig {
     }
 }
 
+/// ECUBridge standard buffer size (2MB)
+pub const ECUBRIDGE_BUFFER_SIZE: usize = 2 * 1024 * 1024;
+
+/// Sequence tracking for packet loss detection
+#[derive(Debug, Default)]
+struct SequenceTracker {
+    last_sequence: AtomicU64,
+    packets_lost: AtomicU64,
+    out_of_order: AtomicU64,
+    initialized: std::sync::atomic::AtomicBool,
+}
+
+impl SequenceTracker {
+    fn track(&self, sequence: u64) {
+        use std::sync::atomic::Ordering::Relaxed;
+        
+        if !self.initialized.load(Relaxed) {
+            self.last_sequence.store(sequence, Relaxed);
+            self.initialized.store(true, Relaxed);
+            return;
+        }
+        
+        let last = self.last_sequence.load(Relaxed);
+        
+        if sequence > last {
+            // Calculate gap (missing packets)
+            let gap = sequence - last - 1;
+            if gap > 0 {
+                self.packets_lost.fetch_add(gap, Relaxed);
+            }
+            self.last_sequence.store(sequence, Relaxed);
+        } else if sequence < last {
+            // Out of order packet
+            self.out_of_order.fetch_add(1, Relaxed);
+        }
+        // sequence == last means duplicate, ignore
+    }
+    
+    fn packets_lost(&self) -> u64 {
+        self.packets_lost.load(std::sync::atomic::Ordering::Relaxed)
+    }
+    
+    fn out_of_order(&self) -> u64 {
+        self.out_of_order.load(std::sync::atomic::Ordering::Relaxed)
+    }
+}
+
 /// Statistics for the UDP source
 #[derive(Debug, Default)]
 struct UdpStats {
@@ -178,6 +225,7 @@ struct UdpStats {
     bytes_received: AtomicU64,
     frames_produced: AtomicU64,
     samples_produced: AtomicU64,
+    sequence_tracker: SequenceTracker,
 }
 
 impl UdpStats {
@@ -210,10 +258,22 @@ impl UdpStats {
                     "packets_skipped".into(),
                     self.packets_skipped.load(Ordering::Relaxed) as f64,
                 ),
+                (
+                    "packets_lost".into(),
+                    self.sequence_tracker.packets_lost() as f64,
+                ),
+                (
+                    "packets_out_of_order".into(),
+                    self.sequence_tracker.out_of_order() as f64,
+                ),
             ]
             .into_iter()
             .collect(),
         }
+    }
+    
+    fn track_sequence(&self, sequence: u64) {
+        self.sequence_tracker.track(sequence);
     }
 }
 
@@ -465,6 +525,9 @@ impl AsyncUdpSource {
                                     stats.packets_decoded.fetch_add(1, Ordering::Relaxed);
                                     stats.frames_produced.fetch_add(1, Ordering::Relaxed);
                                     stats.samples_produced.fetch_add(frame.sample_count() as u64, Ordering::Relaxed);
+                                    
+                                    // Track sequence for packet loss detection
+                                    stats.track_sequence(frame.sequence());
 
                                     // Broadcast frame (ignore if no receivers)
                                     let _ = frame_tx.send(frame);

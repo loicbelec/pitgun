@@ -1,5 +1,40 @@
 //! Deterministic synthetic telemetry source for local testing and tooling.
 //!
+//! This crate provides physics simulation sources for the Pitgun framework.
+//!
+//! # Source Implementations
+//!
+//! - **AsyncPhysicsSource**: Async source implementing [`TelemetrySource`](pitgun_contract::TelemetrySource)
+//!   with configurable frame rate and deterministic output
+//! - **PhysicsSource**: Legacy synchronous source implementing the `Source` trait
+//!
+//! # Usage
+//!
+//! ## Async Source (Recommended)
+//!
+//! ```rust,ignore
+//! use pitgun_source_physics::{AsyncPhysicsSource, AsyncPhysicsConfig};
+//! use pitgun_contract::TelemetrySource;
+//!
+//! #[tokio::main]
+//! async fn main() -> Result<(), Box<dyn std::error::Error>> {
+//!     let config = AsyncPhysicsConfig::new()
+//!         .with_tick_hz(60)
+//!         .with_duration_ticks(600);
+//!
+//!     let mut source = AsyncPhysicsSource::new(config);
+//!     source.start().await?;
+//!
+//!     let mut rx = source.subscribe();
+//!     while let Some(frame) = rx.recv().await {
+//!         println!("Frame: {} samples", frame.sample_count());
+//!     }
+//!     Ok(())
+//! }
+//! ```
+//!
+//! ## Legacy Sync Source
+//!
 //! The source emits `pitgun_core::EventBatch` values with integer nanosecond
 //! timestamps derived from `tick_hz`. For each tick, all channels share the
 //! same `ts_ns` and a batch contains `batch_ticks` consecutive ticks.
@@ -7,6 +42,18 @@
 //! Determinism scope: best-effort with `f64` math; expect stable results within
 //! a single build and platform. A fixed-point implementation can replace the
 //! floating-point model later.
+
+// Async source (implements TelemetrySource)
+mod async_source;
+pub use async_source::{param_ids, AsyncPhysicsConfig, AsyncPhysicsSource};
+
+// Re-export contract types for convenience
+pub use pitgun_contract::{
+    SourceConfig, SourceError, SourceMetadata, SourceState, SourceStats, SourceType,
+    TelemetrySource,
+};
+
+// Legacy source implementation
 use pitgun_contract::SignedSimulationContractV1;
 use pitgun_core::{Event, EventBatch, Source};
 use pitgun_signing::SigningKey;
