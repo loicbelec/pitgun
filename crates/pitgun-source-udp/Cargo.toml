@@ -3,7 +3,11 @@ name = "pitgun-source-udp"
 version = "0.1.0"
 edition = "2024"
 license = "MIT"
+description = "UDP telemetry source for Pitgun multi-source architecture"
 
 [dependencies]
 pitgun-core = { path = "../pitgun-core" }
 pitgun-codec-udp = { path = "../pitgun-codec-udp" }
+pitgun-contract = { path = "../pitgun-contract" }
+async-trait = "0.1"
+tokio = { version = "1", features = ["net", "sync", "time", "macros"] }
