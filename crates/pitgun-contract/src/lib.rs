@@ -1,8 +1,13 @@
+pub mod frame;
 pub mod source;
 
+pub use frame::{
+    Event, EventData, EventId, EventSeverity, ParameterId, Sample, SampleValue, SessionId,
+    SignalQuality, TelemetryFrame, TelemetryFrameBuilder,
+};
 pub use source::{
     SourceConfig, SourceError, SourceMetadata, SourceResult, SourceState, SourceStats,
-    SourceType, TelemetryFrame, TelemetrySource,
+    SourceType, TelemetrySource,
 };
 
 use serde::{Deserialize, Serialize};

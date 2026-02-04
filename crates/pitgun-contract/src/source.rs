@@ -33,18 +33,7 @@ use std::fmt;
 use std::time::Duration;
 use tokio::sync::mpsc;
 
-// Forward declaration - TelemetryFrame will be defined in frame.rs
-// For now, we use a placeholder that will be replaced in Phase 1.2
-// TODO: Replace with actual TelemetryFrame import after frame.rs is created
-
-/// Placeholder for TelemetryFrame until frame.rs is implemented.
-/// This will be replaced by `use crate::frame::TelemetryFrame;`
-#[derive(Clone, Debug)]
-pub struct TelemetryFrame {
-    pub session_id: u64,
-    pub timestamp_us: i64,
-    pub source_id: String,
-}
+use crate::frame::TelemetryFrame;
 
 /// Result type for source operations.
 pub type SourceResult<T> = Result<T, SourceError>;
