@@ -1,9 +1,14 @@
 pub mod frame;
+pub mod registry;
 pub mod source;
 
 pub use frame::{
     Event, EventData, EventId, EventSeverity, ParameterId, Sample, SampleValue, SessionId,
     SignalQuality, TelemetryFrame, TelemetryFrameBuilder,
+};
+pub use registry::{
+    AccessLevel, Conversion, DataType, Parameter, ParameterRegistry, Range, RegistryError,
+    ValidationResult,
 };
 pub use source::{
     SourceConfig, SourceError, SourceMetadata, SourceResult, SourceState, SourceStats,
