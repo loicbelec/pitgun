@@ -1,3 +1,10 @@
+pub mod source;
+
+pub use source::{
+    SourceConfig, SourceError, SourceMetadata, SourceResult, SourceState, SourceStats,
+    SourceType, TelemetryFrame, TelemetrySource,
+};
+
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
 use std::collections::BTreeMap;
