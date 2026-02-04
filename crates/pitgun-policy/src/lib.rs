@@ -1,4 +1,11 @@
+mod access;
 mod tuning;
+
+// Access control exports
+pub use access::{
+    AccessController, AccessDenied, AccessLevel, AccessResult, AuditLogEntry, AuditLogger,
+    Claims, InMemoryAuditLog, ParameterAccess, RateLimiter,
+};
 
 // TODO: Consider trimming crate-root re-exports once internal users (e.g. configd) migrate.
 pub use tuning::{
