@@ -10,6 +10,8 @@ default-members = [
     "crates/pitgun-source-udp",
     "crates/pitgun-codec-json",
     "crates/pitgun-source-ws",
+    "crates/pitgun-source-kafka",
+    "crates/pitgun-source-mqtt",
     "crates/pitgun-emulator",
     "apps/pitgun-cli",
 ]
@@ -19,3 +21,21 @@ resolver = "2"
 edition = "2025"
 authors = ["Loïc Bélec <contact@loicbelec.com>"]
 license = "MIT"
+
+[workspace.dependencies]
+# Async runtime
+tokio = { version = "1", features = ["full"] }
+async-trait = "0.1"
+
+# Serialization
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+serde_yaml = "0.9"
+
+# Messaging
+rdkafka = { version = "0.36", features = ["cmake-build"] }
+rumqttc = "0.24"
+
+# Contract types
+pitgun-contract = { path = "crates/pitgun-contract" }
+pitgun-core = { path = "crates/pitgun-core" }
