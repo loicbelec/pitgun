@@ -1,19 +1,19 @@
 [Unit]
-Description=Pitgun telemetry ingestion daemon (behind Caddy)
+Description=Pitgun gateway service
 After=network.target
-ConditionPathExists=/opt/pitgun/pitgun/target/release/pitgun-telemetryd
+ConditionPathExists=/opt/pitgun/pitgun/target/release/pitgun-gateway
 
 [Service]
 Type=simple
 WorkingDirectory=/opt/pitgun/pitgun
-ExecStart=/opt/pitgun/pitgun/target/release/pitgun-telemetryd
+ExecStart=/opt/pitgun/pitgun/target/release/pitgun-gateway
 Restart=on-failure
 RestartSec=2s
 # Adjust the runtime user to match your deployment.
 User=pitgun
 Group=pitgun
-Environment=PITGUN_TELEMETRY_BIND=127.0.0.1:8080
-Environment=PITGUN_TELEMETRY_DATA_DIR=/opt/pitgun/telemetry/data
+Environment=PITGUN_GATEWAY_BIND=127.0.0.1:8080
+Environment=PITGUN_GATEWAY_DATA_DIR=/opt/pitgun/telemetry/data
 # Example logging level (uses tracing-subscriber env filter)
 Environment=RUST_LOG=info
 

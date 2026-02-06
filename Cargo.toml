@@ -12,7 +12,7 @@ default-members = [
     "crates/pitgun-source-ws",
     "crates/pitgun-source-kafka",
     "crates/pitgun-source-mqtt",
-    "crates/pitgun-emulator",
+    "apps/pitgun-replay",
     "apps/pitgun-cli",
 ]
 resolver = "2"

@@ -1,6 +1,6 @@
 use pitgun_contract::SignedSimulationContractV1;
 use pitgun_core::Source;
-use pitgun_source_physics::{PhysicsSource, PhysicsSourceConfig};
+use pitgun_engine_f1::{PhysicsSource, PhysicsSourceConfig};
 use std::fs::File;
 use std::io::BufReader;
 

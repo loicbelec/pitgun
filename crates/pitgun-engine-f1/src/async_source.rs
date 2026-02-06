@@ -13,7 +13,7 @@
 //! # Example
 //!
 //! ```rust,ignore
-//! use pitgun_source_physics::{AsyncPhysicsSource, AsyncPhysicsConfig};
+//! use pitgun_engine_f1::{AsyncPhysicsSource, AsyncPhysicsConfig};
 //! use pitgun_contract::TelemetrySource;
 //!
 //! let config = AsyncPhysicsConfig::new()

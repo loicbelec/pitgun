@@ -64,7 +64,7 @@ pitgun/
     pitgun-cli/           # CLI for running manifests locally
   services/
     pitgun-telemetryd/    # telemetry ingestion service
-    pitgun-configd/       # config authority service
+    pitgun-authority/     # config authority service
   examples/
     multi_source.rs       # comprehensive pipeline example
     udp_binary.rs         # UDP binary format example

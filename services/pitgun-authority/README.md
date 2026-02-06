@@ -1,4 +1,4 @@
-# pitgun-configd
+# pitgun-authority
 
 ## Simulation contract endpoint
 

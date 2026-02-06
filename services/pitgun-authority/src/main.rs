@@ -280,14 +280,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         .with_state(app_state);
 
     let bind_addr =
-        std::env::var("PITGUN_CONFIGD_BIND").unwrap_or_else(|_| DEFAULT_BIND_ADDR.to_string());
+        std::env::var("PITGUN_AUTHORITY_BIND").unwrap_or_else(|_| DEFAULT_BIND_ADDR.to_string());
     let addr: SocketAddr = bind_addr
         .parse()
         .map_err(|err| format!("invalid PITGUN_CONFIGD_BIND: {err}"))?;
 
     let listener = TcpListener::bind(addr).await?;
 
-    info!("pitgun-configd listening on {}", listener.local_addr()?);
+    info!("pitgun-authority listening on {}", listener.local_addr()?);
     axum::serve(listener, app).await?;
 
     Ok(())

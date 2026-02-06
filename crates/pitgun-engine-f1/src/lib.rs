@@ -13,7 +13,7 @@
 //! ## Async Source (Recommended)
 //!
 //! ```rust,ignore
-//! use pitgun_source_physics::{AsyncPhysicsSource, AsyncPhysicsConfig};
+//! use pitgun_engine_f1::{AsyncPhysicsSource, AsyncPhysicsConfig};
 //! use pitgun_contract::TelemetrySource;
 //!
 //! #[tokio::main]

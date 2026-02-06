@@ -63,15 +63,15 @@ async fn main() -> anyhow::Result<()> {
     tracing_subscriber::fmt().with_env_filter(log_filter).init();
 
     let bind_addr =
-        std::env::var("PITGUN_TELEMETRY_BIND").unwrap_or_else(|_| DEFAULT_BIND_ADDR.to_string());
+        std::env::var("PITGUN_GATEWAY_BIND").unwrap_or_else(|_| DEFAULT_BIND_ADDR.to_string());
     let data_dir =
-        std::env::var("PITGUN_TELEMETRY_DATA_DIR").unwrap_or_else(|_| DEFAULT_DATA_DIR.to_string());
+        std::env::var("PITGUN_GATEWAY_DATA_DIR").unwrap_or_else(|_| DEFAULT_DATA_DIR.to_string());
     let allow_non_loopback =
-        allow_non_loopback_enabled(std::env::var("PITGUN_TELEMETRY_ALLOW_NON_LOOPBACK").ok());
+        allow_non_loopback_enabled(std::env::var("PITGUN_GATEWAY_ALLOW_NON_LOOPBACK").ok());
 
     let addr: SocketAddr = bind_addr
         .parse()
-        .map_err(|err| anyhow::anyhow!("invalid PITGUN_TELEMETRY_BIND: {err}"))?;
+        .map_err(|err| anyhow::anyhow!("invalid PITGUN_GATEWAY_BIND: {err}"))?;
 
     validate_bind_addr(addr, allow_non_loopback)?;
 
