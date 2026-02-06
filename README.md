@@ -1,92 +1,108 @@
-[![Pitgun](docs/img/pitgun_transparent.png)](https://pitgun.loicbelec.com)
+[![Pitgun](docs/img/pitgun_transparent.png)](https://pitgun.io)
 
-## What is Pitgun?
-Pitgun is a modular Rust workspace for telemetry and high-frequency data processing. It ingests raw signals from multiple sources, applies manifest-driven processing, and emits channels and metrics in real time.
+# Pitgun: Distributed Intelligence Mesh
 
-## ⚠️ WARNING
-This repository is **under active development**. Interfaces may change.
+> **From Raw Telemetry to Distributed Decision Making.**
 
-## 🧱 Crates
+Pitgun is a modular Rust framework designed to ingest high-frequency data streams, apply dynamic engineering logic, and orchestrate distributed computations at the edge.
 
-### Contract & Core
-| Crate | Description |
-|-------|-------------|
-| **pitgun-contract** | `TelemetrySource` trait, `TelemetryFrame` model, `ParameterRegistry` |
-| **pitgun-core** | Formula engine, multi-source pipeline, converter service, manifests |
-| **pitgun-policy** | Access control, rate limiting, JWT verification |
-| **pitgun-signing** | Cryptographic signing utilities |
+While currently showcasing a **Reference Implementation in Motorsport** (F1 Simulation), its architecture is domain-agnostic and built for Finance, Energy, and IoT reliability.
 
-### Codecs
-| Crate | Description |
-|-------|-------------|
-| **pitgun-codec-udp** | UDP binary wire format decoding |
-| **pitgun-codec-json** | SessionEnvelope JSON codec |
+---
 
-### Sources
-All sources implement the `TelemetrySource` trait from `pitgun-contract`.
+## 🏗️ The Architecture
 
-| Crate | Transport | Use Case |
-|-------|-----------|----------|
-| **pitgun-source-udp** | UDP unicast/multicast | Binary telemetry, sensors |
-| **pitgun-source-ws** | WebSocket | Games, web apps, JSON streams |
-| **pitgun-source-kafka** | Kafka | High-volume data platforms |
-| **pitgun-source-mqtt** | MQTT | IoT devices, pub/sub |
-| **pitgun-source-physics** | In-process | Simulated/computed channels |
+Pitgun is built on four pillars that separate **Ingestion**, **Processing**, **Compute**, and **Governance**.
 
-### Optional
-| Crate | Description |
-|-------|-------------|
-| **pitgun-emulator** | Dataset playback and synthetic channels |
+### 1. 📡 The Gateway (Ingestion & Traffic)
+A high-throughput ingestion layer capable of normalizing diverse protocols into a single unified `TelemetryFrame`.
+*   **Multi-Protocol:** Native support for UDP (Unicast/Multicast), WebSocket, Kafka, and MQTT.
+*   **Normalization:** Translates disparate wire formats (binary, JSON) into a strict internal schema.
+*   **Service:** `services/pitgun-gateway`
 
-## 🧰 Apps
-- **pitgun-cli**: Command-line interface to ingest, transform, and export telemetry data
+### 2. ⚡ The Core (Dynamic Processing)
+A powerful **Manifest-Driven ETL engine** that allows engineers to define derived channels without recompiling code.
+*   **Formula Engine:** Define `Power = Torque * RPM` using an AST-based expression parser (`pitgun-core`).
+*   **Manifests:** YAML-based configuration for pipelines (`channel_filter`, `scale`, `segment_aggregate`).
+*   **Registry:** Strictly typed parameter definitons (`u16`, `f64`) with validation ranges.
 
-## ⚙️ Features
+### 3. 🧠 The Solver (Distributed Compute)
+An orchestration layer for offloading complex optimization tasks to an edge grid (e.g., WebAssembly Clients).
+*   **Use Cases:** Monte Carlo Simulations, Risk Analysis, Pathfinding.
+*   **Technology:** Rust -> WASM compilation for browser-based volunteer computing.
+*   **Service:** `crates/pitgun-solver`
 
-### Multi-Source Pipeline
-- Ingest from UDP, WebSocket, Kafka, MQTT simultaneously
-- Unified `TelemetryFrame` format across all sources
-- Parameter registry with YAML definitions
+### 4. ⚖️ The Authority (Governance)
+A security layer ensuring that data and configurations are authentic and tamper-proof.
+*   **Access Control:** Rate limiting and capability-based access (`pitgun-policy`).
+*   **Policy Enforcement:** Cryptographic signing of simulation contracts (Tuning Limits).
+*   **Auditability:** Guarantees that result A came from Config B.
+*   **Service:** `services/pitgun-authority`
 
-### Processors
-- `channel_filter` - whitelist channels
-- `scale` - multiply channel by a factor
-- `segment_aggregate` - window by segment key (mean/max/min/stddev/count/sum)
-- `stats` - per-channel counts and gaps
+---
 
-### Sinks
-- Console JSON printer
-- Per-channel CSV recording
+## 🧱 Component Stack
 
-### Wire Formats
-- **UDP v1**: Binary format `[len_channel:u16][channel][ts_ns:u128 LE][value:f64 LE]`
-- **JSON**: SessionEnvelope with schema versioning
+### Foundation Crates
+| Crate | Role | Description |
+|-------|------|-------------|
+| **pitgun-core** | **The Brain** | AST Formula Engine, Pipeline logic, Manifest parsing. |
+| **pitgun-contract** | **The Law** | Shared types (`TelemetryFrame`), IDL, and protocols. |
+| **pitgun-engine-f1** | **Ref. Impl** | A deterministic Physics Engine (Data Plane) for F1 simulation. |
+| **pitgun-solver** | **Control Plane** | Strategy & Risk optimization logic skeleton. |
+
+### Infrastructure
+| Service | Role | Container |
+|---------|------|-----------|
+| **pitgun-gateway** | Traffic Ingress | `pitgun-gateway` |
+| **pitgun-authority** | Security/Config | `pitgun-authority` |
+| **pitgun-replay** | Tooling | `apps/pitgun-replay` |
+
+---
 
 ## 🚀 Quickstart
 
-**1) Emit telemetry from CSV:**
-```bash
-cargo run -p pitgun-emulator -- \
-  --target 127.0.0.1:5001 \
-  --input nEngine=datasets/telemetry/nEngine.csv \
-  --input throttle=datasets/telemetry/rThrottle.csv \
-  --pace
+### 1. Define your Logic (The Manifest)
+Create a `pipeline.yaml` to define how data should be processed dynamically:
+
+```yaml
+version: v1
+pipeline:
+  - type: formula
+    derived_channels:
+      - name: "Power_kW"
+        expr: "Torque_Nm * Engine_RPM / 9549.0"
+  - type: filter
+    whitelist: ["Speed", "Power_kW", "LapTime"]
 ```
 
-**2) Subscribe with a manifest-driven pipeline:**
+### 2. Start the Gateway
 ```bash
-cargo run -p pitgun-cli -- subscribe --config manifests/dummy-pitgun.yaml
+cargo run -p pitgun-gateway --release
 ```
+
+### 3. Inject Data (Replay)
+Simulate a stream of data using the replay tool:
+```bash
+cargo run -p pitgun-replay -- \
+  --target 127.0.0.1:8080 \
+  --input nEngine=datasets/telemetry/nEngine.csv
+```
+
+---
 
 ## 📚 Documentation
 
-- [ARCHITECTURE.md](ARCHITECTURE.md) - Core architecture and crate layout
-- [docs/WIRE_FORMATS.md](docs/WIRE_FORMATS.md) - Wire protocol specifications
-- [docs/segment_aggregation.md](docs/segment_aggregation.md) - Window aggregation feature
+- [ARCHITECTURE.md](ARCHITECTURE.md) - Deep dive into the hexagonal architecture.
+- [docs/WIRE_FORMATS.md](docs/WIRE_FORMATS.md) - Wire protocol specifications.
+- [policies/tuning.v1.yaml](policies/tuning.v1.yaml) - Example of Governance Policy.
 
-## 🧭 Roadmap
+## 🔮 Roadmap
 
-- **Event reliability**: Sequence numbers, loss detection
-- **Typed wire format**: Unified serialization across all components
-- **Ecosystem**: Parquet sink, Arrow integration
-- **Performance**: Benchmarks, memory profiling, throughput optimization
+- **WASM Solver:** Complete the Monte Carlo implementation for the Solver.
+- **Parquet Sink:** Archival storage for historical analysis.
+- **Flow UI:** Visual editor for `pitgun-core` pipeline manifests.
+
+---
+
+> Built with 🦀 Rust for performance and safety.

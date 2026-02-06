@@ -2,27 +2,27 @@
 <html lang="en" class="scroll-smooth"> <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pitgun | Modular Telemetry Framework</title>
+    <title>Pitgun | Distributed Intelligence Mesh</title>
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <link rel="icon" type="image/png" href="/favicon.png">
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
     
     <link rel="canonical" href="https://pitgun.io/" />
 
-    <meta name="description" content="Modular telemetry and data processing framework in Rust. High-frequency, deterministic, F1-grade pipeline for UDP, Kafka and gRPC.">
-    <meta name="keywords" content="Rust, Telemetry, Framework, UDP, Data Processing, Pipeline, Embedded, F1">
+    <meta name="description" content="Distributed Intelligence Mesh in Rust. Ingest telemetry, apply dynamic logic, and orchestrate edge computing (WASM) for Monte Carlo simulations.">
+    <meta name="keywords" content="Rust, Telemetry, Distributed Computing, WASM, Edge, Monte Carlo, F1">
     <meta name="author" content="Loic Belec">
     
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://pitgun.io/">
-    <meta property="og:title" content="Pitgun | High Speed Rust Telemetry">
-    <meta property="og:description" content="Modular pipeline for high-frequency data. Build F1-grade data pipeline in Rust.">
+    <meta property="og:title" content="Pitgun | Distributed Intelligence Mesh">
+    <meta property="og:description" content="From Raw Telemetry to Distributed Decision Making. Build F1-grade edge pipelines in Rust.">
     <meta property="og:image" content="https://pitgun.io/pitgun_large.png">
 
     <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:url" content="https://pitgun.io/">
-    <meta property="twitter:title" content="Pitgun | High Speed Rust Telemetry">
-    <meta property="twitter:description" content="Modular pipeline for high-frequency data. Build F1-grade data pipeline in Rust.">
+    <meta property="twitter:title" content="Pitgun | Distributed Intelligence Mesh">
+    <meta property="twitter:description" content="From Raw Telemetry to Distributed Decision Making. Build F1-grade edge pipelines in Rust.">
     <meta property="twitter:image" content="https://pitgun.io/pitgun_large.png">
     
     <script type="application/ld+json">
@@ -37,7 +37,7 @@
         "price": "0",
         "priceCurrency": "USD"
       },
-      "description": "Modular telemetry and data processing framework in Rust. Includes a CLI, a core library, and an emulator.",
+      "description": "Distributed Intelligence Mesh in Rust. Ingest telemetry, apply dynamic logic, and orchestrate edge computing (WASM) for Monte Carlo simulations.",
       "softwareRequirements": "Rust"
     }
     </script>
@@ -158,51 +158,71 @@
         </div>
     </nav>
 
-    <header class="max-w-7xl mx-auto px-4 md:px-8 py-16 md:py-20">
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
-            <div class="space-y-6">
+    <header class="max-w-7xl mx-auto px-4 md:px-8 py-16 md:py-24">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <div class="space-y-8">
                 <div class="inline-block bg-pit-rust text-white text-[11px] font-bold px-3 py-1.5 uppercase tracking-[0.24em] border-2 border-pit-dark shadow-hard-sm transform -rotate-1">
-                    Rust telemetry
+                    Distributed Intelligence
                 </div>
                 <h1 class="text-6xl md:text-7xl font-display uppercase leading-[0.9] text-pit-petrol text-shadow-retro">
-                    Rust telemetry<br><span class="text-pit-rust">that computes.</span>
+                    Pitgun<br><span class="text-pit-rust">Intelligence Mesh.</span>
                 </h1>
-                <p class="text-lg md:text-xl text-pit-dark/90 font-medium border-l-4 border-pit-rust pl-5 md:pl-6 py-1">
-                    Pitgun ingests telemetry from UDP, applies manifest-driven processors, and emits engineered signals in real time under F1-grade constraints.
+                <p class="text-xl md:text-2xl text-pit-dark/90 font-medium border-l-4 border-pit-rust pl-5 md:pl-6 py-2 max-w-xl">
+                    From Raw Telemetry to Distributed Decision Making. Ingest high-frequency data, apply dynamic logic, and orchestrate distributed computations at the edge.
                 </p>
-                <div class="flex flex-wrap gap-4">
-                    <a href="docs.html" class="bg-pit-rust text-white font-display uppercase tracking-wide px-6 py-3 border-2 border-pit-dark shadow-hard hover:shadow-hard-hover hover:-translate-y-1 active:translate-y-1 active:shadow-hard-active transition-all inline-flex items-center justify-center">
-                        Read Documentation
+                <div class="flex flex-wrap gap-4 pt-4">
+                    <a href="docs.html" class="bg-pit-rust text-white font-display uppercase tracking-wide text-lg px-8 py-4 border-2 border-pit-dark shadow-hard hover:shadow-hard-hover hover:-translate-y-1 active:translate-y-1 active:shadow-hard-active transition-all inline-flex items-center justify-center">
+                        Explore Modules
                     </a>
-                    <a href="https://github.com/loicbelec/pitgun" class="bg-pit-cream px-6 py-3 font-bold uppercase tracking-wide border-2 border-pit-dark shadow-hard hover:shadow-hard-hover hover:-translate-y-1 active:translate-y-1 active:shadow-hard-active transition-all inline-flex items-center justify-center">
-                        View on GitHub
+                    <a href="https://github.com/loicbelec/pitgun" class="bg-pit-cream px-8 py-4 font-bold uppercase tracking-wide text-lg border-2 border-pit-dark shadow-hard hover:shadow-hard-hover hover:-translate-y-1 active:translate-y-1 active:shadow-hard-active transition-all inline-flex items-center justify-center">
+                        View Sources
                     </a>
                 </div>
-                <div class="flex flex-wrap gap-3 text-xs md:text-sm font-mono text-pit-dark/80">
-                    <span class="px-3 py-2 border-2 border-pit-dark bg-pit-cream shadow-hard-sm">UDP source</span>
-                    <span class="px-3 py-2 border-2 border-pit-dark bg-pit-cream shadow-hard-sm">Processors: channel_filter · scale · formula · stats · segment_aggregate</span>
-                    <span class="px-3 py-2 border-2 border-pit-dark bg-pit-cream shadow-hard-sm">Sinks: console JSON · CSV (CLI)</span>
+                <div class="flex flex-wrap gap-3 text-xs md:text-sm font-mono text-pit-dark/80 pt-2">
+                    <span class="px-3 py-2 border-2 border-pit-dark bg-pit-cream shadow-hard-sm">Multi-Protocol Gateway</span>
+                    <span class="px-3 py-2 border-2 border-pit-dark bg-pit-cream shadow-hard-sm">WASM Solver Grid</span>
+                    <span class="px-3 py-2 border-2 border-pit-dark bg-pit-cream shadow-hard-sm">Policy Governance</span>
                 </div>
             </div>
-            <div class="relative">
-                <div class="absolute inset-0 rounded-full bg-pit-rust opacity-10 blur-3xl scale-95 lg:scale-100"></div>
-                <div class="relative bg-pit-petrol text-pit-cream border-4 border-pit-dark shadow-hard overflow-hidden rotate-1 hover:rotate-0 transition-transform duration-500">
+
+            <div class="relative group perspective-1000">
+                <div class="absolute inset-0 rounded-full bg-pit-rust opacity-10 blur-3xl scale-95 lg:scale-100 group-hover:opacity-20 transition-opacity"></div>
+                <div class="relative bg-pit-petrol text-pit-cream border-4 border-pit-dark shadow-hard overflow-hidden rotate-1 group-hover:rotate-0 transition-transform duration-500 origin-center">
                     <div class="absolute inset-0 opacity-10" style="background-image: linear-gradient(#F2E6D6 1px, transparent 1px), linear-gradient(90deg, #F2E6D6 1px, transparent 1px); background-size: 20px 20px;"></div>
-                    <div class="relative p-6 space-y-4">
-                        <div class="flex items-center gap-3">
-                            <div class="h-10 w-10 bg-pit-cream text-pit-petrol font-display text-2xl flex items-center justify-center border-2 border-pit-dark shadow-hard-sm">PG</div>
-                            <div>
-                                <div class="text-xs uppercase tracking-[0.28em] text-pit-accent font-bold">Pipeline ready</div>
-                                <div class="text-2xl font-display uppercase">Telemetry that computes</div>
+                    <div class="relative p-6 md:p-8 space-y-6">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="h-12 w-12 bg-pit-cream text-pit-petrol font-display text-2xl flex items-center justify-center border-2 border-pit-dark shadow-hard-sm">PG</div>
+                                <div>
+                                    <div class="text-xs uppercase tracking-[0.28em] text-pit-accent font-bold">Mesh Network</div>
+                                    <div class="text-2xl font-display uppercase">Gateway Active</div>
+                                </div>
                             </div>
+                            <div class="h-3 w-3 rounded-full bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.8)] animate-pulse"></div>
                         </div>
-                        <div class="bg-pit-dark text-pit-cream border-2 border-pit-cream/40 shadow-hard-sm p-4 font-mono text-sm leading-6">
-<span class="text-pit-rust select-none">$</span> cargo run -p pitgun-cli -- subscribe --config manifests/dummy-pitgun.yaml
+                        
+                        <div class="bg-pit-dark text-pit-cream border-2 border-pit-cream/40 shadow-hard-sm p-5 font-mono text-sm md:text-base leading-7 overflow-x-auto">
+                            <div class="flex gap-2 text-pit-cream/50 mb-2 border-b border-pit-cream/10 pb-2">
+                                <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                                <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                                <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                            </div>
+<span class="text-pit-rust select-none">$</span> cargo run -p pitgun-gateway --release<br>
+<span class="text-pit-cream/60"># Scaling computational mesh...</span><br>
+<span class="text-pit-rust select-none">$</span> cargo run -p pitgun-solver -- --mode wasm<br>
+<span class="text-green-400">✓ Grid Connected: 12 Nodes</span>
                         </div>
-                        <p class="text-sm text-pit-cream/90 leading-relaxed">
-                            Deterministic pipeline with manifest-controlled processors and JSON or CSV sinks.
-                        </p>
+                        
+                        <div class="flex justify-between items-end">
+                            <div class="space-y-1">
+                                <div class="text-xs uppercase tracking-widest text-pit-accent/80">Current Status</div>
+                                <div class="text-lg font-bold">Grid Identity Verified</div>
+                            </div>
+                            <div class="text-4xl font-display text-pit-rust drop-shadow-sm">v0.22</div>
+                        </div>
                     </div>
+                    
+                    <div class="crt-scanline absolute inset-0 pointer-events-none opacity-20"></div>
                 </div>
             </div>
         </div>
@@ -212,32 +232,56 @@
         <div class="absolute inset-0 opacity-10" style="background-image: linear-gradient(#F2E6D6 1px, transparent 1px), linear-gradient(90deg, #F2E6D6 1px, transparent 1px); background-size: 20px 20px;"></div>
 
         <div class="max-w-7xl mx-auto px-4 md:px-8 relative z-10">
-            <div class="flex items-center justify-center mb-14 gap-4">
-                <div class="h-1 w-12 bg-pit-rust"></div>
-                <h2 class="text-pit-cream text-4xl md:text-5xl font-display uppercase tracking-wider text-center">The Toolkit</h2>
-                <div class="h-1 w-12 bg-pit-rust"></div>
+            <div class="flex flex-col items-center justify-center mb-14 gap-2">
+                <div class="flex items-center gap-4">
+                    <div class="h-1 w-12 bg-pit-rust"></div>
+                    <h2 class="text-pit-cream text-4xl md:text-5xl font-display uppercase tracking-wider text-center">Modular Modules</h2>
+                    <div class="h-1 w-12 bg-pit-rust"></div>
+                </div>
+                <p class="text-pit-cream/70 text-center max-w-2xl text-lg font-mono mt-2">
+                    Composable Rust crates. Run them standalone or weave them into a mesh.
+                </p>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- 1. Gateway -->
                 <div class="bg-pit-cream border-4 border-pit-dark p-8 shadow-hard hover:shadow-hard-hover hover:-translate-y-2 transition-all duration-300 relative group overflow-hidden">
                     <div class="absolute -right-4 -top-6 text-[120px] font-display text-pit-petrol opacity-5 select-none group-hover:text-pit-rust transition-colors">1</div>
                     <div class="h-12 w-12 bg-pit-petrol flex items-center justify-center border-2 border-pit-dark mb-6 text-pit-cream font-mono text-xl font-bold group-hover:bg-pit-rust transition-colors">01</div>
-                    <h3 class="text-2xl font-display uppercase text-pit-petrol mb-3 border-b-2 border-pit-dark/10 pb-2">Core Library</h3>
-                    <p class="text-sm font-medium text-pit-dark/80">Trait-based pipeline with sources, processors, and sinks. Includes channel filters, scaling, statistics, and formula evaluation via AST JSON.</p>
+                    <h3 class="text-2xl font-display uppercase text-pit-petrol mb-3 border-b-2 border-pit-dark/10 pb-2">Traffic Gateway</h3>
+                    <p class="text-sm font-medium text-pit-dark/80">
+                        High-throughput ingress layer with HTTP/WebSocket endpoints (UDP, MQTT coming soon). Normalizes disparate wire formats into a unified <code>TelemetryFrame</code>, buffering and routing to the mesh. Use it standalone as a protocol bridge, or as the mesh entry point.
+                    </p>
                 </div>
 
+                <!-- 2. Core & AST (RE-ADDED) -->
                 <div class="bg-pit-cream border-4 border-pit-dark p-8 shadow-hard hover:shadow-hard-hover hover:-translate-y-2 transition-all duration-300 relative group overflow-hidden">
                     <div class="absolute -right-4 -top-6 text-[120px] font-display text-pit-petrol opacity-5 select-none group-hover:text-pit-rust transition-colors">2</div>
                     <div class="h-12 w-12 bg-pit-petrol flex items-center justify-center border-2 border-pit-dark mb-6 text-pit-cream font-mono text-xl font-bold group-hover:bg-pit-rust transition-colors">02</div>
-                    <h3 class="text-2xl font-display uppercase text-pit-petrol mb-3 border-b-2 border-pit-dark/10 pb-2">UDP Emulator</h3>
-                    <p class="text-sm font-medium text-pit-dark/80">Replay multiple CSV time series over UDP with optional pacing and multicast settings.</p>
+                    <h3 class="text-2xl font-display uppercase text-pit-petrol mb-3 border-b-2 border-pit-dark/10 pb-2">Core Engine</h3>
+                    <p class="text-sm font-medium text-pit-dark/80">
+                        The brain of the mesh. <code>pitgun-core</code> provides the AST-based Formula Engine (<code>Power = Torque * RPM</code>), manifest-driven pipelines, and type converters. Embed it directly into your Rust application for local formula evaluation without any network overhead.
+                    </p>
                 </div>
 
+                <!-- 3. Solver -->
                 <div class="bg-pit-cream border-4 border-pit-dark p-8 shadow-hard hover:shadow-hard-hover hover:-translate-y-2 transition-all duration-300 relative group overflow-hidden">
                     <div class="absolute -right-4 -top-6 text-[120px] font-display text-pit-petrol opacity-5 select-none group-hover:text-pit-rust transition-colors">3</div>
                     <div class="h-12 w-12 bg-pit-petrol flex items-center justify-center border-2 border-pit-dark mb-6 text-pit-cream font-mono text-xl font-bold group-hover:bg-pit-rust transition-colors">03</div>
-                    <h3 class="text-2xl font-display uppercase text-pit-petrol mb-3 border-b-2 border-pit-dark/10 pb-2">Pitgun CLI</h3>
-                    <p class="text-sm font-medium text-pit-dark/80">Subscribe to UDP streams, assemble pipelines from YAML manifests, emit derived channels, and record to console or per-channel CSV.</p>
+                    <h3 class="text-2xl font-display uppercase text-pit-petrol mb-3 border-b-2 border-pit-dark/10 pb-2">WASM Solver</h3>
+                    <p class="text-sm font-medium text-pit-dark/80">
+                        Distributed compute orchestration. <code>pitgun-solver</code> compiles to WebAssembly for browser-based volunteer computing. Feed it a <code>RiskAnalysisRequest</code> and it executes Monte Carlo simulations in parallel, aggregating results for strategy optimization.
+                    </p>
+                </div>
+
+                <!-- 4. Authority -->
+                <div class="bg-pit-cream border-4 border-pit-dark p-8 shadow-hard hover:shadow-hard-hover hover:-translate-y-2 transition-all duration-300 relative group overflow-hidden">
+                    <div class="absolute -right-4 -top-6 text-[120px] font-display text-pit-petrol opacity-5 select-none group-hover:text-pit-rust transition-colors">4</div>
+                    <div class="h-12 w-12 bg-pit-petrol flex items-center justify-center border-2 border-pit-dark mb-6 text-pit-cream font-mono text-xl font-bold group-hover:bg-pit-rust transition-colors">04</div>
+                    <h3 class="text-2xl font-display uppercase text-pit-petrol mb-3 border-b-2 border-pit-dark/10 pb-2">Policy Authority <span class="text-xs bg-pit-dark text-pit-cream px-2 py-0.5 ml-2">WIP</span></h3>
+                    <p class="text-sm font-medium text-pit-dark/80">
+                         Governance layer for secure distributed systems. Designed to sign configuration manifests, enforce Tuning Policy Limits, and provide cryptographic proof that result A came from Config B. Foundational work underway.
+                    </p>
                 </div>
             </div>
         </div>
@@ -247,20 +291,24 @@
         <div class="bg-pit-cream border-4 border-pit-dark shadow-hard p-8 md:p-10">
             <div class="flex items-center gap-3 mb-6">
                 <div class="h-1 w-10 bg-pit-rust"></div>
-                <h2 class="text-3xl md:text-4xl font-display uppercase text-pit-petrol">Source → Processors → Sink</h2>
+                <h2 class="text-3xl md:text-4xl font-display uppercase text-pit-petrol">Meshed Architecture</h2>
             </div>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="border-2 border-pit-dark bg-white p-5 shadow-hard-sm">
-                    <div class="text-xs uppercase tracking-[0.2em] text-pit-rust font-bold mb-2">Source</div>
-                    <p class="text-sm text-pit-dark/80">UDP ingest with optional multicast join, small binary frames, and bounded batching.</p>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div class="border-2 border-pit-dark bg-white p-6 shadow-hard-sm">
+                    <div class="text-xs uppercase tracking-[0.2em] text-pit-rust font-bold mb-3">Ingress</div>
+                    <p class="text-sm text-pit-dark/80 leading-relaxed">Gateway normalizes protocols (UDP/TCP/WS) to Frame struct.</p>
                 </div>
-                <div class="border-2 border-pit-dark bg-white p-5 shadow-hard-sm">
-                    <div class="text-xs uppercase tracking-[0.2em] text-pit-rust font-bold mb-2">Processors</div>
-                    <p class="text-sm text-pit-dark/80">Declarative order defined in manifests.</p>
+                <div class="border-2 border-pit-dark bg-white p-6 shadow-hard-sm">
+                    <div class="text-xs uppercase tracking-[0.2em] text-pit-rust font-bold mb-3">Processing</div>
+                    <p class="text-sm text-pit-dark/80 leading-relaxed">Core engine executes manifest-driven channel logic.</p>
                 </div>
-                <div class="border-2 border-pit-dark bg-white p-5 shadow-hard-sm">
-                    <div class="text-xs uppercase tracking-[0.2em] text-pit-rust font-bold mb-2">Sink</div>
-                    <p class="text-sm text-pit-dark/80">Console JSON output by default; CSV recording available via CLI composite sink.</p>
+                <div class="border-2 border-pit-dark bg-white p-6 shadow-hard-sm">
+                    <div class="text-xs uppercase tracking-[0.2em] text-pit-rust font-bold mb-3">Compute</div>
+                    <p class="text-sm text-pit-dark/80 leading-relaxed">Solver node offloads heavy math to WASM grid.</p>
+                </div>
+                 <div class="border-2 border-pit-dark bg-white p-6 shadow-hard-sm">
+                    <div class="text-xs uppercase tracking-[0.2em] text-pit-rust font-bold mb-3">Governance</div>
+                    <p class="text-sm text-pit-dark/80 leading-relaxed">Authority enforces limits and signs outputs.</p>
                 </div>
             </div>
         </div>
@@ -278,11 +326,11 @@
                      <span class="font-display text-3xl tracking-widest text-pit-cream">PITGUN</span>
                 </div>
                 <p class="text-sm text-gray-500 max-w-xs">
-                    Modular telemetry for the modern age.<br>
-                    Built with 🔧 and Rust.
+                    Composable crates. Distributed mesh. Edge-native compute.<br>
+                    Built with 🦀 Rust.
                 </p>
                 <div class="text-xs text-gray-600 font-mono mt-4">
-                    © 2025 Open Source Project
+                    © 2026 Open Source Project
                 </div>
             </div>
             

@@ -42,6 +42,7 @@ By combining insights from Formula 1 telemetry and High-Frequency Trading, Pitgu
 - [11 - From F1-specific dictionary to a canonical multi-domain telemetry model](#11---from-f1-specific-dictionary-to-a-canonical-multi-domain-telemetry-model)
 - [12 – Switching Gemini for Qwen (and back, partially)](#12--switching-gemini-for-qwen-and-back-partially)
 - [13 - Segment aggregation (window-by-key)](#13---segment-aggregation-window-by-key)
+- [14 - The Distributed Computing Pivot](#14---the-distributed-computing-pivot)
 
 ## Project structure
 Pitgun is organized as a Rust workspace composed of three main crates:
@@ -1726,3 +1727,26 @@ Console output will emit one JSON line per segment with the segment key, start/e
 - Optional time-based flush for long-running segments that don’t change keys.
 - Multi-target examples across domains (e.g., price/size per auction in HFT) to broaden docs.
 - Sink-specific formatting (CSV/Parquet) for aggregates when new sinks arrive.
+
+## 14 - The Distributed Computing Pivot
+
+We realized that Pitgun was evolving beyond a simple "telemetry consumption tool". It had all the components of a distributed computing grid.
+
+- **The Realization:** We were ingesting data (Gateway), validating it (Authority), and we had a physics engine (Engine). What was missing was the **Orchestration of Intelligence**.
+- **The Vision:** Move from "Observing the car" to "Optimizing the car" using distributed compute power (Genetic Algorithms, Monte Carlo) running on client machines via WebAssembly.
+
+### The Great Refactoring
+To support this "Platform" vision, we renamed our components to reflect their new roles in a Hexagonal Architecture:
+
+1.  **Data Plane (`pitgun-engine-f1`):** Formerly `source-physics`. It is no longer just a source; it is the reference implementation of the simulation kernel. It is stateless and compile-ready for WASM.
+2.  **Control Plane (`pitgun-solver`):** *New Component.* This is the brain that will distribute jobs (e.g., "Simulate 10k laps with variance X") to workers.
+3.  **Governance (`pitgun-authority`):** Formerly `configd`. It enforces the rules (Policy) and signs the contracts. It is the "Judge".
+4.  **Gateway (`pitgun-gateway`):** Formerly `telemetryd`. It handled too much responsibility. Now it focuses solely on high-throughput ingress and dispatch.
+
+### Infrastructure Maturity
+We moved from "It runs on my machine" to "It runs in the Cloud":
+- **Docker Compose:** Fully generic, production-ready stack with Traefik labels for HTTPS.
+- **Systemd:** Proper daemon management for the Gateway and Authority.
+- **Cleanup:** Removal of legacy scripts and simplification of CI workflows.
+
+Pitgun is now positioned not just as a F1 tool, but as a **Distributed Intelligence Mesh** capable of handling generic optimization problems (Finance, Energy, etc.).
