@@ -623,8 +623,10 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "335ff9f135e4384c8150d6f27c6daed433577f86b4750418338c01a1a2528592"
 dependencies = [
  "cfg-if",
+ "js-sys",
  "libc",
  "wasi",
+ "wasm-bindgen",
 ]
 
 [[package]]
@@ -1113,6 +1115,25 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8b870d8c151b6f2fb93e84a13146138f05d02ed11c7e7c54f8826aaaf7c9f184"
 
 [[package]]
+name = "pitgun-authority"
+version = "0.1.0"
+dependencies = [
+ "axum",
+ "hex",
+ "pitgun-codec-json",
+ "pitgun-contract",
+ "pitgun-policy",
+ "pitgun-signing",
+ "rand",
+ "serde",
+ "serde_json",
+ "sha2",
+ "tokio",
+ "tracing",
+ "tracing-subscriber",
+]
+
+[[package]]
 name = "pitgun-cli"
 version = "0.1.0"
 dependencies = [
@@ -1146,25 +1167,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "pitgun-configd"
-version = "0.1.0"
-dependencies = [
- "axum",
- "hex",
- "pitgun-codec-json",
- "pitgun-contract",
- "pitgun-policy",
- "pitgun-signing",
- "rand",
- "serde",
- "serde_json",
- "sha2",
- "tokio",
- "tracing",
- "tracing-subscriber",
-]
-
-[[package]]
 name = "pitgun-contract"
 version = "0.1.0"
 dependencies = [
@@ -1191,7 +1193,43 @@ dependencies = [
 ]
 
 [[package]]
-name = "pitgun-emulator"
+name = "pitgun-engine-f1"
+version = "0.1.0"
+
+[[package]]
+name = "pitgun-gateway"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "axum",
+ "pitgun-codec-json",
+ "pitgun-core",
+ "prost",
+ "prost-build",
+ "protoc-bin-vendored",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "time",
+ "tokio",
+ "tracing",
+ "tracing-subscriber",
+]
+
+[[package]]
+name = "pitgun-policy"
+version = "0.1.0"
+dependencies = [
+ "pitgun-contract",
+ "serde",
+ "serde_json",
+ "serde_yaml",
+ "thiserror",
+]
+
+[[package]]
+name = "pitgun-replay"
 version = "0.1.0"
 dependencies = [
  "anyhow",
@@ -1204,22 +1242,26 @@ dependencies = [
 ]
 
 [[package]]
-name = "pitgun-policy"
-version = "0.1.0"
-dependencies = [
- "pitgun-contract",
- "serde",
- "serde_json",
- "serde_yaml",
-]
-
-[[package]]
 name = "pitgun-signing"
 version = "0.1.0"
 dependencies = [
  "hex",
  "hmac",
  "sha2",
+]
+
+[[package]]
+name = "pitgun-solver"
+version = "0.1.0"
+dependencies = [
+ "getrandom 0.2.16",
+ "pitgun-contract",
+ "pitgun-engine-f1",
+ "pitgun-policy",
+ "rand",
+ "serde",
+ "serde_json",
+ "wasm-bindgen",
 ]
 
 [[package]]
@@ -1248,18 +1290,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "pitgun-source-physics"
-version = "0.1.0"
-dependencies = [
- "async-trait",
- "pitgun-contract",
- "pitgun-core",
- "pitgun-signing",
- "serde_json",
- "tokio",
-]
-
-[[package]]
 name = "pitgun-source-udp"
 version = "0.1.0"
 dependencies = [
@@ -1283,27 +1313,6 @@ dependencies = [
  "tokio-tungstenite 0.21.0",
  "tungstenite 0.21.0",
  "url",
-]
-
-[[package]]
-name = "pitgun-telemetryd"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "async-trait",
- "axum",
- "pitgun-codec-json",
- "pitgun-core",
- "prost",
- "prost-build",
- "protoc-bin-vendored",
- "serde",
- "serde_json",
- "thiserror",
- "time",
- "tokio",
- "tracing",
- "tracing-subscriber",
 ]
 
 [[package]]

@@ -1,5 +1,6 @@
 pub mod codec;
 pub mod frame;
+pub mod racing;
 pub mod registry;
 pub mod source;
 
@@ -10,6 +11,10 @@ pub use codec::{
 pub use frame::{
     Event, EventData, EventId, EventSeverity, ParameterId, Sample, SampleValue, SessionId,
     SignalQuality, TelemetryFrame, TelemetryFrameBuilder,
+};
+pub use racing::{
+    CompetitorSpec, CompetitorStatus, RaceInput, RaceOutput, RunPackage, StandingEntry, TuningSpec,
+    VehicleClass, resolve_vehicle_class,
 };
 pub use registry::{
     AccessLevel, Conversion, DataType, Parameter, ParameterRegistry, Range, RegistryError,

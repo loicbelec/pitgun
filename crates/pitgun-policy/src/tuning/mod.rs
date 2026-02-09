@@ -106,7 +106,7 @@ impl TuningPolicy {
 pub fn default_policy_path() -> PathBuf {
     std::env::var(POLICY_PATH_ENV)
         .map(PathBuf::from)
-        .unwrap_or_else(|_| PathBuf::from("policies/tuning.v1.yaml"))
+        .unwrap_or_else(|_| PathBuf::from("policies/gametuning.v1.yaml"))
 }
 
 pub fn strict_mode_from_env() -> StrictMode {

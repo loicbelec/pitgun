@@ -1,5 +1,6 @@
 mod access;
 mod tuning;
+pub mod validation;
 
 // Access control exports
 pub use access::{

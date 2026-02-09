@@ -674,7 +674,8 @@ mod tests {
     #[test]
     fn sample_value_conversions() {
         assert_eq!(SampleValue::U16(1000).as_f64(), Some(1000.0));
-        assert_eq!(SampleValue::F32(3.14).as_f64(), Some(3.14 as f64));
+        let f32_value = SampleValue::F32(3.14).as_f64().expect("f32 should convert to f64");
+        assert!((f32_value - 3.14).abs() < 1e-6);
         assert_eq!(SampleValue::Bool(true).as_f64(), Some(1.0));
         assert_eq!(SampleValue::Bool(false).as_f64(), Some(0.0));
         assert!(SampleValue::Bytes(vec![1, 2, 3]).as_f64().is_none());

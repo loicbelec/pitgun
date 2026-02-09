@@ -30,7 +30,7 @@
 //! assert!(controller.check(&claims, 100).is_ok());
 //! ```
 
-use pitgun_contract::{ParameterRegistry, TelemetryFrame, TelemetrySample};
+use pitgun_contract::{ParameterRegistry, Sample, TelemetryFrame};
 use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
@@ -400,7 +400,7 @@ impl AccessController {
     pub fn check(&self, claims: &Claims, parameter_id: u32) -> AccessResult<()> {
         // Check token expiration
         if claims.is_expired() {
-            self.log_access(claims, parameter_id, false, "token expired");
+            self.log_access(claims, parameter_id, false, Some("token expired"));
             return Err(AccessDenied {
                 parameter_id,
                 reason: "token expired".into(),
@@ -427,10 +427,10 @@ impl AccessController {
                 claims,
                 parameter_id,
                 false,
-                &format!(
+                Some(&format!(
                     "insufficient level: user={:?}, required={:?}",
                     claims.max_level, access.level
-                ),
+                )),
             );
             return Err(AccessDenied {
                 parameter_id,
@@ -448,7 +448,7 @@ impl AccessController {
                     claims,
                     parameter_id,
                     false,
-                    &format!("not in required team: {}", team),
+                    Some(&format!("not in required team: {}", team)),
                 );
                 return Err(AccessDenied {
                     parameter_id,
@@ -464,7 +464,7 @@ impl AccessController {
                     claims,
                     parameter_id,
                     false,
-                    &format!("missing required role: {}", role),
+                    Some(&format!("missing required role: {}", role)),
                 );
                 return Err(AccessDenied {
                     parameter_id,
@@ -488,19 +488,16 @@ impl AccessController {
 
     /// Filters a frame to only include accessible samples
     pub fn filter_frame(&self, claims: &Claims, frame: &TelemetryFrame) -> TelemetryFrame {
-        let accessible_samples: Vec<TelemetrySample> = frame
-            .samples()
+        let accessible_samples: Vec<Sample> = frame
+            .samples
             .iter()
-            .filter(|s| self.check(claims, s.parameter_id).is_ok())
+            .filter(|s| self.check(claims, u32::from(s.parameter_id)).is_ok())
             .cloned()
             .collect();
 
-        TelemetryFrame::new(
-            frame.source_id(),
-            frame.sequence(),
-            frame.timestamp(),
-            accessible_samples,
-        )
+        let mut filtered = frame.clone();
+        filtered.samples = accessible_samples;
+        filtered
     }
 
     /// Logs an access attempt

@@ -260,7 +260,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let policy_path = default_policy_path();
     let (tuning_policy, policy_hash) = load_tuning_policy(policy_path.clone()).map_err(|err| {
         format!(
-            "failed to load tuning.v1 policy at {}: {err}",
+            "failed to load game tuning policy at {}: {err}",
             policy_path.display()
         )
     })?;
@@ -302,7 +302,7 @@ mod tests {
 
     fn test_state() -> AppState {
         let policy_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-            .join("../../policies/tuning.v1.yaml");
+            .join("../../policies/gametuning.v1.yaml");
         let (tuning_policy, policy_hash) =
             load_tuning_policy(policy_path).expect("policy should load");
 
@@ -322,10 +322,7 @@ mod tests {
         SimulationContractRequest {
             era: 3,
             category_levels: BTreeMap::from([
-                ("mech_lvl".to_string(), 5),
-                ("testing_lvl".to_string(), 10),
-                ("manufacturing_lvl".to_string(), 15),
-                ("it_systems_lvl".to_string(), 20),
+                ("budget_lvl".to_string(), 100),
             ]),
             owned_upgrades: Vec::new(),
             parameters,
@@ -353,11 +350,11 @@ mod tests {
     fn unlock_rejection_is_bad_request() {
         let state = test_state();
         let mut request = base_request(json!({
-            "powertrain": {
-                "turbo_boost_pressure": 2.0
+            "gameplay": {
+                "engine_points": 10.0
             }
         }));
-        request.owned_upgrades = vec![];
+        request.era = 0;
 
         let err = with_signing_env("unit-test-secret", || {
             build_signed_simulation_contract(1_710_000_000_000, &state, request)
@@ -375,9 +372,11 @@ mod tests {
     fn constraint_violation_is_bad_request() {
         let state = test_state();
         let request = base_request(json!({
-            "aero": {
-                "front_wing_angle": 8.0,
-                "rear_wing_angle": 30.0
+            "gameplay": {
+                "aero_points": 30.0,
+                "chassis_points": 30.0,
+                "cooling_points": 30.0,
+                "engine_points": 30.0
             }
         }));
 
@@ -387,7 +386,7 @@ mod tests {
         });
         match err {
             ContractError::BadRequest(message) => {
-                assert!(message.contains("Aero balance"));
+                assert!(message.contains("Gameplay setup exceeds available budget."));
             }
             ContractError::Internal(message) => panic!("unexpected internal error: {message}"),
         }
@@ -396,12 +395,16 @@ mod tests {
     #[test]
     fn happy_path_returns_signature() {
         let state = test_state();
-        let mut request = base_request(json!({
-            "powertrain": {
-                "turbo_boost_pressure": 1.6
+        let request = base_request(json!({
+            "gameplay": {
+                "aero_points": 25.0,
+                "chassis_points": 25.0,
+                "cooling_points": 25.0,
+                "engine_points": 25.0,
+                "downforce_slider": 0.5,
+                "gear_ratio_slider": 0.5
             }
         }));
-        request.owned_upgrades = vec!["e2_turbocharger".to_string(), "e2_hybrid_sys".to_string()];
 
         let response = with_signing_env("unit-test-secret", || {
             build_signed_simulation_contract(1_710_000_000_000, &state, request)

@@ -95,7 +95,7 @@ cargo run -p pitgun-replay -- \
 
 - [ARCHITECTURE.md](ARCHITECTURE.md) - Deep dive into the hexagonal architecture.
 - [docs/WIRE_FORMATS.md](docs/WIRE_FORMATS.md) - Wire protocol specifications.
-- [policies/tuning.v1.yaml](policies/tuning.v1.yaml) - Example of Governance Policy.
+- [policies/gametuning.v1.yaml](policies/gametuning.v1.yaml) - Example of Governance Policy.
 
 ## 🔮 Roadmap
 

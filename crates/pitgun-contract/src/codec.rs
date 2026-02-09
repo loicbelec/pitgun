@@ -524,7 +524,7 @@ impl TelemetryCodec for JsonCodec {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::frame::{Sample, SampleValue, SignalQuality};
+    use crate::frame::{Sample, SampleValue};
 
     fn sample_frame() -> TelemetryFrame {
         TelemetryFrame::builder()
@@ -649,7 +649,7 @@ mod tests {
         let codec = JsonCodec::new();
         assert!(codec.min_decode_size() >= 1);
         assert!(codec.can_decode(b"{}"));
-        assert!(codec.can_decode(b""));
+        assert!(!codec.can_decode(b""));
     }
 
     #[test]

@@ -4,7 +4,7 @@
 
 `POST /v1/contracts/simulation`
 
-The service loads `policies/tuning.v1.yaml` (override with `PITGUN_TUNING_POLICY_PATH`),
+The service loads `policies/gametuning.v1.yaml` (override with `PITGUN_TUNING_POLICY_PATH`),
 canonicalizes the tuning request, validates derived constraints, and returns a
 signed `SimulationContractV1` payload. The signature is computed over the JSON
 serialization of the `contract` object.
@@ -16,11 +16,17 @@ curl -sS -X POST http://127.0.0.1:8080/v1/contracts/simulation \
   -H 'content-type: application/json' \
   -d '{
     "era": 3,
-    "category_levels": {"mech_lvl": 5, "testing_lvl": 10, "manufacturing_lvl": 15, "it_systems_lvl": 20},
-    "owned_upgrades": ["e2_turbocharger", "e2_hybrid_sys"],
+    "category_levels": {"budget_lvl": 100},
+    "owned_upgrades": [],
     "parameters": {
-      "aero": {"front_wing_angle": 18.0, "rear_wing_angle": 22.0},
-      "powertrain": {"turbo_boost_pressure": 1.6}
+      "gameplay": {
+        "aero_points": 25.0,
+        "chassis_points": 25.0,
+        "cooling_points": 25.0,
+        "engine_points": 25.0,
+        "downforce_slider": 0.5,
+        "gear_ratio_slider": 0.5
+      }
     }
   }'
 ```
@@ -35,17 +41,20 @@ Example response:
     "expires_at_ms": 1710000300000,
     "era": 3,
     "category_levels": {
-      "mech_lvl": 5,
-      "testing_lvl": 10,
-      "manufacturing_lvl": 15,
-      "it_systems_lvl": 20
+      "budget_lvl": 100
     },
-    "owned_upgrades": ["e2_turbocharger", "e2_hybrid_sys"],
+    "owned_upgrades": [],
     "parameters": {
-      "aero": { "front_wing_angle": 18.0, "rear_wing_angle": 22.0 },
-      "powertrain": { "turbo_boost_pressure": 1.6 }
+      "gameplay": {
+        "aero_points": 25.0,
+        "chassis_points": 25.0,
+        "cooling_points": 25.0,
+        "engine_points": 25.0,
+        "downforce_slider": 0.5,
+        "gear_ratio_slider": 0.5
+      }
     },
-    "derived_constraints": ["wing_balance", "turbo_lean_protection", "active_suspension_energy"],
+    "derived_constraints": ["gameplay_budget_cap"],
     "policy_hash": "hex_sha256"
   },
   "signature": "hex_hmac_sha256"

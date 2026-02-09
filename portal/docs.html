@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,12 +9,15 @@
     <link rel="icon" type="image/png" href="/favicon.png">
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 
-    <meta name="description" content="Official Pitgun documentation. Distributed Intelligence Mesh, WASM Solver grid, and cryptographic policy governance.">
+    <meta name="description"
+        content="Official Pitgun documentation. Distributed Intelligence Mesh, WASM Solver grid, and cryptographic policy governance.">
     <meta name="keywords" content="Pitgun, Rust, Telemetry, Distributed Computing, WASM, Monte Carlo, Documentation">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Changa+One&family=Fira+Code:wght@400;600&family=Roboto+Slab:wght@400;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Changa+One&family=Fira+Code:wght@400;600&family=Roboto+Slab:wght@400;700&display=swap"
+        rel="stylesheet">
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -47,51 +51,75 @@
     </script>
 
     <style>
-        html { scroll-behavior: smooth; }
-        body { background-color: #F2E6D6; position: relative; }
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background-color: #F2E6D6;
+            position: relative;
+        }
+
         body::before {
             content: "";
             position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.08'/%3E%3C/svg%3E");
             pointer-events: none;
             z-index: -2;
         }
+
         body::after {
             content: "";
             position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             background-size: 40px 40px;
             background-image: linear-gradient(to right, rgba(47, 72, 88, 0.05) 1px, transparent 1px),
-                              linear-gradient(to bottom, rgba(47, 72, 88, 0.05) 1px, transparent 1px);
+                linear-gradient(to bottom, rgba(47, 72, 88, 0.05) 1px, transparent 1px);
             pointer-events: none;
             z-index: -1;
         }
+
         .text-shadow-retro {
             text-shadow: 3px 3px 0px #F2E6D6, 6px 6px 0px #1A1A1A;
         }
+
         .crt-scanline {
-            background: linear-gradient(
-                to bottom,
-                rgba(255,255,255,0),
-                rgba(255,255,255,0) 50%,
-                rgba(0,0,0,0.1) 50%,
-                rgba(0,0,0,0.1)
-            );
+            background: linear-gradient(to bottom,
+                    rgba(255, 255, 255, 0),
+                    rgba(255, 255, 255, 0) 50%,
+                    rgba(0, 0, 0, 0.1) 50%,
+                    rgba(0, 0, 0, 0.1));
             background-size: 100% 4px;
             pointer-events: none;
         }
     </style>
 </head>
+
 <body class="text-pit-dark font-body leading-relaxed selection:bg-pit-rust selection:text-white">
-    <nav class="w-full py-6 px-4 md:px-8 max-w-7xl mx-auto flex flex-wrap justify-between items-center gap-y-4 border-b-2 border-pit-dark/10">
-        <div class="flex items-center gap-3 text-3xl md:text-4xl font-display uppercase tracking-wider text-pit-rust select-none drop-shadow-sm">
-            <img src="favicon.png" alt="Pitgun favicon" class="h-10 w-10">
-            <a href="index.html">Pitgun<span class="text-pit-dark">.io</span></a>
+    <nav
+        class="w-full py-6 px-4 md:px-8 max-w-7xl mx-auto flex flex-wrap justify-between items-center gap-y-4 border-b-2 border-pit-dark/10">
+        <div class="flex items-center gap-2 select-none">
+            <img src="logo.svg" alt="Pitgun Logo"
+                class="h-12 w-12 hover:rotate-90 transition-transform duration-700 ease-in-out relative z-10">
+            <a href="index.html" class="flex flex-col justify-center leading-none">
+                <span
+                    class="text-4xl md:text-5xl font-display font-bold uppercase tracking-tighter text-pit-rust drop-shadow-[2px_2px_0px_rgba(26,26,26,1)]">
+                    PITGUN<span class="text-pit-petrol">.IO</span>
+                </span>
+            </a>
         </div>
         <div class="flex gap-4 items-center font-bold text-sm md:text-base font-mono">
-            <a href="docs.html" class="hover:text-pit-rust transition-colors uppercase tracking-tight decoration-2 underline-offset-4 hover:underline">Docs</a>
-            <a href="https://github.com/loicbelec/pitgun" class="bg-pit-dark text-pit-cream px-5 py-2 border-2 border-pit-dark shadow-hard-sm hover:shadow-hard hover:-translate-y-0.5 active:translate-y-1 active:shadow-hard-active transition-all">
+            <a href="docs.html"
+                class="hover:text-pit-rust transition-colors uppercase tracking-tight decoration-2 underline-offset-4 hover:underline">Docs</a>
+            <a href="https://github.com/loicbelec/pitgun"
+                class="bg-pit-dark text-pit-cream px-5 py-2 border-2 border-pit-dark shadow-hard-sm hover:shadow-hard hover:-translate-y-0.5 active:translate-y-1 active:shadow-hard-active transition-all">
                 GitHub
             </a>
         </div>
@@ -100,49 +128,63 @@
     <header class="max-w-7xl mx-auto px-4 md:px-8 py-16 md:py-20">
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
             <div class="space-y-6">
-                <div class="inline-block bg-pit-rust text-white text-[11px] font-bold px-3 py-1.5 uppercase tracking-[0.24em] border-2 border-pit-dark shadow-hard-sm transform -rotate-1">
+                <div
+                    class="inline-block bg-pit-rust text-white text-[11px] font-bold px-3 py-1.5 uppercase tracking-[0.24em] border-2 border-pit-dark shadow-hard-sm transform -rotate-1">
                     Distributed Intelligence
                 </div>
                 <h1 class="text-6xl md:text-7xl font-display uppercase leading-[0.9] text-pit-petrol text-shadow-retro">
                     Pitgun docs<br><span class="text-pit-rust">built for the edge.</span>
                 </h1>
                 <p class="text-lg md:text-xl text-pit-dark/90 font-medium border-l-4 border-pit-rust pl-5 md:pl-6 py-1">
-                    Technical reference for the Distributed Intelligence Mesh. Each component—Gateway, Core, Solver, Authority—works standalone or woven together.
+                    Technical reference for the Distributed Intelligence Mesh. Each component—Gateway, Core, Solver,
+                    Authority—works standalone or woven together.
                 </p>
                 <div class="flex flex-wrap gap-4">
-                    <a href="README.md" class="bg-pit-rust text-white font-display uppercase tracking-wide px-6 py-3 border-2 border-pit-dark shadow-hard hover:shadow-hard-hover hover:-translate-y-1 active:translate-y-1 active:shadow-hard-active transition-all inline-flex items-center justify-center">
+                    <a href="README.md"
+                        class="bg-pit-rust text-white font-display uppercase tracking-wide px-6 py-3 border-2 border-pit-dark shadow-hard hover:shadow-hard-hover hover:-translate-y-1 active:translate-y-1 active:shadow-hard-active transition-all inline-flex items-center justify-center">
                         Read quickstart
                     </a>
-                    <a href="../manifests/dummy-pitgun.yaml" class="bg-pit-cream px-6 py-3 font-bold uppercase tracking-wide border-2 border-pit-dark shadow-hard hover:shadow-hard-hover hover:-translate-y-1 active:translate-y-1 active:shadow-hard-active transition-all inline-flex items-center justify-center">
+                    <a href="../manifests/dummy-pitgun.yaml"
+                        class="bg-pit-cream px-6 py-3 font-bold uppercase tracking-wide border-2 border-pit-dark shadow-hard hover:shadow-hard-hover hover:-translate-y-1 active:translate-y-1 active:shadow-hard-active transition-all inline-flex items-center justify-center">
                         Open sample manifest
                     </a>
                 </div>
                 <div class="flex flex-wrap gap-3 text-xs md:text-sm font-mono text-pit-dark/80">
                     <span class="px-3 py-2 border-2 border-pit-dark bg-pit-cream shadow-hard-sm">Edge Computing</span>
-                    <span class="px-3 py-2 border-2 border-pit-dark bg-pit-cream shadow-hard-sm">Ref: Monte Carlo Solver</span>
+                    <span class="px-3 py-2 border-2 border-pit-dark bg-pit-cream shadow-hard-sm">Ref: Monte Carlo
+                        Solver</span>
                     <span class="px-3 py-2 border-2 border-pit-dark bg-pit-cream shadow-hard-sm">Policy Signing</span>
                 </div>
             </div>
 
             <div class="relative">
                 <div class="absolute inset-0 rounded-full bg-pit-rust opacity-10 blur-3xl scale-95 lg:scale-100"></div>
-                <div class="relative bg-pit-petrol text-pit-cream border-4 border-pit-dark shadow-hard overflow-hidden rotate-1 hover:rotate-0 transition-transform duration-500">
-                    <div class="absolute inset-0 opacity-10" style="background-image: linear-gradient(#F2E6D6 1px, transparent 1px), linear-gradient(90deg, #F2E6D6 1px, transparent 1px); background-size: 20px 20px;"></div>
+                <div
+                    class="relative bg-pit-petrol text-pit-cream border-4 border-pit-dark shadow-hard overflow-hidden rotate-1 hover:rotate-0 transition-transform duration-500">
+                    <div class="absolute inset-0 opacity-10"
+                        style="background-image: linear-gradient(#F2E6D6 1px, transparent 1px), linear-gradient(90deg, #F2E6D6 1px, transparent 1px); background-size: 20px 20px;">
+                    </div>
                     <div class="relative p-6 space-y-4">
                         <div class="flex items-center gap-3">
-                            <div class="h-10 w-10 bg-pit-cream text-pit-petrol font-display text-2xl flex items-center justify-center border-2 border-pit-dark shadow-hard-sm">PG</div>
+                            <div
+                                class="h-10 w-10 bg-pit-cream text-pit-petrol font-display text-2xl flex items-center justify-center border-2 border-pit-dark shadow-hard-sm">
+                                PG</div>
                             <div>
-                                <div class="text-xs uppercase tracking-[0.28em] text-pit-accent font-bold">Documentation</div>
+                                <div class="text-xs uppercase tracking-[0.28em] text-pit-accent font-bold">Documentation
+                                </div>
                                 <div class="text-2xl font-display uppercase">Orchestrate the Mesh</div>
                             </div>
                         </div>
-                        <div class="bg-pit-dark text-pit-cream border-2 border-pit-cream/40 shadow-hard-sm p-4 font-mono text-sm leading-6">
-<span class="text-pit-rust select-none">$</span> cargo run -p pitgun-solver -- --mode wasm<br>
-<span class="text-pit-rust select-none">$</span> cargo run -p pitgun-authority -- \<br>
-&nbsp;&nbsp;--sign policies/tuning.v1.yaml
+                        <div
+                            class="bg-pit-dark text-pit-cream border-2 border-pit-cream/40 shadow-hard-sm p-4 font-mono text-sm leading-6">
+                            <span class="text-pit-rust select-none">$</span> cargo run -p pitgun-solver -- --mode
+                            wasm<br>
+                            <span class="text-pit-rust select-none">$</span> cargo run -p pitgun-authority -- \<br>
+                            &nbsp;&nbsp;--sign policies/tuning.v1.yaml
                         </div>
                         <p class="text-sm text-pit-cream/90 leading-relaxed">
-                            Deploy secure, distributed logic to the edge. Manage policies, compute resources, and data ingestion from a single mesh.
+                            Deploy secure, distributed logic to the edge. Manage policies, compute resources, and data
+                            ingestion from a single mesh.
                         </p>
                     </div>
                 </div>
@@ -151,86 +193,120 @@
     </header>
 
     <section id="toc" class="bg-pit-petrol border-y-4 border-pit-dark py-16 md:py-20 relative overflow-hidden">
-        <div class="absolute inset-0 opacity-10" style="background-image: linear-gradient(#F2E6D6 1px, transparent 1px), linear-gradient(90deg, #F2E6D6 1px, transparent 1px); background-size: 22px 22px;"></div>
+        <div class="absolute inset-0 opacity-10"
+            style="background-image: linear-gradient(#F2E6D6 1px, transparent 1px), linear-gradient(90deg, #F2E6D6 1px, transparent 1px); background-size: 22px 22px;">
+        </div>
         <div class="max-w-6xl mx-auto px-4 md:px-8 relative z-10 space-y-8">
             <div class="flex items-center justify-center gap-4">
                 <div class="h-1 w-10 bg-pit-rust"></div>
-                <h2 class="text-pit-cream text-4xl md:text-5xl font-display uppercase tracking-wider text-center">Documentation Structure</h2>
+                <h2 class="text-pit-cream text-4xl md:text-5xl font-display uppercase tracking-wider text-center">
+                    Documentation Structure</h2>
                 <div class="h-1 w-10 bg-pit-rust"></div>
             </div>
             <p class="text-center text-pit-cream/80 max-w-3xl mx-auto text-sm md:text-base">
-                Composable Rust crates powering the Pitgun Mesh. Use them in isolation or deploy the full distributed stack.
+                Composable Rust crates powering the Pitgun Mesh. Use them in isolation or deploy the full distributed
+                stack.
             </p>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <a href="#introduction" class="group bg-pit-cream border-4 border-pit-dark p-5 shadow-hard hover:shadow-hard-hover hover:-translate-y-2 transition-all duration-300">
+                <a href="#introduction"
+                    class="group bg-pit-cream border-4 border-pit-dark p-5 shadow-hard hover:shadow-hard-hover hover:-translate-y-2 transition-all duration-300">
                     <div class="flex items-center justify-between mb-3">
                         <span class="font-display uppercase text-pit-petrol text-xl">Introduction</span>
-                        <span class="text-[11px] font-mono bg-pit-rust text-white px-2 py-1 border border-pit-dark">Now</span>
+                        <span
+                            class="text-[11px] font-mono bg-pit-rust text-white px-2 py-1 border border-pit-dark">Now</span>
                     </div>
-                    <p class="text-sm text-pit-dark/80 leading-relaxed">The pivot to Distributed Intelligence. Why edge computing matters for strategy.</p>
+                    <p class="text-sm text-pit-dark/80 leading-relaxed">The pivot to Distributed Intelligence. Why edge
+                        computing matters for strategy.</p>
                 </a>
-                <a href="#gateway" class="group bg-pit-cream border-4 border-pit-dark p-5 shadow-hard hover:shadow-hard-hover hover:-translate-y-2 transition-all duration-300">
+                <a href="#gateway"
+                    class="group bg-pit-cream border-4 border-pit-dark p-5 shadow-hard hover:shadow-hard-hover hover:-translate-y-2 transition-all duration-300">
                     <div class="flex items-center justify-between mb-3">
                         <span class="font-display uppercase text-pit-petrol text-xl">Gateway</span>
-                        <span class="text-[11px] font-mono bg-pit-rust text-white px-2 py-1 border border-pit-dark">Stable</span>
+                        <span
+                            class="text-[11px] font-mono bg-pit-rust text-white px-2 py-1 border border-pit-dark">Stable</span>
                     </div>
-                    <p class="text-sm text-pit-dark/80 leading-relaxed">Multi-protocol ingestion (UDP, MQTT, WS) and traffic normalization.</p>
+                    <p class="text-sm text-pit-dark/80 leading-relaxed">Multi-protocol ingestion (UDP, MQTT, WS) and
+                        traffic normalization.</p>
                 </a>
-                <a href="#core" class="group bg-pit-cream border-4 border-pit-dark p-5 shadow-hard hover:shadow-hard-hover hover:-translate-y-2 transition-all duration-300">
+                <a href="#core"
+                    class="group bg-pit-cream border-4 border-pit-dark p-5 shadow-hard hover:shadow-hard-hover hover:-translate-y-2 transition-all duration-300">
                     <div class="flex items-center justify-between mb-3">
                         <span class="font-display uppercase text-pit-petrol text-xl">Core Engine</span>
-                        <span class="text-[11px] font-mono bg-pit-rust text-white px-2 py-1 border border-pit-dark">Stable</span>
+                        <span
+                            class="text-[11px] font-mono bg-pit-rust text-white px-2 py-1 border border-pit-dark">Stable</span>
                     </div>
-                    <p class="text-sm text-pit-dark/80 leading-relaxed">The "Brain" of the operation. AST-based formula engine and manifest-driven pipelines.</p>
+                    <p class="text-sm text-pit-dark/80 leading-relaxed">The "Brain" of the operation. AST-based formula
+                        engine and manifest-driven pipelines.</p>
                 </a>
-                <a href="#contract" class="group bg-pit-cream border-4 border-pit-dark p-5 shadow-hard hover:shadow-hard-hover hover:-translate-y-2 transition-all duration-300">
+                <a href="#contract"
+                    class="group bg-pit-cream border-4 border-pit-dark p-5 shadow-hard hover:shadow-hard-hover hover:-translate-y-2 transition-all duration-300">
                     <div class="flex items-center justify-between mb-3">
                         <span class="font-display uppercase text-pit-petrol text-xl">Contract Types</span>
-                        <span class="text-[11px] font-mono bg-pit-rust text-white px-2 py-1 border border-pit-dark">Stable</span>
+                        <span
+                            class="text-[11px] font-mono bg-pit-rust text-white px-2 py-1 border border-pit-dark">Stable</span>
                     </div>
-                    <p class="text-sm text-pit-dark/80 leading-relaxed">Shared IDL: TelemetryFrame, ParameterRegistry, Config Contracts.</p>
+                    <p class="text-sm text-pit-dark/80 leading-relaxed">Shared IDL: TelemetryFrame, ParameterRegistry,
+                        Config Contracts.</p>
                 </a>
-                <a href="#solver" class="group bg-pit-cream border-4 border-pit-dark p-5 shadow-hard hover:shadow-hard-hover hover:-translate-y-2 transition-all duration-300">
+                <a href="#solver"
+                    class="group bg-pit-cream border-4 border-pit-dark p-5 shadow-hard hover:shadow-hard-hover hover:-translate-y-2 transition-all duration-300">
                     <div class="flex items-center justify-between mb-3">
                         <span class="font-display uppercase text-pit-petrol text-xl">The Solver</span>
-                        <span class="text-[11px] font-mono bg-pit-dark text-pit-cream px-2 py-1 border border-pit-dark">Beta</span>
+                        <span
+                            class="text-[11px] font-mono bg-pit-dark text-pit-cream px-2 py-1 border border-pit-dark">Beta</span>
                     </div>
-                    <p class="text-sm text-pit-dark/80 leading-relaxed">WASM-based distributed computing for Monte Carlo simulations.</p>
+                    <p class="text-sm text-pit-dark/80 leading-relaxed">WASM-based distributed computing for Monte Carlo
+                        simulations.</p>
                 </a>
-                <a href="#authority" class="group bg-pit-cream border-4 border-pit-dark p-5 shadow-hard hover:shadow-hard-hover hover:-translate-y-2 transition-all duration-300">
+                <a href="#authority"
+                    class="group bg-pit-cream border-4 border-pit-dark p-5 shadow-hard hover:shadow-hard-hover hover:-translate-y-2 transition-all duration-300">
                     <div class="flex items-center justify-between mb-3">
                         <span class="font-display uppercase text-pit-petrol text-xl">Authority</span>
-                        <span class="text-[11px] font-mono bg-pit-dark text-pit-cream px-2 py-1 border border-pit-dark">WIP</span>
+                        <span
+                            class="text-[11px] font-mono bg-pit-dark text-pit-cream px-2 py-1 border border-pit-dark">WIP</span>
                     </div>
-                    <p class="text-sm text-pit-dark/80 leading-relaxed">Governance layer. Policy signing, rate limiting, and cryptographic verification.</p>
+                    <p class="text-sm text-pit-dark/80 leading-relaxed">Governance layer. Policy signing, rate limiting,
+                        and cryptographic verification.</p>
                 </a>
-                <a href="#engine" class="group bg-pit-cream border-4 border-pit-dark p-5 shadow-hard hover:shadow-hard-hover hover:-translate-y-2 transition-all duration-300">
+                <a href="#engine"
+                    class="group bg-pit-cream border-4 border-pit-dark p-5 shadow-hard hover:shadow-hard-hover hover:-translate-y-2 transition-all duration-300">
                     <div class="flex items-center justify-between mb-3">
                         <span class="font-display uppercase text-pit-petrol text-xl">Engine F1</span>
-                        <span class="text-[11px] font-mono bg-pit-rust text-white px-2 py-1 border border-pit-dark">Stable</span>
+                        <span
+                            class="text-[11px] font-mono bg-pit-rust text-white px-2 py-1 border border-pit-dark">Stable</span>
                     </div>
-                    <p class="text-sm text-pit-dark/80 leading-relaxed">Reference implementation for Motorsport telemtry (the Data Plane).</p>
+                    <p class="text-sm text-pit-dark/80 leading-relaxed">Reference implementation for Motorsport telemtry
+                        (the Data Plane).</p>
                 </a>
-                <a href="#deploy" class="group bg-pit-cream border-4 border-pit-dark p-5 shadow-hard hover:shadow-hard-hover hover:-translate-y-2 transition-all duration-300">
+                <a href="#deploy"
+                    class="group bg-pit-cream border-4 border-pit-dark p-5 shadow-hard hover:shadow-hard-hover hover:-translate-y-2 transition-all duration-300">
                     <div class="flex items-center justify-between mb-3">
                         <span class="font-display uppercase text-pit-petrol text-xl">Deployment</span>
-                        <span class="text-[11px] font-mono bg-pit-dark text-pit-cream px-2 py-1 border border-pit-dark">Ops</span>
+                        <span
+                            class="text-[11px] font-mono bg-pit-dark text-pit-cream px-2 py-1 border border-pit-dark">Ops</span>
                     </div>
-                    <p class="text-sm text-pit-dark/80 leading-relaxed">Docker Compose, Systemd units, and Traefik configuration.</p>
+                    <p class="text-sm text-pit-dark/80 leading-relaxed">Docker Compose, Systemd units, and Traefik
+                        configuration.</p>
                 </a>
-                <a href="#replay" class="group bg-pit-cream border-4 border-pit-dark p-5 shadow-hard hover:shadow-hard-hover hover:-translate-y-2 transition-all duration-300">
+                <a href="#replay"
+                    class="group bg-pit-cream border-4 border-pit-dark p-5 shadow-hard hover:shadow-hard-hover hover:-translate-y-2 transition-all duration-300">
                     <div class="flex items-center justify-between mb-3">
                         <span class="font-display uppercase text-pit-petrol text-xl">Replay Tool</span>
-                        <span class="text-[11px] font-mono bg-pit-rust text-white px-2 py-1 border border-pit-dark">Stable</span>
+                        <span
+                            class="text-[11px] font-mono bg-pit-rust text-white px-2 py-1 border border-pit-dark">Stable</span>
                     </div>
-                    <p class="text-sm text-pit-dark/80 leading-relaxed">CLI for replaying historical CSV data into the mesh for testing.</p>
+                    <p class="text-sm text-pit-dark/80 leading-relaxed">CLI for replaying historical CSV data into the
+                        mesh for testing.</p>
                 </a>
-                <a href="#future" class="group bg-pit-cream border-4 border-pit-dark p-5 shadow-hard hover:shadow-hard-hover hover:-translate-y-2 transition-all duration-300">
+                <a href="#future"
+                    class="group bg-pit-cream border-4 border-pit-dark p-5 shadow-hard hover:shadow-hard-hover hover:-translate-y-2 transition-all duration-300">
                     <div class="flex items-center justify-between mb-3">
                         <span class="font-display uppercase text-pit-petrol text-xl">Roadmap</span>
-                        <span class="text-[11px] font-mono bg-pit-dark text-pit-cream px-2 py-1 border border-pit-dark">Design</span>
+                        <span
+                            class="text-[11px] font-mono bg-pit-dark text-pit-cream px-2 py-1 border border-pit-dark">Design</span>
                     </div>
-                    <p class="text-sm text-pit-dark/80 leading-relaxed">Future plans for Parquet Archival and Flow UI.</p>
+                    <p class="text-sm text-pit-dark/80 leading-relaxed">Future plans for Parquet Archival and Flow UI.
+                    </p>
                 </a>
             </div>
         </div>
@@ -242,26 +318,37 @@
             <h2 class="text-4xl md:text-5xl font-display uppercase text-pit-petrol">Introduction</h2>
         </div>
         <div class="bg-pit-cream border-4 border-pit-dark shadow-hard p-8 md:p-10 space-y-6">
-            <div class="text-sm font-mono uppercase tracking-[0.2em] text-pit-rust mb-2">From Raw Telemetry to Distributed Decision Making</div>
+            <div class="text-sm font-mono uppercase tracking-[0.2em] text-pit-rust mb-2">From Raw Telemetry to
+                Distributed Decision Making</div>
             <p class="text-lg md:text-xl text-pit-dark/90 leading-relaxed">
-                Pitgun began as an F1 telemetry framework and evolved into a <strong>Distributed Intelligence Mesh</strong>. The architectural pivot retained the high-frequency data handling but added distributed compute and governance layers. The result: a modular Rust framework where each crate solves a specific problem, and the full mesh emerges from their composition.
+                Pitgun began as an F1 telemetry framework and evolved into a <strong>Distributed Intelligence
+                    Mesh</strong>. The architectural pivot retained the high-frequency data handling but added
+                distributed compute and governance layers. The result: a modular Rust framework where each crate solves
+                a specific problem, and the full mesh emerges from their composition.
             </p>
             <div class="grid md:grid-cols-2 gap-6">
                 <div class="border-2 border-pit-dark bg-pit-accent/40 p-5 shadow-hard-sm space-y-4">
                     <div class="text-sm font-mono uppercase tracking-[0.2em] text-pit-rust">The Modular Philosophy</div>
                     <ul class="list-disc list-inside text-sm md:text-base text-pit-dark/90 space-y-2 pl-2">
-                        <li><strong>Gateway as Bridge:</strong> Use <code>pitgun-gateway</code> solely to normalize UDP→WebSocket streams.</li>
-                        <li><strong>Core as Library:</strong> Embed <code>pitgun-core</code> in your Rust app for formula evaluation—no network required.</li>
-                        <li><strong>Solver as Grid:</strong> Compile <code>pitgun-solver</code> to WASM for browser-based volunteer computing.</li>
-                        <li><strong>Authority as Policy:</strong> Sign and validate configuration manifests cryptographically.</li>
+                        <li><strong>Gateway as Bridge:</strong> Use <code>pitgun-gateway</code> solely to normalize
+                            UDP→WebSocket streams.</li>
+                        <li><strong>Core as Library:</strong> Embed <code>pitgun-core</code> in your Rust app for
+                            formula evaluation—no network required.</li>
+                        <li><strong>Solver as Grid:</strong> Compile <code>pitgun-solver</code> to WASM for
+                            browser-based volunteer computing.</li>
+                        <li><strong>Authority as Policy:</strong> Sign and validate configuration manifests
+                            cryptographically.</li>
                     </ul>
                 </div>
                 <div class="border-2 border-pit-dark bg-pit-accent/40 p-5 shadow-hard-sm space-y-4">
                     <div class="text-sm font-mono uppercase tracking-[0.2em] text-pit-rust">Why This Exists</div>
                     <ul class="list-disc list-inside text-sm md:text-base text-pit-dark/90 space-y-2 pl-2">
-                        <li>Legacy telemetry systems are passive—Pitgun makes them <strong>active decision engines</strong>.</li>
-                        <li>Enable <strong>Policy as Code</strong>: engineers define strategy constraints in signed YAML manifests.</li>
-                        <li>Provide a <strong>Reference Architecture</strong> for edge-native High Performance Computing (HPC).</li>
+                        <li>Legacy telemetry systems are passive—Pitgun makes them <strong>active decision
+                                engines</strong>.</li>
+                        <li>Enable <strong>Policy as Code</strong>: engineers define strategy constraints in signed YAML
+                            manifests.</li>
+                        <li>Provide a <strong>Reference Architecture</strong> for edge-native High Performance Computing
+                            (HPC).</li>
                         <li>Domain-agnostic: Motorsport reference impl, but applicable to Finance, Energy, IoT.</li>
                     </ul>
                 </div>
@@ -269,30 +356,37 @@
             <div class="grid md:grid-cols-3 gap-4 text-sm font-mono text-pit-dark/80">
                 <div class="bg-white border-2 border-pit-dark p-4 shadow-hard-sm">
                     <div class="text-pit-rust uppercase text-xs font-bold">Transport</div>
-                    <p class="mt-1 leading-relaxed">HTTP/WebSocket Gateway (Axum-based). UDP multicast & MQTT on the roadmap.</p>
+                    <p class="mt-1 leading-relaxed">HTTP/WebSocket Gateway (Axum-based). UDP multicast & MQTT on the
+                        roadmap.</p>
                 </div>
                 <div class="bg-white border-2 border-pit-dark p-4 shadow-hard-sm">
                     <div class="text-pit-rust uppercase text-xs font-bold">Compute</div>
-                    <p class="mt-1 leading-relaxed">WASM Solver nodes via <code>wasm-bindgen</code>. Monte Carlo simulations distributed to browser workers.</p>
+                    <p class="mt-1 leading-relaxed">WASM Solver nodes via <code>wasm-bindgen</code>. Monte Carlo
+                        simulations distributed to browser workers.</p>
                 </div>
                 <div class="bg-white border-2 border-pit-dark p-4 shadow-hard-sm">
                     <div class="text-pit-rust uppercase text-xs font-bold">Security</div>
-                    <p class="mt-1 leading-relaxed">Authority service (WIP) for manifest signing and Tuning Policy enforcement.</p>
+                    <p class="mt-1 leading-relaxed">Authority service (WIP) for manifest signing and Tuning Policy
+                        enforcement.</p>
                 </div>
             </div>
-            <div class="bg-pit-petrol text-pit-cream border-4 border-pit-dark shadow-hard p-6 md:p-8 flex flex-col items-start gap-4">
+            <div
+                class="bg-pit-petrol text-pit-cream border-4 border-pit-dark shadow-hard p-6 md:p-8 flex flex-col items-start gap-4">
                 <div>
                     <div class="text-xs uppercase tracking-[0.22em] text-pit-accent font-bold mb-1">Quick Start</div>
                     <div class="text-3xl font-display uppercase tracking-wide">Boot the Mesh</div>
                     <p class="text-sm text-pit-cream/80 mt-2 max-w-xl leading-relaxed">
-                        Start the Gateway service, connect Solver nodes, and inject historical data via Replay for immediate testing.
+                        Start the Gateway service, connect Solver nodes, and inject historical data via Replay for
+                        immediate testing.
                     </p>
                 </div>
-                <div class="w-full bg-pit-dark border-2 border-pit-cream/40 shadow-hard-sm p-5 font-mono text-sm leading-7 crt-scanline relative overflow-x-auto rounded-sm">
-<span class="text-pit-rust select-none font-bold mr-2">$</span> cargo run -p pitgun-gateway --release<br>
-<span class="text-pit-rust select-none font-bold mr-2">$</span> cargo run -p pitgun-replay -- \<br>
-&nbsp;&nbsp;&nbsp;&nbsp;--target 127.0.0.1:8080 \<br>
-&nbsp;&nbsp;&nbsp;&nbsp;--input datasets/telemetry/session.csv
+                <div
+                    class="w-full bg-pit-dark border-2 border-pit-cream/40 shadow-hard-sm p-5 font-mono text-sm leading-7 crt-scanline relative overflow-x-auto rounded-sm">
+                    <span class="text-pit-rust select-none font-bold mr-2">$</span> cargo run -p pitgun-gateway
+                    --release<br>
+                    <span class="text-pit-rust select-none font-bold mr-2">$</span> cargo run -p pitgun-replay -- \<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;--target 127.0.0.1:8080 \<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;--input datasets/telemetry/session.csv
                 </div>
             </div>
         </div>
@@ -307,23 +401,31 @@
         </div>
         <div class="bg-pit-cream border-4 border-pit-dark shadow-hard p-8 md:p-10 space-y-6">
             <p class="text-base md:text-lg text-pit-dark/90 leading-relaxed">
-                The <code>pitgun-gateway</code> service is the mesh's ingress layer—an Axum-based HTTP server that normalizes incoming telemetry into <code>TelemetryFrame</code> structs. It exposes <code>/beacon</code> (POST) for batch ingestion and <code>/ws</code> for real-time WebSocket streams.
+                The <code>pitgun-gateway</code> service is the mesh's ingress layer—an Axum-based HTTP server that
+                normalizes incoming telemetry into <code>TelemetryFrame</code> structs. It exposes <code>/beacon</code>
+                (POST) for batch ingestion and <code>/ws</code> for real-time WebSocket streams.
             </p>
             <div class="grid md:grid-cols-2 gap-6">
                 <div class="border-2 border-pit-dark bg-white p-6 shadow-hard-sm">
                     <div class="text-sm font-mono uppercase tracking-[0.2em] text-pit-rust mb-3">Standalone Usage</div>
-                    <p class="text-sm text-pit-dark/80 mb-4 leading-relaxed">Deploy the Gateway without other mesh components as a simple protocol bridge. Connect any WebSocket client to stream normalized frames.</p>
+                    <p class="text-sm text-pit-dark/80 mb-4 leading-relaxed">Deploy the Gateway without other mesh
+                        components as a simple protocol bridge. Connect any WebSocket client to stream normalized
+                        frames.</p>
                     <div class="bg-pit-dark text-pit-cream p-4 font-mono text-xs leading-6 overflow-x-auto">
-<span class="text-pit-rust select-none mr-1">$</span> PITGUN_GATEWAY_BIND=0.0.0.0:8080 \<br>
-&nbsp;&nbsp;cargo run -p pitgun-gateway --release
+                        <span class="text-pit-rust select-none mr-1">$</span> PITGUN_GATEWAY_BIND=0.0.0.0:8080 \<br>
+                        &nbsp;&nbsp;cargo run -p pitgun-gateway --release
                     </div>
                 </div>
                 <div class="border-2 border-pit-dark bg-white p-6 shadow-hard-sm">
                     <div class="text-sm font-mono uppercase tracking-[0.2em] text-pit-rust mb-3">Configuration</div>
                     <ul class="text-sm text-pit-dark/80 space-y-2 leading-relaxed">
-                        <li><code class="text-pit-rust bg-pit-cream/50 px-1">PITGUN_GATEWAY_BIND</code><br>Address to bind (default: 127.0.0.1:8080)</li>
-                        <li><code class="text-pit-rust bg-pit-cream/50 px-1">PITGUN_GATEWAY_DATA_DIR</code><br>Storage path for telemetry</li>
-                        <li><code class="text-pit-rust bg-pit-cream/50 px-1">PITGUN_GATEWAY_ALLOW_NON_LOOPBACK</code><br>Enable external binds (set to 1)</li>
+                        <li><code class="text-pit-rust bg-pit-cream/50 px-1">PITGUN_GATEWAY_BIND</code><br>Address to
+                            bind (default: 127.0.0.1:8080)</li>
+                        <li><code class="text-pit-rust bg-pit-cream/50 px-1">PITGUN_GATEWAY_DATA_DIR</code><br>Storage
+                            path for telemetry</li>
+                        <li><code
+                                class="text-pit-rust bg-pit-cream/50 px-1">PITGUN_GATEWAY_ALLOW_NON_LOOPBACK</code><br>Enable
+                            external binds (set to 1)</li>
                     </ul>
                 </div>
             </div>
@@ -349,21 +451,23 @@
             </div>
             <div class="grid md:grid-cols-2 gap-6">
                 <div class="border-2 border-pit-dark bg-white p-6 shadow-hard-sm">
-                    <div class="text-sm font-mono uppercase tracking-[0.2em] text-pit-rust mb-3">Beacon Payload (JSON)</div>
+                    <div class="text-sm font-mono uppercase tracking-[0.2em] text-pit-rust mb-3">Beacon Payload (JSON)
+                    </div>
                     <div class="bg-pit-dark text-pit-cream p-4 font-mono text-xs leading-6 overflow-x-auto rounded-sm">
-<span class="text-gray-500 italic">// POST /beacon</span><br>
-{<br>
-&nbsp;&nbsp;"schema_version": "session-envelope-v1",<br>
-&nbsp;&nbsp;"session_id": 1234567890,<br>
-&nbsp;&nbsp;"sent_at_ms": 1707235200000,<br>
-&nbsp;&nbsp;"batch": {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;"events": [<span class="text-gray-500">...</span>]<br>
-&nbsp;&nbsp;}<br>
-}
+                        <span class="text-gray-500 italic">// POST /beacon</span><br>
+                        {<br>
+                        &nbsp;&nbsp;"schema_version": "session-envelope-v1",<br>
+                        &nbsp;&nbsp;"session_id": 1234567890,<br>
+                        &nbsp;&nbsp;"sent_at_ms": 1707235200000,<br>
+                        &nbsp;&nbsp;"batch": {<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;"events": [<span class="text-gray-500">...</span>]<br>
+                        &nbsp;&nbsp;}<br>
+                        }
                     </div>
                 </div>
                 <div class="border-2 border-pit-dark bg-white p-6 shadow-hard-sm">
-                    <div class="text-sm font-mono uppercase tracking-[0.2em] text-pit-rust mb-3">WebSocket Messages</div>
+                    <div class="text-sm font-mono uppercase tracking-[0.2em] text-pit-rust mb-3">WebSocket Messages
+                    </div>
                     <ul class="text-sm text-pit-dark/80 space-y-3 leading-relaxed">
                         <li>
                             <strong class="text-pit-rust">Text Mode</strong><br>
@@ -382,7 +486,11 @@
             </div>
             <div class="border-2 border-pit-dark bg-pit-accent/30 p-5 shadow-hard-sm">
                 <div class="text-sm font-mono uppercase tracking-[0.2em] text-pit-rust mb-2">Security</div>
-                <p class="text-sm text-pit-dark/80">By default, the Gateway binds to <code>127.0.0.1</code> only. To expose externally, set <code>PITGUN_GATEWAY_ALLOW_NON_LOOPBACK=1</code>. The Gateway extracts <code>X-Forwarded-For</code> and <code>X-Real-IP</code> headers for audit logging. Backpressure is managed via a bounded ingestion queue (1024 slots)—overflow drops batches with a warning.</p>
+                <p class="text-sm text-pit-dark/80">By default, the Gateway binds to <code>127.0.0.1</code> only. To
+                    expose externally, set <code>PITGUN_GATEWAY_ALLOW_NON_LOOPBACK=1</code>. The Gateway extracts
+                    <code>X-Forwarded-For</code> and <code>X-Real-IP</code> headers for audit logging. Backpressure is
+                    managed via a bounded ingestion queue (1024 slots)—overflow drops batches with a warning.
+                </p>
             </div>
         </div>
     </section>
@@ -396,7 +504,9 @@
         </div>
         <div class="bg-pit-cream border-4 border-pit-dark shadow-hard p-8 md:p-10 space-y-6">
             <p class="text-base md:text-lg text-pit-dark/90 leading-relaxed">
-                <code>pitgun-core</code> is the brain—a Rust library containing the AST-based Formula Engine, Pipeline orchestration, type converters, and segment aggregation. Use it as a dependency in your own Rust applications.
+                <code>pitgun-core</code> is the brain—a Rust library containing the AST-based Formula Engine, Pipeline
+                orchestration, type converters, and segment aggregation. Use it as a dependency in your own Rust
+                applications.
             </p>
             <div class="grid md:grid-cols-2 gap-6">
                 <div class="border-2 border-pit-dark bg-white p-6 shadow-hard-sm">
@@ -423,9 +533,9 @@
                 <div class="border-2 border-pit-dark bg-white p-6 shadow-hard-sm">
                     <div class="text-sm font-mono uppercase tracking-[0.2em] text-pit-rust mb-3">Embed in Your App</div>
                     <div class="bg-pit-dark text-pit-cream p-4 font-mono text-xs leading-6 mb-4 rounded-sm">
-<span class="text-gray-500"># Cargo.toml</span><br>
-[dependencies]<br>
-pitgun-core = "0.22"
+                        <span class="text-gray-500"># Cargo.toml</span><br>
+                        [dependencies]<br>
+                        pitgun-core = "0.22"
                     </div>
                     <p class="text-sm text-pit-dark/80 leading-relaxed border-t-2 border-pit-dark/10 pt-3">
                         Then import the pipeline or formula modules directly—no Gateway or network overhead required.
@@ -433,23 +543,28 @@ pitgun-core = "0.22"
                 </div>
             </div>
             <div class="border-2 border-pit-dark bg-pit-accent/30 p-6 shadow-hard-sm">
-                <div class="text-sm font-mono uppercase tracking-[0.2em] text-pit-rust mb-3">Manifest-Driven Pipelines</div>
-                <p class="text-sm text-pit-dark/80 mb-4 leading-relaxed">Define derived channels and filters in YAML without recompiling:</p>
+                <div class="text-sm font-mono uppercase tracking-[0.2em] text-pit-rust mb-3">Manifest-Driven Pipelines
+                </div>
+                <p class="text-sm text-pit-dark/80 mb-4 leading-relaxed">Define derived channels and filters in YAML
+                    without recompiling:</p>
                 <div class="bg-pit-dark text-pit-cream p-4 font-mono text-xs leading-6 overflow-x-auto rounded-sm">
-<span class="text-gray-500"># pipeline.yaml</span><br>
-version: v1<br>
-pipeline:<br>
-&nbsp;&nbsp;- type: formula<br>
-&nbsp;&nbsp;&nbsp;&nbsp;derived_channels:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- name: <span class="text-green-400">"Power_kW"</span><br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;expr: <span class="text-yellow-300">"Torque_Nm * Engine_RPM / 9549.0"</span><br>
-&nbsp;&nbsp;- type: filter<br>
-&nbsp;&nbsp;&nbsp;&nbsp;whitelist: [<span class="text-green-400">"Speed"</span>, <span class="text-green-400">"Power_kW"</span>, <span class="text-green-400">"LapTime"</span>]
+                    <span class="text-gray-500"># pipeline.yaml</span><br>
+                    version: v1<br>
+                    pipeline:<br>
+                    &nbsp;&nbsp;- type: formula<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;derived_channels:<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- name: <span class="text-green-400">"Power_kW"</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;expr: <span class="text-yellow-300">"Torque_Nm *
+                        Engine_RPM / 9549.0"</span><br>
+                    &nbsp;&nbsp;- type: filter<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;whitelist: [<span class="text-green-400">"Speed"</span>, <span
+                        class="text-green-400">"Power_kW"</span>, <span class="text-green-400">"LapTime"</span>]
                 </div>
             </div>
             <div class="grid md:grid-cols-2 gap-6">
                 <div class="border-2 border-pit-dark bg-white p-6 shadow-hard-sm">
-                    <div class="text-sm font-mono uppercase tracking-[0.2em] text-pit-rust mb-3">PipelineConfig Options</div>
+                    <div class="text-sm font-mono uppercase tracking-[0.2em] text-pit-rust mb-3">PipelineConfig Options
+                    </div>
                     <ul class="text-sm text-pit-dark/80 space-y-2 leading-relaxed">
                         <li><code>channel_capacity</code> — Buffer size (default: 4096)</li>
                         <li><code>max_sources</code> — Max concurrent sources (default: 16)</li>
@@ -461,14 +576,14 @@ pipeline:<br>
                 <div class="border-2 border-pit-dark bg-white p-6 shadow-hard-sm">
                     <div class="text-sm font-mono uppercase tracking-[0.2em] text-pit-rust mb-3">Rust API Example</div>
                     <div class="bg-pit-dark text-pit-cream p-4 font-mono text-xs leading-6 overflow-x-auto rounded-sm">
-<span class="text-gray-500">// Multi-source pipeline</span><br>
-let config = PipelineConfig::new()<br>
-&nbsp;&nbsp;.with_channel_capacity(8192)<br>
-&nbsp;&nbsp;.with_merging(Duration::from_millis(2))<br>
-&nbsp;&nbsp;.with_validation();<br><br>
-let mut pipeline = TelemetryPipeline::new(config);<br>
-pipeline.add_source(udp_source);<br>
-pipeline.add_source(ws_source);
+                        <span class="text-gray-500">// Multi-source pipeline</span><br>
+                        let config = PipelineConfig::new()<br>
+                        &nbsp;&nbsp;.with_channel_capacity(8192)<br>
+                        &nbsp;&nbsp;.with_merging(Duration::from_millis(2))<br>
+                        &nbsp;&nbsp;.with_validation();<br><br>
+                        let mut pipeline = TelemetryPipeline::new(config);<br>
+                        pipeline.add_source(udp_source);<br>
+                        pipeline.add_source(ws_source);
                     </div>
                 </div>
             </div>
@@ -484,12 +599,15 @@ pipeline.add_source(ws_source);
         </div>
         <div class="bg-pit-cream border-4 border-pit-dark shadow-hard p-8 md:p-10 space-y-6">
             <p class="text-base md:text-lg text-pit-dark/90 leading-relaxed">
-                <code>pitgun-contract</code> defines the shared types and protocols used across all Pitgun components. It acts as the IDL (Interface Definition Language) ensuring type safety between Gateway, Core, Solver, and Authority.
+                <code>pitgun-contract</code> defines the shared types and protocols used across all Pitgun components.
+                It acts as the IDL (Interface Definition Language) ensuring type safety between Gateway, Core, Solver,
+                and Authority.
             </p>
             <div class="grid md:grid-cols-2 gap-6">
                 <div class="border-2 border-pit-dark bg-white p-6 shadow-hard-sm">
                     <div class="text-sm font-mono uppercase tracking-[0.2em] text-pit-rust mb-3">TelemetryFrame</div>
-                    <p class="text-sm text-pit-dark/80 mb-3 leading-relaxed">The canonical data structure produced by all sources:</p>
+                    <p class="text-sm text-pit-dark/80 mb-3 leading-relaxed">The canonical data structure produced by
+                        all sources:</p>
                     <ul class="text-sm text-pit-dark/80 space-y-2 font-mono leading-relaxed">
                         <li><code>session_id: u64</code> — Unique session identifier</li>
                         <li><code>sequence: u64</code> — Monotonic frame counter</li>
@@ -500,23 +618,26 @@ pipeline.add_source(ws_source);
                     </ul>
                 </div>
                 <div class="border-2 border-pit-dark bg-white p-6 shadow-hard-sm">
-                    <div class="text-sm font-mono uppercase tracking-[0.2em] text-pit-rust mb-3">Sample & SampleValue</div>
-                    <p class="text-sm text-pit-dark/80 mb-3 leading-relaxed">A parameter reading with type-safe values:</p>
+                    <div class="text-sm font-mono uppercase tracking-[0.2em] text-pit-rust mb-3">Sample & SampleValue
+                    </div>
+                    <p class="text-sm text-pit-dark/80 mb-3 leading-relaxed">A parameter reading with type-safe values:
+                    </p>
                     <div class="bg-pit-dark text-pit-cream p-4 font-mono text-xs leading-6 overflow-x-auto rounded-sm">
-let sample = Sample::new(<br>
-&nbsp;&nbsp;1,  <span class="text-gray-500">// parameter_id</span><br>
-&nbsp;&nbsp;SampleValue::U16(8500), <span class="text-gray-500">// RPM</span><br>
-&nbsp;&nbsp;SignalQuality::Good<br>
-);<br><br>
-<span class="text-gray-500">// SampleValue variants:</span><br>
-U8, U16, U32, I8... F32, F64, Bool
+                        let sample = Sample::new(<br>
+                        &nbsp;&nbsp;1, <span class="text-gray-500">// parameter_id</span><br>
+                        &nbsp;&nbsp;SampleValue::U16(8500), <span class="text-gray-500">// RPM</span><br>
+                        &nbsp;&nbsp;SignalQuality::Good<br>
+                        );<br><br>
+                        <span class="text-gray-500">// SampleValue variants:</span><br>
+                        U8, U16, U32, I8... F32, F64, Bool
                     </div>
                 </div>
             </div>
             <div class="grid md:grid-cols-2 gap-6">
                 <div class="border-2 border-pit-dark bg-white p-6 shadow-hard-sm">
                     <div class="text-sm font-mono uppercase tracking-[0.2em] text-pit-rust mb-3">ParameterRegistry</div>
-                    <p class="text-sm text-pit-dark/80 mb-3 leading-relaxed">Canonical dictionary of parameter definitions (inspired by ECUBridge PGV):</p>
+                    <p class="text-sm text-pit-dark/80 mb-3 leading-relaxed">Canonical dictionary of parameter
+                        definitions (inspired by ECUBridge PGV):</p>
                     <ul class="text-sm text-pit-dark/80 space-y-2 leading-relaxed">
                         <li><strong>ID → Name/Unit/Type:</strong> Lookup by parameter ID</li>
                         <li><strong>Range Validation:</strong> Min/max bounds checking</li>
@@ -526,7 +647,8 @@ U8, U16, U32, I8... F32, F64, Bool
                 </div>
                 <div class="border-2 border-pit-dark bg-white p-6 shadow-hard-sm">
                     <div class="text-sm font-mono uppercase tracking-[0.2em] text-pit-rust mb-3">Config Contracts</div>
-                    <p class="text-sm text-pit-dark/80 mb-3 leading-relaxed">Signed configuration payloads for Authority:</p>
+                    <p class="text-sm text-pit-dark/80 mb-3 leading-relaxed">Signed configuration payloads for
+                        Authority:</p>
                     <ul class="text-sm text-pit-dark/80 space-y-2 font-mono leading-relaxed">
                         <li><code>ConfigContractV1</code> — Signed config with limits</li>
                         <li><code>SimulationContractV1</code> — Era, upgrades, policy hash</li>
@@ -538,20 +660,20 @@ U8, U16, U32, I8... F32, F64, Bool
             <div class="border-2 border-pit-dark bg-pit-accent/30 p-6 shadow-hard-sm">
                 <div class="text-sm font-mono uppercase tracking-[0.2em] text-pit-rust mb-3">Registry YAML Format</div>
                 <div class="bg-pit-dark text-pit-cream p-4 font-mono text-xs leading-6 overflow-x-auto rounded-sm">
-<span class="text-gray-500"># registries/f1_generic.yaml</span><br>
-version: "1.0"<br>
-name: "F1 Generic Registry"<br>
-parameters:<br>
-&nbsp;&nbsp;- id: 1<br>
-&nbsp;&nbsp;&nbsp;&nbsp;name: <span class="text-green-400">"Engine_RPM"</span><br>
-&nbsp;&nbsp;&nbsp;&nbsp;unit: "rpm"<br>
-&nbsp;&nbsp;&nbsp;&nbsp;data_type: u16<br>
-&nbsp;&nbsp;&nbsp;&nbsp;range: { min: 0, max: 15000 }<br>
-&nbsp;&nbsp;- id: 2<br>
-&nbsp;&nbsp;&nbsp;&nbsp;name: <span class="text-green-400">"Throttle_Position"</span><br>
-&nbsp;&nbsp;&nbsp;&nbsp;unit: "%"<br>
-&nbsp;&nbsp;&nbsp;&nbsp;data_type: f32<br>
-&nbsp;&nbsp;&nbsp;&nbsp;range: { min: 0.0, max: 100.0 }
+                    <span class="text-gray-500"># registries/f1_generic.yaml</span><br>
+                    version: "1.0"<br>
+                    name: "F1 Generic Registry"<br>
+                    parameters:<br>
+                    &nbsp;&nbsp;- id: 1<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;name: <span class="text-green-400">"Engine_RPM"</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;unit: "rpm"<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;data_type: u16<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;range: { min: 0, max: 15000 }<br>
+                    &nbsp;&nbsp;- id: 2<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;name: <span class="text-green-400">"Throttle_Position"</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;unit: "%"<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;data_type: f32<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;range: { min: 0.0, max: 100.0 }
                 </div>
             </div>
         </div>
@@ -566,70 +688,83 @@ parameters:<br>
         </div>
         <div class="bg-pit-cream border-4 border-pit-dark shadow-hard p-8 md:p-10 space-y-6">
             <p class="text-base md:text-lg text-pit-dark/90 leading-relaxed">
-                <code>pitgun-solver</code> is the distributed compute layer. Compiled to WebAssembly via <code>wasm-bindgen</code>, it runs Monte Carlo simulations in browser-based Web Workers, aggregating results back to the mesh.
+                <code>pitgun-solver</code> is the distributed compute layer. Compiled to WebAssembly via
+                <code>wasm-bindgen</code>, it runs Monte Carlo simulations in browser-based Web Workers, aggregating
+                results back to the mesh.
             </p>
             <div class="grid md:grid-cols-2 gap-6">
                 <div class="border-2 border-pit-dark bg-white p-6 shadow-hard-sm">
                     <div class="text-sm font-mono uppercase tracking-[0.2em] text-pit-rust mb-3">Key Types</div>
                     <ul class="text-sm text-pit-dark/80 space-y-2 font-mono leading-relaxed">
-                        <li><code>RiskAnalysisRequest</code> — Input: base config, lap count, scenario count, risk factors</li>
-                        <li><code>RiskFactors</code> — Tire degradation variance, rain probability, safety car chance</li>
-                        <li><code>SimulationResult</code> — Output: average time, success probability, tire failure rate</li>
+                        <li><code>RiskAnalysisRequest</code> — Input: base config, lap count, scenario count, risk
+                            factors</li>
+                        <li><code>RiskFactors</code> — Tire degradation variance, rain probability, safety car chance
+                        </li>
+                        <li><code>SimulationResult</code> — Output: average time, success probability, tire failure rate
+                        </li>
                         <li><code>RaceStrategySolver</code> — WASM entrypoint for <code>solve_strategy()</code></li>
                     </ul>
                 </div>
                 <div class="border-2 border-pit-dark bg-white p-6 shadow-hard-sm">
                     <div class="text-sm font-mono uppercase tracking-[0.2em] text-pit-rust mb-3">WASM Compilation</div>
                     <div class="bg-pit-dark text-pit-cream p-4 font-mono text-xs leading-6 overflow-x-auto rounded-sm">
-<span class="text-pit-rust select-none mr-1">$</span> wasm-pack build crates/pitgun-solver \<br>
-&nbsp;&nbsp;--target web --out-dir pkg
+                        <span class="text-pit-rust select-none mr-1">$</span> wasm-pack build crates/pitgun-solver \<br>
+                        &nbsp;&nbsp;--target web --out-dir pkg
                     </div>
-                    <p class="text-sm text-pit-dark/80 mt-4 border-t-2 border-pit-dark/10 pt-3">Deploy the <code>.wasm</code> module to browsers. Each client becomes a volunteer compute node.</p>
+                    <p class="text-sm text-pit-dark/80 mt-4 border-t-2 border-pit-dark/10 pt-3">Deploy the
+                        <code>.wasm</code> module to browsers. Each client becomes a volunteer compute node.
+                    </p>
                 </div>
             </div>
             <div class="border-2 border-pit-dark bg-pit-accent/30 p-6 shadow-hard-sm">
                 <div class="text-sm font-mono uppercase tracking-[0.2em] text-pit-rust mb-3">Monte Carlo Flow</div>
-                <p class="text-sm text-pit-dark/80 leading-relaxed">The Solver receives a JSON-serialized <code>RiskAnalysisRequest</code>, runs N scenarios with randomized risk factors (rain, tire wear, safety car), and returns aggregated statistics. Each scenario is CPU-bound—designed to run in a dedicated Web Worker thread.</p>
+                <p class="text-sm text-pit-dark/80 leading-relaxed">The Solver receives a JSON-serialized
+                    <code>RiskAnalysisRequest</code>, runs N scenarios with randomized risk factors (rain, tire wear,
+                    safety car), and returns aggregated statistics. Each scenario is CPU-bound—designed to run in a
+                    dedicated Web Worker thread.
+                </p>
             </div>
             <div class="grid md:grid-cols-2 gap-6">
                 <div class="border-2 border-pit-dark bg-white p-6 shadow-hard-sm">
-                    <div class="text-sm font-mono uppercase tracking-[0.2em] text-pit-rust mb-3">RiskAnalysisRequest</div>
+                    <div class="text-sm font-mono uppercase tracking-[0.2em] text-pit-rust mb-3">RiskAnalysisRequest
+                    </div>
                     <div class="bg-pit-dark text-pit-cream p-4 font-mono text-xs leading-6 overflow-x-auto rounded-sm">
-{<br>
-&nbsp;&nbsp;"base_config": { <span class="text-gray-500">/* CanonicalConfigV1 */</span> },<br>
-&nbsp;&nbsp;"laps": 58,<br>
-&nbsp;&nbsp;"scenarios_count": 10000,<br>
-&nbsp;&nbsp;"risk_factors": {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;"tire_degradation_variance": 0.15,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;"rain_probability_per_lap": 0.02,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;"safety_car_chance": 0.05<br>
-&nbsp;&nbsp;}<br>
-}
+                        {<br>
+                        &nbsp;&nbsp;"base_config": { <span class="text-gray-500">/* CanonicalConfigV1 */</span> },<br>
+                        &nbsp;&nbsp;"laps": 58,<br>
+                        &nbsp;&nbsp;"scenarios_count": 10000,<br>
+                        &nbsp;&nbsp;"risk_factors": {<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;"tire_degradation_variance": 0.15,<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;"rain_probability_per_lap": 0.02,<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;"safety_car_chance": 0.05<br>
+                        &nbsp;&nbsp;}<br>
+                        }
                     </div>
                 </div>
                 <div class="border-2 border-pit-dark bg-white p-6 shadow-hard-sm">
                     <div class="text-sm font-mono uppercase tracking-[0.2em] text-pit-rust mb-3">SimulationResult</div>
                     <div class="bg-pit-dark text-pit-cream p-4 font-mono text-xs leading-6 overflow-x-auto rounded-sm">
-{<br>
-&nbsp;&nbsp;"average_total_time": 5220.45,<br>
-&nbsp;&nbsp;"success_probability": 0.85,<br>
-&nbsp;&nbsp;"tire_failure_rate": 0.02,<br>
-&nbsp;&nbsp;"strategies_histogram": [<br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="text-gray-500">/* distribution buckets */</span><br>
-&nbsp;&nbsp;]<br>
-}
+                        {<br>
+                        &nbsp;&nbsp;"average_total_time": 5220.45,<br>
+                        &nbsp;&nbsp;"success_probability": 0.85,<br>
+                        &nbsp;&nbsp;"tire_failure_rate": 0.02,<br>
+                        &nbsp;&nbsp;"strategies_histogram": [<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;<span class="text-gray-500">/* distribution buckets */</span><br>
+                        &nbsp;&nbsp;]<br>
+                        }
                     </div>
                 </div>
             </div>
             <div class="border-2 border-pit-dark bg-pit-accent/30 p-6 shadow-hard-sm">
-                <div class="text-sm font-mono uppercase tracking-[0.2em] text-pit-rust mb-3">JavaScript Integration</div>
+                <div class="text-sm font-mono uppercase tracking-[0.2em] text-pit-rust mb-3">JavaScript Integration
+                </div>
                 <div class="bg-pit-dark text-pit-cream p-4 font-mono text-xs leading-6 overflow-x-auto rounded-sm">
-<span class="text-gray-500">// In a Web Worker</span><br>
-import init, { RaceStrategySolver } from './pitgun_solver.js';<br><br>
-await init();<br>
-const solver = new RaceStrategySolver();<br>
-const result = solver.solve_strategy(JSON.stringify(request));<br>
-postMessage(JSON.parse(result));
+                    <span class="text-gray-500">// In a Web Worker</span><br>
+                    import init, { RaceStrategySolver } from './pitgun_solver.js';<br><br>
+                    await init();<br>
+                    const solver = new RaceStrategySolver();<br>
+                    const result = solver.solve_strategy(JSON.stringify(request));<br>
+                    postMessage(JSON.parse(result));
                 </div>
             </div>
         </div>
@@ -644,14 +779,18 @@ postMessage(JSON.parse(result));
         </div>
         <div class="bg-pit-cream border-4 border-pit-dark shadow-hard p-8 md:p-10 space-y-6">
             <p class="text-base md:text-lg text-pit-dark/90 leading-relaxed">
-                The <code>pitgun-authority</code> service is the governance layer—designed to sign configuration manifests, enforce rate limits, and provide cryptographic proof of simulation authenticity. <strong>Currently in foundational development.</strong>
+                The <code>pitgun-authority</code> service is the governance layer—designed to sign configuration
+                manifests, enforce rate limits, and provide cryptographic proof of simulation authenticity.
+                <strong>Currently in foundational development.</strong>
             </p>
             <div class="grid md:grid-cols-2 gap-6">
                 <div class="border-2 border-pit-dark bg-white p-6 shadow-hard-sm">
                     <div class="text-sm font-mono uppercase tracking-[0.2em] text-pit-rust mb-3">Design Intent</div>
                     <ul class="text-sm text-pit-dark/80 space-y-2 leading-relaxed">
-                        <li><strong>Manifest Signing:</strong> Cryptographically sign <code>pipeline.yaml</code> and tuning policies.</li>
-                        <li><strong>Tuning Limits:</strong> Enforce parameter bounds (e.g., max RPM, min tire pressure).</li>
+                        <li><strong>Manifest Signing:</strong> Cryptographically sign <code>pipeline.yaml</code> and
+                            tuning policies.</li>
+                        <li><strong>Tuning Limits:</strong> Enforce parameter bounds (e.g., max RPM, min tire pressure).
+                        </li>
                         <li><strong>Auditability:</strong> Prove that result A derived from signed Config B.</li>
                         <li><strong>Rate Limiting:</strong> Capability-based access control per client.</li>
                     </ul>
@@ -659,13 +798,13 @@ postMessage(JSON.parse(result));
                 <div class="border-2 border-pit-dark bg-white p-6 shadow-hard-sm">
                     <div class="text-sm font-mono uppercase tracking-[0.2em] text-pit-rust mb-3">Policy Example</div>
                     <div class="bg-pit-dark text-pit-cream p-4 font-mono text-xs leading-6 overflow-x-auto rounded-sm">
-<span class="text-gray-500"># policies/tuning.v1.yaml</span><br>
-version: v1<br>
-limits:<br>
-&nbsp;&nbsp;max_engine_rpm: 15000<br>
-&nbsp;&nbsp;min_tire_pressure_kpa: 140<br>
-&nbsp;&nbsp;max_ers_deployment_kj: 4000<br>
-signed_by: authority.pitgun.io
+                        <span class="text-gray-500"># policies/tuning.v1.yaml</span><br>
+                        version: v1<br>
+                        limits:<br>
+                        &nbsp;&nbsp;max_engine_rpm: 15000<br>
+                        &nbsp;&nbsp;min_tire_pressure_kpa: 140<br>
+                        &nbsp;&nbsp;max_ers_deployment_kj: 4000<br>
+                        signed_by: authority.pitgun.io
                     </div>
                 </div>
             </div>
@@ -677,11 +816,14 @@ signed_by: authority.pitgun.io
         <div class="flex items-center gap-3">
             <div class="h-1 w-12 bg-pit-rust"></div>
             <h2 class="text-4xl md:text-5xl font-display uppercase text-pit-petrol">Engine F1</h2>
-            <span class="text-xs font-mono bg-pit-rust text-white px-2 py-1 border border-pit-dark">Reference Impl</span>
+            <span class="text-xs font-mono bg-pit-rust text-white px-2 py-1 border border-pit-dark">Reference
+                Impl</span>
         </div>
         <div class="bg-pit-cream border-4 border-pit-dark shadow-hard p-8 md:p-10 space-y-6">
             <p class="text-base md:text-lg text-pit-dark/90 leading-relaxed">
-                <code>pitgun-engine-f1</code> is the reference physics implementation—a deterministic simulation engine for motorsport telemetry. It provides the Data Plane that the Solver uses for Monte Carlo lap simulations.
+                <code>pitgun-engine-f1</code> is the reference physics implementation—a deterministic simulation engine
+                for motorsport telemetry. It provides the Data Plane that the Solver uses for Monte Carlo lap
+                simulations.
             </p>
             <div class="border-2 border-pit-dark bg-pit-accent/30 p-6 shadow-hard-sm">
                 <div class="text-sm font-mono uppercase tracking-[0.2em] text-pit-rust mb-3">Key Features</div>
@@ -703,27 +845,30 @@ signed_by: authority.pitgun.io
         </div>
         <div class="bg-pit-cream border-4 border-pit-dark shadow-hard p-8 md:p-10 space-y-6">
             <p class="text-base md:text-lg text-pit-dark/90 leading-relaxed">
-                Deploy the full mesh with Docker Compose, or run individual services with Cargo. The <code>docker-compose.yml</code> in the repository root orchestrates Gateway + Authority.
+                Deploy the full mesh with Docker Compose, or run individual services with Cargo. The
+                <code>docker-compose.yml</code> in the repository root orchestrates Gateway + Authority.
             </p>
             <div class="grid md:grid-cols-2 gap-6">
                 <div class="border-2 border-pit-dark bg-white p-6 shadow-hard-sm">
                     <div class="text-sm font-mono uppercase tracking-[0.2em] text-pit-rust mb-3">Docker Compose</div>
                     <div class="bg-pit-dark text-pit-cream p-4 font-mono text-xs leading-6 overflow-x-auto rounded-sm">
-<span class="text-pit-rust select-none mr-1">$</span> docker-compose up -d pitgun-gateway<br>
-<span class="text-pit-rust select-none mr-1">$</span> docker-compose logs -f<br><br>
-<span class="text-gray-500"># Scale solver nodes</span><br>
-<span class="text-pit-rust select-none mr-1">$</span> docker-compose up -d --scale solver=4
+                        <span class="text-pit-rust select-none mr-1">$</span> docker-compose up -d pitgun-gateway<br>
+                        <span class="text-pit-rust select-none mr-1">$</span> docker-compose logs -f<br><br>
+                        <span class="text-gray-500"># Scale solver nodes</span><br>
+                        <span class="text-pit-rust select-none mr-1">$</span> docker-compose up -d --scale solver=4
                     </div>
                 </div>
                 <div class="border-2 border-pit-dark bg-white p-6 shadow-hard-sm">
-                    <div class="text-sm font-mono uppercase tracking-[0.2em] text-pit-rust mb-3">Cargo (Development)</div>
+                    <div class="text-sm font-mono uppercase tracking-[0.2em] text-pit-rust mb-3">Cargo (Development)
+                    </div>
                     <div class="bg-pit-dark text-pit-cream p-4 font-mono text-xs leading-6 overflow-x-auto rounded-sm">
-<span class="text-gray-500"># Terminal 1: Gateway</span><br>
-<span class="text-pit-rust select-none mr-1">$</span> cargo run -p pitgun-gateway --release<br><br>
-<span class="text-gray-500"># Terminal 2: Replay data</span><br>
-<span class="text-pit-rust select-none mr-1">$</span> cargo run -p pitgun-replay -- \<br>
-&nbsp;&nbsp;--target 127.0.0.1:8080 \<br>
-&nbsp;&nbsp;--input datasets/session.csv
+                        <span class="text-gray-500"># Terminal 1: Gateway</span><br>
+                        <span class="text-pit-rust select-none mr-1">$</span> cargo run -p pitgun-gateway
+                        --release<br><br>
+                        <span class="text-gray-500"># Terminal 2: Replay data</span><br>
+                        <span class="text-pit-rust select-none mr-1">$</span> cargo run -p pitgun-replay -- \<br>
+                        &nbsp;&nbsp;--target 127.0.0.1:8080 \<br>
+                        &nbsp;&nbsp;--input datasets/session.csv
                     </div>
                 </div>
             </div>
@@ -748,15 +893,16 @@ signed_by: authority.pitgun.io
         </div>
         <div class="bg-pit-cream border-4 border-pit-dark shadow-hard p-8 md:p-10 space-y-6">
             <p class="text-base md:text-lg text-pit-dark/90 leading-relaxed">
-                <code>pitgun-replay</code> is a CLI tool for injecting historical CSV data into the Gateway, enabling testing and development without live data sources.
+                <code>pitgun-replay</code> is a CLI tool for injecting historical CSV data into the Gateway, enabling
+                testing and development without live data sources.
             </p>
             <div class="grid md:grid-cols-2 gap-6">
                 <div class="border-2 border-pit-dark bg-white p-6 shadow-hard-sm">
                     <div class="text-sm font-mono uppercase tracking-[0.2em] text-pit-rust mb-3">Basic Usage</div>
                     <div class="bg-pit-dark text-pit-cream p-4 font-mono text-xs leading-6 overflow-x-auto rounded-sm">
-<span class="text-pit-rust select-none mr-1">$</span> cargo run -p pitgun-replay -- \<br>
-&nbsp;&nbsp;--target 127.0.0.1:8080 \<br>
-&nbsp;&nbsp;--input datasets/telemetry/nEngine.csv
+                        <span class="text-pit-rust select-none mr-1">$</span> cargo run -p pitgun-replay -- \<br>
+                        &nbsp;&nbsp;--target 127.0.0.1:8080 \<br>
+                        &nbsp;&nbsp;--input datasets/telemetry/nEngine.csv
                     </div>
                 </div>
                 <div class="border-2 border-pit-dark bg-white p-6 shadow-hard-sm">
@@ -771,7 +917,9 @@ signed_by: authority.pitgun.io
             </div>
             <div class="border-2 border-pit-dark bg-pit-accent/30 p-6 shadow-hard-sm">
                 <div class="text-sm font-mono uppercase tracking-[0.2em] text-pit-rust mb-3">CSV Format</div>
-                <p class="text-sm text-pit-dark/80 leading-relaxed">CSV files should have a <code>timestamp_us</code> column and parameter columns matching the Registry. The replay tool auto-detects columns and maps them to parameter IDs via name lookup.</p>
+                <p class="text-sm text-pit-dark/80 leading-relaxed">CSV files should have a <code>timestamp_us</code>
+                    column and parameter columns matching the Registry. The replay tool auto-detects columns and maps
+                    them to parameter IDs via name lookup.</p>
             </div>
         </div>
     </section>
@@ -785,24 +933,28 @@ signed_by: authority.pitgun.io
         </div>
         <div class="bg-pit-cream border-4 border-pit-dark shadow-hard p-8 md:p-10 space-y-6">
             <ul class="text-base text-pit-dark/90 space-y-4 leading-relaxed list-disc list-inside">
-                <li><strong>🔧 WASM Solver Completion:</strong> Full Monte Carlo implementation with configurable risk factors.</li>
+                <li><strong>🔧 WASM Solver Completion:</strong> Full Monte Carlo implementation with configurable risk
+                    factors.</li>
                 <li><strong>📦 Parquet Sink:</strong> Archival storage for historical analysis and backtesting.</li>
                 <li><strong>🎨 Flow UI:</strong> Visual editor for <code>pitgun-core</code> pipeline manifests.</li>
-                <li><strong>📡 UDP/MQTT Gateway:</strong> Native support for high-frequency UDP multicast and MQTT ingestion.</li>
+                <li><strong>📡 UDP/MQTT Gateway:</strong> Native support for high-frequency UDP multicast and MQTT
+                    ingestion.</li>
             </ul>
         </div>
     </section>
 
     <footer class="bg-pit-dark text-pit-cream pt-16 pb-12 border-t-8 border-pit-rust relative overflow-hidden">
-        <div class="absolute bottom-0 right-0 text-[120px] leading-none font-display text-white opacity-[0.03] select-none pointer-events-none">
+        <div
+            class="absolute bottom-0 right-0 text-[120px] leading-none font-display text-white opacity-[0.03] select-none pointer-events-none">
             PITGUN
         </div>
 
-        <div class="max-w-7xl mx-auto px-4 md:px-8 flex flex-col md:flex-row justify-between items-start gap-12 relative z-10">
+        <div
+            class="max-w-7xl mx-auto px-4 md:px-8 flex flex-col md:flex-row justify-between items-start gap-12 relative z-10">
             <div class="flex flex-col gap-4">
                 <div class="flex items-center gap-2">
-                     <div class="h-6 w-6 bg-pit-rust rounded-full border-2 border-pit-cream"></div>
-                     <span class="font-display text-3xl tracking-widest text-pit-cream">PITGUN</span>
+                    <div class="h-6 w-6 bg-pit-rust rounded-full border-2 border-pit-cream"></div>
+                    <span class="font-display text-3xl tracking-widest text-pit-cream">PITGUN</span>
                 </div>
                 <p class="text-sm text-gray-500 max-w-xs">
                     Composable crates. Distributed mesh. Edge-native compute.<br>
@@ -812,18 +964,23 @@ signed_by: authority.pitgun.io
                     © 2026 Open Source Project
                 </div>
             </div>
-            
+
             <div class="flex gap-8 md:gap-16 font-mono text-sm">
                 <div class="flex flex-col gap-3">
                     <span class="text-pit-rust uppercase tracking-wider font-bold text-xs">Project</span>
-                    <a href="docs.html" class="text-gray-400 hover:text-white hover:underline transition-colors">Documentation</a>
-                    <a href="https://github.com/loicbelec/pitgun/releases" class="text-gray-400 hover:text-white hover:underline transition-colors">Changelog</a>
-                    <a href="https://github.com/loicbelec/pitgun/blob/main/LICENSE" class="text-gray-400 hover:text-white hover:underline transition-colors">License (MIT)</a>
+                    <a href="docs.html"
+                        class="text-gray-400 hover:text-white hover:underline transition-colors">Documentation</a>
+                    <a href="https://github.com/loicbelec/pitgun/releases"
+                        class="text-gray-400 hover:text-white hover:underline transition-colors">Changelog</a>
+                    <a href="https://github.com/loicbelec/pitgun/blob/main/LICENSE"
+                        class="text-gray-400 hover:text-white hover:underline transition-colors">License (MIT)</a>
                 </div>
                 <div class="flex flex-col gap-3">
                     <span class="text-pit-rust uppercase tracking-wider font-bold text-xs">Community</span>
-                    <a href="https://github.com/loicbelec/pitgun" class="text-gray-400 hover:text-white hover:underline transition-colors">GitHub</a>
-                    <a href="https://crates.io/crates/pitgun" class="text-gray-400 hover:text-white hover:underline transition-colors">Crates.io</a>
+                    <a href="https://github.com/loicbelec/pitgun"
+                        class="text-gray-400 hover:text-white hover:underline transition-colors">GitHub</a>
+                    <a href="https://crates.io/crates/pitgun"
+                        class="text-gray-400 hover:text-white hover:underline transition-colors">Crates.io</a>
                     <a href="#" class="text-gray-400 hover:text-white hover:underline transition-colors">Discord</a>
                 </div>
             </div>
@@ -831,4 +988,5 @@ signed_by: authority.pitgun.io
     </footer>
 
 </body>
+
 </html>
