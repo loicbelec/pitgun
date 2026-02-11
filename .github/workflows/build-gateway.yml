@@ -1,4 +1,4 @@
-name: pitgun-gateway-image
+name: build-gateway
 
 on:
   pull_request:
