@@ -443,7 +443,7 @@ impl SampleValue {
 /// Signal quality indicator for a sample.
 ///
 /// Based on automotive/aerospace standards for signal quality.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum SignalQuality {
     /// Signal is valid and within expected parameters.
@@ -455,6 +455,7 @@ pub enum SignalQuality {
     /// No signal received (timeout, disconnection).
     NoSignal,
     /// Signal quality is unknown or not applicable.
+    #[default]
     Unknown,
 }
 
@@ -473,12 +474,6 @@ impl SignalQuality {
             Self::NoSignal => 0,
             Self::Unknown => 0,
         }
-    }
-}
-
-impl Default for SignalQuality {
-    fn default() -> Self {
-        Self::Unknown
     }
 }
 
@@ -548,7 +543,7 @@ impl Event {
 }
 
 /// Severity level for events.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum EventSeverity {
     /// Trace-level debug information.
@@ -556,6 +551,7 @@ pub enum EventSeverity {
     /// Debug information.
     Debug,
     /// Informational event (e.g., lap completed).
+    #[default]
     Info,
     /// Warning condition (e.g., tire wear high).
     Warning,
@@ -574,12 +570,6 @@ impl EventSeverity {
     /// Returns true if this severity is at least Error level.
     pub fn is_error_or_higher(&self) -> bool {
         *self >= Self::Error
-    }
-}
-
-impl Default for EventSeverity {
-    fn default() -> Self {
-        Self::Info
     }
 }
 
