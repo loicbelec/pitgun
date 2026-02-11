@@ -57,6 +57,7 @@ jobs:
           push: false
           tags: ${{ steps.meta.outputs.image_tag }}
           build-args: |
+            RUST_VERSION=1.89
             BIN_NAME=pitgun-gateway
 
       - name: Build and push gateway image
@@ -71,6 +72,7 @@ jobs:
             ${{ steps.meta.outputs.image_tag }}
             ${{ env.IMAGE_NAME }}:main
           build-args: |
+            RUST_VERSION=1.89
             BIN_NAME=pitgun-gateway
 
       - name: Publish image details

@@ -113,6 +113,9 @@ Run the same checks as `pitgun-ci` locally before pushing:
 ./scripts/pre-commit-checks.sh
 ```
 
+If Docker is installed, this script also performs a local gateway image build
+equivalent to `build-gateway.yml`.
+
 ## 🔮 Roadmap
 
 - **WASM Solver:** Complete the Monte Carlo implementation for the Solver.
