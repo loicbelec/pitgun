@@ -40,11 +40,11 @@ use pitgun_contract::{
     Sample, SampleValue, SignalQuality, SourceConfig, SourceError, SourceMetadata, SourceResult,
     SourceState, SourceStats, SourceType, TelemetryFrame, TelemetryFrameBuilder, TelemetrySource,
 };
-use rumqttc::{AsyncClient, Event, EventLoop, MqttOptions, Packet};
-use std::sync::atomic::{AtomicU64, Ordering};
+use rumqttc::{AsyncClient, Event, MqttOptions, Packet};
 use std::sync::Arc;
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::{Duration, Instant};
-use tokio::sync::{mpsc, RwLock};
+use tokio::sync::{RwLock, mpsc};
 
 /// MQTT Quality of Service levels
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
@@ -179,7 +179,11 @@ impl MqttSourceConfig {
     }
 
     /// Sets authentication credentials
-    pub fn with_credentials(mut self, username: impl Into<String>, password: impl Into<String>) -> Self {
+    pub fn with_credentials(
+        mut self,
+        username: impl Into<String>,
+        password: impl Into<String>,
+    ) -> Self {
         self.username = Some(username.into());
         self.password = Some(password.into());
         self
@@ -206,8 +210,11 @@ impl MqttSourceConfig {
 }
 
 impl From<MqttSourceConfig> for SourceConfig {
-    fn from(_cfg: MqttSourceConfig) -> Self {
-        SourceConfig::default()
+    fn from(cfg: MqttSourceConfig) -> Self {
+        SourceConfig {
+            channel_buffer_size: cfg.channel_capacity,
+            ..SourceConfig::default()
+        }
     }
 }
 
@@ -332,6 +339,7 @@ impl MqttSource {
             });
 
         let frame = TelemetryFrameBuilder::new()
+            .session_id(1)
             .source_id(source_id)
             .sequence(*sequence)
             .timestamp_us(timestamp_us)
@@ -351,7 +359,8 @@ impl MqttSource {
         mut shutdown_rx: mpsc::Receiver<()>,
     ) {
         let mqtt_options = config.build_mqtt_options();
-        let (client, mut eventloop) = AsyncClient::new(mqtt_options, config.incoming_buffer_capacity);
+        let (client, mut eventloop) =
+            AsyncClient::new(mqtt_options, config.incoming_buffer_capacity);
 
         // Subscribe to all configured topics
         for sub in &config.subscriptions {
@@ -428,7 +437,10 @@ impl TelemetrySource for MqttSource {
 
     fn state(&self) -> SourceState {
         // Use try_read to avoid blocking, fallback to Idle
-        self.state.try_read().map(|s| *s).unwrap_or(SourceState::Idle)
+        self.state
+            .try_read()
+            .map(|s| *s)
+            .unwrap_or(SourceState::Idle)
     }
 
     fn metadata(&self) -> SourceMetadata {
@@ -498,7 +510,6 @@ impl TelemetrySource for MqttSource {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -521,8 +532,8 @@ mod tests {
 
     #[test]
     fn config_with_credentials() {
-        let config = MqttSourceConfig::new("mqtt.example.com", 8883)
-            .with_credentials("user", "password");
+        let config =
+            MqttSourceConfig::new("mqtt.example.com", 8883).with_credentials("user", "password");
 
         assert_eq!(config.username, Some("user".to_string()));
         assert_eq!(config.password, Some("password".to_string()));

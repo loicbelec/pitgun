@@ -31,14 +31,14 @@
 use async_trait::async_trait;
 use pitgun_contract::{
     CodecContext, DecodeOutput, SourceConfig, SourceError, SourceMetadata, SourceResult,
-    SourceState, SourceStats, SourceType, TelemetryCodec, TelemetryFrame, TelemetrySource,
+    SourceState, SourceStats, SourceType, TelemetryFrame, TelemetrySource,
 };
 use std::net::{Ipv4Addr, SocketAddr};
-use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Arc;
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::{Duration, Instant};
 use tokio::net::UdpSocket;
-use tokio::sync::{mpsc, RwLock};
+use tokio::sync::{RwLock, mpsc};
 
 /// Codec types supported by the UDP source
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
@@ -147,8 +147,12 @@ impl UdpSourceConfig {
 }
 
 impl From<UdpSourceConfig> for SourceConfig {
-    fn from(_cfg: UdpSourceConfig) -> Self {
-        SourceConfig::default()
+    fn from(cfg: UdpSourceConfig) -> Self {
+        SourceConfig {
+            channel_buffer_size: cfg.channel_capacity,
+            read_timeout: cfg.recv_timeout,
+            ..SourceConfig::default()
+        }
     }
 }
 
@@ -167,15 +171,15 @@ struct SequenceTracker {
 impl SequenceTracker {
     fn track(&self, sequence: u64) {
         use std::sync::atomic::Ordering::Relaxed;
-        
+
         if !self.initialized.load(Relaxed) {
             self.last_sequence.store(sequence, Relaxed);
             self.initialized.store(true, Relaxed);
             return;
         }
-        
+
         let last = self.last_sequence.load(Relaxed);
-        
+
         if sequence > last {
             // Calculate gap (missing packets)
             let gap = sequence - last - 1;
@@ -189,11 +193,11 @@ impl SequenceTracker {
         }
         // sequence == last means duplicate, ignore
     }
-    
+
     fn packets_lost(&self) -> u64 {
         self.packets_lost.load(std::sync::atomic::Ordering::Relaxed)
     }
-    
+
     fn out_of_order(&self) -> u64 {
         self.out_of_order.load(std::sync::atomic::Ordering::Relaxed)
     }
@@ -239,7 +243,7 @@ impl UdpStats {
             reconnect_count: 0,
         }
     }
-    
+
     fn track_sequence(&self, sequence: u64) {
         self.sequence_tracker.track(sequence);
     }
@@ -261,9 +265,10 @@ impl AsyncUdpSource {
     /// Creates a new async UDP source
     pub fn new(config: UdpSourceConfig) -> Self {
         let (shutdown_tx, shutdown_rx) = mpsc::channel(1);
+        let source_config = config.clone().into();
 
         Self {
-            source_config: SourceConfig::default(),
+            source_config,
             config,
             state: Arc::new(RwLock::new(SourceState::Idle)),
             stats: Arc::new(UdpStats::default()),
@@ -285,7 +290,9 @@ impl AsyncUdpSource {
         if let Some(group) = config.multicast_group {
             socket
                 .join_multicast_v4(group, config.multicast_interface)
-                .map_err(|e| SourceError::ConnectionFailed(format!("failed to join multicast: {}", e)))?;
+                .map_err(|e| {
+                    SourceError::ConnectionFailed(format!("failed to join multicast: {}", e))
+                })?;
         }
 
         drop(socket); // Close the test socket, will rebind in start()
@@ -356,8 +363,15 @@ impl AsyncUdpSource {
                             return Ok(DecodeOutput::NoOutput);
                         }
 
+                        let timestamp_us = events
+                            .first()
+                            .map(|event| (event.ts_ns / 1000) as i64)
+                            .unwrap_or_else(Self::now_us);
+
                         let frame = TelemetryFrameBuilder::new()
+                            .session_id(ctx.session_id)
                             .source_id(&ctx.source_id)
+                            .timestamp_us(timestamp_us)
                             .samples(samples)
                             .build();
 
@@ -477,8 +491,15 @@ impl AsyncUdpSource {
                                                 if samples.is_empty() {
                                                     Ok(DecodeOutput::NoOutput)
                                                 } else {
+                                                    let timestamp_us = events
+                                                        .first()
+                                                        .map(|event| (event.ts_ns / 1000) as i64)
+                                                        .unwrap_or_else(Self::now_us);
+
                                                     let frame = TelemetryFrameBuilder::new()
+                                                        .session_id(ctx.session_id)
                                                         .source_id(&ctx.source_id)
+                                                        .timestamp_us(timestamp_us)
                                                         .samples(samples)
                                                         .build();
                                                     Ok(DecodeOutput::Frame(frame))
@@ -496,7 +517,7 @@ impl AsyncUdpSource {
                                     stats.packets_decoded.fetch_add(1, Ordering::Relaxed);
                                     stats.frames_produced.fetch_add(1, Ordering::Relaxed);
                                     stats.samples_produced.fetch_add(frame.sample_count() as u64, Ordering::Relaxed);
-                                    
+
                                     // Track sequence for packet loss detection
                                     stats.track_sequence(frame.sequence);
 
@@ -533,6 +554,13 @@ impl AsyncUdpSource {
 
         *state.write().await = SourceState::Stopped;
     }
+
+    fn now_us() -> i64 {
+        std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .map(|d| d.as_micros() as i64)
+            .unwrap_or(0)
+    }
 }
 
 #[async_trait]
@@ -550,7 +578,10 @@ impl TelemetrySource for AsyncUdpSource {
     }
 
     fn state(&self) -> SourceState {
-        self.state.try_read().map(|s| *s).unwrap_or(SourceState::Idle)
+        self.state
+            .try_read()
+            .map(|s| *s)
+            .unwrap_or(SourceState::Idle)
     }
 
     fn metadata(&self) -> SourceMetadata {
@@ -658,10 +689,16 @@ mod tests {
     fn config_to_source_config() {
         let config = UdpSourceConfig::new("0.0.0.0:20777".parse::<SocketAddr>().unwrap())
             .with_codec(UdpCodecType::F1)
-            .with_source_id("my-source");
+            .with_source_id("my-source")
+            .with_channel_capacity(2048)
+            .with_recv_timeout(Duration::from_millis(1500));
 
         let source_config: SourceConfig = config.into();
-        assert_eq!(source_config.source_id, "my-source");
-        assert_eq!(source_config.options.get("codec"), Some(&"f1-udp".to_string()));
+        assert_eq!(source_config.channel_buffer_size, 2048);
+        assert_eq!(
+            source_config.read_timeout,
+            Some(Duration::from_millis(1500))
+        );
+        assert!(source_config.auto_reconnect);
     }
 }

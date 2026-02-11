@@ -29,8 +29,8 @@
 //!
 //!     let mut rx = source.subscribe();
 //!     while let Some(frame) = rx.recv().await {
-//!         println!("Frame: {} samples from partition {}", 
-//!             frame.sample_count(), 
+//!         println!("Frame: {} samples from partition {}",
+//!             frame.sample_count(),
 //!             frame.metadata().get("partition").unwrap_or(&"?".to_string()));
 //!     }
 //!     Ok(())
@@ -47,13 +47,12 @@ use rdkafka::{
     config::ClientConfig,
     consumer::{Consumer, StreamConsumer},
     message::Message,
-    TopicPartitionList,
 };
 use std::collections::HashMap;
-use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Arc;
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::{Duration, Instant};
-use tokio::sync::{mpsc, RwLock};
+use tokio::sync::{RwLock, mpsc};
 
 /// Configuration for the Kafka source
 #[derive(Clone, Debug)]
@@ -167,8 +166,12 @@ impl KafkaSourceConfig {
 }
 
 impl From<KafkaSourceConfig> for SourceConfig {
-    fn from(_cfg: KafkaSourceConfig) -> Self {
-        SourceConfig::default()
+    fn from(cfg: KafkaSourceConfig) -> Self {
+        SourceConfig {
+            channel_buffer_size: cfg.channel_capacity,
+            connect_timeout: Duration::from_millis(cfg.session_timeout_ms as u64),
+            ..SourceConfig::default()
+        }
     }
 }
 
@@ -181,7 +184,6 @@ struct KafkaStats {
     bytes_received: AtomicU64,
     frames_produced: AtomicU64,
     samples_produced: AtomicU64,
-    partitions_assigned: AtomicU64,
 }
 
 impl KafkaStats {
@@ -228,7 +230,7 @@ pub struct KafkaSource {
 impl KafkaSource {
     /// Creates a new Kafka source
     pub fn new(config: KafkaSourceConfig) -> SourceResult<Self> {
-        let source_config = SourceConfig::default();
+        let source_config = config.clone().into();
         let (shutdown_tx, shutdown_rx) = mpsc::channel(1);
 
         Ok(Self {
@@ -291,6 +293,7 @@ impl KafkaSource {
             });
 
         let mut builder = TelemetryFrameBuilder::new()
+            .session_id(Self::extract_session_id(&json))
             .source_id(source_id)
             .sequence(*sequence)
             .timestamp_us(timestamp_us)
@@ -305,6 +308,16 @@ impl KafkaSource {
         Some(builder.build())
     }
 
+    fn extract_session_id(json: &serde_json::Value) -> u64 {
+        json.get("session_id")
+            .or_else(|| json.get("session"))
+            .and_then(|v| {
+                v.as_u64()
+                    .or_else(|| v.as_str().and_then(|raw| raw.trim().parse::<u64>().ok()))
+            })
+            .unwrap_or(1)
+    }
+
     /// Run the Kafka consumer loop
     async fn consumer_loop(
         config: KafkaSourceConfig,
@@ -313,7 +326,6 @@ impl KafkaSource {
         frame_tx: mpsc::UnboundedSender<TelemetryFrame>,
         mut shutdown_rx: mpsc::Receiver<()>,
     ) {
-
         // Create consumer
         let consumer: StreamConsumer = match config.build_client_config().create() {
             Ok(c) => c,
@@ -403,7 +415,10 @@ impl TelemetrySource for KafkaSource {
     }
 
     fn state(&self) -> SourceState {
-        self.state.try_read().map(|s| *s).unwrap_or(SourceState::Idle)
+        self.state
+            .try_read()
+            .map(|s| *s)
+            .unwrap_or(SourceState::Idle)
     }
 
     fn metadata(&self) -> SourceMetadata {
@@ -473,7 +488,6 @@ impl TelemetrySource for KafkaSource {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -497,14 +511,14 @@ mod tests {
     fn config_to_source_config() {
         let config = KafkaSourceConfig::new("localhost:9092")
             .with_source_id("my-kafka")
-            .with_topics(vec!["telemetry"]);
+            .with_topics(vec!["telemetry"])
+            .with_channel_capacity(2048)
+            .with_session_timeout(Duration::from_millis(8000));
 
         let source_config: SourceConfig = config.into();
-        assert_eq!(source_config.source_id, "my-kafka");
-        assert_eq!(
-            source_config.options.get("bootstrap_servers"),
-            Some(&"localhost:9092".to_string())
-        );
+        assert_eq!(source_config.channel_buffer_size, 2048);
+        assert_eq!(source_config.connect_timeout, Duration::from_millis(8000));
+        assert!(source_config.auto_reconnect);
     }
 
     #[test]
@@ -512,14 +526,7 @@ mod tests {
         let payload = br#"{"speed": 245.5, "rpm": 12500.0, "throttle": 0.85}"#;
         let mut seq = 0u64;
 
-        let frame = KafkaSource::decode_message(
-            payload,
-            "test",
-            "telemetry",
-            0,
-            100,
-            &mut seq,
-        );
+        let frame = KafkaSource::decode_message(payload, "test", "telemetry", 0, 100, &mut seq);
 
         assert!(frame.is_some());
         assert_eq!(seq, 1);

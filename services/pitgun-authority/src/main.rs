@@ -13,9 +13,7 @@ use axum::{
     response::{IntoResponse, Response},
     routing::{get, post},
 };
-use pitgun_contract::{
-    SignedSimulationContractV1, SimulationContractV1,
-};
+use pitgun_contract::{SignedSimulationContractV1, SimulationContractV1};
 use pitgun_policy::{
     PlayerTuningRequest, TuningEvalContext, TuningPolicyV1, default_policy_path,
     load_tuning_v1_from_str,
@@ -124,8 +122,8 @@ fn build_signed_simulation_contract(
     state: &AppState,
     request: SimulationContractRequest,
 ) -> Result<SignedSimulationContractV1, ContractError> {
-    let signing_key = SigningKey::from_env()
-        .map_err(|err| ContractError::Internal(err.to_string()))?;
+    let signing_key =
+        SigningKey::from_env().map_err(|err| ContractError::Internal(err.to_string()))?;
 
     let mut category_levels = BTreeMap::new();
     for (key, value) in request.category_levels {
@@ -177,7 +175,10 @@ fn build_signed_simulation_contract(
         .filter(|names| !names.is_empty());
 
     let issued_at_ms = now_ms;
-    let ttl_ms = (state.config.simulation_contract_ttl_secs.saturating_mul(1_000)) as i64;
+    let ttl_ms = (state
+        .config
+        .simulation_contract_ttl_secs
+        .saturating_mul(1_000)) as i64;
     let contract = SimulationContractV1 {
         version: "SimulationContractV1".to_string(),
         policy_hash: state.policy_hash.clone(),
@@ -301,8 +302,8 @@ mod tests {
     use std::sync::Mutex;
 
     fn test_state() -> AppState {
-        let policy_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-            .join("../../policies/gametuning.v1.yaml");
+        let policy_path =
+            PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../policies/gametuning.v1.yaml");
         let (tuning_policy, policy_hash) =
             load_tuning_policy(policy_path).expect("policy should load");
 
@@ -321,9 +322,7 @@ mod tests {
     fn base_request(parameters: JsonValue) -> SimulationContractRequest {
         SimulationContractRequest {
             era: 3,
-            category_levels: BTreeMap::from([
-                ("budget_lvl".to_string(), 100),
-            ]),
+            category_levels: BTreeMap::from([("budget_lvl".to_string(), 100)]),
             owned_upgrades: Vec::new(),
             parameters,
         }

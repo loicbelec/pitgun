@@ -290,7 +290,11 @@ fn build_metadata(headers: &HeaderMap, peer: SocketAddr) -> IngestMetadata {
     }
 }
 
-fn is_authorized(headers: &HeaderMap, query_token: Option<&str>, api_keys: &HashSet<String>) -> bool {
+fn is_authorized(
+    headers: &HeaderMap,
+    query_token: Option<&str>,
+    api_keys: &HashSet<String>,
+) -> bool {
     if api_keys.is_empty() {
         return true;
     }

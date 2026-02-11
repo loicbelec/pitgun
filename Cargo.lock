@@ -1550,6 +1550,7 @@ dependencies = [
  "pitgun-codec-json",
  "pitgun-contract",
  "pitgun-core",
+ "serde_json",
  "tokio",
  "tokio-tungstenite 0.21.0",
  "tungstenite 0.21.0",

@@ -17,7 +17,7 @@
 //! use pitgun_contract::registry::{ParameterRegistry, Parameter, DataType};
 //!
 //! let registry = ParameterRegistry::load_from_yaml("registries/f1_generic.yaml")?;
-//! 
+//!
 //! if let Some(param) = registry.get(1) {
 //!     println!("{}: {} ({})", param.id, param.name, param.unit);
 //! }
@@ -169,7 +169,10 @@ impl ParameterRegistry {
 
     /// Gets a mutable parameter by ID.
     pub fn get_mut(&mut self, id: ParameterId) -> Option<&mut Parameter> {
-        self.index.get(&id).copied().map(|idx| &mut self.parameters[idx])
+        self.index
+            .get(&id)
+            .copied()
+            .map(|idx| &mut self.parameters[idx])
     }
 
     /// Gets a parameter by name.
@@ -204,7 +207,9 @@ impl ParameterRegistry {
 
     /// Returns parameters filtered by access level.
     pub fn with_access_level(&self, level: AccessLevel) -> impl Iterator<Item = &Parameter> {
-        self.parameters.iter().filter(move |p| p.access_level == level)
+        self.parameters
+            .iter()
+            .filter(move |p| p.access_level == level)
     }
 
     /// Returns parameters that are publicly accessible.
@@ -346,13 +351,13 @@ impl Parameter {
                 reason: "name cannot be empty".into(),
             });
         }
-        if let Some(ref range) = self.range {
-            if range.min > range.max {
-                return Err(RegistryError::InvalidParameter {
-                    id: self.id,
-                    reason: format!("invalid range: min ({}) > max ({})", range.min, range.max),
-                });
-            }
+        if let Some(ref range) = self.range
+            && range.min > range.max
+        {
+            return Err(RegistryError::InvalidParameter {
+                id: self.id,
+                reason: format!("invalid range: min ({}) > max ({})", range.min, range.max),
+            });
         }
         Ok(())
     }
@@ -438,13 +443,23 @@ impl DataType {
     pub fn is_integer(&self) -> bool {
         matches!(
             self,
-            Self::U8 | Self::U16 | Self::U32 | Self::U64 | Self::I8 | Self::I16 | Self::I32 | Self::I64
+            Self::U8
+                | Self::U16
+                | Self::U32
+                | Self::U64
+                | Self::I8
+                | Self::I16
+                | Self::I32
+                | Self::I64
         )
     }
 
     /// Returns true if this is a signed type.
     pub fn is_signed(&self) -> bool {
-        matches!(self, Self::I8 | Self::I16 | Self::I32 | Self::I64 | Self::F32 | Self::F64)
+        matches!(
+            self,
+            Self::I8 | Self::I16 | Self::I32 | Self::I64 | Self::F32 | Self::F64
+        )
     }
 }
 
@@ -492,14 +507,9 @@ pub enum Conversion {
         offset: f64,
     },
     /// Polynomial: eng = sum(coefficients[i] * raw^i).
-    Polynomial {
-        coefficients: Vec<f64>,
-    },
+    Polynomial { coefficients: Vec<f64> },
     /// Table lookup with interpolation.
-    Table {
-        input: Vec<f64>,
-        output: Vec<f64>,
-    },
+    Table { input: Vec<f64>, output: Vec<f64> },
     /// Bit extraction: extract bits from an integer.
     BitField {
         start_bit: u8,
@@ -775,11 +785,11 @@ parameters:
     #[test]
     fn get_by_name() {
         let registry = ParameterRegistry::from_yaml(sample_yaml()).unwrap();
-        
+
         // By name
         let param = registry.get_by_name("engine_speed").unwrap();
         assert_eq!(param.id, 1);
-        
+
         // By canonical name
         let param = registry.get_by_name("engine_rpm").unwrap();
         assert_eq!(param.id, 1);
@@ -826,9 +836,8 @@ parameters:
 
     #[test]
     fn range_validation() {
-        let param = Parameter::new(1, "test")
-            .with_range(0.0, 100.0);
-        
+        let param = Parameter::new(1, "test").with_range(0.0, 100.0);
+
         assert!(param.validate_value(50.0).is_valid());
         assert!(!param.validate_value(-1.0).is_valid());
         assert!(!param.validate_value(101.0).is_valid());
@@ -843,9 +852,13 @@ parameters:
     #[test]
     fn add_parameter() {
         let mut registry = ParameterRegistry::new();
-        registry.add(Parameter::new(1, "speed").with_unit("km/h")).unwrap();
-        registry.add(Parameter::new(2, "rpm").with_unit("rpm")).unwrap();
-        
+        registry
+            .add(Parameter::new(1, "speed").with_unit("km/h"))
+            .unwrap();
+        registry
+            .add(Parameter::new(2, "rpm").with_unit("rpm"))
+            .unwrap();
+
         assert_eq!(registry.len(), 2);
         assert!(registry.contains(1));
         assert!(registry.contains_name("speed"));
@@ -871,10 +884,13 @@ parameters:
             .with_group("thermal")
             .with_tag("engine")
             .with_tag("temperature");
-        
+
         assert_eq!(param.id, 42);
         assert_eq!(param.name, "engine_temp");
-        assert_eq!(param.canonical_name, Some("coolant_temperature".to_string()));
+        assert_eq!(
+            param.canonical_name,
+            Some("coolant_temperature".to_string())
+        );
         assert_eq!(param.tags.len(), 2);
     }
 
@@ -892,12 +908,14 @@ parameters:
     #[test]
     fn registry_to_yaml() {
         let mut registry = ParameterRegistry::with_name("My Registry");
-        registry.add(
-            Parameter::new(1, "speed")
-                .with_unit("km/h")
-                .with_range(0.0, 400.0)
-        ).unwrap();
-        
+        registry
+            .add(
+                Parameter::new(1, "speed")
+                    .with_unit("km/h")
+                    .with_range(0.0, 400.0),
+            )
+            .unwrap();
+
         let yaml = registry.to_yaml().unwrap();
         assert!(yaml.contains("speed"));
         assert!(yaml.contains("km/h"));

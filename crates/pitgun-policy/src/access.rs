@@ -195,6 +195,7 @@ impl Default for ParameterAccess {
 
 /// Access violation details
 #[derive(Clone, Debug)]
+#[allow(dead_code)]
 pub struct AccessViolation {
     /// Parameter ID that was denied
     pub parameter_id: u32,
@@ -442,35 +443,35 @@ impl AccessController {
         }
 
         // Check team requirement
-        if let Some(ref team) = access.required_team {
-            if !claims.in_team(team) {
-                self.log_access(
-                    claims,
-                    parameter_id,
-                    false,
-                    Some(&format!("not in required team: {}", team)),
-                );
-                return Err(AccessDenied {
-                    parameter_id,
-                    reason: format!("not in required team: {}", team),
-                });
-            }
+        if let Some(ref team) = access.required_team
+            && !claims.in_team(team)
+        {
+            self.log_access(
+                claims,
+                parameter_id,
+                false,
+                Some(&format!("not in required team: {}", team)),
+            );
+            return Err(AccessDenied {
+                parameter_id,
+                reason: format!("not in required team: {}", team),
+            });
         }
 
         // Check role requirement
-        if let Some(ref role) = access.required_role {
-            if !claims.has_role(role) {
-                self.log_access(
-                    claims,
-                    parameter_id,
-                    false,
-                    Some(&format!("missing required role: {}", role)),
-                );
-                return Err(AccessDenied {
-                    parameter_id,
-                    reason: format!("missing required role: {}", role),
-                });
-            }
+        if let Some(ref role) = access.required_role
+            && !claims.has_role(role)
+        {
+            self.log_access(
+                claims,
+                parameter_id,
+                false,
+                Some(&format!("missing required role: {}", role)),
+            );
+            return Err(AccessDenied {
+                parameter_id,
+                reason: format!("missing required role: {}", role),
+            });
         }
 
         self.log_access(claims, parameter_id, true, None);

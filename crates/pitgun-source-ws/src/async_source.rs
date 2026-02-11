@@ -35,10 +35,10 @@ use pitgun_contract::{
     Sample, SampleValue, SignalQuality, SourceConfig, SourceError, SourceMetadata, SourceResult,
     SourceState, SourceStats, SourceType, TelemetryFrame, TelemetryFrameBuilder, TelemetrySource,
 };
-use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Arc;
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::{Duration, Instant};
-use tokio::sync::{broadcast, mpsc, RwLock};
+use tokio::sync::{RwLock, mpsc};
 use tokio_tungstenite::{connect_async, tungstenite::Message};
 use url::Url;
 
@@ -104,8 +104,14 @@ impl WsSourceConfig {
 }
 
 impl From<WsSourceConfig> for SourceConfig {
-    fn from(_cfg: WsSourceConfig) -> Self {
-        SourceConfig::default()
+    fn from(cfg: WsSourceConfig) -> Self {
+        SourceConfig {
+            auto_reconnect: cfg.reconnect,
+            reconnect_delay: cfg.reconnect_delay,
+            max_reconnect_delay: cfg.max_reconnect_delay,
+            channel_buffer_size: cfg.channel_capacity,
+            ..SourceConfig::default()
+        }
     }
 }
 
@@ -166,9 +172,10 @@ impl AsyncWsSource {
     /// Creates a new async WebSocket source
     pub fn new(config: WsSourceConfig) -> Self {
         let (shutdown_tx, shutdown_rx) = mpsc::channel(1);
+        let source_config = config.clone().into();
 
         Self {
-            source_config: SourceConfig::default(),
+            source_config,
             config,
             state: Arc::new(RwLock::new(SourceState::Idle)),
             stats: Arc::new(WsStats::default()),
@@ -198,10 +205,52 @@ impl AsyncWsSource {
 
             if !samples.is_empty() {
                 *sequence += 1;
+                let session_id = Self::parse_session_id(&envelope.session_id);
+                let timestamp_us = envelope
+                    .batch
+                    .events
+                    .first()
+                    .map(|event| (event.ts_ns / 1000) as i64)
+                    .or_else(|| envelope.sent_at_ms.map(|ms| ms * 1000))
+                    .unwrap_or_else(Self::now_us);
+
                 return Some(
                     TelemetryFrameBuilder::new()
+                        .session_id(session_id)
                         .source_id(source_id)
                         .sequence(*sequence)
+                        .timestamp_us(timestamp_us)
+                        .samples(samples)
+                        .build(),
+                );
+            }
+        }
+
+        // Fallback: flat JSON object { "rpm": 12000, "speed": 250.0, ... }.
+        if let Ok(json) = serde_json::from_str::<serde_json::Value>(text)
+            && let Some(obj) = json.as_object()
+        {
+            let samples: Vec<Sample> = obj
+                .iter()
+                .enumerate()
+                .filter_map(|(i, (_key, value))| {
+                    value.as_f64().map(|val| Sample {
+                        parameter_id: i as u16,
+                        value: SampleValue::F64(val),
+                        quality: SignalQuality::Good,
+                        timestamp_offset_us: None,
+                    })
+                })
+                .collect();
+
+            if !samples.is_empty() {
+                *sequence += 1;
+                return Some(
+                    TelemetryFrameBuilder::new()
+                        .session_id(1)
+                        .source_id(source_id)
+                        .sequence(*sequence)
+                        .timestamp_us(Self::now_us())
                         .samples(samples)
                         .build(),
                 );
@@ -209,6 +258,25 @@ impl AsyncWsSource {
         }
 
         None
+    }
+
+    fn parse_session_id(raw: &str) -> u64 {
+        let trimmed = raw.trim();
+        if let Ok(value) = trimmed.parse::<u64>() {
+            return value;
+        }
+
+        use std::hash::{Hash, Hasher};
+        let mut hasher = std::collections::hash_map::DefaultHasher::new();
+        trimmed.hash(&mut hasher);
+        hasher.finish()
+    }
+
+    fn now_us() -> i64 {
+        std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .map(|d| d.as_micros() as i64)
+            .unwrap_or(0)
     }
 
     /// Run the WebSocket receive loop with reconnection
@@ -238,7 +306,10 @@ impl AsyncWsSource {
                 Ok((stream, _)) => stream,
                 Err(e) => {
                     if config.reconnect {
-                        eprintln!("WebSocket connection failed: {}, retrying in {:?}", e, reconnect_delay);
+                        eprintln!(
+                            "WebSocket connection failed: {}, retrying in {:?}",
+                            e, reconnect_delay
+                        );
                         stats.reconnect_count.fetch_add(1, Ordering::Relaxed);
 
                         tokio::select! {
@@ -250,7 +321,8 @@ impl AsyncWsSource {
                         }
 
                         // Exponential backoff
-                        reconnect_delay = std::cmp::min(reconnect_delay * 2, config.max_reconnect_delay);
+                        reconnect_delay =
+                            std::cmp::min(reconnect_delay * 2, config.max_reconnect_delay);
                         continue;
                     } else {
                         *state.write().await = SourceState::Error;
@@ -341,7 +413,10 @@ impl TelemetrySource for AsyncWsSource {
     }
 
     fn state(&self) -> SourceState {
-        self.state.try_read().map(|s| *s).unwrap_or(SourceState::Idle)
+        self.state
+            .try_read()
+            .map(|s| *s)
+            .unwrap_or(SourceState::Idle)
     }
 
     fn metadata(&self) -> SourceMetadata {
@@ -389,7 +464,9 @@ impl TelemetrySource for AsyncWsSource {
             tokio::time::sleep(Duration::from_millis(10)).await;
             match self.state() {
                 SourceState::Running => return Ok(()),
-                SourceState::Error => return Err(SourceError::ConnectionFailed("connection failed".into())),
+                SourceState::Error => {
+                    return Err(SourceError::ConnectionFailed("connection failed".into()));
+                }
                 _ => {}
             }
         }
@@ -431,22 +508,28 @@ mod tests {
     #[test]
     fn config_to_source_config() {
         let config = WsSourceConfig::new("ws://localhost:8080")
-            .with_source_id("my-ws");
+            .with_source_id("my-ws")
+            .with_reconnect(false)
+            .with_reconnect_delay(Duration::from_secs(2))
+            .with_max_reconnect_delay(Duration::from_secs(10))
+            .with_channel_capacity(256);
 
         let source_config: SourceConfig = config.into();
-        assert_eq!(source_config.source_id, "my-ws");
-        assert_eq!(source_config.options.get("url"), Some(&"ws://localhost:8080".to_string()));
+        assert!(!source_config.auto_reconnect);
+        assert_eq!(source_config.reconnect_delay, Duration::from_secs(2));
+        assert_eq!(source_config.max_reconnect_delay, Duration::from_secs(10));
+        assert_eq!(source_config.channel_buffer_size, 256);
     }
 
     #[test]
     fn decode_json_telemetry() {
         let json = r#"{"speed": 245.5, "rpm": 12500.0, "throttle": 0.85}"#;
         let mut seq = 0u64;
-        
+
         let frame = AsyncWsSource::decode_message(json, "test", &mut seq);
         assert!(frame.is_some());
         assert_eq!(seq, 1);
-        
+
         let frame = frame.unwrap();
         assert_eq!(frame.sample_count(), 3);
     }

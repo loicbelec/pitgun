@@ -86,7 +86,7 @@ fn tuning_field_names() -> Result<&'static BTreeSet<String>, PolicyError> {
     }
 }
 
-fn resolve_tuning_subsystem<'a>(policy: &'a TuningPolicyV1) -> Result<&'a str, String> {
+fn resolve_tuning_subsystem(policy: &TuningPolicyV1) -> Result<&str, String> {
     let fields = tuning_field_names().map_err(|err| err.to_string())?;
 
     let candidates: Vec<&str> = policy
@@ -116,9 +116,8 @@ fn normalize_competitor(
     }
 
     let tuning_subsystem = resolve_tuning_subsystem(policy)?;
-    let tuning_value = serde_json::to_value(&comp.tuning).map_err(|err| {
-        format!("tuning payload must be finite and serializable: {err}")
-    })?;
+    let tuning_value = serde_json::to_value(&comp.tuning)
+        .map_err(|err| format!("tuning payload must be finite and serializable: {err}"))?;
 
     let mut parameters = serde_json::Map::new();
     parameters.insert(tuning_subsystem.to_string(), tuning_value);
@@ -148,10 +147,8 @@ fn normalize_competitor(
         .cloned()
         .ok_or_else(|| format!("missing canonical parameters.{tuning_subsystem} object"))?;
 
-    let tuning: TuningSpec =
-        serde_json::from_value(canonical_tuning).map_err(|err| {
-            format!("canonical tuning shape mismatch with contract: {err}")
-        })?;
+    let tuning: TuningSpec = serde_json::from_value(canonical_tuning)
+        .map_err(|err| format!("canonical tuning shape mismatch with contract: {err}"))?;
 
     Ok(CompetitorSpec {
         id: comp.id.clone(),

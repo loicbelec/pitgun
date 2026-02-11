@@ -42,10 +42,10 @@ use pitgun_contract::{
     TelemetrySource,
 };
 use std::collections::HashMap;
-use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Arc;
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::{Duration, Instant};
-use tokio::sync::{broadcast, mpsc, RwLock};
+use tokio::sync::{RwLock, broadcast, mpsc};
 
 /// Pipeline configuration
 #[derive(Clone, Debug)]
@@ -122,11 +122,23 @@ impl PipelineStats {
         };
 
         [
-            ("frames_received".into(), self.frames_received.load(Ordering::Relaxed) as f64),
-            ("frames_merged".into(), self.frames_merged.load(Ordering::Relaxed) as f64),
+            (
+                "frames_received".into(),
+                self.frames_received.load(Ordering::Relaxed) as f64,
+            ),
+            (
+                "frames_merged".into(),
+                self.frames_merged.load(Ordering::Relaxed) as f64,
+            ),
             ("frames_output".into(), frames as f64),
-            ("samples_processed".into(), self.samples_processed.load(Ordering::Relaxed) as f64),
-            ("source_errors".into(), self.source_errors.load(Ordering::Relaxed) as f64),
+            (
+                "samples_processed".into(),
+                self.samples_processed.load(Ordering::Relaxed) as f64,
+            ),
+            (
+                "source_errors".into(),
+                self.source_errors.load(Ordering::Relaxed) as f64,
+            ),
             ("output_rate_hz".into(), rate),
             ("uptime_secs".into(), elapsed),
         ]
@@ -274,10 +286,7 @@ impl TelemetryPipeline {
         }
 
         // Take the shutdown receiver
-        let shutdown_rx = self
-            .shutdown_rx
-            .take()
-            .ok_or_else(|| SourceError::AlreadyRunning)?;
+        let shutdown_rx = self.shutdown_rx.take().ok_or(SourceError::AlreadyRunning)?;
 
         // Spawn the merge loop
         let stats = Arc::clone(&self.stats);
@@ -293,7 +302,15 @@ impl TelemetryPipeline {
             .collect();
 
         tokio::spawn(async move {
-            Self::merge_loop(receivers, output_tx, stats, state, shutdown_rx, enable_merging).await;
+            Self::merge_loop(
+                receivers,
+                output_tx,
+                stats,
+                state,
+                shutdown_rx,
+                enable_merging,
+            )
+            .await;
         });
 
         // Wait for running state
@@ -342,11 +359,9 @@ impl TelemetryPipeline {
         loop {
             // Create futures for all receivers
             let mut futures = FuturesUnordered::new();
-            
+
             for (idx, rx) in receivers.iter_mut().enumerate() {
-                futures.push(async move {
-                    (idx, rx.recv().await)
-                });
+                futures.push(async move { (idx, rx.recv().await) });
             }
 
             tokio::select! {
@@ -359,7 +374,7 @@ impl TelemetryPipeline {
                             stats.frames_received.fetch_add(1, Ordering::Relaxed);
                             stats.samples_processed.fetch_add(frame.sample_count() as u64, Ordering::Relaxed);
                             stats.frames_output.fetch_add(1, Ordering::Relaxed);
-                            
+
                             // For now, pass through without merging
                             // TODO: Implement frame merging based on timestamp
                             let _ = output_tx.send(frame);
@@ -386,7 +401,7 @@ impl TelemetryPipeline {
 pub trait FrameProcessor: Send + Sync {
     /// Process a frame and optionally transform it
     async fn process(&self, frame: TelemetryFrame) -> Option<TelemetryFrame>;
-    
+
     /// Returns the processor name
     fn name(&self) -> &str;
 }
@@ -426,7 +441,9 @@ pub struct LoggingProcessor {
 
 impl LoggingProcessor {
     pub fn new(prefix: impl Into<String>) -> Self {
-        Self { prefix: prefix.into() }
+        Self {
+            prefix: prefix.into(),
+        }
     }
 }
 
@@ -470,7 +487,7 @@ mod tests {
         let stats = PipelineStats::default();
         stats.frames_received.fetch_add(100, Ordering::Relaxed);
         stats.frames_output.fetch_add(95, Ordering::Relaxed);
-        
+
         let map = stats.to_map(Instant::now());
         assert_eq!(map.get("frames_received"), Some(&100.0));
         assert_eq!(map.get("frames_output"), Some(&95.0));
