@@ -1,0 +1,22 @@
+[Unit]
+Description=Pitgun configuration authority service
+After=network.target
+ConditionPathExists=/opt/pitgun/pitgun/target/release/pitgun-authority
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/pitgun/pitgun
+ExecStart=/opt/pitgun/pitgun/target/release/pitgun-authority
+Restart=on-failure
+RestartSec=2s
+# Adjust the runtime user to match your deployment.
+User=pitgun
+Group=pitgun
+Environment=PITGUN_AUTHORITY_BIND=0.0.0.0:8081
+# Note: Authority might need the signing secret
+Environment=PITGUN_SIGNING_SECRET=change_me_in_production
+# Example logging level
+Environment=RUST_LOG=info
+
+[Install]
+WantedBy=multi-user.target

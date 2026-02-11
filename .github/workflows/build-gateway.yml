@@ -1,0 +1,82 @@
+name: build-gateway
+
+on:
+  pull_request:
+    paths:
+      - "services/pitgun-gateway/**"
+      - "crates/pitgun-contract/**"
+      - "Dockerfile"
+      - ".github/workflows/build-gateway.yml"
+  push:
+    branches: ["main"]
+    paths:
+      - "services/pitgun-gateway/**"
+      - "crates/pitgun-contract/**"
+      - "Dockerfile"
+      - ".github/workflows/build-gateway.yml"
+  workflow_dispatch:
+
+env:
+  IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/pitgun-gateway
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      image_tag: ${{ steps.meta.outputs.image_tag }}
+      image_digest: ${{ steps.push.outputs.digest }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Compute image tag
+        id: meta
+        run: echo "image_tag=${IMAGE_NAME}:${GITHUB_SHA}" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GHCR
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build gateway image (PR validation)
+        if: github.event_name == 'pull_request'
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          push: false
+          tags: ${{ steps.meta.outputs.image_tag }}
+          build-args: |
+            RUST_VERSION=1.89
+            BIN_NAME=pitgun-gateway
+
+      - name: Build and push gateway image
+        if: github.event_name != 'pull_request'
+        id: push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: |
+            ${{ steps.meta.outputs.image_tag }}
+            ${{ env.IMAGE_NAME }}:main
+          build-args: |
+            RUST_VERSION=1.89
+            BIN_NAME=pitgun-gateway
+
+      - name: Publish image details
+        if: github.event_name != 'pull_request'
+        run: |
+          echo "Image tag: ${{ steps.meta.outputs.image_tag }}"
+          echo "Image digest: ${{ steps.push.outputs.digest }}"

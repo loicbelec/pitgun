@@ -1,0 +1,787 @@
+# Motorsport Full Parameter Registry
+# Comprehensive parameter definitions for professional motorsport telemetry
+# Covers engine, chassis, aero, thermal, and driver inputs
+
+version: "1.0"
+name: "Motorsport Full Registry"
+description: "Complete motorsport telemetry parameters for professional racing applications"
+
+# Parameter groups for organization
+groups:
+  - id: powertrain
+    name: "Powertrain"
+    description: "Engine, gearbox, and drivetrain parameters"
+  - id: chassis
+    name: "Chassis"
+    description: "Suspension, steering, and chassis dynamics"
+  - id: aero
+    name: "Aerodynamics"
+    description: "Wings, DRS, and aero balance"
+  - id: thermal
+    name: "Thermal"
+    description: "Temperature sensors throughout the car"
+  - id: inputs
+    name: "Driver Inputs"
+    description: "Pedals, steering, and buttons"
+  - id: tyres
+    name: "Tyres"
+    description: "Tyre temperatures, pressures, and wear"
+  - id: fuel
+    name: "Fuel System"
+    description: "Fuel flow, level, and consumption"
+  - id: electrical
+    name: "Electrical"
+    description: "ERS, battery, and electrical systems"
+  - id: timing
+    name: "Timing"
+    description: "Lap times, sectors, and session info"
+
+parameters:
+  # ============================================
+  # POWERTRAIN (1-99)
+  # ============================================
+  - id: 1
+    name: engine_rpm
+    description: "Engine rotational speed"
+    unit: rpm
+    data_type: U16
+    range: { min: 0, max: 20000 }
+    conversion: { type: linear, scale: 1.0, offset: 0.0 }
+    access_level: public
+    group: powertrain
+    sample_rate_hz: 200
+
+  - id: 2
+    name: engine_torque
+    description: "Engine output torque"
+    unit: Nm
+    data_type: F32
+    range: { min: -500, max: 1000 }
+    conversion: { type: none }
+    access_level: protected
+    group: powertrain
+    sample_rate_hz: 100
+
+  - id: 3
+    name: engine_power
+    description: "Engine output power"
+    unit: kW
+    data_type: F32
+    range: { min: 0, max: 1000 }
+    conversion: { type: none }
+    access_level: protected
+    group: powertrain
+    sample_rate_hz: 100
+
+  - id: 4
+    name: gear_current
+    description: "Current gear (0=N, -1=R)"
+    unit: ""
+    data_type: I8
+    range: { min: -1, max: 8 }
+    conversion: { type: none }
+    access_level: public
+    group: powertrain
+    sample_rate_hz: 50
+
+  - id: 5
+    name: gear_ratio
+    description: "Current gear ratio"
+    unit: ""
+    data_type: F32
+    range: { min: 0.5, max: 5.0 }
+    conversion: { type: none }
+    access_level: private
+    group: powertrain
+
+  - id: 6
+    name: clutch_position
+    description: "Clutch paddle position"
+    unit: "%"
+    data_type: F32
+    range: { min: 0, max: 100 }
+    conversion: { type: none }
+    access_level: public
+    group: powertrain
+    sample_rate_hz: 100
+
+  - id: 7
+    name: gearbox_oil_temp
+    description: "Gearbox oil temperature"
+    unit: "°C"
+    data_type: F32
+    range: { min: 0, max: 200 }
+    conversion: { type: none }
+    access_level: protected
+    group: powertrain
+    sample_rate_hz: 10
+
+  - id: 8
+    name: gearbox_oil_pressure
+    description: "Gearbox oil pressure"
+    unit: bar
+    data_type: F32
+    range: { min: 0, max: 20 }
+    conversion: { type: none }
+    access_level: protected
+    group: powertrain
+    sample_rate_hz: 10
+
+  # ============================================
+  # DRIVER INPUTS (100-199)
+  # ============================================
+  - id: 100
+    name: throttle_position
+    description: "Throttle pedal position"
+    unit: "%"
+    data_type: F32
+    range: { min: 0, max: 100 }
+    conversion: { type: none }
+    access_level: public
+    group: inputs
+    sample_rate_hz: 200
+
+  - id: 101
+    name: brake_pressure
+    description: "Brake master cylinder pressure"
+    unit: bar
+    data_type: F32
+    range: { min: 0, max: 200 }
+    conversion: { type: none }
+    access_level: public
+    group: inputs
+    sample_rate_hz: 200
+
+  - id: 102
+    name: brake_bias
+    description: "Brake bias front percentage"
+    unit: "%"
+    data_type: F32
+    range: { min: 50, max: 70 }
+    conversion: { type: none }
+    access_level: protected
+    group: inputs
+    sample_rate_hz: 10
+
+  - id: 103
+    name: steering_angle
+    description: "Steering wheel angle (negative = left)"
+    unit: "°"
+    data_type: F32
+    range: { min: -540, max: 540 }
+    conversion: { type: none }
+    access_level: public
+    group: inputs
+    sample_rate_hz: 200
+
+  - id: 104
+    name: steering_torque
+    description: "Steering column torque"
+    unit: Nm
+    data_type: F32
+    range: { min: -50, max: 50 }
+    conversion: { type: none }
+    access_level: protected
+    group: inputs
+    sample_rate_hz: 100
+
+  # ============================================
+  # CHASSIS / SUSPENSION (200-299)
+  # ============================================
+  - id: 200
+    name: ride_height_fl
+    description: "Front left ride height"
+    unit: mm
+    data_type: F32
+    range: { min: 0, max: 100 }
+    conversion: { type: none }
+    access_level: private
+    group: chassis
+    sample_rate_hz: 100
+
+  - id: 201
+    name: ride_height_fr
+    description: "Front right ride height"
+    unit: mm
+    data_type: F32
+    range: { min: 0, max: 100 }
+    conversion: { type: none }
+    access_level: private
+    group: chassis
+    sample_rate_hz: 100
+
+  - id: 202
+    name: ride_height_rl
+    description: "Rear left ride height"
+    unit: mm
+    data_type: F32
+    range: { min: 0, max: 100 }
+    conversion: { type: none }
+    access_level: private
+    group: chassis
+    sample_rate_hz: 100
+
+  - id: 203
+    name: ride_height_rr
+    description: "Rear right ride height"
+    unit: mm
+    data_type: F32
+    range: { min: 0, max: 100 }
+    conversion: { type: none }
+    access_level: private
+    group: chassis
+    sample_rate_hz: 100
+
+  - id: 210
+    name: damper_pos_fl
+    description: "Front left damper position"
+    unit: mm
+    data_type: F32
+    range: { min: -50, max: 50 }
+    conversion: { type: none }
+    access_level: private
+    group: chassis
+    sample_rate_hz: 200
+
+  - id: 211
+    name: damper_pos_fr
+    description: "Front right damper position"
+    unit: mm
+    data_type: F32
+    range: { min: -50, max: 50 }
+    conversion: { type: none }
+    access_level: private
+    group: chassis
+    sample_rate_hz: 200
+
+  - id: 212
+    name: damper_pos_rl
+    description: "Rear left damper position"
+    unit: mm
+    data_type: F32
+    range: { min: -50, max: 50 }
+    conversion: { type: none }
+    access_level: private
+    group: chassis
+    sample_rate_hz: 200
+
+  - id: 213
+    name: damper_pos_rr
+    description: "Rear right damper position"
+    unit: mm
+    data_type: F32
+    range: { min: -50, max: 50 }
+    conversion: { type: none }
+    access_level: private
+    group: chassis
+    sample_rate_hz: 200
+
+  - id: 220
+    name: accel_x
+    description: "Longitudinal acceleration"
+    unit: g
+    data_type: F32
+    range: { min: -6, max: 6 }
+    conversion: { type: none }
+    access_level: public
+    group: chassis
+    sample_rate_hz: 200
+
+  - id: 221
+    name: accel_y
+    description: "Lateral acceleration"
+    unit: g
+    data_type: F32
+    range: { min: -6, max: 6 }
+    conversion: { type: none }
+    access_level: public
+    group: chassis
+    sample_rate_hz: 200
+
+  - id: 222
+    name: accel_z
+    description: "Vertical acceleration"
+    unit: g
+    data_type: F32
+    range: { min: -3, max: 3 }
+    conversion: { type: none }
+    access_level: public
+    group: chassis
+    sample_rate_hz: 200
+
+  - id: 230
+    name: gyro_roll
+    description: "Roll rate"
+    unit: "°/s"
+    data_type: F32
+    range: { min: -500, max: 500 }
+    conversion: { type: none }
+    access_level: protected
+    group: chassis
+    sample_rate_hz: 200
+
+  - id: 231
+    name: gyro_pitch
+    description: "Pitch rate"
+    unit: "°/s"
+    data_type: F32
+    range: { min: -500, max: 500 }
+    conversion: { type: none }
+    access_level: protected
+    group: chassis
+    sample_rate_hz: 200
+
+  - id: 232
+    name: gyro_yaw
+    description: "Yaw rate"
+    unit: "°/s"
+    data_type: F32
+    range: { min: -500, max: 500 }
+    conversion: { type: none }
+    access_level: protected
+    group: chassis
+    sample_rate_hz: 200
+
+  # ============================================
+  # TYRES (300-399)
+  # ============================================
+  - id: 300
+    name: tyre_temp_fl_inner
+    description: "Front left tyre inner temperature"
+    unit: "°C"
+    data_type: F32
+    range: { min: 0, max: 150 }
+    conversion: { type: none }
+    access_level: public
+    group: tyres
+    sample_rate_hz: 10
+
+  - id: 301
+    name: tyre_temp_fl_middle
+    description: "Front left tyre middle temperature"
+    unit: "°C"
+    data_type: F32
+    range: { min: 0, max: 150 }
+    conversion: { type: none }
+    access_level: public
+    group: tyres
+    sample_rate_hz: 10
+
+  - id: 302
+    name: tyre_temp_fl_outer
+    description: "Front left tyre outer temperature"
+    unit: "°C"
+    data_type: F32
+    range: { min: 0, max: 150 }
+    conversion: { type: none }
+    access_level: public
+    group: tyres
+    sample_rate_hz: 10
+
+  - id: 310
+    name: tyre_pressure_fl
+    description: "Front left tyre pressure"
+    unit: psi
+    data_type: F32
+    range: { min: 15, max: 30 }
+    conversion: { type: none }
+    access_level: protected
+    group: tyres
+    sample_rate_hz: 10
+
+  - id: 311
+    name: tyre_pressure_fr
+    description: "Front right tyre pressure"
+    unit: psi
+    data_type: F32
+    range: { min: 15, max: 30 }
+    conversion: { type: none }
+    access_level: protected
+    group: tyres
+    sample_rate_hz: 10
+
+  - id: 312
+    name: tyre_pressure_rl
+    description: "Rear left tyre pressure"
+    unit: psi
+    data_type: F32
+    range: { min: 15, max: 30 }
+    conversion: { type: none }
+    access_level: protected
+    group: tyres
+    sample_rate_hz: 10
+
+  - id: 313
+    name: tyre_pressure_rr
+    description: "Rear right tyre pressure"
+    unit: psi
+    data_type: F32
+    range: { min: 15, max: 30 }
+    conversion: { type: none }
+    access_level: protected
+    group: tyres
+    sample_rate_hz: 10
+
+  - id: 320
+    name: tyre_wear_fl
+    description: "Front left tyre wear"
+    unit: "%"
+    data_type: F32
+    range: { min: 0, max: 100 }
+    conversion: { type: none }
+    access_level: protected
+    group: tyres
+    sample_rate_hz: 1
+
+  - id: 321
+    name: tyre_wear_fr
+    description: "Front right tyre wear"
+    unit: "%"
+    data_type: F32
+    range: { min: 0, max: 100 }
+    conversion: { type: none }
+    access_level: protected
+    group: tyres
+    sample_rate_hz: 1
+
+  - id: 322
+    name: tyre_wear_rl
+    description: "Rear left tyre wear"
+    unit: "%"
+    data_type: F32
+    range: { min: 0, max: 100 }
+    conversion: { type: none }
+    access_level: protected
+    group: tyres
+    sample_rate_hz: 1
+
+  - id: 323
+    name: tyre_wear_rr
+    description: "Rear right tyre wear"
+    unit: "%"
+    data_type: F32
+    range: { min: 0, max: 100 }
+    conversion: { type: none }
+    access_level: protected
+    group: tyres
+    sample_rate_hz: 1
+
+  # ============================================
+  # AERODYNAMICS (400-499)
+  # ============================================
+  - id: 400
+    name: drs_status
+    description: "DRS status (0=closed, 1=open)"
+    unit: ""
+    data_type: U8
+    range: { min: 0, max: 1 }
+    conversion: { type: none }
+    access_level: public
+    group: aero
+    sample_rate_hz: 50
+
+  - id: 401
+    name: drs_allowed
+    description: "DRS detection zone active"
+    unit: ""
+    data_type: U8
+    range: { min: 0, max: 1 }
+    conversion: { type: none }
+    access_level: public
+    group: aero
+    sample_rate_hz: 10
+
+  - id: 410
+    name: front_wing_angle
+    description: "Front wing flap angle"
+    unit: "°"
+    data_type: F32
+    range: { min: 0, max: 30 }
+    conversion: { type: none }
+    access_level: private
+    group: aero
+    sample_rate_hz: 10
+
+  - id: 411
+    name: rear_wing_angle
+    description: "Rear wing angle"
+    unit: "°"
+    data_type: F32
+    range: { min: 0, max: 30 }
+    conversion: { type: none }
+    access_level: private
+    group: aero
+    sample_rate_hz: 10
+
+  - id: 420
+    name: downforce_front
+    description: "Calculated front downforce"
+    unit: N
+    data_type: F32
+    range: { min: 0, max: 20000 }
+    conversion: { type: none }
+    access_level: confidential
+    group: aero
+    sample_rate_hz: 50
+
+  - id: 421
+    name: downforce_rear
+    description: "Calculated rear downforce"
+    unit: N
+    data_type: F32
+    range: { min: 0, max: 20000 }
+    conversion: { type: none }
+    access_level: confidential
+    group: aero
+    sample_rate_hz: 50
+
+  - id: 422
+    name: drag_coefficient
+    description: "Current drag coefficient"
+    unit: ""
+    data_type: F32
+    range: { min: 0.5, max: 1.5 }
+    conversion: { type: none }
+    access_level: confidential
+    group: aero
+    sample_rate_hz: 50
+
+  # ============================================
+  # ELECTRICAL / ERS (500-599)
+  # ============================================
+  - id: 500
+    name: ers_deploy_mode
+    description: "ERS deployment mode"
+    unit: ""
+    data_type: U8
+    range: { min: 0, max: 4 }
+    conversion: { type: none }
+    access_level: public
+    group: electrical
+    sample_rate_hz: 10
+
+  - id: 501
+    name: ers_harvest_mode
+    description: "ERS harvesting mode"
+    unit: ""
+    data_type: U8
+    range: { min: 0, max: 4 }
+    conversion: { type: none }
+    access_level: public
+    group: electrical
+    sample_rate_hz: 10
+
+  - id: 502
+    name: ers_store
+    description: "ERS energy store level"
+    unit: kJ
+    data_type: F32
+    range: { min: 0, max: 4000 }
+    conversion: { type: none }
+    access_level: public
+    group: electrical
+    sample_rate_hz: 10
+
+  - id: 503
+    name: mgu_k_power
+    description: "MGU-K power output"
+    unit: kW
+    data_type: F32
+    range: { min: -120, max: 120 }
+    conversion: { type: none }
+    access_level: protected
+    group: electrical
+    sample_rate_hz: 100
+
+  - id: 504
+    name: mgu_h_rpm
+    description: "MGU-H rotational speed"
+    unit: rpm
+    data_type: U32
+    range: { min: 0, max: 125000 }
+    conversion: { type: none }
+    access_level: protected
+    group: electrical
+    sample_rate_hz: 100
+
+  - id: 510
+    name: battery_temp
+    description: "Battery pack temperature"
+    unit: "°C"
+    data_type: F32
+    range: { min: 0, max: 80 }
+    conversion: { type: none }
+    access_level: protected
+    group: electrical
+    sample_rate_hz: 10
+
+  - id: 511
+    name: battery_voltage
+    description: "Battery voltage"
+    unit: V
+    data_type: F32
+    range: { min: 600, max: 1000 }
+    conversion: { type: none }
+    access_level: protected
+    group: electrical
+    sample_rate_hz: 10
+
+  # ============================================
+  # FUEL SYSTEM (600-699)
+  # ============================================
+  - id: 600
+    name: fuel_mass
+    description: "Remaining fuel mass"
+    unit: kg
+    data_type: F32
+    range: { min: 0, max: 110 }
+    conversion: { type: none }
+    access_level: public
+    group: fuel
+    sample_rate_hz: 10
+
+  - id: 601
+    name: fuel_flow
+    description: "Instantaneous fuel flow rate"
+    unit: kg/h
+    data_type: F32
+    range: { min: 0, max: 110 }
+    conversion: { type: none }
+    access_level: protected
+    group: fuel
+    sample_rate_hz: 100
+
+  - id: 602
+    name: fuel_consumption_lap
+    description: "Fuel consumed this lap"
+    unit: kg
+    data_type: F32
+    range: { min: 0, max: 5 }
+    conversion: { type: none }
+    access_level: protected
+    group: fuel
+    sample_rate_hz: 1
+
+  - id: 603
+    name: fuel_mix_setting
+    description: "Fuel mixture setting (1-10)"
+    unit: ""
+    data_type: U8
+    range: { min: 1, max: 10 }
+    conversion: { type: none }
+    access_level: public
+    group: fuel
+    sample_rate_hz: 10
+
+  # ============================================
+  # TIMING (700-799)
+  # ============================================
+  - id: 700
+    name: lap_number
+    description: "Current lap number"
+    unit: ""
+    data_type: U16
+    range: { min: 0, max: 999 }
+    conversion: { type: none }
+    access_level: public
+    group: timing
+    sample_rate_hz: 1
+
+  - id: 701
+    name: lap_time_current
+    description: "Current lap time"
+    unit: ms
+    data_type: U32
+    range: { min: 0, max: 600000 }
+    conversion: { type: none }
+    access_level: public
+    group: timing
+    sample_rate_hz: 10
+
+  - id: 702
+    name: lap_time_best
+    description: "Best lap time this session"
+    unit: ms
+    data_type: U32
+    range: { min: 0, max: 600000 }
+    conversion: { type: none }
+    access_level: public
+    group: timing
+    sample_rate_hz: 1
+
+  - id: 703
+    name: sector_1_time
+    description: "Sector 1 time"
+    unit: ms
+    data_type: U32
+    range: { min: 0, max: 200000 }
+    conversion: { type: none }
+    access_level: public
+    group: timing
+    sample_rate_hz: 1
+
+  - id: 704
+    name: sector_2_time
+    description: "Sector 2 time"
+    unit: ms
+    data_type: U32
+    range: { min: 0, max: 200000 }
+    conversion: { type: none }
+    access_level: public
+    group: timing
+    sample_rate_hz: 1
+
+  - id: 705
+    name: sector_3_time
+    description: "Sector 3 time"
+    unit: ms
+    data_type: U32
+    range: { min: 0, max: 200000 }
+    conversion: { type: none }
+    access_level: public
+    group: timing
+    sample_rate_hz: 1
+
+  - id: 710
+    name: speed_trap
+    description: "Speed trap reading"
+    unit: km/h
+    data_type: F32
+    range: { min: 0, max: 400 }
+    conversion: { type: none }
+    access_level: public
+    group: timing
+    sample_rate_hz: 1
+
+  - id: 720
+    name: position_x
+    description: "Car position X (world coordinates)"
+    unit: m
+    data_type: F32
+    range: { min: -10000, max: 10000 }
+    conversion: { type: none }
+    access_level: public
+    group: timing
+    sample_rate_hz: 50
+
+  - id: 721
+    name: position_y
+    description: "Car position Y (world coordinates)"
+    unit: m
+    data_type: F32
+    range: { min: -10000, max: 10000 }
+    conversion: { type: none }
+    access_level: public
+    group: timing
+    sample_rate_hz: 50
+
+  - id: 722
+    name: position_z
+    description: "Car position Z (elevation)"
+    unit: m
+    data_type: F32
+    range: { min: -100, max: 500 }
+    conversion: { type: none }
+    access_level: public
+    group: timing
+    sample_rate_hz: 50

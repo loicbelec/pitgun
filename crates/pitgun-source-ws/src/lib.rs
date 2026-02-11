@@ -1,3 +1,60 @@
+//! Pitgun WebSocket Telemetry Source
+//!
+//! This crate provides WebSocket telemetry sources for the Pitgun framework.
+//!
+//! # Source Implementations
+//!
+//! - **AsyncWsSource**: Async source implementing [`TelemetrySource`](pitgun_contract::TelemetrySource)
+//!   with auto-reconnect and JSON decoding
+//! - **WsSource**: Legacy synchronous source implementing the `Source` trait
+//!
+//! # Usage
+//!
+//! ## Async Source (Recommended)
+//!
+//! ```rust,ignore
+//! use pitgun_source_ws::{AsyncWsSource, WsSourceConfig};
+//! use pitgun_contract::TelemetrySource;
+//!
+//! #[tokio::main]
+//! async fn main() -> Result<(), Box<dyn std::error::Error>> {
+//!     let config = WsSourceConfig::new("ws://localhost:8080/telemetry")
+//!         .with_reconnect(true);
+//!
+//!     let mut source = AsyncWsSource::new(config);
+//!     source.start().await?;
+//!
+//!     let mut rx = source.subscribe();
+//!     while let Some(frame) = rx.recv().await {
+//!         println!("Frame: {} samples", frame.sample_count());
+//!     }
+//!     Ok(())
+//! }
+//! ```
+//!
+//! ## Legacy Sync Source
+//!
+//! ```rust,ignore
+//! use pitgun_source_ws::WsSource;
+//! use pitgun_core::Source;
+//!
+//! let mut source = WsSource::connect("ws://localhost:8080/telemetry")?;
+//! while let Some(batch) = source.next_batch() {
+//!     println!("Batch: {} events", batch.events.len());
+//! }
+//! ```
+
+// Async source (implements TelemetrySource)
+mod async_source;
+pub use async_source::{AsyncWsSource, WsSourceConfig};
+
+// Re-export contract types for convenience
+pub use pitgun_contract::{
+    SourceConfig, SourceError, SourceMetadata, SourceState, SourceStats, SourceType,
+    TelemetrySource,
+};
+
+// Legacy synchronous source
 use pitgun_codec_json::deserialize_session_envelope;
 use pitgun_core::{EventBatch, Source};
 use std::collections::VecDeque;

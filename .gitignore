@@ -24,3 +24,6 @@ docs/.notes/*
 
 # Temp files
 /tmp/
+
+# Infra-only compose (kept in dedicated infra repo)
+docker-compose.prod.yml

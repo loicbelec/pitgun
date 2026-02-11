@@ -1,0 +1,27 @@
+[Unit]
+Description=Pitgun gateway service
+After=network.target
+ConditionPathExists=/opt/pitgun/pitgun/target/release/pitgun-gateway
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/pitgun/pitgun
+ExecStart=/opt/pitgun/pitgun/target/release/pitgun-gateway
+Restart=on-failure
+RestartSec=2s
+# Adjust the runtime user to match your deployment.
+User=pitgun
+Group=pitgun
+Environment=PITGUN_GATEWAY_BIND=127.0.0.1:8080
+Environment=PITGUN_GATEWAY_DB_PATH=/opt/pitgun/telemetry/data/events.db
+Environment=PITGUN_GATEWAY_API_KEY=change-me
+# Example logging level (uses tracing-subscriber env filter)
+Environment=RUST_LOG=info
+
+[Install]
+WantedBy=multi-user.target
+
+# Notes:
+# - TLS is terminated by Caddy; keep PITGUN_GATEWAY_BIND on localhost.
+# - Ensure /opt/pitgun/telemetry/data is writable by the service user.
+# - Repo is expected at /opt/pitgun/pitgun with release binary in target/release/.

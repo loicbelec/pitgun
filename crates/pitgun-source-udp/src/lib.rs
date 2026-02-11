@@ -1,3 +1,64 @@
+//! Pitgun UDP Telemetry Source
+//!
+//! This crate provides UDP telemetry sources for the Pitgun framework.
+//!
+//! # Source Implementations
+//!
+//! - **AsyncUdpSource**: Async source implementing [`TelemetrySource`](pitgun_contract::TelemetrySource)
+//!   with multi-codec support (ECUBridge, F1, PitgunV1)
+//! - **UdpSource**: Legacy synchronous source implementing the `Source` trait
+//!
+//! # Usage
+//!
+//! ## Async Source (Recommended)
+//!
+//! ```rust,ignore
+//! use pitgun_source_udp::{AsyncUdpSource, UdpSourceConfig, UdpCodecType};
+//! use pitgun_contract::TelemetrySource;
+//!
+//! #[tokio::main]
+//! async fn main() -> Result<(), Box<dyn std::error::Error>> {
+//!     let config = UdpSourceConfig::parse("0.0.0.0:20777")?
+//!         .with_codec(UdpCodecType::F1);
+//!
+//!     let mut source = AsyncUdpSource::new(config);
+//!     source.start().await?;
+//!
+//!     let mut rx = source.subscribe();
+//!     while let Some(frame) = rx.recv().await {
+//!         println!("Frame: {} samples", frame.sample_count());
+//!     }
+//!     Ok(())
+//! }
+//! ```
+//!
+//! ## Legacy Sync Source
+//!
+//! ```rust,ignore
+//! use pitgun_source_udp::{UdpSource, UdpWireFormat};
+//! use pitgun_core::Source;
+//!
+//! let source = UdpSource::new(
+//!     "0.0.0.0:9999".parse()?,
+//!     None, // no multicast
+//!     "0.0.0.0".parse()?,
+//!     100,  // batch size
+//!     1_000_000, // batch timeout ns
+//!     UdpWireFormat::PitgunV1,
+//! )?;
+//! ```
+
+// Async source (implements TelemetrySource)
+mod async_source;
+pub use async_source::{AsyncUdpSource, UdpCodecType, UdpSourceConfig};
+
+// Re-export contract types for convenience
+pub use pitgun_contract::{
+    SourceConfig, SourceError, SourceMetadata, SourceState, SourceStats, SourceType,
+    TelemetrySource,
+};
+
+// Legacy synchronous source
 use pitgun_codec_udp::{UdpDecoded, UdpDecoder};
 use pitgun_core::{Event, EventBatch, Source};
 use std::collections::VecDeque;

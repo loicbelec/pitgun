@@ -1,0 +1,9 @@
+.git
+.github
+target
+**/target
+.venv
+.vscode
+.DS_Store
+node_modules
+**/node_modules

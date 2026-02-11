@@ -1,0 +1,96 @@
+services:
+  # NOTE:
+  # - This is the canonical compose file for local development in this repository.
+  # - Run with: docker compose -f docker-compose.dev.yml up -d
+  # - If you use a dedicated infra repo, production compose should live there as source of truth.
+  # - In infra/prod, prefer immutable image digests (ghcr.io/...@sha256:...).
+
+  # ==========================================
+  # GATEWAY - Traffic Entrypoint
+  # ==========================================
+  pitgun-gateway:
+    image: "${PITGUN_GATEWAY_IMAGE:-pitgun-gateway:local}"
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        BIN_NAME: pitgun-gateway
+    container_name: pitgun-gateway
+    # User ID matching host helps with volume permissions
+    user: "${PUID:-1001}:${PGID:-1001}"
+    environment:
+      PITGUN_GATEWAY_BIND: "0.0.0.0:8080"
+      PITGUN_GATEWAY_ALLOW_NON_LOOPBACK: "1"
+      PITGUN_GATEWAY_DB_PATH: "/data/events.db"
+      PITGUN_GATEWAY_API_KEY: "${PITGUN_GATEWAY_API_KEY:-}"
+      RUST_LOG: "${RUST_LOG:-info}"
+    volumes:
+      - ./volumes/gateway/data:/data
+
+    # Debug only - In prod, traffic goes through Traefik
+    ports:
+      - "127.0.0.1:8080:8080"
+
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=web"
+
+      # HTTPS router (WSS/HTTP)
+      - "traefik.http.routers.gateway.rule=Host(`gateway.${DOMAIN:-example.com}`)"
+      - "traefik.http.routers.gateway.entrypoints=websecure"
+      - "traefik.http.routers.gateway.tls=true"
+      - "traefik.http.routers.gateway.tls.certresolver=le"
+
+      # HTTP router -> redirect HTTPS
+      - "traefik.http.routers.gateway-http.rule=Host(`gateway.${DOMAIN:-example.com}`)"
+      - "traefik.http.routers.gateway-http.entrypoints=web"
+      - "traefik.http.routers.gateway-http.middlewares=https-redirect"
+      
+      # Middleware redirect HTTPS generic
+      - "traefik.http.middlewares.https-redirect.redirectscheme.scheme=https"
+
+      # Service -> port interne
+      - "traefik.http.services.gateway.loadbalancer.server.port=8080"
+    networks:
+      - web
+    restart: unless-stopped
+
+  # ==========================================
+  # AUTHORITY - Policy & Signing
+  # ==========================================
+  pitgun-authority:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        BIN_NAME: pitgun-authority
+    container_name: pitgun-authority
+    user: "${PUID:-1001}:${PGID:-1001}"
+    environment:
+      PITGUN_AUTHORITY_BIND: "0.0.0.0:8081"
+      PITGUN_SIGNING_SECRET: "${PITGUN_SIGNING_SECRET:-change_me_in_prod}"
+      RUST_LOG: "${RUST_LOG:-info}"
+    
+    # Internal port for debug
+    ports:
+      - "127.0.0.1:8081:8081"
+
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=web"
+
+      # HTTPS router
+      - "traefik.http.routers.authority.rule=Host(`config.${DOMAIN:-example.com}`)"
+      - "traefik.http.routers.authority.entrypoints=websecure"
+      - "traefik.http.routers.authority.tls=true"
+      - "traefik.http.routers.authority.tls.certresolver=le"
+
+      # Service -> port interne
+      - "traefik.http.services.authority.loadbalancer.server.port=8081"
+    networks:
+      - web
+    restart: unless-stopped
+
+networks:
+  web:
+    external: true

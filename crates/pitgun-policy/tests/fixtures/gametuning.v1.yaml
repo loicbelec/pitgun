@@ -1,0 +1,59 @@
+version: tuning.v1
+
+meta:
+  description: "Pitgun tuning policy V1 (gameplay subset)."
+  determinism:
+    numeric: fixed_q16_16
+    tick_hz: 60
+  signing:
+    contract_type: SimulationContractV1
+    fields_to_sign: [version, parameters, derived_constraints]
+
+parameters:
+  gameplay:
+    aero_points:
+      type: float
+      unit: points
+      range: { min: 0.0, max: 100.0, step: 1.0 }
+      default: 0.0
+      unlock: "era >= 1"
+
+    chassis_points:
+      type: float
+      unit: points
+      range: { min: 0.0, max: 100.0, step: 1.0 }
+      default: 0.0
+      unlock: "era >= 1"
+
+    cooling_points:
+      type: float
+      unit: points
+      range: { min: 0.0, max: 100.0, step: 1.0 }
+      default: 0.0
+      unlock: "era >= 1"
+
+    engine_points:
+      type: float
+      unit: points
+      range: { min: 0.0, max: 100.0, step: 1.0 }
+      default: 0.0
+      unlock: "era >= 1"
+
+    downforce_slider:
+      type: float
+      unit: ratio
+      range: { min: 0.0, max: 1.0, step: 0.01 }
+      default: 0.5
+      unlock: "era >= 1"
+
+    gear_ratio_slider:
+      type: float
+      unit: ratio
+      range: { min: 0.0, max: 1.0, step: 0.01 }
+      default: 0.5
+      unlock: "era >= 1"
+
+derived_constraints:
+  - name: gameplay_budget_cap
+    rule: "parameters.gameplay.aero_points + parameters.gameplay.chassis_points + parameters.gameplay.cooling_points + parameters.gameplay.engine_points <= budget_lvl"
+    error_msg: "Gameplay setup exceeds available budget."

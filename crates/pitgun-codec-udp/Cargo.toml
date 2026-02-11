@@ -3,6 +3,8 @@ name = "pitgun-codec-udp"
 version = "0.1.0"
 edition = "2024"
 license = "MIT"
+description = "UDP telemetry codecs for Pitgun (ECUBridge, F1, PitgunV1)"
 
 [dependencies]
 pitgun-core = { path = "../pitgun-core" }
+pitgun-contract = { path = "../pitgun-contract" }

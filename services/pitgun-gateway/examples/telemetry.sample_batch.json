@@ -1,0 +1,51 @@
+{
+  "schema_version": "pitgun-envelope-v1",
+  "event_id": "95d81f5b-edbc-440c-bdf8-1fdbf6496a8d",
+  "ts": "2026-02-11T09:00:01Z",
+  "player_id": "player-123",
+  "session_id": "session-abc",
+  "event_type": "telemetry.sample_batch",
+  "payload": {
+    "frames": [
+      {
+        "session_id": 4242,
+        "sequence": 1,
+        "timestamp_us": 1760000001000000,
+        "received_at_us": 1760000001000500,
+        "source_id": "pitgun-game-loop",
+        "samples": [
+          {
+            "parameter_id": 1,
+            "value": {
+              "type": "F32",
+              "value": 312.7
+            },
+            "quality": "good"
+          },
+          {
+            "parameter_id": 2,
+            "value": {
+              "type": "U16",
+              "value": 13654
+            },
+            "quality": "good"
+          }
+        ],
+        "events": [
+          {
+            "event_id": 7,
+            "name": "drs_open",
+            "severity": "info",
+            "data": true
+          }
+        ],
+        "lap_number": 4,
+        "sector": 2,
+        "lap_distance_m": 3821.4,
+        "metadata": {
+          "unit_system": "metric"
+        }
+      }
+    ]
+  }
+}

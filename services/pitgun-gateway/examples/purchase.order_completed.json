@@ -1,0 +1,31 @@
+{
+  "schema_version": "pitgun-envelope-v1",
+  "event_id": "a09d9d2f-d34a-4c20-8e7b-4d4e2a2de5e2",
+  "ts": "2026-02-11T09:10:00Z",
+  "player_id": "player-123",
+  "session_id": "session-abc",
+  "event_type": "purchase.order_completed",
+  "payload": {
+    "order_id": "ord-20260211-00042",
+    "currency": "USD",
+    "subtotal": 7800.0,
+    "total": 7800.0,
+    "tax": 0.0,
+    "discount": 0.0,
+    "line_items": [
+      {
+        "upgrade_id": "aero_wing_lv2",
+        "quantity": 1,
+        "unit_price": 5000.0,
+        "line_total": 5000.0
+      },
+      {
+        "upgrade_id": "cooling_pack_lv1",
+        "quantity": 1,
+        "unit_price": 2800.0,
+        "line_total": 2800.0
+      }
+    ],
+    "purchased_at": "2026-02-11T09:09:58Z"
+  }
+}

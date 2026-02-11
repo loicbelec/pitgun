@@ -1,0 +1,14 @@
+[package]
+name = "pitgun-replay"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+
+[dependencies]
+anyhow = "1"
+serde = { version = "1", features = ["derive"] }
+clap = { version = "4", features = ["derive"] }
+csv = "1"
+pitgun-codec-udp = { path = "../../crates/pitgun-codec-udp" }
+socket2 = "0.5"
+time = { version = "0.3", features = ["parsing", "formatting"] }

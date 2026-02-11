@@ -1,3 +1,47 @@
+//! Pitgun UDP Codecs
+//!
+//! This crate provides UDP telemetry codecs for various protocols:
+//!
+//! - **ECUBridge**: McLaren-inspired binary protocol for high-throughput telemetry
+//! - **F1 UDP**: F1 telemetry format (real F1 protocol)
+//! - **PitgunV1**: Legacy simple telemetry format
+//!
+//! # Protocol Support
+//!
+//! All codecs implement the [`TelemetryCodec`](pitgun_contract::TelemetryCodec) trait
+//! from `pitgun-contract`, providing a unified interface for encoding and decoding.
+//!
+//! # Example
+//!
+//! ```rust,ignore
+//! use pitgun_codec_udp::{EcuBridgeCodec, F1UdpCodec};
+//! use pitgun_contract::{TelemetryCodec, CodecContext};
+//!
+//! // Decode ECUBridge packets
+//! let ecu_codec = EcuBridgeCodec::new();
+//! let ctx = CodecContext::new(1, "ecu-source");
+//! let frame = ecu_codec.decode(&packet_data, &ctx)?;
+//!
+//! // Decode F1 game packets
+//! let f1_codec = F1UdpCodec::new();
+//! let frame = f1_codec.decode(&packet_data, &ctx)?;
+//! ```
+
+// Protocol-specific codecs
+mod ecubridge;
+mod f1;
+
+// Re-export codec implementations
+pub use ecubridge::{
+    DataTypeCode, EcuBridgeCodec, EcuBridgePacketBuilder, PacketFlags, PacketHeader,
+    ECUBRIDGE_MAGIC, ECUBRIDGE_MIN_SIZE, ECUBRIDGE_PACKET_SIZE,
+};
+pub use f1::{
+    param_ids as f1_params, F1Header, F1PacketType, F1UdpCodec, F1_HEADER_SIZE,
+    F1_MIN_PACKET_SIZE,
+};
+
+// Legacy codec support
 use pitgun_core::{Event, EventBatch};
 use std::io;
 
