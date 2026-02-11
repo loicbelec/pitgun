@@ -5,27 +5,16 @@ edition = "2024"
 authors.workspace = true
 license.workspace = true
 
-[features]
-default = []
-protobuf = ["prost"]
-
 [dependencies]
 anyhow = "1"
-async-trait = "0.1"
 axum = { version = "0.7", features = ["ws"] }
-pitgun-codec-json = { path = "../../crates/pitgun-codec-json" }
-pitgun-core = { path = "../../crates/pitgun-core" }
+pitgun-contract = { path = "../../crates/pitgun-contract" }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-time = { version = "0.3", features = ["formatting", "macros"] }
-tokio = { version = "1", features = ["macros", "rt-multi-thread", "signal", "fs", "net"] }
+sqlx = { version = "0.8", default-features = false, features = ["runtime-tokio-rustls", "sqlite", "time", "uuid", "json"] }
+thiserror = "1"
+time = { version = "0.3", features = ["formatting", "macros", "parsing", "serde"] }
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "signal", "net", "sync"] }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt"] }
-
-# Protobuf ingestion (optional)
-prost = { version = "0.12", optional = true }
-thiserror = "1"
-
-[build-dependencies]
-prost-build = "0.12"
-protoc-bin-vendored = "3"
+uuid = { version = "1", features = ["serde", "v4"] }

@@ -81,6 +81,14 @@ pipeline:
 cargo run -p pitgun-gateway --release
 ```
 
+### 2b. Start Services with Docker Compose (Dev)
+```bash
+docker compose -f docker-compose.dev.yml up -d
+```
+
+Production compose is maintained in the dedicated infra repository; this repo ignores
+`docker-compose.prod.yml`.
+
 ### 3. Inject Data (Replay)
 Simulate a stream of data using the replay tool:
 ```bash

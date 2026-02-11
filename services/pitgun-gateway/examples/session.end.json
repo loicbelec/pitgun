@@ -1,0 +1,17 @@
+{
+  "schema_version": "pitgun-envelope-v1",
+  "event_id": "18867f99-91c2-4c98-b7de-d4f3ec42d877",
+  "ts": "2026-02-11T09:25:00Z",
+  "player_id": "player-123",
+  "session_id": "session-abc",
+  "event_type": "session.end",
+  "payload": {
+    "reason": "user_exit",
+    "duration_ms": 1500000,
+    "laps_completed": 12,
+    "best_lap_ms": 81234,
+    "metadata": {
+      "result": "finished"
+    }
+  }
+}

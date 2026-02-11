@@ -1,0 +1,17 @@
+{
+  "schema_version": "pitgun-envelope-v1",
+  "event_id": "2fbaaf96-cf57-4f65-a6bc-fcef12f20d20",
+  "ts": "2026-02-11T09:00:00Z",
+  "player_id": "player-123",
+  "session_id": "session-abc",
+  "event_type": "session.start",
+  "payload": {
+    "game_version": "1.4.0",
+    "source_id": "pitgun-game-client",
+    "track_id": "monza",
+    "metadata": {
+      "platform": "web",
+      "build": "f98b6a1"
+    }
+  }
+}

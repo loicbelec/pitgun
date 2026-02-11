@@ -1,8 +1,15 @@
 services:
+  # NOTE:
+  # - This is the canonical compose file for local development in this repository.
+  # - Run with: docker compose -f docker-compose.dev.yml up -d
+  # - If you use a dedicated infra repo, production compose should live there as source of truth.
+  # - In infra/prod, prefer immutable image digests (ghcr.io/...@sha256:...).
+
   # ==========================================
   # GATEWAY - Traffic Entrypoint
   # ==========================================
   pitgun-gateway:
+    image: "${PITGUN_GATEWAY_IMAGE:-pitgun-gateway:local}"
     build:
       context: .
       dockerfile: Dockerfile
@@ -14,7 +21,8 @@ services:
     environment:
       PITGUN_GATEWAY_BIND: "0.0.0.0:8080"
       PITGUN_GATEWAY_ALLOW_NON_LOOPBACK: "1"
-      PITGUN_GATEWAY_DATA_DIR: "/data"
+      PITGUN_GATEWAY_DB_PATH: "/data/events.db"
+      PITGUN_GATEWAY_API_KEY: "${PITGUN_GATEWAY_API_KEY:-}"
       RUST_LOG: "${RUST_LOG:-info}"
     volumes:
       - ./volumes/gateway/data:/data

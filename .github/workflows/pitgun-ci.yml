@@ -1,4 +1,4 @@
-name: CI
+name: pitgun-ci
 
 on:
   pull_request:
