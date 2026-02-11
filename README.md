@@ -105,6 +105,14 @@ cargo run -p pitgun-replay -- \
 - [docs/WIRE_FORMATS.md](docs/WIRE_FORMATS.md) - Wire protocol specifications.
 - [policies/gametuning.v1.yaml](policies/gametuning.v1.yaml) - Example of Governance Policy.
 
+## ✅ Local CI Before Commit
+
+Run the same checks as `pitgun-ci` locally before pushing:
+
+```bash
+./scripts/pre-commit-checks.sh
+```
+
 ## 🔮 Roadmap
 
 - **WASM Solver:** Complete the Monte Carlo implementation for the Solver.

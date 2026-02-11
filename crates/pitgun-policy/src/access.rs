@@ -37,23 +37,18 @@ use std::sync::Arc;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 /// Access level for telemetry parameters
-#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum AccessLevel {
     /// Available to all users, no authentication required
     Public = 0,
     /// Requires valid authentication token
+    #[default]
     Protected = 1,
     /// Requires specific role or team membership
     Private = 2,
     /// Requires explicit permission grant
     Confidential = 3,
-}
-
-impl Default for AccessLevel {
-    fn default() -> Self {
-        Self::Protected
-    }
 }
 
 impl AccessLevel {
