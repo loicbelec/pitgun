@@ -48,7 +48,7 @@ A security layer ensuring that data and configurations are authentic and tamper-
 |-------|------|-------------|
 | **pitgun-core** | **The Brain** | AST Formula Engine, Pipeline logic, Manifest parsing. |
 | **pitgun-contract** | **The Law** | Shared types (`TelemetryFrame`), IDL, and protocols. |
-| **pitgun-engine-f1** | **Ref. Impl** | A deterministic Physics Engine (Data Plane) for F1 simulation. |
+| **pitgun-simulator** | **Ref. Impl** | A deterministic, WASM-first simulator (Data Plane) for multi-vehicle lap simulation. |
 | **pitgun-solver** | **Control Plane** | Strategy & Risk optimization logic skeleton. |
 
 ### Infrastructure
