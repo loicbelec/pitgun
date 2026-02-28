@@ -4,7 +4,7 @@ use std::collections::HashMap;
 use std::path::Path;
 
 use serde::Deserialize;
-use serde::de::DeserializeOwned;
+use serde_json::Value;
 
 use crate::errors::SimulatorError;
 use crate::models::{
@@ -14,46 +14,76 @@ use crate::models::{
 use crate::profiles::{CompetitorProfile, DrivingStyle, EngineMode};
 use crate::provider::InMemoryConfigProvider;
 
+const DEFAULT_PIT_LOSS_MS: u64 = 22_000;
 const SCHEMA_VERSION: u32 = 1;
-const TRACK_SAMPLE_POINTS: usize = 420;
-
-const EMBEDDED_FILES: &[(&str, &str)] = &[
-    ("aero/none.json", include_str!("../data/aero/none.json")),
-    ("aero/basic.json", include_str!("../data/aero/basic.json")),
-    ("aero/active.json", include_str!("../data/aero/active.json")),
-    ("chassis/default.json", include_str!("../data/chassis/default.json")),
-    ("chassis/f1_2026.json", include_str!("../data/chassis/f1_2026.json")),
-    ("circuits/default.json", include_str!("../data/circuits/default.json")),
-    ("circuits/monaco.json", include_str!("../data/circuits/monaco.json")),
-    ("circuits/monza.json", include_str!("../data/circuits/monza.json")),
-    ("circuits/spa.json", include_str!("../data/circuits/spa.json")),
-    ("circuits/suzuka.json", include_str!("../data/circuits/suzuka.json")),
-    ("drivers/aggressive.json", include_str!("../data/drivers/aggressive.json")),
-    ("drivers/balanced.json", include_str!("../data/drivers/balanced.json")),
-    ("drivers/conservative.json", include_str!("../data/drivers/conservative.json")),
-    ("engines/v6t.json", include_str!("../data/engines/v6t.json")),
+const EMBEDDED_FILES: &[(&str, &[u8])] = &[
+    ("aero/active.json", include_bytes!("../data/aero/active.json")),
+    ("aero/basic.json", include_bytes!("../data/aero/basic.json")),
+    ("aero/none.json", include_bytes!("../data/aero/none.json")),
+    ("chassis/default.json", include_bytes!("../data/chassis/default.json")),
+    ("chassis/f1_2026.json", include_bytes!("../data/chassis/f1_2026.json")),
+    ("circuits/austin.json", include_bytes!("../data/circuits/austin.json")),
+    ("circuits/baku.json", include_bytes!("../data/circuits/baku.json")),
+    ("circuits/barcelona.json", include_bytes!("../data/circuits/barcelona.json")),
+    ("circuits/budapest.json", include_bytes!("../data/circuits/budapest.json")),
+    ("circuits/default.json", include_bytes!("../data/circuits/default.json")),
+    ("circuits/jeddah.json", include_bytes!("../data/circuits/jeddah.json")),
+    ("circuits/las_vegas.json", include_bytes!("../data/circuits/las_vegas.json")),
+    ("circuits/lusail.json", include_bytes!("../data/circuits/lusail.json")),
+    ("circuits/madrid.json", include_bytes!("../data/circuits/madrid.json")),
+    ("circuits/melbourne.json", include_bytes!("../data/circuits/melbourne.json")),
+    ("circuits/mexico.json", include_bytes!("../data/circuits/mexico.json")),
+    ("circuits/miami.json", include_bytes!("../data/circuits/miami.json")),
+    ("circuits/monaco.json", include_bytes!("../data/circuits/monaco.json")),
+    ("circuits/montreal.json", include_bytes!("../data/circuits/montreal.json")),
+    ("circuits/monza.json", include_bytes!("../data/circuits/monza.json")),
+    ("circuits/sakhir.json", include_bytes!("../data/circuits/sakhir.json")),
+    ("circuits/sao_paulo.json", include_bytes!("../data/circuits/sao_paulo.json")),
+    ("circuits/shanghai.json", include_bytes!("../data/circuits/shanghai.json")),
+    ("circuits/silverstone.json", include_bytes!("../data/circuits/silverstone.json")),
+    ("circuits/singapore.json", include_bytes!("../data/circuits/singapore.json")),
+    ("circuits/spa.json", include_bytes!("../data/circuits/spa.json")),
+    ("circuits/spielberg.json", include_bytes!("../data/circuits/spielberg.json")),
+    ("circuits/suzuka.json", include_bytes!("../data/circuits/suzuka.json")),
+    ("circuits/yas_marina.json", include_bytes!("../data/circuits/yas_marina.json")),
+    ("circuits/zandvoort.json", include_bytes!("../data/circuits/zandvoort.json")),
+    ("drivers/aggressive.json", include_bytes!("../data/drivers/aggressive.json")),
+    ("drivers/balanced.json", include_bytes!("../data/drivers/balanced.json")),
+    ("drivers/battery_voltas.json", include_bytes!("../data/drivers/battery_voltas.json")),
     (
-        "engines/v6t_hybrid.json",
-        include_str!("../data/engines/v6t_hybrid.json"),
+        "drivers/charles_leclair.json",
+        include_bytes!("../data/drivers/charles_leclair.json"),
     ),
-    ("engines/v8_1960.json", include_str!("../data/engines/v8_1960.json")),
-    ("engines/v8_1970.json", include_str!("../data/engines/v8_1970.json")),
-    ("tires/hard.json", include_str!("../data/tires/hard.json")),
-    ("tires/medium.json", include_str!("../data/tires/medium.json")),
-    ("tires/soft.json", include_str!("../data/tires/soft.json")),
+    ("drivers/conservative.json", include_bytes!("../data/drivers/conservative.json")),
+    (
+        "drivers/daniel_enchantier.json",
+        include_bytes!("../data/drivers/daniel_enchantier.json"),
+    ),
+    ("drivers/default.json", include_bytes!("../data/drivers/default.json")),
+    ("drivers/franz_hermann.json", include_bytes!("../data/drivers/franz_hermann.json")),
+    ("drivers/goat_tifi.json", include_bytes!("../data/drivers/goat_tifi.json")),
+    ("drivers/isa_kadjar.json", include_bytes!("../data/drivers/isa_kadjar.json")),
+    ("drivers/luis_amilton.json", include_bytes!("../data/drivers/luis_amilton.json")),
+    ("drivers/pedro_gaseoso.json", include_bytes!("../data/drivers/pedro_gaseoso.json")),
+    ("drivers/smooth_operator.json", include_bytes!("../data/drivers/smooth_operator.json")),
+    ("engines/v6t.json", include_bytes!("../data/engines/v6t.json")),
+    ("engines/v6t_hybrid.json", include_bytes!("../data/engines/v6t_hybrid.json")),
+    ("engines/v8_1960.json", include_bytes!("../data/engines/v8_1960.json")),
+    ("engines/v8_1970.json", include_bytes!("../data/engines/v8_1970.json")),
+    ("tires/hard.json", include_bytes!("../data/tires/hard.json")),
+    ("tires/medium.json", include_bytes!("../data/tires/medium.json")),
+    ("tires/soft.json", include_bytes!("../data/tires/soft.json")),
     (
         "vehicles/classic_v8_1960.json",
-        include_str!("../data/vehicles/classic_v8_1960.json"),
+        include_bytes!("../data/vehicles/classic_v8_1960.json"),
     ),
     (
         "vehicles/classic_v8_1970.json",
-        include_str!("../data/vehicles/classic_v8_1970.json"),
+        include_bytes!("../data/vehicles/classic_v8_1970.json"),
     ),
-    ("vehicles/f1_2026.json", include_str!("../data/vehicles/f1_2026.json")),
-    (
-        "vehicles/modern_v6t.json",
-        include_str!("../data/vehicles/modern_v6t.json"),
-    ),
+    ("vehicles/default.json", include_bytes!("../data/vehicles/default.json")),
+    ("vehicles/f1_2026.json", include_bytes!("../data/vehicles/f1_2026.json")),
+    ("vehicles/modern_v6t.json", include_bytes!("../data/vehicles/modern_v6t.json")),
 ];
 
 #[derive(Debug, Clone, Default)]
@@ -70,8 +100,8 @@ pub struct DataRegistry {
 impl DataRegistry {
     pub fn load_default() -> Result<Self, SimulatorError> {
         let mut registry = Self::default();
-        for (path, raw) in EMBEDDED_FILES {
-            registry.apply_file(path, raw.as_bytes(), false)?;
+        for (path, contents) in embedded_files()? {
+            registry.apply_file(&path, contents, false)?;
         }
         registry.validate()?;
         Ok(registry)
@@ -207,112 +237,32 @@ impl DataRegistry {
         raw: &[u8],
         allow_override: bool,
     ) -> Result<(), SimulatorError> {
-        let mut parts = relative_path.split('/');
-        let Some(category) = parts.next() else {
-            return Err(SimulatorError::Parse(format!(
-                "invalid data pack path '{relative_path}'"
-            )));
-        };
+        let (category, file_name) = relative_path.split_once('/').ok_or_else(|| {
+            SimulatorError::Parse(format!("invalid data pack path '{relative_path}'"))
+        })?;
+
+        if !file_name.ends_with(".json") {
+            return Ok(());
+        }
 
         let raw_str = std::str::from_utf8(raw).map_err(|err| {
             SimulatorError::Parse(format!("invalid UTF-8 in '{relative_path}': {err}"))
         })?;
+        let value: Value = serde_json::from_str(raw_str).map_err(|err| {
+            SimulatorError::Parse(format!("failed to parse '{relative_path}': {err}"))
+        })?;
+
+        let stem = file_name.trim_end_matches(".json");
 
         match category {
-            "aero" => {
-                let data = parse_json::<AeroData>("aero", relative_path, raw_str)?;
-                ensure_schema("aero", &data.id, data.schema_version)?;
-                self.insert_aero(
-                    AeroConfig {
-                        id: data.id,
-                        cd_a_straight: data.cd_a_straight,
-                        cd_a_corner: data.cd_a_corner,
-                        cl_a_straight: data.cl_a_straight,
-                        cl_a_corner: data.cl_a_corner,
-                    },
-                    allow_override,
-                )
-            }
-            "chassis" => {
-                let data = parse_json::<ChassisData>("chassis", relative_path, raw_str)?;
-                ensure_schema("chassis", &data.id, data.schema_version)?;
-                self.insert_chassis(
-                    ChassisConfig {
-                        id: data.id,
-                        mass_empty_kg: data.mass_empty_kg,
-                        wheel_radius_m: data.wheel_radius_m,
-                        mu0: data.mu0,
-                        rolling_resistance: data.rolling_resistance,
-                        air_density: data.air_density,
-                        gravity: data.gravity,
-                    },
-                    allow_override,
-                )
-            }
-            "engines" => {
-                let data = parse_json::<EngineData>("engine", relative_path, raw_str)?;
-                ensure_schema("engine", &data.id, data.schema_version)?;
-                self.insert_engine(build_engine(data), allow_override)
-            }
-            "tires" => {
-                let data = parse_json::<TireData>("tire", relative_path, raw_str)?;
-                ensure_schema("tire", &data.id, data.schema_version)?;
-                self.insert_tire(
-                    TireConfig {
-                        id: data.id,
-                        mu_scale: data.mu_scale,
-                        wear_per_s: data.wear_per_s,
-                        wear_load_k: data.wear_load_k,
-                        wear_grip_k: data.wear_grip_k,
-                        wear_min: data.wear_min,
-                        temp_opt_c: data.temp_opt_c,
-                        temp_sigma_c: data.temp_sigma_c,
-                        temp_min_k: data.temp_min_k,
-                        heat_k: data.heat_k,
-                        cool_k: data.cool_k,
-                    },
-                    allow_override,
-                )
-            }
-            "circuits" => {
-                let data = parse_json::<CircuitData>("track", relative_path, raw_str)?;
-                ensure_schema("track", &data.id, data.schema_version)?;
-                self.insert_track(build_track(data), allow_override)
-            }
-            "vehicles" => {
-                let data = parse_json::<VehicleData>("vehicle", relative_path, raw_str)?;
-                ensure_schema("vehicle", &data.id, data.schema_version)?;
-                self.insert_vehicle(
-                    VehicleConfig {
-                        id: data.id,
-                        aero_id: data.aero_id,
-                        chassis_id: data.chassis_id,
-                        engine_id: data.engine_id,
-                        tire_id: data.tire_id,
-                    },
-                    allow_override,
-                )
-            }
-            "drivers" => {
-                let data = parse_json::<DriverData>("profile", relative_path, raw_str)?;
-                ensure_schema("profile", &data.id, data.schema_version)?;
-                self.insert_profile(
-                    CompetitorProfile {
-                        id: data.id,
-                        display_name: data.display_name,
-                        style: data.style,
-                        engine_mode: data.engine_mode,
-                        tire_id: data.tire_id,
-                        downforce_bias: data.downforce_bias,
-                        gear_ratio_bias: data.gear_ratio_bias,
-                        pace_variance_ms: data.pace_variance_ms,
-                    },
-                    allow_override,
-                )
-            }
-            _ => Err(SimulatorError::Parse(format!(
-                "unknown data pack category '{category}'"
-            ))),
+            "aero" => self.insert_aero(parse_aero_value(stem, &value)?, allow_override),
+            "chassis" => self.insert_chassis(parse_chassis_value(stem, &value)?, allow_override),
+            "engines" => self.insert_engine(parse_engine_value(stem, &value)?, allow_override),
+            "tires" => self.insert_tire(parse_tire_value(stem, &value)?, allow_override),
+            "circuits" => self.insert_track(parse_track_value(stem, &value)?, allow_override),
+            "vehicles" => self.insert_vehicle(parse_vehicle_value(stem, &value)?, allow_override),
+            "drivers" => self.insert_profile(parse_profile_value(stem, &value)?, allow_override),
+            _ => Ok(()),
         }
     }
 
@@ -397,9 +347,9 @@ impl DataRegistry {
             if !dir.exists() {
                 continue;
             }
+
             let entries = std::fs::read_dir(&dir)
                 .map_err(|err| SimulatorError::Io(format!("{}: {err}", dir.display())))?;
-
             let mut paths = entries
                 .map(|entry| {
                     entry
@@ -429,23 +379,422 @@ impl DataRegistry {
     }
 }
 
-fn parse_json<T: DeserializeOwned>(kind: &str, path: &str, raw: &str) -> Result<T, SimulatorError> {
-    serde_json::from_str(raw).map_err(|err| {
-        SimulatorError::Parse(format!("failed to parse {kind} file '{path}': {err}"))
+fn embedded_files() -> Result<Vec<(String, &'static [u8])>, SimulatorError> {
+    Ok(EMBEDDED_FILES
+        .iter()
+        .map(|(path, bytes)| ((*path).to_string(), *bytes))
+        .collect())
+}
+
+fn parse_aero_value(file_stem: &str, value: &Value) -> Result<AeroConfig, SimulatorError> {
+    let id = parsed_id(file_stem, value, false)?;
+    let config = AeroConfig {
+        id,
+        cd_a_straight: read_required_f64(value, &["cd_a_straight", "cdA_x"])?,
+        cd_a_corner: read_required_f64(value, &["cd_a_corner", "cdA_z"])?,
+        cl_a_straight: read_required_f64(value, &["cl_a_straight", "clA_x"])?,
+        cl_a_corner: read_required_f64(value, &["cl_a_corner", "clA_z"])?,
+    };
+    config.validate()?;
+    Ok(config)
+}
+
+fn parse_chassis_value(file_stem: &str, value: &Value) -> Result<ChassisConfig, SimulatorError> {
+    let id = parsed_id(file_stem, value, false)?;
+    let config = ChassisConfig {
+        id,
+        mass_empty_kg: read_required_f64(value, &["mass_empty_kg", "mass_empty"])?,
+        wheel_radius_m: read_required_f64(value, &["wheel_radius_m", "r_wheel"])?,
+        mu0: read_required_f64(value, &["mu0"])?,
+        rolling_resistance: read_required_f64(value, &["rolling_resistance", "c_rr"])?,
+        air_density: read_required_f64(value, &["air_density", "rho"])?,
+        gravity: read_optional_f64(value, &["gravity", "g"]).unwrap_or(9.81),
+    };
+    config.validate()?;
+    Ok(config)
+}
+
+fn parse_tire_value(file_stem: &str, value: &Value) -> Result<TireConfig, SimulatorError> {
+    let id = parsed_id(file_stem, value, false)?;
+    let config = TireConfig {
+        id,
+        mu_scale: read_required_f64(value, &["mu_scale"])?,
+        wear_per_s: read_required_f64(value, &["wear_per_s"])?,
+        wear_load_k: read_required_f64(value, &["wear_load_k"])?,
+        wear_grip_k: read_required_f64(value, &["wear_grip_k"])?,
+        wear_min: read_required_f64(value, &["wear_min"])?,
+        temp_opt_c: read_required_f64(value, &["temp_opt_c", "temp_opt"])?,
+        temp_sigma_c: read_required_f64(value, &["temp_sigma_c", "temp_sigma"])?,
+        temp_min_k: read_required_f64(value, &["temp_min_k"])?,
+        heat_k: read_required_f64(value, &["heat_k"])?,
+        cool_k: read_required_f64(value, &["cool_k"])?,
+    };
+    config.validate()?;
+    Ok(config)
+}
+
+fn parse_vehicle_value(file_stem: &str, value: &Value) -> Result<VehicleConfig, SimulatorError> {
+    let id = parsed_id(file_stem, value, false)?;
+    let config = VehicleConfig {
+        id,
+        engine_id: read_required_string(value, &["engine_id", "engine"])?,
+        aero_id: read_required_string(value, &["aero_id", "aero"])?,
+        chassis_id: read_required_string(value, &["chassis_id", "chassis"])?,
+        tire_id: read_optional_string(value, &["tire_id", "tire"])
+            .unwrap_or_else(|| "medium".to_string()),
+    };
+
+    if config.engine_id.is_empty() || config.aero_id.is_empty() || config.chassis_id.is_empty() {
+        return Err(SimulatorError::InvalidConfig {
+            kind: "vehicle",
+            id: config.id.clone(),
+            reason: "engine/aero/chassis refs must be non-empty".to_string(),
+        });
+    }
+
+    Ok(config)
+}
+
+fn parse_engine_value(file_stem: &str, value: &Value) -> Result<EngineConfig, SimulatorError> {
+    if value.get("max_rpm").is_some() {
+        parse_engine_compact(file_stem, value)
+    } else {
+        parse_engine_trackeagle(file_stem, value)
+    }
+}
+
+fn parse_engine_compact(file_stem: &str, value: &Value) -> Result<EngineConfig, SimulatorError> {
+    let id = parsed_id(file_stem, value, false)?;
+    let max_rpm = read_required_f64(value, &["max_rpm"])?;
+    let tq_peak = read_required_f64(value, &["tq_peak"])?;
+    let g_last_total = read_required_f64(value, &["g_last_total"])?;
+    let gear_count = read_required_usize(value, &["gear_count"])?.max(2);
+    let idle_rpm = read_optional_f64(value, &["idle_rpm"]).unwrap_or(400.0);
+    let fuel_burn_kg_per_s = read_optional_f64(value, &["fuel_burn_kg_per_s"]).unwrap_or(0.02);
+    let thermal_value = value.get("thermal").ok_or_else(|| SimulatorError::Parse(format!(
+        "missing thermal block for engine '{id}'"
+    )))?;
+
+    build_compact_engine(
+        id,
+        max_rpm,
+        tq_peak,
+        g_last_total,
+        gear_count,
+        idle_rpm,
+        fuel_burn_kg_per_s,
+        EngineThermalConfig {
+            ambient_temp_c: read_required_f64(thermal_value, &["ambient_temp_c"])?,
+            initial_temp_c: read_required_f64(thermal_value, &["initial_temp_c"])?,
+            capacity_j_per_c: read_required_f64(thermal_value, &["capacity_j_per_c"])?,
+            heat_alpha: read_required_f64(thermal_value, &["heat_alpha"])?,
+            cooling_base_w: read_required_f64(thermal_value, &["cooling_base_w"])?,
+            cooling_speed_w_per_ms: read_required_f64(thermal_value, &["cooling_speed_w_per_ms"])?,
+            soft_temp_c: read_required_f64(thermal_value, &["soft_temp_c"])?,
+            derate_per_c: read_required_f64(thermal_value, &["derate_per_c"])?,
+        },
+    )
+}
+
+fn parse_engine_trackeagle(file_stem: &str, value: &Value) -> Result<EngineConfig, SimulatorError> {
+    let id = parsed_id(file_stem, value, false)?;
+    let parsed: EngineJson = serde_json::from_value(value.clone())
+        .map_err(|err| SimulatorError::Parse(format!("engine '{id}' parse failed: {err}")))?;
+
+    let rpm_samples = match parsed.n_rpm {
+        SeriesSpec::Values(values) => values,
+        SeriesSpec::Range { start, end, step } => build_range_series(start, end, step),
+    };
+
+    let mut torque_samples = Vec::new();
+    for segment in parsed.trq_segments {
+        match segment {
+            TorqueSegment::Linspace { start, end, num } => {
+                if num == 0 {
+                    continue;
+                }
+                if num == 1 {
+                    torque_samples.push(start);
+                } else {
+                    for i in 0..num {
+                        let a = i as f64 / (num - 1) as f64;
+                        torque_samples.push(start + (end - start) * a);
+                    }
+                }
+            }
+            TorqueSegment::List { values } => torque_samples.extend(values),
+        }
+    }
+
+    if torque_samples.len() > rpm_samples.len() {
+        torque_samples.truncate(rpm_samples.len());
+    }
+    while torque_samples.len() < rpm_samples.len() {
+        let tail = torque_samples.last().copied().unwrap_or(0.0);
+        torque_samples.push(tail);
+    }
+
+    let engine = EngineConfig {
+        id,
+        rpm_samples,
+        torque_samples,
+        gear_ratios: build_gear_ratios(
+            parsed.gearbox.g1_total,
+            parsed.gearbox.g_last_total,
+            parsed.gearbox.gear_count.max(2),
+        ),
+        idle_rpm: parsed.n_idle,
+        max_rpm: parsed.n_max,
+        thermal: EngineThermalConfig {
+            ambient_temp_c: parsed.thermal.t_amb,
+            initial_temp_c: parsed.thermal.t_init,
+            capacity_j_per_c: parsed.thermal.c_th,
+            heat_alpha: parsed.thermal.alpha_heat,
+            cooling_base_w: parsed.thermal.p_cool0,
+            cooling_speed_w_per_ms: parsed.thermal.k_cool,
+            soft_temp_c: parsed.thermal.t_soft,
+            derate_per_c: parsed.thermal.beta_derate,
+        },
+        fuel_burn_kg_per_s: parsed.fuel_burn_kg_per_s,
+    };
+    engine.validate()?;
+    Ok(engine)
+}
+
+fn parse_track_value(file_stem: &str, value: &Value) -> Result<TrackConfig, SimulatorError> {
+    if value.get("distance_m").is_some() {
+        parse_compact_track(file_stem, value)
+    } else {
+        parse_trackeagle_track(file_stem, value)
+    }
+}
+
+fn parse_compact_track(file_stem: &str, value: &Value) -> Result<TrackConfig, SimulatorError> {
+    let id = parsed_id(file_stem, value, true)?;
+    let distance_m = read_required_f64(value, &["distance_m"])?;
+    let radius_x = read_required_f64(value, &["radius_x"])?;
+    let radius_y = read_required_f64(value, &["radius_y"])?;
+    let wobble_x = read_required_f64(value, &["wobble_x"])?;
+    let wobble_y = read_required_f64(value, &["wobble_y"])?;
+    let slope_amp_m = read_required_f64(value, &["slope_amp_m"])?;
+    let pit_loss_ms = read_optional_u64(value, &["pit_loss_ms"]).unwrap_or(DEFAULT_PIT_LOSS_MS);
+
+    let points = 420usize;
+    let mut s = Vec::with_capacity(points);
+    let mut x = Vec::with_capacity(points);
+    let mut y = Vec::with_capacity(points);
+    let mut z = Vec::with_capacity(points);
+
+    for i in 0..points {
+        let t = i as f64 / (points - 1) as f64;
+        let theta = t * std::f64::consts::TAU;
+        s.push(t * distance_m);
+        x.push(
+            radius_x * theta.cos()
+                + wobble_x * (2.6 * theta).cos() * 0.55
+                + wobble_x * (4.2 * theta).sin() * 0.15,
+        );
+        y.push(
+            radius_y * theta.sin()
+                + wobble_y * (1.8 * theta).sin() * 0.60
+                + wobble_y * (3.3 * theta).cos() * 0.20,
+        );
+        z.push(
+            slope_amp_m * (1.7 * theta).sin() * 0.5
+                + slope_amp_m * (0.4 * theta).cos() * 0.2,
+        );
+    }
+
+    build_track_from_arrays(id, s, x, y, z, None, None, None, pit_loss_ms)
+}
+
+fn parse_trackeagle_track(file_stem: &str, value: &Value) -> Result<TrackConfig, SimulatorError> {
+    let id = parsed_id(file_stem, value, true)?;
+    let data = value.get("data").unwrap_or(value);
+
+    let s = read_vec(data, "s_m")?;
+    let x = read_vec(data, "x_m")?;
+    let y = read_vec(data, "y_m")?;
+    let z = read_vec(data, "z_m")?;
+    let curvature = if data.get("curvature_radpm").is_some() {
+        Some(read_vec(data, "curvature_radpm")?)
+    } else {
+        None
+    };
+    let slope = if data.get("slope_pct").is_some() {
+        Some(read_vec(data, "slope_pct")?)
+    } else if data.get("slope").is_some() {
+        Some(read_vec(data, "slope")?)
+    } else {
+        None
+    };
+    let heading = if data.get("heading_rad").is_some() {
+        Some(read_vec(data, "heading_rad")?)
+    } else {
+        None
+    };
+
+    let pit_loss_ms = read_optional_u64(value, &["pit_loss_ms"]).unwrap_or(DEFAULT_PIT_LOSS_MS);
+    build_track_from_arrays(id, s, x, y, z, curvature, slope, heading, pit_loss_ms)
+}
+
+fn parse_profile_value(file_stem: &str, value: &Value) -> Result<CompetitorProfile, SimulatorError> {
+    if value.get("style").is_some() || value.get("engine_mode").is_some() {
+        parse_explicit_profile(file_stem, value)
+    } else {
+        parse_aggressiveness_profile(file_stem, value)
+    }
+}
+
+fn parse_explicit_profile(file_stem: &str, value: &Value) -> Result<CompetitorProfile, SimulatorError> {
+    let id = parsed_id(file_stem, value, false)?;
+    let display_name = read_optional_string(value, &["display_name"])
+        .unwrap_or_else(|| id.clone());
+    let style = parse_driving_style(
+        read_optional_string(value, &["style"])
+            .unwrap_or_else(|| "balanced".to_string())
+            .as_str(),
+    )?;
+    let engine_mode = parse_engine_mode(
+        read_optional_string(value, &["engine_mode"])
+            .unwrap_or_else(|| "balanced".to_string())
+            .as_str(),
+    )?;
+
+    Ok(CompetitorProfile {
+        id,
+        display_name,
+        style,
+        engine_mode,
+        tire_id: read_optional_string(value, &["tire_id"]).unwrap_or_else(|| "medium".to_string()),
+        downforce_bias: read_optional_f64(value, &["downforce_bias"]).unwrap_or(0.0),
+        gear_ratio_bias: read_optional_f64(value, &["gear_ratio_bias"]).unwrap_or(0.0),
+        pace_variance_ms: read_optional_f64(value, &["pace_variance_ms"]).unwrap_or(30.0),
     })
 }
 
-fn ensure_schema(kind: &'static str, id: &str, schema_version: u32) -> Result<(), SimulatorError> {
-    if schema_version != SCHEMA_VERSION {
-        return Err(SimulatorError::InvalidConfig {
-            kind,
-            id: id.to_string(),
-            reason: format!(
-                "unsupported schema_version {schema_version}, expected {SCHEMA_VERSION}"
-            ),
-        });
+fn parse_aggressiveness_profile(
+    file_stem: &str,
+    value: &Value,
+) -> Result<CompetitorProfile, SimulatorError> {
+    #[derive(Debug, Deserialize)]
+    struct DriverJson {
+        #[serde(default)]
+        id: Option<String>,
+        #[serde(default)]
+        display_name: Option<String>,
+        #[serde(default = "default_aggressiveness")]
+        aggressiveness: f64,
     }
-    Ok(())
+
+    let mut parsed: DriverJson = serde_json::from_value(value.clone()).map_err(|err| {
+        SimulatorError::Parse(format!("driver '{}' parse failed: {err}", file_stem))
+    })?;
+
+    let a = parsed.aggressiveness.clamp(0.0, 1.0);
+    let (style, engine_mode) = if a < 0.33 {
+        (DrivingStyle::Conservative, EngineMode::Economy)
+    } else if a < 0.66 {
+        (DrivingStyle::Balanced, EngineMode::Balanced)
+    } else {
+        (DrivingStyle::Aggressive, EngineMode::Push)
+    };
+
+    let id = schema_version(value)
+        .map(|_| explicit_id(value, file_stem, false))
+        .transpose()?
+        .or_else(|| parsed.id.take())
+        .unwrap_or_else(|| file_stem.to_string());
+
+    Ok(CompetitorProfile {
+        id: id.clone(),
+        display_name: parsed.display_name.unwrap_or(id),
+        style,
+        engine_mode,
+        tire_id: "medium".to_string(),
+        downforce_bias: 0.0,
+        gear_ratio_bias: 0.0,
+        pace_variance_ms: 20.0 + 60.0 * a,
+    })
+}
+
+fn build_compact_engine(
+    id: String,
+    max_rpm: f64,
+    tq_peak: f64,
+    g_last_total: f64,
+    gear_count: usize,
+    idle_rpm: f64,
+    fuel_burn_kg_per_s: f64,
+    thermal: EngineThermalConfig,
+) -> Result<EngineConfig, SimulatorError> {
+    let step = 250.0;
+    let mut rpm_samples = Vec::new();
+    let mut torque_samples = Vec::new();
+    let mut rpm = 0.0;
+    while rpm <= max_rpm + step * 0.5 {
+        rpm_samples.push(rpm);
+        let normalized = if max_rpm > 0.0 { rpm / max_rpm } else { 0.0 };
+        let tq = if normalized < 0.7 {
+            tq_peak * (0.70 + 0.40 * normalized)
+        } else {
+            tq_peak * (1.0 - 0.65 * (normalized - 0.7))
+        }
+        .max(0.12);
+        torque_samples.push(tq);
+        rpm += step;
+    }
+
+    let g1_total = 14.0;
+    let mut gear_ratios = Vec::with_capacity(gear_count);
+    for idx in 0..gear_count {
+        let a = idx as f64 / (gear_count - 1) as f64;
+        gear_ratios.push(g1_total * (g_last_total / g1_total).powf(a));
+    }
+
+    let engine = EngineConfig {
+        id,
+        rpm_samples,
+        torque_samples,
+        gear_ratios,
+        idle_rpm,
+        max_rpm,
+        thermal,
+        fuel_burn_kg_per_s,
+    };
+    engine.validate()?;
+    Ok(engine)
+}
+
+fn build_track_from_arrays(
+    id: String,
+    s: Vec<f64>,
+    x: Vec<f64>,
+    y: Vec<f64>,
+    z: Vec<f64>,
+    curvature: Option<Vec<f64>>,
+    slope: Option<Vec<f64>>,
+    heading: Option<Vec<f64>>,
+    pit_loss_ms: u64,
+) -> Result<TrackConfig, SimulatorError> {
+    let heading = heading.unwrap_or_else(|| derive_heading(&x, &y));
+    let curvature = curvature.unwrap_or_else(|| vec![0.0; s.len()]);
+    let slope = slope.unwrap_or_else(|| derive_gradient(&s, &z));
+
+    let track = TrackConfig {
+        id,
+        s_m: s,
+        x_m: x,
+        y_m: y,
+        z_m: z,
+        curvature_radpm: curvature,
+        slope,
+        heading_rad: heading,
+        pit_loss_ms,
+    };
+
+    track.validate()?;
+    Ok(track)
 }
 
 fn insert_unique<T>(
@@ -466,116 +815,155 @@ fn insert_unique<T>(
     Ok(())
 }
 
-fn build_engine(data: EngineData) -> EngineConfig {
-    let gear_count = data.gear_count.max(2);
-    let step = 250.0;
-    let mut rpm_samples = Vec::new();
-    let mut torque_samples = Vec::new();
-    let mut rpm = 0.0;
-    while rpm <= data.max_rpm + step * 0.5 {
-        rpm_samples.push(rpm);
-        let normalized = if data.max_rpm > 0.0 {
-            rpm / data.max_rpm
-        } else {
-            0.0
-        };
-        let tq = if normalized < 0.7 {
-            data.tq_peak * (0.70 + 0.40 * normalized)
-        } else {
-            data.tq_peak * (1.0 - 0.65 * (normalized - 0.7))
+fn parsed_id(file_stem: &str, value: &Value, normalize_track: bool) -> Result<String, SimulatorError> {
+    match schema_version(value) {
+        Some(version) => {
+            ensure_schema(version, file_stem)?;
+            explicit_id(value, file_stem, normalize_track)
         }
-        .max(0.12);
-        torque_samples.push(tq);
-        rpm += step;
-    }
-
-    let g1_total = 14.0;
-    let mut gear_ratios = Vec::with_capacity(gear_count);
-    for idx in 0..gear_count {
-        let a = idx as f64 / (gear_count - 1) as f64;
-        gear_ratios.push(g1_total * (data.g_last_total / g1_total).powf(a));
-    }
-
-    EngineConfig {
-        id: data.id,
-        rpm_samples,
-        torque_samples,
-        gear_ratios,
-        idle_rpm: data.idle_rpm,
-        max_rpm: data.max_rpm,
-        thermal: EngineThermalConfig {
-            ambient_temp_c: data.thermal.ambient_temp_c,
-            initial_temp_c: data.thermal.initial_temp_c,
-            capacity_j_per_c: data.thermal.capacity_j_per_c,
-            heat_alpha: data.thermal.heat_alpha,
-            cooling_base_w: data.thermal.cooling_base_w,
-            cooling_speed_w_per_ms: data.thermal.cooling_speed_w_per_ms,
-            soft_temp_c: data.thermal.soft_temp_c,
-            derate_per_c: data.thermal.derate_per_c,
-        },
-        fuel_burn_kg_per_s: data.fuel_burn_kg_per_s,
+        None => Ok(derived_id(file_stem, normalize_track)),
     }
 }
 
-fn build_track(data: CircuitData) -> TrackConfig {
-    let mut s = Vec::with_capacity(TRACK_SAMPLE_POINTS);
-    let mut x = Vec::with_capacity(TRACK_SAMPLE_POINTS);
-    let mut y = Vec::with_capacity(TRACK_SAMPLE_POINTS);
-    let mut z = Vec::with_capacity(TRACK_SAMPLE_POINTS);
-
-    for i in 0..TRACK_SAMPLE_POINTS {
-        let t = i as f64 / (TRACK_SAMPLE_POINTS - 1) as f64;
-        let theta = t * std::f64::consts::TAU;
-        s.push(t * data.distance_m);
-        x.push(
-            data.radius_x * theta.cos()
-                + data.wobble_x * (2.6 * theta).cos() * 0.55
-                + data.wobble_x * (4.2 * theta).sin() * 0.15,
-        );
-        y.push(
-            data.radius_y * theta.sin()
-                + data.wobble_y * (1.8 * theta).sin() * 0.60
-                + data.wobble_y * (3.3 * theta).cos() * 0.20,
-        );
-        z.push(
-            data.slope_amp_m * (1.7 * theta).sin() * 0.5
-                + data.slope_amp_m * (0.4 * theta).cos() * 0.2,
-        );
+fn explicit_id(
+    value: &Value,
+    file_stem: &str,
+    normalize_track: bool,
+) -> Result<String, SimulatorError> {
+    let id = read_required_string(value, &["id"])?;
+    if id.trim().is_empty() {
+        return Err(SimulatorError::InvalidConfig {
+            kind: "data",
+            id: file_stem.to_string(),
+            reason: "id must be non-empty".to_string(),
+        });
     }
+    Ok(if normalize_track {
+        normalize_track_id(&id)
+    } else {
+        id
+    })
+}
 
-    let mut heading = vec![0.0; TRACK_SAMPLE_POINTS];
-    for i in 0..TRACK_SAMPLE_POINTS {
+fn derived_id(file_stem: &str, normalize_track: bool) -> String {
+    if normalize_track {
+        normalize_track_id(file_stem)
+    } else {
+        file_stem.to_string()
+    }
+}
+
+fn schema_version(value: &Value) -> Option<u32> {
+    value
+        .get("schema_version")
+        .and_then(Value::as_u64)
+        .map(|value| value as u32)
+}
+
+fn ensure_schema(version: u32, file_stem: &str) -> Result<(), SimulatorError> {
+    if version != SCHEMA_VERSION {
+        return Err(SimulatorError::InvalidConfig {
+            kind: "data",
+            id: file_stem.to_string(),
+            reason: format!(
+                "unsupported schema_version {version}, expected {SCHEMA_VERSION}"
+            ),
+        });
+    }
+    Ok(())
+}
+
+fn read_required_f64(value: &Value, keys: &[&str]) -> Result<f64, SimulatorError> {
+    read_optional_f64(value, keys).ok_or_else(|| {
+        SimulatorError::Parse(format!("missing numeric field '{}'", keys.join("' or '")))
+    })
+}
+
+fn read_optional_f64(value: &Value, keys: &[&str]) -> Option<f64> {
+    keys.iter()
+        .find_map(|key| value.get(*key).and_then(Value::as_f64))
+}
+
+fn read_required_u64(value: &Value, keys: &[&str]) -> Result<u64, SimulatorError> {
+    read_optional_u64(value, keys).ok_or_else(|| {
+        SimulatorError::Parse(format!("missing integer field '{}'", keys.join("' or '")))
+    })
+}
+
+fn read_optional_u64(value: &Value, keys: &[&str]) -> Option<u64> {
+    keys.iter()
+        .find_map(|key| value.get(*key).and_then(Value::as_u64))
+}
+
+fn read_required_usize(value: &Value, keys: &[&str]) -> Result<usize, SimulatorError> {
+    let raw = read_required_u64(value, keys)?;
+    usize::try_from(raw).map_err(|_| {
+        SimulatorError::Parse(format!("integer field '{}' exceeds usize", keys.join("' or '")))
+    })
+}
+
+fn read_required_string(value: &Value, keys: &[&str]) -> Result<String, SimulatorError> {
+    read_optional_string(value, keys).ok_or_else(|| {
+        SimulatorError::Parse(format!("missing string field '{}'", keys.join("' or '")))
+    })
+}
+
+fn read_optional_string(value: &Value, keys: &[&str]) -> Option<String> {
+    keys.iter()
+        .find_map(|key| value.get(*key).and_then(Value::as_str).map(str::to_string))
+}
+
+fn read_vec(value: &Value, key: &str) -> Result<Vec<f64>, SimulatorError> {
+    let arr = value
+        .get(key)
+        .and_then(Value::as_array)
+        .ok_or_else(|| SimulatorError::Parse(format!("missing or invalid array key '{key}'")))?;
+    let mut out = Vec::with_capacity(arr.len());
+    for item in arr {
+        let Some(num) = item.as_f64() else {
+            return Err(SimulatorError::Parse(format!(
+                "non-numeric value in array '{key}'"
+            )));
+        };
+        out.push(num);
+    }
+    Ok(out)
+}
+
+fn normalize_track_id(track_id: &str) -> String {
+    track_id
+        .chars()
+        .filter(|ch| !matches!(ch, '-' | '_' | ' '))
+        .flat_map(char::to_uppercase)
+        .collect()
+}
+
+fn derive_heading(x: &[f64], y: &[f64]) -> Vec<f64> {
+    let n = x.len().min(y.len());
+    let mut heading = vec![0.0; n];
+    for i in 0..n {
         let i0 = i.saturating_sub(1);
-        let i1 = (i + 1).min(TRACK_SAMPLE_POINTS - 1);
+        let i1 = (i + 1).min(n - 1);
         let dx = x[i1] - x[i0];
         let dy = y[i1] - y[i0];
         heading[i] = dy.atan2(dx);
     }
-    for i in 1..TRACK_SAMPLE_POINTS {
+    for i in 1..n {
         heading[i] = unwrap_angle(heading[i], heading[i - 1]);
     }
+    heading
+}
 
-    let mut curvature = vec![0.0; TRACK_SAMPLE_POINTS];
-    let mut slope = vec![0.0; TRACK_SAMPLE_POINTS];
-    for i in 0..TRACK_SAMPLE_POINTS {
+fn derive_gradient(s: &[f64], values: &[f64]) -> Vec<f64> {
+    let n = s.len().min(values.len());
+    let mut out = vec![0.0; n];
+    for i in 0..n {
         let i0 = i.saturating_sub(1);
-        let i1 = (i + 1).min(TRACK_SAMPLE_POINTS - 1);
-        let ds = (s[i1] - s[i0]).max(1e-6);
-        curvature[i] = (heading[i1] - heading[i0]) / ds;
-        slope[i] = (z[i1] - z[i0]) / ds;
+        let i1 = (i + 1).min(n - 1);
+        let ds = (s[i1] - s[i0]).abs().max(1e-6);
+        out[i] = (values[i1] - values[i0]) / ds;
     }
-
-    TrackConfig {
-        id: data.id,
-        s_m: s,
-        x_m: x,
-        y_m: y,
-        z_m: z,
-        curvature_radpm: curvature,
-        slope,
-        heading_rad: heading,
-        pit_loss_ms: data.pit_loss_ms,
-    }
+    out
 }
 
 fn unwrap_angle(mut value: f64, reference: f64) -> f64 {
@@ -588,103 +976,100 @@ fn unwrap_angle(mut value: f64, reference: f64) -> f64 {
     value
 }
 
-#[derive(Debug, Deserialize)]
-struct AeroData {
-    schema_version: u32,
-    id: String,
-    cd_a_straight: f64,
-    cd_a_corner: f64,
-    cl_a_straight: f64,
-    cl_a_corner: f64,
+fn default_fuel_burn() -> f64 {
+    0.02
+}
+
+fn default_aggressiveness() -> f64 {
+    0.5
+}
+
+fn build_range_series(start: f64, end: f64, step: f64) -> Vec<f64> {
+    if step <= 0.0 || end < start {
+        return vec![start];
+    }
+    let mut out = Vec::new();
+    let mut value = start;
+    while value <= end + step * 0.5 {
+        out.push(value);
+        value += step;
+    }
+    out
+}
+
+fn build_gear_ratios(g1_total: f64, g_last_total: f64, gear_count: usize) -> Vec<f64> {
+    let mut out = Vec::with_capacity(gear_count);
+    if gear_count == 1 {
+        return vec![g1_total];
+    }
+    for gear in 0..gear_count {
+        let a = gear as f64 / (gear_count - 1) as f64;
+        out.push(g1_total * (g_last_total / g1_total).powf(a));
+    }
+    out
+}
+
+fn parse_driving_style(raw: &str) -> Result<DrivingStyle, SimulatorError> {
+    match raw {
+        "conservative" => Ok(DrivingStyle::Conservative),
+        "balanced" => Ok(DrivingStyle::Balanced),
+        "aggressive" => Ok(DrivingStyle::Aggressive),
+        _ => Err(SimulatorError::Parse(format!("unknown driving style '{raw}'"))),
+    }
+}
+
+fn parse_engine_mode(raw: &str) -> Result<EngineMode, SimulatorError> {
+    match raw {
+        "economy" => Ok(EngineMode::Economy),
+        "balanced" => Ok(EngineMode::Balanced),
+        "push" => Ok(EngineMode::Push),
+        _ => Err(SimulatorError::Parse(format!("unknown engine mode '{raw}'"))),
+    }
 }
 
 #[derive(Debug, Deserialize)]
-struct ChassisData {
-    schema_version: u32,
-    id: String,
-    mass_empty_kg: f64,
-    wheel_radius_m: f64,
-    mu0: f64,
-    rolling_resistance: f64,
-    air_density: f64,
-    gravity: f64,
+#[serde(untagged)]
+enum SeriesSpec {
+    Values(Vec<f64>),
+    Range { start: f64, end: f64, step: f64 },
 }
 
 #[derive(Debug, Deserialize)]
-struct EngineData {
-    schema_version: u32,
-    id: String,
-    max_rpm: f64,
+#[serde(tag = "type", rename_all = "snake_case")]
+enum TorqueSegment {
+    Linspace { start: f64, end: f64, num: usize },
+    List { values: Vec<f64> },
+}
+
+#[derive(Debug, Deserialize)]
+struct GearboxSpec {
+    g1_total: f64,
     g_last_total: f64,
-    tq_peak: f64,
     gear_count: usize,
-    idle_rpm: f64,
+}
+
+#[derive(Debug, Deserialize)]
+struct ThermalJson {
+    t_amb: f64,
+    t_init: f64,
+    c_th: f64,
+    alpha_heat: f64,
+    p_cool0: f64,
+    k_cool: f64,
+    t_soft: f64,
+    beta_derate: f64,
+}
+
+#[derive(Debug, Deserialize)]
+struct EngineJson {
+    n_rpm: SeriesSpec,
+    trq_segments: Vec<TorqueSegment>,
+    gearbox: GearboxSpec,
+    n_idle: f64,
+    n_max: f64,
+    thermal: ThermalJson,
+    #[serde(default = "default_fuel_burn")]
     fuel_burn_kg_per_s: f64,
-    thermal: ThermalData,
-}
-
-#[derive(Debug, Deserialize)]
-struct ThermalData {
-    ambient_temp_c: f64,
-    initial_temp_c: f64,
-    capacity_j_per_c: f64,
-    heat_alpha: f64,
-    cooling_base_w: f64,
-    cooling_speed_w_per_ms: f64,
-    soft_temp_c: f64,
-    derate_per_c: f64,
-}
-
-#[derive(Debug, Deserialize)]
-struct TireData {
-    schema_version: u32,
-    id: String,
-    mu_scale: f64,
-    wear_per_s: f64,
-    wear_load_k: f64,
-    wear_grip_k: f64,
-    wear_min: f64,
-    temp_opt_c: f64,
-    temp_sigma_c: f64,
-    temp_min_k: f64,
-    heat_k: f64,
-    cool_k: f64,
-}
-
-#[derive(Debug, Deserialize)]
-struct CircuitData {
-    schema_version: u32,
-    id: String,
-    distance_m: f64,
-    radius_x: f64,
-    radius_y: f64,
-    wobble_x: f64,
-    wobble_y: f64,
-    slope_amp_m: f64,
-    pit_loss_ms: u64,
-}
-
-#[derive(Debug, Deserialize)]
-struct VehicleData {
-    schema_version: u32,
-    id: String,
-    aero_id: String,
-    chassis_id: String,
-    engine_id: String,
-    tire_id: String,
-}
-
-#[derive(Debug, Deserialize)]
-struct DriverData {
-    schema_version: u32,
-    id: String,
-    display_name: String,
-    style: DrivingStyle,
-    engine_mode: EngineMode,
-    tire_id: String,
-    downforce_bias: f64,
-    gear_ratio_bias: f64,
-    pace_variance_ms: f64,
 }
 
 #[cfg(test)]
@@ -701,7 +1086,18 @@ mod tests {
             crate::provider::ConfigProvider::get_track(&provider, "SPA").expect("SPA track");
 
         assert_eq!(vehicle.engine_id, "v6t_hybrid");
-        assert_eq!(track.pit_loss_ms, 22_000);
+        assert_eq!(track.pit_loss_ms, DEFAULT_PIT_LOSS_MS);
+    }
+
+    #[test]
+    fn loads_trackeagle_tracks_from_embedded_pack() {
+        let registry = DataRegistry::load_default().expect("embedded pack should load");
+        let provider = registry.into_provider();
+        let track = crate::provider::ConfigProvider::get_track(&provider, "ZANDVOORT")
+            .expect("zandvoort track");
+
+        assert!(track.s_m.len() > 1000);
+        assert_eq!(track.pit_loss_ms, DEFAULT_PIT_LOSS_MS);
     }
 
     #[cfg(not(target_arch = "wasm32"))]
@@ -713,12 +1109,10 @@ mod tests {
         std::fs::write(
             aero_dir.join("basic.json"),
             r#"{
-  "schema_version": 1,
-  "id": "basic",
-  "cd_a_straight": 0.7,
-  "cd_a_corner": 0.8,
-  "cl_a_straight": 2.1,
-  "cl_a_corner": 3.0
+  "cdA_x": 0.7,
+  "cdA_z": 0.8,
+  "clA_x": 2.1,
+  "clA_z": 3.0
 }"#,
         )
         .expect("override file");
@@ -739,12 +1133,10 @@ mod tests {
         files.insert(
             "vehicles/bad.json".to_string(),
             br#"{
-  "schema_version": 1,
-  "id": "broken",
-  "aero_id": "basic",
-  "chassis_id": "f1_2026",
-  "engine_id": "missing",
-  "tire_id": "medium"
+  "engine": "missing",
+  "aero": "basic",
+  "chassis": "f1_2026",
+  "tire": "medium"
 }"#
             .to_vec(),
         );

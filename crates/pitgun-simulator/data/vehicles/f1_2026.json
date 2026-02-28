@@ -1,8 +1,6 @@
 {
-  "schema_version": 1,
-  "id": "f1_2026",
-  "aero_id": "active",
-  "chassis_id": "f1_2026",
-  "engine_id": "v6t_hybrid",
-  "tire_id": "medium"
+  "engine": "v6t_hybrid",
+  "aero": "active",
+  "chassis": "f1_2026",
+  "tire": "medium"
 }

@@ -1,14 +1,12 @@
 {
-  "schema_version": 1,
-  "id": "hard",
-  "mu_scale": 0.96,
-  "wear_per_s": 0.000001,
-  "wear_load_k": 0.0000001,
-  "wear_grip_k": 0.4,
-  "wear_min": 0.6,
-  "temp_opt_c": 95.0,
-  "temp_sigma_c": 50.0,
-  "temp_min_k": 0.85,
-  "heat_k": 0.0052,
-  "cool_k": 0.00095
+  "mu_scale": 0.97,
+  "wear_per_s": 0.0000007,
+  "wear_load_k": 0.00000007,
+  "wear_grip_k": 0.47,
+  "wear_min": 0.52,
+  "temp_opt": 100.0,
+  "temp_sigma": 55.0,
+  "temp_min_k": 0.87,
+  "heat_k": 0.0058,
+  "cool_k": 0.00092
 }

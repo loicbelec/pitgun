@@ -1,20 +1,24 @@
 {
-  "schema_version": 1,
-  "id": "v6t",
-  "max_rpm": 14500.0,
-  "g_last_total": 4.8,
-  "tq_peak": 0.56,
-  "gear_count": 8,
-  "idle_rpm": 400.0,
-  "fuel_burn_kg_per_s": 0.021,
+  "n_rpm": {"start": 0, "end": 12000, "step": 250},
+  "trq_segments": [
+    {"type": "linspace", "start": 0.365, "end": 0.56, "num": 41},
+    {"type": "linspace", "start": 0.56, "end": 0.51, "num": 4},
+    {"type": "linspace", "start": 0.5, "end": 0.1, "num": 4}
+  ],
+  "gearbox": {"g1_total": 14.0, "g_last_total": 4.5, "gear_count": 5},
+  "fuel_burn_kg_per_s": 0.02,
+  "n_idle": 1700.0,
+  "n_max": 12000.0,
+  "n_upshift": 0.0,
+  "n_downshift": 0.0,
   "thermal": {
-    "ambient_temp_c": 35.0,
-    "initial_temp_c": 90.0,
-    "capacity_j_per_c": 100000.0,
-    "heat_alpha": 0.45,
-    "cooling_base_w": 0.0,
-    "cooling_speed_w_per_ms": 45.0,
-    "soft_temp_c": 110.0,
-    "derate_per_c": 0.008
+    "t_amb": 35.0,
+    "t_init": 90.0,
+    "c_th": 100000.0,
+    "alpha_heat": 0.45,
+    "p_cool0": 0.0,
+    "k_cool": 45.0,
+    "t_soft": 110.0,
+    "beta_derate": 0.01
   }
 }

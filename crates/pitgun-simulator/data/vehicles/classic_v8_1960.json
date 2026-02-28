@@ -1,8 +1,6 @@
 {
-  "schema_version": 1,
-  "id": "classic_v8_1960",
-  "aero_id": "none",
-  "chassis_id": "default",
-  "engine_id": "v8_1960",
-  "tire_id": "medium"
+  "engine": "v8_1960",
+  "aero": "none",
+  "chassis": "default",
+  "tire": "medium"
 }

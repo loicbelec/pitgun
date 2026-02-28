@@ -1,20 +1,23 @@
 {
-  "schema_version": 1,
-  "id": "v8_1960",
-  "max_rpm": 11000.0,
-  "g_last_total": 6.0,
-  "tq_peak": 0.46,
-  "gear_count": 5,
-  "idle_rpm": 400.0,
-  "fuel_burn_kg_per_s": 0.018,
+  "n_rpm": {"start": 0, "end": 11000, "step": 250},
+  "trq_segments": [
+    {"type": "linspace", "start": 0.11, "end": 0.15, "num": 40},
+    {"type": "linspace", "start": 0.15, "end": 0.05, "num": 5}
+  ],
+  "gearbox": {"g1_total": 13.0, "g_last_total": 5.5, "gear_count": 5},
+  "fuel_burn_kg_per_s": 0.02,
+  "n_idle": 1500.0,
+  "n_max": 11000.0,
+  "n_upshift": 0.0,
+  "n_downshift": 0.0,
   "thermal": {
-    "ambient_temp_c": 35.0,
-    "initial_temp_c": 90.0,
-    "capacity_j_per_c": 100000.0,
-    "heat_alpha": 0.45,
-    "cooling_base_w": 0.0,
-    "cooling_speed_w_per_ms": 45.0,
-    "soft_temp_c": 110.0,
-    "derate_per_c": 0.008
+    "t_amb": 35.0,
+    "t_init": 90.0,
+    "c_th": 100000.0,
+    "alpha_heat": 0.45,
+    "p_cool0": 0.0,
+    "k_cool": 45.0,
+    "t_soft": 110.0,
+    "beta_derate": 0.004
   }
 }

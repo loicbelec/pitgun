@@ -1,8 +1,6 @@
 {
-  "schema_version": 1,
-  "id": "basic",
-  "cd_a_straight": 0.6,
-  "cd_a_corner": 0.75,
-  "cl_a_straight": 1.8,
-  "cl_a_corner": 2.7
+  "cdA_x": 0.9,
+  "cdA_z": 0.9,
+  "clA_x": 4.0,
+  "clA_z": 4.0
 }
