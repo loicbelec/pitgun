@@ -13,7 +13,8 @@ pub use frame::{
     SignalQuality, TelemetryFrame, TelemetryFrameBuilder,
 };
 pub use racing::{
-    CompetitorSpec, CompetitorStatus, RaceInput, RaceOutput, RunPackage, StandingEntry, TuningSpec,
+    CircuitCatalogEntry, CompetitorSpec, CompetitorStatus, CompetitorStintStrategy,
+    EngineCatalogEntry, RaceInput, RaceOutput, RaceStint, RunPackage, StandingEntry, TuningSpec,
     VehicleClass, resolve_vehicle_class,
 };
 pub use registry::{
