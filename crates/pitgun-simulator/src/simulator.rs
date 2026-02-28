@@ -48,10 +48,6 @@ impl Simulator {
     }
 
     pub fn simulate_lap(&self, input: LapInput) -> Result<LapOutput, SimulatorError> {
-        if input.hz <= 0.0 {
-            return Err(SimulatorError::InvalidInput("hz must be > 0".to_string()));
-        }
-
         let vehicle = self.provider.get_vehicle(&input.vehicle_id)?;
         let aero = self.provider.get_aero(&vehicle.aero_id)?;
         let chassis = self.provider.get_chassis(&vehicle.chassis_id)?;
@@ -74,10 +70,7 @@ impl Simulator {
         let profile = match (input.profile, input.profile_id) {
             (Some(profile), _) => profile,
             (None, Some(profile_id)) => self.provider.get_profile(&profile_id)?,
-            (None, None) => self
-                .provider
-                .get_profile("balanced")
-                .unwrap_or_else(|_| CompetitorProfile::default()),
+            (None, None) => self.provider.get_profile("balanced")?,
         };
 
         let tuning = input.tuning.clamped();
@@ -87,7 +80,13 @@ impl Simulator {
             ..SimulatorState::default()
         });
 
-        let sim = run_single_lap(&track, &resolved, &profile, initial_state, input.hz)?;
+        let sim = run_single_lap(
+            &track,
+            &resolved,
+            &profile,
+            initial_state,
+            if input.hz > 0.0 { input.hz } else { default_hz() },
+        )?;
         Ok(sim)
     }
 }

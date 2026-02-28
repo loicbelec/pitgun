@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "id": "MONZA",
+  "distance_m": 5793.0,
+  "radius_x": 980.0,
+  "radius_y": 430.0,
+  "wobble_x": 120.0,
+  "wobble_y": 95.0,
+  "slope_amp_m": 2.0,
+  "pit_loss_ms": 22000
+}

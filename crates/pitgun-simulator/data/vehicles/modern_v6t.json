@@ -1,0 +1,8 @@
+{
+  "schema_version": 1,
+  "id": "modern_v6t",
+  "aero_id": "basic",
+  "chassis_id": "f1_2026",
+  "engine_id": "v6t",
+  "tire_id": "medium"
+}

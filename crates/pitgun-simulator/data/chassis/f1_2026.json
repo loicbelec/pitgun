@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "id": "f1_2026",
+  "mass_empty_kg": 768.0,
+  "wheel_radius_m": 0.36,
+  "mu0": 1.8,
+  "rolling_resistance": 0.015,
+  "air_density": 1.225,
+  "gravity": 9.81
+}

@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "id": "default",
+  "mass_empty_kg": 805.0,
+  "wheel_radius_m": 0.34,
+  "mu0": 1.5,
+  "rolling_resistance": 0.02,
+  "air_density": 1.225,
+  "gravity": 9.81
+}

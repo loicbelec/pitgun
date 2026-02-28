@@ -1,4 +1,5 @@
 mod catalog;
+mod data;
 mod errors;
 mod models;
 mod profiles;
@@ -9,6 +10,7 @@ mod telemetry;
 mod tuning;
 
 pub use errors::SimulatorError;
+pub use data::DataRegistry;
 pub use models::{
     AeroConfig, ChassisConfig, EngineConfig, EngineThermalConfig, TireConfig, TrackConfig,
     VehicleConfig,

@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "id": "medium",
+  "mu_scale": 1.0,
+  "wear_per_s": 0.0000015,
+  "wear_load_k": 0.00000015,
+  "wear_grip_k": 0.5,
+  "wear_min": 0.5,
+  "temp_opt_c": 98.0,
+  "temp_sigma_c": 45.0,
+  "temp_min_k": 0.84,
+  "heat_k": 0.0058,
+  "cool_k": 0.0009
+}

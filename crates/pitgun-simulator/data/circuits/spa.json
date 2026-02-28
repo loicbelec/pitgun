@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "id": "SPA",
+  "distance_m": 7004.0,
+  "radius_x": 930.0,
+  "radius_y": 600.0,
+  "wobble_x": 260.0,
+  "wobble_y": 180.0,
+  "slope_amp_m": 9.0,
+  "pit_loss_ms": 22000
+}

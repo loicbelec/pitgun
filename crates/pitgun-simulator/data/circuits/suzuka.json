@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "id": "SUZUKA",
+  "distance_m": 5807.0,
+  "radius_x": 760.0,
+  "radius_y": 620.0,
+  "wobble_x": 290.0,
+  "wobble_y": 250.0,
+  "slope_amp_m": 5.0,
+  "pit_loss_ms": 22000
+}

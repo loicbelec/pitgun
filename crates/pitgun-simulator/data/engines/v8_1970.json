@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "id": "v8_1970",
+  "max_rpm": 12000.0,
+  "g_last_total": 7.0,
+  "tq_peak": 0.52,
+  "gear_count": 6,
+  "idle_rpm": 400.0,
+  "fuel_burn_kg_per_s": 0.019,
+  "thermal": {
+    "ambient_temp_c": 35.0,
+    "initial_temp_c": 90.0,
+    "capacity_j_per_c": 100000.0,
+    "heat_alpha": 0.45,
+    "cooling_base_w": 0.0,
+    "cooling_speed_w_per_ms": 45.0,
+    "soft_temp_c": 110.0,
+    "derate_per_c": 0.008
+  }
+}

@@ -80,6 +80,7 @@ pub struct TrackConfig {
     pub curvature_radpm: Vec<f64>,
     pub slope: Vec<f64>,
     pub heading_rad: Vec<f64>,
+    pub pit_loss_ms: u64,
 }
 
 impl AeroConfig {
@@ -173,6 +174,13 @@ impl TrackConfig {
                 kind: "track",
                 id: self.id.clone(),
                 reason: "s_m must be strictly increasing".to_string(),
+            });
+        }
+        if self.pit_loss_ms == 0 {
+            return Err(SimulatorError::InvalidConfig {
+                kind: "track",
+                id: self.id.clone(),
+                reason: "pit_loss_ms must be > 0".to_string(),
             });
         }
         Ok(())
