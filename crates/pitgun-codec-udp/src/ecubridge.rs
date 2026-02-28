@@ -265,11 +265,9 @@ impl EcuBridgeCodec {
             _ => SignalQuality::Unknown,
         };
 
-        let data_type =
-            DataTypeCode::from_u8(type_byte[0]).ok_or(CodecError::MalformedData(format!(
-                "invalid data type: {}",
-                type_byte[0] & 0x3F
-            )))?;
+        let data_type = DataTypeCode::from_u8(type_byte[0]).ok_or(CodecError::MalformedData(
+            format!("invalid data type: {}", type_byte[0] & 0x3F),
+        ))?;
 
         let value = self.read_value(cursor, data_type)?;
 
@@ -277,7 +275,11 @@ impl EcuBridgeCodec {
     }
 
     /// Reads a value of the given type from the cursor
-    fn read_value(&self, cursor: &mut Cursor<&[u8]>, data_type: DataTypeCode) -> CodecResult<SampleValue> {
+    fn read_value(
+        &self,
+        cursor: &mut Cursor<&[u8]>,
+        data_type: DataTypeCode,
+    ) -> CodecResult<SampleValue> {
         let mut buf1 = [0u8; 1];
         let mut buf2 = [0u8; 2];
         let mut buf4 = [0u8; 4];
@@ -382,7 +384,11 @@ impl EcuBridgeCodec {
                 .map_err(|_| CodecError::MalformedData("failed to read event data".into()))?;
         }
 
-        Ok(Event::new(event_id, format!("event_{}", event_id), severity))
+        Ok(Event::new(
+            event_id,
+            format!("event_{}", event_id),
+            severity,
+        ))
     }
 
     /// Calculates CRC32 of the packet data
@@ -645,7 +651,12 @@ impl EcuBridgePacketBuilder {
         self
     }
 
-    pub fn sample(mut self, param_id: ParameterId, value: SampleValue, quality: SignalQuality) -> Self {
+    pub fn sample(
+        mut self,
+        param_id: ParameterId,
+        value: SampleValue,
+        quality: SignalQuality,
+    ) -> Self {
         self.samples.push(Sample::new(param_id, value, quality));
         self
     }

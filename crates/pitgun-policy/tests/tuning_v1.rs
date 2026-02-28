@@ -32,7 +32,10 @@ fn canonicalize_applies_defaults() {
     };
 
     let canonical = policy.canonicalize(&ctx, &req).expect("canonicalize");
-    let gameplay = canonical.parameters.get("gameplay").expect("gameplay section");
+    let gameplay = canonical
+        .parameters
+        .get("gameplay")
+        .expect("gameplay section");
     let engine = gameplay
         .get("engine_points")
         .and_then(|value| value.as_f64())
@@ -62,14 +65,23 @@ fn canonicalize_clamps_and_quantizes() {
     };
 
     let canonical = policy.canonicalize(&ctx, &req).expect("canonicalize");
-    let gameplay = canonical.parameters.get("gameplay").expect("gameplay section");
+    let gameplay = canonical
+        .parameters
+        .get("gameplay")
+        .expect("gameplay section");
 
     assert_eq!(
-        gameplay.get("engine_points").and_then(|v| v.as_f64()).unwrap(),
+        gameplay
+            .get("engine_points")
+            .and_then(|v| v.as_f64())
+            .unwrap(),
         23.0
     );
     assert_eq!(
-        gameplay.get("aero_points").and_then(|v| v.as_f64()).unwrap(),
+        gameplay
+            .get("aero_points")
+            .and_then(|v| v.as_f64())
+            .unwrap(),
         100.0
     );
     assert_eq!(
@@ -125,9 +137,7 @@ fn constraint_rejects_budget_cap() {
     };
 
     let canonical = policy.canonicalize(&ctx, &req).expect("canonicalize");
-    let err = policy
-        .validate_constraints(&ctx, &canonical)
-        .unwrap_err();
+    let err = policy.validate_constraints(&ctx, &canonical).unwrap_err();
     match err {
         PolicyError::InvalidField { path, reason } => {
             assert_eq!(path, "derived_constraints.gameplay_budget_cap");

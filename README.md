@@ -8,48 +8,53 @@ Pitgun is a modular Rust framework designed to ingest high-frequency data stream
 
 While currently showcasing a **Reference Implementation in Motorsport** (F1 Simulation), its architecture is domain-agnostic and built for Finance, Energy, and IoT reliability.
 
----
-
 ## 🏗️ The Architecture
 
 Pitgun is built on four pillars that separate **Ingestion**, **Processing**, **Compute**, and **Governance**.
 
 ### 1. 📡 The Gateway (Ingestion & Traffic)
+
 A high-throughput ingestion layer capable of normalizing diverse protocols into a single unified `TelemetryFrame`.
-*   **Multi-Protocol:** Native support for UDP (Unicast/Multicast), WebSocket, Kafka, and MQTT.
-*   **Normalization:** Translates disparate wire formats (binary, JSON) into a strict internal schema.
-*   **Service:** `services/pitgun-gateway`
+
+- **Multi-Protocol:** Native support for UDP (Unicast/Multicast), WebSocket, Kafka, and MQTT.
+- **Normalization:** Translates disparate wire formats (binary, JSON) into a strict internal schema.
+- **Service:** `services/pitgun-gateway`
 
 ### 2. ⚡ The Core (Dynamic Processing)
+
 A powerful **Manifest-Driven ETL engine** that allows engineers to define derived channels without recompiling code.
-*   **Formula Engine:** Define `Power = Torque * RPM` using an AST-based expression parser (`pitgun-core`).
-*   **Manifests:** YAML-based configuration for pipelines (`channel_filter`, `scale`, `segment_aggregate`).
-*   **Registry:** Strictly typed parameter definitons (`u16`, `f64`) with validation ranges.
+
+- **Formula Engine:** Define `Power = Torque * RPM` using an AST-based expression parser (`pitgun-core`).
+- **Manifests:** YAML-based configuration for pipelines (`channel_filter`, `scale`, `segment_aggregate`).
+- **Registry:** Strictly typed parameter definitions (`u16`, `f64`) with validation ranges.
 
 ### 3. 🧠 The Solver (Distributed Compute)
-An orchestration layer for offloading complex optimization tasks to an edge grid (e.g., WebAssembly Clients).
-*   **Use Cases:** Monte Carlo Simulations, Risk Analysis, Pathfinding.
-*   **Technology:** Rust -> WASM compilation for browser-based volunteer computing.
-*   **Service:** `crates/pitgun-solver`
+
+A lightweight orchestration layer that validates inputs and forwards explicit simulation requests.
+
+- **Role:** Maps external DTOs to simulator inputs without introducing hidden behavior.
+- **Boundary:** Simulation defaults and behavior belong in `pitgun-simulator`, not in the solver.
+- **Service:** `crates/pitgun-solver`
 
 ### 4. ⚖️ The Authority (Governance)
-A security layer ensuring that data and configurations are authentic and tamper-proof.
-*   **Access Control:** Rate limiting and capability-based access (`pitgun-policy`).
-*   **Policy Enforcement:** Cryptographic signing of simulation contracts (Tuning Limits).
-*   **Auditability:** Guarantees that result A came from Config B.
-*   **Service:** `services/pitgun-authority`
 
----
+A security layer ensuring that data and configurations are authentic and tamper-proof.
+
+- **Access Control:** Rate limiting and capability-based access (`pitgun-policy`).
+- **Policy Enforcement:** Cryptographic signing of simulation contracts (tuning limits).
+- **Auditability:** Guarantees that result A came from config B.
+- **Service:** `services/pitgun-authority`
 
 ## 🧱 Component Stack
 
 ### Foundation Crates
+
 | Crate | Role | Description |
 |-------|------|-------------|
 | **pitgun-core** | **The Brain** | AST Formula Engine, Pipeline logic, Manifest parsing. |
 | **pitgun-contract** | **The Law** | Shared types (`TelemetryFrame`), IDL, and protocols. |
-| **pitgun-engine-f1** | **Ref. Impl** | A deterministic Physics Engine (Data Plane) for F1 simulation. |
-| **pitgun-solver** | **Control Plane** | Strategy & Risk optimization logic skeleton. |
+| **pitgun-simulator** | **Source of Truth** | Deterministic, WASM-first simulation engine where simulation behavior and default data live. |
+| **pitgun-solver** | **Control Plane** | Thin orchestration layer that validates and forwards explicit simulator inputs. |
 
 ### Infrastructure
 | Service | Role | Container |
@@ -58,11 +63,10 @@ A security layer ensuring that data and configurations are authentic and tamper-
 | **pitgun-authority** | Security/Config | `pitgun-authority` |
 | **pitgun-replay** | Tooling | `apps/pitgun-replay` |
 
----
-
 ## 🚀 Quickstart
 
 ### 1. Define your Logic (The Manifest)
+
 Create a `pipeline.yaml` to define how data should be processed dynamically:
 
 ```yaml
@@ -77,11 +81,13 @@ pipeline:
 ```
 
 ### 2. Start the Gateway
+
 ```bash
 cargo run -p pitgun-gateway --release
 ```
 
-### 2b. Start Services with Docker Compose (Dev)
+### Optional: Start Services with Docker Compose (Dev)
+
 ```bash
 docker compose -f docker-compose.dev.yml up -d
 ```
@@ -90,14 +96,14 @@ Production compose is maintained in the dedicated infra repository; this repo ig
 `docker-compose.prod.yml`.
 
 ### 3. Inject Data (Replay)
+
 Simulate a stream of data using the replay tool:
+
 ```bash
 cargo run -p pitgun-replay -- \
   --target 127.0.0.1:8080 \
   --input nEngine=datasets/telemetry/nEngine.csv
 ```
-
----
 
 ## 📚 Documentation
 
@@ -118,10 +124,8 @@ equivalent to `build-gateway.yml`.
 
 ## 🔮 Roadmap
 
-- **WASM Solver:** Complete the Monte Carlo implementation for the Solver.
+- **Dedicated Optimizer:** Move search and optimization logic into a separate crate.
 - **Parquet Sink:** Archival storage for historical analysis.
 - **Flow UI:** Visual editor for `pitgun-core` pipeline manifests.
-
----
 
 > Built with 🦀 Rust for performance and safety.

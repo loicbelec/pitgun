@@ -22,9 +22,9 @@ pub(crate) fn canonicalize(
                 "unknown subsystem",
             ));
         };
-        let sub_map = value.as_object().ok_or_else(|| {
-            invalid_field(format!("parameters.{subsystem}"), "must be an object")
-        })?;
+        let sub_map = value
+            .as_object()
+            .ok_or_else(|| invalid_field(format!("parameters.{subsystem}"), "must be an object"))?;
         for key in sub_map.keys() {
             if !specs.contains_key(key) {
                 return Err(invalid_field(
@@ -156,9 +156,9 @@ fn canonicalize_value(
 ) -> Result<JsonValue, PolicyError> {
     match spec {
         ParameterSpecV1::Float { range, .. } => {
-            let value = raw.as_f64().ok_or_else(|| {
-                invalid_field(path, "expected a number for float parameter")
-            })?;
+            let value = raw
+                .as_f64()
+                .ok_or_else(|| invalid_field(path, "expected a number for float parameter"))?;
             if !value.is_finite() {
                 return Err(invalid_field(path, "float must be finite"));
             }
@@ -166,14 +166,11 @@ fn canonicalize_value(
             json_number(quantized, path)
         }
         ParameterSpecV1::Enum { values, .. } => {
-            let value = raw.as_str().ok_or_else(|| {
-                invalid_field(path, "expected a string for enum parameter")
-            })?;
+            let value = raw
+                .as_str()
+                .ok_or_else(|| invalid_field(path, "expected a string for enum parameter"))?;
             if !values.iter().any(|entry| entry == value) {
-                return Err(invalid_field(
-                    path,
-                    format!("invalid enum value '{value}'"),
-                ));
+                return Err(invalid_field(path, format!("invalid enum value '{value}'")));
             }
             Ok(JsonValue::String(value.to_string()))
         }

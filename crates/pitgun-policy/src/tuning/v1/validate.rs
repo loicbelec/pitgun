@@ -1,9 +1,9 @@
 use std::collections::BTreeSet;
 
+use crate::tuning::v1::TUNING_POLICY_V1_VERSION;
 use crate::tuning::v1::error::{PolicyError, invalid_field};
 use crate::tuning::v1::expr::{ExprMode, parse_expression, validate_expression};
 use crate::tuning::v1::schema::{ParameterSpecV1, TuningPolicyV1};
-use crate::tuning::v1::TUNING_POLICY_V1_VERSION;
 
 pub(crate) fn validate_static(policy: &TuningPolicyV1) -> Result<(), PolicyError> {
     if policy.version != TUNING_POLICY_V1_VERSION {
@@ -33,18 +33,14 @@ pub(crate) fn validate_static(policy: &TuningPolicyV1) -> Result<(), PolicyError
                     unlock,
                     ..
                 } => {
-                    if !range.min.is_finite() || !range.max.is_finite() || !range.step.is_finite()
-                    {
+                    if !range.min.is_finite() || !range.max.is_finite() || !range.step.is_finite() {
                         return Err(invalid_field(
                             format!("{path}.range"),
                             "min/max/step must be finite",
                         ));
                     }
                     if range.min > range.max {
-                        return Err(invalid_field(
-                            format!("{path}.range"),
-                            "min must be <= max",
-                        ));
+                        return Err(invalid_field(format!("{path}.range"), "min must be <= max"));
                     }
                     if range.step <= 0.0 {
                         return Err(invalid_field(

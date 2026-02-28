@@ -27,7 +27,9 @@
 //! let converted = converter.convert(42, 1200.0)?; // Returns 80.0
 //! ```
 
-use pitgun_contract::{ParameterId, ParameterRegistry, Sample, SampleValue, TelemetryFrame, TelemetryFrameBuilder};
+use pitgun_contract::{
+    ParameterId, ParameterRegistry, Sample, SampleValue, TelemetryFrame, TelemetryFrameBuilder,
+};
 use std::collections::HashMap;
 
 /// Conversion method for a parameter
@@ -77,7 +79,10 @@ impl ConversionMethod {
 
     /// Creates a table conversion
     pub fn table(breakpoints: Vec<f64>, values: Vec<f64>) -> Self {
-        Self::Table { breakpoints, values }
+        Self::Table {
+            breakpoints,
+            values,
+        }
     }
 
     /// Applies the conversion to a value
@@ -97,7 +102,10 @@ impl ConversionMethod {
                 result
             }
 
-            Self::Table { breakpoints, values } => {
+            Self::Table {
+                breakpoints,
+                values,
+            } => {
                 if breakpoints.is_empty() || values.is_empty() {
                     return x;
                 }
@@ -238,11 +246,12 @@ impl ConverterService {
 
         for sample in &frame.samples {
             if let Some(raw_value) = sample.as_f64() {
-                let converted_value = if let Some(method) = self.conversions.get(&sample.parameter_id) {
-                    method.apply(raw_value)
-                } else {
-                    raw_value
-                };
+                let converted_value =
+                    if let Some(method) = self.conversions.get(&sample.parameter_id) {
+                        method.apply(raw_value)
+                    } else {
+                        raw_value
+                    };
                 converted_samples.push(Sample {
                     parameter_id: sample.parameter_id,
                     value: SampleValue::F64(converted_value),
@@ -364,7 +373,10 @@ impl ConversionTableBuilder {
 
         let (breakpoints, values): (Vec<_>, Vec<_>) = pairs.into_iter().unzip();
 
-        ConversionMethod::Table { breakpoints, values }
+        ConversionMethod::Table {
+            breakpoints,
+            values,
+        }
     }
 }
 
@@ -396,10 +408,7 @@ mod tests {
 
     #[test]
     fn table_conversion() {
-        let method = ConversionMethod::table(
-            vec![0.0, 100.0, 200.0],
-            vec![0.0, 10.0, 40.0],
-        );
+        let method = ConversionMethod::table(vec![0.0, 100.0, 200.0], vec![0.0, 10.0, 40.0]);
 
         // Exact points
         assert!((method.apply(0.0) - 0.0).abs() < 1e-10);

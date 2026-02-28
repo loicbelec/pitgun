@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "id": "aggressive",
+  "display_name": "Aggressive",
+  "style": "aggressive",
+  "engine_mode": "push",
+  "tire_id": "soft",
+  "downforce_bias": -0.03,
+  "gear_ratio_bias": 0.07,
+  "pace_variance_ms": 70.0
+}

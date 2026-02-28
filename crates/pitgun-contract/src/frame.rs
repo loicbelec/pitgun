@@ -125,7 +125,9 @@ impl TelemetryFrame {
 
     /// Returns all samples with good signal quality.
     pub fn good_samples(&self) -> impl Iterator<Item = &Sample> {
-        self.samples.iter().filter(|s| s.quality == SignalQuality::Good)
+        self.samples
+            .iter()
+            .filter(|s| s.quality == SignalQuality::Good)
     }
 
     /// Calculates the age of this frame (time since capture).
@@ -543,7 +545,9 @@ impl Event {
 }
 
 /// Severity level for events.
-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+#[derive(
+    Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize,
+)]
 #[serde(rename_all = "snake_case")]
 pub enum EventSeverity {
     /// Trace-level debug information.
@@ -664,7 +668,9 @@ mod tests {
     #[test]
     fn sample_value_conversions() {
         assert_eq!(SampleValue::U16(1000).as_f64(), Some(1000.0));
-        let f32_value = SampleValue::F32(3.14).as_f64().expect("f32 should convert to f64");
+        let f32_value = SampleValue::F32(3.14)
+            .as_f64()
+            .expect("f32 should convert to f64");
         assert!((f32_value - 3.14).abs() < 1e-6);
         assert_eq!(SampleValue::Bool(true).as_f64(), Some(1.0));
         assert_eq!(SampleValue::Bool(false).as_f64(), Some(0.0));

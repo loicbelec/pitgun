@@ -1,0 +1,12 @@
+{
+  "mu_scale": 1.02,
+  "wear_per_s": 0.000002,
+  "wear_load_k": 0.0000002,
+  "wear_grip_k": 0.6,
+  "wear_min": 0.45,
+  "temp_opt": 100.0,
+  "temp_sigma": 42.5,
+  "temp_min_k": 0.825,
+  "heat_k": 0.0061,
+  "cool_k": 0.00089
+}

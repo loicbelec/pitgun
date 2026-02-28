@@ -1738,7 +1738,7 @@ We realized that Pitgun was evolving beyond a simple "telemetry consumption tool
 ### The Great Refactoring
 To support this "Platform" vision, we renamed our components to reflect their new roles in a Hexagonal Architecture:
 
-1.  **Data Plane (`pitgun-engine-f1`):** Formerly `source-physics`. It is no longer just a source; it is the reference implementation of the simulation kernel. It is stateless and compile-ready for WASM.
+1.  **Data Plane (`pitgun-simulator`):** Formerly `source-physics`. It is no longer just a source; it is the reference implementation of the simulation kernel. It is stateless and compile-ready for WASM.
 2.  **Control Plane (`pitgun-solver`):** *New Component.* This is the brain that will distribute jobs (e.g., "Simulate 10k laps with variance X") to workers.
 3.  **Governance (`pitgun-authority`):** Formerly `configd`. It enforces the rules (Policy) and signs the contracts. It is the "Judge".
 4.  **Gateway (`pitgun-gateway`):** Formerly `telemetryd`. It handled too much responsibility. Now it focuses solely on high-throughput ingress and dispatch.

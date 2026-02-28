@@ -307,7 +307,11 @@ pub struct SourceMetadata {
 
 impl SourceMetadata {
     /// Creates a new metadata instance with required fields.
-    pub fn new(source_id: impl Into<String>, name: impl Into<String>, source_type: SourceType) -> Self {
+    pub fn new(
+        source_id: impl Into<String>,
+        name: impl Into<String>,
+        source_type: SourceType,
+    ) -> Self {
         Self {
             source_id: source_id.into(),
             name: name.into(),

@@ -7,7 +7,7 @@ edition = "2024"
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-pitgun-engine-f1 = { path = "../pitgun-engine-f1" }
+pitgun-simulator = { path = "../pitgun-simulator", features = ["wasm"] }
 pitgun-contract = { path = "../pitgun-contract" }
 pitgun-policy = { path = "../pitgun-policy" }
 serde = { version = "1.0", features = ["derive"] }

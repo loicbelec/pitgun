@@ -21,8 +21,8 @@ pub use registry::{
     ValidationResult,
 };
 pub use source::{
-    SourceConfig, SourceError, SourceMetadata, SourceResult, SourceState, SourceStats,
-    SourceType, TelemetrySource,
+    SourceConfig, SourceError, SourceMetadata, SourceResult, SourceState, SourceStats, SourceType,
+    TelemetrySource,
 };
 
 use serde::{Deserialize, Serialize};
@@ -249,9 +249,7 @@ mod tests {
         };
 
         let base_bytes = base.signing_bytes().expect("payload should serialize");
-        let reordered_bytes = reordered
-            .signing_bytes()
-            .expect("payload should serialize");
+        let reordered_bytes = reordered.signing_bytes().expect("payload should serialize");
         assert_eq!(base_bytes, reordered_bytes);
 
         let key = SigningKey::from_secret(b"unit-test-secret").expect("secret should be valid");
