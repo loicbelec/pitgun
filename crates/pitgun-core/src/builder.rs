@@ -26,15 +26,9 @@ use std::time::Duration;
 #[derive(Clone, Debug)]
 pub enum SourceConfig {
     /// UDP source configuration
-    Udp {
-        bind_addr: String,
-        codec: String,
-    },
+    Udp { bind_addr: String, codec: String },
     /// WebSocket source configuration  
-    WebSocket {
-        url: String,
-        codec: Option<String>,
-    },
+    WebSocket { url: String, codec: Option<String> },
     /// Kafka source configuration
     Kafka {
         brokers: Vec<String>,
@@ -48,10 +42,7 @@ pub enum SourceConfig {
         client_id: String,
     },
     /// Physics simulation source
-    Physics {
-        model_name: String,
-        frame_rate: f64,
-    },
+    Physics { model_name: String, frame_rate: f64 },
 }
 
 /// Builder for constructing TelemetryPipeline instances
@@ -308,13 +299,12 @@ impl PipelineBuilder {
     ///
     /// The factory closure receives each source configuration and
     /// should return a boxed TelemetrySource implementation.
-    pub async fn build_with_factory<F, Fut>(
-        self,
-        factory: F,
-    ) -> SourceResult<TelemetryPipeline>
+    pub async fn build_with_factory<F, Fut>(self, factory: F) -> SourceResult<TelemetryPipeline>
     where
         F: Fn(String, SourceConfig) -> Fut,
-        Fut: std::future::Future<Output = SourceResult<Box<dyn pitgun_contract::TelemetrySource + Send>>>,
+        Fut: std::future::Future<
+                Output = SourceResult<Box<dyn pitgun_contract::TelemetrySource + Send>>,
+            >,
     {
         if self.sources.is_empty() {
             return Err(SourceError::InvalidConfig("no sources configured".into()));
@@ -395,10 +385,10 @@ mod tests {
             .with_channel_capacity(4096);
 
         let (config, sources) = builder.into_config();
-        
+
         assert_eq!(config.channel_capacity, 4096);
         assert_eq!(sources.len(), 1);
-        
+
         match &sources[0].1 {
             SourceConfig::Udp { bind_addr, codec } => {
                 assert_eq!(bind_addr, "0.0.0.0:20777");

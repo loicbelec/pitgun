@@ -404,14 +404,30 @@ impl F1UdpCodec {
 
         // Tyres pressure (4 × f32) - offset 42
         if car_data.len() >= 58 {
-            let tp_fl = f32::from_le_bytes([car_data[42], car_data[43], car_data[44], car_data[45]]);
-            let tp_fr = f32::from_le_bytes([car_data[46], car_data[47], car_data[48], car_data[49]]);
-            let tp_rl = f32::from_le_bytes([car_data[50], car_data[51], car_data[52], car_data[53]]);
-            let tp_rr = f32::from_le_bytes([car_data[54], car_data[55], car_data[56], car_data[57]]);
-            samples.push(Sample::good(param_ids::TYRE_PRESSURE_FL, SampleValue::F32(tp_fl)));
-            samples.push(Sample::good(param_ids::TYRE_PRESSURE_FR, SampleValue::F32(tp_fr)));
-            samples.push(Sample::good(param_ids::TYRE_PRESSURE_RL, SampleValue::F32(tp_rl)));
-            samples.push(Sample::good(param_ids::TYRE_PRESSURE_RR, SampleValue::F32(tp_rr)));
+            let tp_fl =
+                f32::from_le_bytes([car_data[42], car_data[43], car_data[44], car_data[45]]);
+            let tp_fr =
+                f32::from_le_bytes([car_data[46], car_data[47], car_data[48], car_data[49]]);
+            let tp_rl =
+                f32::from_le_bytes([car_data[50], car_data[51], car_data[52], car_data[53]]);
+            let tp_rr =
+                f32::from_le_bytes([car_data[54], car_data[55], car_data[56], car_data[57]]);
+            samples.push(Sample::good(
+                param_ids::TYRE_PRESSURE_FL,
+                SampleValue::F32(tp_fl),
+            ));
+            samples.push(Sample::good(
+                param_ids::TYRE_PRESSURE_FR,
+                SampleValue::F32(tp_fr),
+            ));
+            samples.push(Sample::good(
+                param_ids::TYRE_PRESSURE_RL,
+                SampleValue::F32(tp_rl),
+            ));
+            samples.push(Sample::good(
+                param_ids::TYRE_PRESSURE_RR,
+                SampleValue::F32(tp_rr),
+            ));
         }
 
         Ok(())
@@ -437,7 +453,10 @@ impl F1UdpCodec {
 
         // Last lap time (u32 ms)
         let last_lap = u32::from_le_bytes([car_data[0], car_data[1], car_data[2], car_data[3]]);
-        samples.push(Sample::good(param_ids::LAP_TIME, SampleValue::U32(last_lap)));
+        samples.push(Sample::good(
+            param_ids::LAP_TIME,
+            SampleValue::U32(last_lap),
+        ));
 
         // Current lap time (u32 ms) - offset 4
         // Sector 1 time (u16 ms) - offset 8
@@ -453,7 +472,10 @@ impl F1UdpCodec {
 
         // Current lap num (u8) - offset 24
         let lap_num = car_data[24];
-        samples.push(Sample::good(param_ids::LAP_NUMBER, SampleValue::U8(lap_num)));
+        samples.push(Sample::good(
+            param_ids::LAP_NUMBER,
+            SampleValue::U8(lap_num),
+        ));
 
         // Sector (u8) - offset 29
         let sector = car_data[29];
@@ -463,7 +485,12 @@ impl F1UdpCodec {
     }
 
     /// Decodes Event packet (packet ID 3)
-    fn decode_event(&self, data: &[u8], _header: &F1Header, events: &mut Vec<Event>) -> CodecResult<()> {
+    fn decode_event(
+        &self,
+        data: &[u8],
+        _header: &F1Header,
+        events: &mut Vec<Event>,
+    ) -> CodecResult<()> {
         if data.len() < F1_HEADER_SIZE + 4 {
             return Ok(());
         }
@@ -500,12 +527,19 @@ impl F1UdpCodec {
     }
 
     /// Helper to read an f32 sample
-    fn read_f32_sample(&self, cursor: &mut Cursor<&[u8]>, param_id: ParameterId) -> CodecResult<Sample> {
+    fn read_f32_sample(
+        &self,
+        cursor: &mut Cursor<&[u8]>,
+        param_id: ParameterId,
+    ) -> CodecResult<Sample> {
         let mut buf = [0u8; 4];
         cursor
             .read_exact(&mut buf)
             .map_err(|_| CodecError::MalformedData("failed to read f32".into()))?;
-        Ok(Sample::good(param_id, SampleValue::F32(f32::from_le_bytes(buf))))
+        Ok(Sample::good(
+            param_id,
+            SampleValue::F32(f32::from_le_bytes(buf)),
+        ))
     }
 }
 

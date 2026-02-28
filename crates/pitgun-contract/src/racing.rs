@@ -36,7 +36,7 @@ pub struct TuningSpec {
     pub cooling_points: f64,
     pub aero_points: f64,
     pub chassis_points: f64,
-    pub downforce_slider: f64, // 0.0 - 1.0
+    pub downforce_slider: f64,  // 0.0 - 1.0
     pub gear_ratio_slider: f64, // 0.0 - 1.0
 }
 

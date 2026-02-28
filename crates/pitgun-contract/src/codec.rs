@@ -58,27 +58,15 @@ pub type CodecResult<T> = Result<T, CodecError>;
 #[derive(Clone, Debug)]
 pub enum CodecError {
     /// Data is too short to decode.
-    InsufficientData {
-        expected: usize,
-        actual: usize,
-    },
+    InsufficientData { expected: usize, actual: usize },
     /// Invalid magic number or header.
-    InvalidHeader {
-        expected: Vec<u8>,
-        actual: Vec<u8>,
-    },
+    InvalidHeader { expected: Vec<u8>, actual: Vec<u8> },
     /// Unsupported protocol version.
-    UnsupportedVersion {
-        version: u32,
-        supported: Vec<u32>,
-    },
+    UnsupportedVersion { version: u32, supported: Vec<u32> },
     /// Invalid packet type or ID.
     InvalidPacketType(u8),
     /// Checksum or CRC mismatch.
-    ChecksumMismatch {
-        expected: u32,
-        actual: u32,
-    },
+    ChecksumMismatch { expected: u32, actual: u32 },
     /// Data corruption or invalid format.
     MalformedData(String),
     /// Required field is missing.
@@ -96,10 +84,7 @@ pub enum CodecError {
     /// Decoding not supported by this codec.
     DecodeNotSupported,
     /// Buffer too small for encoding.
-    BufferTooSmall {
-        required: usize,
-        available: usize,
-    },
+    BufferTooSmall { required: usize, available: usize },
     /// I/O error during encoding/decoding.
     IoError(String),
     /// JSON/serialization error.
@@ -112,28 +97,48 @@ impl fmt::Display for CodecError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::InsufficientData { expected, actual } => {
-                write!(f, "insufficient data: expected {expected} bytes, got {actual}")
+                write!(
+                    f,
+                    "insufficient data: expected {expected} bytes, got {actual}"
+                )
             }
             Self::InvalidHeader { expected, actual } => {
-                write!(f, "invalid header: expected {:?}, got {:?}", expected, actual)
+                write!(
+                    f,
+                    "invalid header: expected {:?}, got {:?}",
+                    expected, actual
+                )
             }
             Self::UnsupportedVersion { version, supported } => {
                 write!(f, "unsupported version {version}, supported: {supported:?}")
             }
             Self::InvalidPacketType(t) => write!(f, "invalid packet type: {t}"),
             Self::ChecksumMismatch { expected, actual } => {
-                write!(f, "checksum mismatch: expected {expected:#x}, got {actual:#x}")
+                write!(
+                    f,
+                    "checksum mismatch: expected {expected:#x}, got {actual:#x}"
+                )
             }
             Self::MalformedData(msg) => write!(f, "malformed data: {msg}"),
             Self::MissingField(field) => write!(f, "missing required field: {field}"),
-            Self::ValueOutOfRange { field, value, range } => {
+            Self::ValueOutOfRange {
+                field,
+                value,
+                range,
+            } => {
                 write!(f, "value out of range: {field}={value}, expected {range}")
             }
             Self::UnknownParameter(id) => write!(f, "unknown parameter ID: {id}"),
             Self::EncodeNotSupported => write!(f, "encoding not supported by this codec"),
             Self::DecodeNotSupported => write!(f, "decoding not supported by this codec"),
-            Self::BufferTooSmall { required, available } => {
-                write!(f, "buffer too small: need {required} bytes, have {available}")
+            Self::BufferTooSmall {
+                required,
+                available,
+            } => {
+                write!(
+                    f,
+                    "buffer too small: need {required} bytes, have {available}"
+                )
             }
             Self::IoError(msg) => write!(f, "I/O error: {msg}"),
             Self::SerializationError(msg) => write!(f, "serialization error: {msg}"),
@@ -571,7 +576,9 @@ mod tests {
         assert!(caps.can_decode);
         assert!(!caps.can_encode);
 
-        let caps = CodecCapabilities::bidirectional().with_streaming().with_lossless();
+        let caps = CodecCapabilities::bidirectional()
+            .with_streaming()
+            .with_lossless();
         assert!(caps.can_decode);
         assert!(caps.can_encode);
         assert!(caps.supports_streaming);
@@ -581,7 +588,7 @@ mod tests {
     #[test]
     fn decode_output_frames() {
         let frame = sample_frame();
-        
+
         let output = DecodeOutput::Frame(frame.clone());
         assert!(output.has_frames());
         assert_eq!(output.frame_count(), 1);

@@ -1,9 +1,11 @@
-use std::fs;
 use pitgun_contract::SignedSimulationContractV1;
 use pitgun_signing::SigningKey;
+use std::fs;
 
 fn main() {
-    let path = std::env::args().nth(1).expect("usage: verify_sim <contract.json>");
+    let path = std::env::args()
+        .nth(1)
+        .expect("usage: verify_sim <contract.json>");
     let raw = fs::read_to_string(&path).expect("read json");
 
     let signed: SignedSimulationContractV1 =
