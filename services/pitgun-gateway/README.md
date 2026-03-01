@@ -29,7 +29,7 @@ Every message over `/ws` must follow:
   "ts": "ISO8601",
   "player_id": "string",
   "session_id": "string",
-  "event_type": "session.start | telemetry.sample_batch | session.end | purchase.order_completed",
+  "event_type": "session.start | telemetry.sample_batch | session.end | purchase.order_completed | pitwall.session_configured",
   "payload": {}
 }
 ```

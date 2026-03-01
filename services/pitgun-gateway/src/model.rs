@@ -11,6 +11,7 @@ pub const EVENT_TYPE_SESSION_START: &str = "session.start";
 pub const EVENT_TYPE_TELEMETRY_SAMPLE_BATCH: &str = "telemetry.sample_batch";
 pub const EVENT_TYPE_SESSION_END: &str = "session.end";
 pub const EVENT_TYPE_PURCHASE_ORDER_COMPLETED: &str = "purchase.order_completed";
+pub const EVENT_TYPE_PITWALL_SESSION_CONFIGURED: &str = "pitwall.session_configured";
 
 #[derive(Clone, Debug)]
 pub struct EventEnvelope {
@@ -30,6 +31,7 @@ impl EventEnvelope {
             EventPayload::TelemetrySampleBatch(payload) => serde_json::to_value(payload),
             EventPayload::SessionEnd(payload) => serde_json::to_value(payload),
             EventPayload::PurchaseOrderCompleted(payload) => serde_json::to_value(payload),
+            EventPayload::PitWallSessionConfigured(payload) => serde_json::to_value(payload),
         }
     }
 }
@@ -40,6 +42,7 @@ pub enum EventPayload {
     TelemetrySampleBatch(TelemetrySampleBatchPayload),
     SessionEnd(SessionEndPayload),
     PurchaseOrderCompleted(PurchaseOrderCompletedPayload),
+    PitWallSessionConfigured(PitWallSessionConfiguredPayload),
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -99,6 +102,28 @@ pub struct PurchaseOrderLineItem {
     pub quantity: u32,
     pub unit_price: f64,
     pub line_total: f64,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct PitWallSessionConfiguredPayload {
+    pub run_id: String,
+    pub track_id: String,
+    pub vehicle_id: String,
+    pub session_type: String,
+    pub seed: u64,
+    pub sampling_hz: f64,
+    #[serde(default)]
+    pub game_version: Option<String>,
+    #[serde(default)]
+    pub wasm_source_commit: Option<String>,
+    #[serde(default)]
+    pub wasm_build_time: Option<String>,
+    pub setup: Value,
+    pub setup_offsets: Value,
+    pub effective_setup: Value,
+    #[serde(default)]
+    pub stint_strategy: Option<Value>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -223,6 +248,18 @@ fn parse_payload(
             validate_purchase_payload(event_type, &payload)?;
             Ok(EventPayload::PurchaseOrderCompleted(payload))
         }
+        EVENT_TYPE_PITWALL_SESSION_CONFIGURED => {
+            let payload: PitWallSessionConfiguredPayload =
+                serde_json::from_value(payload).map_err(|err| {
+                    EnvelopeValidationError::InvalidPayload {
+                        event_type: event_type.to_string(),
+                        message: err.to_string(),
+                    }
+                })?;
+
+            validate_pitwall_session_payload(event_type, &payload)?;
+            Ok(EventPayload::PitWallSessionConfigured(payload))
+        }
         other => Err(EnvelopeValidationError::UnsupportedEventType(
             other.to_string(),
         )),
@@ -311,9 +348,63 @@ fn validate_purchase_payload(
     Ok(())
 }
 
+fn validate_pitwall_session_payload(
+    event_type: &str,
+    payload: &PitWallSessionConfiguredPayload,
+) -> Result<(), EnvelopeValidationError> {
+    if payload.run_id.trim().is_empty() {
+        return Err(EnvelopeValidationError::InvalidPayload {
+            event_type: event_type.to_string(),
+            message: "run_id must be a non-empty string".to_string(),
+        });
+    }
+
+    if payload.track_id.trim().is_empty() {
+        return Err(EnvelopeValidationError::InvalidPayload {
+            event_type: event_type.to_string(),
+            message: "track_id must be a non-empty string".to_string(),
+        });
+    }
+
+    if payload.vehicle_id.trim().is_empty() {
+        return Err(EnvelopeValidationError::InvalidPayload {
+            event_type: event_type.to_string(),
+            message: "vehicle_id must be a non-empty string".to_string(),
+        });
+    }
+
+    if payload.session_type.trim().is_empty() {
+        return Err(EnvelopeValidationError::InvalidPayload {
+            event_type: event_type.to_string(),
+            message: "session_type must be a non-empty string".to_string(),
+        });
+    }
+
+    if !payload.sampling_hz.is_finite() || payload.sampling_hz <= 0.0 {
+        return Err(EnvelopeValidationError::InvalidPayload {
+            event_type: event_type.to_string(),
+            message: "sampling_hz must be a finite number > 0".to_string(),
+        });
+    }
+
+    if let Some(wasm_build_time) = &payload.wasm_build_time {
+        OffsetDateTime::parse(wasm_build_time, &Rfc3339).map_err(|_| {
+            EnvelopeValidationError::InvalidPayload {
+                event_type: event_type.to_string(),
+                message: "wasm_build_time must be ISO8601/RFC3339 when provided".to_string(),
+            }
+        })?;
+    }
+
+    Ok(())
+}
+
 #[cfg(test)]
 mod tests {
-    use super::{EVENT_TYPE_TELEMETRY_SAMPLE_BATCH, parse_event_envelope};
+    use super::{
+        EVENT_TYPE_PITWALL_SESSION_CONFIGURED, EVENT_TYPE_TELEMETRY_SAMPLE_BATCH,
+        parse_event_envelope,
+    };
 
     #[test]
     fn parses_telemetry_sample_batch() {
@@ -363,5 +454,65 @@ mod tests {
             err.to_string()
                 .contains("schema_version must be pitgun-envelope-v1")
         );
+    }
+
+    #[test]
+    fn parses_pitwall_session_configured() {
+        let payload = format!(
+            r#"{{
+                "schema_version": "pitgun-envelope-v1",
+                "event_id": "11111111-2222-4333-8444-555555555555",
+                "ts": "2026-02-11T09:00:00Z",
+                "player_id": "player-1",
+                "session_id": "session-abc",
+                "event_type": "{EVENT_TYPE_PITWALL_SESSION_CONFIGURED}",
+                "payload": {{
+                    "run_id": "run-1",
+                    "track_id": "SPA",
+                    "vehicle_id": "f1_2026",
+                    "session_type": "FP1",
+                    "seed": 1,
+                    "sampling_hz": 5.0,
+                    "game_version": "1.2",
+                    "wasm_source_commit": "abc123",
+                    "wasm_build_time": "2026-02-11T09:00:00Z",
+                    "setup": {{
+                        "aero": 8,
+                        "chassis": 4,
+                        "cooling": 2,
+                        "engine": 3,
+                        "downforce_slider": 0.5,
+                        "gear_ratio_slider": 0.5
+                    }},
+                    "setup_offsets": {{
+                        "aero": 2,
+                        "chassis": 1,
+                        "cooling": 0,
+                        "engine": 0
+                    }},
+                    "effective_setup": {{
+                        "aero": 10,
+                        "chassis": 5,
+                        "cooling": 2,
+                        "engine": 3,
+                        "downforce_slider": 0.5,
+                        "gear_ratio_slider": 0.5
+                    }},
+                    "stint_strategy": {{
+                        "stints": [
+                            {{ "tire_id": "medium", "laps": 6 }},
+                            {{ "tire_id": "hard", "laps": 4 }}
+                        ],
+                        "pit_laps": [6]
+                    }}
+                }}
+            }}"#
+        );
+
+        let envelope =
+            parse_event_envelope(&payload, "pitgun-envelope-v1").expect("payload should parse");
+
+        assert_eq!(envelope.player_id, "player-1");
+        assert_eq!(envelope.event_type, EVENT_TYPE_PITWALL_SESSION_CONFIGURED);
     }
 }
