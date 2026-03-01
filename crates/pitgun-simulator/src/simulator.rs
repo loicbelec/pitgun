@@ -114,14 +114,19 @@ impl Simulator {
             &resolved,
             &profile,
             initial_state,
-            if input.hz > 0.0 { input.hz } else { default_hz() },
+            if input.hz > 0.0 {
+                input.hz
+            } else {
+                default_hz()
+            },
         )?;
         let lap_number = input.lap_number.unwrap_or(1).max(1);
         let lap_delta_ms = deterministic_lap_delta_ms(&effects, &driver.id, input.seed, lap_number);
         if lap_delta_ms != 0 {
             apply_lap_delta(&mut sim, lap_delta_ms);
         }
-        let fuel_used_kg = (resolved.engine.fuel_burn_kg_per_s * sim.lap_time_s).min(initial_fuel_mass_kg);
+        let fuel_used_kg =
+            (resolved.engine.fuel_burn_kg_per_s * sim.lap_time_s).min(initial_fuel_mass_kg);
         sim.fuel_used_kg = fuel_used_kg;
         sim.final_state.fuel_mass_kg = (initial_fuel_mass_kg - fuel_used_kg).max(0.0);
         Ok(sim)
@@ -279,11 +284,12 @@ fn run_single_lap(
     let mut tire_wear = vec![0.0; n];
     let mut power_kw = vec![0.0; n];
     let mut gear = vec![1u8; n];
-    let start_speed = if initial_state.exit_speed_mps.is_finite() && initial_state.exit_speed_mps > 0.0 {
-        initial_state.exit_speed_mps
-    } else {
-        30.0
-    };
+    let start_speed =
+        if initial_state.exit_speed_mps.is_finite() && initial_state.exit_speed_mps > 0.0 {
+            initial_state.exit_speed_mps
+        } else {
+            30.0
+        };
     let start_gear = initial_state
         .exit_gear
         .clamp(1, vehicle.engine.gear_ratios.len() as u8);
@@ -350,7 +356,6 @@ fn run_single_lap(
             let a = f_net / mass;
             v_fwd[i + 1] = (v * v + 2.0 * a * ds).max(0.0).sqrt();
             gear[i] = best_gear;
-
         }
 
         let heat = 1000.0 * vehicle.engine.thermal.heat_alpha * power_kw[i] * heat_mult;
