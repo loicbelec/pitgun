@@ -249,12 +249,10 @@ fn parse_payload(
             Ok(EventPayload::PurchaseOrderCompleted(payload))
         }
         EVENT_TYPE_PITWALL_SESSION_CONFIGURED => {
-            let payload: PitWallSessionConfiguredPayload =
-                serde_json::from_value(payload).map_err(|err| {
-                    EnvelopeValidationError::InvalidPayload {
-                        event_type: event_type.to_string(),
-                        message: err.to_string(),
-                    }
+            let payload: PitWallSessionConfiguredPayload = serde_json::from_value(payload)
+                .map_err(|err| EnvelopeValidationError::InvalidPayload {
+                    event_type: event_type.to_string(),
+                    message: err.to_string(),
                 })?;
 
             validate_pitwall_session_payload(event_type, &payload)?;
