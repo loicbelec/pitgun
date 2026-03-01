@@ -8,8 +8,8 @@ use serde_json::Value;
 
 use crate::errors::SimulatorError;
 use crate::models::{
-    AeroConfig, ChassisConfig, EngineConfig, EngineThermalConfig, TireConfig, TrackConfig,
-    VehicleConfig,
+    AeroConfig, ChassisConfig, DriverConfig, EngineConfig, EngineThermalConfig, TireConfig,
+    TrackConfig, VehicleConfig,
 };
 use crate::profiles::{CompetitorProfile, DrivingStyle, EngineMode};
 use crate::provider::InMemoryConfigProvider;
@@ -94,6 +94,7 @@ pub struct DataRegistry {
     tires: HashMap<String, TireConfig>,
     tracks: HashMap<String, TrackConfig>,
     vehicles: HashMap<String, VehicleConfig>,
+    drivers: HashMap<String, DriverConfig>,
     profiles: HashMap<String, CompetitorProfile>,
 }
 
@@ -156,6 +157,9 @@ impl DataRegistry {
         for value in self.vehicles.into_values() {
             provider.insert_vehicle(value);
         }
+        for value in self.drivers.into_values() {
+            provider.insert_driver(value);
+        }
         for value in self.profiles.into_values() {
             provider.insert_profile(value);
         }
@@ -175,8 +179,19 @@ impl DataRegistry {
         for tire in self.tires.values() {
             tire.validate()?;
         }
+        for driver in self.drivers.values() {
+            driver.validate()?;
+        }
         for track in self.tracks.values() {
             track.validate()?;
+        }
+
+        if !self.drivers.contains_key("default") {
+            return Err(SimulatorError::InvalidConfig {
+                kind: "driver",
+                id: "default".to_string(),
+                reason: "missing required default driver".to_string(),
+            });
         }
 
         if !self.profiles.contains_key("balanced") {
@@ -261,7 +276,13 @@ impl DataRegistry {
             "tires" => self.insert_tire(parse_tire_value(stem, &value)?, allow_override),
             "circuits" => self.insert_track(parse_track_value(stem, &value)?, allow_override),
             "vehicles" => self.insert_vehicle(parse_vehicle_value(stem, &value)?, allow_override),
-            "drivers" => self.insert_profile(parse_profile_value(stem, &value)?, allow_override),
+            "drivers" => {
+                if value.get("style").is_some() || value.get("engine_mode").is_some() {
+                    self.insert_profile(parse_profile_value(stem, &value)?, allow_override)
+                } else {
+                    self.insert_driver(parse_driver_value(stem, &value)?, allow_override)
+                }
+            }
             _ => Ok(()),
         }
     }
@@ -324,6 +345,20 @@ impl DataRegistry {
         )
     }
 
+    fn insert_driver(
+        &mut self,
+        value: DriverConfig,
+        allow_override: bool,
+    ) -> Result<(), SimulatorError> {
+        insert_unique(
+            &mut self.drivers,
+            "driver",
+            value.id.clone(),
+            value,
+            allow_override,
+        )
+    }
+
     fn insert_profile(
         &mut self,
         value: CompetitorProfile,
@@ -376,6 +411,24 @@ impl DataRegistry {
             }
         }
         Ok(())
+    }
+
+    pub fn tracks(&self) -> Vec<TrackConfig> {
+        let mut items = self.tracks.values().cloned().collect::<Vec<_>>();
+        items.sort_by(|left, right| left.id.cmp(&right.id));
+        items
+    }
+
+    pub fn engines(&self) -> Vec<EngineConfig> {
+        let mut items = self.engines.values().cloned().collect::<Vec<_>>();
+        items.sort_by(|left, right| left.id.cmp(&right.id));
+        items
+    }
+
+    pub fn drivers(&self) -> Vec<DriverConfig> {
+        let mut items = self.drivers.values().cloned().collect::<Vec<_>>();
+        items.sort_by(|left, right| left.id.cmp(&right.id));
+        items
     }
 }
 
@@ -605,12 +658,13 @@ fn parse_compact_track(file_stem: &str, value: &Value) -> Result<TrackConfig, Si
         );
     }
 
-    build_track_from_arrays(id, s, x, y, z, None, None, None, pit_loss_ms)
+    build_track_from_arrays(id, None, s, x, y, z, None, None, None, pit_loss_ms)
 }
 
 fn parse_trackeagle_track(file_stem: &str, value: &Value) -> Result<TrackConfig, SimulatorError> {
     let id = parsed_id(file_stem, value, true)?;
     let data = value.get("data").unwrap_or(value);
+    let country_code = derive_track_country_code(value);
 
     let s = read_vec(data, "s_m")?;
     let x = read_vec(data, "x_m")?;
@@ -635,15 +689,22 @@ fn parse_trackeagle_track(file_stem: &str, value: &Value) -> Result<TrackConfig,
     };
 
     let pit_loss_ms = read_optional_u64(value, &["pit_loss_ms"]).unwrap_or(DEFAULT_PIT_LOSS_MS);
-    build_track_from_arrays(id, s, x, y, z, curvature, slope, heading, pit_loss_ms)
+    build_track_from_arrays(
+        id,
+        country_code,
+        s,
+        x,
+        y,
+        z,
+        curvature,
+        slope,
+        heading,
+        pit_loss_ms,
+    )
 }
 
 fn parse_profile_value(file_stem: &str, value: &Value) -> Result<CompetitorProfile, SimulatorError> {
-    if value.get("style").is_some() || value.get("engine_mode").is_some() {
-        parse_explicit_profile(file_stem, value)
-    } else {
-        parse_aggressiveness_profile(file_stem, value)
-    }
+    parse_explicit_profile(file_stem, value)
 }
 
 fn parse_explicit_profile(file_stem: &str, value: &Value) -> Result<CompetitorProfile, SimulatorError> {
@@ -673,10 +734,7 @@ fn parse_explicit_profile(file_stem: &str, value: &Value) -> Result<CompetitorPr
     })
 }
 
-fn parse_aggressiveness_profile(
-    file_stem: &str,
-    value: &Value,
-) -> Result<CompetitorProfile, SimulatorError> {
+fn parse_driver_value(file_stem: &str, value: &Value) -> Result<DriverConfig, SimulatorError> {
     #[derive(Debug, Deserialize)]
     struct DriverJson {
         #[serde(default)]
@@ -691,31 +749,18 @@ fn parse_aggressiveness_profile(
         SimulatorError::Parse(format!("driver '{}' parse failed: {err}", file_stem))
     })?;
 
-    let a = parsed.aggressiveness.clamp(0.0, 1.0);
-    let (style, engine_mode) = if a < 0.33 {
-        (DrivingStyle::Conservative, EngineMode::Economy)
-    } else if a < 0.66 {
-        (DrivingStyle::Balanced, EngineMode::Balanced)
-    } else {
-        (DrivingStyle::Aggressive, EngineMode::Push)
-    };
-
     let id = schema_version(value)
         .map(|_| explicit_id(value, file_stem, false))
         .transpose()?
         .or_else(|| parsed.id.take())
         .unwrap_or_else(|| file_stem.to_string());
-
-    Ok(CompetitorProfile {
+    let driver = DriverConfig {
         id: id.clone(),
         display_name: parsed.display_name.unwrap_or(id),
-        style,
-        engine_mode,
-        tire_id: "medium".to_string(),
-        downforce_bias: 0.0,
-        gear_ratio_bias: 0.0,
-        pace_variance_ms: 20.0 + 60.0 * a,
-    })
+        aggressiveness: parsed.aggressiveness.clamp(0.0, 1.0),
+    };
+    driver.validate()?;
+    Ok(driver)
 }
 
 fn build_compact_engine(
@@ -768,6 +813,7 @@ fn build_compact_engine(
 
 fn build_track_from_arrays(
     id: String,
+    country_code: Option<String>,
     s: Vec<f64>,
     x: Vec<f64>,
     y: Vec<f64>,
@@ -783,6 +829,7 @@ fn build_track_from_arrays(
 
     let track = TrackConfig {
         id,
+        country_code,
         s_m: s,
         x_m: x,
         y_m: y,
@@ -795,6 +842,24 @@ fn build_track_from_arrays(
 
     track.validate()?;
     Ok(track)
+}
+
+fn derive_track_country_code(value: &Value) -> Option<String> {
+    let meta = value.get("meta")?;
+    if let Some(explicit) = read_optional_string(meta, &["country_code"]) {
+        let normalized = explicit.trim().to_uppercase();
+        if normalized.len() == 2 && normalized.chars().all(|ch| ch.is_ascii_alphabetic()) {
+            return Some(normalized);
+        }
+    }
+
+    let raw_id = read_optional_string(meta, &["id"])?;
+    let prefix = raw_id.split('-').next()?.trim().to_uppercase();
+    if prefix.len() == 2 && prefix.chars().all(|ch| ch.is_ascii_alphabetic()) {
+        Some(prefix)
+    } else {
+        None
+    }
 }
 
 fn insert_unique<T>(
@@ -1098,6 +1163,18 @@ mod tests {
 
         assert!(track.s_m.len() > 1000);
         assert_eq!(track.pit_loss_ms, DEFAULT_PIT_LOSS_MS);
+        assert_eq!(track.country_code.as_deref(), Some("NL"));
+    }
+
+    #[test]
+    fn loads_driver_catalog_from_embedded_pack() {
+        let registry = DataRegistry::load_default().expect("embedded pack should load");
+        let provider = registry.into_provider();
+        let driver = crate::provider::ConfigProvider::get_driver(&provider, "smooth_operator")
+            .expect("smooth operator driver");
+
+        assert!(driver.aggressiveness > 0.0);
+        assert!(!driver.display_name.trim().is_empty());
     }
 
     #[cfg(not(target_arch = "wasm32"))]

@@ -1,8 +1,11 @@
 use std::collections::HashMap;
 
+#[cfg(all(feature = "json-files", not(target_arch = "wasm32")))]
 use crate::data::DataRegistry;
 use crate::errors::SimulatorError;
-use crate::models::{AeroConfig, ChassisConfig, EngineConfig, TireConfig, TrackConfig, VehicleConfig};
+use crate::models::{
+    AeroConfig, ChassisConfig, DriverConfig, EngineConfig, TireConfig, TrackConfig, VehicleConfig,
+};
 use crate::profiles::CompetitorProfile;
 
 pub trait ConfigProvider: Send + Sync {
@@ -12,7 +15,11 @@ pub trait ConfigProvider: Send + Sync {
     fn get_engine(&self, id: &str) -> Result<EngineConfig, SimulatorError>;
     fn get_tire(&self, id: &str) -> Result<TireConfig, SimulatorError>;
     fn get_track(&self, id: &str) -> Result<TrackConfig, SimulatorError>;
+    fn get_driver(&self, id: &str) -> Result<DriverConfig, SimulatorError>;
     fn get_profile(&self, id: &str) -> Result<CompetitorProfile, SimulatorError>;
+    fn list_tracks(&self) -> Result<Vec<TrackConfig>, SimulatorError>;
+    fn list_engines(&self) -> Result<Vec<EngineConfig>, SimulatorError>;
+    fn list_drivers(&self) -> Result<Vec<DriverConfig>, SimulatorError>;
 }
 
 #[derive(Debug, Clone, Default)]
@@ -23,6 +30,7 @@ pub struct InMemoryConfigProvider {
     engines: HashMap<String, EngineConfig>,
     tires: HashMap<String, TireConfig>,
     tracks: HashMap<String, TrackConfig>,
+    drivers: HashMap<String, DriverConfig>,
     profiles: HashMap<String, CompetitorProfile>,
 }
 
@@ -53,6 +61,10 @@ impl InMemoryConfigProvider {
 
     pub fn insert_track(&mut self, value: TrackConfig) {
         self.tracks.insert(value.id.clone(), value);
+    }
+
+    pub fn insert_driver(&mut self, value: DriverConfig) {
+        self.drivers.insert(value.id.clone(), value);
     }
 
     pub fn insert_profile(&mut self, value: CompetitorProfile) {
@@ -101,6 +113,28 @@ impl ConfigProvider for InMemoryConfigProvider {
     fn get_profile(&self, id: &str) -> Result<CompetitorProfile, SimulatorError> {
         Self::get_from(&self.profiles, "profile", id)
     }
+
+    fn get_driver(&self, id: &str) -> Result<DriverConfig, SimulatorError> {
+        Self::get_from(&self.drivers, "driver", id)
+    }
+
+    fn list_tracks(&self) -> Result<Vec<TrackConfig>, SimulatorError> {
+        let mut items = self.tracks.values().cloned().collect::<Vec<_>>();
+        items.sort_by(|left, right| left.id.cmp(&right.id));
+        Ok(items)
+    }
+
+    fn list_engines(&self) -> Result<Vec<EngineConfig>, SimulatorError> {
+        let mut items = self.engines.values().cloned().collect::<Vec<_>>();
+        items.sort_by(|left, right| left.id.cmp(&right.id));
+        Ok(items)
+    }
+
+    fn list_drivers(&self) -> Result<Vec<DriverConfig>, SimulatorError> {
+        let mut items = self.drivers.values().cloned().collect::<Vec<_>>();
+        items.sort_by(|left, right| left.id.cmp(&right.id));
+        Ok(items)
+    }
 }
 
 #[cfg(all(feature = "json-files", not(target_arch = "wasm32")))]
@@ -146,8 +180,24 @@ impl ConfigProvider for JsonFileConfigProvider {
         self.load_provider()?.get_track(id)
     }
 
+    fn get_driver(&self, id: &str) -> Result<DriverConfig, SimulatorError> {
+        self.load_provider()?.get_driver(id)
+    }
+
     fn get_profile(&self, id: &str) -> Result<CompetitorProfile, SimulatorError> {
         self.load_provider()?.get_profile(id)
+    }
+
+    fn list_tracks(&self) -> Result<Vec<TrackConfig>, SimulatorError> {
+        self.load_provider()?.list_tracks()
+    }
+
+    fn list_engines(&self) -> Result<Vec<EngineConfig>, SimulatorError> {
+        self.load_provider()?.list_engines()
+    }
+
+    fn list_drivers(&self) -> Result<Vec<DriverConfig>, SimulatorError> {
+        self.load_provider()?.list_drivers()
     }
 }
 
@@ -200,9 +250,36 @@ impl ConfigProvider for JsonFileConfigProvider {
         )))
     }
 
+    fn get_driver(&self, id: &str) -> Result<DriverConfig, SimulatorError> {
+        Err(SimulatorError::InvalidInput(format!(
+            "JsonFileConfigProvider unavailable on this target/feature set (driver {id})"
+        )))
+    }
+
     fn get_profile(&self, id: &str) -> Result<CompetitorProfile, SimulatorError> {
         Err(SimulatorError::InvalidInput(format!(
             "JsonFileConfigProvider unavailable on this target/feature set (profile {id})"
         )))
+    }
+
+    fn list_tracks(&self) -> Result<Vec<TrackConfig>, SimulatorError> {
+        Err(SimulatorError::InvalidInput(
+            "JsonFileConfigProvider unavailable on this target/feature set (list tracks)"
+                .to_string(),
+        ))
+    }
+
+    fn list_engines(&self) -> Result<Vec<EngineConfig>, SimulatorError> {
+        Err(SimulatorError::InvalidInput(
+            "JsonFileConfigProvider unavailable on this target/feature set (list engines)"
+                .to_string(),
+        ))
+    }
+
+    fn list_drivers(&self) -> Result<Vec<DriverConfig>, SimulatorError> {
+        Err(SimulatorError::InvalidInput(
+            "JsonFileConfigProvider unavailable on this target/feature set (list drivers)"
+                .to_string(),
+        ))
     }
 }

@@ -152,11 +152,13 @@ fn normalize_competitor(
 
     Ok(CompetitorSpec {
         id: comp.id.clone(),
+        driver_id: comp.driver_id.clone(),
         name: comp.name.clone(),
         team_id: comp.team_id.clone(),
         is_player: comp.is_player,
         tuning,
         budget_cap: comp.budget_cap,
+        stint_strategy: comp.stint_strategy.clone(),
     })
 }
 
@@ -167,11 +169,13 @@ mod tests {
     fn base_competitor(tuning: TuningSpec, budget_cap: f64) -> CompetitorSpec {
         CompetitorSpec {
             id: "c1".into(),
+            driver_id: None,
             name: "test".into(),
             team_id: "t1".into(),
             is_player: true,
             budget_cap,
             tuning,
+            stint_strategy: None,
         }
     }
 

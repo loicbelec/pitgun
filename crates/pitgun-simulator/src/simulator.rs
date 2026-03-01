@@ -2,6 +2,9 @@ use std::sync::Arc;
 
 use serde::{Deserialize, Serialize};
 
+use crate::drivers::{
+    apply_driver_to_tire, default_driver_id, deterministic_lap_delta_ms, driver_effects,
+};
 use crate::errors::SimulatorError;
 use crate::models::{AeroConfig, ChassisConfig, EngineConfig, TireConfig, TrackConfig};
 use crate::profiles::CompetitorProfile;
@@ -21,7 +24,15 @@ pub struct LapInput {
     #[serde(default)]
     pub profile: Option<CompetitorProfile>,
     #[serde(default)]
+    pub driver_id: Option<String>,
+    #[serde(default)]
+    pub tire_id: Option<String>,
+    #[serde(default)]
     pub initial_state: Option<SimulatorState>,
+    #[serde(default)]
+    pub seed: Option<u64>,
+    #[serde(default)]
+    pub lap_number: Option<u16>,
     #[serde(default = "default_hz")]
     pub hz: f64,
 }
@@ -53,18 +64,35 @@ impl Simulator {
         let chassis = self.provider.get_chassis(&vehicle.chassis_id)?;
         let engine = self.provider.get_engine(&vehicle.engine_id)?;
         let tire_id = input
-            .profile
-            .as_ref()
-            .map(|p| p.tire_id.as_str())
-            .filter(|id| !id.trim().is_empty())
+            .tire_id
+            .as_deref()
+            .map(str::trim)
+            .filter(|id| !id.is_empty())
+            .or_else(|| {
+                input
+                    .profile
+                    .as_ref()
+                    .map(|p| p.tire_id.as_str())
+                    .filter(|id| !id.trim().is_empty())
+            })
             .unwrap_or(vehicle.tire_id.as_str());
-        let tire = self.provider.get_tire(tire_id)?;
+        let base_tire = self.provider.get_tire(tire_id)?;
+        let driver_id = input
+            .driver_id
+            .as_deref()
+            .map(str::trim)
+            .filter(|id| !id.is_empty())
+            .unwrap_or(default_driver_id());
+        let driver = self.provider.get_driver(driver_id)?;
+        let effects = driver_effects(&driver);
+        let tire = apply_driver_to_tire(&base_tire, &effects);
         let track = self.provider.get_track(&input.track_id)?;
 
         track.validate()?;
         aero.validate()?;
         chassis.validate()?;
         engine.validate()?;
+        driver.validate()?;
         tire.validate()?;
 
         let profile = match (input.profile, input.profile_id) {
@@ -79,15 +107,33 @@ impl Simulator {
             engine_temp_c: resolved.engine.thermal.initial_temp_c,
             ..SimulatorState::default()
         });
+        let initial_fuel_mass_kg = initial_state.fuel_mass_kg.max(0.0);
 
-        let sim = run_single_lap(
+        let mut sim = run_single_lap(
             &track,
             &resolved,
             &profile,
             initial_state,
             if input.hz > 0.0 { input.hz } else { default_hz() },
         )?;
+        let lap_number = input.lap_number.unwrap_or(1).max(1);
+        let lap_delta_ms = deterministic_lap_delta_ms(&effects, &driver.id, input.seed, lap_number);
+        if lap_delta_ms != 0 {
+            apply_lap_delta(&mut sim, lap_delta_ms);
+        }
+        let fuel_used_kg = (resolved.engine.fuel_burn_kg_per_s * sim.lap_time_s).min(initial_fuel_mass_kg);
+        sim.fuel_used_kg = fuel_used_kg;
+        sim.final_state.fuel_mass_kg = (initial_fuel_mass_kg - fuel_used_kg).max(0.0);
         Ok(sim)
+    }
+}
+
+fn apply_lap_delta(output: &mut LapOutput, lap_delta_ms: i32) {
+    let adjusted_lap_time_s = (output.lap_time_s + lap_delta_ms as f64 / 1000.0).max(0.1);
+    let scale = adjusted_lap_time_s / output.lap_time_s.max(1e-6);
+    output.lap_time_s = adjusted_lap_time_s;
+    for frame in &mut output.telemetry {
+        frame.time_s *= scale;
     }
 }
 
@@ -233,18 +279,29 @@ fn run_single_lap(
     let mut tire_wear = vec![0.0; n];
     let mut power_kw = vec![0.0; n];
     let mut gear = vec![1u8; n];
-    let mut fuel_used_kg = 0.0;
+    let start_speed = if initial_state.exit_speed_mps.is_finite() && initial_state.exit_speed_mps > 0.0 {
+        initial_state.exit_speed_mps
+    } else {
+        30.0
+    };
+    let start_gear = initial_state
+        .exit_gear
+        .clamp(1, vehicle.engine.gear_ratios.len() as u8);
+    v_fwd[n - 1] = start_speed.min(v_bwd[n - 1]);
+    engine_temp[n - 1] = initial_state.engine_temp_c;
+    tire_temp[n - 1] = initial_state.tire_temp_c;
+    tire_wear[n - 1] = initial_state.tire_wear;
+    gear[n - 1] = start_gear;
 
-    v_fwd[0] = 30.0_f64.min(v_bwd[0]);
-    engine_temp[0] = initial_state.engine_temp_c;
-    tire_temp[0] = initial_state.tire_temp_c;
-    tire_wear[0] = initial_state.tire_wear;
+    v_fwd[0] = v_fwd[n - 1];
+    engine_temp[0] = engine_temp[n - 1];
+    tire_temp[0] = tire_temp[n - 1];
+    tire_wear[0] = tire_wear[n - 1];
+    gear[0] = gear[n - 1];
 
     let power_mult = profile.power_multiplier();
     let heat_mult = profile.heat_multiplier();
     let wear_mult = profile.tire_wear_multiplier();
-    let fuel_mult = profile.fuel_multiplier();
-
     for i in 0..(n - 1) {
         let ds = (track.s_m[i + 1] - track.s_m[i]).max(1e-3);
         let v = v_fwd[i].min(v_bwd[i]).max(1.0);
@@ -294,13 +351,6 @@ fn run_single_lap(
             v_fwd[i + 1] = (v * v + 2.0 * a * ds).max(0.0).sqrt();
             gear[i] = best_gear;
 
-            let throttle = if pwr_kw > 1e-9 {
-                (power_kw[i] / pwr_kw).clamp(0.0, 1.2)
-            } else {
-                0.0
-            };
-            fuel_used_kg +=
-                vehicle.engine.fuel_burn_kg_per_s * fuel_mult * (0.35 + 0.65 * throttle) * dt;
         }
 
         let heat = 1000.0 * vehicle.engine.thermal.heat_alpha * power_kw[i] * heat_mult;
@@ -325,11 +375,6 @@ fn run_single_lap(
 
         let _ = rpm;
     }
-
-    gear[n - 1] = gear[n - 2];
-    engine_temp[n - 1] = engine_temp[n - 2];
-    tire_temp[n - 1] = tire_temp[n - 2];
-    tire_wear[n - 1] = tire_wear[n - 2];
 
     let v_final: Vec<f64> = v_fwd
         .iter()
@@ -363,10 +408,12 @@ fn run_single_lap(
     };
 
     let final_state = SimulatorState {
-        fuel_mass_kg: (initial_state.fuel_mass_kg - fuel_used_kg).max(0.0),
+        fuel_mass_kg: initial_state.fuel_mass_kg.max(0.0),
         tire_wear: tire_wear[n - 1],
         tire_temp_c: tire_temp[n - 1],
         engine_temp_c: engine_temp[n - 1],
+        exit_speed_mps: v_final[n - 1],
+        exit_gear: gear[n - 1].clamp(1, vehicle.engine.gear_ratios.len() as u8),
     };
 
     let max_engine_temp_c = engine_temp
@@ -383,7 +430,7 @@ fn run_single_lap(
     Ok(LapOutput {
         lap_time_s,
         average_speed_kph: avg_speed_mps * 3.6,
-        fuel_used_kg,
+        fuel_used_kg: 0.0,
         final_state,
         telemetry,
         max_engine_temp_c,
@@ -667,7 +714,11 @@ mod tests {
                 },
                 profile_id: Some("balanced".to_string()),
                 profile: None,
+                driver_id: None,
+                tire_id: None,
                 initial_state: None,
+                seed: None,
+                lap_number: None,
                 hz: 20.0,
             })
             .expect("lap simulation");
@@ -676,6 +727,8 @@ mod tests {
         assert!(output.average_speed_kph > 20.0);
         assert!(output.telemetry.len() > 50);
         assert!(output.telemetry.iter().all(|f| f.speed_kph.is_finite()));
+        assert!(output.fuel_used_kg > 0.0);
+        assert!(output.final_state.fuel_mass_kg < 100.0);
     }
 
     #[test]
@@ -690,7 +743,11 @@ mod tests {
                 tuning: Tuning::default(),
                 profile_id: Some("aggressive".to_string()),
                 profile: None,
+                driver_id: None,
+                tire_id: None,
                 initial_state: None,
+                seed: None,
+                lap_number: None,
                 hz: 20.0,
             })
             .expect("aggressive run");
@@ -702,7 +759,11 @@ mod tests {
                 tuning: Tuning::default(),
                 profile_id: Some("conservative".to_string()),
                 profile: None,
+                driver_id: None,
+                tire_id: None,
                 initial_state: None,
+                seed: None,
+                lap_number: None,
                 hz: 20.0,
             })
             .expect("conservative run");
@@ -711,5 +772,69 @@ mod tests {
             (aggressive.lap_time_s - conservative.lap_time_s).abs() > 1e-4,
             "profile branches should affect lap time"
         );
+    }
+
+    #[test]
+    fn carried_exit_speed_affects_next_lap_entry_speed() {
+        let provider = Arc::new(default_in_memory_provider());
+        let simulator = Simulator::new(provider);
+
+        let fresh = simulator
+            .simulate_lap(LapInput {
+                vehicle_id: "f1_2026".to_string(),
+                track_id: "MONZA".to_string(),
+                tuning: Tuning::default(),
+                profile_id: Some("balanced".to_string()),
+                profile: None,
+                driver_id: None,
+                tire_id: None,
+                initial_state: Some(SimulatorState {
+                    exit_speed_mps: 0.0,
+                    exit_gear: 1,
+                    ..SimulatorState::default()
+                }),
+                seed: None,
+                lap_number: None,
+                hz: 20.0,
+            })
+            .expect("fresh lap");
+
+        let carried = simulator
+            .simulate_lap(LapInput {
+                vehicle_id: "f1_2026".to_string(),
+                track_id: "MONZA".to_string(),
+                tuning: Tuning::default(),
+                profile_id: Some("balanced".to_string()),
+                profile: None,
+                driver_id: None,
+                tire_id: None,
+                initial_state: Some(SimulatorState {
+                    exit_speed_mps: 80.0,
+                    exit_gear: 6,
+                    ..SimulatorState::default()
+                }),
+                seed: None,
+                lap_number: None,
+                hz: 20.0,
+            })
+            .expect("carried lap");
+
+        let fresh_entry_speed = fresh
+            .telemetry
+            .first()
+            .map(|frame| frame.speed_kph)
+            .unwrap_or(0.0);
+        let carried_entry_speed = carried
+            .telemetry
+            .first()
+            .map(|frame| frame.speed_kph)
+            .unwrap_or(0.0);
+
+        assert!(
+            carried_entry_speed > fresh_entry_speed + 20.0,
+            "expected carried lap to start faster: fresh={fresh_entry_speed:.2} carried={carried_entry_speed:.2}"
+        );
+        assert!(carried.final_state.exit_speed_mps > 0.0);
+        assert!(carried.final_state.exit_gear >= 1);
     }
 }

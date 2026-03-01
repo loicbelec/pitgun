@@ -62,6 +62,13 @@ pub struct TireConfig {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct DriverConfig {
+    pub id: String,
+    pub display_name: String,
+    pub aggressiveness: f64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct VehicleConfig {
     pub id: String,
     pub aero_id: String,
@@ -73,6 +80,8 @@ pub struct VehicleConfig {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct TrackConfig {
     pub id: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub country_code: Option<String>,
     pub s_m: Vec<f64>,
     pub x_m: Vec<f64>,
     pub y_m: Vec<f64>,
@@ -146,6 +155,26 @@ impl TireConfig {
                 kind: "tire",
                 id: self.id.clone(),
                 reason: "mu_scale and temp_sigma must be > 0".to_string(),
+            });
+        }
+        Ok(())
+    }
+}
+
+impl DriverConfig {
+    pub fn validate(&self) -> Result<(), SimulatorError> {
+        if self.id.trim().is_empty() {
+            return Err(SimulatorError::InvalidConfig {
+                kind: "driver",
+                id: self.id.clone(),
+                reason: "id must be non-empty".to_string(),
+            });
+        }
+        if !(0.0..=1.0).contains(&self.aggressiveness) {
+            return Err(SimulatorError::InvalidConfig {
+                kind: "driver",
+                id: self.id.clone(),
+                reason: "aggressiveness must be in [0, 1]".to_string(),
             });
         }
         Ok(())

@@ -20,14 +20,31 @@ pub struct RaceInput {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
+pub struct RaceStint {
+    pub tire_id: String,
+    pub laps: u16,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
+pub struct CompetitorStintStrategy {
+    pub stints: Vec<RaceStint>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub pit_laps: Vec<u16>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 pub struct CompetitorSpec {
     pub id: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub driver_id: Option<String>,
     pub name: String,
     pub team_id: String,
     pub is_player: bool,
     pub tuning: TuningSpec,
     /// Total point budget used by this competitor (for validation).
     pub budget_cap: f64,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub stint_strategy: Option<CompetitorStintStrategy>,
 }
 
 #[derive(Clone, Debug, Default, Serialize, Deserialize, PartialEq)]
@@ -72,6 +89,24 @@ pub enum VehicleClass {
     GroundEffect1970,
     HybridModern,
     ActiveAero2026,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
+pub struct CircuitCatalogEntry {
+    pub id: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub country_code: Option<String>,
+    pub sample_count: usize,
+    pub distance_m: f64,
+    pub pit_loss_ms: u64,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
+pub struct EngineCatalogEntry {
+    pub id: String,
+    pub idle_rpm: f64,
+    pub max_rpm: f64,
+    pub gear_count: usize,
 }
 
 /// Canonical mapping from game-era (or explicit year) to vehicle class.
