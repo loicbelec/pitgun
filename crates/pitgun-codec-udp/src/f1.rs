@@ -41,8 +41,7 @@
 
 use pitgun_contract::{
     CodecCapabilities, CodecContext, CodecError, CodecResult, DecodeOutput, Event, EventSeverity,
-    ParameterId, ProtocolInfo, Sample, SampleValue, SignalQuality, TelemetryCodec, TelemetryFrame,
-    TelemetryFrameBuilder,
+    ParameterId, ProtocolInfo, Sample, SampleValue, TelemetryCodec, TelemetryFrameBuilder,
 };
 use std::io::{Cursor, Read};
 

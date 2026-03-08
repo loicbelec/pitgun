@@ -17,61 +17,193 @@ use crate::provider::InMemoryConfigProvider;
 const DEFAULT_PIT_LOSS_MS: u64 = 22_000;
 const SCHEMA_VERSION: u32 = 1;
 const EMBEDDED_FILES: &[(&str, &[u8])] = &[
-    ("aero/active.json", include_bytes!("../data/aero/active.json")),
+    (
+        "aero/active.json",
+        include_bytes!("../data/aero/active.json"),
+    ),
     ("aero/basic.json", include_bytes!("../data/aero/basic.json")),
     ("aero/none.json", include_bytes!("../data/aero/none.json")),
-    ("chassis/default.json", include_bytes!("../data/chassis/default.json")),
-    ("chassis/f1_2026.json", include_bytes!("../data/chassis/f1_2026.json")),
-    ("circuits/austin.json", include_bytes!("../data/circuits/austin.json")),
-    ("circuits/baku.json", include_bytes!("../data/circuits/baku.json")),
-    ("circuits/barcelona.json", include_bytes!("../data/circuits/barcelona.json")),
-    ("circuits/budapest.json", include_bytes!("../data/circuits/budapest.json")),
-    ("circuits/default.json", include_bytes!("../data/circuits/default.json")),
-    ("circuits/jeddah.json", include_bytes!("../data/circuits/jeddah.json")),
-    ("circuits/las_vegas.json", include_bytes!("../data/circuits/las_vegas.json")),
-    ("circuits/lusail.json", include_bytes!("../data/circuits/lusail.json")),
-    ("circuits/madrid.json", include_bytes!("../data/circuits/madrid.json")),
-    ("circuits/melbourne.json", include_bytes!("../data/circuits/melbourne.json")),
-    ("circuits/mexico.json", include_bytes!("../data/circuits/mexico.json")),
-    ("circuits/miami.json", include_bytes!("../data/circuits/miami.json")),
-    ("circuits/monaco.json", include_bytes!("../data/circuits/monaco.json")),
-    ("circuits/montreal.json", include_bytes!("../data/circuits/montreal.json")),
-    ("circuits/monza.json", include_bytes!("../data/circuits/monza.json")),
-    ("circuits/sakhir.json", include_bytes!("../data/circuits/sakhir.json")),
-    ("circuits/sao_paulo.json", include_bytes!("../data/circuits/sao_paulo.json")),
-    ("circuits/shanghai.json", include_bytes!("../data/circuits/shanghai.json")),
-    ("circuits/silverstone.json", include_bytes!("../data/circuits/silverstone.json")),
-    ("circuits/singapore.json", include_bytes!("../data/circuits/singapore.json")),
-    ("circuits/spa.json", include_bytes!("../data/circuits/spa.json")),
-    ("circuits/spielberg.json", include_bytes!("../data/circuits/spielberg.json")),
-    ("circuits/suzuka.json", include_bytes!("../data/circuits/suzuka.json")),
-    ("circuits/yas_marina.json", include_bytes!("../data/circuits/yas_marina.json")),
-    ("circuits/zandvoort.json", include_bytes!("../data/circuits/zandvoort.json")),
-    ("drivers/aggressive.json", include_bytes!("../data/drivers/aggressive.json")),
-    ("drivers/balanced.json", include_bytes!("../data/drivers/balanced.json")),
-    ("drivers/battery_voltas.json", include_bytes!("../data/drivers/battery_voltas.json")),
+    (
+        "chassis/default.json",
+        include_bytes!("../data/chassis/default.json"),
+    ),
+    (
+        "chassis/f1_2026.json",
+        include_bytes!("../data/chassis/f1_2026.json"),
+    ),
+    (
+        "circuits/austin.json",
+        include_bytes!("../data/circuits/austin.json"),
+    ),
+    (
+        "circuits/baku.json",
+        include_bytes!("../data/circuits/baku.json"),
+    ),
+    (
+        "circuits/barcelona.json",
+        include_bytes!("../data/circuits/barcelona.json"),
+    ),
+    (
+        "circuits/budapest.json",
+        include_bytes!("../data/circuits/budapest.json"),
+    ),
+    (
+        "circuits/default.json",
+        include_bytes!("../data/circuits/default.json"),
+    ),
+    (
+        "circuits/jeddah.json",
+        include_bytes!("../data/circuits/jeddah.json"),
+    ),
+    (
+        "circuits/las_vegas.json",
+        include_bytes!("../data/circuits/las_vegas.json"),
+    ),
+    (
+        "circuits/lusail.json",
+        include_bytes!("../data/circuits/lusail.json"),
+    ),
+    (
+        "circuits/madrid.json",
+        include_bytes!("../data/circuits/madrid.json"),
+    ),
+    (
+        "circuits/melbourne.json",
+        include_bytes!("../data/circuits/melbourne.json"),
+    ),
+    (
+        "circuits/mexico.json",
+        include_bytes!("../data/circuits/mexico.json"),
+    ),
+    (
+        "circuits/miami.json",
+        include_bytes!("../data/circuits/miami.json"),
+    ),
+    (
+        "circuits/monaco.json",
+        include_bytes!("../data/circuits/monaco.json"),
+    ),
+    (
+        "circuits/montreal.json",
+        include_bytes!("../data/circuits/montreal.json"),
+    ),
+    (
+        "circuits/monza.json",
+        include_bytes!("../data/circuits/monza.json"),
+    ),
+    (
+        "circuits/sakhir.json",
+        include_bytes!("../data/circuits/sakhir.json"),
+    ),
+    (
+        "circuits/sao_paulo.json",
+        include_bytes!("../data/circuits/sao_paulo.json"),
+    ),
+    (
+        "circuits/shanghai.json",
+        include_bytes!("../data/circuits/shanghai.json"),
+    ),
+    (
+        "circuits/silverstone.json",
+        include_bytes!("../data/circuits/silverstone.json"),
+    ),
+    (
+        "circuits/singapore.json",
+        include_bytes!("../data/circuits/singapore.json"),
+    ),
+    (
+        "circuits/spa.json",
+        include_bytes!("../data/circuits/spa.json"),
+    ),
+    (
+        "circuits/spielberg.json",
+        include_bytes!("../data/circuits/spielberg.json"),
+    ),
+    (
+        "circuits/suzuka.json",
+        include_bytes!("../data/circuits/suzuka.json"),
+    ),
+    (
+        "circuits/yas_marina.json",
+        include_bytes!("../data/circuits/yas_marina.json"),
+    ),
+    (
+        "circuits/zandvoort.json",
+        include_bytes!("../data/circuits/zandvoort.json"),
+    ),
+    (
+        "drivers/aggressive.json",
+        include_bytes!("../data/drivers/aggressive.json"),
+    ),
+    (
+        "drivers/balanced.json",
+        include_bytes!("../data/drivers/balanced.json"),
+    ),
+    (
+        "drivers/battery_voltas.json",
+        include_bytes!("../data/drivers/battery_voltas.json"),
+    ),
     (
         "drivers/charles_leclair.json",
         include_bytes!("../data/drivers/charles_leclair.json"),
     ),
-    ("drivers/conservative.json", include_bytes!("../data/drivers/conservative.json")),
+    (
+        "drivers/conservative.json",
+        include_bytes!("../data/drivers/conservative.json"),
+    ),
     (
         "drivers/daniel_enchantier.json",
         include_bytes!("../data/drivers/daniel_enchantier.json"),
     ),
-    ("drivers/default.json", include_bytes!("../data/drivers/default.json")),
-    ("drivers/franz_hermann.json", include_bytes!("../data/drivers/franz_hermann.json")),
-    ("drivers/goat_tifi.json", include_bytes!("../data/drivers/goat_tifi.json")),
-    ("drivers/isa_kadjar.json", include_bytes!("../data/drivers/isa_kadjar.json")),
-    ("drivers/luis_amilton.json", include_bytes!("../data/drivers/luis_amilton.json")),
-    ("drivers/pedro_gaseoso.json", include_bytes!("../data/drivers/pedro_gaseoso.json")),
-    ("drivers/smooth_operator.json", include_bytes!("../data/drivers/smooth_operator.json")),
-    ("engines/v6t.json", include_bytes!("../data/engines/v6t.json")),
-    ("engines/v6t_hybrid.json", include_bytes!("../data/engines/v6t_hybrid.json")),
-    ("engines/v8_1960.json", include_bytes!("../data/engines/v8_1960.json")),
-    ("engines/v8_1970.json", include_bytes!("../data/engines/v8_1970.json")),
+    (
+        "drivers/default.json",
+        include_bytes!("../data/drivers/default.json"),
+    ),
+    (
+        "drivers/franz_hermann.json",
+        include_bytes!("../data/drivers/franz_hermann.json"),
+    ),
+    (
+        "drivers/goat_tifi.json",
+        include_bytes!("../data/drivers/goat_tifi.json"),
+    ),
+    (
+        "drivers/isa_kadjar.json",
+        include_bytes!("../data/drivers/isa_kadjar.json"),
+    ),
+    (
+        "drivers/luis_amilton.json",
+        include_bytes!("../data/drivers/luis_amilton.json"),
+    ),
+    (
+        "drivers/pedro_gaseoso.json",
+        include_bytes!("../data/drivers/pedro_gaseoso.json"),
+    ),
+    (
+        "drivers/smooth_operator.json",
+        include_bytes!("../data/drivers/smooth_operator.json"),
+    ),
+    (
+        "engines/v6t.json",
+        include_bytes!("../data/engines/v6t.json"),
+    ),
+    (
+        "engines/v6t_hybrid.json",
+        include_bytes!("../data/engines/v6t_hybrid.json"),
+    ),
+    (
+        "engines/v8_1960.json",
+        include_bytes!("../data/engines/v8_1960.json"),
+    ),
+    (
+        "engines/v8_1970.json",
+        include_bytes!("../data/engines/v8_1970.json"),
+    ),
     ("tires/hard.json", include_bytes!("../data/tires/hard.json")),
-    ("tires/medium.json", include_bytes!("../data/tires/medium.json")),
+    (
+        "tires/medium.json",
+        include_bytes!("../data/tires/medium.json"),
+    ),
     ("tires/soft.json", include_bytes!("../data/tires/soft.json")),
     (
         "vehicles/classic_v8_1960.json",
@@ -81,9 +213,18 @@ const EMBEDDED_FILES: &[(&str, &[u8])] = &[
         "vehicles/classic_v8_1970.json",
         include_bytes!("../data/vehicles/classic_v8_1970.json"),
     ),
-    ("vehicles/default.json", include_bytes!("../data/vehicles/default.json")),
-    ("vehicles/f1_2026.json", include_bytes!("../data/vehicles/f1_2026.json")),
-    ("vehicles/modern_v6t.json", include_bytes!("../data/vehicles/modern_v6t.json")),
+    (
+        "vehicles/default.json",
+        include_bytes!("../data/vehicles/default.json"),
+    ),
+    (
+        "vehicles/f1_2026.json",
+        include_bytes!("../data/vehicles/f1_2026.json"),
+    ),
+    (
+        "vehicles/modern_v6t.json",
+        include_bytes!("../data/vehicles/modern_v6t.json"),
+    ),
 ];
 
 #[derive(Debug, Clone, Default)]
@@ -287,8 +428,18 @@ impl DataRegistry {
         }
     }
 
-    fn insert_aero(&mut self, value: AeroConfig, allow_override: bool) -> Result<(), SimulatorError> {
-        insert_unique(&mut self.aeros, "aero", value.id.clone(), value, allow_override)
+    fn insert_aero(
+        &mut self,
+        value: AeroConfig,
+        allow_override: bool,
+    ) -> Result<(), SimulatorError> {
+        insert_unique(
+            &mut self.aeros,
+            "aero",
+            value.id.clone(),
+            value,
+            allow_override,
+        )
     }
 
     fn insert_chassis(
@@ -319,8 +470,18 @@ impl DataRegistry {
         )
     }
 
-    fn insert_tire(&mut self, value: TireConfig, allow_override: bool) -> Result<(), SimulatorError> {
-        insert_unique(&mut self.tires, "tire", value.id.clone(), value, allow_override)
+    fn insert_tire(
+        &mut self,
+        value: TireConfig,
+        allow_override: bool,
+    ) -> Result<(), SimulatorError> {
+        insert_unique(
+            &mut self.tires,
+            "tire",
+            value.id.clone(),
+            value,
+            allow_override,
+        )
     }
 
     fn insert_track(
@@ -328,7 +489,13 @@ impl DataRegistry {
         value: TrackConfig,
         allow_override: bool,
     ) -> Result<(), SimulatorError> {
-        insert_unique(&mut self.tracks, "track", value.id.clone(), value, allow_override)
+        insert_unique(
+            &mut self.tracks,
+            "track",
+            value.id.clone(),
+            value,
+            allow_override,
+        )
     }
 
     fn insert_vehicle(
@@ -524,9 +691,9 @@ fn parse_engine_compact(file_stem: &str, value: &Value) -> Result<EngineConfig, 
     let gear_count = read_required_usize(value, &["gear_count"])?.max(2);
     let idle_rpm = read_optional_f64(value, &["idle_rpm"]).unwrap_or(400.0);
     let fuel_burn_kg_per_s = read_optional_f64(value, &["fuel_burn_kg_per_s"]).unwrap_or(0.02);
-    let thermal_value = value.get("thermal").ok_or_else(|| SimulatorError::Parse(format!(
-        "missing thermal block for engine '{id}'"
-    )))?;
+    let thermal_value = value
+        .get("thermal")
+        .ok_or_else(|| SimulatorError::Parse(format!("missing thermal block for engine '{id}'")))?;
 
     build_compact_engine(
         id,
@@ -652,10 +819,7 @@ fn parse_compact_track(file_stem: &str, value: &Value) -> Result<TrackConfig, Si
                 + wobble_y * (1.8 * theta).sin() * 0.60
                 + wobble_y * (3.3 * theta).cos() * 0.20,
         );
-        z.push(
-            slope_amp_m * (1.7 * theta).sin() * 0.5
-                + slope_amp_m * (0.4 * theta).cos() * 0.2,
-        );
+        z.push(slope_amp_m * (1.7 * theta).sin() * 0.5 + slope_amp_m * (0.4 * theta).cos() * 0.2);
     }
 
     build_track_from_arrays(id, None, s, x, y, z, None, None, None, pit_loss_ms)
@@ -703,14 +867,19 @@ fn parse_trackeagle_track(file_stem: &str, value: &Value) -> Result<TrackConfig,
     )
 }
 
-fn parse_profile_value(file_stem: &str, value: &Value) -> Result<CompetitorProfile, SimulatorError> {
+fn parse_profile_value(
+    file_stem: &str,
+    value: &Value,
+) -> Result<CompetitorProfile, SimulatorError> {
     parse_explicit_profile(file_stem, value)
 }
 
-fn parse_explicit_profile(file_stem: &str, value: &Value) -> Result<CompetitorProfile, SimulatorError> {
+fn parse_explicit_profile(
+    file_stem: &str,
+    value: &Value,
+) -> Result<CompetitorProfile, SimulatorError> {
     let id = parsed_id(file_stem, value, false)?;
-    let display_name = read_optional_string(value, &["display_name"])
-        .unwrap_or_else(|| id.clone());
+    let display_name = read_optional_string(value, &["display_name"]).unwrap_or_else(|| id.clone());
     let style = parse_driving_style(
         read_optional_string(value, &["style"])
             .unwrap_or_else(|| "balanced".to_string())
@@ -880,7 +1049,11 @@ fn insert_unique<T>(
     Ok(())
 }
 
-fn parsed_id(file_stem: &str, value: &Value, normalize_track: bool) -> Result<String, SimulatorError> {
+fn parsed_id(
+    file_stem: &str,
+    value: &Value,
+    normalize_track: bool,
+) -> Result<String, SimulatorError> {
     match schema_version(value) {
         Some(version) => {
             ensure_schema(version, file_stem)?;
@@ -930,9 +1103,7 @@ fn ensure_schema(version: u32, file_stem: &str) -> Result<(), SimulatorError> {
         return Err(SimulatorError::InvalidConfig {
             kind: "data",
             id: file_stem.to_string(),
-            reason: format!(
-                "unsupported schema_version {version}, expected {SCHEMA_VERSION}"
-            ),
+            reason: format!("unsupported schema_version {version}, expected {SCHEMA_VERSION}"),
         });
     }
     Ok(())
@@ -963,7 +1134,10 @@ fn read_optional_u64(value: &Value, keys: &[&str]) -> Option<u64> {
 fn read_required_usize(value: &Value, keys: &[&str]) -> Result<usize, SimulatorError> {
     let raw = read_required_u64(value, keys)?;
     usize::try_from(raw).map_err(|_| {
-        SimulatorError::Parse(format!("integer field '{}' exceeds usize", keys.join("' or '")))
+        SimulatorError::Parse(format!(
+            "integer field '{}' exceeds usize",
+            keys.join("' or '")
+        ))
     })
 }
 
@@ -1079,7 +1253,9 @@ fn parse_driving_style(raw: &str) -> Result<DrivingStyle, SimulatorError> {
         "conservative" => Ok(DrivingStyle::Conservative),
         "balanced" => Ok(DrivingStyle::Balanced),
         "aggressive" => Ok(DrivingStyle::Aggressive),
-        _ => Err(SimulatorError::Parse(format!("unknown driving style '{raw}'"))),
+        _ => Err(SimulatorError::Parse(format!(
+            "unknown driving style '{raw}'"
+        ))),
     }
 }
 
@@ -1088,7 +1264,9 @@ fn parse_engine_mode(raw: &str) -> Result<EngineMode, SimulatorError> {
         "economy" => Ok(EngineMode::Economy),
         "balanced" => Ok(EngineMode::Balanced),
         "push" => Ok(EngineMode::Push),
-        _ => Err(SimulatorError::Parse(format!("unknown engine mode '{raw}'"))),
+        _ => Err(SimulatorError::Parse(format!(
+            "unknown engine mode '{raw}'"
+        ))),
     }
 }
 
@@ -1197,8 +1375,8 @@ mod tests {
         let provider = DataRegistry::load_from_dir(temp.path())
             .expect("load from dir")
             .into_provider();
-        let aero = crate::provider::ConfigProvider::get_aero(&provider, "basic")
-            .expect("basic aero");
+        let aero =
+            crate::provider::ConfigProvider::get_aero(&provider, "basic").expect("basic aero");
 
         assert_eq!(aero.cd_a_straight, 0.7);
         assert_eq!(aero.cl_a_corner, 3.0);

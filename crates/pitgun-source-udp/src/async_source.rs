@@ -194,13 +194,6 @@ impl SequenceTracker {
         // sequence == last means duplicate, ignore
     }
 
-    fn packets_lost(&self) -> u64 {
-        self.packets_lost.load(std::sync::atomic::Ordering::Relaxed)
-    }
-
-    fn out_of_order(&self) -> u64 {
-        self.out_of_order.load(std::sync::atomic::Ordering::Relaxed)
-    }
 }
 
 /// Statistics for the UDP source
@@ -219,6 +212,8 @@ struct UdpStats {
 impl UdpStats {
     fn to_source_stats(&self, start_time: Instant) -> SourceStats {
         let frames = self.frames_produced.load(Ordering::Relaxed);
+        let packets_lost = self.sequence_tracker.packets_lost.load(Ordering::Relaxed);
+        let out_of_order = self.sequence_tracker.out_of_order.load(Ordering::Relaxed);
         let elapsed = start_time.elapsed().as_secs_f64();
         let fps = if elapsed > 0.0 {
             frames as f64 / elapsed
@@ -229,7 +224,8 @@ impl UdpStats {
         SourceStats {
             frames_received: frames,
             bytes_received: self.bytes_received.load(Ordering::Relaxed),
-            frames_dropped: 0,
+            // Non-monotonic sequence metrics are surfaced as dropped frames.
+            frames_dropped: packets_lost + out_of_order,
             decode_errors: self.decode_errors.load(Ordering::Relaxed),
             connection_errors: 0,
             current_fps: fps,
@@ -300,7 +296,7 @@ impl AsyncUdpSource {
     }
 
     /// Detect codec from packet data
-    fn detect_codec(&self, data: &[u8]) -> UdpCodecType {
+    fn detect_codec(data: &[u8]) -> UdpCodecType {
         use pitgun_codec_udp::{EcuBridgeCodec, F1UdpCodec};
         use pitgun_contract::TelemetryCodec;
 
@@ -319,7 +315,6 @@ impl AsyncUdpSource {
 
     /// Decode packet with the appropriate codec
     fn decode_packet(
-        &self,
         data: &[u8],
         codec_type: UdpCodecType,
         ctx: &CodecContext,
@@ -329,8 +324,8 @@ impl AsyncUdpSource {
 
         match codec_type {
             UdpCodecType::Auto => {
-                let detected = self.detect_codec(data);
-                self.decode_packet(data, detected, ctx)
+                let detected = Self::detect_codec(data);
+                Self::decode_packet(data, detected, ctx)
             }
             UdpCodecType::EcuBridge => {
                 let codec = EcuBridgeCodec::new();
@@ -435,20 +430,7 @@ impl AsyncUdpSource {
                             stats.bytes_received.fetch_add(n as u64, Ordering::Relaxed);
 
                             // Detect or use locked codec
-                            let codec = locked_codec.unwrap_or_else(|| {
-                                use pitgun_codec_udp::{EcuBridgeCodec, F1UdpCodec};
-                                use pitgun_contract::TelemetryCodec;
-
-                                let ecu = EcuBridgeCodec::new();
-                                if ecu.can_decode(&buf[..n]) {
-                                    return UdpCodecType::EcuBridge;
-                                }
-                                let f1 = F1UdpCodec::new();
-                                if f1.can_decode(&buf[..n]) {
-                                    return UdpCodecType::F1;
-                                }
-                                UdpCodecType::PitgunV1
-                            });
+                            let codec = locked_codec.unwrap_or_else(|| Self::detect_codec(&buf[..n]));
 
                             // Lock onto detected codec
                             if locked_codec.is_none() {
@@ -456,61 +438,7 @@ impl AsyncUdpSource {
                             }
 
                             // Decode
-                            let decode_result = {
-                                use pitgun_codec_udp::{EcuBridgeCodec, F1UdpCodec};
-                                use pitgun_contract::TelemetryCodec;
-
-                                match codec {
-                                    UdpCodecType::EcuBridge => {
-                                        let c = EcuBridgeCodec::new();
-                                        c.decode(&buf[..n], &ctx)
-                                    }
-                                    UdpCodecType::F1 => {
-                                        let c = F1UdpCodec::new();
-                                        c.decode(&buf[..n], &ctx)
-                                    }
-                                    _ => {
-                                        // PitgunV1 or other
-                                        use pitgun_codec_udp::{UdpDecoded, UdpDecoder, UdpWireFormat};
-                                        use pitgun_contract::{Sample, SampleValue, SignalQuality, TelemetryFrameBuilder};
-
-                                        let format = UdpWireFormat::PitgunV1;
-                                        match format.decode(&buf[..n]) {
-                                            Ok(UdpDecoded::Events(events)) => {
-                                                let samples: Vec<Sample> = events
-                                                    .iter()
-                                                    .enumerate()
-                                                    .map(|(i, e)| Sample {
-                                                        parameter_id: i as u16,
-                                                        value: SampleValue::F64(e.value),
-                                                        quality: SignalQuality::Good,
-                                                        timestamp_offset_us: None,
-                                                    })
-                                                    .collect();
-
-                                                if samples.is_empty() {
-                                                    Ok(DecodeOutput::NoOutput)
-                                                } else {
-                                                    let timestamp_us = events
-                                                        .first()
-                                                        .map(|event| (event.ts_ns / 1000) as i64)
-                                                        .unwrap_or_else(Self::now_us);
-
-                                                    let frame = TelemetryFrameBuilder::new()
-                                                        .session_id(ctx.session_id)
-                                                        .source_id(&ctx.source_id)
-                                                        .timestamp_us(timestamp_us)
-                                                        .samples(samples)
-                                                        .build();
-                                                    Ok(DecodeOutput::Frame(frame))
-                                                }
-                                            }
-                                            Ok(UdpDecoded::Batches(_)) => Ok(DecodeOutput::NoOutput),
-                                            Err(e) => Err(pitgun_contract::CodecError::MalformedData(e.to_string())),
-                                        }
-                                    }
-                                }
-                            };
+                            let decode_result = Self::decode_packet(&buf[..n], codec, &ctx);
 
                             match decode_result {
                                 Ok(DecodeOutput::Frame(frame)) => {

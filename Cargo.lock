@@ -1503,6 +1503,8 @@ dependencies = [
 name = "pitgun-simulator"
 version = "0.1.0"
 dependencies = [
+ "pitgun-contract",
+ "pitgun-solver",
  "serde",
  "serde_json",
  "tempfile",
@@ -1514,9 +1516,9 @@ name = "pitgun-solver"
 version = "0.1.0"
 dependencies = [
  "getrandom 0.2.16",
+ "md-5",
  "pitgun-contract",
  "pitgun-policy",
- "pitgun-simulator",
  "rand",
  "serde",
  "serde_json",

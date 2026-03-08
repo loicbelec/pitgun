@@ -37,7 +37,9 @@ pub fn deterministic_lap_delta_ms(
     lap_number: u16,
 ) -> i32 {
     let noise_ms = match seed {
-        Some(seed) => deterministic_noise(seed, driver_id, lap_number, effects.lap_time_noise_std_ms),
+        Some(seed) => {
+            deterministic_noise(seed, driver_id, lap_number, effects.lap_time_noise_std_ms)
+        }
         None => 0,
     };
     effects.peak_pace_bonus_ms + noise_ms
