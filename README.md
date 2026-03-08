@@ -1,131 +1,130 @@
 [![Pitgun](docs/img/pitgun_transparent.png)](https://pitgun.io)
 
-# Pitgun: Distributed Intelligence Mesh
+# Pitgun Framework
 
-> **From Raw Telemetry to Distributed Decision Making.**
+> High-performance Rust framework for real-time data ingestion, deterministic processing, and policy-governed distributed compute.
 
-Pitgun is a modular Rust framework designed to ingest high-frequency data streams, apply dynamic engineering logic, and orchestrate distributed computations at the edge.
+Pitgun Framework helps engineering teams build reliable event pipelines and decision systems from heterogeneous telemetry and data streams.
+It is domain-agnostic by design (industrial, IoT, mobility, finance, and simulation-heavy workloads).
 
-While currently showcasing a **Reference Implementation in Motorsport** (F1 Simulation), its architecture is domain-agnostic and built for Finance, Energy, and IoT reliability.
+## What You Get
 
-## 🏗️ The Architecture
+- Multi-protocol ingestion (UDP, WebSocket, Kafka, MQTT)
+- Strict contracts and typed schemas for event safety
+- Manifest-driven processing pipelines (no full recompilation for every rule change)
+- Deterministic simulation and compute primitives
+- Replay tooling for debugging and reproducibility
+- Governance and policy controls for access and signed configurations
 
-Pitgun is built on four pillars that separate **Ingestion**, **Processing**, **Compute**, and **Governance**.
+## Architecture At A Glance
 
-### 1. 📡 The Gateway (Ingestion & Traffic)
+| Layer | Responsibility | Main Components |
+|---|---|---|
+| Sources and Codecs | Connect to external systems and normalize inputs | `pitgun-source-*`, `pitgun-codec-*` |
+| Gateway | Receive, validate, and persist incoming envelopes | `services/pitgun-gateway` |
+| Core Processing | Transform and derive channels with manifest-defined logic | `crates/pitgun-core` |
+| Contracts | Shared schemas and protocol types | `crates/pitgun-contract` |
+| Policy and Signing | Validation, access control, signing primitives | `crates/pitgun-policy`, `crates/pitgun-signing` |
+| Solver and Compute | Deterministic compute orchestration | `crates/pitgun-solver`, `crates/pitgun-simulator` |
+| Tooling | Replay and CLI operations | `apps/pitgun-replay`, `apps/pitgun-cli` |
+| Authority Service | Governance-facing runtime service | `services/pitgun-authority` |
 
-A high-throughput ingestion layer capable of normalizing diverse protocols into a single unified `TelemetryFrame`.
+## Repository Layout
 
-- **Multi-Protocol:** Native support for UDP (Unicast/Multicast), WebSocket, Kafka, and MQTT.
-- **Normalization:** Translates disparate wire formats (binary, JSON) into a strict internal schema.
-- **Service:** `services/pitgun-gateway`
+```text
+crates/     # reusable framework crates
+apps/       # operator and developer tools
+services/   # deployable runtime services
+docs/       # protocol, architecture, and technical documentation
+examples/   # manifests, registries, and integration examples
+policies/   # policy samples
+```
 
-### 2. ⚡ The Core (Dynamic Processing)
+## Quickstart
 
-A powerful **Manifest-Driven ETL engine** that allows engineers to define derived channels without recompiling code.
+### Prerequisites
 
-- **Formula Engine:** Define `Power = Torque * RPM` using an AST-based expression parser (`pitgun-core`).
-- **Manifests:** YAML-based configuration for pipelines (`channel_filter`, `scale`, `segment_aggregate`).
-- **Registry:** Strictly typed parameter definitions (`u16`, `f64`) with validation ranges.
+- Rust stable toolchain
+- Cargo
+- Optional: Docker for local service stack
 
-### 3. 🧠 The Solver (Distributed Compute)
+### 1) Build the workspace
 
-A lightweight orchestration layer that validates inputs and forwards explicit simulation requests.
+```bash
+cargo check --workspace
+```
 
-- **Role:** Maps external DTOs to simulator inputs without introducing hidden behavior.
-- **Boundary:** Simulation defaults and behavior belong in `pitgun-simulator`, not in the solver.
-- **Service:** `crates/pitgun-solver`
+### 2) Run the gateway locally
 
-### 4. ⚖️ The Authority (Governance)
+```bash
+PITGUN_GATEWAY_API_KEY=dev-secret \
+PITGUN_GATEWAY_BIND=127.0.0.1:8080 \
+cargo run -p pitgun-gateway --release
+```
 
-A security layer ensuring that data and configurations are authentic and tamper-proof.
+### 3) Verify health
 
-- **Access Control:** Rate limiting and capability-based access (`pitgun-policy`).
-- **Policy Enforcement:** Cryptographic signing of simulation contracts (tuning limits).
-- **Auditability:** Guarantees that result A came from config B.
-- **Service:** `services/pitgun-authority`
+```bash
+curl -fsS http://127.0.0.1:8080/health
+```
 
-## 🧱 Component Stack
+### 4) Send a sample envelope (optional)
 
-### Foundation Crates
+```bash
+websocat -H='x-api-key: dev-secret' ws://127.0.0.1:8080/ws < services/pitgun-gateway/examples/session.start.json
+```
 
-| Crate | Role | Description |
-|-------|------|-------------|
-| **pitgun-core** | **The Brain** | AST Formula Engine, Pipeline logic, Manifest parsing. |
-| **pitgun-contract** | **The Law** | Shared types (`TelemetryFrame`), IDL, and protocols. |
-| **pitgun-simulator** | **Source of Truth** | Deterministic, WASM-first simulation engine where simulation behavior and default data live. |
-| **pitgun-solver** | **Control Plane** | Thin orchestration layer that validates and forwards explicit simulator inputs. |
-
-### Infrastructure
-| Service | Role | Container |
-|---------|------|-----------|
-| **pitgun-gateway** | Traffic Ingress | `pitgun-gateway` |
-| **pitgun-authority** | Security/Config | `pitgun-authority` |
-| **pitgun-replay** | Tooling | `apps/pitgun-replay` |
-
-## 🚀 Quickstart
-
-### 1. Define your Logic (The Manifest)
-
-Create a `pipeline.yaml` to define how data should be processed dynamically:
+## Example: Manifest-Driven Processing
 
 ```yaml
 version: v1
 pipeline:
   - type: formula
     derived_channels:
-      - name: "Power_kW"
-        expr: "Torque_Nm * Engine_RPM / 9549.0"
+      - name: "derived.metric"
+        expr: "source.a * source.b"
   - type: filter
-    whitelist: ["Speed", "Power_kW", "LapTime"]
+    whitelist: ["derived.metric", "source.timestamp"]
 ```
 
-### 2. Start the Gateway
+## Configuration
 
-```bash
-cargo run -p pitgun-gateway --release
-```
+Runtime behavior is controlled by environment variables.
+For gateway-specific variables and payload contracts, see:
 
-### Optional: Start Services with Docker Compose (Dev)
+- `services/pitgun-gateway/README.md`
+- `services/pitgun-gateway/docs/event-model.md`
 
-```bash
-docker compose -f docker-compose.dev.yml up -d
-```
+## Documentation Map
 
-Production compose is maintained in the dedicated infra repository; this repo ignores
-`docker-compose.prod.yml`.
+- `ARCHITECTURE.md` - framework architecture and boundaries
+- `docs/WIRE_FORMATS.md` - wire protocol specifications
+- `docs/commands.md` - CLI and command usage
+- `docs/index.md` - entry point for technical docs
 
-### 3. Inject Data (Replay)
+## Security and Privacy Principles
 
-Simulate a stream of data using the replay tool:
+- Data minimization by default
+- Contract-first validation at ingress boundaries
+- Policy-gated sensitive operations
+- Signed configuration paths for auditability
+- Pseudonymous identifiers recommended for production telemetry
 
-```bash
-cargo run -p pitgun-replay -- \
-  --target 127.0.0.1:8080 \
-  --input nEngine=datasets/telemetry/nEngine.csv
-```
+## Quality Gate (Before Commit)
 
-## 📚 Documentation
-
-- [ARCHITECTURE.md](ARCHITECTURE.md) - Deep dive into the hexagonal architecture.
-- [docs/WIRE_FORMATS.md](docs/WIRE_FORMATS.md) - Wire protocol specifications.
-- [policies/gametuning.v1.yaml](policies/gametuning.v1.yaml) - Example of Governance Policy.
-
-## ✅ Local CI Before Commit
-
-Run the same checks as `pitgun-ci` locally before pushing:
+Run the same checks as CI before pushing:
 
 ```bash
 ./scripts/pre-commit-checks.sh
 ```
 
-If Docker is installed, this script also performs a local gateway image build
-equivalent to `build-gateway.yml`.
+If Docker is installed, this script also performs a local gateway image build equivalent to `build-gateway.yml`.
 
-## 🔮 Roadmap
+## Notes On Domain Neutrality
 
-- **Dedicated Optimizer:** Move search and optimization logic into a separate crate.
-- **Parquet Sink:** Archival storage for historical analysis.
-- **Flow UI:** Visual editor for `pitgun-core` pipeline manifests.
+This repository may include reference assets and examples from specific domains.
+Those examples demonstrate usage patterns only; the framework primitives remain domain-agnostic.
 
-> Built with 🦀 Rust for performance and safety.
+## License
+
+MIT

@@ -50,7 +50,7 @@
 
 // Async source (implements TelemetrySource)
 mod async_source;
-pub use async_source::{AsyncUdpSource, UdpCodecType, UdpSourceConfig};
+pub use async_source::{AsyncUdpSource, ECUBRIDGE_BUFFER_SIZE, UdpCodecType, UdpSourceConfig};
 
 // Re-export contract types for convenience
 pub use pitgun_contract::{
