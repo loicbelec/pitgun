@@ -4,6 +4,8 @@ use anyhow::Context;
 use sqlx::{SqlitePool, sqlite::SqlitePoolOptions};
 use time::{OffsetDateTime, UtcOffset, format_description::well_known::Rfc3339};
 
+use crate::insight_requests::InsightRequestPayload;
+use crate::insight_responses::InsightResponsePayload;
 use crate::model::EventEnvelope;
 
 #[derive(Clone, Debug)]
@@ -38,6 +40,18 @@ pub struct SqliteEventStore {
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum EventInsertOutcome {
+    Inserted,
+    Duplicate,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum InsightRequestInsertOutcome {
+    Inserted,
+    Duplicate,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum InsightResponseInsertOutcome {
     Inserted,
     Duplicate,
 }
@@ -92,6 +106,55 @@ impl SqliteEventStore {
         sqlx::query("CREATE INDEX IF NOT EXISTS idx_events_type_ts ON events(event_type, ts);")
             .execute(&pool)
             .await?;
+
+        sqlx::query(
+            r#"
+            CREATE TABLE IF NOT EXISTS insight_requests (
+                seq_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                trace_id TEXT NOT NULL UNIQUE,
+                event_id TEXT NOT NULL,
+                run_id TEXT NOT NULL,
+                session_id TEXT NOT NULL,
+                emitted_at_ms INTEGER NOT NULL,
+                payload_json TEXT NOT NULL,
+                created_at TEXT NOT NULL
+            );
+            "#,
+        )
+        .execute(&pool)
+        .await?;
+
+        sqlx::query(
+            "CREATE INDEX IF NOT EXISTS idx_insight_requests_session_ts ON insight_requests(session_id, created_at);",
+        )
+        .execute(&pool)
+        .await?;
+
+        sqlx::query(
+            r#"
+            CREATE TABLE IF NOT EXISTS insight_responses (
+                seq_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                trace_id TEXT NOT NULL UNIQUE,
+                run_id TEXT NOT NULL,
+                session_id TEXT NOT NULL,
+                status TEXT NOT NULL,
+                generated_at_ms INTEGER NOT NULL,
+                latency_ms INTEGER,
+                source_model TEXT,
+                payload_json TEXT NOT NULL,
+                raw_model_response TEXT,
+                created_at TEXT NOT NULL
+            );
+            "#,
+        )
+        .execute(&pool)
+        .await?;
+
+        sqlx::query(
+            "CREATE INDEX IF NOT EXISTS idx_insight_responses_session_ts ON insight_responses(session_id, created_at);",
+        )
+        .execute(&pool)
+        .await?;
 
         Ok(Self { pool })
     }
@@ -157,6 +220,95 @@ impl SqliteEventStore {
             .await?;
         Ok(())
     }
+
+    pub async fn insert_insight_request(
+        &self,
+        request: &InsightRequestPayload,
+    ) -> anyhow::Result<InsightRequestInsertOutcome> {
+        let payload_json = serde_json::to_string(request)?;
+        let created_at = OffsetDateTime::now_utc()
+            .format(&Rfc3339)
+            .map_err(|err| anyhow::anyhow!("failed to format insight request created_at: {err}"))?;
+
+        let result = sqlx::query(
+            r#"
+            INSERT INTO insight_requests (
+                trace_id,
+                event_id,
+                run_id,
+                session_id,
+                emitted_at_ms,
+                payload_json,
+                created_at
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(trace_id) DO NOTHING;
+            "#,
+        )
+        .bind(&request.trace_id)
+        .bind(&request.trace_id)
+        .bind(&request.run_id)
+        .bind(&request.session_id)
+        .bind(request.emitted_at_ms)
+        .bind(payload_json)
+        .bind(created_at)
+        .execute(&self.pool)
+        .await?;
+
+        if result.rows_affected() == 0 {
+            Ok(InsightRequestInsertOutcome::Duplicate)
+        } else {
+            Ok(InsightRequestInsertOutcome::Inserted)
+        }
+    }
+
+    pub async fn insert_insight_response(
+        &self,
+        response: &InsightResponsePayload,
+        raw_model_response: Option<&str>,
+    ) -> anyhow::Result<InsightResponseInsertOutcome> {
+        let payload_json = serde_json::to_string(response)?;
+        let created_at = OffsetDateTime::now_utc().format(&Rfc3339).map_err(|err| {
+            anyhow::anyhow!("failed to format insight response created_at: {err}")
+        })?;
+
+        let result = sqlx::query(
+            r#"
+            INSERT INTO insight_responses (
+                trace_id,
+                run_id,
+                session_id,
+                status,
+                generated_at_ms,
+                latency_ms,
+                source_model,
+                payload_json,
+                raw_model_response,
+                created_at
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(trace_id) DO NOTHING;
+            "#,
+        )
+        .bind(&response.trace_id)
+        .bind(&response.run_id)
+        .bind(&response.session_id)
+        .bind(response.status.as_str())
+        .bind(response.generated_at_ms)
+        .bind(response.latency_ms)
+        .bind(response.source_model.as_deref())
+        .bind(payload_json)
+        .bind(raw_model_response)
+        .bind(created_at)
+        .execute(&self.pool)
+        .await?;
+
+        if result.rows_affected() == 0 {
+            Ok(InsightResponseInsertOutcome::Duplicate)
+        } else {
+            Ok(InsightResponseInsertOutcome::Inserted)
+        }
+    }
 }
 
 fn sqlite_url(path: &str) -> String {
@@ -188,7 +340,16 @@ async fn ensure_parent_dir_exists(path: &str) -> anyhow::Result<()> {
 
 #[cfg(test)]
 mod tests {
-    use super::{EventInsertOutcome, IngestMetadata, QueueMessage, SqliteEventStore};
+    use super::{
+        EventInsertOutcome, IngestMetadata, InsightRequestInsertOutcome,
+        InsightResponseInsertOutcome, QueueMessage, SqliteEventStore,
+    };
+    use crate::insight_requests::{
+        InsightConstraints, InsightContext, InsightMetric, InsightRequestPayload,
+    };
+    use crate::insight_responses::{
+        InsightError, InsightItem, InsightResponsePayload, InsightSeverity, InsightStatus,
+    };
     use crate::model::parse_event_envelope;
 
     #[tokio::test]
@@ -241,5 +402,101 @@ mod tests {
             .await
             .expect("second insert should work");
         assert_eq!(second, EventInsertOutcome::Duplicate);
+    }
+
+    #[tokio::test]
+    async fn deduplicates_insight_request_by_trace_id() {
+        let store = SqliteEventStore::new("sqlite::memory:")
+            .await
+            .expect("store should be created");
+
+        let request = InsightRequestPayload {
+            schema_version: "pitgun-insight-request-v1".to_string(),
+            run_id: "run_123".to_string(),
+            session_id: "session_123".to_string(),
+            trace_id: "trace_123".to_string(),
+            emitted_at_ms: 1_773_401_234_567,
+            context: InsightContext {
+                circuit_id: "MONACO".to_string(),
+                era: 2026,
+                lap: 12,
+                position: Some(4),
+                weather: Some("clear".to_string()),
+                track_status: Some("green".to_string()),
+            },
+            metrics: vec![InsightMetric {
+                key: "pace.speed_kph".to_string(),
+                value: 212.4,
+                unit: "kph".to_string(),
+                trend: "up".to_string(),
+                horizon: "lap".to_string(),
+                confidence: 0.91,
+            }],
+            constraints: InsightConstraints {
+                max_insights: 3,
+                max_words_per_insight: 32,
+                language: "en".to_string(),
+            },
+            policy_version: "policy.v1".to_string(),
+            prompt_version: "chief-race.v1".to_string(),
+        };
+
+        let first = store
+            .insert_insight_request(&request)
+            .await
+            .expect("first insert should work");
+        assert_eq!(first, InsightRequestInsertOutcome::Inserted);
+
+        let second = store
+            .insert_insight_request(&request)
+            .await
+            .expect("second insert should work");
+        assert_eq!(second, InsightRequestInsertOutcome::Duplicate);
+    }
+
+    #[tokio::test]
+    async fn deduplicates_insight_response_by_trace_id() {
+        let store = SqliteEventStore::new("sqlite::memory:")
+            .await
+            .expect("store should be created");
+
+        let response = InsightResponsePayload {
+            schema_version: "pitgun-insight-response-v1".to_string(),
+            run_id: "run_123".to_string(),
+            session_id: "session_123".to_string(),
+            trace_id: "trace_123".to_string(),
+            generated_at_ms: 1_773_401_234_622,
+            latency_ms: Some(155),
+            source_model: Some("llama3.2:3b".to_string()),
+            status: InsightStatus::Error,
+            insights: vec![InsightItem {
+                id: "pit_window".to_string(),
+                severity: InsightSeverity::Advisory,
+                confidence: 0.8,
+                title: "Open pit window".to_string(),
+                rationale: "Wear is increasing".to_string(),
+                recommendation: "Prepare stop in 2 laps".to_string(),
+                metric_keys: Some(vec!["tires.avg_wear_pct.max".to_string()]),
+                ttl_ms: Some(90_000),
+                tags: Some(vec!["strategy".to_string()]),
+            }],
+            warnings: None,
+            error: Some(InsightError {
+                code: "llm_http_error".to_string(),
+                message: "timeout".to_string(),
+            }),
+        };
+
+        let first = store
+            .insert_insight_response(&response, Some("{\"raw\":true}"))
+            .await
+            .expect("first insert should work");
+        assert_eq!(first, InsightResponseInsertOutcome::Inserted);
+
+        let second = store
+            .insert_insight_response(&response, Some("{\"raw\":true}"))
+            .await
+            .expect("second insert should work");
+        assert_eq!(second, InsightResponseInsertOutcome::Duplicate);
     }
 }
