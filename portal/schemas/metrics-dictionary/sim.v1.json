@@ -1,0 +1,128 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pitgun.io/schemas/metrics-dictionary/sim.v1",
+  "schema_version": "pitgun-sim-dictionary-v1",
+  "scope": "insight_ingress",
+  "description": "Canonical sim.* parameter dictionary for telemetry -> insights ingestion in staging/prod.",
+  "entries": [
+    {
+      "parameter_id": 5000,
+      "channel": "sim.time_s",
+      "metric_key": "sim.time_s",
+      "unit": "s",
+      "description": "Elapsed simulation time."
+    },
+    {
+      "parameter_id": 5001,
+      "channel": "sim.s_m",
+      "metric_key": "sim.distance_m",
+      "unit": "m",
+      "description": "Distance along lap centerline."
+    },
+    {
+      "parameter_id": 5002,
+      "channel": "sim.x_m",
+      "metric_key": "sim.position_x_m",
+      "unit": "m",
+      "description": "World X position."
+    },
+    {
+      "parameter_id": 5003,
+      "channel": "sim.y_m",
+      "metric_key": "sim.position_y_m",
+      "unit": "m",
+      "description": "World Y position."
+    },
+    {
+      "parameter_id": 5004,
+      "channel": "sim.heading_rad",
+      "metric_key": "sim.heading_rad",
+      "unit": "rad",
+      "description": "Vehicle heading angle."
+    },
+    {
+      "parameter_id": 5005,
+      "channel": "sim.speed_kph",
+      "metric_key": "pace.speed_kph",
+      "unit": "kph",
+      "description": "Vehicle speed."
+    },
+    {
+      "parameter_id": 5006,
+      "channel": "sim.rpm",
+      "metric_key": "powertrain.rpm",
+      "unit": "rpm",
+      "description": "Engine rotation speed."
+    },
+    {
+      "parameter_id": 5007,
+      "channel": "sim.gear",
+      "metric_key": "powertrain.gear",
+      "unit": "gear",
+      "description": "Current transmission gear."
+    },
+    {
+      "parameter_id": 5008,
+      "channel": "sim.throttle_pct",
+      "metric_key": "driver.throttle_pct",
+      "unit": "pct",
+      "description": "Throttle pedal input."
+    },
+    {
+      "parameter_id": 5009,
+      "channel": "sim.brake_pct",
+      "metric_key": "driver.brake_pct",
+      "unit": "pct",
+      "description": "Brake pedal input."
+    },
+    {
+      "parameter_id": 5010,
+      "channel": "sim.g_lat",
+      "metric_key": "dynamics.g_lat",
+      "unit": "g",
+      "description": "Lateral acceleration."
+    },
+    {
+      "parameter_id": 5011,
+      "channel": "sim.g_long",
+      "metric_key": "dynamics.g_long",
+      "unit": "g",
+      "description": "Longitudinal acceleration."
+    },
+    {
+      "parameter_id": 5012,
+      "channel": "sim.g_vert",
+      "metric_key": "dynamics.g_vert",
+      "unit": "g",
+      "description": "Vertical acceleration."
+    },
+    {
+      "parameter_id": 5013,
+      "channel": "sim.engine_temp_c",
+      "metric_key": "powertrain.engine_temp_c",
+      "unit": "c",
+      "description": "Engine coolant temperature."
+    },
+    {
+      "parameter_id": 5014,
+      "channel": "sim.engine_power_w",
+      "metric_key": "powertrain.engine_power_w",
+      "unit": "w",
+      "description": "Engine output power."
+    },
+    {
+      "parameter_id": 5015,
+      "channel": "sim.tire_temp_c",
+      "metric_key": "tires.avg_temp_c",
+      "unit": "c",
+      "description": "Average tire temperature."
+    },
+    {
+      "parameter_id": 5016,
+      "channel": "sim.tire_wear_pct",
+      "metric_key": "tires.avg_wear_pct",
+      "unit": "pct",
+      "description": "Average tire wear."
+    }
+  ]
+}

@@ -20,6 +20,24 @@ Telemetry payloads reuse existing Pitgun contract types from `pitgun-contract`:
 
 See `docs/event-model.md` for details.
 
+### Sim-only insight ingress (MVP)
+
+For the insights pipeline, gateway currently evaluates telemetry with a strict
+`sim.*` dictionary:
+
+- parameter IDs `5000..5016` only
+- mapped to canonical metric keys (for `pitgun-insight-request-v1`)
+- non-`sim.*` parameter IDs are ignored for insights
+- bad quality/non-numeric samples are dropped for insights
+- stats (`min`, `max`, `mean`, `stddev`, etc.) are selected by declared manifest
+- a `pitgun-insight-request-v1` payload is built and stored per telemetry event
+- optional llm-core call (Ollama `/api/generate`) transforms request into `pitgun-insight-response-v1`
+- responses are persisted by `trace_id` for replay/debug
+
+Reference dictionary:
+
+- `portal/schemas/metrics-dictionary/sim.v1.json`
+
 ## Event envelope
 Every message over `/ws` must follow:
 ```json
@@ -59,6 +77,27 @@ Indexes:
 - `(player_id, ts)`
 - `(event_type, ts)`
 
+Table: `insight_requests`
+- `trace_id` (unique, aligned with envelope `event_id`)
+- `event_id`
+- `run_id`
+- `session_id`
+- `emitted_at_ms`
+- `payload_json` (`pitgun-insight-request-v1`)
+- `created_at`
+
+Table: `insight_responses`
+- `trace_id` (unique, aligned with insight request `trace_id`)
+- `run_id`
+- `session_id`
+- `status`
+- `generated_at_ms`
+- `latency_ms`
+- `source_model`
+- `payload_json` (`pitgun-insight-response-v1`)
+- `raw_model_response` (raw JSON text produced by model)
+- `created_at`
+
 ## Environment variables
 - `PITGUN_GATEWAY_BIND` (default `127.0.0.1:8080`)
 - `PITGUN_GATEWAY_ALLOW_NON_LOOPBACK` (default disabled)
@@ -70,6 +109,13 @@ Indexes:
 - `PITGUN_GATEWAY_MAX_MESSAGE_BYTES` (default `524288`)
 - `PITGUN_GATEWAY_MAX_MESSAGES_PER_SEC` (default `120`)
 - `PITGUN_GATEWAY_INGEST_QUEUE_SIZE` (default `4096`)
+- `PITGUN_GATEWAY_INSIGHT_MANIFEST` (optional path to pipeline manifest for insight stats targets/metrics)
+- `PITGUN_GATEWAY_LLM_CORE_URL` (optional; enables llm-core call when set, ex: `http://llm-core:11434/api/generate`)
+- `PITGUN_GATEWAY_LLM_MODEL` (default `llama3.2:3b`, fallback to `OLLAMA_MODEL`)
+- `PITGUN_GATEWAY_LLM_TIMEOUT_MS` (default `8000`)
+- `PITGUN_GATEWAY_LLM_NUM_CTX` (default `1024`)
+- `PITGUN_GATEWAY_LLM_NUM_PREDICT` (default `180`)
+- `PITGUN_GATEWAY_LLM_TEMPERATURE` (default `0`)
 - `RUST_LOG` (default `info`)
 
 ## Local run
