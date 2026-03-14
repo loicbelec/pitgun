@@ -27,7 +27,7 @@ use axum::{
 use insight_ingress::extract_sim_metric_points;
 use insight_requests::build_insight_request;
 use insight_stats_plan::resolve_insight_stats_plan;
-use llm_core::{LlmCoreClient, LlmCoreConfig};
+use llm_core::{LlmCoreClient, LlmCoreConfig, LlmProvider};
 use model::{EventPayload, parse_event_envelope};
 use serde::Deserialize;
 use storage::{
@@ -64,7 +64,9 @@ struct GatewayConfig {
     ingest_queue_size: usize,
     api_keys: HashSet<String>,
     insight_manifest_path: Option<String>,
+    llm_provider: LlmProvider,
     llm_core_url: Option<String>,
+    llm_api_key: Option<String>,
     llm_model: String,
     llm_timeout_ms: u64,
     llm_num_ctx: u32,
@@ -518,7 +520,32 @@ impl GatewayConfig {
             .map(|value| value.trim().to_string())
             .filter(|value| !value.is_empty());
 
-        let llm_core_url = std::env::var("PITGUN_GATEWAY_LLM_CORE_URL")
+        let llm_provider = std::env::var("PITGUN_GATEWAY_LLM_PROVIDER")
+            .ok()
+            .map(|value| value.trim().to_string())
+            .filter(|value| !value.is_empty())
+            .map(|value| {
+                LlmProvider::from_env_value(&value).ok_or_else(|| {
+                    anyhow::anyhow!(
+                        "invalid PITGUN_GATEWAY_LLM_PROVIDER: {value} (expected ollama or openai_compatible)"
+                    )
+                })
+            })
+            .transpose()?
+            .unwrap_or(LlmProvider::Ollama);
+
+        let llm_core_url = std::env::var("PITGUN_GATEWAY_LLM_URL")
+            .ok()
+            .map(|value| value.trim().to_string())
+            .filter(|value| !value.is_empty())
+            .or_else(|| {
+                std::env::var("PITGUN_GATEWAY_LLM_CORE_URL")
+                    .ok()
+                    .map(|value| value.trim().to_string())
+                    .filter(|value| !value.is_empty())
+            });
+
+        let llm_api_key = std::env::var("PITGUN_GATEWAY_LLM_API_KEY")
             .ok()
             .map(|value| value.trim().to_string())
             .filter(|value| !value.is_empty());
@@ -552,7 +579,9 @@ impl GatewayConfig {
             ingest_queue_size,
             api_keys,
             insight_manifest_path,
+            llm_provider,
             llm_core_url,
+            llm_api_key,
             llm_model,
             llm_timeout_ms,
             llm_num_ctx,
@@ -569,6 +598,8 @@ fn build_llm_client(config: &GatewayConfig) -> anyhow::Result<Option<Arc<LlmCore
     };
 
     let mut llm_config = LlmCoreConfig::with_defaults(url.clone(), config.llm_model.clone());
+    llm_config.provider = config.llm_provider;
+    llm_config.api_key = config.llm_api_key.clone();
     llm_config.timeout_ms = config.llm_timeout_ms;
     llm_config.num_ctx = config.llm_num_ctx;
     llm_config.num_predict = config.llm_num_predict;
@@ -577,6 +608,7 @@ fn build_llm_client(config: &GatewayConfig) -> anyhow::Result<Option<Arc<LlmCore
     let client = LlmCoreClient::new(llm_config)?;
     info!(
         llm_url = %url,
+        llm_provider = %config.llm_provider.as_str(),
         llm_model = %config.llm_model,
         "llm-core integration enabled"
     );
