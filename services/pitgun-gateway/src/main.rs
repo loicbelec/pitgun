@@ -7,7 +7,7 @@ mod model;
 mod storage;
 
 use std::{
-    collections::HashSet,
+    collections::{BTreeMap, HashMap, HashSet},
     net::SocketAddr,
     path::PathBuf,
     sync::Arc,
@@ -25,7 +25,9 @@ use axum::{
     routing::get,
 };
 use insight_ingress::extract_sim_metric_points;
-use insight_requests::build_insight_request;
+use insight_requests::{
+    InsightConstraints, InsightContext, InsightMetric, InsightRequestPayload, build_insight_request,
+};
 use insight_stats_plan::resolve_insight_stats_plan;
 use llm_core::{LlmCoreClient, LlmCoreConfig, LlmProvider};
 use model::{EventPayload, parse_event_envelope};
@@ -52,6 +54,30 @@ const DEFAULT_LLM_TIMEOUT_MS: u64 = 8_000;
 const DEFAULT_LLM_NUM_CTX: u32 = 1_024;
 const DEFAULT_LLM_NUM_PREDICT: u32 = 180;
 const DEFAULT_LLM_TEMPERATURE: f32 = 0.0;
+const DEFAULT_LLM_DISPATCH_MODE: &str = "per_request";
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum LlmDispatchMode {
+    PerRequest,
+    SessionEndSummary,
+}
+
+impl LlmDispatchMode {
+    fn from_env_value(raw: &str) -> Option<Self> {
+        match raw.trim().to_ascii_lowercase().as_str() {
+            "per_request" => Some(Self::PerRequest),
+            "session_end_summary" => Some(Self::SessionEndSummary),
+            _ => None,
+        }
+    }
+
+    fn as_str(self) -> &'static str {
+        match self {
+            Self::PerRequest => "per_request",
+            Self::SessionEndSummary => "session_end_summary",
+        }
+    }
+}
 
 #[derive(Clone)]
 struct GatewayConfig {
@@ -72,6 +98,7 @@ struct GatewayConfig {
     llm_num_ctx: u32,
     llm_num_predict: u32,
     llm_temperature: f32,
+    llm_dispatch_mode: LlmDispatchMode,
 }
 
 #[derive(Clone)]
@@ -111,6 +138,7 @@ async fn main() -> anyhow::Result<()> {
         store.clone(),
         insight_stats_plan,
         llm_client,
+        config.llm_dispatch_mode,
         rx,
     ));
 
@@ -162,8 +190,11 @@ async fn process_queue(
     store: Arc<SqliteEventStore>,
     insight_stats_plan: Arc<insight_stats_plan::InsightStatsPlan>,
     llm_client: Option<Arc<LlmCoreClient>>,
+    llm_dispatch_mode: LlmDispatchMode,
     mut rx: mpsc::Receiver<QueueMessage>,
 ) {
+    let mut session_summaries: HashMap<String, SessionSummaryState> = HashMap::new();
+
     while let Some(msg) = rx.recv().await {
         if let EventPayload::TelemetrySampleBatch(payload) = &msg.envelope.payload {
             let extraction = extract_sim_metric_points(payload);
@@ -182,63 +213,59 @@ async fn process_queue(
             if let Some(request) =
                 build_insight_request(&msg.envelope, payload, &extraction, &insight_stats_plan)
             {
-                match store.insert_insight_request(&request).await {
-                    Ok(InsightRequestInsertOutcome::Inserted) => {
-                        debug!(
-                            event_id = %msg.envelope.event_id,
-                            trace_id = %request.trace_id,
-                            metric_count = request.metrics.len(),
-                            "insight request stored"
-                        );
-
-                        if let Some(client) = &llm_client {
-                            let llm_result = client.generate_insights(&request).await;
-                            match store
-                                .insert_insight_response(
-                                    &llm_result.response,
-                                    llm_result.raw_model_response.as_deref(),
-                                )
-                                .await
-                            {
-                                Ok(InsightResponseInsertOutcome::Inserted) => {
-                                    debug!(
-                                        trace_id = %request.trace_id,
-                                        status = %llm_result.response.status.as_str(),
-                                        done_reason = ?llm_result.done_reason,
-                                        "insight response stored"
-                                    );
-                                }
-                                Ok(InsightResponseInsertOutcome::Duplicate) => {
-                                    debug!(
-                                        trace_id = %request.trace_id,
-                                        "duplicate insight response dropped"
-                                    );
-                                }
-                                Err(err) => {
-                                    warn!(
-                                        ?err,
-                                        trace_id = %request.trace_id,
-                                        "failed to persist insight response"
-                                    );
-                                }
-                            }
+                match llm_dispatch_mode {
+                    LlmDispatchMode::PerRequest => {
+                        persist_insight_request_and_dispatch(
+                            &store,
+                            llm_client.as_ref(),
+                            request,
+                            "telemetry.sample_batch",
+                        )
+                        .await;
+                    }
+                    LlmDispatchMode::SessionEndSummary => {
+                        let session_id = request.session_id.clone();
+                        if let Some(state) = session_summaries.get_mut(&session_id) {
+                            state.update_from_request(&request);
+                        } else {
+                            session_summaries.insert(
+                                session_id.clone(),
+                                SessionSummaryState::from_request(&request),
+                            );
                         }
-                    }
-                    Ok(InsightRequestInsertOutcome::Duplicate) => {
                         debug!(
                             event_id = %msg.envelope.event_id,
-                            trace_id = %request.trace_id,
-                            "duplicate insight request dropped"
-                        );
-                    }
-                    Err(err) => {
-                        warn!(
-                            ?err,
-                            event_id = %msg.envelope.event_id,
-                            "failed to persist insight request"
+                            session_id = %session_id,
+                            metric_count = request.metrics.len(),
+                            "insight request absorbed into session summary"
                         );
                     }
                 }
+            }
+        }
+
+        if matches!(msg.envelope.payload, EventPayload::SessionEnd(_))
+            && matches!(llm_dispatch_mode, LlmDispatchMode::SessionEndSummary)
+        {
+            let session_id = msg.envelope.session_id.clone();
+            if let Some(summary) = session_summaries.remove(&session_id) {
+                let trace_id = format!("{}-summary", msg.envelope.event_id);
+                let emitted_at_ms =
+                    (msg.envelope.ts.unix_timestamp_nanos() / 1_000_000).max(0) as i64;
+                let request = summary.into_request(session_id, trace_id, emitted_at_ms);
+                persist_insight_request_and_dispatch(
+                    &store,
+                    llm_client.as_ref(),
+                    request,
+                    "session.end",
+                )
+                .await;
+            } else {
+                debug!(
+                    event_id = %msg.envelope.event_id,
+                    session_id = %msg.envelope.session_id,
+                    "no accumulated telemetry summary found for session.end"
+                );
             }
         }
 
@@ -568,6 +595,22 @@ impl GatewayConfig {
             read_env_u32("PITGUN_GATEWAY_LLM_NUM_PREDICT", DEFAULT_LLM_NUM_PREDICT)?;
         let llm_temperature =
             read_env_f32("PITGUN_GATEWAY_LLM_TEMPERATURE", DEFAULT_LLM_TEMPERATURE)?;
+        let llm_dispatch_mode = std::env::var("PITGUN_GATEWAY_LLM_DISPATCH_MODE")
+            .ok()
+            .map(|value| value.trim().to_string())
+            .filter(|value| !value.is_empty())
+            .map(|value| {
+                LlmDispatchMode::from_env_value(&value).ok_or_else(|| {
+                    anyhow::anyhow!(
+                        "invalid PITGUN_GATEWAY_LLM_DISPATCH_MODE: {value} (expected per_request or session_end_summary)"
+                    )
+                })
+            })
+            .transpose()?
+            .unwrap_or_else(|| {
+                LlmDispatchMode::from_env_value(DEFAULT_LLM_DISPATCH_MODE)
+                    .unwrap_or(LlmDispatchMode::PerRequest)
+            });
 
         Ok(Self {
             bind_addr,
@@ -587,6 +630,7 @@ impl GatewayConfig {
             llm_num_ctx,
             llm_num_predict,
             llm_temperature,
+            llm_dispatch_mode,
         })
     }
 }
@@ -610,6 +654,7 @@ fn build_llm_client(config: &GatewayConfig) -> anyhow::Result<Option<Arc<LlmCore
         llm_url = %url,
         llm_provider = %config.llm_provider.as_str(),
         llm_model = %config.llm_model,
+        llm_dispatch_mode = %config.llm_dispatch_mode.as_str(),
         "llm-core integration enabled"
     );
 
@@ -696,6 +741,212 @@ fn read_db_path() -> String {
     }
 
     DEFAULT_DB_PATH.to_string()
+}
+
+#[derive(Clone, Debug)]
+struct SessionSummaryState {
+    run_id: String,
+    context: InsightContext,
+    constraints: InsightConstraints,
+    policy_version: String,
+    prompt_version: String,
+    metrics: HashMap<String, SessionMetricStats>,
+}
+
+impl SessionSummaryState {
+    fn from_request(request: &InsightRequestPayload) -> Self {
+        let mut state = Self {
+            run_id: request.run_id.clone(),
+            context: request.context.clone(),
+            constraints: request.constraints.clone(),
+            policy_version: request.policy_version.clone(),
+            prompt_version: request.prompt_version.clone(),
+            metrics: HashMap::new(),
+        };
+        state.update_from_request(request);
+        state
+    }
+
+    fn update_from_request(&mut self, request: &InsightRequestPayload) {
+        self.run_id = request.run_id.clone();
+        self.constraints = request.constraints.clone();
+        self.policy_version = request.policy_version.clone();
+        self.prompt_version = request.prompt_version.clone();
+
+        self.context.circuit_id = request.context.circuit_id.clone();
+        self.context.era = request.context.era;
+        self.context.lap = self.context.lap.max(request.context.lap);
+        self.context.position = request.context.position.or(self.context.position);
+        self.context.weather = request
+            .context
+            .weather
+            .clone()
+            .or_else(|| self.context.weather.clone());
+        self.context.track_status = request
+            .context
+            .track_status
+            .clone()
+            .or_else(|| self.context.track_status.clone());
+
+        for metric in &request.metrics {
+            let entry = self
+                .metrics
+                .entry(metric.key.clone())
+                .or_insert_with(|| SessionMetricStats::from_metric(metric));
+            entry.update(metric);
+        }
+    }
+
+    fn into_request(
+        self,
+        session_id: String,
+        trace_id: String,
+        emitted_at_ms: i64,
+    ) -> InsightRequestPayload {
+        let mut sorted: BTreeMap<String, SessionMetricStats> = BTreeMap::new();
+        for (key, stats) in self.metrics {
+            sorted.insert(key, stats);
+        }
+
+        let metrics = sorted
+            .into_iter()
+            .map(|(key, stats)| InsightMetric {
+                value: stats.mean(),
+                confidence: stats.mean_confidence(),
+                key,
+                unit: stats.unit,
+                trend: "unknown".to_string(),
+                horizon: stats.horizon,
+            })
+            .collect::<Vec<_>>();
+
+        InsightRequestPayload {
+            schema_version: "pitgun-insight-request-v1".to_string(),
+            run_id: self.run_id,
+            session_id,
+            trace_id,
+            emitted_at_ms,
+            context: self.context,
+            metrics,
+            constraints: self.constraints,
+            policy_version: self.policy_version,
+            prompt_version: self.prompt_version,
+        }
+    }
+}
+
+#[derive(Clone, Debug)]
+struct SessionMetricStats {
+    count: u64,
+    sum: f64,
+    confidence_sum: f64,
+    unit: String,
+    horizon: String,
+}
+
+impl SessionMetricStats {
+    fn from_metric(metric: &InsightMetric) -> Self {
+        Self {
+            count: 0,
+            sum: 0.0,
+            confidence_sum: 0.0,
+            unit: metric.unit.clone(),
+            horizon: metric.horizon.clone(),
+        }
+    }
+
+    fn update(&mut self, metric: &InsightMetric) {
+        self.count = self.count.saturating_add(1);
+        self.sum += metric.value;
+        self.confidence_sum += metric.confidence;
+        self.unit = metric.unit.clone();
+        self.horizon = metric.horizon.clone();
+    }
+
+    fn mean(&self) -> f64 {
+        if self.count == 0 {
+            0.0
+        } else {
+            self.sum / self.count as f64
+        }
+    }
+
+    fn mean_confidence(&self) -> f64 {
+        if self.count == 0 {
+            0.0
+        } else {
+            (self.confidence_sum / self.count as f64).clamp(0.0, 1.0)
+        }
+    }
+}
+
+async fn persist_insight_request_and_dispatch(
+    store: &Arc<SqliteEventStore>,
+    llm_client: Option<&Arc<LlmCoreClient>>,
+    request: InsightRequestPayload,
+    source: &str,
+) {
+    match store.insert_insight_request(&request).await {
+        Ok(InsightRequestInsertOutcome::Inserted) => {
+            debug!(
+                source = %source,
+                trace_id = %request.trace_id,
+                metric_count = request.metrics.len(),
+                "insight request stored"
+            );
+
+            if let Some(client) = llm_client {
+                let llm_result = client.generate_insights(&request).await;
+                match store
+                    .insert_insight_response(
+                        &llm_result.response,
+                        llm_result.raw_model_response.as_deref(),
+                    )
+                    .await
+                {
+                    Ok(InsightResponseInsertOutcome::Inserted) => {
+                        debug!(
+                            source = %source,
+                            trace_id = %request.trace_id,
+                            status = %llm_result.response.status.as_str(),
+                            done_reason = ?llm_result.done_reason,
+                            "insight response stored"
+                        );
+                    }
+                    Ok(InsightResponseInsertOutcome::Duplicate) => {
+                        debug!(
+                            source = %source,
+                            trace_id = %request.trace_id,
+                            "duplicate insight response dropped"
+                        );
+                    }
+                    Err(err) => {
+                        warn!(
+                            ?err,
+                            source = %source,
+                            trace_id = %request.trace_id,
+                            "failed to persist insight response"
+                        );
+                    }
+                }
+            }
+        }
+        Ok(InsightRequestInsertOutcome::Duplicate) => {
+            debug!(
+                source = %source,
+                trace_id = %request.trace_id,
+                "duplicate insight request dropped"
+            );
+        }
+        Err(err) => {
+            warn!(
+                ?err,
+                source = %source,
+                trace_id = %request.trace_id,
+                "failed to persist insight request"
+            );
+        }
+    }
 }
 
 struct ConnectionRateLimiter {

@@ -119,6 +119,7 @@ Table: `insight_responses`
 - `PITGUN_GATEWAY_LLM_NUM_CTX` (default `1024`)
 - `PITGUN_GATEWAY_LLM_NUM_PREDICT` (default `180`)
 - `PITGUN_GATEWAY_LLM_TEMPERATURE` (default `0`)
+- `PITGUN_GATEWAY_LLM_DISPATCH_MODE` (default `per_request`; `session_end_summary` sends a single LLM request when `session.end` is received)
 - `RUST_LOG` (default `info`)
 
 ## Local run
