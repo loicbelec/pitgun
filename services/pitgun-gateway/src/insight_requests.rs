@@ -104,6 +104,22 @@ pub struct PracticeSummaryPayload {
     pub metrics: Vec<InsightMetric>,
 }
 
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
+pub struct RaceSummaryPayload {
+    pub schema_version: String,
+    pub summary_id: String,
+    pub player_id: String,
+    pub run_id: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub weekend_id: Option<String>,
+    pub session_id: String,
+    pub emitted_at_ms: i64,
+    pub ended_at_us: i64,
+    pub lap_count: u32,
+    pub context: InsightContext,
+    pub metrics: Vec<InsightMetric>,
+}
+
 #[derive(Clone, Debug, PartialEq)]
 pub struct SummaryMetadata {
     pub player_id: String,
@@ -406,6 +422,32 @@ pub fn build_insight_request_from_session_summary(
     )
 }
 
+pub fn build_race_summary_from_session(
+    summary: &SessionSummaryPayload,
+) -> Option<RaceSummaryPayload> {
+    if !summary
+        .session_type
+        .as_deref()
+        .is_some_and(|value| value.eq_ignore_ascii_case("RACE"))
+    {
+        return None;
+    }
+
+    Some(RaceSummaryPayload {
+        schema_version: "pitgun-race-summary-v1".to_string(),
+        summary_id: format!("{}:race", summary.session_id),
+        player_id: summary.player_id.clone(),
+        run_id: summary.run_id.clone(),
+        weekend_id: summary.weekend_id.clone(),
+        session_id: summary.session_id.clone(),
+        emitted_at_ms: summary.emitted_at_ms,
+        ended_at_us: summary.ended_at_us,
+        lap_count: summary.lap_count,
+        context: summary.context.clone(),
+        metrics: summary.metrics.clone(),
+    })
+}
+
 pub fn build_insight_request(
     envelope: &EventEnvelope,
     payload: &TelemetrySampleBatchPayload,
@@ -522,8 +564,10 @@ mod tests {
     };
 
     use super::{
-        aggregate_points_by_channel, build_insight_request, build_insight_request_from_lap_summary,
-        build_insight_request_from_session_summary, build_lap_summary, build_session_summary,
+        InsightContext, InsightMetric, SessionSummaryPayload, aggregate_points_by_channel,
+        build_insight_request, build_insight_request_from_lap_summary,
+        build_insight_request_from_session_summary, build_lap_summary,
+        build_race_summary_from_session, build_session_summary,
     };
 
     #[test]
@@ -735,5 +779,52 @@ mod tests {
         assert_eq!(request.session_id, "session-abc");
         assert_eq!(request.context.lap, 12);
         assert_eq!(request.metrics, summary.metrics);
+    }
+
+    #[test]
+    fn builds_race_summary_from_race_session_summary() {
+        let summary = SessionSummaryPayload {
+            schema_version: "pitgun-session-summary-v1".to_string(),
+            summary_id: "session-race:session".to_string(),
+            player_id: "player-123".to_string(),
+            run_id: "run-race-001".to_string(),
+            weekend_id: Some("weekend-singapore".to_string()),
+            session_id: "session-race".to_string(),
+            session_type: Some("RACE".to_string()),
+            emitted_at_ms: 1_770_000_002_345,
+            ended_at_us: 1_770_000_002_345_000,
+            lap_count: 57,
+            context: InsightContext {
+                circuit_id: "SINGAPORE".to_string(),
+                era: 2026,
+                lap: 57,
+                position: Some(4),
+                weather: Some("dry".to_string()),
+                track_status: Some("green".to_string()),
+            },
+            metrics: vec![InsightMetric {
+                key: "pace.speed_kph.mean".to_string(),
+                value: 181.2,
+                unit: "kph".to_string(),
+                trend: "mixed".to_string(),
+                horizon: "lap".to_string(),
+                confidence: 0.91,
+            }],
+        };
+
+        let race_summary =
+            build_race_summary_from_session(&summary).expect("race summary should be built");
+
+        assert_eq!(race_summary.schema_version, "pitgun-race-summary-v1");
+        assert_eq!(race_summary.summary_id, "session-race:race");
+        assert_eq!(race_summary.player_id, "player-123");
+        assert_eq!(race_summary.run_id, "run-race-001");
+        assert_eq!(
+            race_summary.weekend_id.as_deref(),
+            Some("weekend-singapore")
+        );
+        assert_eq!(race_summary.session_id, "session-race");
+        assert_eq!(race_summary.lap_count, 57);
+        assert_eq!(race_summary.metrics.len(), 1);
     }
 }
