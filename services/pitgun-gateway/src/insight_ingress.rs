@@ -1,5 +1,7 @@
 use std::collections::BTreeSet;
 
+use pitgun_contract::TelemetryFrame;
+
 use crate::model::TelemetrySampleBatchPayload;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -144,41 +146,59 @@ pub fn extract_sim_metric_points(payload: &TelemetrySampleBatchPayload) -> Insig
     let mut extraction = InsightExtraction::default();
 
     for frame in &payload.frames {
-        for sample in &frame.samples {
-            let Some(metric) = sim_metric_by_parameter_id(sample.parameter_id) else {
-                extraction.dropped_non_sim += 1;
-                extraction.unknown_parameter_ids.insert(sample.parameter_id);
-                continue;
-            };
-
-            if !sample.quality.is_usable() {
-                extraction.dropped_bad_quality += 1;
-                continue;
-            }
-
-            let Some(value) = sample.as_f64() else {
-                extraction.dropped_non_numeric += 1;
-                continue;
-            };
-
-            let timestamp_us = frame
-                .timestamp_us
-                .saturating_add(sample.timestamp_offset_us.unwrap_or(0) as i64);
-
-            extraction.points.push(InsightMetricPoint {
-                parameter_id: sample.parameter_id,
-                channel: metric.channel,
-                metric_key: metric.metric_key,
-                unit: metric.unit,
-                value,
-                timestamp_us,
-                session_id: frame.session_id,
-                source_id: frame.source_id.clone(),
-            });
-        }
+        merge_extraction(&mut extraction, extract_sim_metric_points_from_frame(frame));
     }
 
     extraction
+}
+
+pub fn extract_sim_metric_points_from_frame(frame: &TelemetryFrame) -> InsightExtraction {
+    let mut extraction = InsightExtraction::default();
+
+    for sample in &frame.samples {
+        let Some(metric) = sim_metric_by_parameter_id(sample.parameter_id) else {
+            extraction.dropped_non_sim += 1;
+            extraction.unknown_parameter_ids.insert(sample.parameter_id);
+            continue;
+        };
+
+        if !sample.quality.is_usable() {
+            extraction.dropped_bad_quality += 1;
+            continue;
+        }
+
+        let Some(value) = sample.as_f64() else {
+            extraction.dropped_non_numeric += 1;
+            continue;
+        };
+
+        let timestamp_us = frame
+            .timestamp_us
+            .saturating_add(sample.timestamp_offset_us.unwrap_or(0) as i64);
+
+        extraction.points.push(InsightMetricPoint {
+            parameter_id: sample.parameter_id,
+            channel: metric.channel,
+            metric_key: metric.metric_key,
+            unit: metric.unit,
+            value,
+            timestamp_us,
+            session_id: frame.session_id,
+            source_id: frame.source_id.clone(),
+        });
+    }
+
+    extraction
+}
+
+fn merge_extraction(target: &mut InsightExtraction, mut source: InsightExtraction) {
+    target.points.append(&mut source.points);
+    target.dropped_non_sim += source.dropped_non_sim;
+    target.dropped_non_numeric += source.dropped_non_numeric;
+    target.dropped_bad_quality += source.dropped_bad_quality;
+    target
+        .unknown_parameter_ids
+        .append(&mut source.unknown_parameter_ids);
 }
 
 fn sim_metric_by_parameter_id(parameter_id: u16) -> Option<&'static SimMetricDef> {
@@ -192,7 +212,8 @@ mod tests {
     use pitgun_contract::{Sample, SampleValue, SignalQuality, TelemetryFrame};
 
     use super::{
-        InsightMetricPoint, SimMetricDef, extract_sim_metric_points, sim_metric_dictionary,
+        InsightMetricPoint, SimMetricDef, extract_sim_metric_points,
+        extract_sim_metric_points_from_frame, sim_metric_dictionary,
     };
     use crate::model::TelemetrySampleBatchPayload;
 
@@ -205,26 +226,24 @@ mod tests {
 
     #[test]
     fn extracts_only_mapped_sim_metrics() {
-        let payload = TelemetrySampleBatchPayload {
-            frames: vec![TelemetryFrame {
-                session_id: 4242,
-                sequence: 7,
-                timestamp_us: 1_770_000_001_000_000,
-                received_at_us: 1_770_000_001_000_050,
-                source_id: "pitgun-solver".to_string(),
-                samples: vec![
-                    Sample::new(5005, SampleValue::F64(212.4), SignalQuality::Good),
-                    Sample::new(65000, SampleValue::F64(1.0), SignalQuality::Good),
-                ],
-                events: Vec::new(),
-                lap_number: Some(12),
-                sector: Some(2),
-                lap_distance_m: Some(3021.4),
-                metadata: Default::default(),
-            }],
+        let frame = TelemetryFrame {
+            session_id: 4242,
+            sequence: 7,
+            timestamp_us: 1_770_000_001_000_000,
+            received_at_us: 1_770_000_001_000_050,
+            source_id: "pitgun-solver".to_string(),
+            samples: vec![
+                Sample::new(5005, SampleValue::F64(212.4), SignalQuality::Good),
+                Sample::new(65000, SampleValue::F64(1.0), SignalQuality::Good),
+            ],
+            events: Vec::new(),
+            lap_number: Some(12),
+            sector: Some(2),
+            lap_distance_m: Some(3021.4),
+            metadata: Default::default(),
         };
 
-        let extraction = extract_sim_metric_points(&payload);
+        let extraction = extract_sim_metric_points_from_frame(&frame);
 
         assert_eq!(extraction.points.len(), 1);
         assert_eq!(extraction.dropped_non_sim, 1);
@@ -294,5 +313,62 @@ mod tests {
         assert_eq!(wear.channel, "sim.tire_wear_pct");
         assert_eq!(wear.metric_key, "tires.avg_wear_pct");
         assert_eq!(wear.unit, "pct");
+    }
+
+    #[test]
+    fn batch_extraction_merges_multiple_frames() {
+        let payload = TelemetrySampleBatchPayload {
+            frames: vec![
+                TelemetryFrame {
+                    session_id: 4242,
+                    sequence: 1,
+                    timestamp_us: 100,
+                    received_at_us: 110,
+                    source_id: "test".to_string(),
+                    samples: vec![Sample::new(
+                        5005,
+                        SampleValue::F64(201.0),
+                        SignalQuality::Good,
+                    )],
+                    events: Vec::new(),
+                    lap_number: Some(1),
+                    sector: None,
+                    lap_distance_m: None,
+                    metadata: Default::default(),
+                },
+                TelemetryFrame {
+                    session_id: 4242,
+                    sequence: 2,
+                    timestamp_us: 200,
+                    received_at_us: 210,
+                    source_id: "test".to_string(),
+                    samples: vec![Sample::new(
+                        5006,
+                        SampleValue::F64(12000.0),
+                        SignalQuality::Good,
+                    )],
+                    events: Vec::new(),
+                    lap_number: Some(1),
+                    sector: None,
+                    lap_distance_m: None,
+                    metadata: Default::default(),
+                },
+            ],
+        };
+
+        let extraction = extract_sim_metric_points(&payload);
+        assert_eq!(extraction.points.len(), 2);
+        assert!(
+            extraction
+                .points
+                .iter()
+                .any(|point| point.parameter_id == 5005)
+        );
+        assert!(
+            extraction
+                .points
+                .iter()
+                .any(|point| point.parameter_id == 5006)
+        );
     }
 }
