@@ -1752,12 +1752,7 @@ mod tests {
             fixture.expected.sample_count,
             "sample_count mismatch"
         );
-        approx_eq(
-            solution.v[0],
-            0.0,
-            0.001,
-            "speed_head[0]",
-        );
+        approx_eq(solution.v[0], 0.0, 0.001, "speed_head[0]");
         approx_slice_eq(
             &solution.v[solution.v.len() - fixture.expected.speed_tail.len()..],
             &fixture.expected.speed_tail,
