@@ -669,9 +669,11 @@ mod tests {
         let summary = LapSummaryPayload {
             schema_version: "pitgun-lap-summary-v1".to_string(),
             summary_id: "session-001:lap:12".to_string(),
+            player_id: "player_001".to_string(),
             run_id: "run_001".to_string(),
             weekend_id: Some("weekend_001".to_string()),
             session_id: "session_001".to_string(),
+            session_type: Some("FP1".to_string()),
             lap_number: 12,
             started_at_us: 1_773_401_000_000,
             ended_at_us: 1_773_491_000_000,

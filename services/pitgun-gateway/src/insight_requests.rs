@@ -56,10 +56,13 @@ pub struct InsightConstraints {
 pub struct LapSummaryPayload {
     pub schema_version: String,
     pub summary_id: String,
+    pub player_id: String,
     pub run_id: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub weekend_id: Option<String>,
     pub session_id: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub session_type: Option<String>,
     pub lap_number: u32,
     pub started_at_us: i64,
     pub ended_at_us: i64,
@@ -71,10 +74,13 @@ pub struct LapSummaryPayload {
 pub struct SessionSummaryPayload {
     pub schema_version: String,
     pub summary_id: String,
+    pub player_id: String,
     pub run_id: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub weekend_id: Option<String>,
     pub session_id: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub session_type: Option<String>,
     pub emitted_at_ms: i64,
     pub ended_at_us: i64,
     pub lap_count: u32,
@@ -83,23 +89,27 @@ pub struct SessionSummaryPayload {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
-pub struct WeekendSummaryPayload {
+pub struct PracticeSummaryPayload {
     pub schema_version: String,
     pub summary_id: String,
+    pub player_id: String,
     pub weekend_id: String,
     pub emitted_at_ms: i64,
     pub ended_at_us: i64,
     pub session_count: u32,
     pub source_run_ids: Vec<String>,
     pub source_session_ids: Vec<String>,
+    pub source_session_types: Vec<String>,
     pub context: InsightContext,
     pub metrics: Vec<InsightMetric>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct SummaryMetadata {
+    pub player_id: String,
     pub run_id: String,
     pub weekend_id: Option<String>,
+    pub session_type: Option<String>,
     pub context: InsightContext,
 }
 
@@ -223,6 +233,7 @@ pub(crate) fn build_insight_metrics(
 }
 
 pub fn resolve_summary_metadata(
+    player_id: &str,
     metadata: &HashMap<String, String>,
     session_id: &str,
     fallback_run_id: &str,
@@ -241,6 +252,11 @@ pub fn resolve_summary_metadata(
     let weekend_id = metadata
         .get("weekend_id")
         .map(|value| trim_to_max(value, 64))
+        .filter(|value| !value.is_empty());
+
+    let session_type = metadata
+        .get("session_type")
+        .map(|value| trim_to_max(&value.trim().to_ascii_uppercase(), 16))
         .filter(|value| !value.is_empty());
 
     let circuit_id = metadata
@@ -271,8 +287,10 @@ pub fn resolve_summary_metadata(
         .filter(|value| !value.is_empty());
 
     SummaryMetadata {
+        player_id: trim_to_max(player_id, 64),
         run_id,
         weekend_id,
+        session_type,
         context: InsightContext {
             circuit_id,
             era,
@@ -286,6 +304,7 @@ pub fn resolve_summary_metadata(
 
 pub fn build_lap_summary(
     summary_id: String,
+    player_id: &str,
     session_id: String,
     lap_number: u32,
     started_at_us: i64,
@@ -300,15 +319,22 @@ pub fn build_lap_summary(
         return None;
     }
 
-    let summary_metadata =
-        resolve_summary_metadata(metadata, &session_id, fallback_run_id, lap_number);
+    let summary_metadata = resolve_summary_metadata(
+        player_id,
+        metadata,
+        &session_id,
+        fallback_run_id,
+        lap_number,
+    );
 
     Some(LapSummaryPayload {
         schema_version: "pitgun-lap-summary-v1".to_string(),
         summary_id: trim_to_max(&summary_id, 128),
+        player_id: summary_metadata.player_id,
         run_id: summary_metadata.run_id,
         weekend_id: summary_metadata.weekend_id,
         session_id: trim_to_max(&session_id, 64),
+        session_type: summary_metadata.session_type,
         lap_number,
         started_at_us,
         ended_at_us,
@@ -333,6 +359,7 @@ pub fn build_insight_request_from_lap_summary(
 
 pub fn build_session_summary(
     summary_id: String,
+    player_id: &str,
     session_id: String,
     emitted_at_ms: i64,
     lap: u32,
@@ -346,14 +373,17 @@ pub fn build_session_summary(
         return None;
     }
 
-    let summary_metadata = resolve_summary_metadata(metadata, &session_id, fallback_run_id, lap);
+    let summary_metadata =
+        resolve_summary_metadata(player_id, metadata, &session_id, fallback_run_id, lap);
 
     Some(SessionSummaryPayload {
         schema_version: "pitgun-session-summary-v1".to_string(),
         summary_id: trim_to_max(&summary_id, 128),
+        player_id: summary_metadata.player_id,
         run_id: summary_metadata.run_id,
         weekend_id: summary_metadata.weekend_id,
         session_id: trim_to_max(&session_id, 64),
+        session_type: summary_metadata.session_type,
         emitted_at_ms: emitted_at_ms.max(0),
         ended_at_us: emitted_at_ms.saturating_mul(1_000),
         lap_count: lap,
@@ -413,6 +443,7 @@ pub fn build_insight_request(
         .find_map(|frame| frame.lap_number)
         .unwrap_or(0) as u32;
     let metadata = resolve_summary_metadata(
+        &envelope.player_id,
         latest_metadata,
         &envelope.session_id,
         &envelope.event_id.to_string(),
@@ -613,6 +644,7 @@ mod tests {
         let aggregates = aggregate_points_by_channel(&extraction.points);
         let summary = build_lap_summary(
             "session-abc:lap:7".to_string(),
+            "player-123",
             "session-abc".to_string(),
             7,
             1_770_000_000_000_000,
@@ -625,6 +657,7 @@ mod tests {
         .expect("lap summary should be built");
 
         assert_eq!(summary.schema_version, "pitgun-lap-summary-v1");
+        assert_eq!(summary.player_id, "player-123");
         assert_eq!(summary.run_id, "run_lap_001");
         assert_eq!(summary.weekend_id.as_deref(), Some("weekend-spa"));
         assert_eq!(summary.context.circuit_id, "SPA");
@@ -676,6 +709,7 @@ mod tests {
         let aggregates = aggregate_points_by_channel(&extraction.points);
         let summary = build_session_summary(
             "session-abc:session".to_string(),
+            "player-123",
             "session-abc".to_string(),
             1_770_000_001_234,
             12,
@@ -687,6 +721,7 @@ mod tests {
         .expect("session summary should be built");
 
         assert_eq!(summary.schema_version, "pitgun-session-summary-v1");
+        assert_eq!(summary.player_id, "player-123");
         assert_eq!(summary.run_id, "run_session_001");
         assert_eq!(summary.weekend_id.as_deref(), Some("weekend-monza"));
         assert_eq!(summary.lap_count, 12);

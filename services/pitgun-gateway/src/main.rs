@@ -43,10 +43,12 @@ use storage::{
     EventInsertOutcome, IngestMetadata, InsightRequestInsertOutcome, InsightResponseInsertOutcome,
     LapSummaryInsertOutcome, QueueMessage, SqliteEventStore, SqliteJournalMode,
 };
+use time::OffsetDateTime;
 use tokio::{
     net::TcpListener,
     signal,
     sync::mpsc::{self, error::TrySendError},
+    time::sleep,
 };
 use tracing::{debug, error, info, warn};
 
@@ -146,6 +148,7 @@ async fn main() -> anyhow::Result<()> {
 
     let store = Arc::new(SqliteEventStore::new(&config.db_path, config.sqlite_journal_mode).await?);
     let questdb_store = build_questdb_store(&config).await?;
+    backfill_practice_summaries(questdb_store.as_deref()).await?;
     let run_registry_client = build_run_registry_client(&config)?;
     let llm_client = build_llm_client(&config)?;
     let (tx, rx) = mpsc::channel(config.ingest_queue_size);
@@ -233,6 +236,7 @@ async fn process_queue(
                 .entry(msg.envelope.session_id.clone())
                 .or_insert_with(|| {
                     SessionAggregationState::new(
+                        msg.envelope.player_id.clone(),
                         msg.envelope.session_id.clone(),
                         msg.envelope.event_id.to_string(),
                     )
@@ -308,14 +312,12 @@ async fn process_queue(
                 {
                     persist_session_summary(questdb_store.as_ref(), summary.clone()).await;
 
-                    if state.should_emit_weekend_summary() {
-                        persist_weekend_summary(
-                            questdb_store.as_ref(),
-                            summary.weekend_id.as_deref(),
-                            emitted_at_ms,
-                        )
-                        .await;
-                    }
+                    persist_practice_summary(
+                        questdb_store.as_ref(),
+                        summary.weekend_id.as_deref(),
+                        emitted_at_ms,
+                    )
+                    .await;
 
                     if matches!(llm_dispatch_mode, LlmDispatchMode::SessionEndSummary) {
                         let trace_id = format!("{}-session-summary", msg.envelope.event_id);
@@ -493,7 +495,7 @@ async fn persist_session_summary(
     }
 }
 
-async fn persist_weekend_summary(
+async fn persist_practice_summary(
     questdb_store: Option<&Arc<QuestDbStore>>,
     weekend_id: Option<&str>,
     emitted_at_ms: i64,
@@ -505,33 +507,110 @@ async fn persist_weekend_summary(
         return;
     };
 
-    match questdb_store
-        .rebuild_weekend_summary(weekend_id, emitted_at_ms)
-        .await
-    {
-        Ok(Some(summary)) => {
-            debug!(
-                summary_id = %summary.summary_id,
-                weekend_id = %summary.weekend_id,
-                session_count = summary.session_count,
-                metric_count = summary.metrics.len(),
-                "weekend summary mirrored to QuestDB"
-            );
+    match questdb_store.has_practice_summary(weekend_id).await {
+        Ok(true) => {
+            debug!(weekend_id = %weekend_id, "practice summary already present in QuestDB; skipping");
+            return;
         }
-        Ok(None) => {
-            debug!(
-                weekend_id = %weekend_id,
-                "weekend summary not emitted yet; waiting for enough practice sessions"
-            );
-        }
+        Ok(false) => {}
         Err(err) => {
             warn!(
                 ?err,
                 weekend_id = %weekend_id,
-                "failed to rebuild weekend summary in QuestDB"
+                "failed to check existing practice summary before rebuild"
             );
         }
     }
+
+    for attempt in 1..=5 {
+        match questdb_store
+            .rebuild_practice_summary(weekend_id, emitted_at_ms)
+            .await
+        {
+            Ok(Some(summary)) => {
+                debug!(
+                    summary_id = %summary.summary_id,
+                    weekend_id = %summary.weekend_id,
+                    session_count = summary.session_count,
+                    metric_count = summary.metrics.len(),
+                    attempt,
+                    "practice summary mirrored to QuestDB"
+                );
+                return;
+            }
+            Ok(None) if attempt < 5 => {
+                debug!(
+                    weekend_id = %weekend_id,
+                    attempt,
+                    "practice summary not visible yet in QuestDB; retrying"
+                );
+                sleep(Duration::from_millis(250)).await;
+            }
+            Ok(None) => {
+                warn!(
+                    weekend_id = %weekend_id,
+                    attempt,
+                    "practice summary not emitted after retries; waiting for enough practice sessions or fresh QuestDB visibility"
+                );
+                return;
+            }
+            Err(err) => {
+                warn!(
+                    ?err,
+                    weekend_id = %weekend_id,
+                    attempt,
+                    "failed to rebuild practice summary in QuestDB"
+                );
+                return;
+            }
+        }
+    }
+}
+
+async fn backfill_practice_summaries(questdb_store: Option<&QuestDbStore>) -> anyhow::Result<()> {
+    let Some(questdb_store) = questdb_store else {
+        return Ok(());
+    };
+
+    let candidate_weekend_ids = questdb_store
+        .list_backfillable_practice_weekend_ids()
+        .await?;
+    if candidate_weekend_ids.is_empty() {
+        return Ok(());
+    }
+
+    let emitted_at_ms = (OffsetDateTime::now_utc().unix_timestamp_nanos() / 1_000_000) as i64;
+    for weekend_id in candidate_weekend_ids {
+        if questdb_store.has_practice_summary(&weekend_id).await? {
+            continue;
+        }
+
+        match questdb_store
+            .rebuild_practice_summary(&weekend_id, emitted_at_ms)
+            .await
+        {
+            Ok(Some(summary)) => {
+                info!(
+                    summary_id = %summary.summary_id,
+                    weekend_id = %summary.weekend_id,
+                    session_count = summary.session_count,
+                    metric_count = summary.metrics.len(),
+                    "backfilled practice summary from existing practice sessions"
+                );
+            }
+            Ok(None) => {
+                warn!(
+                    weekend_id,
+                    "skipped practice summary backfill because practice sessions were still incomplete"
+                );
+            }
+            Err(err) => {
+                warn!(weekend_id, %err, "failed to backfill practice summary");
+            }
+        }
+    }
+
+    Ok(())
 }
 
 async fn health(State(state): State<AppState>) -> impl IntoResponse {
@@ -1084,6 +1163,7 @@ fn read_db_path() -> String {
 
 #[derive(Clone, Debug)]
 struct SessionAggregationState {
+    player_id: String,
     session_id: String,
     fallback_run_id: String,
     latest_metadata: HashMap<String, String>,
@@ -1093,8 +1173,9 @@ struct SessionAggregationState {
 }
 
 impl SessionAggregationState {
-    fn new(session_id: String, fallback_run_id: String) -> Self {
+    fn new(player_id: String, session_id: String, fallback_run_id: String) -> Self {
         Self {
+            player_id,
             session_id,
             fallback_run_id,
             latest_metadata: HashMap::new(),
@@ -1169,6 +1250,7 @@ impl SessionAggregationState {
 
         build_lap_summary(
             summary_id,
+            &self.player_id,
             self.session_id.clone(),
             open_lap.lap_number,
             open_lap.started_at_us,
@@ -1187,6 +1269,7 @@ impl SessionAggregationState {
     ) -> Option<SessionSummaryPayload> {
         build_session_summary(
             format!("{}:session", self.session_id),
+            &self.player_id,
             self.session_id.clone(),
             emitted_at_ms,
             self.max_lap,
@@ -1195,12 +1278,6 @@ impl SessionAggregationState {
             &self.session_aggregates,
             stats_plan,
         )
-    }
-
-    fn should_emit_weekend_summary(&self) -> bool {
-        self.latest_metadata
-            .get("session_type")
-            .is_some_and(|value| value.eq_ignore_ascii_case("FP3"))
     }
 }
 
