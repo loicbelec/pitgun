@@ -1,10 +1,13 @@
-use std::path::Path;
+use std::{path::Path, str::FromStr};
 
 use anyhow::Context;
-use sqlx::{SqlitePool, sqlite::SqlitePoolOptions};
+use sqlx::{
+    SqlitePool,
+    sqlite::{SqliteConnectOptions, SqlitePoolOptions},
+};
 use time::{OffsetDateTime, UtcOffset, format_description::well_known::Rfc3339};
 
-use crate::insight_requests::InsightRequestPayload;
+use crate::insight_requests::{InsightRequestPayload, LapSummaryPayload};
 use crate::insight_responses::InsightResponsePayload;
 use crate::model::EventEnvelope;
 
@@ -39,6 +42,41 @@ pub struct SqliteEventStore {
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum SqliteJournalMode {
+    Wal,
+    Delete,
+    Truncate,
+    Persist,
+    Memory,
+    Off,
+}
+
+impl SqliteJournalMode {
+    pub fn from_env_value(value: &str) -> Option<Self> {
+        match value.trim().to_ascii_lowercase().as_str() {
+            "wal" => Some(Self::Wal),
+            "delete" => Some(Self::Delete),
+            "truncate" => Some(Self::Truncate),
+            "persist" => Some(Self::Persist),
+            "memory" => Some(Self::Memory),
+            "off" => Some(Self::Off),
+            _ => None,
+        }
+    }
+
+    fn pragma_value(self) -> &'static str {
+        match self {
+            Self::Wal => "WAL",
+            Self::Delete => "DELETE",
+            Self::Truncate => "TRUNCATE",
+            Self::Persist => "PERSIST",
+            Self::Memory => "MEMORY",
+            Self::Off => "OFF",
+        }
+    }
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum EventInsertOutcome {
     Inserted,
     Duplicate,
@@ -56,20 +94,28 @@ pub enum InsightResponseInsertOutcome {
     Duplicate,
 }
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum LapSummaryInsertOutcome {
+    Inserted,
+    Duplicate,
+}
+
 impl SqliteEventStore {
-    pub async fn new(db_path: &str) -> anyhow::Result<Self> {
+    pub async fn new(db_path: &str, journal_mode: SqliteJournalMode) -> anyhow::Result<Self> {
         ensure_parent_dir_exists(db_path).await?;
 
         let db_url = sqlite_url(db_path);
+        let connect_options = SqliteConnectOptions::from_str(&db_url)
+            .with_context(|| format!("invalid sqlite database url: {db_url}"))?
+            .create_if_missing(true);
         let pool = SqlitePoolOptions::new()
             .max_connections(10)
-            .connect(&db_url)
+            .connect_with(connect_options)
             .await
             .with_context(|| format!("failed to connect to sqlite database at {db_path}"))?;
 
-        sqlx::query("PRAGMA journal_mode = WAL;")
-            .execute(&pool)
-            .await?;
+        let journal_mode_sql = format!("PRAGMA journal_mode = {};", journal_mode.pragma_value());
+        sqlx::query(&journal_mode_sql).execute(&pool).await?;
         sqlx::query("PRAGMA synchronous = NORMAL;")
             .execute(&pool)
             .await?;
@@ -82,6 +128,7 @@ impl SqliteEventStore {
                 schema_version TEXT NOT NULL,
                 ts TEXT NOT NULL,
                 player_id TEXT NOT NULL,
+                weekend_id TEXT,
                 session_id TEXT NOT NULL,
                 event_type TEXT NOT NULL,
                 payload_json TEXT NOT NULL,
@@ -95,11 +142,17 @@ impl SqliteEventStore {
         .execute(&pool)
         .await?;
 
+        ensure_nullable_text_column(&pool, "events", "weekend_id").await?;
+
         sqlx::query("CREATE INDEX IF NOT EXISTS idx_events_session_ts ON events(session_id, ts);")
             .execute(&pool)
             .await?;
 
         sqlx::query("CREATE INDEX IF NOT EXISTS idx_events_player_ts ON events(player_id, ts);")
+            .execute(&pool)
+            .await?;
+
+        sqlx::query("CREATE INDEX IF NOT EXISTS idx_events_weekend_ts ON events(weekend_id, ts);")
             .execute(&pool)
             .await?;
 
@@ -156,6 +209,45 @@ impl SqliteEventStore {
         .execute(&pool)
         .await?;
 
+        sqlx::query(
+            r#"
+            CREATE TABLE IF NOT EXISTS lap_summaries (
+                seq_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                summary_id TEXT NOT NULL UNIQUE,
+                run_id TEXT NOT NULL,
+                weekend_id TEXT,
+                session_id TEXT NOT NULL,
+                lap_number INTEGER NOT NULL,
+                started_at_us INTEGER NOT NULL,
+                ended_at_us INTEGER NOT NULL,
+                payload_json TEXT NOT NULL,
+                created_at TEXT NOT NULL
+            );
+            "#,
+        )
+        .execute(&pool)
+        .await?;
+
+        ensure_nullable_text_column(&pool, "lap_summaries", "weekend_id").await?;
+
+        sqlx::query(
+            "CREATE INDEX IF NOT EXISTS idx_lap_summaries_run_lap ON lap_summaries(run_id, lap_number);",
+        )
+        .execute(&pool)
+        .await?;
+
+        sqlx::query(
+            "CREATE INDEX IF NOT EXISTS idx_lap_summaries_session_lap ON lap_summaries(session_id, lap_number);",
+        )
+        .execute(&pool)
+        .await?;
+
+        sqlx::query(
+            "CREATE INDEX IF NOT EXISTS idx_lap_summaries_weekend_lap ON lap_summaries(weekend_id, lap_number);",
+        )
+        .execute(&pool)
+        .await?;
+
         Ok(Self { pool })
     }
 
@@ -181,6 +273,7 @@ impl SqliteEventStore {
                 schema_version,
                 ts,
                 player_id,
+                weekend_id,
                 session_id,
                 event_type,
                 payload_json,
@@ -189,7 +282,7 @@ impl SqliteEventStore {
                 remote_ip,
                 user_agent
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(event_id) DO NOTHING;
             "#,
         )
@@ -197,6 +290,7 @@ impl SqliteEventStore {
         .bind(msg.envelope.schema_version)
         .bind(event_ts)
         .bind(msg.envelope.player_id)
+        .bind(msg.envelope.weekend_id)
         .bind(msg.envelope.session_id)
         .bind(msg.envelope.event_type)
         .bind(payload_json)
@@ -309,6 +403,51 @@ impl SqliteEventStore {
             Ok(InsightResponseInsertOutcome::Inserted)
         }
     }
+
+    pub async fn insert_lap_summary(
+        &self,
+        summary: &LapSummaryPayload,
+    ) -> anyhow::Result<LapSummaryInsertOutcome> {
+        let payload_json = serde_json::to_string(summary)?;
+        let created_at = OffsetDateTime::now_utc()
+            .format(&Rfc3339)
+            .map_err(|err| anyhow::anyhow!("failed to format lap summary created_at: {err}"))?;
+
+        let result = sqlx::query(
+            r#"
+            INSERT INTO lap_summaries (
+                summary_id,
+                run_id,
+                weekend_id,
+                session_id,
+                lap_number,
+                started_at_us,
+                ended_at_us,
+                payload_json,
+                created_at
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(summary_id) DO NOTHING;
+            "#,
+        )
+        .bind(&summary.summary_id)
+        .bind(&summary.run_id)
+        .bind(summary.weekend_id.as_deref())
+        .bind(&summary.session_id)
+        .bind(summary.lap_number as i64)
+        .bind(summary.started_at_us)
+        .bind(summary.ended_at_us)
+        .bind(payload_json)
+        .bind(created_at)
+        .execute(&self.pool)
+        .await?;
+
+        if result.rows_affected() == 0 {
+            Ok(LapSummaryInsertOutcome::Duplicate)
+        } else {
+            Ok(LapSummaryInsertOutcome::Inserted)
+        }
+    }
 }
 
 fn sqlite_url(path: &str) -> String {
@@ -338,14 +477,35 @@ async fn ensure_parent_dir_exists(path: &str) -> anyhow::Result<()> {
     Ok(())
 }
 
+async fn ensure_nullable_text_column(
+    pool: &SqlitePool,
+    table_name: &str,
+    column_name: &str,
+) -> anyhow::Result<()> {
+    let exists_sql =
+        format!("SELECT COUNT(*) FROM pragma_table_info('{table_name}') WHERE name = ?;");
+    let exists: i64 = sqlx::query_scalar(&exists_sql)
+        .bind(column_name)
+        .fetch_one(pool)
+        .await?;
+
+    if exists == 0 {
+        let alter_sql = format!("ALTER TABLE {table_name} ADD COLUMN {column_name} TEXT;");
+        sqlx::query(&alter_sql).execute(pool).await?;
+    }
+
+    Ok(())
+}
+
 #[cfg(test)]
 mod tests {
     use super::{
         EventInsertOutcome, IngestMetadata, InsightRequestInsertOutcome,
-        InsightResponseInsertOutcome, QueueMessage, SqliteEventStore,
+        InsightResponseInsertOutcome, LapSummaryInsertOutcome, QueueMessage, SqliteEventStore,
+        SqliteJournalMode,
     };
     use crate::insight_requests::{
-        InsightConstraints, InsightContext, InsightMetric, InsightRequestPayload,
+        InsightConstraints, InsightContext, InsightMetric, InsightRequestPayload, LapSummaryPayload,
     };
     use crate::insight_responses::{
         InsightError, InsightItem, InsightResponsePayload, InsightSeverity, InsightStatus,
@@ -354,7 +514,7 @@ mod tests {
 
     #[tokio::test]
     async fn deduplicates_by_event_id() {
-        let store = SqliteEventStore::new("sqlite::memory:")
+        let store = SqliteEventStore::new("sqlite::memory:", SqliteJournalMode::Memory)
             .await
             .expect("store should be created");
 
@@ -406,7 +566,7 @@ mod tests {
 
     #[tokio::test]
     async fn deduplicates_insight_request_by_trace_id() {
-        let store = SqliteEventStore::new("sqlite::memory:")
+        let store = SqliteEventStore::new("sqlite::memory:", SqliteJournalMode::Memory)
             .await
             .expect("store should be created");
 
@@ -456,7 +616,7 @@ mod tests {
 
     #[tokio::test]
     async fn deduplicates_insight_response_by_trace_id() {
-        let store = SqliteEventStore::new("sqlite::memory:")
+        let store = SqliteEventStore::new("sqlite::memory:", SqliteJournalMode::Memory)
             .await
             .expect("store should be created");
 
@@ -498,5 +658,51 @@ mod tests {
             .await
             .expect("second insert should work");
         assert_eq!(second, InsightResponseInsertOutcome::Duplicate);
+    }
+
+    #[tokio::test]
+    async fn deduplicates_lap_summary_by_summary_id() {
+        let store = SqliteEventStore::new("sqlite::memory:", SqliteJournalMode::Memory)
+            .await
+            .expect("store should be created");
+
+        let summary = LapSummaryPayload {
+            schema_version: "pitgun-lap-summary-v1".to_string(),
+            summary_id: "session-001:lap:12".to_string(),
+            run_id: "run_001".to_string(),
+            weekend_id: Some("weekend_001".to_string()),
+            session_id: "session_001".to_string(),
+            lap_number: 12,
+            started_at_us: 1_773_401_000_000,
+            ended_at_us: 1_773_491_000_000,
+            context: InsightContext {
+                circuit_id: "MONZA".to_string(),
+                era: 2026,
+                lap: 12,
+                position: Some(3),
+                weather: Some("clear".to_string()),
+                track_status: Some("green".to_string()),
+            },
+            metrics: vec![InsightMetric {
+                key: "pace.speed_kph.mean".to_string(),
+                value: 210.2,
+                unit: "kph".to_string(),
+                trend: "unknown".to_string(),
+                horizon: "lap".to_string(),
+                confidence: 0.9,
+            }],
+        };
+
+        let first = store
+            .insert_lap_summary(&summary)
+            .await
+            .expect("first insert should work");
+        assert_eq!(first, LapSummaryInsertOutcome::Inserted);
+
+        let second = store
+            .insert_lap_summary(&summary)
+            .await
+            .expect("second insert should work");
+        assert_eq!(second, LapSummaryInsertOutcome::Duplicate);
     }
 }

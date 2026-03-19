@@ -30,7 +30,8 @@ For the insights pipeline, gateway currently evaluates telemetry with a strict
 - non-`sim.*` parameter IDs are ignored for insights
 - bad quality/non-numeric samples are dropped for insights
 - stats (`min`, `max`, `mean`, `stddev`, etc.) are selected by declared manifest
-- a `pitgun-insight-request-v1` payload is built and stored per telemetry event
+- the gateway maintains a raw aggregate by `run_id + lap_number` and persists one `pitgun-lap-summary-v1` per completed lap
+- compact `pitgun-insight-request-v1` payloads are emitted from `lap_end` or `session.end` summaries instead of from every telemetry batch
 - optional llm-core call (Ollama `/api/generate`) transforms request into `pitgun-insight-response-v1`
 - responses are persisted by `trace_id` for replay/debug
 
@@ -98,10 +99,21 @@ Table: `insight_responses`
 - `raw_model_response` (raw JSON text produced by model)
 - `created_at`
 
+Table: `lap_summaries`
+- `summary_id` (unique, formatted from session + lap)
+- `run_id`
+- `session_id`
+- `lap_number`
+- `started_at_us`
+- `ended_at_us`
+- `payload_json` (`pitgun-lap-summary-v1`)
+- `created_at`
+
 ## Environment variables
 - `PITGUN_GATEWAY_BIND` (default `127.0.0.1:8080`)
 - `PITGUN_GATEWAY_ALLOW_NON_LOOPBACK` (default disabled)
 - `PITGUN_GATEWAY_DB_PATH` (default `./telemetry/events.db`)
+- `PITGUN_GATEWAY_SQLITE_JOURNAL_MODE` (default `wal`; supported: `wal`, `delete`, `truncate`, `persist`, `memory`, `off`)
 - `PITGUN_GATEWAY_DATA_DIR` (legacy fallback; used as `<dir>/events.db` if DB path is not set)
 - `PITGUN_GATEWAY_SCHEMA_VERSION` (default `pitgun-envelope-v1`)
 - `PITGUN_GATEWAY_API_KEY` (single key)
@@ -119,7 +131,7 @@ Table: `insight_responses`
 - `PITGUN_GATEWAY_LLM_NUM_CTX` (default `1024`)
 - `PITGUN_GATEWAY_LLM_NUM_PREDICT` (default `180`)
 - `PITGUN_GATEWAY_LLM_TEMPERATURE` (default `0`)
-- `PITGUN_GATEWAY_LLM_DISPATCH_MODE` (default `per_request`; `session_end_summary` sends a single LLM request when `session.end` is received)
+- `PITGUN_GATEWAY_LLM_DISPATCH_MODE` (default `lap_end`; supported: `per_request`, `lap_end`, `session_end_summary`)
 - `RUST_LOG` (default `info`)
 
 ## Local run

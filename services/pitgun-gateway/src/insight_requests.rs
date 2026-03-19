@@ -3,7 +3,7 @@ use std::collections::{BTreeMap, HashMap};
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    insight_ingress::InsightExtraction,
+    insight_ingress::{InsightExtraction, InsightMetricPoint},
     insight_stats_plan::{InsightStatsPlan, StatMetric},
     model::{EventEnvelope, TelemetrySampleBatchPayload},
 };
@@ -52,8 +52,59 @@ pub struct InsightConstraints {
     pub language: String,
 }
 
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
+pub struct LapSummaryPayload {
+    pub schema_version: String,
+    pub summary_id: String,
+    pub run_id: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub weekend_id: Option<String>,
+    pub session_id: String,
+    pub lap_number: u32,
+    pub started_at_us: i64,
+    pub ended_at_us: i64,
+    pub context: InsightContext,
+    pub metrics: Vec<InsightMetric>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
+pub struct SessionSummaryPayload {
+    pub schema_version: String,
+    pub summary_id: String,
+    pub run_id: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub weekend_id: Option<String>,
+    pub session_id: String,
+    pub emitted_at_ms: i64,
+    pub ended_at_us: i64,
+    pub lap_count: u32,
+    pub context: InsightContext,
+    pub metrics: Vec<InsightMetric>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
+pub struct WeekendSummaryPayload {
+    pub schema_version: String,
+    pub summary_id: String,
+    pub weekend_id: String,
+    pub emitted_at_ms: i64,
+    pub ended_at_us: i64,
+    pub session_count: u32,
+    pub source_run_ids: Vec<String>,
+    pub source_session_ids: Vec<String>,
+    pub context: InsightContext,
+    pub metrics: Vec<InsightMetric>,
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct SummaryMetadata {
+    pub run_id: String,
+    pub weekend_id: Option<String>,
+    pub context: InsightContext,
+}
+
 #[derive(Clone, Debug)]
-struct MetricAggregate {
+pub(crate) struct MetricAggregate {
     count: u64,
     min: f64,
     max: f64,
@@ -115,6 +166,216 @@ impl MetricAggregate {
     }
 }
 
+pub(crate) fn accumulate_metric_point(
+    aggregates: &mut BTreeMap<String, MetricAggregate>,
+    point: &InsightMetricPoint,
+) {
+    let channel = point.channel.to_string();
+    if let Some(entry) = aggregates.get_mut(&channel) {
+        entry.update(point.value);
+    } else {
+        aggregates.insert(
+            channel,
+            MetricAggregate::new(
+                point.value,
+                point.unit.to_string(),
+                point.metric_key.to_string(),
+            ),
+        );
+    }
+}
+
+pub(crate) fn aggregate_points_by_channel(
+    points: &[InsightMetricPoint],
+) -> BTreeMap<String, MetricAggregate> {
+    let mut aggregates = BTreeMap::new();
+    for point in points {
+        accumulate_metric_point(&mut aggregates, point);
+    }
+    aggregates
+}
+
+pub(crate) fn build_insight_metrics(
+    aggregates: &BTreeMap<String, MetricAggregate>,
+    stats_plan: &InsightStatsPlan,
+) -> Vec<InsightMetric> {
+    let mut metrics = Vec::new();
+
+    for target in &stats_plan.targets {
+        let Some(agg) = aggregates.get(&target.channel) else {
+            continue;
+        };
+
+        for stat_metric in &target.metrics {
+            let key = format!("{}.{}", agg.metric_key, stat_metric.suffix());
+            metrics.push(InsightMetric {
+                key: key.clone(),
+                value: agg.value_for_metric(*stat_metric),
+                unit: agg.unit_for_metric(*stat_metric),
+                trend: "unknown".to_string(),
+                horizon: infer_horizon(&key).to_string(),
+                confidence: 0.9,
+            });
+        }
+    }
+
+    metrics
+}
+
+pub fn resolve_summary_metadata(
+    metadata: &HashMap<String, String>,
+    session_id: &str,
+    fallback_run_id: &str,
+    lap: u32,
+) -> SummaryMetadata {
+    let run_id = metadata
+        .get("run_id")
+        .map(|value| trim_to_max(value, 64))
+        .filter(|value| !value.is_empty())
+        .or_else(|| {
+            let trimmed = trim_to_max(fallback_run_id, 64);
+            (!trimmed.is_empty()).then_some(trimmed)
+        })
+        .unwrap_or_else(|| trim_to_max(session_id, 64));
+
+    let weekend_id = metadata
+        .get("weekend_id")
+        .map(|value| trim_to_max(value, 64))
+        .filter(|value| !value.is_empty());
+
+    let circuit_id = metadata
+        .get("track_id")
+        .map(|value| trim_to_max(&value.trim().to_ascii_uppercase(), 32))
+        .filter(|value| !value.is_empty())
+        .unwrap_or_else(|| "UNKNOWN".to_string());
+
+    let era = metadata
+        .get("era")
+        .and_then(|value| value.trim().parse::<u32>().ok())
+        .filter(|value| *value >= 1)
+        .unwrap_or(1);
+
+    let position = metadata
+        .get("position")
+        .and_then(|value| value.trim().parse::<u32>().ok())
+        .filter(|value| *value >= 1);
+
+    let weather = metadata
+        .get("weather")
+        .map(|value| trim_to_max(value, 32))
+        .filter(|value| !value.is_empty());
+
+    let track_status = metadata
+        .get("track_status")
+        .map(|value| trim_to_max(value, 32))
+        .filter(|value| !value.is_empty());
+
+    SummaryMetadata {
+        run_id,
+        weekend_id,
+        context: InsightContext {
+            circuit_id,
+            era,
+            lap,
+            position,
+            weather,
+            track_status,
+        },
+    }
+}
+
+pub fn build_lap_summary(
+    summary_id: String,
+    session_id: String,
+    lap_number: u32,
+    started_at_us: i64,
+    ended_at_us: i64,
+    metadata: &HashMap<String, String>,
+    fallback_run_id: &str,
+    aggregates: &BTreeMap<String, MetricAggregate>,
+    stats_plan: &InsightStatsPlan,
+) -> Option<LapSummaryPayload> {
+    let metrics = build_insight_metrics(aggregates, stats_plan);
+    if metrics.is_empty() {
+        return None;
+    }
+
+    let summary_metadata =
+        resolve_summary_metadata(metadata, &session_id, fallback_run_id, lap_number);
+
+    Some(LapSummaryPayload {
+        schema_version: "pitgun-lap-summary-v1".to_string(),
+        summary_id: trim_to_max(&summary_id, 128),
+        run_id: summary_metadata.run_id,
+        weekend_id: summary_metadata.weekend_id,
+        session_id: trim_to_max(&session_id, 64),
+        lap_number,
+        started_at_us,
+        ended_at_us,
+        context: summary_metadata.context,
+        metrics,
+    })
+}
+
+pub fn build_insight_request_from_lap_summary(
+    summary: &LapSummaryPayload,
+    trace_id: String,
+) -> InsightRequestPayload {
+    build_insight_request_payload(
+        summary.run_id.clone(),
+        summary.session_id.clone(),
+        trace_id,
+        (summary.ended_at_us / 1_000).max(0),
+        summary.context.clone(),
+        summary.metrics.clone(),
+    )
+}
+
+pub fn build_session_summary(
+    summary_id: String,
+    session_id: String,
+    emitted_at_ms: i64,
+    lap: u32,
+    metadata: &HashMap<String, String>,
+    fallback_run_id: &str,
+    aggregates: &BTreeMap<String, MetricAggregate>,
+    stats_plan: &InsightStatsPlan,
+) -> Option<SessionSummaryPayload> {
+    let metrics = build_insight_metrics(aggregates, stats_plan);
+    if metrics.is_empty() {
+        return None;
+    }
+
+    let summary_metadata = resolve_summary_metadata(metadata, &session_id, fallback_run_id, lap);
+
+    Some(SessionSummaryPayload {
+        schema_version: "pitgun-session-summary-v1".to_string(),
+        summary_id: trim_to_max(&summary_id, 128),
+        run_id: summary_metadata.run_id,
+        weekend_id: summary_metadata.weekend_id,
+        session_id: trim_to_max(&session_id, 64),
+        emitted_at_ms: emitted_at_ms.max(0),
+        ended_at_us: emitted_at_ms.saturating_mul(1_000),
+        lap_count: lap,
+        context: summary_metadata.context,
+        metrics,
+    })
+}
+
+pub fn build_insight_request_from_session_summary(
+    summary: &SessionSummaryPayload,
+    trace_id: String,
+) -> InsightRequestPayload {
+    build_insight_request_payload(
+        summary.run_id.clone(),
+        summary.session_id.clone(),
+        trace_id,
+        summary.emitted_at_ms,
+        summary.context.clone(),
+        summary.metrics.clone(),
+    )
+}
+
 pub fn build_insight_request(
     envelope: &EventEnvelope,
     payload: &TelemetrySampleBatchPayload,
@@ -135,115 +396,67 @@ pub fn build_insight_request(
         .or_else(|| payload.frames.last().map(|frame| &frame.metadata))
         .unwrap_or(&empty_metadata);
 
-    let mut aggregates: BTreeMap<String, MetricAggregate> = BTreeMap::new();
-    for point in &extraction.points {
-        let channel = point.channel.to_string();
-        if let Some(entry) = aggregates.get_mut(&channel) {
-            entry.update(point.value);
-        } else {
-            aggregates.insert(
-                channel,
-                MetricAggregate::new(
-                    point.value,
-                    point.unit.to_string(),
-                    point.metric_key.to_string(),
-                ),
-            );
-        }
-    }
-
+    let aggregates = aggregate_points_by_channel(&extraction.points);
     if aggregates.is_empty() {
         return None;
     }
 
-    let mut metrics = Vec::new();
-    for target in &stats_plan.targets {
-        let Some(agg) = aggregates.get(&target.channel) else {
-            continue;
-        };
-
-        for stat_metric in &target.metrics {
-            let key = format!("{}.{}", agg.metric_key, stat_metric.suffix());
-            metrics.push(InsightMetric {
-                key: key.clone(),
-                value: agg.value_for_metric(*stat_metric),
-                unit: agg.unit_for_metric(*stat_metric),
-                trend: "unknown".to_string(),
-                horizon: infer_horizon(&key).to_string(),
-                confidence: 0.9,
-            });
-        }
-    }
-
+    let metrics = build_insight_metrics(&aggregates, stats_plan);
     if metrics.is_empty() {
         return None;
     }
 
-    let event_trace_id = envelope.event_id.to_string();
-    let run_id = latest_metadata
-        .get("run_id")
-        .map(|value| trim_to_max(value, 64))
-        .filter(|value| !value.is_empty())
-        .unwrap_or_else(|| event_trace_id.clone());
-
-    let emitted_at_ms = (envelope.ts.unix_timestamp_nanos() / 1_000_000).max(0) as i64;
     let latest_lap = payload
         .frames
         .iter()
         .rev()
         .find_map(|frame| frame.lap_number)
         .unwrap_or(0) as u32;
+    let metadata = resolve_summary_metadata(
+        latest_metadata,
+        &envelope.session_id,
+        &envelope.event_id.to_string(),
+        latest_lap,
+    );
 
-    let circuit_id = latest_metadata
-        .get("track_id")
-        .map(|value| trim_to_max(&value.trim().to_ascii_uppercase(), 32))
-        .filter(|value| !value.is_empty())
-        .unwrap_or_else(|| "UNKNOWN".to_string());
+    Some(build_insight_request_payload(
+        metadata.run_id,
+        trim_to_max(&envelope.session_id, 64),
+        envelope.event_id.to_string(),
+        (envelope.ts.unix_timestamp_nanos() / 1_000_000).max(0) as i64,
+        metadata.context,
+        metrics,
+    ))
+}
 
-    let era = latest_metadata
-        .get("era")
-        .and_then(|value| value.trim().parse::<u32>().ok())
-        .filter(|value| *value >= 1)
-        .unwrap_or(1);
-
-    let position = latest_metadata
-        .get("position")
-        .and_then(|value| value.trim().parse::<u32>().ok())
-        .filter(|value| *value >= 1);
-
-    let weather = latest_metadata
-        .get("weather")
-        .map(|value| trim_to_max(value, 32))
-        .filter(|value| !value.is_empty());
-
-    let track_status = latest_metadata
-        .get("track_status")
-        .map(|value| trim_to_max(value, 32))
-        .filter(|value| !value.is_empty());
-
-    Some(InsightRequestPayload {
+fn build_insight_request_payload(
+    run_id: String,
+    session_id: String,
+    trace_id: String,
+    emitted_at_ms: i64,
+    context: InsightContext,
+    metrics: Vec<InsightMetric>,
+) -> InsightRequestPayload {
+    InsightRequestPayload {
         schema_version: "pitgun-insight-request-v1".to_string(),
         run_id,
-        session_id: trim_to_max(&envelope.session_id, 64),
-        trace_id: event_trace_id,
+        session_id: trim_to_max(&session_id, 64),
+        trace_id: trim_to_max(&trace_id, 128),
         emitted_at_ms,
-        context: InsightContext {
-            circuit_id,
-            era,
-            lap: latest_lap,
-            position,
-            weather,
-            track_status,
-        },
+        context,
         metrics,
-        constraints: InsightConstraints {
-            max_insights: 3,
-            max_words_per_insight: 32,
-            language: "en".to_string(),
-        },
+        constraints: default_constraints(),
         policy_version: "policy.v1".to_string(),
         prompt_version: "chief-race.v1".to_string(),
-    })
+    }
+}
+
+fn default_constraints() -> InsightConstraints {
+    InsightConstraints {
+        max_insights: 3,
+        max_words_per_insight: 32,
+        language: "en".to_string(),
+    }
 }
 
 fn infer_horizon(metric_key: &str) -> &'static str {
@@ -277,7 +490,10 @@ mod tests {
         model::{EventEnvelope, EventPayload, TelemetrySampleBatchPayload},
     };
 
-    use super::build_insight_request;
+    use super::{
+        aggregate_points_by_channel, build_insight_request, build_insight_request_from_lap_summary,
+        build_insight_request_from_session_summary, build_lap_summary, build_session_summary,
+    };
 
     #[test]
     fn builds_insight_request_from_sim_points_only() {
@@ -311,6 +527,7 @@ mod tests {
             event_id: Uuid::parse_str("95d81f5b-edbc-440c-bdf8-1fdbf6496a8d").expect("valid UUID"),
             ts: OffsetDateTime::from_unix_timestamp(1_773_417_600).expect("valid timestamp"),
             player_id: "player-123".to_string(),
+            weekend_id: None,
             session_id: "session-abc".to_string(),
             event_type: "telemetry.sample_batch".to_string(),
             payload: EventPayload::TelemetrySampleBatch(payload.clone()),
@@ -344,5 +561,144 @@ mod tests {
                 .any(|m| m.key == "tires.avg_wear_pct.stddev")
         );
         assert!(!request.metrics.iter().any(|m| m.key.contains("65000")));
+    }
+
+    #[test]
+    fn builds_lap_summary_and_compact_request() {
+        let mut metadata = HashMap::new();
+        metadata.insert("track_id".to_string(), "spa".to_string());
+        metadata.insert("weekend_id".to_string(), "weekend-spa".to_string());
+        metadata.insert("run_id".to_string(), "run_lap_001".to_string());
+
+        let payload = TelemetrySampleBatchPayload {
+            frames: vec![
+                TelemetryFrame {
+                    session_id: 4242,
+                    sequence: 1,
+                    timestamp_us: 1_770_000_000_000_000,
+                    received_at_us: 1_770_000_000_000_010,
+                    source_id: "pitgun-solver".to_string(),
+                    samples: vec![Sample::new(
+                        5005,
+                        SampleValue::F64(201.4),
+                        SignalQuality::Good,
+                    )],
+                    events: Vec::new(),
+                    lap_number: Some(7),
+                    sector: Some(1),
+                    lap_distance_m: Some(120.0),
+                    metadata: metadata.clone(),
+                },
+                TelemetryFrame {
+                    session_id: 4242,
+                    sequence: 2,
+                    timestamp_us: 1_770_000_001_000_000,
+                    received_at_us: 1_770_000_001_000_010,
+                    source_id: "pitgun-solver".to_string(),
+                    samples: vec![Sample::new(
+                        5005,
+                        SampleValue::F64(208.2),
+                        SignalQuality::Good,
+                    )],
+                    events: Vec::new(),
+                    lap_number: Some(7),
+                    sector: Some(3),
+                    lap_distance_m: Some(7020.0),
+                    metadata,
+                },
+            ],
+        };
+
+        let extraction = extract_sim_metric_points(&payload);
+        let aggregates = aggregate_points_by_channel(&extraction.points);
+        let summary = build_lap_summary(
+            "session-abc:lap:7".to_string(),
+            "session-abc".to_string(),
+            7,
+            1_770_000_000_000_000,
+            1_770_000_001_000_000,
+            &payload.frames[1].metadata,
+            "fallback-run",
+            &aggregates,
+            &InsightStatsPlan::default_sim_plan(),
+        )
+        .expect("lap summary should be built");
+
+        assert_eq!(summary.schema_version, "pitgun-lap-summary-v1");
+        assert_eq!(summary.run_id, "run_lap_001");
+        assert_eq!(summary.weekend_id.as_deref(), Some("weekend-spa"));
+        assert_eq!(summary.context.circuit_id, "SPA");
+        assert_eq!(summary.context.lap, 7);
+        assert!(
+            summary
+                .metrics
+                .iter()
+                .any(|metric| metric.key == "pace.speed_kph.max")
+        );
+
+        let request = build_insight_request_from_lap_summary(
+            &summary,
+            "session-abc:lap:7:insight".to_string(),
+        );
+        assert_eq!(request.trace_id, "session-abc:lap:7:insight");
+        assert_eq!(request.session_id, "session-abc");
+        assert_eq!(request.context.lap, 7);
+        assert_eq!(request.metrics, summary.metrics);
+    }
+
+    #[test]
+    fn builds_session_summary_and_compact_request() {
+        let mut metadata = HashMap::new();
+        metadata.insert("track_id".to_string(), "monza".to_string());
+        metadata.insert("weekend_id".to_string(), "weekend-monza".to_string());
+        metadata.insert("run_id".to_string(), "run_session_001".to_string());
+
+        let payload = TelemetrySampleBatchPayload {
+            frames: vec![TelemetryFrame {
+                session_id: 4242,
+                sequence: 1,
+                timestamp_us: 1_770_000_000_000_000,
+                received_at_us: 1_770_000_000_000_010,
+                source_id: "pitgun-solver".to_string(),
+                samples: vec![
+                    Sample::new(5005, SampleValue::F64(211.4), SignalQuality::Good),
+                    Sample::new(5016, SampleValue::F64(33.1), SignalQuality::Good),
+                ],
+                events: Vec::new(),
+                lap_number: Some(12),
+                sector: Some(3),
+                lap_distance_m: Some(5710.0),
+                metadata,
+            }],
+        };
+
+        let extraction = extract_sim_metric_points(&payload);
+        let aggregates = aggregate_points_by_channel(&extraction.points);
+        let summary = build_session_summary(
+            "session-abc:session".to_string(),
+            "session-abc".to_string(),
+            1_770_000_001_234,
+            12,
+            &payload.frames[0].metadata,
+            "fallback-run",
+            &aggregates,
+            &InsightStatsPlan::default_sim_plan(),
+        )
+        .expect("session summary should be built");
+
+        assert_eq!(summary.schema_version, "pitgun-session-summary-v1");
+        assert_eq!(summary.run_id, "run_session_001");
+        assert_eq!(summary.weekend_id.as_deref(), Some("weekend-monza"));
+        assert_eq!(summary.lap_count, 12);
+        assert_eq!(summary.context.circuit_id, "MONZA");
+
+        let request = build_insight_request_from_session_summary(
+            &summary,
+            "session-abc:session:insight".to_string(),
+        );
+        assert_eq!(request.trace_id, "session-abc:session:insight");
+        assert_eq!(request.session_id, "session-abc");
+        assert_eq!(request.context.lap, 12);
+        assert_eq!(request.metrics, summary.metrics);
     }
 }

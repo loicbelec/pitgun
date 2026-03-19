@@ -4,6 +4,8 @@ mod insight_responses;
 mod insight_stats_plan;
 mod llm_core;
 mod model;
+mod questdb;
+mod run_registry;
 mod storage;
 
 use std::{
@@ -24,17 +26,22 @@ use axum::{
     response::IntoResponse,
     routing::get,
 };
-use insight_ingress::extract_sim_metric_points;
+use insight_ingress::{extract_sim_metric_points, extract_sim_metric_points_from_frame};
 use insight_requests::{
-    InsightConstraints, InsightContext, InsightMetric, InsightRequestPayload, build_insight_request,
+    InsightRequestPayload, LapSummaryPayload, MetricAggregate, SessionSummaryPayload,
+    accumulate_metric_point, build_insight_request, build_insight_request_from_lap_summary,
+    build_insight_request_from_session_summary, build_lap_summary, build_session_summary,
 };
 use insight_stats_plan::resolve_insight_stats_plan;
 use llm_core::{LlmCoreClient, LlmCoreConfig, LlmProvider};
 use model::{EventPayload, parse_event_envelope};
+use pitgun_contract::TelemetryFrame;
+use questdb::{QuestDbStore, TelemetryPointRow};
+use run_registry::{RunRegistryClient, RunRegistryUpsertRequest};
 use serde::Deserialize;
 use storage::{
     EventInsertOutcome, IngestMetadata, InsightRequestInsertOutcome, InsightResponseInsertOutcome,
-    QueueMessage, SqliteEventStore,
+    LapSummaryInsertOutcome, QueueMessage, SqliteEventStore, SqliteJournalMode,
 };
 use tokio::{
     net::TcpListener,
@@ -54,11 +61,12 @@ const DEFAULT_LLM_TIMEOUT_MS: u64 = 8_000;
 const DEFAULT_LLM_NUM_CTX: u32 = 1_024;
 const DEFAULT_LLM_NUM_PREDICT: u32 = 180;
 const DEFAULT_LLM_TEMPERATURE: f32 = 0.0;
-const DEFAULT_LLM_DISPATCH_MODE: &str = "per_request";
+const DEFAULT_LLM_DISPATCH_MODE: &str = "lap_end";
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum LlmDispatchMode {
     PerRequest,
+    LapEnd,
     SessionEndSummary,
 }
 
@@ -66,6 +74,7 @@ impl LlmDispatchMode {
     fn from_env_value(raw: &str) -> Option<Self> {
         match raw.trim().to_ascii_lowercase().as_str() {
             "per_request" => Some(Self::PerRequest),
+            "lap_end" => Some(Self::LapEnd),
             "session_end_summary" => Some(Self::SessionEndSummary),
             _ => None,
         }
@@ -74,6 +83,7 @@ impl LlmDispatchMode {
     fn as_str(self) -> &'static str {
         match self {
             Self::PerRequest => "per_request",
+            Self::LapEnd => "lap_end",
             Self::SessionEndSummary => "session_end_summary",
         }
     }
@@ -84,6 +94,7 @@ struct GatewayConfig {
     bind_addr: SocketAddr,
     allow_non_loopback: bool,
     db_path: String,
+    sqlite_journal_mode: SqliteJournalMode,
     schema_version: String,
     max_message_bytes: usize,
     max_messages_per_sec: u32,
@@ -99,6 +110,8 @@ struct GatewayConfig {
     llm_num_predict: u32,
     llm_temperature: f32,
     llm_dispatch_mode: LlmDispatchMode,
+    questdb_url: Option<String>,
+    run_registry_url: Option<String>,
 }
 
 #[derive(Clone)]
@@ -131,11 +144,15 @@ async fn main() -> anyhow::Result<()> {
         warn!("PITGUN_GATEWAY_API_KEY/PITGUN_GATEWAY_API_KEYS not set; websocket auth is disabled");
     }
 
-    let store = Arc::new(SqliteEventStore::new(&config.db_path).await?);
+    let store = Arc::new(SqliteEventStore::new(&config.db_path, config.sqlite_journal_mode).await?);
+    let questdb_store = build_questdb_store(&config).await?;
+    let run_registry_client = build_run_registry_client(&config)?;
     let llm_client = build_llm_client(&config)?;
     let (tx, rx) = mpsc::channel(config.ingest_queue_size);
     let queue_task = tokio::spawn(process_queue(
         store.clone(),
+        questdb_store,
+        run_registry_client,
         insight_stats_plan,
         llm_client,
         config.llm_dispatch_mode,
@@ -188,12 +205,14 @@ async fn shutdown_signal() {
 
 async fn process_queue(
     store: Arc<SqliteEventStore>,
+    questdb_store: Option<Arc<QuestDbStore>>,
+    run_registry_client: Option<Arc<RunRegistryClient>>,
     insight_stats_plan: Arc<insight_stats_plan::InsightStatsPlan>,
     llm_client: Option<Arc<LlmCoreClient>>,
     llm_dispatch_mode: LlmDispatchMode,
     mut rx: mpsc::Receiver<QueueMessage>,
 ) {
-    let mut session_summaries: HashMap<String, SessionSummaryState> = HashMap::new();
+    let mut session_states: HashMap<String, SessionAggregationState> = HashMap::new();
 
     while let Some(msg) = rx.recv().await {
         if let EventPayload::TelemetrySampleBatch(payload) = &msg.envelope.payload {
@@ -210,61 +229,118 @@ async fn process_queue(
                 "telemetry batch evaluated for sim-only insight ingress"
             );
 
-            if let Some(request) =
-                build_insight_request(&msg.envelope, payload, &extraction, &insight_stats_plan)
-            {
-                match llm_dispatch_mode {
-                    LlmDispatchMode::PerRequest => {
-                        persist_insight_request_and_dispatch(
-                            &store,
-                            llm_client.as_ref(),
-                            request,
-                            "telemetry.sample_batch",
-                        )
-                        .await;
-                    }
-                    LlmDispatchMode::SessionEndSummary => {
-                        let session_id = request.session_id.clone();
-                        if let Some(state) = session_summaries.get_mut(&session_id) {
-                            state.update_from_request(&request);
-                        } else {
-                            session_summaries.insert(
-                                session_id.clone(),
-                                SessionSummaryState::from_request(&request),
-                            );
-                        }
-                        debug!(
-                            event_id = %msg.envelope.event_id,
-                            session_id = %session_id,
-                            metric_count = request.metrics.len(),
-                            "insight request absorbed into session summary"
-                        );
-                    }
+            let session_state = session_states
+                .entry(msg.envelope.session_id.clone())
+                .or_insert_with(|| {
+                    SessionAggregationState::new(
+                        msg.envelope.session_id.clone(),
+                        msg.envelope.event_id.to_string(),
+                    )
+                });
+
+            let mut telemetry_points = Vec::new();
+            for frame in &payload.frames {
+                let frame_extraction = extract_sim_metric_points_from_frame(frame);
+                telemetry_points.extend(build_telemetry_points(
+                    &msg.envelope,
+                    frame,
+                    &frame_extraction,
+                ));
+                let completed_laps =
+                    session_state.ingest_frame(frame, &frame_extraction, &insight_stats_plan);
+                for summary in completed_laps {
+                    persist_lap_summary_and_dispatch(
+                        &store,
+                        questdb_store.as_ref(),
+                        llm_client.as_ref(),
+                        llm_dispatch_mode,
+                        summary,
+                    )
+                    .await;
+                }
+            }
+
+            persist_telemetry_points(questdb_store.as_ref(), &telemetry_points).await;
+
+            if matches!(llm_dispatch_mode, LlmDispatchMode::PerRequest) {
+                if let Some(request) =
+                    build_insight_request(&msg.envelope, payload, &extraction, &insight_stats_plan)
+                {
+                    persist_insight_request_and_dispatch(
+                        &store,
+                        llm_client.as_ref(),
+                        request,
+                        "telemetry.sample_batch",
+                    )
+                    .await;
                 }
             }
         }
 
-        if matches!(msg.envelope.payload, EventPayload::SessionEnd(_))
-            && matches!(llm_dispatch_mode, LlmDispatchMode::SessionEndSummary)
-        {
+        if let EventPayload::PitWallSessionConfigured(payload) = &msg.envelope.payload {
+            persist_run_configuration(
+                run_registry_client.as_ref(),
+                &msg.envelope.player_id,
+                &msg.envelope.session_id,
+                payload,
+            )
+            .await;
+        }
+
+        if matches!(msg.envelope.payload, EventPayload::SessionEnd(_)) {
             let session_id = msg.envelope.session_id.clone();
-            if let Some(summary) = session_summaries.remove(&session_id) {
-                let trace_id = format!("{}-summary", msg.envelope.event_id);
+            if let Some(mut state) = session_states.remove(&session_id) {
+                if let Some(summary) = state.finalize_open_lap(&insight_stats_plan) {
+                    persist_lap_summary_and_dispatch(
+                        &store,
+                        questdb_store.as_ref(),
+                        llm_client.as_ref(),
+                        llm_dispatch_mode,
+                        summary,
+                    )
+                    .await;
+                }
+
                 let emitted_at_ms =
                     (msg.envelope.ts.unix_timestamp_nanos() / 1_000_000).max(0) as i64;
-                let request = summary.into_request(session_id, trace_id, emitted_at_ms);
-                persist_insight_request_and_dispatch(
-                    &store,
-                    llm_client.as_ref(),
-                    request,
-                    "session.end",
-                )
-                .await;
+                if let Some(summary) =
+                    state.build_session_summary_payload(emitted_at_ms, &insight_stats_plan)
+                {
+                    persist_session_summary(questdb_store.as_ref(), summary.clone()).await;
+
+                    if state.should_emit_weekend_summary() {
+                        persist_weekend_summary(
+                            questdb_store.as_ref(),
+                            summary.weekend_id.as_deref(),
+                            emitted_at_ms,
+                        )
+                        .await;
+                    }
+
+                    if matches!(llm_dispatch_mode, LlmDispatchMode::SessionEndSummary) {
+                        let trace_id = format!("{}-session-summary", msg.envelope.event_id);
+                        let request =
+                            build_insight_request_from_session_summary(&summary, trace_id);
+                        persist_insight_request_and_dispatch(
+                            &store,
+                            llm_client.as_ref(),
+                            request,
+                            "session.end",
+                        )
+                        .await;
+                    }
+                } else {
+                    debug!(
+                        event_id = %msg.envelope.event_id,
+                        session_id = %msg.envelope.session_id,
+                        "no compact session summary produced for session.end"
+                    );
+                }
             } else {
                 debug!(
                     event_id = %msg.envelope.event_id,
                     session_id = %msg.envelope.session_id,
-                    "no accumulated telemetry summary found for session.end"
+                    "no telemetry aggregation state found for session.end"
                 );
             }
         }
@@ -281,6 +357,181 @@ async fn process_queue(
     }
 
     info!("ingestion queue closed");
+}
+
+async fn persist_lap_summary_and_dispatch(
+    store: &Arc<SqliteEventStore>,
+    questdb_store: Option<&Arc<QuestDbStore>>,
+    llm_client: Option<&Arc<LlmCoreClient>>,
+    llm_dispatch_mode: LlmDispatchMode,
+    summary: LapSummaryPayload,
+) {
+    match store.insert_lap_summary(&summary).await {
+        Ok(LapSummaryInsertOutcome::Inserted) => {
+            debug!(
+                summary_id = %summary.summary_id,
+                lap = summary.lap_number,
+                metric_count = summary.metrics.len(),
+                "lap summary stored"
+            );
+
+            if let Some(questdb_store) = questdb_store {
+                match questdb_store.insert_lap_summary(&summary).await {
+                    Ok(()) => {
+                        debug!(
+                            summary_id = %summary.summary_id,
+                            lap = summary.lap_number,
+                            "lap summary mirrored to QuestDB"
+                        );
+                    }
+                    Err(err) => {
+                        warn!(
+                            ?err,
+                            summary_id = %summary.summary_id,
+                            "failed to mirror lap summary to QuestDB"
+                        );
+                    }
+                }
+            }
+
+            if matches!(llm_dispatch_mode, LlmDispatchMode::LapEnd) {
+                let trace_id = format!("{}:insight", summary.summary_id);
+                let request = build_insight_request_from_lap_summary(&summary, trace_id);
+                persist_insight_request_and_dispatch(store, llm_client, request, "lap.end").await;
+            }
+        }
+        Ok(LapSummaryInsertOutcome::Duplicate) => {
+            debug!(
+                summary_id = %summary.summary_id,
+                "duplicate lap summary dropped"
+            );
+        }
+        Err(err) => {
+            warn!(
+                ?err,
+                summary_id = %summary.summary_id,
+                "failed to persist lap summary"
+            );
+        }
+    }
+}
+
+async fn persist_telemetry_points(
+    questdb_store: Option<&Arc<QuestDbStore>>,
+    points: &[TelemetryPointRow],
+) {
+    let Some(questdb_store) = questdb_store else {
+        return;
+    };
+
+    if points.is_empty() {
+        return;
+    }
+
+    match questdb_store.insert_telemetry_points(points).await {
+        Ok(()) => {
+            debug!(
+                point_count = points.len(),
+                "telemetry points mirrored to QuestDB"
+            );
+        }
+        Err(err) => {
+            warn!(
+                ?err,
+                point_count = points.len(),
+                "failed to mirror telemetry points to QuestDB"
+            );
+        }
+    }
+}
+
+async fn persist_run_configuration(
+    run_registry_client: Option<&Arc<RunRegistryClient>>,
+    player_id: &str,
+    session_id: &str,
+    payload: &model::PitWallSessionConfiguredPayload,
+) {
+    let Some(run_registry_client) = run_registry_client else {
+        return;
+    };
+
+    let request = RunRegistryUpsertRequest::from_configured_event(player_id, session_id, payload);
+    match run_registry_client.upsert_run(&request).await {
+        Ok(()) => {
+            debug!(run_id = %payload.run_id, "pitwall run mirrored to run registry");
+        }
+        Err(err) => {
+            warn!(?err, run_id = %payload.run_id, "failed to mirror pitwall run to run registry");
+        }
+    }
+}
+
+async fn persist_session_summary(
+    questdb_store: Option<&Arc<QuestDbStore>>,
+    summary: SessionSummaryPayload,
+) {
+    let Some(questdb_store) = questdb_store else {
+        return;
+    };
+
+    match questdb_store.insert_session_summary(&summary).await {
+        Ok(()) => {
+            debug!(
+                summary_id = %summary.summary_id,
+                lap_count = summary.lap_count,
+                metric_count = summary.metrics.len(),
+                "session summary mirrored to QuestDB"
+            );
+        }
+        Err(err) => {
+            warn!(
+                ?err,
+                summary_id = %summary.summary_id,
+                "failed to mirror session summary to QuestDB"
+            );
+        }
+    }
+}
+
+async fn persist_weekend_summary(
+    questdb_store: Option<&Arc<QuestDbStore>>,
+    weekend_id: Option<&str>,
+    emitted_at_ms: i64,
+) {
+    let Some(questdb_store) = questdb_store else {
+        return;
+    };
+    let Some(weekend_id) = weekend_id.filter(|value| !value.is_empty()) else {
+        return;
+    };
+
+    match questdb_store
+        .rebuild_weekend_summary(weekend_id, emitted_at_ms)
+        .await
+    {
+        Ok(Some(summary)) => {
+            debug!(
+                summary_id = %summary.summary_id,
+                weekend_id = %summary.weekend_id,
+                session_count = summary.session_count,
+                metric_count = summary.metrics.len(),
+                "weekend summary mirrored to QuestDB"
+            );
+        }
+        Ok(None) => {
+            debug!(
+                weekend_id = %weekend_id,
+                "weekend summary not emitted yet; waiting for enough practice sessions"
+            );
+        }
+        Err(err) => {
+            warn!(
+                ?err,
+                weekend_id = %weekend_id,
+                "failed to rebuild weekend summary in QuestDB"
+            );
+        }
+    }
 }
 
 async fn health(State(state): State<AppState>) -> impl IntoResponse {
@@ -522,6 +773,19 @@ impl GatewayConfig {
             allow_non_loopback_enabled(std::env::var("PITGUN_GATEWAY_ALLOW_NON_LOOPBACK").ok());
 
         let db_path = read_db_path();
+        let sqlite_journal_mode = std::env::var("PITGUN_GATEWAY_SQLITE_JOURNAL_MODE")
+            .ok()
+            .map(|value| value.trim().to_string())
+            .filter(|value| !value.is_empty())
+            .map(|value| {
+                SqliteJournalMode::from_env_value(&value).ok_or_else(|| {
+                    anyhow::anyhow!(
+                        "invalid PITGUN_GATEWAY_SQLITE_JOURNAL_MODE: {value} (expected wal, delete, truncate, persist, memory or off)"
+                    )
+                })
+            })
+            .transpose()?
+            .unwrap_or(SqliteJournalMode::Wal);
 
         let schema_version = std::env::var("PITGUN_GATEWAY_SCHEMA_VERSION")
             .unwrap_or_else(|_| DEFAULT_SCHEMA_VERSION.to_string());
@@ -602,7 +866,7 @@ impl GatewayConfig {
             .map(|value| {
                 LlmDispatchMode::from_env_value(&value).ok_or_else(|| {
                     anyhow::anyhow!(
-                        "invalid PITGUN_GATEWAY_LLM_DISPATCH_MODE: {value} (expected per_request or session_end_summary)"
+                        "invalid PITGUN_GATEWAY_LLM_DISPATCH_MODE: {value} (expected per_request, lap_end or session_end_summary)"
                     )
                 })
             })
@@ -611,11 +875,20 @@ impl GatewayConfig {
                 LlmDispatchMode::from_env_value(DEFAULT_LLM_DISPATCH_MODE)
                     .unwrap_or(LlmDispatchMode::PerRequest)
             });
+        let questdb_url = std::env::var("PITGUN_GATEWAY_QUESTDB_URL")
+            .ok()
+            .map(|value| value.trim().to_string())
+            .filter(|value| !value.is_empty());
+        let run_registry_url = std::env::var("PITGUN_GATEWAY_RUN_REGISTRY_URL")
+            .ok()
+            .map(|value| value.trim().to_string())
+            .filter(|value| !value.is_empty());
 
         Ok(Self {
             bind_addr,
             allow_non_loopback,
             db_path,
+            sqlite_journal_mode,
             schema_version,
             max_message_bytes,
             max_messages_per_sec,
@@ -631,6 +904,8 @@ impl GatewayConfig {
             llm_num_predict,
             llm_temperature,
             llm_dispatch_mode,
+            questdb_url,
+            run_registry_url,
         })
     }
 }
@@ -659,6 +934,70 @@ fn build_llm_client(config: &GatewayConfig) -> anyhow::Result<Option<Arc<LlmCore
     );
 
     Ok(Some(Arc::new(client)))
+}
+
+async fn build_questdb_store(config: &GatewayConfig) -> anyhow::Result<Option<Arc<QuestDbStore>>> {
+    let Some(url) = config.questdb_url.as_ref() else {
+        info!("QuestDB integration disabled (PITGUN_GATEWAY_QUESTDB_URL not set)");
+        return Ok(None);
+    };
+
+    let store = QuestDbStore::new(url).await?;
+    info!(questdb_url = %url, "QuestDB integration enabled");
+    Ok(Some(Arc::new(store)))
+}
+
+fn build_run_registry_client(
+    config: &GatewayConfig,
+) -> anyhow::Result<Option<Arc<RunRegistryClient>>> {
+    let Some(url) = config.run_registry_url.as_ref() else {
+        info!("run registry integration disabled (PITGUN_GATEWAY_RUN_REGISTRY_URL not set)");
+        return Ok(None);
+    };
+
+    let client = RunRegistryClient::new(url.clone())?;
+    info!(run_registry_url = %url, "run registry integration enabled");
+    Ok(Some(Arc::new(client)))
+}
+
+fn build_telemetry_points(
+    envelope: &model::EventEnvelope,
+    frame: &TelemetryFrame,
+    extraction: &insight_ingress::InsightExtraction,
+) -> Vec<TelemetryPointRow> {
+    let run_id = frame.metadata.get("run_id").cloned();
+    let session_type = frame.metadata.get("session_type").cloned();
+    let track_id = frame.metadata.get("track_id").cloned();
+    let weekend_id = envelope
+        .weekend_id
+        .clone()
+        .or_else(|| frame.metadata.get("weekend_id").cloned());
+
+    extraction
+        .points
+        .iter()
+        .map(|point| TelemetryPointRow {
+            player_id: envelope.player_id.clone(),
+            weekend_id: weekend_id.clone(),
+            session_id: envelope.session_id.clone(),
+            run_id: run_id.clone(),
+            session_type: session_type.clone(),
+            track_id: track_id.clone(),
+            source_id: point.source_id.clone(),
+            frame_session_id: frame.session_id,
+            frame_sequence: frame.sequence,
+            timestamp_us: point.timestamp_us,
+            received_at_us: frame.received_at_us,
+            lap_number: frame.lap_number,
+            sector: frame.sector,
+            lap_distance_m: frame.lap_distance_m,
+            parameter_id: point.parameter_id,
+            channel: point.channel.to_string(),
+            metric_key: point.metric_key.to_string(),
+            unit: point.unit.to_string(),
+            value: point.value,
+        })
+        .collect()
 }
 
 fn read_env_u32(key: &str, default: u32) -> anyhow::Result<u32> {
@@ -744,138 +1083,144 @@ fn read_db_path() -> String {
 }
 
 #[derive(Clone, Debug)]
-struct SessionSummaryState {
-    run_id: String,
-    context: InsightContext,
-    constraints: InsightConstraints,
-    policy_version: String,
-    prompt_version: String,
-    metrics: HashMap<String, SessionMetricStats>,
+struct SessionAggregationState {
+    session_id: String,
+    fallback_run_id: String,
+    latest_metadata: HashMap<String, String>,
+    max_lap: u32,
+    current_lap: Option<OpenLapState>,
+    session_aggregates: BTreeMap<String, MetricAggregate>,
 }
 
-impl SessionSummaryState {
-    fn from_request(request: &InsightRequestPayload) -> Self {
-        let mut state = Self {
-            run_id: request.run_id.clone(),
-            context: request.context.clone(),
-            constraints: request.constraints.clone(),
-            policy_version: request.policy_version.clone(),
-            prompt_version: request.prompt_version.clone(),
-            metrics: HashMap::new(),
-        };
-        state.update_from_request(request);
-        state
-    }
-
-    fn update_from_request(&mut self, request: &InsightRequestPayload) {
-        self.run_id = request.run_id.clone();
-        self.constraints = request.constraints.clone();
-        self.policy_version = request.policy_version.clone();
-        self.prompt_version = request.prompt_version.clone();
-
-        self.context.circuit_id = request.context.circuit_id.clone();
-        self.context.era = request.context.era;
-        self.context.lap = self.context.lap.max(request.context.lap);
-        self.context.position = request.context.position.or(self.context.position);
-        self.context.weather = request
-            .context
-            .weather
-            .clone()
-            .or_else(|| self.context.weather.clone());
-        self.context.track_status = request
-            .context
-            .track_status
-            .clone()
-            .or_else(|| self.context.track_status.clone());
-
-        for metric in &request.metrics {
-            let entry = self
-                .metrics
-                .entry(metric.key.clone())
-                .or_insert_with(|| SessionMetricStats::from_metric(metric));
-            entry.update(metric);
-        }
-    }
-
-    fn into_request(
-        self,
-        session_id: String,
-        trace_id: String,
-        emitted_at_ms: i64,
-    ) -> InsightRequestPayload {
-        let mut sorted: BTreeMap<String, SessionMetricStats> = BTreeMap::new();
-        for (key, stats) in self.metrics {
-            sorted.insert(key, stats);
-        }
-
-        let metrics = sorted
-            .into_iter()
-            .map(|(key, stats)| InsightMetric {
-                value: stats.mean(),
-                confidence: stats.mean_confidence(),
-                key,
-                unit: stats.unit,
-                trend: "unknown".to_string(),
-                horizon: stats.horizon,
-            })
-            .collect::<Vec<_>>();
-
-        InsightRequestPayload {
-            schema_version: "pitgun-insight-request-v1".to_string(),
-            run_id: self.run_id,
+impl SessionAggregationState {
+    fn new(session_id: String, fallback_run_id: String) -> Self {
+        Self {
             session_id,
-            trace_id,
-            emitted_at_ms,
-            context: self.context,
-            metrics,
-            constraints: self.constraints,
-            policy_version: self.policy_version,
-            prompt_version: self.prompt_version,
+            fallback_run_id,
+            latest_metadata: HashMap::new(),
+            max_lap: 0,
+            current_lap: None,
+            session_aggregates: BTreeMap::new(),
         }
+    }
+
+    fn ingest_frame(
+        &mut self,
+        frame: &TelemetryFrame,
+        extraction: &insight_ingress::InsightExtraction,
+        stats_plan: &insight_stats_plan::InsightStatsPlan,
+    ) -> Vec<LapSummaryPayload> {
+        if !frame.metadata.is_empty() {
+            self.latest_metadata = frame.metadata.clone();
+        }
+
+        if extraction.points.is_empty() {
+            return Vec::new();
+        }
+
+        let Some(lap_number) = frame
+            .lap_number
+            .map(|value| value as u32)
+            .filter(|value| *value >= 1)
+        else {
+            return Vec::new();
+        };
+
+        self.max_lap = self.max_lap.max(lap_number);
+
+        let mut completed = Vec::new();
+        if self
+            .current_lap
+            .as_ref()
+            .is_some_and(|open_lap| open_lap.lap_number != lap_number)
+        {
+            if let Some(summary) = self.finalize_open_lap(stats_plan) {
+                completed.push(summary);
+            }
+        }
+
+        let open_lap = self
+            .current_lap
+            .get_or_insert_with(|| OpenLapState::new(lap_number, frame.timestamp_us));
+        open_lap.ended_at_us = frame.timestamp_us;
+        if !frame.metadata.is_empty() {
+            open_lap.latest_metadata = frame.metadata.clone();
+        }
+
+        for point in &extraction.points {
+            accumulate_metric_point(&mut open_lap.aggregates, point);
+            accumulate_metric_point(&mut self.session_aggregates, point);
+        }
+
+        completed
+    }
+
+    fn finalize_open_lap(
+        &mut self,
+        stats_plan: &insight_stats_plan::InsightStatsPlan,
+    ) -> Option<LapSummaryPayload> {
+        let open_lap = self.current_lap.take()?;
+        let summary_id = format!("{}:lap:{}", self.session_id, open_lap.lap_number);
+        let metadata = if open_lap.latest_metadata.is_empty() {
+            &self.latest_metadata
+        } else {
+            &open_lap.latest_metadata
+        };
+
+        build_lap_summary(
+            summary_id,
+            self.session_id.clone(),
+            open_lap.lap_number,
+            open_lap.started_at_us,
+            open_lap.ended_at_us,
+            metadata,
+            &self.fallback_run_id,
+            &open_lap.aggregates,
+            stats_plan,
+        )
+    }
+
+    fn build_session_summary_payload(
+        &self,
+        emitted_at_ms: i64,
+        stats_plan: &insight_stats_plan::InsightStatsPlan,
+    ) -> Option<SessionSummaryPayload> {
+        build_session_summary(
+            format!("{}:session", self.session_id),
+            self.session_id.clone(),
+            emitted_at_ms,
+            self.max_lap,
+            &self.latest_metadata,
+            &self.fallback_run_id,
+            &self.session_aggregates,
+            stats_plan,
+        )
+    }
+
+    fn should_emit_weekend_summary(&self) -> bool {
+        self.latest_metadata
+            .get("session_type")
+            .is_some_and(|value| value.eq_ignore_ascii_case("FP3"))
     }
 }
 
 #[derive(Clone, Debug)]
-struct SessionMetricStats {
-    count: u64,
-    sum: f64,
-    confidence_sum: f64,
-    unit: String,
-    horizon: String,
+struct OpenLapState {
+    lap_number: u32,
+    started_at_us: i64,
+    ended_at_us: i64,
+    latest_metadata: HashMap<String, String>,
+    aggregates: BTreeMap<String, MetricAggregate>,
 }
 
-impl SessionMetricStats {
-    fn from_metric(metric: &InsightMetric) -> Self {
+impl OpenLapState {
+    fn new(lap_number: u32, started_at_us: i64) -> Self {
         Self {
-            count: 0,
-            sum: 0.0,
-            confidence_sum: 0.0,
-            unit: metric.unit.clone(),
-            horizon: metric.horizon.clone(),
-        }
-    }
-
-    fn update(&mut self, metric: &InsightMetric) {
-        self.count = self.count.saturating_add(1);
-        self.sum += metric.value;
-        self.confidence_sum += metric.confidence;
-        self.unit = metric.unit.clone();
-        self.horizon = metric.horizon.clone();
-    }
-
-    fn mean(&self) -> f64 {
-        if self.count == 0 {
-            0.0
-        } else {
-            self.sum / self.count as f64
-        }
-    }
-
-    fn mean_confidence(&self) -> f64 {
-        if self.count == 0 {
-            0.0
-        } else {
-            (self.confidence_sum / self.count as f64).clamp(0.0, 1.0)
+            lap_number,
+            started_at_us,
+            ended_at_us: started_at_us,
+            latest_metadata: HashMap::new(),
+            aggregates: BTreeMap::new(),
         }
     }
 }
