@@ -4,7 +4,8 @@ use anyhow::Context;
 use sqlx::{PgPool, Row, postgres::PgPoolOptions};
 
 use crate::insight_requests::{
-    InsightContext, InsightMetric, LapSummaryPayload, PracticeSummaryPayload, SessionSummaryPayload,
+    InsightContext, InsightMetric, LapSummaryPayload, PracticeSummaryPayload, RaceSummaryPayload,
+    SessionSummaryPayload,
 };
 
 #[derive(Clone)]
@@ -240,6 +241,58 @@ impl QuestDbStore {
         ensure_column(&self.pool, "session_summary_metrics", "session_type SYMBOL").await?;
         ensure_column(&self.pool, "practice_summaries", "player_id SYMBOL").await?;
         ensure_column(&self.pool, "practice_summary_metrics", "player_id SYMBOL").await?;
+        sqlx::query(
+            r#"
+            CREATE TABLE IF NOT EXISTS race_summaries (
+                ts_end TIMESTAMP,
+                summary_id SYMBOL,
+                player_id SYMBOL,
+                run_id SYMBOL,
+                weekend_id SYMBOL,
+                session_id SYMBOL,
+                circuit_id SYMBOL,
+                lap_count LONG,
+                emitted_at_ms LONG,
+                ended_at_us LONG,
+                metric_count LONG,
+                era LONG,
+                position LONG,
+                weather VARCHAR,
+                track_status VARCHAR,
+                payload_json VARCHAR
+            ) TIMESTAMP(ts_end) PARTITION BY DAY WAL;
+            "#,
+        )
+        .execute(&self.pool)
+        .await
+        .context("failed to ensure QuestDB table race_summaries")?;
+
+        sqlx::query(
+            r#"
+            CREATE TABLE IF NOT EXISTS race_summary_metrics (
+                ts_end TIMESTAMP,
+                summary_id SYMBOL,
+                player_id SYMBOL,
+                run_id SYMBOL,
+                weekend_id SYMBOL,
+                session_id SYMBOL,
+                circuit_id SYMBOL,
+                lap_count LONG,
+                metric_key SYMBOL,
+                unit SYMBOL,
+                trend SYMBOL,
+                horizon SYMBOL,
+                value DOUBLE,
+                confidence DOUBLE
+            ) TIMESTAMP(ts_end) PARTITION BY DAY WAL;
+            "#,
+        )
+        .execute(&self.pool)
+        .await
+        .context("failed to ensure QuestDB table race_summary_metrics")?;
+
+        ensure_column(&self.pool, "race_summaries", "player_id SYMBOL").await?;
+        ensure_column(&self.pool, "race_summary_metrics", "player_id SYMBOL").await?;
 
         Ok(())
     }
@@ -813,6 +866,135 @@ impl QuestDbStore {
         Ok(count > 0)
     }
 
+    pub async fn list_backfillable_race_session_ids(&self) -> anyhow::Result<Vec<String>> {
+        let rows = sqlx::query(
+            r#"
+            SELECT session_id
+            FROM session_summaries
+            WHERE session_type = 'RACE'
+            GROUP BY session_id;
+            "#,
+        )
+        .fetch_all(&self.pool)
+        .await
+        .context("failed to list backfillable race session ids from QuestDB")?;
+
+        let mut session_ids = Vec::new();
+        for row in rows {
+            let session_id: Option<String> = row.try_get("session_id")?;
+            if let Some(session_id) = session_id
+                && !session_id.trim().is_empty()
+            {
+                session_ids.push(session_id);
+            }
+        }
+
+        Ok(session_ids)
+    }
+
+    pub async fn rebuild_race_summary(
+        &self,
+        session_id: &str,
+    ) -> anyhow::Result<Option<RaceSummaryPayload>> {
+        let summary_row = sqlx::query(
+            r#"
+            SELECT player_id, run_id, weekend_id, session_id, circuit_id, lap_count, emitted_at_ms, ended_at_us, era, position, weather, track_status
+            FROM session_summaries
+            WHERE session_id = $1
+              AND session_type = 'RACE'
+            ORDER BY ended_at_us DESC
+            LIMIT 1;
+            "#,
+        )
+        .bind(session_id)
+        .fetch_optional(&self.pool)
+        .await
+        .with_context(|| format!("failed to fetch race session summary for session {session_id}"))?;
+
+        let Some(summary_row) = summary_row else {
+            return Ok(None);
+        };
+
+        let metric_rows = sqlx::query(
+            r#"
+            SELECT metric_key, unit, trend, horizon, value, confidence
+            FROM session_summary_metrics
+            WHERE session_id = $1
+              AND session_type = 'RACE';
+            "#,
+        )
+        .bind(session_id)
+        .fetch_all(&self.pool)
+        .await
+        .with_context(|| {
+            format!("failed to fetch race session summary metrics for session {session_id}")
+        })?;
+
+        if metric_rows.is_empty() {
+            return Ok(None);
+        }
+
+        let metrics = metric_rows
+            .into_iter()
+            .map(|row| -> anyhow::Result<InsightMetric> {
+                Ok(InsightMetric {
+                    key: row.try_get("metric_key")?,
+                    unit: row.try_get("unit")?,
+                    trend: row.try_get("trend")?,
+                    horizon: row.try_get("horizon")?,
+                    value: row.try_get("value")?,
+                    confidence: row.try_get("confidence")?,
+                })
+            })
+            .collect::<anyhow::Result<Vec<_>>>()?;
+
+        let lap_count = summary_row.try_get::<i64, _>("lap_count")?.max(0) as u32;
+        let summary = RaceSummaryPayload {
+            schema_version: "pitgun-race-summary-v1".to_string(),
+            summary_id: format!("{session_id}:race"),
+            player_id: summary_row.try_get("player_id")?,
+            run_id: summary_row.try_get("run_id")?,
+            weekend_id: summary_row.try_get("weekend_id")?,
+            session_id: summary_row.try_get("session_id")?,
+            emitted_at_ms: summary_row.try_get("emitted_at_ms")?,
+            ended_at_us: summary_row.try_get("ended_at_us")?,
+            lap_count,
+            context: InsightContext {
+                circuit_id: summary_row.try_get("circuit_id")?,
+                era: summary_row.try_get::<i64, _>("era")?.max(0) as u32,
+                lap: lap_count,
+                position: summary_row
+                    .try_get::<Option<i64>, _>("position")?
+                    .map(|value| value.max(0) as u32),
+                weather: summary_row.try_get("weather")?,
+                track_status: summary_row.try_get("track_status")?,
+            },
+            metrics,
+        };
+
+        self.insert_race_summary(&summary).await?;
+        Ok(Some(summary))
+    }
+
+    pub async fn has_race_summary(&self, session_id: &str) -> anyhow::Result<bool> {
+        let row = sqlx::query(
+            r#"
+            SELECT count() AS summary_count
+            FROM race_summaries
+            WHERE session_id = $1;
+            "#,
+        )
+        .bind(session_id)
+        .fetch_one(&self.pool)
+        .await
+        .with_context(|| {
+            format!("failed to check existing race summary for session {session_id}")
+        })?;
+
+        let count: i64 = row.try_get("summary_count")?;
+        Ok(count > 0)
+    }
+
     async fn insert_practice_summary(
         &self,
         summary: &PracticeSummaryPayload,
@@ -946,6 +1128,149 @@ impl QuestDbStore {
         .with_context(|| {
             format!(
                 "failed to insert practice summary metric {} for {} into QuestDB",
+                metric.key, summary.summary_id
+            )
+        })?;
+
+        Ok(())
+    }
+
+    pub async fn insert_race_summary(&self, summary: &RaceSummaryPayload) -> anyhow::Result<()> {
+        let payload_json =
+            serde_json::to_string(summary).context("failed to serialize race summary payload")?;
+
+        sqlx::query(
+            r#"
+            INSERT INTO race_summaries (
+                ts_end,
+                summary_id,
+                player_id,
+                run_id,
+                weekend_id,
+                session_id,
+                circuit_id,
+                lap_count,
+                emitted_at_ms,
+                ended_at_us,
+                metric_count,
+                era,
+                position,
+                weather,
+                track_status,
+                payload_json
+            )
+            VALUES (
+                cast($1 as timestamp),
+                $2,
+                $3,
+                $4,
+                $5,
+                $6,
+                $7,
+                $8,
+                $9,
+                $10,
+                $11,
+                $12,
+                $13,
+                $14,
+                $15,
+                $16
+            );
+            "#,
+        )
+        .bind(summary.ended_at_us)
+        .bind(&summary.summary_id)
+        .bind(&summary.player_id)
+        .bind(&summary.run_id)
+        .bind(summary.weekend_id.as_deref())
+        .bind(&summary.session_id)
+        .bind(&summary.context.circuit_id)
+        .bind(summary.lap_count as i64)
+        .bind(summary.emitted_at_ms)
+        .bind(summary.ended_at_us)
+        .bind(summary.metrics.len() as i64)
+        .bind(summary.context.era as i64)
+        .bind(summary.context.position.map(i64::from))
+        .bind(summary.context.weather.as_deref())
+        .bind(summary.context.track_status.as_deref())
+        .bind(payload_json)
+        .execute(&self.pool)
+        .await
+        .with_context(|| {
+            format!(
+                "failed to insert race summary {} into QuestDB",
+                summary.summary_id
+            )
+        })?;
+
+        for metric in &summary.metrics {
+            self.insert_race_metric(summary, metric).await?;
+        }
+
+        Ok(())
+    }
+
+    async fn insert_race_metric(
+        &self,
+        summary: &RaceSummaryPayload,
+        metric: &InsightMetric,
+    ) -> anyhow::Result<()> {
+        sqlx::query(
+            r#"
+            INSERT INTO race_summary_metrics (
+                ts_end,
+                summary_id,
+                player_id,
+                run_id,
+                weekend_id,
+                session_id,
+                circuit_id,
+                lap_count,
+                metric_key,
+                unit,
+                trend,
+                horizon,
+                value,
+                confidence
+            )
+            VALUES (
+                cast($1 as timestamp),
+                $2,
+                $3,
+                $4,
+                $5,
+                $6,
+                $7,
+                $8,
+                $9,
+                $10,
+                $11,
+                $12,
+                $13,
+                $14
+            );
+            "#,
+        )
+        .bind(summary.ended_at_us)
+        .bind(&summary.summary_id)
+        .bind(&summary.player_id)
+        .bind(&summary.run_id)
+        .bind(summary.weekend_id.as_deref())
+        .bind(&summary.session_id)
+        .bind(&summary.context.circuit_id)
+        .bind(summary.lap_count as i64)
+        .bind(&metric.key)
+        .bind(&metric.unit)
+        .bind(&metric.trend)
+        .bind(&metric.horizon)
+        .bind(metric.value)
+        .bind(metric.confidence)
+        .execute(&self.pool)
+        .await
+        .with_context(|| {
+            format!(
+                "failed to insert race summary metric {} for {} into QuestDB",
                 metric.key, summary.summary_id
             )
         })?;

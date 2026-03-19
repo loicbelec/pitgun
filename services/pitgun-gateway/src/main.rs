@@ -30,7 +30,8 @@ use insight_ingress::{extract_sim_metric_points, extract_sim_metric_points_from_
 use insight_requests::{
     InsightRequestPayload, LapSummaryPayload, MetricAggregate, SessionSummaryPayload,
     accumulate_metric_point, build_insight_request, build_insight_request_from_lap_summary,
-    build_insight_request_from_session_summary, build_lap_summary, build_session_summary,
+    build_insight_request_from_session_summary, build_lap_summary, build_race_summary_from_session,
+    build_session_summary,
 };
 use insight_stats_plan::resolve_insight_stats_plan;
 use llm_core::{LlmCoreClient, LlmCoreConfig, LlmProvider};
@@ -149,6 +150,7 @@ async fn main() -> anyhow::Result<()> {
     let store = Arc::new(SqliteEventStore::new(&config.db_path, config.sqlite_journal_mode).await?);
     let questdb_store = build_questdb_store(&config).await?;
     backfill_practice_summaries(questdb_store.as_deref()).await?;
+    backfill_race_summaries(questdb_store.as_deref()).await?;
     let run_registry_client = build_run_registry_client(&config)?;
     let llm_client = build_llm_client(&config)?;
     let (tx, rx) = mpsc::channel(config.ingest_queue_size);
@@ -318,6 +320,7 @@ async fn process_queue(
                         emitted_at_ms,
                     )
                     .await;
+                    persist_race_summary(questdb_store.as_ref(), &summary).await;
 
                     if matches!(llm_dispatch_mode, LlmDispatchMode::SessionEndSummary) {
                         let trace_id = format!("{}-session-summary", msg.envelope.event_id);
@@ -567,6 +570,57 @@ async fn persist_practice_summary(
     }
 }
 
+async fn persist_race_summary(
+    questdb_store: Option<&Arc<QuestDbStore>>,
+    summary: &SessionSummaryPayload,
+) {
+    let Some(questdb_store) = questdb_store else {
+        return;
+    };
+    let Some(race_summary) = build_race_summary_from_session(summary) else {
+        return;
+    };
+
+    match questdb_store
+        .has_race_summary(&race_summary.session_id)
+        .await
+    {
+        Ok(true) => {
+            debug!(
+                session_id = %race_summary.session_id,
+                "race summary already present in QuestDB; skipping"
+            );
+            return;
+        }
+        Ok(false) => {}
+        Err(err) => {
+            warn!(
+                ?err,
+                session_id = %race_summary.session_id,
+                "failed to check existing race summary before insert"
+            );
+        }
+    }
+
+    match questdb_store.insert_race_summary(&race_summary).await {
+        Ok(()) => {
+            debug!(
+                summary_id = %race_summary.summary_id,
+                session_id = %race_summary.session_id,
+                metric_count = race_summary.metrics.len(),
+                "race summary mirrored to QuestDB"
+            );
+        }
+        Err(err) => {
+            warn!(
+                ?err,
+                summary_id = %race_summary.summary_id,
+                "failed to mirror race summary to QuestDB"
+            );
+        }
+    }
+}
+
 async fn backfill_practice_summaries(questdb_store: Option<&QuestDbStore>) -> anyhow::Result<()> {
     let Some(questdb_store) = questdb_store else {
         return Ok(());
@@ -606,6 +660,45 @@ async fn backfill_practice_summaries(questdb_store: Option<&QuestDbStore>) -> an
             }
             Err(err) => {
                 warn!(weekend_id, %err, "failed to backfill practice summary");
+            }
+        }
+    }
+
+    Ok(())
+}
+
+async fn backfill_race_summaries(questdb_store: Option<&QuestDbStore>) -> anyhow::Result<()> {
+    let Some(questdb_store) = questdb_store else {
+        return Ok(());
+    };
+
+    let candidate_session_ids = questdb_store.list_backfillable_race_session_ids().await?;
+    if candidate_session_ids.is_empty() {
+        return Ok(());
+    }
+
+    for session_id in candidate_session_ids {
+        if questdb_store.has_race_summary(&session_id).await? {
+            continue;
+        }
+
+        match questdb_store.rebuild_race_summary(&session_id).await {
+            Ok(Some(summary)) => {
+                info!(
+                    summary_id = %summary.summary_id,
+                    session_id = %summary.session_id,
+                    metric_count = summary.metrics.len(),
+                    "backfilled race summary from existing race session"
+                );
+            }
+            Ok(None) => {
+                warn!(
+                    session_id,
+                    "skipped race summary backfill because race session data was incomplete"
+                );
+            }
+            Err(err) => {
+                warn!(session_id, %err, "failed to backfill race summary");
             }
         }
     }
