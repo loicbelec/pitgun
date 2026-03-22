@@ -248,229 +248,7 @@ const PARAM_ENGINE_TEMP_C: u16 = 5013;
 const PARAM_ENGINE_POWER_W: u16 = 5014;
 const PARAM_TIRE_TEMP_C: u16 = 5015;
 const PARAM_TIRE_WEAR_PCT: u16 = 5016;
-
-const EMBEDDED_FILES: &[(&str, &str)] = &[
-    (
-        "aero/active.json",
-        include_str!("../../pitgun-simulator/data/aero/active.json"),
-    ),
-    (
-        "aero/basic.json",
-        include_str!("../../pitgun-simulator/data/aero/basic.json"),
-    ),
-    (
-        "aero/none.json",
-        include_str!("../../pitgun-simulator/data/aero/none.json"),
-    ),
-    (
-        "chassis/default.json",
-        include_str!("../../pitgun-simulator/data/chassis/default.json"),
-    ),
-    (
-        "chassis/f1_2026.json",
-        include_str!("../../pitgun-simulator/data/chassis/f1_2026.json"),
-    ),
-    (
-        "circuits/austin.json",
-        include_str!("../../pitgun-simulator/data/circuits/austin.json"),
-    ),
-    (
-        "circuits/baku.json",
-        include_str!("../../pitgun-simulator/data/circuits/baku.json"),
-    ),
-    (
-        "circuits/barcelona.json",
-        include_str!("../../pitgun-simulator/data/circuits/barcelona.json"),
-    ),
-    (
-        "circuits/budapest.json",
-        include_str!("../../pitgun-simulator/data/circuits/budapest.json"),
-    ),
-    (
-        "circuits/default.json",
-        include_str!("../../pitgun-simulator/data/circuits/default.json"),
-    ),
-    (
-        "circuits/jeddah.json",
-        include_str!("../../pitgun-simulator/data/circuits/jeddah.json"),
-    ),
-    (
-        "circuits/las_vegas.json",
-        include_str!("../../pitgun-simulator/data/circuits/las_vegas.json"),
-    ),
-    (
-        "circuits/lusail.json",
-        include_str!("../../pitgun-simulator/data/circuits/lusail.json"),
-    ),
-    (
-        "circuits/madrid.json",
-        include_str!("../../pitgun-simulator/data/circuits/madrid.json"),
-    ),
-    (
-        "circuits/melbourne.json",
-        include_str!("../../pitgun-simulator/data/circuits/melbourne.json"),
-    ),
-    (
-        "circuits/mexico.json",
-        include_str!("../../pitgun-simulator/data/circuits/mexico.json"),
-    ),
-    (
-        "circuits/miami.json",
-        include_str!("../../pitgun-simulator/data/circuits/miami.json"),
-    ),
-    (
-        "circuits/monaco.json",
-        include_str!("../../pitgun-simulator/data/circuits/monaco.json"),
-    ),
-    (
-        "circuits/montreal.json",
-        include_str!("../../pitgun-simulator/data/circuits/montreal.json"),
-    ),
-    (
-        "circuits/monza.json",
-        include_str!("../../pitgun-simulator/data/circuits/monza.json"),
-    ),
-    (
-        "circuits/sakhir.json",
-        include_str!("../../pitgun-simulator/data/circuits/sakhir.json"),
-    ),
-    (
-        "circuits/sao_paulo.json",
-        include_str!("../../pitgun-simulator/data/circuits/sao_paulo.json"),
-    ),
-    (
-        "circuits/shanghai.json",
-        include_str!("../../pitgun-simulator/data/circuits/shanghai.json"),
-    ),
-    (
-        "circuits/silverstone.json",
-        include_str!("../../pitgun-simulator/data/circuits/silverstone.json"),
-    ),
-    (
-        "circuits/singapore.json",
-        include_str!("../../pitgun-simulator/data/circuits/singapore.json"),
-    ),
-    (
-        "circuits/spa.json",
-        include_str!("../../pitgun-simulator/data/circuits/spa.json"),
-    ),
-    (
-        "circuits/spielberg.json",
-        include_str!("../../pitgun-simulator/data/circuits/spielberg.json"),
-    ),
-    (
-        "circuits/suzuka.json",
-        include_str!("../../pitgun-simulator/data/circuits/suzuka.json"),
-    ),
-    (
-        "circuits/yas_marina.json",
-        include_str!("../../pitgun-simulator/data/circuits/yas_marina.json"),
-    ),
-    (
-        "circuits/zandvoort.json",
-        include_str!("../../pitgun-simulator/data/circuits/zandvoort.json"),
-    ),
-    (
-        "drivers/aggressive.json",
-        include_str!("../../pitgun-simulator/data/drivers/aggressive.json"),
-    ),
-    (
-        "drivers/balanced.json",
-        include_str!("../../pitgun-simulator/data/drivers/balanced.json"),
-    ),
-    (
-        "drivers/battery_voltas.json",
-        include_str!("../../pitgun-simulator/data/drivers/battery_voltas.json"),
-    ),
-    (
-        "drivers/charles_leclair.json",
-        include_str!("../../pitgun-simulator/data/drivers/charles_leclair.json"),
-    ),
-    (
-        "drivers/conservative.json",
-        include_str!("../../pitgun-simulator/data/drivers/conservative.json"),
-    ),
-    (
-        "drivers/daniel_enchantier.json",
-        include_str!("../../pitgun-simulator/data/drivers/daniel_enchantier.json"),
-    ),
-    (
-        "drivers/default.json",
-        include_str!("../../pitgun-simulator/data/drivers/default.json"),
-    ),
-    (
-        "drivers/franz_hermann.json",
-        include_str!("../../pitgun-simulator/data/drivers/franz_hermann.json"),
-    ),
-    (
-        "drivers/goat_tifi.json",
-        include_str!("../../pitgun-simulator/data/drivers/goat_tifi.json"),
-    ),
-    (
-        "drivers/isa_kadjar.json",
-        include_str!("../../pitgun-simulator/data/drivers/isa_kadjar.json"),
-    ),
-    (
-        "drivers/luis_amilton.json",
-        include_str!("../../pitgun-simulator/data/drivers/luis_amilton.json"),
-    ),
-    (
-        "drivers/pedro_gaseoso.json",
-        include_str!("../../pitgun-simulator/data/drivers/pedro_gaseoso.json"),
-    ),
-    (
-        "drivers/smooth_operator.json",
-        include_str!("../../pitgun-simulator/data/drivers/smooth_operator.json"),
-    ),
-    (
-        "engines/v6t.json",
-        include_str!("../../pitgun-simulator/data/engines/v6t.json"),
-    ),
-    (
-        "engines/v6t_hybrid.json",
-        include_str!("../../pitgun-simulator/data/engines/v6t_hybrid.json"),
-    ),
-    (
-        "engines/v8_1960.json",
-        include_str!("../../pitgun-simulator/data/engines/v8_1960.json"),
-    ),
-    (
-        "engines/v8_1970.json",
-        include_str!("../../pitgun-simulator/data/engines/v8_1970.json"),
-    ),
-    (
-        "tires/hard.json",
-        include_str!("../../pitgun-simulator/data/tires/hard.json"),
-    ),
-    (
-        "tires/medium.json",
-        include_str!("../../pitgun-simulator/data/tires/medium.json"),
-    ),
-    (
-        "tires/soft.json",
-        include_str!("../../pitgun-simulator/data/tires/soft.json"),
-    ),
-    (
-        "vehicles/classic_v8_1960.json",
-        include_str!("../../pitgun-simulator/data/vehicles/classic_v8_1960.json"),
-    ),
-    (
-        "vehicles/classic_v8_1970.json",
-        include_str!("../../pitgun-simulator/data/vehicles/classic_v8_1970.json"),
-    ),
-    (
-        "vehicles/default.json",
-        include_str!("../../pitgun-simulator/data/vehicles/default.json"),
-    ),
-    (
-        "vehicles/f1_2026.json",
-        include_str!("../../pitgun-simulator/data/vehicles/f1_2026.json"),
-    ),
-    (
-        "vehicles/modern_v6t.json",
-        include_str!("../../pitgun-simulator/data/vehicles/modern_v6t.json"),
-    ),
-];
+include!(concat!(env!("OUT_DIR"), "/embedded_files.rs"));
 
 pub fn run_race(request: RunRaceRequest) -> Result<RaceOutput, String> {
     if request.input.race.competitors.is_empty() {
@@ -1202,6 +980,11 @@ fn normalize_track_id(track_id: &str) -> String {
         .collect()
 }
 
+fn derived_track_id(file_stem: &str) -> String {
+    let slug = file_stem.split('-').next().unwrap_or(file_stem);
+    normalize_track_id(slug)
+}
+
 fn track_from_payload(
     track_id: &str,
     payload: &SolverTrackProfile,
@@ -1354,11 +1137,7 @@ fn parse_track(stem: &str, value: &Value) -> Result<TrackRecord, String> {
     }
 
     let data = value.get("data").unwrap_or(value);
-    let id = normalize_track_id(
-        read_optional_string(value.get("meta").unwrap_or(value), &["id"])
-            .unwrap_or_else(|| stem.to_string())
-            .as_str(),
-    );
+    let id = derived_track_id(stem);
     let s = read_vec(data, "s_m")?;
     let x = read_vec(data, "x_m")?;
     let y = read_vec(data, "y_m")?;
@@ -1398,11 +1177,9 @@ fn parse_track(stem: &str, value: &Value) -> Result<TrackRecord, String> {
 }
 
 fn parse_compact_track(stem: &str, value: &Value) -> Result<TrackRecord, String> {
-    let id = normalize_track_id(
-        read_optional_string(value, &["id"])
-            .unwrap_or_else(|| stem.to_string())
-            .as_str(),
-    );
+    let id = read_optional_string(value, &["id"])
+        .map(|value| normalize_track_id(&value))
+        .unwrap_or_else(|| derived_track_id(stem));
     let distance_m = read_required_f64(value, &["distance_m"])?;
     let radius_x = read_required_f64(value, &["radius_x"])?;
     let radius_y = read_required_f64(value, &["radius_y"])?;
@@ -1804,8 +1581,8 @@ mod tests {
         let catalog: CatalogSnapshot =
             serde_json::from_str(&catalog_json()).expect("catalog_json must return valid JSON");
         assert!(
-            catalog.circuits.iter().any(|entry| entry.id == "IT1922"),
-            "catalog must expose IT1922"
+            catalog.circuits.iter().any(|entry| entry.id == "MONZA"),
+            "catalog must expose MONZA"
         );
         assert!(
             catalog.engines.iter().any(|entry| entry.id == "v6t_hybrid"),
@@ -1815,7 +1592,7 @@ mod tests {
         let request = RunRaceRequest {
             input: RunRaceInput {
                 race: RaceInput {
-                    track_id: "it-1922".to_string(),
+                    track_id: "MONZA".to_string(),
                     laps: 1,
                     competitors: vec![CompetitorSpec {
                         id: "player".to_string(),

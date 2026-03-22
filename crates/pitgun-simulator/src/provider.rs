@@ -17,9 +17,14 @@ pub trait ConfigProvider: Send + Sync {
     fn get_track(&self, id: &str) -> Result<TrackConfig, SimulatorError>;
     fn get_driver(&self, id: &str) -> Result<DriverConfig, SimulatorError>;
     fn get_profile(&self, id: &str) -> Result<CompetitorProfile, SimulatorError>;
+    fn list_vehicles(&self) -> Result<Vec<VehicleConfig>, SimulatorError>;
+    fn list_aeros(&self) -> Result<Vec<AeroConfig>, SimulatorError>;
+    fn list_chassis(&self) -> Result<Vec<ChassisConfig>, SimulatorError>;
     fn list_tracks(&self) -> Result<Vec<TrackConfig>, SimulatorError>;
     fn list_engines(&self) -> Result<Vec<EngineConfig>, SimulatorError>;
+    fn list_tires(&self) -> Result<Vec<TireConfig>, SimulatorError>;
     fn list_drivers(&self) -> Result<Vec<DriverConfig>, SimulatorError>;
+    fn list_profiles(&self) -> Result<Vec<CompetitorProfile>, SimulatorError>;
 }
 
 #[derive(Debug, Clone, Default)]
@@ -118,6 +123,24 @@ impl ConfigProvider for InMemoryConfigProvider {
         Self::get_from(&self.drivers, "driver", id)
     }
 
+    fn list_vehicles(&self) -> Result<Vec<VehicleConfig>, SimulatorError> {
+        let mut items = self.vehicles.values().cloned().collect::<Vec<_>>();
+        items.sort_by(|left, right| left.id.cmp(&right.id));
+        Ok(items)
+    }
+
+    fn list_aeros(&self) -> Result<Vec<AeroConfig>, SimulatorError> {
+        let mut items = self.aeros.values().cloned().collect::<Vec<_>>();
+        items.sort_by(|left, right| left.id.cmp(&right.id));
+        Ok(items)
+    }
+
+    fn list_chassis(&self) -> Result<Vec<ChassisConfig>, SimulatorError> {
+        let mut items = self.chassis.values().cloned().collect::<Vec<_>>();
+        items.sort_by(|left, right| left.id.cmp(&right.id));
+        Ok(items)
+    }
+
     fn list_tracks(&self) -> Result<Vec<TrackConfig>, SimulatorError> {
         let mut items = self.tracks.values().cloned().collect::<Vec<_>>();
         items.sort_by(|left, right| left.id.cmp(&right.id));
@@ -130,8 +153,20 @@ impl ConfigProvider for InMemoryConfigProvider {
         Ok(items)
     }
 
+    fn list_tires(&self) -> Result<Vec<TireConfig>, SimulatorError> {
+        let mut items = self.tires.values().cloned().collect::<Vec<_>>();
+        items.sort_by(|left, right| left.id.cmp(&right.id));
+        Ok(items)
+    }
+
     fn list_drivers(&self) -> Result<Vec<DriverConfig>, SimulatorError> {
         let mut items = self.drivers.values().cloned().collect::<Vec<_>>();
+        items.sort_by(|left, right| left.id.cmp(&right.id));
+        Ok(items)
+    }
+
+    fn list_profiles(&self) -> Result<Vec<CompetitorProfile>, SimulatorError> {
+        let mut items = self.profiles.values().cloned().collect::<Vec<_>>();
         items.sort_by(|left, right| left.id.cmp(&right.id));
         Ok(items)
     }
@@ -188,6 +223,18 @@ impl ConfigProvider for JsonFileConfigProvider {
         self.load_provider()?.get_profile(id)
     }
 
+    fn list_vehicles(&self) -> Result<Vec<VehicleConfig>, SimulatorError> {
+        self.load_provider()?.list_vehicles()
+    }
+
+    fn list_aeros(&self) -> Result<Vec<AeroConfig>, SimulatorError> {
+        self.load_provider()?.list_aeros()
+    }
+
+    fn list_chassis(&self) -> Result<Vec<ChassisConfig>, SimulatorError> {
+        self.load_provider()?.list_chassis()
+    }
+
     fn list_tracks(&self) -> Result<Vec<TrackConfig>, SimulatorError> {
         self.load_provider()?.list_tracks()
     }
@@ -196,8 +243,16 @@ impl ConfigProvider for JsonFileConfigProvider {
         self.load_provider()?.list_engines()
     }
 
+    fn list_tires(&self) -> Result<Vec<TireConfig>, SimulatorError> {
+        self.load_provider()?.list_tires()
+    }
+
     fn list_drivers(&self) -> Result<Vec<DriverConfig>, SimulatorError> {
         self.load_provider()?.list_drivers()
+    }
+
+    fn list_profiles(&self) -> Result<Vec<CompetitorProfile>, SimulatorError> {
+        self.load_provider()?.list_profiles()
     }
 }
 
@@ -262,6 +317,27 @@ impl ConfigProvider for JsonFileConfigProvider {
         )))
     }
 
+    fn list_vehicles(&self) -> Result<Vec<VehicleConfig>, SimulatorError> {
+        Err(SimulatorError::InvalidInput(
+            "JsonFileConfigProvider unavailable on this target/feature set (list vehicles)"
+                .to_string(),
+        ))
+    }
+
+    fn list_aeros(&self) -> Result<Vec<AeroConfig>, SimulatorError> {
+        Err(SimulatorError::InvalidInput(
+            "JsonFileConfigProvider unavailable on this target/feature set (list aeros)"
+                .to_string(),
+        ))
+    }
+
+    fn list_chassis(&self) -> Result<Vec<ChassisConfig>, SimulatorError> {
+        Err(SimulatorError::InvalidInput(
+            "JsonFileConfigProvider unavailable on this target/feature set (list chassis)"
+                .to_string(),
+        ))
+    }
+
     fn list_tracks(&self) -> Result<Vec<TrackConfig>, SimulatorError> {
         Err(SimulatorError::InvalidInput(
             "JsonFileConfigProvider unavailable on this target/feature set (list tracks)"
@@ -276,9 +352,23 @@ impl ConfigProvider for JsonFileConfigProvider {
         ))
     }
 
+    fn list_tires(&self) -> Result<Vec<TireConfig>, SimulatorError> {
+        Err(SimulatorError::InvalidInput(
+            "JsonFileConfigProvider unavailable on this target/feature set (list tires)"
+                .to_string(),
+        ))
+    }
+
     fn list_drivers(&self) -> Result<Vec<DriverConfig>, SimulatorError> {
         Err(SimulatorError::InvalidInput(
             "JsonFileConfigProvider unavailable on this target/feature set (list drivers)"
+                .to_string(),
+        ))
+    }
+
+    fn list_profiles(&self) -> Result<Vec<CompetitorProfile>, SimulatorError> {
+        Err(SimulatorError::InvalidInput(
+            "JsonFileConfigProvider unavailable on this target/feature set (list profiles)"
                 .to_string(),
         ))
     }

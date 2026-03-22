@@ -1,0 +1,6 @@
+{
+  "engine": "v8_2000",
+  "aero": "modern",
+  "chassis": "default",
+  "tire": "medium"
+}

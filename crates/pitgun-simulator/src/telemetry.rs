@@ -19,4 +19,8 @@ pub struct TelemetryFrame {
     pub engine_power_w: f64,
     pub tire_temp_c: f64,
     pub tire_wear_pct: f64,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub tire_mu: Option<f64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub n_lap: Option<u16>,
 }

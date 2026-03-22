@@ -1,16 +1,18 @@
 # pitgun-simulator
 
-`pitgun-simulator` is the simulation source of truth.
+`pitgun-simulator` is the data pack and runtime adapter around `pitgun-solver`.
 
-- Simulation defaults live in the embedded JSON data pack under [`data/`](/Users/loic/Code/pitgun/pitgun/crates/pitgun-simulator/data).
+- The canonical simulator data pack lives first in `tooling/pitgun_simulator/data` and is mirrored here for embedding and WASM distribution.
+- Embedded defaults live in the JSON data pack under [`data/`](/Users/loic/Code/pitgun/pitgun/crates/pitgun-simulator/data).
 - Native builds can layer an external pack on top of the embedded defaults with `DataRegistry::load_from_dir(...)`.
 - WASM builds always use the embedded pack.
 
 To add or change simulator data:
 
-1. Add or update the JSON file in the matching category under [`data/`](/Users/loic/Code/pitgun/pitgun/crates/pitgun-simulator/data).
-2. Keep `schema_version` at the supported version and use a stable `id`.
-3. If the file changes a referenced object (`vehicle`, `driver`, etc.), make sure the referenced ids already exist in the pack.
-4. Run `cargo test -p pitgun-simulator`.
+1. Update the canonical JSON file under `tooling/pitgun_simulator/data`.
+2. Mirror the same file into [`data/`](/Users/loic/Code/pitgun/pitgun/crates/pitgun-simulator/data).
+3. Keep `schema_version` at the supported version and use stable ids when the schema supports them.
+4. If the file changes a referenced object (`vehicle`, `driver`, etc.), make sure the referenced ids already exist in the pack.
+5. Run `cargo test -p pitgun-simulator`.
 
-The solver and frontend should pass explicit inputs. They should not redefine simulator defaults.
+`pitgun-solver` remains the source of truth for simulation math. `pitgun-simulator` should not maintain a divergent physics implementation.

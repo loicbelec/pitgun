@@ -11,221 +11,12 @@ use crate::models::{
     AeroConfig, ChassisConfig, DriverConfig, EngineConfig, EngineThermalConfig, TireConfig,
     TrackConfig, VehicleConfig,
 };
-use crate::profiles::{CompetitorProfile, DrivingStyle, EngineMode};
+use crate::profiles::{CompetitorProfile, DrivingStyle, EngineMode, builtin_profiles};
 use crate::provider::InMemoryConfigProvider;
 
 const DEFAULT_PIT_LOSS_MS: u64 = 22_000;
 const SCHEMA_VERSION: u32 = 1;
-const EMBEDDED_FILES: &[(&str, &[u8])] = &[
-    (
-        "aero/active.json",
-        include_bytes!("../data/aero/active.json"),
-    ),
-    ("aero/basic.json", include_bytes!("../data/aero/basic.json")),
-    ("aero/none.json", include_bytes!("../data/aero/none.json")),
-    (
-        "chassis/default.json",
-        include_bytes!("../data/chassis/default.json"),
-    ),
-    (
-        "chassis/f1_2026.json",
-        include_bytes!("../data/chassis/f1_2026.json"),
-    ),
-    (
-        "circuits/austin.json",
-        include_bytes!("../data/circuits/austin.json"),
-    ),
-    (
-        "circuits/baku.json",
-        include_bytes!("../data/circuits/baku.json"),
-    ),
-    (
-        "circuits/barcelona.json",
-        include_bytes!("../data/circuits/barcelona.json"),
-    ),
-    (
-        "circuits/budapest.json",
-        include_bytes!("../data/circuits/budapest.json"),
-    ),
-    (
-        "circuits/default.json",
-        include_bytes!("../data/circuits/default.json"),
-    ),
-    (
-        "circuits/jeddah.json",
-        include_bytes!("../data/circuits/jeddah.json"),
-    ),
-    (
-        "circuits/las_vegas.json",
-        include_bytes!("../data/circuits/las_vegas.json"),
-    ),
-    (
-        "circuits/lusail.json",
-        include_bytes!("../data/circuits/lusail.json"),
-    ),
-    (
-        "circuits/madrid.json",
-        include_bytes!("../data/circuits/madrid.json"),
-    ),
-    (
-        "circuits/melbourne.json",
-        include_bytes!("../data/circuits/melbourne.json"),
-    ),
-    (
-        "circuits/mexico.json",
-        include_bytes!("../data/circuits/mexico.json"),
-    ),
-    (
-        "circuits/miami.json",
-        include_bytes!("../data/circuits/miami.json"),
-    ),
-    (
-        "circuits/monaco.json",
-        include_bytes!("../data/circuits/monaco.json"),
-    ),
-    (
-        "circuits/montreal.json",
-        include_bytes!("../data/circuits/montreal.json"),
-    ),
-    (
-        "circuits/monza.json",
-        include_bytes!("../data/circuits/monza.json"),
-    ),
-    (
-        "circuits/sakhir.json",
-        include_bytes!("../data/circuits/sakhir.json"),
-    ),
-    (
-        "circuits/sao_paulo.json",
-        include_bytes!("../data/circuits/sao_paulo.json"),
-    ),
-    (
-        "circuits/shanghai.json",
-        include_bytes!("../data/circuits/shanghai.json"),
-    ),
-    (
-        "circuits/silverstone.json",
-        include_bytes!("../data/circuits/silverstone.json"),
-    ),
-    (
-        "circuits/singapore.json",
-        include_bytes!("../data/circuits/singapore.json"),
-    ),
-    (
-        "circuits/spa.json",
-        include_bytes!("../data/circuits/spa.json"),
-    ),
-    (
-        "circuits/spielberg.json",
-        include_bytes!("../data/circuits/spielberg.json"),
-    ),
-    (
-        "circuits/suzuka.json",
-        include_bytes!("../data/circuits/suzuka.json"),
-    ),
-    (
-        "circuits/yas_marina.json",
-        include_bytes!("../data/circuits/yas_marina.json"),
-    ),
-    (
-        "circuits/zandvoort.json",
-        include_bytes!("../data/circuits/zandvoort.json"),
-    ),
-    (
-        "drivers/aggressive.json",
-        include_bytes!("../data/drivers/aggressive.json"),
-    ),
-    (
-        "drivers/balanced.json",
-        include_bytes!("../data/drivers/balanced.json"),
-    ),
-    (
-        "drivers/battery_voltas.json",
-        include_bytes!("../data/drivers/battery_voltas.json"),
-    ),
-    (
-        "drivers/charles_leclair.json",
-        include_bytes!("../data/drivers/charles_leclair.json"),
-    ),
-    (
-        "drivers/conservative.json",
-        include_bytes!("../data/drivers/conservative.json"),
-    ),
-    (
-        "drivers/daniel_enchantier.json",
-        include_bytes!("../data/drivers/daniel_enchantier.json"),
-    ),
-    (
-        "drivers/default.json",
-        include_bytes!("../data/drivers/default.json"),
-    ),
-    (
-        "drivers/franz_hermann.json",
-        include_bytes!("../data/drivers/franz_hermann.json"),
-    ),
-    (
-        "drivers/goat_tifi.json",
-        include_bytes!("../data/drivers/goat_tifi.json"),
-    ),
-    (
-        "drivers/isa_kadjar.json",
-        include_bytes!("../data/drivers/isa_kadjar.json"),
-    ),
-    (
-        "drivers/luis_amilton.json",
-        include_bytes!("../data/drivers/luis_amilton.json"),
-    ),
-    (
-        "drivers/pedro_gaseoso.json",
-        include_bytes!("../data/drivers/pedro_gaseoso.json"),
-    ),
-    (
-        "drivers/smooth_operator.json",
-        include_bytes!("../data/drivers/smooth_operator.json"),
-    ),
-    (
-        "engines/v6t.json",
-        include_bytes!("../data/engines/v6t.json"),
-    ),
-    (
-        "engines/v6t_hybrid.json",
-        include_bytes!("../data/engines/v6t_hybrid.json"),
-    ),
-    (
-        "engines/v8_1960.json",
-        include_bytes!("../data/engines/v8_1960.json"),
-    ),
-    (
-        "engines/v8_1970.json",
-        include_bytes!("../data/engines/v8_1970.json"),
-    ),
-    ("tires/hard.json", include_bytes!("../data/tires/hard.json")),
-    (
-        "tires/medium.json",
-        include_bytes!("../data/tires/medium.json"),
-    ),
-    ("tires/soft.json", include_bytes!("../data/tires/soft.json")),
-    (
-        "vehicles/classic_v8_1960.json",
-        include_bytes!("../data/vehicles/classic_v8_1960.json"),
-    ),
-    (
-        "vehicles/classic_v8_1970.json",
-        include_bytes!("../data/vehicles/classic_v8_1970.json"),
-    ),
-    (
-        "vehicles/default.json",
-        include_bytes!("../data/vehicles/default.json"),
-    ),
-    (
-        "vehicles/f1_2026.json",
-        include_bytes!("../data/vehicles/f1_2026.json"),
-    ),
-    (
-        "vehicles/modern_v6t.json",
-        include_bytes!("../data/vehicles/modern_v6t.json"),
-    ),
-];
+include!(concat!(env!("OUT_DIR"), "/embedded_files.rs"));
 
 #[derive(Debug, Clone, Default)]
 pub struct DataRegistry {
@@ -242,6 +33,9 @@ pub struct DataRegistry {
 impl DataRegistry {
     pub fn load_default() -> Result<Self, SimulatorError> {
         let mut registry = Self::default();
+        for profile in builtin_profiles() {
+            registry.profiles.insert(profile.id.clone(), profile);
+        }
         for (path, contents) in embedded_files()? {
             registry.apply_file(&path, contents, false)?;
         }
@@ -417,13 +211,8 @@ impl DataRegistry {
             "tires" => self.insert_tire(parse_tire_value(stem, &value)?, allow_override),
             "circuits" => self.insert_track(parse_track_value(stem, &value)?, allow_override),
             "vehicles" => self.insert_vehicle(parse_vehicle_value(stem, &value)?, allow_override),
-            "drivers" => {
-                if value.get("style").is_some() || value.get("engine_mode").is_some() {
-                    self.insert_profile(parse_profile_value(stem, &value)?, allow_override)
-                } else {
-                    self.insert_driver(parse_driver_value(stem, &value)?, allow_override)
-                }
-            }
+            "drivers" => self.insert_driver(parse_driver_value(stem, &value)?, allow_override),
+            "profiles" => self.insert_profile(parse_profile_value(stem, &value)?, allow_override),
             _ => Ok(()),
         }
     }
@@ -543,7 +332,14 @@ impl DataRegistry {
     #[cfg(not(target_arch = "wasm32"))]
     fn merge_dir(&mut self, root: &Path) -> Result<(), SimulatorError> {
         for category in [
-            "aero", "chassis", "circuits", "drivers", "engines", "tires", "vehicles",
+            "aero",
+            "chassis",
+            "circuits",
+            "drivers",
+            "engines",
+            "profiles",
+            "tires",
+            "vehicles",
         ] {
             let dir = root.join(category);
             if !dir.exists() {
@@ -586,14 +382,44 @@ impl DataRegistry {
         items
     }
 
+    pub fn vehicles(&self) -> Vec<VehicleConfig> {
+        let mut items = self.vehicles.values().cloned().collect::<Vec<_>>();
+        items.sort_by(|left, right| left.id.cmp(&right.id));
+        items
+    }
+
+    pub fn aeros(&self) -> Vec<AeroConfig> {
+        let mut items = self.aeros.values().cloned().collect::<Vec<_>>();
+        items.sort_by(|left, right| left.id.cmp(&right.id));
+        items
+    }
+
+    pub fn chassis(&self) -> Vec<ChassisConfig> {
+        let mut items = self.chassis.values().cloned().collect::<Vec<_>>();
+        items.sort_by(|left, right| left.id.cmp(&right.id));
+        items
+    }
+
     pub fn engines(&self) -> Vec<EngineConfig> {
         let mut items = self.engines.values().cloned().collect::<Vec<_>>();
         items.sort_by(|left, right| left.id.cmp(&right.id));
         items
     }
 
+    pub fn tires(&self) -> Vec<TireConfig> {
+        let mut items = self.tires.values().cloned().collect::<Vec<_>>();
+        items.sort_by(|left, right| left.id.cmp(&right.id));
+        items
+    }
+
     pub fn drivers(&self) -> Vec<DriverConfig> {
         let mut items = self.drivers.values().cloned().collect::<Vec<_>>();
+        items.sort_by(|left, right| left.id.cmp(&right.id));
+        items
+    }
+
+    pub fn profiles(&self) -> Vec<CompetitorProfile> {
+        let mut items = self.profiles.values().cloned().collect::<Vec<_>>();
         items.sort_by(|left, right| left.id.cmp(&right.id));
         items
     }
@@ -1085,10 +911,15 @@ fn explicit_id(
 
 fn derived_id(file_stem: &str, normalize_track: bool) -> String {
     if normalize_track {
-        normalize_track_id(file_stem)
+        derive_track_id(file_stem)
     } else {
         file_stem.to_string()
     }
+}
+
+fn derive_track_id(file_stem: &str) -> String {
+    let slug = file_stem.split('-').next().unwrap_or(file_stem);
+    normalize_track_id(slug)
 }
 
 fn schema_version(value: &Value) -> Option<u32> {
@@ -1318,6 +1149,35 @@ struct EngineJson {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::collections::HashMap;
+    use std::path::PathBuf;
+
+    fn python_reference_pack() -> HashMap<String, Vec<u8>> {
+        let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .join("../../../tooling/pitgun_simulator/data");
+        let mut files = HashMap::new();
+        for category in [
+            "aero", "chassis", "circuits", "drivers", "engines", "tires", "vehicles",
+        ] {
+            let dir = root.join(category);
+            let entries = std::fs::read_dir(&dir).expect("read reference category");
+            for entry in entries {
+                let path = entry.expect("dir entry").path();
+                if path.extension().and_then(|ext| ext.to_str()) != Some("json") {
+                    continue;
+                }
+                let name = path
+                    .file_name()
+                    .and_then(|value| value.to_str())
+                    .expect("utf-8 filename");
+                files.insert(
+                    format!("{category}/{name}"),
+                    std::fs::read(&path).expect("read reference file"),
+                );
+            }
+        }
+        files
+    }
 
     #[test]
     fn loads_embedded_pack() {
@@ -1398,5 +1258,37 @@ mod tests {
 
         let err = DataRegistry::load_from_bytes_map(files).expect_err("invalid refs must fail");
         assert!(err.to_string().contains("unknown engine reference"));
+    }
+
+    #[test]
+    fn loads_python_reference_pack_without_exceptions() {
+        let registry =
+            DataRegistry::load_from_bytes_map(python_reference_pack()).expect("reference pack");
+        let provider = registry.into_provider();
+
+        let aero = crate::provider::ConfigProvider::get_aero(&provider, "modern")
+            .expect("modern aero");
+        let engine = crate::provider::ConfigProvider::get_engine(&provider, "v10_1990")
+            .expect("v10_1990 engine");
+        let vehicle = crate::provider::ConfigProvider::get_vehicle(&provider, "classic_v10_1990")
+            .expect("classic_v10_1990 vehicle");
+        let track =
+            crate::provider::ConfigProvider::get_track(&provider, "SPA").expect("SPA track");
+
+        assert!(aero.cl_a_corner > 0.0);
+        assert!(engine.max_rpm > 0.0);
+        assert_eq!(vehicle.engine_id, "v10_1990");
+        assert!(track.s_m.len() > 1000);
+    }
+
+    #[test]
+    fn builtin_profiles_are_available_without_profile_files() {
+        let registry = DataRegistry::load_default().expect("embedded pack should load");
+        let profiles = registry.profiles();
+        let ids = profiles.into_iter().map(|profile| profile.id).collect::<Vec<_>>();
+
+        assert!(ids.iter().any(|id| id == "balanced"));
+        assert!(ids.iter().any(|id| id == "aggressive"));
+        assert!(ids.iter().any(|id| id == "conservative"));
     }
 }

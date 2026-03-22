@@ -114,6 +114,7 @@ impl Simulator {
             &resolved,
             &profile,
             initial_state,
+            input.lap_number.unwrap_or(1).max(1),
             if input.hz > 0.0 {
                 input.hz
             } else {
@@ -207,6 +208,7 @@ fn run_single_lap(
     vehicle: &ResolvedVehicle,
     profile: &CompetitorProfile,
     initial_state: SimulatorState,
+    lap_number: u16,
     hz: f64,
 ) -> Result<LapOutput, SimulatorError> {
     let n = track.s_m.len();
@@ -397,6 +399,7 @@ fn run_single_lap(
         track,
         vehicle,
         hz,
+        lap_number,
         &t,
         &v_final,
         &power_kw,
@@ -448,6 +451,7 @@ fn build_telemetry(
     track: &TrackConfig,
     vehicle: &ResolvedVehicle,
     hz: f64,
+    lap_number: u16,
     t_grid: &[f64],
     v_grid: &[f64],
     power_grid_kw: &[f64],
@@ -480,6 +484,7 @@ fn build_telemetry(
         let eng_temp = interp_linear(ts, t_grid, engine_temp_grid);
         let tire_temp = interp_linear(ts, t_grid, tire_temp_grid);
         let tire_wear = interp_linear(ts, t_grid, tire_wear_grid).clamp(0.0, 1.0);
+        let tire_mu = effective_mu(vehicle.chassis.mu0, tire_wear, tire_temp, &vehicle.tire);
         let gear_raw = interp_linear(ts, t_grid, &u8_to_f64(gear_grid));
         let gear = gear_raw
             .round()
@@ -533,6 +538,8 @@ fn build_telemetry(
             engine_power_w: p_kw * 1000.0,
             tire_temp_c: tire_temp,
             tire_wear_pct: tire_wear * 100.0,
+            tire_mu: Some(tire_mu),
+            n_lap: Some(lap_number),
         });
 
         prev_t = ts;
@@ -551,6 +558,7 @@ fn build_telemetry(
         let eng_temp = *engine_temp_grid.last().unwrap_or(&0.0);
         let tire_temp = *tire_temp_grid.last().unwrap_or(&0.0);
         let tire_wear = *tire_wear_grid.last().unwrap_or(&0.0);
+        let tire_mu = effective_mu(vehicle.chassis.mu0, tire_wear, tire_temp, &vehicle.tire);
         let gear = *gear_grid.last().unwrap_or(&1);
         let gear_ratio = vehicle.engine.gear_ratios[gear as usize - 1];
         let rpm = rpm_from_speed_gear(v, gear_ratio, vehicle.chassis.wheel_radius_m);
@@ -573,6 +581,8 @@ fn build_telemetry(
             engine_power_w: p_kw * 1000.0,
             tire_temp_c: tire_temp,
             tire_wear_pct: tire_wear * 100.0,
+            tire_mu: Some(tire_mu),
+            n_lap: Some(lap_number),
         });
     }
 
@@ -732,6 +742,8 @@ mod tests {
         assert!(output.average_speed_kph > 20.0);
         assert!(output.telemetry.len() > 50);
         assert!(output.telemetry.iter().all(|f| f.speed_kph.is_finite()));
+        assert!(output.telemetry.iter().all(|f| f.tire_mu.is_some()));
+        assert!(output.telemetry.iter().all(|f| f.n_lap == Some(1)));
         assert!(output.fuel_used_kg > 0.0);
         assert!(output.final_state.fuel_mass_kg < 100.0);
     }

@@ -115,3 +115,33 @@ impl CompetitorProfile {
         }
     }
 }
+
+pub fn builtin_profiles() -> Vec<CompetitorProfile> {
+    vec![
+        CompetitorProfile {
+            id: "balanced".to_string(),
+            display_name: "Balanced".to_string(),
+            ..CompetitorProfile::default()
+        },
+        CompetitorProfile {
+            id: "aggressive".to_string(),
+            display_name: "Aggressive".to_string(),
+            style: DrivingStyle::Aggressive,
+            engine_mode: EngineMode::Push,
+            tire_id: "soft".to_string(),
+            downforce_bias: 0.05,
+            gear_ratio_bias: -0.04,
+            pace_variance_ms: 38.0,
+        },
+        CompetitorProfile {
+            id: "conservative".to_string(),
+            display_name: "Conservative".to_string(),
+            style: DrivingStyle::Conservative,
+            engine_mode: EngineMode::Economy,
+            tire_id: "hard".to_string(),
+            downforce_bias: -0.03,
+            gear_ratio_bias: 0.04,
+            pace_variance_ms: 22.0,
+        },
+    ]
+}
