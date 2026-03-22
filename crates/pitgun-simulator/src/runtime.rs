@@ -8,11 +8,13 @@ use pitgun_solver::{
     PitPlan as SolverPitPlan, PitStop as SolverPitStop, ResampledTelemetry,
     SimConfig as SolverSimConfig, SimulationRequest as SolverSimulationRequest, SimulationResult,
     TireParams as SolverTireParams, Track as SolverTrack, Tuning as SolverTuning,
-    VehicleParams as SolverVehicleParams, VehicleState as SolverVehicleState, resample_solution,
-    solve,
+    VehicleParams as SolverVehicleParams, VehicleState as SolverVehicleState, apply_tuning,
+    resample_solution, solve,
 };
 
+use crate::drivers::apply_driver_to_tire;
 use crate::errors::SimulatorError;
+use crate::profiles::CompetitorProfile;
 use crate::provider::ConfigProvider;
 
 const PARAM_TIME_S: u16 = 5000;
@@ -54,6 +56,14 @@ pub struct SimulationRunRequest {
     #[serde(default)]
     pub driver_id: Option<String>,
     #[serde(default)]
+    pub tire_id: Option<String>,
+    #[serde(default)]
+    pub profile_id: Option<String>,
+    #[serde(default)]
+    pub profile: Option<CompetitorProfile>,
+    #[serde(default)]
+    pub seed: Option<u64>,
+    #[serde(default)]
     pub telemetry_hz: Option<f64>,
 }
 
@@ -76,9 +86,19 @@ pub fn run_simulation(
     let aero = provider.get_aero(&vehicle_config.aero_id)?;
     let chassis = provider.get_chassis(&vehicle_config.chassis_id)?;
     let engine = provider.get_engine(&vehicle_config.engine_id)?;
-    let tire = provider.get_tire(&vehicle_config.tire_id)?;
     let track = provider.get_track(&request.track_id)?;
+    let profile = resolve_profile(provider, request.profile.clone(), request.profile_id.as_deref())?;
     let driver = resolve_driver(provider, request.driver_id.as_deref())?;
+    let tire_id = request
+        .tire_id
+        .as_deref()
+        .map(str::trim)
+        .filter(|id| !id.is_empty())
+        .unwrap_or(profile.tire_id.as_str());
+    let base_tire = provider
+        .get_tire(tire_id)
+        .or_else(|_| provider.get_tire(&vehicle_config.tire_id))?;
+    let tire = apply_driver_to_tire(&base_tire, &crate::drivers::driver_effects_from_aggressiveness(driver.aggressiveness));
 
     let mut pit_stops = Vec::with_capacity(request.pit_plan.len());
     for stop in &request.pit_plan {
@@ -94,6 +114,8 @@ pub fn run_simulation(
         tire_wear: 0.0,
         tire_temp: 90.0,
         engine_temp: engine.thermal.initial_temp_c,
+        exit_speed_mps: 0.0,
+        exit_gear: 1,
     });
 
     let ds = track
@@ -103,14 +125,18 @@ pub fn run_simulation(
         .map(|window| window[1] - window[0])
         .unwrap_or(1.0);
 
-    let solver_request = SolverSimulationRequest {
-        track: map_track(&track),
-        vehicle: SolverVehicleParams {
+    let solver_vehicle = apply_profile_to_vehicle(
+        SolverVehicleParams {
             chassis: map_chassis(&chassis),
             aero: map_aero(&aero),
             engine: map_engine(&engine),
             tire: map_tire(&tire),
         },
+        &profile,
+    );
+    let solver_request = SolverSimulationRequest {
+        track: map_track(&track),
+        vehicle: apply_tuning(&solver_vehicle, &apply_profile_to_tuning(request.tuning.clone(), &profile)),
         state: initial_state,
         config: SolverSimConfig {
             ds,
@@ -118,12 +144,12 @@ pub fn run_simulation(
             pit_time_penalty_s: track.pit_loss_ms as f64 / 1000.0,
             pit_tire_temp: None,
             tire_temp_amb: 35.0,
-            sim_seed: 0,
+            sim_seed: request.seed.unwrap_or(0),
         },
         lap_count: request.lap_count.max(1),
         pit_plan: SolverPitPlan { stops: pit_stops },
         driver,
-        tuning: Some(request.tuning.clone()),
+        tuning: None,
     };
 
     let simulation =
@@ -150,7 +176,7 @@ pub fn run_simulation(
     .map_err(SimulatorError::InvalidInput)?;
     let gateway_frames_5hz = gateway_frames(
         &player_telemetry,
-        telemetry_session_id(0, &request.track_id, "player"),
+        telemetry_session_id(request.seed.unwrap_or(0), &request.track_id, "player"),
         "pitwall-sim:player",
         &gateway_metadata(
             &request.track_id,
@@ -165,6 +191,20 @@ pub fn run_simulation(
         telemetry,
         gateway_frames_5hz,
     })
+}
+
+fn resolve_profile(
+    provider: &dyn ConfigProvider,
+    explicit: Option<CompetitorProfile>,
+    requested: Option<&str>,
+) -> Result<CompetitorProfile, SimulatorError> {
+    match (explicit, requested) {
+        (Some(profile), _) => Ok(profile),
+        (None, Some(id)) => provider
+            .get_profile(id)
+            .or_else(|_| provider.get_profile("balanced")),
+        (None, None) => provider.get_profile("balanced"),
+    }
 }
 
 fn resolve_driver(
@@ -184,6 +224,31 @@ fn resolve_driver(
         display_name: driver_config.display_name,
         aggressiveness: driver_config.aggressiveness,
     })
+}
+
+fn apply_profile_to_tuning(mut tuning: SolverTuning, profile: &CompetitorProfile) -> SolverTuning {
+    tuning.downforce_slider = (tuning.downforce_slider + profile.downforce_bias).clamp(0.0, 1.0);
+    tuning.gear_ratio_slider = (tuning.gear_ratio_slider + profile.gear_ratio_bias).clamp(0.0, 1.0);
+    tuning
+}
+
+fn apply_profile_to_vehicle(
+    mut vehicle: SolverVehicleParams,
+    profile: &CompetitorProfile,
+) -> SolverVehicleParams {
+    let power = profile.power_multiplier();
+    let heat = profile.heat_multiplier();
+    let fuel = profile.fuel_multiplier();
+    let tire_wear = profile.tire_wear_multiplier();
+
+    for torque in &mut vehicle.engine.trq {
+        *torque *= power;
+    }
+    vehicle.engine.alpha_heat *= heat;
+    vehicle.engine.fuel_burn_kg_per_s *= fuel;
+    vehicle.tire.wear_per_s *= tire_wear;
+
+    vehicle
 }
 
 fn map_aero(value: &crate::models::AeroConfig) -> SolverAeroParams {

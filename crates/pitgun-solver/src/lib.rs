@@ -380,6 +380,8 @@ fn run_single_session(
                 tire_wear: 0.0,
                 tire_temp: 90.0,
                 engine_temp: resolved_vehicle.0.engine.t_init,
+                exit_speed_mps: 0.0,
+                exit_gear: 1,
             },
             config: sim_config,
             lap_count: laps.max(1),

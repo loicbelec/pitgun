@@ -69,6 +69,10 @@ pub struct VehicleState {
     pub tire_wear: f64,
     pub tire_temp: f64,
     pub engine_temp: f64,
+    #[serde(default)]
+    pub exit_speed_mps: f64,
+    #[serde(default = "default_exit_gear")]
+    pub exit_gear: u8,
 }
 
 impl Default for VehicleState {
@@ -78,6 +82,8 @@ impl Default for VehicleState {
             tire_wear: 0.0,
             tire_temp: 90.0,
             engine_temp: 90.0,
+            exit_speed_mps: 0.0,
+            exit_gear: default_exit_gear(),
         }
     }
 }
@@ -86,6 +92,10 @@ impl VehicleState {
     pub fn total_mass_delta(&self) -> f64 {
         self.fuel_mass
     }
+}
+
+const fn default_exit_gear() -> u8 {
+    1
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -284,8 +294,16 @@ pub fn run_simulation(input: &SimulationRequest) -> Result<SimulationResult, Str
     let initial_tire_temp = input.state.tire_temp;
     let mut t_offset = 0.0;
     let mut s_offset = 0.0;
-    let mut prev_end_speed: Option<f64> = None;
-    let mut prev_end_gear: Option<u8> = None;
+    let mut prev_end_speed: Option<f64> = if input.state.exit_speed_mps > 0.0 {
+        Some(input.state.exit_speed_mps)
+    } else {
+        None
+    };
+    let mut prev_end_gear: Option<u8> = if input.state.exit_gear > 0 {
+        Some(input.state.exit_gear)
+    } else {
+        None
+    };
     let mut lap_times_s = Vec::with_capacity(lap_count as usize);
 
     let mut pit_stops = input.pit_plan.stops.clone();
@@ -504,6 +522,8 @@ pub fn run_simulation(input: &SimulationRequest) -> Result<SimulationResult, Str
             tire_wear: wear_next,
             tire_temp: tire_temp_next,
             engine_temp: *temp.last().unwrap_or(&state_curr.engine_temp),
+            exit_speed_mps: prev_end_speed.unwrap_or(0.0),
+            exit_gear: prev_end_gear.unwrap_or(default_exit_gear()),
         };
     }
 

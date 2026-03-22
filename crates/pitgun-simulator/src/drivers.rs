@@ -16,7 +16,11 @@ pub fn default_driver_id() -> &'static str {
 }
 
 pub fn driver_effects(driver: &DriverConfig) -> DriverEffects {
-    let a = driver.aggressiveness.clamp(0.0, 1.0);
+    driver_effects_from_aggressiveness(driver.aggressiveness)
+}
+
+pub fn driver_effects_from_aggressiveness(aggressiveness: f64) -> DriverEffects {
+    let a = aggressiveness.clamp(0.0, 1.0);
     DriverEffects {
         tire_wear_multiplier: lerp(0.92, 1.18, a),
         lap_time_noise_std_ms: lerp(20.0, 80.0, a).round() as i32,
