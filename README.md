@@ -25,7 +25,7 @@ It is domain-agnostic by design (industrial, IoT, mobility, finance, and simulat
 | Core Processing | Transform and derive channels with manifest-defined logic | `crates/pitgun-core` |
 | Contracts | Shared schemas and protocol types | `crates/pitgun-contract` |
 | Policy and Signing | Validation, access control, signing primitives | `crates/pitgun-policy`, `crates/pitgun-signing` |
-| Solver and Compute | Deterministic compute orchestration | `crates/pitgun-solver`, `crates/pitgun-simulator` |
+| Solver and Compute | Deterministic compute kernel plus simulator data/runtime adapter | `crates/pitgun-solver`, `crates/pitgun-simulator` |
 | Tooling | Replay and CLI operations | `apps/pitgun-replay`, `apps/pitgun-cli` |
 | Authority Service | Governance-facing runtime service | `services/pitgun-authority` |
 
@@ -98,6 +98,7 @@ For gateway-specific variables and payload contracts, see:
 ## Documentation Map
 
 - `ARCHITECTURE.md` - framework architecture and boundaries
+- `docs/SOLVER_SIMULATOR_BOUNDARY.md` - explicit boundary between compute kernel and simulator adapter
 - `docs/WIRE_FORMATS.md` - wire protocol specifications
 - `docs/commands.md` - CLI and command usage
 - `docs/index.md` - entry point for technical docs

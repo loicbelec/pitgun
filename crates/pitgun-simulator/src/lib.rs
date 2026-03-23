@@ -12,10 +12,6 @@ mod telemetry;
 mod tuning;
 
 pub use data::DataRegistry;
-pub use drivers::{
-    DriverEffects, apply_driver_to_tire, default_driver_id, deterministic_lap_delta_ms,
-    driver_effects,
-};
 pub use errors::SimulatorError;
 pub use models::{
     AeroConfig, ChassisConfig, DriverConfig, EngineConfig, EngineThermalConfig, TireConfig,

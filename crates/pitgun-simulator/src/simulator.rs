@@ -235,6 +235,7 @@ fn apply_lap_delta(lap_time_s: &mut f64, telemetry: &mut [TelemetryFrame], lap_d
 mod tests {
     use super::*;
     use crate::catalog::default_in_memory_provider;
+    use crate::runtime;
 
     #[test]
     fn lap_simulation_produces_finite_values() {
@@ -379,5 +380,61 @@ mod tests {
         );
         assert!(carried.final_state.exit_speed_mps > 0.0);
         assert!(carried.final_state.exit_gear >= 1);
+    }
+
+    #[test]
+    fn simulator_facade_matches_runtime_without_noise() {
+        let provider = Arc::new(default_in_memory_provider());
+        let simulator = Simulator::new(provider.clone());
+
+        let lap = simulator
+            .simulate_lap(LapInput {
+                vehicle_id: "f1_2026".to_string(),
+                track_id: "MONZA".to_string(),
+                tuning: Tuning::default(),
+                profile_id: Some("balanced".to_string()),
+                profile: None,
+                driver_id: Some("default".to_string()),
+                tire_id: None,
+                initial_state: None,
+                seed: None,
+                lap_number: Some(1),
+                hz: 20.0,
+            })
+            .expect("simulator lap");
+
+        let runtime = runtime::run_simulation(
+            provider.as_ref(),
+            &runtime::SimulationRunRequest {
+                vehicle_id: "f1_2026".to_string(),
+                track_id: "MONZA".to_string(),
+                tuning: map_tuning(&Tuning::default()),
+                initial_state: Some(map_state_to_solver(&SimulatorState::default())),
+                lap_count: 1,
+                pit_plan: Vec::new(),
+                driver_id: Some("default".to_string()),
+                tire_id: None,
+                profile_id: Some("balanced".to_string()),
+                profile: None,
+                seed: None,
+                telemetry_hz: Some(20.0),
+            },
+        )
+        .expect("runtime lap");
+
+        let runtime_telemetry = telemetry_frames_from_resampled(
+            runtime.telemetry.expect("runtime telemetry"),
+            1,
+        );
+        let driver = provider.get_driver("default").expect("default driver");
+        let effects = driver_effects(&driver);
+        let expected_delta_s =
+            deterministic_lap_delta_ms(&effects, &driver.id, None, 1) as f64 / 1000.0;
+
+        assert!(
+            (lap.lap_time_s - (runtime.simulation.total_time_s + expected_delta_s)).abs() < 1e-9
+        );
+        assert_eq!(lap.telemetry.len(), runtime_telemetry.len());
+        assert!(lap.telemetry[0].time_s <= runtime_telemetry[0].time_s + 1e-9);
     }
 }
