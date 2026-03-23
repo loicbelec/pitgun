@@ -14,12 +14,13 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use wasm_bindgen::prelude::*;
 
+// Keep the crate root focused on the stable solver surface consumed by
+// adapters, WASM bindings, and higher-level products.
 pub use kernel::{
-    AeroParams, ChassisParams, Driver, DriverEffects, EngineParams, PitPlan, PitStop,
-    ResampledTelemetry, SimConfig, SimulationRequest, SimulationResult, SimulationSolution,
-    TireParams, Track, Tuning, VehicleParams, VehicleState, apply_driver_to_tire, apply_tuning,
-    best_power_at_speed, derating_factor, driver_effects, effective_mu, power_kw_from_rpm,
-    resample_telemetry as resample_solution, rpm_from_speed_gear, run_simulation as solve,
+    AeroParams, ChassisParams, Driver, EngineParams, PitPlan, PitStop, ResampledTelemetry,
+    SimConfig, SimulationRequest, SimulationResult, SimulationSolution, TireParams, Track,
+    Tuning, VehicleParams, VehicleState, apply_tuning, resample_telemetry as resample_solution,
+    run_simulation as solve,
 };
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -159,8 +160,11 @@ pub struct CatalogSnapshot {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CircuitDetail {
     pub id: String,
+    pub display_name: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub country_code: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub laps: Option<u16>,
     pub s_m: Vec<f64>,
     pub x_m: Vec<f64>,
     pub y_m: Vec<f64>,
@@ -198,7 +202,9 @@ struct VehicleRecord {
 #[derive(Debug, Clone)]
 struct TrackRecord {
     id: String,
+    display_name: String,
     country_code: Option<String>,
+    laps: Option<u16>,
     track: Track,
     pit_loss_ms: u64,
 }
@@ -571,7 +577,9 @@ pub fn list_circuits() -> Result<Vec<CircuitCatalogEntry>, String> {
         .values()
         .map(|track| CircuitCatalogEntry {
             id: track.id.clone(),
+            display_name: track.display_name.clone(),
             country_code: track.country_code.clone(),
+            laps: track.laps,
             sample_count: track.track.s.len(),
             distance_m: track.track.s.last().copied().unwrap_or(0.0),
             pit_loss_ms: track.pit_loss_ms,
@@ -586,7 +594,9 @@ pub fn get_circuit(track_id: &str) -> Result<CircuitDetail, String> {
     let record = catalog.get_track(track_id)?;
     Ok(CircuitDetail {
         id: record.id.clone(),
+        display_name: record.display_name.clone(),
         country_code: record.country_code.clone(),
+        laps: record.laps,
         s_m: record.track.s.clone(),
         x_m: record.track.x.clone(),
         y_m: record.track.y.clone(),
@@ -1017,7 +1027,9 @@ fn track_from_payload(
 
     Ok(TrackRecord {
         id: normalize_track_id(track_id),
+        display_name: track_id.to_string(),
         country_code: None,
+        laps: None,
         track: Track {
             s: payload.s.clone(),
             x: payload.x.clone(),
@@ -1164,7 +1176,9 @@ fn parse_track(stem: &str, value: &Value) -> Result<TrackRecord, String> {
 
     Ok(TrackRecord {
         id,
+        display_name: derive_track_display_name(value).unwrap_or_else(|| stem.to_string()),
         country_code: derive_track_country_code(value),
+        laps: derive_track_laps(value),
         track: Track {
             s,
             x,
@@ -1218,7 +1232,10 @@ fn parse_compact_track(stem: &str, value: &Value) -> Result<TrackRecord, String>
 
     Ok(TrackRecord {
         id,
+        display_name: read_optional_string(value, &["name"])
+            .unwrap_or_else(|| stem.replace('_', " ")),
         country_code: None,
+        laps: read_optional_u16(value, &["laps"]),
         track: Track {
             s,
             x,
@@ -1243,6 +1260,16 @@ fn derive_track_country_code(value: &Value) -> Option<String> {
     }
 }
 
+fn derive_track_display_name(value: &Value) -> Option<String> {
+    let meta = value.get("meta")?;
+    read_optional_string(meta, &["Name", "name", "Location", "location"])
+}
+
+fn derive_track_laps(value: &Value) -> Option<u16> {
+    let meta = value.get("meta")?;
+    read_optional_u16(meta, &["laps"])
+}
+
 fn read_required_f64(value: &Value, keys: &[&str]) -> Result<f64, String> {
     read_optional_f64(value, keys)
         .ok_or_else(|| format!("missing numeric field '{}'", keys.join("' or '")))
@@ -1261,6 +1288,11 @@ fn read_required_u64(value: &Value, keys: &[&str]) -> Result<u64, String> {
 fn read_optional_u64(value: &Value, keys: &[&str]) -> Option<u64> {
     keys.iter()
         .find_map(|key| value.get(*key).and_then(Value::as_u64))
+}
+
+fn read_optional_u16(value: &Value, keys: &[&str]) -> Option<u16> {
+    read_optional_u64(value, keys)
+        .and_then(|value| u16::try_from(value).ok())
 }
 
 fn read_required_string(value: &Value, keys: &[&str]) -> Result<String, String> {

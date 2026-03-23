@@ -94,8 +94,11 @@ pub enum VehicleClass {
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 pub struct CircuitCatalogEntry {
     pub id: String,
+    pub display_name: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub country_code: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub laps: Option<u16>,
     pub sample_count: usize,
     pub distance_m: f64,
     pub pit_loss_ms: u64,

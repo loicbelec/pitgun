@@ -25,6 +25,15 @@ domain-friendly API for tools, WASM, and the game.
 `pitgun-solver` should receive resolved structures, not repository-specific file
 paths or JSON pack semantics.
 
+The stable crate-root API of `pitgun-solver` should stay centered on:
+
+- resolved input/output structs (`Track`, `VehicleParams`, `SimulationRequest`, ...)
+- high-level entry points (`solve`, `run_race`, `run_sessions`)
+- catalog access needed by WASM/game consumers (`list_circuits`, `get_circuit`, `list_engines`, `get_engine`)
+
+Low-level helper functions such as tire, thermal, or gearbox formulas should
+remain implementation details unless a second adapter genuinely needs them.
+
 ## `pitgun-simulator` owns
 
 - embedded simulator data pack
@@ -36,6 +45,13 @@ paths or JSON pack semantics.
 
 `pitgun-simulator` may adapt requests and outputs, but it must not carry an
 independent physics implementation.
+
+The stable crate-root API of `pitgun-simulator` should stay centered on:
+
+- resource loading and listing (`DataRegistry`, `ConfigProvider`)
+- configuration models (`VehicleConfig`, `TrackConfig`, ...)
+- runtime orchestration (`run_simulation`)
+- ergonomic façade types for product code (`Simulator`, `LapInput`, `LapOutput`)
 
 ## What should not live in either crate
 

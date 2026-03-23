@@ -16,3 +16,14 @@ To add or change simulator data:
 5. Run `cargo test -p pitgun-simulator`.
 
 `pitgun-solver` remains the source of truth for simulation math. `pitgun-simulator` should not maintain a divergent physics implementation.
+
+## Public API
+
+The intended public surface of `pitgun-simulator` is:
+
+- `DataRegistry` and the provider types for loading and listing simulator assets
+- config models such as `VehicleConfig`, `TrackConfig`, `EngineConfig`, and friends
+- runtime entry points such as `run_simulation(...)`
+- ergonomic façade types such as `Simulator`, `LapInput`, and `LapOutput`
+
+Lower-level solver math helpers belong in `pitgun-solver`, not here.
