@@ -6,8 +6,9 @@ use std::hash::{Hash, Hasher};
 
 use kernel::{resample_telemetry, run_simulation};
 use pitgun_contract::{
-    CircuitCatalogEntry, CompetitorSpec, CompetitorStintStrategy, EngineCatalogEntry, RaceInput,
-    Sample, SampleValue, SignalQuality, TelemetryFrame,
+    CircuitCatalogEntry, CompetitorSpec, CompetitorStintStrategy, DriverCatalogEntry,
+    EngineCatalogEntry, RaceInput, Sample, SampleValue, SignalQuality, TelemetryFrame,
+    TireCatalogEntry, VehicleCatalogEntry,
 };
 use pitgun_policy::validation::normalize_and_validate_race_input;
 use serde::{Deserialize, Serialize};
@@ -153,8 +154,9 @@ pub struct SessionRunOutput {
 pub struct CatalogSnapshot {
     pub circuits: Vec<CircuitCatalogEntry>,
     pub engines: Vec<EngineCatalogEntry>,
-    pub vehicles: Vec<String>,
-    pub drivers: Vec<String>,
+    pub vehicles: Vec<VehicleCatalogEntry>,
+    pub drivers: Vec<DriverCatalogEntry>,
+    pub tires: Vec<TireCatalogEntry>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -551,22 +553,37 @@ pub fn get_engine_json(engine_id: String) -> String {
     }
 }
 
+#[wasm_bindgen]
+pub fn list_drivers_json() -> String {
+    match list_drivers() {
+        Ok(output) => serialize_json(&output),
+        Err(error) => json_error(&error),
+    }
+}
+
+#[wasm_bindgen]
+pub fn list_vehicles_json() -> String {
+    match list_vehicles() {
+        Ok(output) => serialize_json(&output),
+        Err(error) => json_error(&error),
+    }
+}
+
+#[wasm_bindgen]
+pub fn list_tires_json() -> String {
+    match list_tires() {
+        Ok(output) => serialize_json(&output),
+        Err(error) => json_error(&error),
+    }
+}
+
 pub fn catalog_snapshot() -> Result<CatalogSnapshot, String> {
-    let catalog = EmbeddedCatalog::load_default()?;
-    let mut vehicles = catalog.vehicles.keys().cloned().collect::<Vec<_>>();
-    vehicles.sort();
-    let mut drivers = catalog
-        .drivers
-        .keys()
-        .filter(|id| id.as_str() != "default")
-        .cloned()
-        .collect::<Vec<_>>();
-    drivers.sort();
     Ok(CatalogSnapshot {
         circuits: list_circuits()?,
         engines: list_engines()?,
-        vehicles,
-        drivers,
+        vehicles: list_vehicles()?,
+        drivers: list_drivers()?,
+        tires: list_tires()?,
     })
 }
 
@@ -638,6 +655,47 @@ pub fn get_engine(engine_id: &str) -> Result<EngineDetail, String> {
         idle_rpm: engine.n_idle,
         max_rpm: engine.n_max,
     })
+}
+
+pub fn list_drivers() -> Result<Vec<DriverCatalogEntry>, String> {
+    let catalog = EmbeddedCatalog::load_default()?;
+    let mut items = catalog
+        .drivers
+        .values()
+        .filter(|driver| driver.id != "default")
+        .map(|driver| DriverCatalogEntry {
+            id: driver.id.clone(),
+            display_name: driver.display_name.clone(),
+        })
+        .collect::<Vec<_>>();
+    items.sort_by(|left, right| left.id.cmp(&right.id));
+    Ok(items)
+}
+
+pub fn list_vehicles() -> Result<Vec<VehicleCatalogEntry>, String> {
+    let catalog = EmbeddedCatalog::load_default()?;
+    let mut items = catalog
+        .vehicles
+        .iter()
+        .map(|(id, vehicle)| VehicleCatalogEntry {
+            id: id.clone(),
+            engine_id: vehicle.engine_id.clone(),
+            default_tire_id: vehicle.tire_id.clone(),
+        })
+        .collect::<Vec<_>>();
+    items.sort_by(|left, right| left.id.cmp(&right.id));
+    Ok(items)
+}
+
+pub fn list_tires() -> Result<Vec<TireCatalogEntry>, String> {
+    let catalog = EmbeddedCatalog::load_default()?;
+    let mut items = catalog
+        .tires
+        .keys()
+        .map(|id| TireCatalogEntry { id: id.clone() })
+        .collect::<Vec<_>>();
+    items.sort_by(|left, right| left.id.cmp(&right.id));
+    Ok(items)
 }
 
 impl EmbeddedCatalog {
@@ -1621,6 +1679,18 @@ mod tests {
         assert!(
             catalog.engines.iter().any(|entry| entry.id == "v6t_hybrid"),
             "catalog must expose v6t_hybrid"
+        );
+        assert!(
+            catalog.drivers.iter().any(|entry| entry.id == "battery_voltas"),
+            "catalog must expose battery_voltas"
+        );
+        assert!(
+            catalog.vehicles.iter().any(|entry| entry.id == "f1_2026"),
+            "catalog must expose f1_2026"
+        );
+        assert!(
+            catalog.tires.iter().any(|entry| entry.id == "medium"),
+            "catalog must expose medium tire"
         );
 
         let request = RunRaceRequest {

@@ -14,8 +14,9 @@ pub use frame::{
 };
 pub use racing::{
     CircuitCatalogEntry, CompetitorSpec, CompetitorStatus, CompetitorStintStrategy,
-    EngineCatalogEntry, RaceInput, RaceOutput, RaceStint, RunPackage, StandingEntry, TuningSpec,
-    VehicleClass, resolve_vehicle_class,
+    DriverCatalogEntry, EngineCatalogEntry, RaceInput, RaceOutput, RaceStint, RunPackage,
+    StandingEntry, TireCatalogEntry, TuningSpec, VehicleCatalogEntry, VehicleClass,
+    resolve_vehicle_class,
 };
 pub use registry::{
     AccessLevel, Conversion, DataType, Parameter, ParameterRegistry, Range, RegistryError,

@@ -112,6 +112,24 @@ pub struct EngineCatalogEntry {
     pub gear_count: usize,
 }
 
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
+pub struct DriverCatalogEntry {
+    pub id: String,
+    pub display_name: String,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
+pub struct TireCatalogEntry {
+    pub id: String,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
+pub struct VehicleCatalogEntry {
+    pub id: String,
+    pub engine_id: String,
+    pub default_tire_id: String,
+}
+
 /// Canonical mapping from game-era (or explicit year) to vehicle class.
 ///
 /// Game-era mapping:
