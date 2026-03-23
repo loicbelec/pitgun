@@ -10,7 +10,7 @@
 To add or change simulator data:
 
 1. Update the canonical JSON file under `tooling/pitgun_simulator/data`.
-2. Mirror the same file into [`data/`](/Users/loic/Code/pitgun/pitgun/crates/pitgun-simulator/data).
+2. Run `./scripts/sync-simulator-data.sh` from the `framework/` repo root.
 3. Keep `schema_version` at the supported version and use stable ids when the schema supports them.
 4. If the file changes a referenced object (`vehicle`, `driver`, etc.), make sure the referenced ids already exist in the pack.
 5. Run `cargo test -p pitgun-simulator`.

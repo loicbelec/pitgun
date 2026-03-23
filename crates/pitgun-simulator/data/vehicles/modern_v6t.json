@@ -1,6 +1,6 @@
 {
-  "engine": "v6t",
-  "aero": "basic",
+  "engine": "v6t_hybrid",
+  "aero": "modern",
   "chassis": "default",
   "tire": "medium"
 }
