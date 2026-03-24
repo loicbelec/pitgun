@@ -756,10 +756,14 @@ pub fn apply_tuning(vehicle: &VehicleParams, tuning: &Tuning) -> VehicleParams {
     let engine_pts = clamp(tuning.engine_points as f64, 0.0, 20.0);
     let df = clamp(tuning.downforce_slider, 0.0, 1.0);
     let gr = clamp(tuning.gear_ratio_slider, 0.0, 1.0);
+    let cooling_ratio = cooling_pts / 20.0;
 
     let aero_k = 1.0 + 0.10 * (aero_pts / 20.0);
-    let drag_blend = 0.85 + 0.30 * df;
-    let df_blend = 0.75 + 0.55 * df;
+    // Keep these affine ramps easy to port back to Python.
+    // At the midpoint (df = 0.5) they remain close to neutral, but
+    // full-downforce now pays a materially larger drag bill.
+    let drag_blend = 0.68 + 0.64 * df;
+    let df_blend = 0.84 + 0.32 * df;
 
     let aero = AeroParams {
         cd_a_x: vehicle.aero.cd_a_x * aero_k * drag_blend * 0.95,
@@ -778,7 +782,12 @@ pub fn apply_tuning(vehicle: &VehicleParams, tuning: &Tuning) -> VehicleParams {
         g: vehicle.chassis.g,
     };
 
-    let cool_k = 0.75 + 0.50 * (cooling_pts / 20.0);
+    // Cooling used to be too forgiving. These affine ramps make low cooling
+    // clearly under-provisioned and high cooling meaningfully safer, while
+    // staying simple enough to mirror in Python.
+    let cooling_scale = 0.35 + 1.30 * cooling_ratio;
+    let t_soft_offset = -5.0 + 10.0 * cooling_ratio;
+    let beta_derate_scale = 1.15 - 0.30 * cooling_ratio;
     let trq: Vec<f64> = vehicle
         .engine
         .trq
@@ -805,10 +814,10 @@ pub fn apply_tuning(vehicle: &VehicleParams, tuning: &Tuning) -> VehicleParams {
         t_init: vehicle.engine.t_init,
         c_th: vehicle.engine.c_th,
         alpha_heat: vehicle.engine.alpha_heat,
-        p_cool0: vehicle.engine.p_cool0 * cool_k,
-        k_cool: vehicle.engine.k_cool * cool_k,
-        t_soft: vehicle.engine.t_soft,
-        beta_derate: vehicle.engine.beta_derate,
+        p_cool0: vehicle.engine.p_cool0 * cooling_scale,
+        k_cool: vehicle.engine.k_cool * cooling_scale,
+        t_soft: vehicle.engine.t_soft + t_soft_offset,
+        beta_derate: vehicle.engine.beta_derate * beta_derate_scale,
         fuel_burn_kg_per_s: vehicle.engine.fuel_burn_kg_per_s,
     };
 
@@ -1105,4 +1114,245 @@ fn u8s_to_f64(values: &[u8]) -> Vec<f64> {
 
 fn u16s_to_f64(values: &[u16]) -> Vec<f64> {
     values.iter().map(|value| *value as f64).collect()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn test_vehicle() -> VehicleParams {
+        VehicleParams {
+            aero: AeroParams {
+                cd_a_x: 1.05,
+                cd_a_z: 1.18,
+                cl_a_x: 0.55,
+                cl_a_z: 1.25,
+            },
+            chassis: ChassisParams {
+                mass_empty: 800.0,
+                r_wheel: 0.34,
+                mu0: 1.9,
+                c_rr: 0.012,
+                rho: 1.225,
+                g: 9.81,
+            },
+            engine: EngineParams {
+                n_rpm: vec![0.0, 4000.0, 8000.0, 12000.0, 15000.0],
+                trq: vec![180.0, 420.0, 620.0, 560.0, 320.0],
+                gear_ratios: vec![14.0, 10.5, 8.0, 6.4, 5.2, 4.3],
+                n_upshift: 0.0,
+                n_downshift: 0.0,
+                n_idle: 400.0,
+                n_max: 15000.0,
+                t_amb: 35.0,
+                t_init: 90.0,
+                c_th: 100000.0,
+                alpha_heat: 0.45,
+                p_cool0: 0.0,
+                k_cool: 45.0,
+                t_soft: 110.0,
+                beta_derate: 0.02,
+                fuel_burn_kg_per_s: 0.02,
+            },
+            tire: TireParams {
+                mu_scale: 1.0,
+                wear_per_s: 0.00012,
+                wear_load_k: 0.00002,
+                wear_grip_k: 0.3,
+                wear_min: 0.72,
+                temp_opt: 92.0,
+                temp_sigma: 22.0,
+                temp_min_k: 0.82,
+                heat_k: 0.0035,
+                cool_k: 0.0012,
+            },
+        }
+    }
+
+    fn straight_track(length_m: f64, samples: usize) -> Track {
+        let step = length_m / (samples.saturating_sub(1) as f64);
+        let s: Vec<f64> = (0..samples).map(|idx| idx as f64 * step).collect();
+        let x = s.clone();
+        let y = vec![0.0; samples];
+        let z = vec![0.0; samples];
+        let kappa = vec![0.0; samples];
+        let slope = vec![0.0; samples];
+        let heading = vec![0.0; samples];
+        Track {
+            s,
+            x,
+            y,
+            z,
+            kappa,
+            slope,
+            heading,
+        }
+    }
+
+    fn tight_track(length_m: f64, samples: usize, curvature: f64) -> Track {
+        let step = length_m / (samples.saturating_sub(1) as f64);
+        let s: Vec<f64> = (0..samples).map(|idx| idx as f64 * step).collect();
+        let radius = 1.0 / curvature.max(1e-6);
+        let theta_end = length_m / radius;
+        let x: Vec<f64> = s
+            .iter()
+            .map(|value| {
+                let theta = theta_end * (*value / length_m.max(1e-6));
+                radius * theta.sin()
+            })
+            .collect();
+        let y: Vec<f64> = s
+            .iter()
+            .map(|value| {
+                let theta = theta_end * (*value / length_m.max(1e-6));
+                radius * (1.0 - theta.cos())
+            })
+            .collect();
+        let z = vec![0.0; samples];
+        let kappa = vec![curvature; samples];
+        let slope = vec![0.0; samples];
+        let heading: Vec<f64> = s
+            .iter()
+            .map(|value| theta_end * (*value / length_m.max(1e-6)))
+            .collect();
+        Track {
+            s,
+            x,
+            y,
+            z,
+            kappa,
+            slope,
+            heading,
+        }
+    }
+
+    fn run_case(track: Track, tuning: Tuning, laps: u16) -> SimulationResult {
+        run_simulation(&SimulationRequest {
+            track,
+            vehicle: test_vehicle(),
+            state: VehicleState {
+                fuel_mass: 80.0,
+                tire_wear: 0.0,
+                tire_temp: 90.0,
+                engine_temp: 90.0,
+                exit_speed_mps: 0.0,
+                exit_gear: 1,
+            },
+            config: SimConfig {
+                ds: 0.0,
+                max_speed: 400.0,
+                pit_time_penalty_s: 20.0,
+                pit_tire_temp: None,
+                tire_temp_amb: 35.0,
+                sim_seed: 7,
+            },
+            lap_count: laps,
+            pit_plan: PitPlan::default(),
+            driver: Driver::default(),
+            tuning: Some(tuning),
+        })
+        .expect("simulation should succeed")
+    }
+
+    #[test]
+    fn full_downforce_now_pays_more_drag_than_downforce_gain() {
+        let vehicle = test_vehicle();
+        let tuned = apply_tuning(
+            &vehicle,
+            &Tuning {
+                aero_points: 0,
+                chassis_points: 0,
+                cooling_points: 10,
+                engine_points: 0,
+                downforce_slider: 1.0,
+                gear_ratio_slider: 0.5,
+            },
+        );
+
+        let drag_factor = tuned.aero.cd_a_x / vehicle.aero.cd_a_x;
+        let downforce_factor = tuned.aero.cl_a_z / vehicle.aero.cl_a_z;
+
+        assert!(
+            drag_factor > downforce_factor,
+            "expected drag factor ({drag_factor}) to exceed downforce factor ({downforce_factor})",
+        );
+    }
+
+    #[test]
+    fn low_downforce_is_faster_on_a_fast_track_but_slower_on_a_tight_track() {
+        let fast_track = straight_track(5000.0, 220);
+        let technical_track = tight_track(2200.0, 220, 0.0105);
+
+        let low_df = Tuning {
+            aero_points: 10,
+            chassis_points: 10,
+            cooling_points: 10,
+            engine_points: 10,
+            downforce_slider: 0.0,
+            gear_ratio_slider: 0.7,
+        };
+        let high_df = Tuning {
+            downforce_slider: 1.0,
+            gear_ratio_slider: 0.3,
+            ..low_df.clone()
+        };
+
+        let fast_low = run_case(fast_track, low_df.clone(), 1);
+        let fast_high = run_case(straight_track(5000.0, 220), high_df.clone(), 1);
+        assert!(
+            fast_low.total_time_s < fast_high.total_time_s,
+            "expected low downforce to win on fast track: {} vs {}",
+            fast_low.total_time_s,
+            fast_high.total_time_s,
+        );
+
+        let technical_low = run_case(technical_track, low_df, 1);
+        let technical_high = run_case(tight_track(2200.0, 220, 0.0105), high_df, 1);
+        assert!(
+            technical_high.total_time_s < technical_low.total_time_s,
+            "expected high downforce to win on tight track: {} vs {}",
+            technical_high.total_time_s,
+            technical_low.total_time_s,
+        );
+    }
+
+    #[test]
+    fn neglected_cooling_triggers_visible_derating() {
+        let base = Tuning {
+            aero_points: 10,
+            chassis_points: 10,
+            cooling_points: 0,
+            engine_points: 10,
+            downforce_slider: 0.4,
+            gear_ratio_slider: 0.6,
+        };
+        let low_cooling = run_case(straight_track(5200.0, 260), base.clone(), 4);
+        let high_cooling = run_case(
+            straight_track(5200.0, 260),
+            Tuning {
+                cooling_points: 20,
+                ..base
+            },
+            4,
+        );
+
+        let low_derate = derating_factor(low_cooling.final_state.engine_temp, &low_cooling.applied_vehicle.engine);
+        let high_derate =
+            derating_factor(high_cooling.final_state.engine_temp, &high_cooling.applied_vehicle.engine);
+
+        assert!(
+            low_cooling.final_state.engine_temp > high_cooling.final_state.engine_temp + 10.0,
+            "expected low cooling to run much hotter: {} vs {}",
+            low_cooling.final_state.engine_temp,
+            high_cooling.final_state.engine_temp,
+        );
+        assert!(
+            low_derate < 0.98,
+            "expected low cooling to trigger derating, got {low_derate}",
+        );
+        assert!(
+            low_derate < high_derate,
+            "expected low cooling derate ({low_derate}) to be worse than high cooling ({high_derate})",
+        );
+    }
 }
