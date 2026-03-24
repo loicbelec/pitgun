@@ -369,13 +369,13 @@ fn validate_pitwall_session_payload(
     event_type: &str,
     payload: &PitWallSessionConfiguredPayload,
 ) -> Result<(), EnvelopeValidationError> {
-    if let Some(weekend_id) = &payload.weekend_id {
-        if weekend_id.trim().is_empty() {
-            return Err(EnvelopeValidationError::InvalidPayload {
-                event_type: event_type.to_string(),
-                message: "weekend_id must be a non-empty string when provided".to_string(),
-            });
-        }
+    if let Some(weekend_id) = &payload.weekend_id
+        && weekend_id.trim().is_empty()
+    {
+        return Err(EnvelopeValidationError::InvalidPayload {
+            event_type: event_type.to_string(),
+            message: "weekend_id must be a non-empty string when provided".to_string(),
+        });
     }
 
     if payload.run_id.trim().is_empty() {
