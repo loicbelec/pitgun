@@ -120,6 +120,31 @@ pub struct RaceSummaryPayload {
     pub metrics: Vec<InsightMetric>,
 }
 
+pub struct LapSummaryInput<'a> {
+    pub summary_id: String,
+    pub player_id: &'a str,
+    pub session_id: String,
+    pub lap_number: u32,
+    pub started_at_us: i64,
+    pub ended_at_us: i64,
+    pub metadata: &'a HashMap<String, String>,
+    pub fallback_run_id: &'a str,
+    pub aggregates: &'a BTreeMap<String, MetricAggregate>,
+    pub stats_plan: &'a InsightStatsPlan,
+}
+
+pub struct SessionSummaryInput<'a> {
+    pub summary_id: String,
+    pub player_id: &'a str,
+    pub session_id: String,
+    pub emitted_at_ms: i64,
+    pub lap: u32,
+    pub metadata: &'a HashMap<String, String>,
+    pub fallback_run_id: &'a str,
+    pub aggregates: &'a BTreeMap<String, MetricAggregate>,
+    pub stats_plan: &'a InsightStatsPlan,
+}
+
 #[derive(Clone, Debug, PartialEq)]
 pub struct SummaryMetadata {
     pub player_id: String,
@@ -318,18 +343,20 @@ pub fn resolve_summary_metadata(
     }
 }
 
-pub fn build_lap_summary(
-    summary_id: String,
-    player_id: &str,
-    session_id: String,
-    lap_number: u32,
-    started_at_us: i64,
-    ended_at_us: i64,
-    metadata: &HashMap<String, String>,
-    fallback_run_id: &str,
-    aggregates: &BTreeMap<String, MetricAggregate>,
-    stats_plan: &InsightStatsPlan,
-) -> Option<LapSummaryPayload> {
+pub fn build_lap_summary(input: LapSummaryInput<'_>) -> Option<LapSummaryPayload> {
+    let LapSummaryInput {
+        summary_id,
+        player_id,
+        session_id,
+        lap_number,
+        started_at_us,
+        ended_at_us,
+        metadata,
+        fallback_run_id,
+        aggregates,
+        stats_plan,
+    } = input;
+
     let metrics = build_insight_metrics(aggregates, stats_plan);
     if metrics.is_empty() {
         return None;
@@ -373,17 +400,19 @@ pub fn build_insight_request_from_lap_summary(
     )
 }
 
-pub fn build_session_summary(
-    summary_id: String,
-    player_id: &str,
-    session_id: String,
-    emitted_at_ms: i64,
-    lap: u32,
-    metadata: &HashMap<String, String>,
-    fallback_run_id: &str,
-    aggregates: &BTreeMap<String, MetricAggregate>,
-    stats_plan: &InsightStatsPlan,
-) -> Option<SessionSummaryPayload> {
+pub fn build_session_summary(input: SessionSummaryInput<'_>) -> Option<SessionSummaryPayload> {
+    let SessionSummaryInput {
+        summary_id,
+        player_id,
+        session_id,
+        emitted_at_ms,
+        lap,
+        metadata,
+        fallback_run_id,
+        aggregates,
+        stats_plan,
+    } = input;
+
     let metrics = build_insight_metrics(aggregates, stats_plan);
     if metrics.is_empty() {
         return None;
@@ -564,8 +593,8 @@ mod tests {
     };
 
     use super::{
-        InsightContext, InsightMetric, SessionSummaryPayload, aggregate_points_by_channel,
-        build_insight_request, build_insight_request_from_lap_summary,
+        InsightContext, InsightMetric, LapSummaryInput, SessionSummaryInput, SessionSummaryPayload,
+        aggregate_points_by_channel, build_insight_request, build_insight_request_from_lap_summary,
         build_insight_request_from_session_summary, build_lap_summary,
         build_race_summary_from_session, build_session_summary,
     };
@@ -686,18 +715,18 @@ mod tests {
 
         let extraction = extract_sim_metric_points(&payload);
         let aggregates = aggregate_points_by_channel(&extraction.points);
-        let summary = build_lap_summary(
-            "session-abc:lap:7".to_string(),
-            "player-123",
-            "session-abc".to_string(),
-            7,
-            1_770_000_000_000_000,
-            1_770_000_001_000_000,
-            &payload.frames[1].metadata,
-            "fallback-run",
-            &aggregates,
-            &InsightStatsPlan::default_sim_plan(),
-        )
+        let summary = build_lap_summary(LapSummaryInput {
+            summary_id: "session-abc:lap:7".to_string(),
+            player_id: "player-123",
+            session_id: "session-abc".to_string(),
+            lap_number: 7,
+            started_at_us: 1_770_000_000_000_000,
+            ended_at_us: 1_770_000_001_000_000,
+            metadata: &payload.frames[1].metadata,
+            fallback_run_id: "fallback-run",
+            aggregates: &aggregates,
+            stats_plan: &InsightStatsPlan::default_sim_plan(),
+        })
         .expect("lap summary should be built");
 
         assert_eq!(summary.schema_version, "pitgun-lap-summary-v1");
@@ -751,17 +780,17 @@ mod tests {
 
         let extraction = extract_sim_metric_points(&payload);
         let aggregates = aggregate_points_by_channel(&extraction.points);
-        let summary = build_session_summary(
-            "session-abc:session".to_string(),
-            "player-123",
-            "session-abc".to_string(),
-            1_770_000_001_234,
-            12,
-            &payload.frames[0].metadata,
-            "fallback-run",
-            &aggregates,
-            &InsightStatsPlan::default_sim_plan(),
-        )
+        let summary = build_session_summary(SessionSummaryInput {
+            summary_id: "session-abc:session".to_string(),
+            player_id: "player-123",
+            session_id: "session-abc".to_string(),
+            emitted_at_ms: 1_770_000_001_234,
+            lap: 12,
+            metadata: &payload.frames[0].metadata,
+            fallback_run_id: "fallback-run",
+            aggregates: &aggregates,
+            stats_plan: &InsightStatsPlan::default_sim_plan(),
+        })
         .expect("session summary should be built");
 
         assert_eq!(summary.schema_version, "pitgun-session-summary-v1");

@@ -28,10 +28,10 @@ use axum::{
 };
 use insight_ingress::{extract_sim_metric_points, extract_sim_metric_points_from_frame};
 use insight_requests::{
-    InsightRequestPayload, LapSummaryPayload, MetricAggregate, SessionSummaryPayload,
-    accumulate_metric_point, build_insight_request, build_insight_request_from_lap_summary,
-    build_insight_request_from_session_summary, build_lap_summary, build_race_summary_from_session,
-    build_session_summary,
+    InsightRequestPayload, LapSummaryInput, LapSummaryPayload, MetricAggregate,
+    SessionSummaryInput, SessionSummaryPayload, accumulate_metric_point, build_insight_request,
+    build_insight_request_from_lap_summary, build_insight_request_from_session_summary,
+    build_lap_summary, build_race_summary_from_session, build_session_summary,
 };
 use insight_stats_plan::resolve_insight_stats_plan;
 use llm_core::{LlmCoreClient, LlmCoreConfig, LlmProvider};
@@ -268,18 +268,17 @@ async fn process_queue(
 
             persist_telemetry_points(questdb_store.as_ref(), &telemetry_points).await;
 
-            if matches!(llm_dispatch_mode, LlmDispatchMode::PerRequest) {
-                if let Some(request) =
+            if matches!(llm_dispatch_mode, LlmDispatchMode::PerRequest)
+                && let Some(request) =
                     build_insight_request(&msg.envelope, payload, &extraction, &insight_stats_plan)
-                {
-                    persist_insight_request_and_dispatch(
-                        &store,
-                        llm_client.as_ref(),
-                        request,
-                        "telemetry.sample_batch",
-                    )
-                    .await;
-                }
+            {
+                persist_insight_request_and_dispatch(
+                    &store,
+                    llm_client.as_ref(),
+                    request,
+                    "telemetry.sample_batch",
+                )
+                .await;
             }
         }
 
@@ -1307,10 +1306,9 @@ impl SessionAggregationState {
             .current_lap
             .as_ref()
             .is_some_and(|open_lap| open_lap.lap_number != lap_number)
+            && let Some(summary) = self.finalize_open_lap(stats_plan)
         {
-            if let Some(summary) = self.finalize_open_lap(stats_plan) {
-                completed.push(summary);
-            }
+            completed.push(summary);
         }
 
         let open_lap = self
@@ -1341,18 +1339,18 @@ impl SessionAggregationState {
             &open_lap.latest_metadata
         };
 
-        build_lap_summary(
+        build_lap_summary(LapSummaryInput {
             summary_id,
-            &self.player_id,
-            self.session_id.clone(),
-            open_lap.lap_number,
-            open_lap.started_at_us,
-            open_lap.ended_at_us,
+            player_id: &self.player_id,
+            session_id: self.session_id.clone(),
+            lap_number: open_lap.lap_number,
+            started_at_us: open_lap.started_at_us,
+            ended_at_us: open_lap.ended_at_us,
             metadata,
-            &self.fallback_run_id,
-            &open_lap.aggregates,
+            fallback_run_id: &self.fallback_run_id,
+            aggregates: &open_lap.aggregates,
             stats_plan,
-        )
+        })
     }
 
     fn build_session_summary_payload(
@@ -1360,17 +1358,17 @@ impl SessionAggregationState {
         emitted_at_ms: i64,
         stats_plan: &insight_stats_plan::InsightStatsPlan,
     ) -> Option<SessionSummaryPayload> {
-        build_session_summary(
-            format!("{}:session", self.session_id),
-            &self.player_id,
-            self.session_id.clone(),
+        build_session_summary(SessionSummaryInput {
+            summary_id: format!("{}:session", self.session_id),
+            player_id: &self.player_id,
+            session_id: self.session_id.clone(),
             emitted_at_ms,
-            self.max_lap,
-            &self.latest_metadata,
-            &self.fallback_run_id,
-            &self.session_aggregates,
+            lap: self.max_lap,
+            metadata: &self.latest_metadata,
+            fallback_run_id: &self.fallback_run_id,
+            aggregates: &self.session_aggregates,
             stats_plan,
-        )
+        })
     }
 }
 
