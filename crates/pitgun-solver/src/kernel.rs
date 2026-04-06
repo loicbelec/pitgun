@@ -749,16 +749,24 @@ pub fn apply_driver_to_tire(tire: &TireParams, effects: &DriverEffects) -> TireP
     adjusted
 }
 
+fn diminishing_tuning_effect(points: i32) -> f64 {
+    let clamped = clamp(points as f64, 0.0, 100.0);
+    if clamped <= 0.0 {
+        return 0.0;
+    }
+    1.0 - (-clamped / 20.0).exp()
+}
+
 pub fn apply_tuning(vehicle: &VehicleParams, tuning: &Tuning) -> VehicleParams {
-    let aero_pts = clamp(tuning.aero_points as f64, 0.0, 20.0);
-    let chassis_pts = clamp(tuning.chassis_points as f64, 0.0, 20.0);
-    let cooling_pts = clamp(tuning.cooling_points as f64, 0.0, 20.0);
-    let engine_pts = clamp(tuning.engine_points as f64, 0.0, 20.0);
+    let aero_eff = diminishing_tuning_effect(tuning.aero_points);
+    let chassis_eff = diminishing_tuning_effect(tuning.chassis_points);
+    let cooling_eff = diminishing_tuning_effect(tuning.cooling_points);
+    let engine_eff = diminishing_tuning_effect(tuning.engine_points);
     let df = clamp(tuning.downforce_slider, 0.0, 1.0);
     let gr = clamp(tuning.gear_ratio_slider, 0.0, 1.0);
-    let cooling_ratio = cooling_pts / 20.0;
+    let cooling_ratio = cooling_eff;
 
-    let aero_k = 1.0 + 0.10 * (aero_pts / 20.0);
+    let aero_k = 1.0 + 0.10 * aero_eff;
     // Keep these affine ramps easy to port back to Python.
     // At the midpoint (df = 0.5) they remain close to neutral, but
     // full-downforce now pays a materially larger drag bill.
@@ -772,7 +780,7 @@ pub fn apply_tuning(vehicle: &VehicleParams, tuning: &Tuning) -> VehicleParams {
         cl_a_z: vehicle.aero.cl_a_z * aero_k * df_blend * 1.05,
     };
 
-    let grip_blend = 1.0 + 0.08 * (chassis_pts / 20.0);
+    let grip_blend = 1.0 + 0.08 * chassis_eff;
     let chassis = ChassisParams {
         mass_empty: vehicle.chassis.mass_empty,
         r_wheel: vehicle.chassis.r_wheel,
@@ -792,7 +800,7 @@ pub fn apply_tuning(vehicle: &VehicleParams, tuning: &Tuning) -> VehicleParams {
         .engine
         .trq
         .iter()
-        .map(|value| value * (1.0 + 0.01 * (engine_pts / 20.0)))
+        .map(|value| value * (1.0 + 0.01 * engine_eff))
         .collect();
     let scale = 1.10 - 0.20 * gr;
     let gear_ratios: Vec<f64> = vehicle
@@ -1354,5 +1362,15 @@ mod tests {
             low_derate < high_derate,
             "expected low cooling derate ({low_derate}) to be worse than high cooling ({high_derate})",
         );
+    }
+
+    #[test]
+    fn tuning_points_have_diminishing_returns() {
+        let gain_10_to_20 = diminishing_tuning_effect(20) - diminishing_tuning_effect(10);
+        let gain_50_to_60 = diminishing_tuning_effect(60) - diminishing_tuning_effect(50);
+
+        assert!(gain_10_to_20 > gain_50_to_60);
+        assert!(diminishing_tuning_effect(100) < 1.0);
+        assert!(diminishing_tuning_effect(100) > diminishing_tuning_effect(20));
     }
 }
