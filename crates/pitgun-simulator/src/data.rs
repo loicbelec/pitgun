@@ -1205,12 +1205,28 @@ mod tests {
     }
 
     #[test]
-    fn embedded_pack_and_reference_pack_share_catalog_shape() {
-        let embedded = embedded_reference_pack();
+    fn reference_pack_contains_expected_categories_and_loads() {
         let reference = python_reference_pack();
-        assert!(!embedded.is_empty());
-        assert_eq!(embedded.len(), reference.len());
-        assert_eq!(embedded.keys().collect::<Vec<_>>(), reference.keys().collect::<Vec<_>>());
+        assert!(!reference.is_empty());
+        for category in [
+            "aero", "chassis", "circuits", "drivers", "engines", "tires", "vehicles",
+        ] {
+            assert!(
+                reference.keys().any(|key| key.starts_with(&format!("{category}/"))),
+                "missing reference category {category}"
+            );
+        }
+
+        let registry =
+            DataRegistry::load_from_bytes_map(reference).expect("reference pack should load");
+        let provider = registry.into_provider();
+        let vehicle = crate::provider::ConfigProvider::get_vehicle(&provider, "f1_2026")
+            .expect("f1_2026 vehicle");
+        let track =
+            crate::provider::ConfigProvider::get_track(&provider, "SPA").expect("SPA track");
+
+        assert_eq!(vehicle.engine_id, "v6t_hybrid");
+        assert!(track.s_m.len() > 1000);
     }
 
     #[test]
