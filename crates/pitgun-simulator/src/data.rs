@@ -1150,11 +1150,22 @@ struct EngineJson {
 mod tests {
     use super::*;
     use std::collections::HashMap;
-    use std::path::PathBuf;
+    use std::path::{Path, PathBuf};
 
-    fn python_reference_pack() -> HashMap<String, Vec<u8>> {
-        let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-            .join("../../../tooling/pitgun_simulator/data");
+    fn existing_reference_root() -> PathBuf {
+        let manifest_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+        let candidates = [
+            manifest_dir.join("data"),
+            manifest_dir.join("../../../tooling/pitgun_simulator/data"),
+        ];
+
+        candidates
+            .into_iter()
+            .find(|path| path.is_dir())
+            .unwrap_or_else(|| panic!("no reference data directory found from {}", manifest_dir.display()))
+    }
+
+    fn collect_reference_pack(root: &Path) -> HashMap<String, Vec<u8>> {
         let mut files = HashMap::new();
         for category in [
             "aero", "chassis", "circuits", "drivers", "engines", "tires", "vehicles",
@@ -1177,6 +1188,29 @@ mod tests {
             }
         }
         files
+    }
+
+    fn python_reference_pack() -> HashMap<String, Vec<u8>> {
+        collect_reference_pack(&existing_reference_root())
+    }
+
+    fn embedded_reference_pack() -> HashMap<String, Vec<u8>> {
+        let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("data");
+        collect_reference_pack(&root)
+    }
+
+    #[test]
+    fn reference_pack_helper_resolves_existing_data_root() {
+        assert!(existing_reference_root().is_dir());
+    }
+
+    #[test]
+    fn embedded_pack_and_reference_pack_share_catalog_shape() {
+        let embedded = embedded_reference_pack();
+        let reference = python_reference_pack();
+        assert!(!embedded.is_empty());
+        assert_eq!(embedded.len(), reference.len());
+        assert_eq!(embedded.keys().collect::<Vec<_>>(), reference.keys().collect::<Vec<_>>());
     }
 
     #[test]
