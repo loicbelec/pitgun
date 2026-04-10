@@ -3,24 +3,9 @@ use std::collections::{BTreeMap, HashMap};
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    insight_ingress::{InsightExtraction, InsightMetricPoint},
+    insight_ingress::{InsightMetricPoint},
     insight_stats_plan::{InsightStatsPlan, StatMetric},
-    model::{EventEnvelope, TelemetrySampleBatchPayload},
 };
-
-#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
-pub struct InsightRequestPayload {
-    pub schema_version: String,
-    pub run_id: String,
-    pub session_id: String,
-    pub trace_id: String,
-    pub emitted_at_ms: i64,
-    pub context: InsightContext,
-    pub metrics: Vec<InsightMetric>,
-    pub constraints: InsightConstraints,
-    pub policy_version: String,
-    pub prompt_version: String,
-}
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 pub struct InsightContext {
@@ -45,12 +30,6 @@ pub struct InsightMetric {
     pub confidence: f64,
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
-pub struct InsightConstraints {
-    pub max_insights: u8,
-    pub max_words_per_insight: u8,
-    pub language: String,
-}
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 pub struct LapSummaryPayload {
@@ -236,6 +215,7 @@ pub(crate) fn accumulate_metric_point(
     }
 }
 
+#[cfg(test)]
 pub(crate) fn aggregate_points_by_channel(
     points: &[InsightMetricPoint],
 ) -> BTreeMap<String, MetricAggregate> {
@@ -386,19 +366,6 @@ pub fn build_lap_summary(input: LapSummaryInput<'_>) -> Option<LapSummaryPayload
     })
 }
 
-pub fn build_insight_request_from_lap_summary(
-    summary: &LapSummaryPayload,
-    trace_id: String,
-) -> InsightRequestPayload {
-    build_insight_request_payload(
-        summary.run_id.clone(),
-        summary.session_id.clone(),
-        trace_id,
-        (summary.ended_at_us / 1_000).max(0),
-        summary.context.clone(),
-        summary.metrics.clone(),
-    )
-}
 
 pub fn build_session_summary(input: SessionSummaryInput<'_>) -> Option<SessionSummaryPayload> {
     let SessionSummaryInput {
@@ -437,19 +404,6 @@ pub fn build_session_summary(input: SessionSummaryInput<'_>) -> Option<SessionSu
     })
 }
 
-pub fn build_insight_request_from_session_summary(
-    summary: &SessionSummaryPayload,
-    trace_id: String,
-) -> InsightRequestPayload {
-    build_insight_request_payload(
-        summary.run_id.clone(),
-        summary.session_id.clone(),
-        trace_id,
-        summary.emitted_at_ms,
-        summary.context.clone(),
-        summary.metrics.clone(),
-    )
-}
 
 pub fn build_race_summary_from_session(
     summary: &SessionSummaryPayload,
@@ -477,89 +431,6 @@ pub fn build_race_summary_from_session(
     })
 }
 
-pub fn build_insight_request(
-    envelope: &EventEnvelope,
-    payload: &TelemetrySampleBatchPayload,
-    extraction: &InsightExtraction,
-    stats_plan: &InsightStatsPlan,
-) -> Option<InsightRequestPayload> {
-    if extraction.points.is_empty() {
-        return None;
-    }
-
-    let empty_metadata = HashMap::new();
-    let latest_metadata = payload
-        .frames
-        .iter()
-        .rev()
-        .find(|frame| !frame.metadata.is_empty())
-        .map(|frame| &frame.metadata)
-        .or_else(|| payload.frames.last().map(|frame| &frame.metadata))
-        .unwrap_or(&empty_metadata);
-
-    let aggregates = aggregate_points_by_channel(&extraction.points);
-    if aggregates.is_empty() {
-        return None;
-    }
-
-    let metrics = build_insight_metrics(&aggregates, stats_plan);
-    if metrics.is_empty() {
-        return None;
-    }
-
-    let latest_lap = payload
-        .frames
-        .iter()
-        .rev()
-        .find_map(|frame| frame.lap_number)
-        .unwrap_or(0) as u32;
-    let metadata = resolve_summary_metadata(
-        &envelope.player_id,
-        latest_metadata,
-        &envelope.session_id,
-        &envelope.event_id.to_string(),
-        latest_lap,
-    );
-
-    Some(build_insight_request_payload(
-        metadata.run_id,
-        trim_to_max(&envelope.session_id, 64),
-        envelope.event_id.to_string(),
-        (envelope.ts.unix_timestamp_nanos() / 1_000_000).max(0) as i64,
-        metadata.context,
-        metrics,
-    ))
-}
-
-fn build_insight_request_payload(
-    run_id: String,
-    session_id: String,
-    trace_id: String,
-    emitted_at_ms: i64,
-    context: InsightContext,
-    metrics: Vec<InsightMetric>,
-) -> InsightRequestPayload {
-    InsightRequestPayload {
-        schema_version: "pitgun-insight-request-v1".to_string(),
-        run_id,
-        session_id: trim_to_max(&session_id, 64),
-        trace_id: trim_to_max(&trace_id, 128),
-        emitted_at_ms,
-        context,
-        metrics,
-        constraints: default_constraints(),
-        policy_version: "policy.v1".to_string(),
-        prompt_version: "chief-race.v1".to_string(),
-    }
-}
-
-fn default_constraints() -> InsightConstraints {
-    InsightConstraints {
-        max_insights: 3,
-        max_words_per_insight: 32,
-        language: "en".to_string(),
-    }
-}
 
 fn infer_horizon(metric_key: &str) -> &'static str {
     if metric_key.starts_with("tires.") {
@@ -583,92 +454,21 @@ mod tests {
     use std::collections::HashMap;
 
     use pitgun_contract::{Sample, SampleValue, SignalQuality, TelemetryFrame};
-    use time::OffsetDateTime;
-    use uuid::Uuid;
 
     use crate::{
         insight_ingress::extract_sim_metric_points,
         insight_stats_plan::InsightStatsPlan,
-        model::{EventEnvelope, EventPayload, TelemetrySampleBatchPayload},
+        model::TelemetrySampleBatchPayload,
     };
 
     use super::{
         InsightContext, InsightMetric, LapSummaryInput, SessionSummaryInput, SessionSummaryPayload,
-        aggregate_points_by_channel, build_insight_request, build_insight_request_from_lap_summary,
-        build_insight_request_from_session_summary, build_lap_summary,
-        build_race_summary_from_session, build_session_summary,
+        aggregate_points_by_channel, build_lap_summary, build_race_summary_from_session,
+        build_session_summary,
     };
 
     #[test]
-    fn builds_insight_request_from_sim_points_only() {
-        let mut metadata = HashMap::new();
-        metadata.insert("track_id".to_string(), "monaco".to_string());
-        metadata.insert("run_id".to_string(), "run_insight_001".to_string());
-        metadata.insert("session_type".to_string(), "RACE".to_string());
-
-        let payload = TelemetrySampleBatchPayload {
-            frames: vec![TelemetryFrame {
-                session_id: 4242,
-                sequence: 1,
-                timestamp_us: 1_770_000_000_000_000,
-                received_at_us: 1_770_000_000_000_010,
-                source_id: "pitgun-solver".to_string(),
-                samples: vec![
-                    Sample::new(5005, SampleValue::F64(201.4), SignalQuality::Good),
-                    Sample::new(5016, SampleValue::F64(42.3), SignalQuality::Good),
-                    Sample::new(65000, SampleValue::F64(1.0), SignalQuality::Good),
-                ],
-                events: Vec::new(),
-                lap_number: Some(18),
-                sector: Some(2),
-                lap_distance_m: Some(3222.0),
-                metadata,
-            }],
-        };
-
-        let envelope = EventEnvelope {
-            schema_version: "pitgun-envelope-v1".to_string(),
-            event_id: Uuid::parse_str("95d81f5b-edbc-440c-bdf8-1fdbf6496a8d").expect("valid UUID"),
-            ts: OffsetDateTime::from_unix_timestamp(1_773_417_600).expect("valid timestamp"),
-            player_id: "player-123".to_string(),
-            weekend_id: None,
-            session_id: "session-abc".to_string(),
-            event_type: "telemetry.sample_batch".to_string(),
-            payload: EventPayload::TelemetrySampleBatch(payload.clone()),
-        };
-
-        let extraction = extract_sim_metric_points(&payload);
-        let request = build_insight_request(
-            &envelope,
-            &payload,
-            &extraction,
-            &InsightStatsPlan::default_sim_plan(),
-        )
-        .expect("insight request should be built");
-
-        assert_eq!(request.schema_version, "pitgun-insight-request-v1");
-        assert_eq!(request.run_id, "run_insight_001");
-        assert_eq!(request.session_id, "session-abc");
-        assert_eq!(request.trace_id, "95d81f5b-edbc-440c-bdf8-1fdbf6496a8d");
-        assert_eq!(request.context.circuit_id, "MONACO");
-        assert_eq!(request.context.lap, 18);
-        assert!(
-            request
-                .metrics
-                .iter()
-                .any(|m| m.key == "pace.speed_kph.mean")
-        );
-        assert!(
-            request
-                .metrics
-                .iter()
-                .any(|m| m.key == "tires.avg_wear_pct.stddev")
-        );
-        assert!(!request.metrics.iter().any(|m| m.key.contains("65000")));
-    }
-
-    #[test]
-    fn builds_lap_summary_and_compact_request() {
+    fn builds_lap_summary_from_sim_points() {
         let mut metadata = HashMap::new();
         metadata.insert("track_id".to_string(), "spa".to_string());
         metadata.insert("weekend_id".to_string(), "weekend-spa".to_string());
@@ -741,19 +541,10 @@ mod tests {
                 .iter()
                 .any(|metric| metric.key == "pace.speed_kph.max")
         );
-
-        let request = build_insight_request_from_lap_summary(
-            &summary,
-            "session-abc:lap:7:insight".to_string(),
-        );
-        assert_eq!(request.trace_id, "session-abc:lap:7:insight");
-        assert_eq!(request.session_id, "session-abc");
-        assert_eq!(request.context.lap, 7);
-        assert_eq!(request.metrics, summary.metrics);
     }
 
     #[test]
-    fn builds_session_summary_and_compact_request() {
+    fn builds_session_summary_from_sim_points() {
         let mut metadata = HashMap::new();
         metadata.insert("track_id".to_string(), "monza".to_string());
         metadata.insert("weekend_id".to_string(), "weekend-monza".to_string());
@@ -799,15 +590,6 @@ mod tests {
         assert_eq!(summary.weekend_id.as_deref(), Some("weekend-monza"));
         assert_eq!(summary.lap_count, 12);
         assert_eq!(summary.context.circuit_id, "MONZA");
-
-        let request = build_insight_request_from_session_summary(
-            &summary,
-            "session-abc:session:insight".to_string(),
-        );
-        assert_eq!(request.trace_id, "session-abc:session:insight");
-        assert_eq!(request.session_id, "session-abc");
-        assert_eq!(request.context.lap, 12);
-        assert_eq!(request.metrics, summary.metrics);
     }
 
     #[test]

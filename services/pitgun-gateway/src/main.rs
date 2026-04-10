@@ -1,17 +1,16 @@
 mod insight_ingress;
 mod insight_requests;
-mod insight_responses;
 mod insight_stats_plan;
-mod llm_core;
 mod model;
 mod questdb;
 mod run_registry;
 mod storage;
 
+use anyhow::Context;
+
 use std::{
     collections::{BTreeMap, HashMap, HashSet},
     net::SocketAddr,
-    path::PathBuf,
     sync::Arc,
     time::{Duration, Instant},
 };
@@ -28,22 +27,16 @@ use axum::{
 };
 use insight_ingress::{extract_sim_metric_points, extract_sim_metric_points_from_frame};
 use insight_requests::{
-    InsightRequestPayload, LapSummaryInput, LapSummaryPayload, MetricAggregate,
-    SessionSummaryInput, SessionSummaryPayload, accumulate_metric_point, build_insight_request,
-    build_insight_request_from_lap_summary, build_insight_request_from_session_summary,
-    build_lap_summary, build_race_summary_from_session, build_session_summary,
+    LapSummaryInput, LapSummaryPayload, MetricAggregate, SessionSummaryInput, SessionSummaryPayload,
+    accumulate_metric_point, build_lap_summary, build_race_summary_from_session,
+    build_session_summary,
 };
-use insight_stats_plan::resolve_insight_stats_plan;
-use llm_core::{LlmCoreClient, LlmCoreConfig, LlmProvider};
 use model::{EventPayload, parse_event_envelope};
 use pitgun_contract::TelemetryFrame;
 use questdb::{QuestDbStore, TelemetryPointRow};
 use run_registry::{RunRegistryClient, RunRegistryUpsertRequest};
 use serde::Deserialize;
-use storage::{
-    EventInsertOutcome, IngestMetadata, InsightRequestInsertOutcome, InsightResponseInsertOutcome,
-    LapSummaryInsertOutcome, QueueMessage, SqliteEventStore, SqliteJournalMode,
-};
+use storage::{EventInsertOutcome, IngestMetadata, LapSummaryInsertOutcome, PgEventStore, QueueMessage};
 use time::OffsetDateTime;
 use tokio::{
     net::TcpListener,
@@ -54,65 +47,21 @@ use tokio::{
 use tracing::{debug, error, info, warn};
 
 const DEFAULT_BIND_ADDR: &str = "127.0.0.1:8080";
-const DEFAULT_DB_PATH: &str = "./telemetry/events.db";
 const DEFAULT_SCHEMA_VERSION: &str = "pitgun-envelope-v1";
 const DEFAULT_MAX_MESSAGE_BYTES: usize = 512 * 1024;
 const DEFAULT_MAX_MESSAGES_PER_SEC: u32 = 120;
 const DEFAULT_INGEST_QUEUE_SIZE: usize = 4096;
-const DEFAULT_LLM_MODEL: &str = "llama3.2:3b";
-const DEFAULT_LLM_TIMEOUT_MS: u64 = 8_000;
-const DEFAULT_LLM_NUM_CTX: u32 = 1_024;
-const DEFAULT_LLM_NUM_PREDICT: u32 = 180;
-const DEFAULT_LLM_TEMPERATURE: f32 = 0.0;
-const DEFAULT_LLM_DISPATCH_MODE: &str = "lap_end";
-
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-enum LlmDispatchMode {
-    PerRequest,
-    LapEnd,
-    SessionEndSummary,
-}
-
-impl LlmDispatchMode {
-    fn from_env_value(raw: &str) -> Option<Self> {
-        match raw.trim().to_ascii_lowercase().as_str() {
-            "per_request" => Some(Self::PerRequest),
-            "lap_end" => Some(Self::LapEnd),
-            "session_end_summary" => Some(Self::SessionEndSummary),
-            _ => None,
-        }
-    }
-
-    fn as_str(self) -> &'static str {
-        match self {
-            Self::PerRequest => "per_request",
-            Self::LapEnd => "lap_end",
-            Self::SessionEndSummary => "session_end_summary",
-        }
-    }
-}
 
 #[derive(Clone)]
 struct GatewayConfig {
     bind_addr: SocketAddr,
     allow_non_loopback: bool,
-    db_path: String,
-    sqlite_journal_mode: SqliteJournalMode,
+    database_url: String,
     schema_version: String,
     max_message_bytes: usize,
     max_messages_per_sec: u32,
     ingest_queue_size: usize,
     api_keys: HashSet<String>,
-    insight_manifest_path: Option<String>,
-    llm_provider: LlmProvider,
-    llm_core_url: Option<String>,
-    llm_api_key: Option<String>,
-    llm_model: String,
-    llm_timeout_ms: u64,
-    llm_num_ctx: u32,
-    llm_num_predict: u32,
-    llm_temperature: f32,
-    llm_dispatch_mode: LlmDispatchMode,
     questdb_url: Option<String>,
     run_registry_url: Option<String>,
 }
@@ -120,7 +69,7 @@ struct GatewayConfig {
 #[derive(Clone)]
 struct AppState {
     tx: mpsc::Sender<QueueMessage>,
-    store: Arc<SqliteEventStore>,
+    store: Arc<PgEventStore>,
     config: Arc<GatewayConfig>,
 }
 
@@ -137,9 +86,7 @@ async fn main() -> anyhow::Result<()> {
     tracing_subscriber::fmt().with_env_filter(log_filter).init();
 
     let config = Arc::new(GatewayConfig::from_env()?);
-    let insight_stats_plan = Arc::new(resolve_insight_stats_plan(
-        config.insight_manifest_path.as_deref(),
-    )?);
+    let insight_stats_plan = Arc::new(insight_stats_plan::InsightStatsPlan::default_sim_plan());
 
     validate_bind_addr(config.bind_addr, config.allow_non_loopback)?;
 
@@ -147,20 +94,17 @@ async fn main() -> anyhow::Result<()> {
         warn!("PITGUN_GATEWAY_API_KEY/PITGUN_GATEWAY_API_KEYS not set; websocket auth is disabled");
     }
 
-    let store = Arc::new(SqliteEventStore::new(&config.db_path, config.sqlite_journal_mode).await?);
+    let store = Arc::new(PgEventStore::new(&config.database_url).await?);
     let questdb_store = build_questdb_store(&config).await?;
     backfill_practice_summaries(questdb_store.as_deref()).await?;
     backfill_race_summaries(questdb_store.as_deref()).await?;
     let run_registry_client = build_run_registry_client(&config)?;
-    let llm_client = build_llm_client(&config)?;
     let (tx, rx) = mpsc::channel(config.ingest_queue_size);
     let queue_task = tokio::spawn(process_queue(
         store.clone(),
         questdb_store,
         run_registry_client,
         insight_stats_plan,
-        llm_client,
-        config.llm_dispatch_mode,
         rx,
     ));
 
@@ -209,12 +153,10 @@ async fn shutdown_signal() {
 }
 
 async fn process_queue(
-    store: Arc<SqliteEventStore>,
+    store: Arc<PgEventStore>,
     questdb_store: Option<Arc<QuestDbStore>>,
     run_registry_client: Option<Arc<RunRegistryClient>>,
     insight_stats_plan: Arc<insight_stats_plan::InsightStatsPlan>,
-    llm_client: Option<Arc<LlmCoreClient>>,
-    llm_dispatch_mode: LlmDispatchMode,
     mut rx: mpsc::Receiver<QueueMessage>,
 ) {
     let mut session_states: HashMap<String, SessionAggregationState> = HashMap::new();
@@ -258,8 +200,6 @@ async fn process_queue(
                     persist_lap_summary_and_dispatch(
                         &store,
                         questdb_store.as_ref(),
-                        llm_client.as_ref(),
-                        llm_dispatch_mode,
                         summary,
                     )
                     .await;
@@ -267,19 +207,6 @@ async fn process_queue(
             }
 
             persist_telemetry_points(questdb_store.as_ref(), &telemetry_points).await;
-
-            if matches!(llm_dispatch_mode, LlmDispatchMode::PerRequest)
-                && let Some(request) =
-                    build_insight_request(&msg.envelope, payload, &extraction, &insight_stats_plan)
-            {
-                persist_insight_request_and_dispatch(
-                    &store,
-                    llm_client.as_ref(),
-                    request,
-                    "telemetry.sample_batch",
-                )
-                .await;
-            }
         }
 
         if let EventPayload::PitWallSessionConfigured(payload) = &msg.envelope.payload {
@@ -299,8 +226,6 @@ async fn process_queue(
                     persist_lap_summary_and_dispatch(
                         &store,
                         questdb_store.as_ref(),
-                        llm_client.as_ref(),
-                        llm_dispatch_mode,
                         summary,
                     )
                     .await;
@@ -320,19 +245,6 @@ async fn process_queue(
                     )
                     .await;
                     persist_race_summary(questdb_store.as_ref(), &summary).await;
-
-                    if matches!(llm_dispatch_mode, LlmDispatchMode::SessionEndSummary) {
-                        let trace_id = format!("{}-session-summary", msg.envelope.event_id);
-                        let request =
-                            build_insight_request_from_session_summary(&summary, trace_id);
-                        persist_insight_request_and_dispatch(
-                            &store,
-                            llm_client.as_ref(),
-                            request,
-                            "session.end",
-                        )
-                        .await;
-                    }
                 } else {
                     debug!(
                         event_id = %msg.envelope.event_id,
@@ -364,10 +276,8 @@ async fn process_queue(
 }
 
 async fn persist_lap_summary_and_dispatch(
-    store: &Arc<SqliteEventStore>,
+    store: &Arc<PgEventStore>,
     questdb_store: Option<&Arc<QuestDbStore>>,
-    llm_client: Option<&Arc<LlmCoreClient>>,
-    llm_dispatch_mode: LlmDispatchMode,
     summary: LapSummaryPayload,
 ) {
     match store.insert_lap_summary(&summary).await {
@@ -396,12 +306,6 @@ async fn persist_lap_summary_and_dispatch(
                         );
                     }
                 }
-            }
-
-            if matches!(llm_dispatch_mode, LlmDispatchMode::LapEnd) {
-                let trace_id = format!("{}:insight", summary.summary_id);
-                let request = build_insight_request_from_lap_summary(&summary, trace_id);
-                persist_insight_request_and_dispatch(store, llm_client, request, "lap.end").await;
             }
         }
         Ok(LapSummaryInsertOutcome::Duplicate) => {
@@ -943,20 +847,9 @@ impl GatewayConfig {
         let allow_non_loopback =
             allow_non_loopback_enabled(std::env::var("PITGUN_GATEWAY_ALLOW_NON_LOOPBACK").ok());
 
-        let db_path = read_db_path();
-        let sqlite_journal_mode = std::env::var("PITGUN_GATEWAY_SQLITE_JOURNAL_MODE")
-            .ok()
-            .map(|value| value.trim().to_string())
-            .filter(|value| !value.is_empty())
-            .map(|value| {
-                SqliteJournalMode::from_env_value(&value).ok_or_else(|| {
-                    anyhow::anyhow!(
-                        "invalid PITGUN_GATEWAY_SQLITE_JOURNAL_MODE: {value} (expected wal, delete, truncate, persist, memory or off)"
-                    )
-                })
-            })
-            .transpose()?
-            .unwrap_or(SqliteJournalMode::Wal);
+        let database_url = std::env::var("PITGUN_GATEWAY_DATABASE_URL")
+            .or_else(|_| std::env::var("DATABASE_URL"))
+            .context("missing PITGUN_GATEWAY_DATABASE_URL (or DATABASE_URL)")?;
 
         let schema_version = std::env::var("PITGUN_GATEWAY_SCHEMA_VERSION")
             .unwrap_or_else(|_| DEFAULT_SCHEMA_VERSION.to_string());
@@ -977,75 +870,6 @@ impl GatewayConfig {
         )?;
 
         let api_keys = read_api_keys();
-        let insight_manifest_path = std::env::var("PITGUN_GATEWAY_INSIGHT_MANIFEST")
-            .ok()
-            .map(|value| value.trim().to_string())
-            .filter(|value| !value.is_empty());
-
-        let llm_provider = std::env::var("PITGUN_GATEWAY_LLM_PROVIDER")
-            .ok()
-            .map(|value| value.trim().to_string())
-            .filter(|value| !value.is_empty())
-            .map(|value| {
-                LlmProvider::from_env_value(&value).ok_or_else(|| {
-                    anyhow::anyhow!(
-                        "invalid PITGUN_GATEWAY_LLM_PROVIDER: {value} (expected ollama or openai_compatible)"
-                    )
-                })
-            })
-            .transpose()?
-            .unwrap_or(LlmProvider::Ollama);
-
-        let llm_core_url = std::env::var("PITGUN_GATEWAY_LLM_URL")
-            .ok()
-            .map(|value| value.trim().to_string())
-            .filter(|value| !value.is_empty())
-            .or_else(|| {
-                std::env::var("PITGUN_GATEWAY_LLM_CORE_URL")
-                    .ok()
-                    .map(|value| value.trim().to_string())
-                    .filter(|value| !value.is_empty())
-            });
-
-        let llm_api_key = std::env::var("PITGUN_GATEWAY_LLM_API_KEY")
-            .ok()
-            .map(|value| value.trim().to_string())
-            .filter(|value| !value.is_empty());
-
-        let llm_model = std::env::var("PITGUN_GATEWAY_LLM_MODEL")
-            .ok()
-            .map(|value| value.trim().to_string())
-            .filter(|value| !value.is_empty())
-            .or_else(|| {
-                std::env::var("OLLAMA_MODEL")
-                    .ok()
-                    .map(|value| value.trim().to_string())
-                    .filter(|value| !value.is_empty())
-            })
-            .unwrap_or_else(|| DEFAULT_LLM_MODEL.to_string());
-
-        let llm_timeout_ms = read_env_u64("PITGUN_GATEWAY_LLM_TIMEOUT_MS", DEFAULT_LLM_TIMEOUT_MS)?;
-        let llm_num_ctx = read_env_u32("PITGUN_GATEWAY_LLM_NUM_CTX", DEFAULT_LLM_NUM_CTX)?;
-        let llm_num_predict =
-            read_env_u32("PITGUN_GATEWAY_LLM_NUM_PREDICT", DEFAULT_LLM_NUM_PREDICT)?;
-        let llm_temperature =
-            read_env_f32("PITGUN_GATEWAY_LLM_TEMPERATURE", DEFAULT_LLM_TEMPERATURE)?;
-        let llm_dispatch_mode = std::env::var("PITGUN_GATEWAY_LLM_DISPATCH_MODE")
-            .ok()
-            .map(|value| value.trim().to_string())
-            .filter(|value| !value.is_empty())
-            .map(|value| {
-                LlmDispatchMode::from_env_value(&value).ok_or_else(|| {
-                    anyhow::anyhow!(
-                        "invalid PITGUN_GATEWAY_LLM_DISPATCH_MODE: {value} (expected per_request, lap_end or session_end_summary)"
-                    )
-                })
-            })
-            .transpose()?
-            .unwrap_or_else(|| {
-                LlmDispatchMode::from_env_value(DEFAULT_LLM_DISPATCH_MODE)
-                    .unwrap_or(LlmDispatchMode::PerRequest)
-            });
         let questdb_url = std::env::var("PITGUN_GATEWAY_QUESTDB_URL")
             .ok()
             .map(|value| value.trim().to_string())
@@ -1058,54 +882,18 @@ impl GatewayConfig {
         Ok(Self {
             bind_addr,
             allow_non_loopback,
-            db_path,
-            sqlite_journal_mode,
+            database_url,
             schema_version,
             max_message_bytes,
             max_messages_per_sec,
             ingest_queue_size,
             api_keys,
-            insight_manifest_path,
-            llm_provider,
-            llm_core_url,
-            llm_api_key,
-            llm_model,
-            llm_timeout_ms,
-            llm_num_ctx,
-            llm_num_predict,
-            llm_temperature,
-            llm_dispatch_mode,
             questdb_url,
             run_registry_url,
         })
     }
 }
 
-fn build_llm_client(config: &GatewayConfig) -> anyhow::Result<Option<Arc<LlmCoreClient>>> {
-    let Some(url) = config.llm_core_url.as_ref() else {
-        info!("llm-core integration disabled (PITGUN_GATEWAY_LLM_CORE_URL not set)");
-        return Ok(None);
-    };
-
-    let mut llm_config = LlmCoreConfig::with_defaults(url.clone(), config.llm_model.clone());
-    llm_config.provider = config.llm_provider;
-    llm_config.api_key = config.llm_api_key.clone();
-    llm_config.timeout_ms = config.llm_timeout_ms;
-    llm_config.num_ctx = config.llm_num_ctx;
-    llm_config.num_predict = config.llm_num_predict;
-    llm_config.temperature = config.llm_temperature;
-
-    let client = LlmCoreClient::new(llm_config)?;
-    info!(
-        llm_url = %url,
-        llm_provider = %config.llm_provider.as_str(),
-        llm_model = %config.llm_model,
-        llm_dispatch_mode = %config.llm_dispatch_mode.as_str(),
-        "llm-core integration enabled"
-    );
-
-    Ok(Some(Arc::new(client)))
-}
 
 async fn build_questdb_store(config: &GatewayConfig) -> anyhow::Result<Option<Arc<QuestDbStore>>> {
     let Some(url) = config.questdb_url.as_ref() else {
@@ -1181,25 +969,6 @@ fn read_env_u32(key: &str, default: u32) -> anyhow::Result<u32> {
     }
 }
 
-fn read_env_u64(key: &str, default: u64) -> anyhow::Result<u64> {
-    match std::env::var(key) {
-        Ok(value) => value
-            .trim()
-            .parse::<u64>()
-            .map_err(|err| anyhow::anyhow!("invalid {key}: {err}")),
-        Err(_) => Ok(default),
-    }
-}
-
-fn read_env_f32(key: &str, default: f32) -> anyhow::Result<f32> {
-    match std::env::var(key) {
-        Ok(value) => value
-            .trim()
-            .parse::<f32>()
-            .map_err(|err| anyhow::anyhow!("invalid {key}: {err}")),
-        Err(_) => Ok(default),
-    }
-}
 
 fn read_env_usize(key: &str, default: usize) -> anyhow::Result<usize> {
     match std::env::var(key) {
@@ -1233,25 +1002,6 @@ fn read_api_keys() -> HashSet<String> {
     keys
 }
 
-fn read_db_path() -> String {
-    if let Ok(value) = std::env::var("PITGUN_GATEWAY_DB_PATH") {
-        let trimmed = value.trim();
-        if !trimmed.is_empty() {
-            return trimmed.to_string();
-        }
-    }
-
-    if let Ok(data_dir) = std::env::var("PITGUN_GATEWAY_DATA_DIR") {
-        let trimmed = data_dir.trim();
-        if !trimmed.is_empty() {
-            let mut path = PathBuf::from(trimmed);
-            path.push("events.db");
-            return path.to_string_lossy().to_string();
-        }
-    }
-
-    DEFAULT_DB_PATH.to_string()
-}
 
 #[derive(Clone, Debug)]
 struct SessionAggregationState {
@@ -1393,74 +1143,6 @@ impl OpenLapState {
     }
 }
 
-async fn persist_insight_request_and_dispatch(
-    store: &Arc<SqliteEventStore>,
-    llm_client: Option<&Arc<LlmCoreClient>>,
-    request: InsightRequestPayload,
-    source: &str,
-) {
-    match store.insert_insight_request(&request).await {
-        Ok(InsightRequestInsertOutcome::Inserted) => {
-            debug!(
-                source = %source,
-                trace_id = %request.trace_id,
-                metric_count = request.metrics.len(),
-                "insight request stored"
-            );
-
-            if let Some(client) = llm_client {
-                let llm_result = client.generate_insights(&request).await;
-                match store
-                    .insert_insight_response(
-                        &llm_result.response,
-                        llm_result.raw_model_response.as_deref(),
-                    )
-                    .await
-                {
-                    Ok(InsightResponseInsertOutcome::Inserted) => {
-                        debug!(
-                            source = %source,
-                            trace_id = %request.trace_id,
-                            status = %llm_result.response.status.as_str(),
-                            done_reason = ?llm_result.done_reason,
-                            "insight response stored"
-                        );
-                    }
-                    Ok(InsightResponseInsertOutcome::Duplicate) => {
-                        debug!(
-                            source = %source,
-                            trace_id = %request.trace_id,
-                            "duplicate insight response dropped"
-                        );
-                    }
-                    Err(err) => {
-                        warn!(
-                            ?err,
-                            source = %source,
-                            trace_id = %request.trace_id,
-                            "failed to persist insight response"
-                        );
-                    }
-                }
-            }
-        }
-        Ok(InsightRequestInsertOutcome::Duplicate) => {
-            debug!(
-                source = %source,
-                trace_id = %request.trace_id,
-                "duplicate insight request dropped"
-            );
-        }
-        Err(err) => {
-            warn!(
-                ?err,
-                source = %source,
-                trace_id = %request.trace_id,
-                "failed to persist insight request"
-            );
-        }
-    }
-}
 
 struct ConnectionRateLimiter {
     max_per_sec: u32,
@@ -1497,7 +1179,7 @@ impl ConnectionRateLimiter {
 mod tests {
     use super::{
         ConnectionRateLimiter, allow_non_loopback_enabled, parse_bearer_token, parse_query_token,
-        read_api_keys, read_db_path, validate_bind_addr,
+        read_api_keys, validate_bind_addr,
     };
     use std::net::SocketAddr;
 
@@ -1572,20 +1254,4 @@ mod tests {
         }
     }
 
-    #[test]
-    fn read_db_path_uses_data_dir_fallback() {
-        // Safety: tests can mutate process environment for their own process.
-        unsafe {
-            std::env::remove_var("PITGUN_GATEWAY_DB_PATH");
-            std::env::set_var("PITGUN_GATEWAY_DATA_DIR", "/tmp/pitgun-data");
-        }
-
-        let path = read_db_path();
-        assert_eq!(path, "/tmp/pitgun-data/events.db");
-
-        // Safety: cleanup local process test env keys.
-        unsafe {
-            std::env::remove_var("PITGUN_GATEWAY_DATA_DIR");
-        }
-    }
 }
