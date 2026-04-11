@@ -5,7 +5,8 @@ WebSocket ingestion service for Pitgun telemetry and game purchase events.
 - Transport: `ws://` (behind reverse proxy => `wss://telemetry.pitgun.com`)
 - Health: `GET /health`
 - Ingest: `GET /ws` (JSON text messages)
-- Storage (MVP): SQLite append-only `events` table with idempotence on `event_id`
+- Storage: PostgreSQL append-only `events` table with idempotence on `event_id`
+- Optional sinks: QuestDB telemetry projection and run-registry mirroring
 
 ## Pitgun-native telemetry model
 Telemetry payloads reuse existing Pitgun contract types from `pitgun-contract`:
@@ -17,6 +18,14 @@ Telemetry payloads reuse existing Pitgun contract types from `pitgun-contract`:
 - `SignalQuality`
 
 `telemetry.sample_batch` uses a thin wrapper: `payload.frames: Vec<TelemetryFrame>`.
+
+Public envelope schema:
+
+- `https://pitgun.io/schemas/pitgun-envelope/v1.json`
+
+Source schema:
+
+- `portal/schemas/pitgun-envelope/v1.json`
 
 See `docs/event-model.md` for details.
 
@@ -60,7 +69,7 @@ Every message over `/ws` must follow:
 - Per-connection message rate limit (`PITGUN_GATEWAY_MAX_MESSAGES_PER_SEC`).
 - Idempotence: duplicate `event_id` is ignored by unique DB constraint.
 
-## Storage schema (SQLite)
+## Storage schema (PostgreSQL)
 Table: `events`
 - `event_id` (unique)
 - `schema_version`
@@ -112,15 +121,15 @@ Table: `lap_summaries`
 ## Environment variables
 - `PITGUN_GATEWAY_BIND` (default `127.0.0.1:8080`)
 - `PITGUN_GATEWAY_ALLOW_NON_LOOPBACK` (default disabled)
-- `PITGUN_GATEWAY_DB_PATH` (default `./telemetry/events.db`)
-- `PITGUN_GATEWAY_SQLITE_JOURNAL_MODE` (default `wal`; supported: `wal`, `delete`, `truncate`, `persist`, `memory`, `off`)
-- `PITGUN_GATEWAY_DATA_DIR` (legacy fallback; used as `<dir>/events.db` if DB path is not set)
+- `PITGUN_GATEWAY_DATABASE_URL` (required unless `DATABASE_URL` is set)
 - `PITGUN_GATEWAY_SCHEMA_VERSION` (default `pitgun-envelope-v1`)
 - `PITGUN_GATEWAY_API_KEY` (single key)
 - `PITGUN_GATEWAY_API_KEYS` (comma-separated keys)
 - `PITGUN_GATEWAY_MAX_MESSAGE_BYTES` (default `524288`)
 - `PITGUN_GATEWAY_MAX_MESSAGES_PER_SEC` (default `120`)
 - `PITGUN_GATEWAY_INGEST_QUEUE_SIZE` (default `4096`)
+- `PITGUN_GATEWAY_QUESTDB_URL` (optional)
+- `PITGUN_GATEWAY_RUN_REGISTRY_URL` (optional, mirrors `pitwall.session_configured` runs)
 - `PITGUN_GATEWAY_INSIGHT_MANIFEST` (optional path to pipeline manifest for insight stats targets/metrics)
 - `PITGUN_GATEWAY_LLM_PROVIDER` (optional, default `ollama`; supported: `ollama`, `openai_compatible`)
 - `PITGUN_GATEWAY_LLM_URL` (optional; enables LLM call when set, ex: `http://llm-core:11434/api/generate` for Ollama, or `https://generativelanguage.googleapis.com/v1beta/openai/chat/completions` for Gemini OpenAI-compatible)
@@ -148,6 +157,7 @@ websocat -H='x-api-key: dev-secret' ws://127.0.0.1:8080/ws < services/pitgun-gat
 websocat -H='x-api-key: dev-secret' ws://127.0.0.1:8080/ws < services/pitgun-gateway/examples/telemetry.sample_batch.json
 websocat -H='x-api-key: dev-secret' ws://127.0.0.1:8080/ws < services/pitgun-gateway/examples/session.end.json
 websocat -H='x-api-key: dev-secret' ws://127.0.0.1:8080/ws < services/pitgun-gateway/examples/purchase.order_completed.json
+websocat -H='x-api-key: dev-secret' ws://127.0.0.1:8080/ws < services/pitgun-gateway/examples/pitwall.session_configured.json
 ```
 
 ## Test with wscat

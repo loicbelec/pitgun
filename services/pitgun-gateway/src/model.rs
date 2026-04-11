@@ -431,6 +431,7 @@ mod tests {
         EVENT_TYPE_PITWALL_SESSION_CONFIGURED, EVENT_TYPE_TELEMETRY_SAMPLE_BATCH,
         parse_event_envelope,
     };
+    use std::fs;
 
     #[test]
     fn parses_telemetry_sample_batch() {
@@ -545,5 +546,21 @@ mod tests {
         assert_eq!(envelope.player_id, "player-1");
         assert_eq!(envelope.weekend_id.as_deref(), Some("weekend-monza"));
         assert_eq!(envelope.event_type, EVENT_TYPE_PITWALL_SESSION_CONFIGURED);
+    }
+
+    #[test]
+    fn parses_documented_examples() {
+        let examples_dir = format!("{}/examples", env!("CARGO_MANIFEST_DIR"));
+        for entry in fs::read_dir(&examples_dir).expect("read examples dir") {
+            let entry = entry.expect("read example dir entry");
+            let path = entry.path();
+            if path.extension().and_then(|ext| ext.to_str()) != Some("json") {
+                continue;
+            }
+
+            let payload = fs::read_to_string(&path).expect("read example payload");
+            parse_event_envelope(&payload, "pitgun-envelope-v1")
+                .unwrap_or_else(|err| panic!("{} should parse: {err}", path.display()));
+        }
     }
 }
