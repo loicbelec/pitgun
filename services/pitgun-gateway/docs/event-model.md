@@ -1,5 +1,18 @@
 # Pitgun-native Event Model
 
+The public JSON Schema for this envelope is:
+
+- `https://pitgun.io/schemas/pitgun-envelope/v1.json`
+
+The schema source lives in `framework/portal/schemas/pitgun-envelope/v1.json`.
+Published schema versions must remain backward compatible; incompatible changes require a new version.
+
+Validate schemas and gateway examples from the workspace root with:
+
+```bash
+tooling/.venv/bin/python framework/scripts/validate-schemas.py
+```
+
 ## Envelope (all events)
 ```json
 {
@@ -18,6 +31,7 @@
 - `telemetry.sample_batch`
 - `session.end`
 - `purchase.order_completed`
+- `pitwall.session_configured`
 
 ## Telemetry payload mapping
 `telemetry.sample_batch.payload.frames` is `Vec<pitgun_contract::TelemetryFrame>`.
@@ -33,6 +47,24 @@ No gateway-only telemetry schema exists.
 
 Channel/parameter semantics remain in `pitgun-contract::registry` (`Parameter`, `ParameterRegistry`),
 so `parameter_id` values inside samples can be resolved by Pitgun-native dictionaries.
+
+The JSON Schema mirrors the serialized Rust shape:
+- `SampleValue` is represented as `{ "type": "...", "value": ... }`.
+- `SignalQuality` and `EventSeverity` use `snake_case` values.
+- `metadata` maps string keys to string values.
+
+## Pit Wall session payload
+`pitwall.session_configured.payload` declares the run metadata mirrored to the run registry:
+- `run_id`
+- `track_id`
+- `vehicle_id`
+- `session_type`
+- `seed`
+- `sampling_hz`
+- `setup`
+- `setup_offsets`
+- `effective_setup`
+- optional build metadata and `stint_strategy`
 
 ## Purchase payload (game-native, PO-like)
 `purchase.order_completed.payload` includes:

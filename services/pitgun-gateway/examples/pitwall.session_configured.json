@@ -1,0 +1,45 @@
+{
+  "schema_version": "pitgun-envelope-v1",
+  "event_id": "11111111-2222-4333-8444-555555555555",
+  "ts": "2026-02-11T09:00:00Z",
+  "player_id": "player-123",
+  "weekend_id": "weekend-spa",
+  "session_id": "session-abc",
+  "event_type": "pitwall.session_configured",
+  "payload": {
+    "weekend_id": "weekend-spa",
+    "run_id": "run-1",
+    "track_id": "SPA",
+    "vehicle_id": "f1_2026",
+    "session_type": "FP1",
+    "seed": 1,
+    "sampling_hz": 5.0,
+    "game_version": "1.4.0",
+    "wasm_source_commit": "abc123",
+    "wasm_build_time": "2026-02-11T09:00:00Z",
+    "setup": {
+      "aero": 8,
+      "chassis": 4,
+      "cooling": 2,
+      "engine": 3,
+      "downforce_slider": 0.5,
+      "gear_ratio_slider": 0.5
+    },
+    "setup_offsets": {
+      "aero": 2,
+      "chassis": 1,
+      "cooling": 0,
+      "engine": -1
+    },
+    "effective_setup": {
+      "aero": 10,
+      "chassis": 5,
+      "cooling": 2,
+      "engine": 2
+    },
+    "stint_strategy": {
+      "target_laps": 12,
+      "compound": "medium"
+    }
+  }
+}
