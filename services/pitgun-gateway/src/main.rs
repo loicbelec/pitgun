@@ -11,7 +11,10 @@ use anyhow::Context;
 use std::{
     collections::{BTreeMap, HashMap, HashSet},
     net::SocketAddr,
-    sync::Arc,
+    sync::{
+        Arc, Mutex,
+        atomic::{AtomicU64, Ordering},
+    },
     time::{Duration, Instant},
 };
 
@@ -21,22 +24,24 @@ use axum::{
         ConnectInfo, Query, State,
         ws::{CloseFrame, Message, WebSocket, WebSocketUpgrade, close_code},
     },
-    http::{HeaderMap, StatusCode},
+    http::{HeaderMap, StatusCode, header},
     response::IntoResponse,
     routing::get,
 };
 use insight_ingress::{extract_sim_metric_points, extract_sim_metric_points_from_frame};
 use insight_requests::{
-    LapSummaryInput, LapSummaryPayload, MetricAggregate, SessionSummaryInput, SessionSummaryPayload,
-    accumulate_metric_point, build_lap_summary, build_race_summary_from_session,
-    build_session_summary,
+    LapSummaryInput, LapSummaryPayload, MetricAggregate, SessionSummaryInput,
+    SessionSummaryPayload, accumulate_metric_point, build_lap_summary,
+    build_race_summary_from_session, build_session_summary,
 };
 use model::{EventPayload, parse_event_envelope};
 use pitgun_contract::TelemetryFrame;
 use questdb::{QuestDbStore, TelemetryPointRow};
 use run_registry::{RunRegistryClient, RunRegistryUpsertRequest};
 use serde::Deserialize;
-use storage::{EventInsertOutcome, IngestMetadata, LapSummaryInsertOutcome, PgEventStore, QueueMessage};
+use storage::{
+    EventInsertOutcome, IngestMetadata, LapSummaryInsertOutcome, PgEventStore, QueueMessage,
+};
 use time::OffsetDateTime;
 use tokio::{
     net::TcpListener,
@@ -71,6 +76,210 @@ struct AppState {
     tx: mpsc::Sender<QueueMessage>,
     store: Arc<PgEventStore>,
     config: Arc<GatewayConfig>,
+    metrics: Arc<GatewayMetrics>,
+}
+
+#[derive(Default)]
+struct GatewayMetrics {
+    ws_messages_total: AtomicU64,
+    ws_message_bytes_total: AtomicU64,
+    events_ingested_total: Mutex<HashMap<String, u64>>,
+    events_rejected_total: Mutex<HashMap<String, u64>>,
+    postgres_writes_total: Mutex<HashMap<String, u64>>,
+    questdb_writes_total: Mutex<HashMap<String, u64>>,
+    run_registry_mirrors_total: Mutex<HashMap<String, u64>>,
+    parse_latency: LatencyMetric,
+    postgres_write_latency: LatencyMetric,
+    questdb_write_latency: LatencyMetric,
+    run_registry_latency: LatencyMetric,
+}
+
+#[derive(Default)]
+struct LatencyMetric {
+    count: AtomicU64,
+    sum_nanos: AtomicU64,
+}
+
+impl LatencyMetric {
+    fn observe(&self, elapsed: Duration) {
+        self.count.fetch_add(1, Ordering::Relaxed);
+        self.sum_nanos.fetch_add(
+            elapsed.as_nanos().min(u128::from(u64::MAX)) as u64,
+            Ordering::Relaxed,
+        );
+    }
+
+    fn count(&self) -> u64 {
+        self.count.load(Ordering::Relaxed)
+    }
+
+    fn sum_seconds(&self) -> f64 {
+        self.sum_nanos.load(Ordering::Relaxed) as f64 / 1_000_000_000.0
+    }
+}
+
+impl GatewayMetrics {
+    fn record_ws_message(&self, bytes: usize) {
+        self.ws_messages_total.fetch_add(1, Ordering::Relaxed);
+        self.ws_message_bytes_total
+            .fetch_add(bytes as u64, Ordering::Relaxed);
+    }
+
+    fn record_ingested_event(&self, event_type: &str) {
+        increment_labelled(&self.events_ingested_total, event_type);
+    }
+
+    fn record_rejected_event(&self, reason: &str) {
+        increment_labelled(&self.events_rejected_total, reason);
+    }
+
+    fn record_postgres_write(&self, outcome: &str, elapsed: Duration) {
+        increment_labelled(&self.postgres_writes_total, outcome);
+        self.postgres_write_latency.observe(elapsed);
+    }
+
+    fn record_questdb_write(&self, outcome: &str, elapsed: Duration) {
+        increment_labelled(&self.questdb_writes_total, outcome);
+        self.questdb_write_latency.observe(elapsed);
+    }
+
+    fn record_run_registry_mirror(&self, outcome: &str, elapsed: Duration) {
+        increment_labelled(&self.run_registry_mirrors_total, outcome);
+        self.run_registry_latency.observe(elapsed);
+    }
+
+    fn record_parse_latency(&self, elapsed: Duration) {
+        self.parse_latency.observe(elapsed);
+    }
+
+    fn render_prometheus(&self) -> String {
+        let mut output = String::new();
+
+        render_counter(
+            &mut output,
+            "pitgun_gateway_ws_messages_total",
+            "Total WebSocket text messages received.",
+            self.ws_messages_total.load(Ordering::Relaxed),
+        );
+        render_counter(
+            &mut output,
+            "pitgun_gateway_ws_message_bytes_total",
+            "Total bytes received in WebSocket text messages.",
+            self.ws_message_bytes_total.load(Ordering::Relaxed),
+        );
+        render_labelled_counter(
+            &mut output,
+            "pitgun_gateway_events_ingested_total",
+            "Total events accepted into the ingestion queue.",
+            "event_type",
+            &self.events_ingested_total,
+        );
+        render_labelled_counter(
+            &mut output,
+            "pitgun_gateway_events_rejected_total",
+            "Total events rejected before ingestion.",
+            "reason",
+            &self.events_rejected_total,
+        );
+        render_labelled_counter(
+            &mut output,
+            "pitgun_gateway_postgres_writes_total",
+            "Total PostgreSQL write attempts by outcome.",
+            "outcome",
+            &self.postgres_writes_total,
+        );
+        render_labelled_counter(
+            &mut output,
+            "pitgun_gateway_questdb_writes_total",
+            "Total QuestDB write attempts by outcome.",
+            "outcome",
+            &self.questdb_writes_total,
+        );
+        render_labelled_counter(
+            &mut output,
+            "pitgun_gateway_run_registry_mirrors_total",
+            "Total run-registry mirror attempts by outcome.",
+            "outcome",
+            &self.run_registry_mirrors_total,
+        );
+        render_latency(
+            &mut output,
+            "pitgun_gateway_parse_latency_seconds",
+            "Envelope parse and validation latency.",
+            &self.parse_latency,
+        );
+        render_latency(
+            &mut output,
+            "pitgun_gateway_postgres_write_latency_seconds",
+            "PostgreSQL event write latency.",
+            &self.postgres_write_latency,
+        );
+        render_latency(
+            &mut output,
+            "pitgun_gateway_questdb_write_latency_seconds",
+            "QuestDB write latency.",
+            &self.questdb_write_latency,
+        );
+        render_latency(
+            &mut output,
+            "pitgun_gateway_run_registry_latency_seconds",
+            "Run-registry mirror latency.",
+            &self.run_registry_latency,
+        );
+
+        output
+    }
+}
+
+fn increment_labelled(counters: &Mutex<HashMap<String, u64>>, label: &str) {
+    let mut counters = counters.lock().expect("metrics mutex poisoned");
+    *counters.entry(label.to_string()).or_insert(0) += 1;
+}
+
+fn render_counter(output: &mut String, name: &str, help: &str, value: u64) {
+    output.push_str(&format!("# HELP {name} {help}\n"));
+    output.push_str(&format!("# TYPE {name} counter\n"));
+    output.push_str(&format!("{name} {value}\n"));
+}
+
+fn render_labelled_counter(
+    output: &mut String,
+    name: &str,
+    help: &str,
+    label_name: &str,
+    counters: &Mutex<HashMap<String, u64>>,
+) {
+    output.push_str(&format!("# HELP {name} {help}\n"));
+    output.push_str(&format!("# TYPE {name} counter\n"));
+
+    let mut values: Vec<_> = counters
+        .lock()
+        .expect("metrics mutex poisoned")
+        .iter()
+        .map(|(label, value)| (label.clone(), *value))
+        .collect();
+    values.sort_by(|left, right| left.0.cmp(&right.0));
+
+    for (label, value) in values {
+        output.push_str(&format!(
+            "{name}{{{label_name}=\"{}\"}} {value}\n",
+            escape_prometheus_label(&label)
+        ));
+    }
+}
+
+fn render_latency(output: &mut String, name: &str, help: &str, metric: &LatencyMetric) {
+    output.push_str(&format!("# HELP {name} {help}\n"));
+    output.push_str(&format!("# TYPE {name} summary\n"));
+    output.push_str(&format!("{name}_count {}\n", metric.count()));
+    output.push_str(&format!("{name}_sum {:.9}\n", metric.sum_seconds()));
+}
+
+fn escape_prometheus_label(value: &str) -> String {
+    value
+        .replace('\\', r"\\")
+        .replace('\n', r"\n")
+        .replace('"', r#"\""#)
 }
 
 #[derive(Debug, Default, Deserialize)]
@@ -95,6 +304,7 @@ async fn main() -> anyhow::Result<()> {
     }
 
     let store = Arc::new(PgEventStore::new(&config.database_url).await?);
+    let metrics = Arc::new(GatewayMetrics::default());
     let questdb_store = build_questdb_store(&config).await?;
     backfill_practice_summaries(questdb_store.as_deref()).await?;
     backfill_race_summaries(questdb_store.as_deref()).await?;
@@ -105,13 +315,20 @@ async fn main() -> anyhow::Result<()> {
         questdb_store,
         run_registry_client,
         insight_stats_plan,
+        metrics.clone(),
         rx,
     ));
 
-    let app_state = AppState { tx, store, config };
+    let app_state = AppState {
+        tx,
+        store,
+        config,
+        metrics,
+    };
 
     let app = Router::new()
         .route("/health", get(health))
+        .route("/metrics", get(metrics_handler))
         .route("/ws", get(ws_handler))
         .with_state(app_state.clone());
 
@@ -157,6 +374,7 @@ async fn process_queue(
     questdb_store: Option<Arc<QuestDbStore>>,
     run_registry_client: Option<Arc<RunRegistryClient>>,
     insight_stats_plan: Arc<insight_stats_plan::InsightStatsPlan>,
+    metrics: Arc<GatewayMetrics>,
     mut rx: mpsc::Receiver<QueueMessage>,
 ) {
     let mut session_states: HashMap<String, SessionAggregationState> = HashMap::new();
@@ -200,18 +418,20 @@ async fn process_queue(
                     persist_lap_summary_and_dispatch(
                         &store,
                         questdb_store.as_ref(),
+                        &metrics,
                         summary,
                     )
                     .await;
                 }
             }
 
-            persist_telemetry_points(questdb_store.as_ref(), &telemetry_points).await;
+            persist_telemetry_points(questdb_store.as_ref(), &metrics, &telemetry_points).await;
         }
 
         if let EventPayload::PitWallSessionConfigured(payload) = &msg.envelope.payload {
             persist_run_configuration(
                 run_registry_client.as_ref(),
+                &metrics,
                 &msg.envelope.player_id,
                 &msg.envelope.session_id,
                 payload,
@@ -226,6 +446,7 @@ async fn process_queue(
                     persist_lap_summary_and_dispatch(
                         &store,
                         questdb_store.as_ref(),
+                        &metrics,
                         summary,
                     )
                     .await;
@@ -236,15 +457,17 @@ async fn process_queue(
                 if let Some(summary) =
                     state.build_session_summary_payload(emitted_at_ms, &insight_stats_plan)
                 {
-                    persist_session_summary(questdb_store.as_ref(), summary.clone()).await;
+                    persist_session_summary(questdb_store.as_ref(), &metrics, summary.clone())
+                        .await;
 
                     persist_practice_summary(
                         questdb_store.as_ref(),
+                        &metrics,
                         summary.weekend_id.as_deref(),
                         emitted_at_ms,
                     )
                     .await;
-                    persist_race_summary(questdb_store.as_ref(), &summary).await;
+                    persist_race_summary(questdb_store.as_ref(), &metrics, &summary).await;
                 } else {
                     debug!(
                         event_id = %msg.envelope.event_id,
@@ -261,12 +484,17 @@ async fn process_queue(
             }
         }
 
+        let started = Instant::now();
         match store.insert_event(msg).await {
-            Ok(EventInsertOutcome::Inserted) => {}
+            Ok(EventInsertOutcome::Inserted) => {
+                metrics.record_postgres_write("inserted", started.elapsed());
+            }
             Ok(EventInsertOutcome::Duplicate) => {
+                metrics.record_postgres_write("duplicate", started.elapsed());
                 debug!("duplicate event dropped (event_id already exists)");
             }
             Err(err) => {
+                metrics.record_postgres_write("error", started.elapsed());
                 error!(?err, "failed to persist event");
             }
         }
@@ -278,10 +506,13 @@ async fn process_queue(
 async fn persist_lap_summary_and_dispatch(
     store: &Arc<PgEventStore>,
     questdb_store: Option<&Arc<QuestDbStore>>,
+    metrics: &GatewayMetrics,
     summary: LapSummaryPayload,
 ) {
+    let started = Instant::now();
     match store.insert_lap_summary(&summary).await {
         Ok(LapSummaryInsertOutcome::Inserted) => {
+            metrics.record_postgres_write("lap_summary_inserted", started.elapsed());
             debug!(
                 summary_id = %summary.summary_id,
                 lap = summary.lap_number,
@@ -290,8 +521,10 @@ async fn persist_lap_summary_and_dispatch(
             );
 
             if let Some(questdb_store) = questdb_store {
+                let started = Instant::now();
                 match questdb_store.insert_lap_summary(&summary).await {
                     Ok(()) => {
+                        metrics.record_questdb_write("success", started.elapsed());
                         debug!(
                             summary_id = %summary.summary_id,
                             lap = summary.lap_number,
@@ -299,6 +532,7 @@ async fn persist_lap_summary_and_dispatch(
                         );
                     }
                     Err(err) => {
+                        metrics.record_questdb_write("error", started.elapsed());
                         warn!(
                             ?err,
                             summary_id = %summary.summary_id,
@@ -309,12 +543,14 @@ async fn persist_lap_summary_and_dispatch(
             }
         }
         Ok(LapSummaryInsertOutcome::Duplicate) => {
+            metrics.record_postgres_write("lap_summary_duplicate", started.elapsed());
             debug!(
                 summary_id = %summary.summary_id,
                 "duplicate lap summary dropped"
             );
         }
         Err(err) => {
+            metrics.record_postgres_write("lap_summary_error", started.elapsed());
             warn!(
                 ?err,
                 summary_id = %summary.summary_id,
@@ -326,6 +562,7 @@ async fn persist_lap_summary_and_dispatch(
 
 async fn persist_telemetry_points(
     questdb_store: Option<&Arc<QuestDbStore>>,
+    metrics: &GatewayMetrics,
     points: &[TelemetryPointRow],
 ) {
     let Some(questdb_store) = questdb_store else {
@@ -336,14 +573,17 @@ async fn persist_telemetry_points(
         return;
     }
 
+    let started = Instant::now();
     match questdb_store.insert_telemetry_points(points).await {
         Ok(()) => {
+            metrics.record_questdb_write("success", started.elapsed());
             debug!(
                 point_count = points.len(),
                 "telemetry points mirrored to QuestDB"
             );
         }
         Err(err) => {
+            metrics.record_questdb_write("error", started.elapsed());
             warn!(
                 ?err,
                 point_count = points.len(),
@@ -355,6 +595,7 @@ async fn persist_telemetry_points(
 
 async fn persist_run_configuration(
     run_registry_client: Option<&Arc<RunRegistryClient>>,
+    metrics: &GatewayMetrics,
     player_id: &str,
     session_id: &str,
     payload: &model::PitWallSessionConfiguredPayload,
@@ -364,11 +605,14 @@ async fn persist_run_configuration(
     };
 
     let request = RunRegistryUpsertRequest::from_configured_event(player_id, session_id, payload);
+    let started = Instant::now();
     match run_registry_client.upsert_run(&request).await {
         Ok(()) => {
+            metrics.record_run_registry_mirror("success", started.elapsed());
             debug!(run_id = %payload.run_id, "pitwall run mirrored to run registry");
         }
         Err(err) => {
+            metrics.record_run_registry_mirror("error", started.elapsed());
             warn!(?err, run_id = %payload.run_id, "failed to mirror pitwall run to run registry");
         }
     }
@@ -376,14 +620,17 @@ async fn persist_run_configuration(
 
 async fn persist_session_summary(
     questdb_store: Option<&Arc<QuestDbStore>>,
+    metrics: &GatewayMetrics,
     summary: SessionSummaryPayload,
 ) {
     let Some(questdb_store) = questdb_store else {
         return;
     };
 
+    let started = Instant::now();
     match questdb_store.insert_session_summary(&summary).await {
         Ok(()) => {
+            metrics.record_questdb_write("success", started.elapsed());
             debug!(
                 summary_id = %summary.summary_id,
                 lap_count = summary.lap_count,
@@ -392,6 +639,7 @@ async fn persist_session_summary(
             );
         }
         Err(err) => {
+            metrics.record_questdb_write("error", started.elapsed());
             warn!(
                 ?err,
                 summary_id = %summary.summary_id,
@@ -403,6 +651,7 @@ async fn persist_session_summary(
 
 async fn persist_practice_summary(
     questdb_store: Option<&Arc<QuestDbStore>>,
+    metrics: &GatewayMetrics,
     weekend_id: Option<&str>,
     emitted_at_ms: i64,
 ) {
@@ -429,11 +678,13 @@ async fn persist_practice_summary(
     }
 
     for attempt in 1..=5 {
+        let started = Instant::now();
         match questdb_store
             .rebuild_practice_summary(weekend_id, emitted_at_ms)
             .await
         {
             Ok(Some(summary)) => {
+                metrics.record_questdb_write("success", started.elapsed());
                 debug!(
                     summary_id = %summary.summary_id,
                     weekend_id = %summary.weekend_id,
@@ -445,6 +696,7 @@ async fn persist_practice_summary(
                 return;
             }
             Ok(None) if attempt < 5 => {
+                metrics.record_questdb_write("not_ready", started.elapsed());
                 debug!(
                     weekend_id = %weekend_id,
                     attempt,
@@ -453,6 +705,7 @@ async fn persist_practice_summary(
                 sleep(Duration::from_millis(250)).await;
             }
             Ok(None) => {
+                metrics.record_questdb_write("not_ready", started.elapsed());
                 warn!(
                     weekend_id = %weekend_id,
                     attempt,
@@ -461,6 +714,7 @@ async fn persist_practice_summary(
                 return;
             }
             Err(err) => {
+                metrics.record_questdb_write("error", started.elapsed());
                 warn!(
                     ?err,
                     weekend_id = %weekend_id,
@@ -475,6 +729,7 @@ async fn persist_practice_summary(
 
 async fn persist_race_summary(
     questdb_store: Option<&Arc<QuestDbStore>>,
+    metrics: &GatewayMetrics,
     summary: &SessionSummaryPayload,
 ) {
     let Some(questdb_store) = questdb_store else {
@@ -505,8 +760,10 @@ async fn persist_race_summary(
         }
     }
 
+    let started = Instant::now();
     match questdb_store.insert_race_summary(&race_summary).await {
         Ok(()) => {
+            metrics.record_questdb_write("success", started.elapsed());
             debug!(
                 summary_id = %race_summary.summary_id,
                 session_id = %race_summary.session_id,
@@ -515,6 +772,7 @@ async fn persist_race_summary(
             );
         }
         Err(err) => {
+            metrics.record_questdb_write("error", started.elapsed());
             warn!(
                 ?err,
                 summary_id = %race_summary.summary_id,
@@ -619,6 +877,16 @@ async fn health(State(state): State<AppState>) -> impl IntoResponse {
     }
 }
 
+async fn metrics_handler(State(state): State<AppState>) -> impl IntoResponse {
+    (
+        [(
+            header::CONTENT_TYPE,
+            "text/plain; version=0.0.4; charset=utf-8",
+        )],
+        state.metrics.render_prometheus(),
+    )
+}
+
 async fn ws_handler(
     State(state): State<AppState>,
     ConnectInfo(peer): ConnectInfo<SocketAddr>,
@@ -629,6 +897,7 @@ async fn ws_handler(
     let query_token = query.token.as_deref().or(query.api_key.as_deref());
 
     if !is_authorized(&headers, query_token, &state.config.api_keys) {
+        state.metrics.record_rejected_event("unauthorized");
         warn!(peer = %peer, "websocket auth failed");
         return (StatusCode::UNAUTHORIZED, "missing or invalid API key").into_response();
     }
@@ -648,7 +917,10 @@ async fn handle_socket(mut socket: WebSocket, state: AppState, meta: IngestMetad
     while let Some(message) = socket.recv().await {
         match message {
             Ok(Message::Text(text)) => {
+                state.metrics.record_ws_message(text.len());
+
                 if text.len() > state.config.max_message_bytes {
+                    state.metrics.record_rejected_event("message_too_large");
                     close_with_reason(
                         &mut socket,
                         1009,
@@ -659,17 +931,24 @@ async fn handle_socket(mut socket: WebSocket, state: AppState, meta: IngestMetad
                 }
 
                 if !limiter.allow() {
+                    state.metrics.record_rejected_event("rate_limited");
                     close_with_reason(&mut socket, close_code::POLICY, "rate limit exceeded").await;
                     break;
                 }
 
+                let parse_started = Instant::now();
                 match parse_event_envelope(&text, &state.config.schema_version) {
                     Ok(envelope) => {
+                        state.metrics.record_parse_latency(parse_started.elapsed());
+                        let event_type = envelope.event_type.clone();
                         let msg = QueueMessage::new(envelope, text.to_string(), meta.clone());
 
                         match state.tx.try_send(msg) {
-                            Ok(()) => {}
+                            Ok(()) => {
+                                state.metrics.record_ingested_event(&event_type);
+                            }
                             Err(TrySendError::Full(_)) => {
+                                state.metrics.record_rejected_event("queue_full");
                                 close_with_reason(
                                     &mut socket,
                                     1013,
@@ -679,6 +958,7 @@ async fn handle_socket(mut socket: WebSocket, state: AppState, meta: IngestMetad
                                 break;
                             }
                             Err(TrySendError::Closed(_)) => {
+                                state.metrics.record_rejected_event("queue_closed");
                                 close_with_reason(
                                     &mut socket,
                                     close_code::ERROR,
@@ -690,6 +970,8 @@ async fn handle_socket(mut socket: WebSocket, state: AppState, meta: IngestMetad
                         }
                     }
                     Err(err) => {
+                        state.metrics.record_parse_latency(parse_started.elapsed());
+                        state.metrics.record_rejected_event("invalid_payload");
                         warn!(?err, "invalid websocket payload");
                         close_with_reason(&mut socket, close_code::POLICY, "invalid payload").await;
                         break;
@@ -697,6 +979,7 @@ async fn handle_socket(mut socket: WebSocket, state: AppState, meta: IngestMetad
                 }
             }
             Ok(Message::Binary(_)) => {
+                state.metrics.record_rejected_event("binary_payload");
                 close_with_reason(
                     &mut socket,
                     close_code::UNSUPPORTED,
@@ -894,7 +1177,6 @@ impl GatewayConfig {
     }
 }
 
-
 async fn build_questdb_store(config: &GatewayConfig) -> anyhow::Result<Option<Arc<QuestDbStore>>> {
     let Some(url) = config.questdb_url.as_ref() else {
         info!("QuestDB integration disabled (PITGUN_GATEWAY_QUESTDB_URL not set)");
@@ -969,7 +1251,6 @@ fn read_env_u32(key: &str, default: u32) -> anyhow::Result<u32> {
     }
 }
 
-
 fn read_env_usize(key: &str, default: usize) -> anyhow::Result<usize> {
     match std::env::var(key) {
         Ok(value) => value
@@ -1001,7 +1282,6 @@ fn read_api_keys() -> HashSet<String> {
 
     keys
 }
-
 
 #[derive(Clone, Debug)]
 struct SessionAggregationState {
@@ -1143,7 +1423,6 @@ impl OpenLapState {
     }
 }
 
-
 struct ConnectionRateLimiter {
     max_per_sec: u32,
     window_started_at: Instant,
@@ -1178,10 +1457,10 @@ impl ConnectionRateLimiter {
 #[cfg(test)]
 mod tests {
     use super::{
-        ConnectionRateLimiter, allow_non_loopback_enabled, parse_bearer_token, parse_query_token,
-        read_api_keys, validate_bind_addr,
+        ConnectionRateLimiter, GatewayMetrics, allow_non_loopback_enabled, parse_bearer_token,
+        parse_query_token, read_api_keys, validate_bind_addr,
     };
-    use std::net::SocketAddr;
+    use std::{net::SocketAddr, time::Duration};
 
     #[test]
     fn non_loopback_fails_without_flag() {
@@ -1254,4 +1533,34 @@ mod tests {
         }
     }
 
+    #[test]
+    fn renders_prometheus_metrics() {
+        let metrics = GatewayMetrics::default();
+
+        metrics.record_ws_message(42);
+        metrics.record_ingested_event("telemetry.sample_batch");
+        metrics.record_rejected_event("invalid_payload");
+        metrics.record_postgres_write("inserted", Duration::from_millis(2));
+        metrics.record_questdb_write("success", Duration::from_millis(3));
+        metrics.record_run_registry_mirror("error", Duration::from_millis(4));
+        metrics.record_parse_latency(Duration::from_millis(1));
+
+        let rendered = metrics.render_prometheus();
+
+        assert!(rendered.contains("pitgun_gateway_ws_messages_total 1"));
+        assert!(rendered.contains("pitgun_gateway_ws_message_bytes_total 42"));
+        assert!(rendered.contains(
+            "pitgun_gateway_events_ingested_total{event_type=\"telemetry.sample_batch\"} 1"
+        ));
+        assert!(
+            rendered.contains("pitgun_gateway_events_rejected_total{reason=\"invalid_payload\"} 1")
+        );
+        assert!(rendered.contains("pitgun_gateway_postgres_writes_total{outcome=\"inserted\"} 1"));
+        assert!(rendered.contains("pitgun_gateway_questdb_writes_total{outcome=\"success\"} 1"));
+        assert!(
+            rendered.contains("pitgun_gateway_run_registry_mirrors_total{outcome=\"error\"} 1")
+        );
+        assert!(rendered.contains("pitgun_gateway_parse_latency_seconds_count 1"));
+        assert!(rendered.contains("pitgun_gateway_parse_latency_seconds_sum 0.001000000"));
+    }
 }

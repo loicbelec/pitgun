@@ -3,7 +3,7 @@ use std::collections::{BTreeMap, HashMap};
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    insight_ingress::{InsightMetricPoint},
+    insight_ingress::InsightMetricPoint,
     insight_stats_plan::{InsightStatsPlan, StatMetric},
 };
 
@@ -29,7 +29,6 @@ pub struct InsightMetric {
     pub horizon: String,
     pub confidence: f64,
 }
-
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 pub struct LapSummaryPayload {
@@ -366,7 +365,6 @@ pub fn build_lap_summary(input: LapSummaryInput<'_>) -> Option<LapSummaryPayload
     })
 }
 
-
 pub fn build_session_summary(input: SessionSummaryInput<'_>) -> Option<SessionSummaryPayload> {
     let SessionSummaryInput {
         summary_id,
@@ -404,7 +402,6 @@ pub fn build_session_summary(input: SessionSummaryInput<'_>) -> Option<SessionSu
     })
 }
 
-
 pub fn build_race_summary_from_session(
     summary: &SessionSummaryPayload,
 ) -> Option<RaceSummaryPayload> {
@@ -431,7 +428,6 @@ pub fn build_race_summary_from_session(
     })
 }
 
-
 fn infer_horizon(metric_key: &str) -> &'static str {
     if metric_key.starts_with("tires.") {
         return "stint";
@@ -456,8 +452,7 @@ mod tests {
     use pitgun_contract::{Sample, SampleValue, SignalQuality, TelemetryFrame};
 
     use crate::{
-        insight_ingress::extract_sim_metric_points,
-        insight_stats_plan::InsightStatsPlan,
+        insight_ingress::extract_sim_metric_points, insight_stats_plan::InsightStatsPlan,
         model::TelemetrySampleBatchPayload,
     };
 
