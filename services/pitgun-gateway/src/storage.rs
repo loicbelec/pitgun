@@ -41,7 +41,6 @@ pub enum EventInsertOutcome {
     Duplicate,
 }
 
-
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum LapSummaryInsertOutcome {
     Inserted,
@@ -187,9 +186,7 @@ impl PgEventStore {
     }
 
     pub async fn health_check(&self) -> anyhow::Result<()> {
-        let _: i32 = sqlx::query_scalar("SELECT 1")
-            .fetch_one(&self.pool)
-            .await?;
+        let _: i32 = sqlx::query_scalar("SELECT 1").fetch_one(&self.pool).await?;
         Ok(())
     }
 
@@ -236,7 +233,9 @@ impl PgEventStore {
 
 #[cfg(test)]
 mod tests {
-    use super::{EventInsertOutcome, IngestMetadata, LapSummaryInsertOutcome, PgEventStore, QueueMessage};
+    use super::{
+        EventInsertOutcome, IngestMetadata, LapSummaryInsertOutcome, PgEventStore, QueueMessage,
+    };
     use crate::insight_requests::{InsightContext, InsightMetric, LapSummaryPayload};
     use crate::model::parse_event_envelope;
 

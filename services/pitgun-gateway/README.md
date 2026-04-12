@@ -4,6 +4,7 @@ WebSocket ingestion service for Pitgun telemetry and game purchase events.
 
 - Transport: `ws://` (behind reverse proxy => `wss://telemetry.pitgun.com`)
 - Health: `GET /health`
+- Metrics: `GET /metrics` (Prometheus text format)
 - Ingest: `GET /ws` (JSON text messages)
 - Storage: PostgreSQL append-only `events` table with idempotence on `event_id`
 - Optional sinks: QuestDB telemetry projection and run-registry mirroring
@@ -68,6 +69,25 @@ Every message over `/ws` must follow:
 - Max payload size per WS message (`PITGUN_GATEWAY_MAX_MESSAGE_BYTES`).
 - Per-connection message rate limit (`PITGUN_GATEWAY_MAX_MESSAGES_PER_SEC`).
 - Idempotence: duplicate `event_id` is ignored by unique DB constraint.
+
+## Metrics
+`GET /metrics` exposes Prometheus text format metrics:
+
+- `pitgun_gateway_ws_messages_total`
+- `pitgun_gateway_ws_message_bytes_total`
+- `pitgun_gateway_events_ingested_total{event_type}`
+- `pitgun_gateway_events_rejected_total{reason}`
+- `pitgun_gateway_postgres_writes_total{outcome}`
+- `pitgun_gateway_questdb_writes_total{outcome}`
+- `pitgun_gateway_run_registry_mirrors_total{outcome}`
+- `pitgun_gateway_parse_latency_seconds_count`
+- `pitgun_gateway_parse_latency_seconds_sum`
+- `pitgun_gateway_postgres_write_latency_seconds_count`
+- `pitgun_gateway_postgres_write_latency_seconds_sum`
+- `pitgun_gateway_questdb_write_latency_seconds_count`
+- `pitgun_gateway_questdb_write_latency_seconds_sum`
+- `pitgun_gateway_run_registry_latency_seconds_count`
+- `pitgun_gateway_run_registry_latency_seconds_sum`
 
 ## Storage schema (PostgreSQL)
 Table: `events`
