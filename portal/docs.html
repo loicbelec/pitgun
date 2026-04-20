@@ -10,8 +10,8 @@
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 
     <meta name="description"
-        content="Official Pitgun framework documentation. Runtime event contracts, telemetry ingestion, processing pipelines, and public JSON schemas.">
-    <meta name="keywords" content="Pitgun, Rust, Telemetry, JSON Schema, WebSocket, Observability, Documentation">
+        content="Pitgun framework documentation: canonical metrics dictionary, public JSON schemas, event envelopes, and manifest-driven telemetry processing.">
+    <meta name="keywords" content="Pitgun, Rust, Telemetry, JSON Schema, Metrics Dictionary, Manifests, Observability, Documentation">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -130,29 +130,29 @@
             <div class="space-y-6">
                 <div
                     class="inline-block bg-pit-rust text-white text-[11px] font-bold px-3 py-1.5 uppercase tracking-[0.24em] border-2 border-pit-dark shadow-hard-sm transform -rotate-1">
-                    Contract-First Telemetry
+                    Manifest-Driven Telemetry
                 </div>
                 <h1 class="text-6xl md:text-7xl font-display uppercase leading-[0.9] text-pit-petrol text-shadow-retro">
-                    Pitgun docs<br><span class="text-pit-rust">built for telemetry.</span>
+                    Pitgun docs<br><span class="text-pit-rust">built for data contracts.</span>
                 </h1>
                 <p class="text-lg md:text-xl text-pit-dark/90 font-medium border-l-4 border-pit-rust pl-5 md:pl-6 py-1">
-                    Technical reference for the Pitgun framework: runtime event contracts, gateway ingestion,
-                    processing manifests, metrics dictionaries, and insight exchange schemas.
+                    Technical reference for the Pitgun framework: canonical metric definitions, public schemas,
+                    event envelopes, processing manifests, and runtime telemetry services.
                 </p>
                 <div class="flex flex-wrap gap-4">
-                    <a href="README.md"
+                    <a href="#dictionary"
                         class="bg-pit-rust text-white font-display uppercase tracking-wide px-6 py-3 border-2 border-pit-dark shadow-hard hover:shadow-hard-hover hover:-translate-y-1 active:translate-y-1 active:shadow-hard-active transition-all inline-flex items-center justify-center">
-                        Read quickstart
+                        Start with dictionary
                     </a>
-                    <a href="../manifests/dummy-pitgun.yaml"
+                    <a href="#schemas"
                         class="bg-pit-cream px-6 py-3 font-bold uppercase tracking-wide border-2 border-pit-dark shadow-hard hover:shadow-hard-hover hover:-translate-y-1 active:translate-y-1 active:shadow-hard-active transition-all inline-flex items-center justify-center">
-                        Open sample manifest
+                        Open public schemas
                     </a>
                 </div>
                 <div class="flex flex-wrap gap-3 text-xs md:text-sm font-mono text-pit-dark/80">
-                    <span class="px-3 py-2 border-2 border-pit-dark bg-pit-cream shadow-hard-sm">Runtime Contracts</span>
+                    <span class="px-3 py-2 border-2 border-pit-dark bg-pit-cream shadow-hard-sm">Canonical Dictionary</span>
                     <span class="px-3 py-2 border-2 border-pit-dark bg-pit-cream shadow-hard-sm">Public Schemas</span>
-                    <span class="px-3 py-2 border-2 border-pit-dark bg-pit-cream shadow-hard-sm">Gateway Metrics</span>
+                    <span class="px-3 py-2 border-2 border-pit-dark bg-pit-cream shadow-hard-sm">Processing Manifests</span>
                 </div>
             </div>
 
@@ -171,18 +171,18 @@
                             <div>
                                 <div class="text-xs uppercase tracking-[0.28em] text-pit-accent font-bold">Documentation
                                 </div>
-                                <div class="text-2xl font-display uppercase">Validate the Runtime</div>
+                                <div class="text-2xl font-display uppercase">Validate the Contracts</div>
                             </div>
                         </div>
                         <div
                             class="bg-pit-dark text-pit-cream border-2 border-pit-cream/40 shadow-hard-sm p-4 font-mono text-sm leading-6">
-                            <span class="text-pit-rust select-none">$</span> cargo run -p pitgun-gateway --release<br>
+                            <span class="text-pit-rust select-none">$</span> curl https://api.pitgun.io<br>
                             <span class="text-pit-rust select-none">$</span> curl https://pitgun.io/schemas/pitgun-envelope/v1<br>
-                            <span class="text-pit-rust select-none">$</span> curl http://127.0.0.1:8080/metrics
+                            <span class="text-pit-rust select-none">$</span> curl https://pitgun.io/schemas/pipeline-manifest/v1
                         </div>
                         <p class="text-sm text-pit-cream/90 leading-relaxed">
-                            Deploy a runtime that accepts versioned events, validates contracts, exports metrics, and
-                            feeds downstream processing or insight services.
+                            Start from canonical definitions, validate event boundaries, then run the same manifests
+                            against real-time streams or historical data.
                         </p>
                     </div>
                 </div>
@@ -202,8 +202,8 @@
                 <div class="h-1 w-10 bg-pit-rust"></div>
             </div>
             <p class="text-center text-pit-cream/80 max-w-3xl mx-auto text-sm md:text-base">
-                Composable Rust services and public contracts powering Pitgun telemetry. Use the gateway alone or wire
-                it into processing, analytics, and insight services.
+                Public contracts and Rust services powering Pitgun telemetry. The dictionary defines meaning, schemas
+                define boundaries, and manifests define reproducible processing.
             </p>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <a href="#introduction"
@@ -216,35 +216,15 @@
                     <p class="text-sm text-pit-dark/80 leading-relaxed">The runtime model: events, contracts,
                         telemetry, and processing boundaries.</p>
                 </a>
-                <a href="#gateway"
+                <a href="#dictionary"
                     class="group bg-pit-cream border-4 border-pit-dark p-5 shadow-hard hover:shadow-hard-hover hover:-translate-y-2 transition-all duration-300">
                     <div class="flex items-center justify-between mb-3">
-                        <span class="font-display uppercase text-pit-petrol text-xl">Gateway</span>
+                        <span class="font-display uppercase text-pit-petrol text-xl">Dictionary</span>
                         <span
-                            class="text-[11px] font-mono bg-pit-rust text-white px-2 py-1 border border-pit-dark">Stable</span>
+                            class="text-[11px] font-mono bg-pit-rust text-white px-2 py-1 border border-pit-dark">Live</span>
                     </div>
-                    <p class="text-sm text-pit-dark/80 leading-relaxed">Multi-protocol ingestion (UDP, MQTT, WS) and
-                        traffic normalization.</p>
-                </a>
-                <a href="#core"
-                    class="group bg-pit-cream border-4 border-pit-dark p-5 shadow-hard hover:shadow-hard-hover hover:-translate-y-2 transition-all duration-300">
-                    <div class="flex items-center justify-between mb-3">
-                        <span class="font-display uppercase text-pit-petrol text-xl">Core Engine</span>
-                        <span
-                            class="text-[11px] font-mono bg-pit-rust text-white px-2 py-1 border border-pit-dark">Stable</span>
-                    </div>
-                    <p class="text-sm text-pit-dark/80 leading-relaxed">The "Brain" of the operation. AST-based formula
-                        engine and manifest-driven pipelines.</p>
-                </a>
-                <a href="#contract"
-                    class="group bg-pit-cream border-4 border-pit-dark p-5 shadow-hard hover:shadow-hard-hover hover:-translate-y-2 transition-all duration-300">
-                    <div class="flex items-center justify-between mb-3">
-                        <span class="font-display uppercase text-pit-petrol text-xl">Contract Types</span>
-                        <span
-                            class="text-[11px] font-mono bg-pit-rust text-white px-2 py-1 border border-pit-dark">Stable</span>
-                    </div>
-                    <p class="text-sm text-pit-dark/80 leading-relaxed">Shared runtime types and public schema
-                        boundaries.</p>
+                    <p class="text-sm text-pit-dark/80 leading-relaxed">Canonical metric names, units, types, and
+                        dimensions exposed through <code>api.pitgun.io</code>.</p>
                 </a>
                 <a href="#schemas"
                     class="group bg-pit-cream border-4 border-pit-dark p-5 shadow-hard hover:shadow-hard-hover hover:-translate-y-2 transition-all duration-300">
@@ -256,35 +236,45 @@
                     <p class="text-sm text-pit-dark/80 leading-relaxed">Versioned JSON Schemas available at
                         <code>/schemas/&lt;schema&gt;/&lt;version&gt;</code>.</p>
                 </a>
-                <a href="#solver"
+                <a href="#gateway"
                     class="group bg-pit-cream border-4 border-pit-dark p-5 shadow-hard hover:shadow-hard-hover hover:-translate-y-2 transition-all duration-300">
                     <div class="flex items-center justify-between mb-3">
-                        <span class="font-display uppercase text-pit-petrol text-xl">The Solver</span>
+                        <span class="font-display uppercase text-pit-petrol text-xl">Gateway</span>
                         <span
-                            class="text-[11px] font-mono bg-pit-dark text-pit-cream px-2 py-1 border border-pit-dark">Beta</span>
+                            class="text-[11px] font-mono bg-pit-rust text-white px-2 py-1 border border-pit-dark">Stable</span>
                     </div>
-                    <p class="text-sm text-pit-dark/80 leading-relaxed">WASM-based distributed computing for Monte Carlo
-                        simulations.</p>
+                    <p class="text-sm text-pit-dark/80 leading-relaxed">HTTP/WebSocket ingress for
+                        <code>pitgun-envelope-v1</code> events and Prometheus metrics.</p>
                 </a>
-                <a href="#authority"
+                <a href="#core"
                     class="group bg-pit-cream border-4 border-pit-dark p-5 shadow-hard hover:shadow-hard-hover hover:-translate-y-2 transition-all duration-300">
                     <div class="flex items-center justify-between mb-3">
-                        <span class="font-display uppercase text-pit-petrol text-xl">Authority</span>
+                        <span class="font-display uppercase text-pit-petrol text-xl">Manifests</span>
                         <span
-                            class="text-[11px] font-mono bg-pit-dark text-pit-cream px-2 py-1 border border-pit-dark">WIP</span>
+                            class="text-[11px] font-mono bg-pit-rust text-white px-2 py-1 border border-pit-dark">Stable</span>
                     </div>
-                    <p class="text-sm text-pit-dark/80 leading-relaxed">Governance layer. Policy signing, rate limiting,
-                        and cryptographic verification.</p>
+                    <p class="text-sm text-pit-dark/80 leading-relaxed">Formula evaluation, derived metrics,
+                        filters, aggregations, and analysis outputs.</p>
+                </a>
+                <a href="#contract"
+                    class="group bg-pit-cream border-4 border-pit-dark p-5 shadow-hard hover:shadow-hard-hover hover:-translate-y-2 transition-all duration-300">
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="font-display uppercase text-pit-petrol text-xl">Contract Types</span>
+                        <span
+                            class="text-[11px] font-mono bg-pit-rust text-white px-2 py-1 border border-pit-dark">Stable</span>
+                    </div>
+                    <p class="text-sm text-pit-dark/80 leading-relaxed">Shared Rust types and public schema boundaries
+                        for producers and processors.</p>
                 </a>
                 <a href="#engine"
                     class="group bg-pit-cream border-4 border-pit-dark p-5 shadow-hard hover:shadow-hard-hover hover:-translate-y-2 transition-all duration-300">
                     <div class="flex items-center justify-between mb-3">
-                        <span class="font-display uppercase text-pit-petrol text-xl">Engine F1</span>
+                        <span class="font-display uppercase text-pit-petrol text-xl">Reference Workload</span>
                         <span
-                            class="text-[11px] font-mono bg-pit-rust text-white px-2 py-1 border border-pit-dark">Stable</span>
+                            class="text-[11px] font-mono bg-pit-dark text-pit-cream px-2 py-1 border border-pit-dark">Live</span>
                     </div>
-                    <p class="text-sm text-pit-dark/80 leading-relaxed">Reference implementation for Motorsport telemtry
-                        (the Data Plane).</p>
+                    <p class="text-sm text-pit-dark/80 leading-relaxed">Pitgun Game as a real telemetry workload for
+                        ingestion, processing, and observability.</p>
                 </a>
                 <a href="#deploy"
                     class="group bg-pit-cream border-4 border-pit-dark p-5 shadow-hard hover:shadow-hard-hover hover:-translate-y-2 transition-all duration-300">
@@ -293,8 +283,8 @@
                         <span
                             class="text-[11px] font-mono bg-pit-dark text-pit-cream px-2 py-1 border border-pit-dark">Ops</span>
                     </div>
-                    <p class="text-sm text-pit-dark/80 leading-relaxed">Docker Compose, Systemd units, and Traefik
-                        configuration.</p>
+                    <p class="text-sm text-pit-dark/80 leading-relaxed">Docker Compose, service configuration, and
+                        operational boundaries.</p>
                 </a>
                 <a href="#replay"
                     class="group bg-pit-cream border-4 border-pit-dark p-5 shadow-hard hover:shadow-hard-hover hover:-translate-y-2 transition-all duration-300">
@@ -303,8 +293,8 @@
                         <span
                             class="text-[11px] font-mono bg-pit-rust text-white px-2 py-1 border border-pit-dark">Stable</span>
                     </div>
-                    <p class="text-sm text-pit-dark/80 leading-relaxed">CLI for replaying historical CSV data into the
-                        gateway for testing.</p>
+                    <p class="text-sm text-pit-dark/80 leading-relaxed">CLI for replaying historical data into the
+                        gateway for post-mortem testing.</p>
                 </a>
                 <a href="#future"
                     class="group bg-pit-cream border-4 border-pit-dark p-5 shadow-hard hover:shadow-hard-hover hover:-translate-y-2 transition-all duration-300">
@@ -313,7 +303,8 @@
                         <span
                             class="text-[11px] font-mono bg-pit-dark text-pit-cream px-2 py-1 border border-pit-dark">Design</span>
                     </div>
-                    <p class="text-sm text-pit-dark/80 leading-relaxed">Future plans for Parquet Archival and Flow UI.
+                    <p class="text-sm text-pit-dark/80 leading-relaxed">Experimental solver, authority layer,
+                        archival sinks, and visual manifest tooling.
                     </p>
                 </a>
             </div>
@@ -329,17 +320,19 @@
             <div class="text-sm font-mono uppercase tracking-[0.2em] text-pit-rust mb-2">From Raw Telemetry to
                 Contracted Runtime Events</div>
             <p class="text-lg md:text-xl text-pit-dark/90 leading-relaxed">
-                Pitgun began as an F1 telemetry framework and is now a <strong>contract-first telemetry
-                    runtime</strong>. The game remains a reference implementation, but the framework is designed for
-                any producer that can emit versioned events, high-frequency samples, or processing manifests.
+                Pitgun began as an F1 telemetry framework and is now a <strong>manifest-driven telemetry
+                    processing framework</strong>. The game remains a reference workload, but the framework is designed
+                for any producer that can emit versioned events, high-frequency samples, or historical datasets.
             </p>
             <div class="grid md:grid-cols-2 gap-6">
                 <div class="border-2 border-pit-dark bg-pit-accent/40 p-5 shadow-hard-sm space-y-4">
                     <div class="text-sm font-mono uppercase tracking-[0.2em] text-pit-rust">The Runtime Philosophy</div>
                     <ul class="list-disc list-inside text-sm md:text-base text-pit-dark/90 space-y-2 pl-2">
+                        <li><strong>Dictionary as Source of Truth:</strong> Define canonical names, units, types, and
+                            dimensions once.</li>
+                        <li><strong>Contracts as API:</strong> Publish stable JSON Schemas for runtime boundaries.</li>
                         <li><strong>Gateway as Ingress:</strong> Accept <code>pitgun-envelope-v1</code> events over
                             HTTP or WebSocket.</li>
-                        <li><strong>Contracts as API:</strong> Publish stable JSON Schemas for runtime boundaries.</li>
                         <li><strong>Core as Processor:</strong> Execute manifest-driven transformations and derived
                             metrics.</li>
                         <li><strong>Insights as Output:</strong> Feed reporting, dashboards, datasets, or LLM services
@@ -349,9 +342,9 @@
                 <div class="border-2 border-pit-dark bg-pit-accent/40 p-5 shadow-hard-sm space-y-4">
                     <div class="text-sm font-mono uppercase tracking-[0.2em] text-pit-rust">Why This Exists</div>
                     <ul class="list-disc list-inside text-sm md:text-base text-pit-dark/90 space-y-2 pl-2">
-                        <li>Telemetry producers need a stable ingestion contract before they need dashboards.</li>
+                        <li>Telemetry producers need stable semantics before they need dashboards.</li>
                         <li>Schema-first boundaries make historical data usable for analysis and dataset creation.</li>
-                        <li>Processing manifests keep transformations reproducible and reviewable.</li>
+                        <li>Processing manifests keep transformations reproducible, reviewable, and portable.</li>
                         <li>Domain-agnostic: motorsport is the reference app, but the contracts can serve IoT, energy,
                             robotics, or simulation.</li>
                     </ul>
@@ -359,9 +352,9 @@
             </div>
             <div class="grid md:grid-cols-3 gap-4 text-sm font-mono text-pit-dark/80">
                 <div class="bg-white border-2 border-pit-dark p-4 shadow-hard-sm">
-                    <div class="text-pit-rust uppercase text-xs font-bold">Ingress</div>
-                    <p class="mt-1 leading-relaxed">HTTP/WebSocket Gateway (Axum-based), with schema-aware runtime
-                        envelopes and Prometheus metrics.</p>
+                    <div class="text-pit-rust uppercase text-xs font-bold">Dictionary</div>
+                    <p class="mt-1 leading-relaxed">Canonical metric definitions exposed through
+                        <code>api.pitgun.io</code>.</p>
                 </div>
                 <div class="bg-white border-2 border-pit-dark p-4 shadow-hard-sm">
                     <div class="text-pit-rust uppercase text-xs font-bold">Contracts</div>
@@ -378,17 +371,64 @@
                 class="bg-pit-petrol text-pit-cream border-4 border-pit-dark shadow-hard p-6 md:p-8 flex flex-col items-start gap-4">
                 <div>
                     <div class="text-xs uppercase tracking-[0.22em] text-pit-accent font-bold mb-1">Quick Start</div>
-                    <div class="text-3xl font-display uppercase tracking-wide">Boot the Runtime</div>
+                    <div class="text-3xl font-display uppercase tracking-wide">Resolve the Contracts</div>
                     <p class="text-sm text-pit-cream/80 mt-2 max-w-xl leading-relaxed">
-                        Start the Gateway service, send a versioned event envelope, then inspect ingestion metrics.
+                        Start from the dictionary, inspect public schemas, then send a versioned event envelope to the
+                        Gateway.
                     </p>
                 </div>
                 <div
                     class="w-full bg-pit-dark border-2 border-pit-cream/40 shadow-hard-sm p-5 font-mono text-sm leading-7 crt-scanline relative overflow-x-auto rounded-sm">
-                    <span class="text-pit-rust select-none font-bold mr-2">$</span> cargo run -p pitgun-gateway --release<br>
-                    <span class="text-pit-rust select-none font-bold mr-2">$</span> curl http://127.0.0.1:8080/health<br>
-                    <span class="text-pit-rust select-none font-bold mr-2">$</span> curl http://127.0.0.1:8080/metrics
+                    <span class="text-pit-rust select-none font-bold mr-2">$</span> curl https://api.pitgun.io<br>
+                    <span class="text-pit-rust select-none font-bold mr-2">$</span> curl https://pitgun.io/schemas/metrics-dictionary/sim.v1<br>
+                    <span class="text-pit-rust select-none font-bold mr-2">$</span> cargo run -p pitgun-gateway --release
                 </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Dictionary Section -->
+    <section id="dictionary" class="max-w-6xl mx-auto px-4 md:px-8 py-12 space-y-8">
+        <div class="flex items-center gap-3">
+            <div class="h-1 w-12 bg-pit-rust"></div>
+            <h2 class="text-4xl md:text-5xl font-display uppercase text-pit-petrol">Canonical Dictionary</h2>
+            <span class="text-xs font-mono bg-pit-rust text-white px-2 py-1 border border-pit-dark">Live</span>
+        </div>
+        <div class="bg-pit-cream border-4 border-pit-dark shadow-hard p-8 md:p-10 space-y-6">
+            <p class="text-base md:text-lg text-pit-dark/90 leading-relaxed">
+                The dictionary is the semantic layer of the framework. It defines what a telemetry channel means before
+                any service stores, charts, or analyzes it: canonical name, unit, type, dimension, expected range, and
+                domain context.
+            </p>
+            <div class="grid md:grid-cols-2 gap-6">
+                <div class="border-2 border-pit-dark bg-white p-6 shadow-hard-sm">
+                    <div class="text-sm font-mono uppercase tracking-[0.2em] text-pit-rust mb-3">Dictionary API</div>
+                    <p class="text-sm text-pit-dark/80 mb-4 leading-relaxed">
+                        <code>api.pitgun.io</code> exposes the canonical dictionary for producers, processors, docs,
+                        and downstream analysis tools. The API is intentionally separate from the game domain.
+                    </p>
+                    <div class="bg-pit-dark text-pit-cream p-4 font-mono text-xs leading-6 overflow-x-auto rounded-sm">
+                        <span class="text-pit-rust select-none mr-1">$</span> curl https://api.pitgun.io<br>
+                        <span class="text-pit-rust select-none mr-1">$</span> curl https://pitgun.io/schemas/metrics-dictionary/sim.v1
+                    </div>
+                </div>
+                <div class="border-2 border-pit-dark bg-white p-6 shadow-hard-sm">
+                    <div class="text-sm font-mono uppercase tracking-[0.2em] text-pit-rust mb-3">What It Prevents</div>
+                    <ul class="text-sm text-pit-dark/80 space-y-3 leading-relaxed">
+                        <li><strong>Unit drift:</strong> milliseconds, seconds, and microseconds cannot be mixed silently.</li>
+                        <li><strong>Name drift:</strong> producers do not invent incompatible channel names.</li>
+                        <li><strong>Analysis drift:</strong> manifests reference stable metrics instead of ad-hoc fields.</li>
+                        <li><strong>Dataset decay:</strong> historical data remains interpretable after the product evolves.</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-2 border-pit-dark bg-pit-accent/30 p-6 shadow-hard-sm">
+                <div class="text-sm font-mono uppercase tracking-[0.2em] text-pit-rust mb-3">Real-time and Post-mortem Use</div>
+                <p class="text-sm text-pit-dark/80 leading-relaxed">
+                    Real-time ingestion and post-mortem analysis use the same semantic base. A WebSocket event, a stored
+                    QuestDB row, and a replayed dataset should all resolve to the same canonical metric definitions
+                    before processing starts.
+                </p>
             </div>
         </div>
     </section>
@@ -504,18 +544,18 @@
         </div>
     </section>
 
-    <!-- Core Section -->
+    <!-- Manifest Processing Section -->
     <section id="core" class="max-w-6xl mx-auto px-4 md:px-8 py-12 space-y-8">
         <div class="flex items-center gap-3">
             <div class="h-1 w-12 bg-pit-rust"></div>
-            <h2 class="text-4xl md:text-5xl font-display uppercase text-pit-petrol">Core Engine</h2>
+            <h2 class="text-4xl md:text-5xl font-display uppercase text-pit-petrol">Manifest Processing</h2>
             <span class="text-xs font-mono bg-pit-rust text-white px-2 py-1 border border-pit-dark">Stable</span>
         </div>
         <div class="bg-pit-cream border-4 border-pit-dark shadow-hard p-8 md:p-10 space-y-6">
             <p class="text-base md:text-lg text-pit-dark/90 leading-relaxed">
-                <code>pitgun-core</code> is the brain—a Rust library containing the AST-based Formula Engine, Pipeline
-                orchestration, type converters, and segment aggregation. Use it as a dependency in your own Rust
-                applications.
+                <code>pitgun-core</code> is the processing layer: a Rust library for formula evaluation, pipeline
+                orchestration, type conversion, and aggregation. It is designed so analysis behavior can live in
+                manifests instead of being buried in application code.
             </p>
             <div class="grid md:grid-cols-2 gap-6">
                 <div class="border-2 border-pit-dark bg-white p-6 shadow-hard-sm">
@@ -555,7 +595,7 @@
                 <div class="text-sm font-mono uppercase tracking-[0.2em] text-pit-rust mb-3">Manifest-Driven Pipelines
                 </div>
                 <p class="text-sm text-pit-dark/80 mb-4 leading-relaxed">Define derived channels and filters in YAML
-                    without recompiling:</p>
+                    without recompiling. The same manifest can be applied during live ingestion or post-mortem replay:</p>
                 <div class="bg-pit-dark text-pit-cream p-4 font-mono text-xs leading-6 overflow-x-auto rounded-sm">
                     <span class="text-gray-500"># pipeline.yaml</span><br>
                     version: v1<br>
@@ -607,7 +647,7 @@
             <span class="text-xs font-mono bg-pit-rust text-white px-2 py-1 border border-pit-dark">Stable</span>
         </div>
         <div class="bg-pit-cream border-4 border-pit-dark shadow-hard p-8 md:p-10 space-y-6">
-            <p class="text-base md:text-lg text-pit-dark/90 leading-relaxed">
+                <p class="text-base md:text-lg text-pit-dark/90 leading-relaxed">
                 <code>pitgun-contract</code> defines the shared runtime types used across Pitgun components. Public JSON
                 Schemas expose those boundaries to non-Rust producers and consumers, so ingestion clients, processors,
                 and insight services can evolve without guessing payload shapes.
@@ -646,7 +686,7 @@
                 <div class="border-2 border-pit-dark bg-white p-6 shadow-hard-sm">
                     <div class="text-sm font-mono uppercase tracking-[0.2em] text-pit-rust mb-3">ParameterRegistry</div>
                     <p class="text-sm text-pit-dark/80 mb-3 leading-relaxed">Canonical dictionary of parameter
-                        definitions (inspired by ECUBridge PGV):</p>
+                        definitions exposed through <code>api.pitgun.io</code> and mirrored in public schemas:</p>
                     <ul class="text-sm text-pit-dark/80 space-y-2 leading-relaxed">
                         <li><strong>ID → Name/Unit/Type:</strong> Lookup by parameter ID</li>
                         <li><strong>Range Validation:</strong> Min/max bounds checking</li>
@@ -699,7 +739,8 @@
             <p class="text-base md:text-lg text-pit-dark/90 leading-relaxed">
                 Pitgun publishes its public contracts as versioned JSON Schemas. The canonical URL format is
                 <code>https://pitgun.io/schemas/&lt;schema&gt;/&lt;version&gt;</code>; the server rewrites that stable
-                URL to the underlying <code>.json</code> file.
+                URL to the underlying <code>.json</code> file. These schemas are the public boundary between the
+                dictionary, producers, processors, and insight services.
             </p>
             <div class="grid md:grid-cols-2 gap-4">
                 <a href="schemas/pitgun-envelope/v1"
@@ -773,14 +814,14 @@
     <section id="solver" class="max-w-6xl mx-auto px-4 md:px-8 py-12 space-y-8">
         <div class="flex items-center gap-3">
             <div class="h-1 w-12 bg-pit-rust"></div>
-            <h2 class="text-4xl md:text-5xl font-display uppercase text-pit-petrol">The Solver</h2>
-            <span class="text-xs font-mono bg-pit-dark text-pit-cream px-2 py-1 border border-pit-dark">Beta</span>
+            <h2 class="text-4xl md:text-5xl font-display uppercase text-pit-petrol">Experimental Solver</h2>
+            <span class="text-xs font-mono bg-pit-dark text-pit-cream px-2 py-1 border border-pit-dark">Experimental</span>
         </div>
         <div class="bg-pit-cream border-4 border-pit-dark shadow-hard p-8 md:p-10 space-y-6">
             <p class="text-base md:text-lg text-pit-dark/90 leading-relaxed">
-                <code>pitgun-solver</code> is the distributed compute layer. Compiled to WebAssembly via
-                <code>wasm-bindgen</code>, it runs Monte Carlo simulations in browser-based Web Workers, aggregating
-                results back to the runtime.
+                <code>pitgun-solver</code> is an experimental compute layer. The design target is WebAssembly-based
+                scenario evaluation for simulation workloads, but it is not the core promise of the framework today.
+                The stable foundation remains the dictionary, schemas, gateway, and manifests.
             </p>
             <div class="grid md:grid-cols-2 gap-6">
                 <div class="border-2 border-pit-dark bg-white p-6 shadow-hard-sm">
@@ -864,14 +905,14 @@
     <section id="authority" class="max-w-6xl mx-auto px-4 md:px-8 py-12 space-y-8">
         <div class="flex items-center gap-3">
             <div class="h-1 w-12 bg-pit-rust"></div>
-            <h2 class="text-4xl md:text-5xl font-display uppercase text-pit-petrol">Authority</h2>
-            <span class="text-xs font-mono bg-pit-dark text-pit-cream px-2 py-1 border border-pit-dark">WIP</span>
+            <h2 class="text-4xl md:text-5xl font-display uppercase text-pit-petrol">Experimental Authority</h2>
+            <span class="text-xs font-mono bg-pit-dark text-pit-cream px-2 py-1 border border-pit-dark">Design</span>
         </div>
         <div class="bg-pit-cream border-4 border-pit-dark shadow-hard p-8 md:p-10 space-y-6">
             <p class="text-base md:text-lg text-pit-dark/90 leading-relaxed">
-                The <code>pitgun-authority</code> service is the governance layer—designed to sign configuration
-                manifests, enforce rate limits, and provide cryptographic proof of simulation authenticity.
-                <strong>Currently in foundational development.</strong>
+                <code>pitgun-authority</code> is a design track for governance: signed manifests, rate limits, and
+                proof that outputs were derived from approved inputs. It is intentionally presented as roadmap work,
+                not as a required runtime dependency.
             </p>
             <div class="grid md:grid-cols-2 gap-6">
                 <div class="border-2 border-pit-dark bg-white p-6 shadow-hard-sm">
@@ -901,26 +942,27 @@
         </div>
     </section>
 
-    <!-- Engine F1 Reference Implementation -->
+    <!-- Reference Workload -->
     <section id="engine" class="max-w-6xl mx-auto px-4 md:px-8 py-12 space-y-8">
         <div class="flex items-center gap-3">
             <div class="h-1 w-12 bg-pit-rust"></div>
-            <h2 class="text-4xl md:text-5xl font-display uppercase text-pit-petrol">Engine F1</h2>
+            <h2 class="text-4xl md:text-5xl font-display uppercase text-pit-petrol">Reference Workload</h2>
             <span class="text-xs font-mono bg-pit-rust text-white px-2 py-1 border border-pit-dark">Reference
                 Impl</span>
         </div>
         <div class="bg-pit-cream border-4 border-pit-dark shadow-hard p-8 md:p-10 space-y-6">
             <p class="text-base md:text-lg text-pit-dark/90 leading-relaxed">
-                <code>pitgun-simulator</code> is the reference physics implementation—a deterministic simulation engine
-                for motorsport telemetry. It provides the Data Plane that the Solver uses for Monte Carlo lap
-                simulations.
+                Pitgun Game is the live reference workload for the framework. Browser clients generate telemetry,
+                <code>pitgun-gateway</code> ingests event envelopes, PostgreSQL and QuestDB store operational and
+                analytical data, and the performance API exposes the resulting runs and reports.
             </p>
             <div class="border-2 border-pit-dark bg-pit-accent/30 p-6 shadow-hard-sm">
-                <div class="text-sm font-mono uppercase tracking-[0.2em] text-pit-rust mb-3">Key Features</div>
+                <div class="text-sm font-mono uppercase tracking-[0.2em] text-pit-rust mb-3">What the Game Proves</div>
                 <ul class="text-sm text-pit-dark/80 space-y-2 leading-relaxed">
-                    <li><strong>PhysicsSource:</strong> Synchronous lap simulation without async overhead.</li>
-                    <li><strong>CanonicalConfigV1:</strong> Shared configuration contract with the Solver.</li>
-                    <li><strong>Deterministic:</strong> Same inputs → same outputs, enabling reproducible analysis.</li>
+                    <li><strong>Live ingestion:</strong> WebSocket and beacon events from real browser sessions.</li>
+                    <li><strong>Contract discipline:</strong> telemetry crosses service boundaries through versioned schemas.</li>
+                    <li><strong>Analytical storage:</strong> PostgreSQL for runs and QuestDB for high-frequency telemetry.</li>
+                    <li><strong>Operations:</strong> staging and production deployments with observability.</li>
                 </ul>
             </div>
         </div>
@@ -1024,12 +1066,11 @@
         </div>
         <div class="bg-pit-cream border-4 border-pit-dark shadow-hard p-8 md:p-10 space-y-6">
             <ul class="text-base text-pit-dark/90 space-y-4 leading-relaxed list-disc list-inside">
-                <li><strong>🔧 WASM Solver Completion:</strong> Full Monte Carlo implementation with configurable risk
-                    factors.</li>
-                <li><strong>📦 Parquet Sink:</strong> Archival storage for historical analysis and backtesting.</li>
-                <li><strong>🎨 Flow UI:</strong> Visual editor for <code>pitgun-core</code> pipeline manifests.</li>
-                <li><strong>📡 UDP/MQTT Gateway:</strong> Native support for high-frequency UDP multicast and MQTT
-                    ingestion.</li>
+                <li><strong>WASM Solver Completion:</strong> scenario evaluation for simulation-heavy workloads.</li>
+                <li><strong>Parquet Sink:</strong> archival storage for historical analysis and backtesting.</li>
+                <li><strong>Flow UI:</strong> visual editor for <code>pitgun-core</code> pipeline manifests.</li>
+                <li><strong>Additional Ingestion Adapters:</strong> native support for more high-frequency producers
+                    after the HTTP/WebSocket contract is stable.</li>
             </ul>
         </div>
     </section>
@@ -1048,7 +1089,7 @@
                     <span class="font-display text-3xl tracking-widest text-pit-cream">PITGUN</span>
                 </div>
                 <p class="text-sm text-gray-500 max-w-xs">
-                    Contract-first telemetry. Runtime schemas. Rust services.<br>
+                    Canonical dictionary. Runtime schemas. Manifest-driven processing.<br>
                     Built with Rust.
                 </p>
                 <div class="text-xs text-gray-600 font-mono mt-4">
