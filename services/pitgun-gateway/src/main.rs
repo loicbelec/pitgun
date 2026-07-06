@@ -83,6 +83,7 @@ struct AppState {
 struct GatewayMetrics {
     ws_messages_total: AtomicU64,
     ws_message_bytes_total: AtomicU64,
+    timestamp_normalizations_total: AtomicU64,
     events_ingested_total: Mutex<HashMap<String, u64>>,
     events_rejected_total: Mutex<HashMap<String, u64>>,
     postgres_writes_total: Mutex<HashMap<String, u64>>,
@@ -152,6 +153,11 @@ impl GatewayMetrics {
         self.parse_latency.observe(elapsed);
     }
 
+    fn record_timestamp_normalizations(&self, count: u64) {
+        self.timestamp_normalizations_total
+            .fetch_add(count, Ordering::Relaxed);
+    }
+
     fn render_prometheus(&self) -> String {
         let mut output = String::new();
 
@@ -166,6 +172,12 @@ impl GatewayMetrics {
             "pitgun_gateway_ws_message_bytes_total",
             "Total bytes received in WebSocket text messages.",
             self.ws_message_bytes_total.load(Ordering::Relaxed),
+        );
+        render_counter(
+            &mut output,
+            "pitgun_gateway_timestamp_normalizations_total",
+            "Total telemetry frames whose relative or implausible timestamp was normalized.",
+            self.timestamp_normalizations_total.load(Ordering::Relaxed),
         );
         render_labelled_counter(
             &mut output,
@@ -404,8 +416,19 @@ async fn process_queue(
                     )
                 });
 
+            let envelope_timestamp_us =
+                (msg.envelope.ts.unix_timestamp_nanos() / 1_000).max(0) as i64;
+            let normalized_timestamp_count = payload
+                .frames
+                .iter()
+                .filter(|frame| {
+                    timestamp_needs_normalization(frame.timestamp_us, envelope_timestamp_us)
+                })
+                .count() as u64;
+            metrics.record_timestamp_normalizations(normalized_timestamp_count);
+            let frames = normalize_frame_timestamps(&payload.frames, envelope_timestamp_us);
             let mut telemetry_points = Vec::new();
-            for frame in &payload.frames {
+            for frame in &frames {
                 let frame_extraction = extract_sim_metric_points_from_frame(frame);
                 telemetry_points.extend(build_telemetry_points(
                     &msg.envelope,
@@ -1241,6 +1264,42 @@ fn build_telemetry_points(
         .collect()
 }
 
+const MIN_ABSOLUTE_TIMESTAMP_US: i64 = 946_684_800_000_000;
+const MAX_FUTURE_TIMESTAMP_SKEW_US: i64 = 86_400_000_000;
+
+fn timestamp_needs_normalization(timestamp_us: i64, envelope_timestamp_us: i64) -> bool {
+    timestamp_us < MIN_ABSOLUTE_TIMESTAMP_US
+        || timestamp_us > envelope_timestamp_us.saturating_add(MAX_FUTURE_TIMESTAMP_SKEW_US)
+}
+
+fn normalize_frame_timestamps(
+    frames: &[TelemetryFrame],
+    envelope_timestamp_us: i64,
+) -> Vec<TelemetryFrame> {
+    let max_relative_timestamp_us = frames
+        .iter()
+        .filter(|frame| frame.timestamp_us < MIN_ABSOLUTE_TIMESTAMP_US)
+        .map(|frame| frame.timestamp_us.max(0))
+        .max()
+        .unwrap_or(0);
+    let relative_origin_us = envelope_timestamp_us.saturating_sub(max_relative_timestamp_us);
+
+    frames
+        .iter()
+        .cloned()
+        .map(|mut frame| {
+            if frame.timestamp_us < MIN_ABSOLUTE_TIMESTAMP_US {
+                frame.timestamp_us = relative_origin_us.saturating_add(frame.timestamp_us.max(0));
+                frame.received_at_us = envelope_timestamp_us;
+            } else if timestamp_needs_normalization(frame.timestamp_us, envelope_timestamp_us) {
+                frame.timestamp_us = envelope_timestamp_us;
+                frame.received_at_us = envelope_timestamp_us;
+            }
+            frame
+        })
+        .collect()
+}
+
 fn read_env_u32(key: &str, default: u32) -> anyhow::Result<u32> {
     match std::env::var(key) {
         Ok(value) => value
@@ -1457,10 +1516,66 @@ impl ConnectionRateLimiter {
 #[cfg(test)]
 mod tests {
     use super::{
-        ConnectionRateLimiter, GatewayMetrics, allow_non_loopback_enabled, parse_bearer_token,
-        parse_query_token, read_api_keys, validate_bind_addr,
+        ConnectionRateLimiter, GatewayMetrics, allow_non_loopback_enabled,
+        normalize_frame_timestamps, parse_bearer_token, parse_query_token, read_api_keys,
+        validate_bind_addr,
     };
+    use pitgun_contract::TelemetryFrame;
+    use std::collections::HashMap;
     use std::{net::SocketAddr, time::Duration};
+
+    fn telemetry_frame(timestamp_us: i64) -> TelemetryFrame {
+        TelemetryFrame {
+            session_id: 1,
+            sequence: 0,
+            timestamp_us,
+            received_at_us: timestamp_us,
+            source_id: "test".to_string(),
+            samples: Vec::new(),
+            events: Vec::new(),
+            lap_number: None,
+            sector: None,
+            lap_distance_m: None,
+            metadata: HashMap::new(),
+        }
+    }
+
+    #[test]
+    fn anchors_relative_frame_timestamps_to_envelope_time() {
+        let envelope_timestamp_us = 1_788_000_000_000_000;
+        let frames = vec![telemetry_frame(1_000_000), telemetry_frame(3_000_000)];
+
+        let normalized = normalize_frame_timestamps(&frames, envelope_timestamp_us);
+
+        assert_eq!(
+            normalized[0].timestamp_us,
+            envelope_timestamp_us - 2_000_000
+        );
+        assert_eq!(normalized[1].timestamp_us, envelope_timestamp_us);
+        assert_eq!(normalized[0].received_at_us, envelope_timestamp_us);
+    }
+
+    #[test]
+    fn preserves_absolute_frame_timestamps() {
+        let timestamp_us = 1_788_000_000_000_000;
+        let frames = vec![telemetry_frame(timestamp_us)];
+
+        let normalized = normalize_frame_timestamps(&frames, timestamp_us + 1_000_000);
+
+        assert_eq!(normalized[0].timestamp_us, timestamp_us);
+        assert_eq!(normalized[0].received_at_us, timestamp_us);
+    }
+
+    #[test]
+    fn clamps_implausible_future_timestamps_to_envelope_time() {
+        let envelope_timestamp_us = 1_788_000_000_000_000;
+        let frames = vec![telemetry_frame(envelope_timestamp_us + 172_800_000_000)];
+
+        let normalized = normalize_frame_timestamps(&frames, envelope_timestamp_us);
+
+        assert_eq!(normalized[0].timestamp_us, envelope_timestamp_us);
+        assert_eq!(normalized[0].received_at_us, envelope_timestamp_us);
+    }
 
     #[test]
     fn non_loopback_fails_without_flag() {
@@ -1538,6 +1653,7 @@ mod tests {
         let metrics = GatewayMetrics::default();
 
         metrics.record_ws_message(42);
+        metrics.record_timestamp_normalizations(3);
         metrics.record_ingested_event("telemetry.sample_batch");
         metrics.record_rejected_event("invalid_payload");
         metrics.record_postgres_write("inserted", Duration::from_millis(2));
@@ -1549,6 +1665,7 @@ mod tests {
 
         assert!(rendered.contains("pitgun_gateway_ws_messages_total 1"));
         assert!(rendered.contains("pitgun_gateway_ws_message_bytes_total 42"));
+        assert!(rendered.contains("pitgun_gateway_timestamp_normalizations_total 3"));
         assert!(rendered.contains(
             "pitgun_gateway_events_ingested_total{event_type=\"telemetry.sample_batch\"} 1"
         ));
