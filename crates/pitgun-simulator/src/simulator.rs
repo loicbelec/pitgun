@@ -86,7 +86,11 @@ impl Simulator {
                 profile_id: input.profile_id.clone(),
                 profile: input.profile.clone(),
                 seed: input.seed,
-                telemetry_hz: Some(if input.hz > 0.0 { input.hz } else { default_hz() }),
+                telemetry_hz: Some(if input.hz > 0.0 {
+                    input.hz
+                } else {
+                    default_hz()
+                }),
             },
         )?;
 
@@ -95,25 +99,19 @@ impl Simulator {
             lap_number,
         );
         let mut lap_time_s = output.simulation.total_time_s;
-        let lap_delta_ms =
-            deterministic_lap_delta_ms(&effects, &driver.id, input.seed, lap_number);
+        let lap_delta_ms = deterministic_lap_delta_ms(&effects, &driver.id, input.seed, lap_number);
         if lap_delta_ms != 0 {
             apply_lap_delta(&mut lap_time_s, &mut telemetry, lap_delta_ms);
         }
 
-        let distance_m = output
-            .simulation
-            .solution
-            .s
-            .last()
-            .copied()
-            .unwrap_or(0.0);
+        let distance_m = output.simulation.solution.s.last().copied().unwrap_or(0.0);
         let average_speed_kph = if lap_time_s > 0.0 {
             (distance_m / lap_time_s) * 3.6
         } else {
             0.0
         };
-        let fuel_used_kg = (initial_fuel_mass_kg - output.simulation.final_state.fuel_mass).max(0.0);
+        let fuel_used_kg =
+            (initial_fuel_mass_kg - output.simulation.final_state.fuel_mass).max(0.0);
         let max_engine_temp_c = telemetry
             .iter()
             .map(|frame| frame.engine_temp_c)
@@ -158,6 +156,7 @@ fn map_state_to_solver(value: &SimulatorState) -> pitgun_solver::VehicleState {
         tire_wear: value.tire_wear,
         tire_temp: value.tire_temp_c,
         engine_temp: value.engine_temp_c,
+        battery_soc: value.battery_soc,
         exit_speed_mps: value.exit_speed_mps,
         exit_gear: value.exit_gear,
     }
@@ -169,6 +168,7 @@ fn map_state_from_solver(value: pitgun_solver::VehicleState) -> SimulatorState {
         tire_wear: value.tire_wear,
         tire_temp_c: value.tire_temp,
         engine_temp_c: value.engine_temp,
+        battery_soc: value.battery_soc,
         exit_speed_mps: value.exit_speed_mps,
         exit_gear: value.exit_gear,
     }
@@ -422,10 +422,8 @@ mod tests {
         )
         .expect("runtime lap");
 
-        let runtime_telemetry = telemetry_frames_from_resampled(
-            runtime.telemetry.expect("runtime telemetry"),
-            1,
-        );
+        let runtime_telemetry =
+            telemetry_frames_from_resampled(runtime.telemetry.expect("runtime telemetry"), 1);
         let driver = provider.get_driver("default").expect("default driver");
         let effects = driver_effects(&driver);
         let expected_delta_s =

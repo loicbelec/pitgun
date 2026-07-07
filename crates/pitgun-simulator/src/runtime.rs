@@ -87,7 +87,11 @@ pub fn run_simulation(
     let chassis = provider.get_chassis(&vehicle_config.chassis_id)?;
     let engine = provider.get_engine(&vehicle_config.engine_id)?;
     let track = provider.get_track(&request.track_id)?;
-    let profile = resolve_profile(provider, request.profile.clone(), request.profile_id.as_deref())?;
+    let profile = resolve_profile(
+        provider,
+        request.profile.clone(),
+        request.profile_id.as_deref(),
+    )?;
     let driver = resolve_driver(provider, request.driver_id.as_deref())?;
     let tire_id = request
         .tire_id
@@ -98,7 +102,10 @@ pub fn run_simulation(
     let base_tire = provider
         .get_tire(tire_id)
         .or_else(|_| provider.get_tire(&vehicle_config.tire_id))?;
-    let tire = apply_driver_to_tire(&base_tire, &crate::drivers::driver_effects_from_aggressiveness(driver.aggressiveness));
+    let tire = apply_driver_to_tire(
+        &base_tire,
+        &crate::drivers::driver_effects_from_aggressiveness(driver.aggressiveness),
+    );
 
     let mut pit_stops = Vec::with_capacity(request.pit_plan.len());
     for stop in &request.pit_plan {
@@ -114,6 +121,7 @@ pub fn run_simulation(
         tire_wear: 0.0,
         tire_temp: 90.0,
         engine_temp: engine.thermal.initial_temp_c,
+        battery_soc: 0.0,
         exit_speed_mps: 0.0,
         exit_gear: 1,
     });
@@ -131,12 +139,16 @@ pub fn run_simulation(
             aero: map_aero(&aero),
             engine: map_engine(&engine),
             tire: map_tire(&tire),
+            hybrid: None,
         },
         &profile,
     );
     let solver_request = SolverSimulationRequest {
         track: map_track(&track),
-        vehicle: apply_tuning(&solver_vehicle, &apply_profile_to_tuning(request.tuning.clone(), &profile)),
+        vehicle: apply_tuning(
+            &solver_vehicle,
+            &apply_profile_to_tuning(request.tuning.clone(), &profile),
+        ),
         state: initial_state,
         config: SolverSimConfig {
             ds,
@@ -146,6 +158,7 @@ pub fn run_simulation(
             tire_temp_amb: 35.0,
             sim_seed: request.seed.unwrap_or(0),
         },
+        energy_mode: pitgun_solver::EnergyMode::Balanced,
         lap_count: request.lap_count.max(1),
         pit_plan: SolverPitPlan { stops: pit_stops },
         driver,

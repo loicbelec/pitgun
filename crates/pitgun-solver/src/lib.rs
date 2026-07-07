@@ -18,10 +18,10 @@ use wasm_bindgen::prelude::*;
 // Keep the crate root focused on the stable solver surface consumed by
 // adapters, WASM bindings, and higher-level products.
 pub use kernel::{
-    AeroParams, ChassisParams, Driver, EngineParams, PitPlan, PitStop, ResampledTelemetry,
-    SimConfig, SimulationRequest, SimulationResult, SimulationSolution, TireParams, Track,
-    Tuning, VehicleParams, VehicleState, apply_tuning, resample_telemetry as resample_solution,
-    run_simulation as solve,
+    AeroParams, ChassisParams, Driver, EnergyMode, EngineParams, HybridParams, PitPlan, PitStop,
+    ResampledTelemetry, SimConfig, SimulationRequest, SimulationResult, SimulationSolution,
+    TireParams, Track, Tuning, VehicleParams, VehicleState, apply_tuning,
+    resample_telemetry as resample_solution, run_simulation as solve,
 };
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -388,10 +388,12 @@ fn run_single_session(
                 tire_wear: 0.0,
                 tire_temp: 90.0,
                 engine_temp: resolved_vehicle.0.engine.t_init,
+                battery_soc: 0.0,
                 exit_speed_mps: 0.0,
                 exit_gear: 1,
             },
             config: sim_config,
+            energy_mode: EnergyMode::Balanced,
             lap_count: laps.max(1),
             pit_plan,
             driver,
@@ -786,6 +788,7 @@ impl EmbeddedCatalog {
                 aero: aero.clone(),
                 engine: engine.clone(),
                 tire: tire.clone(),
+                hybrid: None,
             },
             record.tire_id.clone(),
         ))
@@ -1349,8 +1352,7 @@ fn read_optional_u64(value: &Value, keys: &[&str]) -> Option<u64> {
 }
 
 fn read_optional_u16(value: &Value, keys: &[&str]) -> Option<u16> {
-    read_optional_u64(value, keys)
-        .and_then(|value| u16::try_from(value).ok())
+    read_optional_u64(value, keys).and_then(|value| u16::try_from(value).ok())
 }
 
 fn read_required_string(value: &Value, keys: &[&str]) -> Result<String, String> {
@@ -1607,6 +1609,7 @@ mod tests {
                 tire_temp_amb: fixture.config.tire_temp_amb,
                 sim_seed: fixture.config.sim_seed,
             },
+            energy_mode: EnergyMode::Balanced,
             lap_count: fixture.lap_count,
             pit_plan: PitPlan::default(),
             driver,
@@ -1686,7 +1689,10 @@ mod tests {
             "catalog must expose v6t_hybrid"
         );
         assert!(
-            catalog.drivers.iter().any(|entry| entry.id == "battery_voltas"),
+            catalog
+                .drivers
+                .iter()
+                .any(|entry| entry.id == "battery_voltas"),
             "catalog must expose battery_voltas"
         );
         assert!(

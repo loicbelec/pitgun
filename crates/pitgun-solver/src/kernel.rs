@@ -56,11 +56,25 @@ pub struct TireParams {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct HybridParams {
+    pub battery_capacity_kwh: f64,
+    pub battery_min_soc: f64,
+    pub battery_max_soc: f64,
+    pub max_deploy_kw: f64,
+    pub max_regen_kw: f64,
+    pub deploy_efficiency: f64,
+    pub regen_efficiency: f64,
+    pub mass_kg: f64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct VehicleParams {
     pub chassis: ChassisParams,
     pub aero: AeroParams,
     pub engine: EngineParams,
     pub tire: TireParams,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub hybrid: Option<HybridParams>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -69,6 +83,8 @@ pub struct VehicleState {
     pub tire_wear: f64,
     pub tire_temp: f64,
     pub engine_temp: f64,
+    #[serde(default = "default_battery_soc")]
+    pub battery_soc: f64,
     #[serde(default)]
     pub exit_speed_mps: f64,
     #[serde(default = "default_exit_gear")]
@@ -82,6 +98,7 @@ impl Default for VehicleState {
             tire_wear: 0.0,
             tire_temp: 90.0,
             engine_temp: 90.0,
+            battery_soc: default_battery_soc(),
             exit_speed_mps: 0.0,
             exit_gear: default_exit_gear(),
         }
@@ -96,6 +113,10 @@ impl VehicleState {
 
 const fn default_exit_gear() -> u8 {
     1
+}
+
+const fn default_battery_soc() -> f64 {
+    0.0
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -179,6 +200,15 @@ pub struct DriverEffects {
     pub peak_pace_bonus_ms: i32,
 }
 
+#[derive(Debug, Clone, Copy, Default, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum EnergyMode {
+    #[default]
+    Balanced,
+    Attack,
+    Harvest,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct PitStop {
     pub lap: u16,
@@ -198,6 +228,8 @@ pub struct SimulationRequest {
     pub state: VehicleState,
     #[serde(default)]
     pub config: SimConfig,
+    #[serde(default)]
+    pub energy_mode: EnergyMode,
     #[serde(default = "default_lap_count")]
     pub lap_count: u16,
     #[serde(default)]
@@ -522,6 +554,7 @@ pub fn run_simulation(input: &SimulationRequest) -> Result<SimulationResult, Str
             tire_wear: wear_next,
             tire_temp: tire_temp_next,
             engine_temp: *temp.last().unwrap_or(&state_curr.engine_temp),
+            battery_soc: state_curr.battery_soc,
             exit_speed_mps: prev_end_speed.unwrap_or(0.0),
             exit_gear: prev_end_gear.unwrap_or(default_exit_gear()),
         };
@@ -834,6 +867,7 @@ pub fn apply_tuning(vehicle: &VehicleParams, tuning: &Tuning) -> VehicleParams {
         aero,
         engine,
         tire: vehicle.tire.clone(),
+        hybrid: vehicle.hybrid.clone(),
     }
 }
 
@@ -1174,6 +1208,7 @@ mod tests {
                 heat_k: 0.0035,
                 cool_k: 0.0012,
             },
+            hybrid: None,
         }
     }
 
@@ -1243,6 +1278,7 @@ mod tests {
                 tire_wear: 0.0,
                 tire_temp: 90.0,
                 engine_temp: 90.0,
+                battery_soc: 0.0,
                 exit_speed_mps: 0.0,
                 exit_gear: 1,
             },
@@ -1257,6 +1293,7 @@ mod tests {
             lap_count: laps,
             pit_plan: PitPlan::default(),
             driver: Driver::default(),
+            energy_mode: EnergyMode::Balanced,
             tuning: Some(tuning),
         })
         .expect("simulation should succeed")
@@ -1344,9 +1381,14 @@ mod tests {
             4,
         );
 
-        let low_derate = derating_factor(low_cooling.final_state.engine_temp, &low_cooling.applied_vehicle.engine);
-        let high_derate =
-            derating_factor(high_cooling.final_state.engine_temp, &high_cooling.applied_vehicle.engine);
+        let low_derate = derating_factor(
+            low_cooling.final_state.engine_temp,
+            &low_cooling.applied_vehicle.engine,
+        );
+        let high_derate = derating_factor(
+            high_cooling.final_state.engine_temp,
+            &high_cooling.applied_vehicle.engine,
+        );
 
         assert!(
             low_cooling.final_state.engine_temp > high_cooling.final_state.engine_temp + 10.0,

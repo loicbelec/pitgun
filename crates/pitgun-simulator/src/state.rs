@@ -7,6 +7,8 @@ pub struct SimulatorState {
     pub tire_temp_c: f64,
     pub engine_temp_c: f64,
     #[serde(default)]
+    pub battery_soc: f64,
+    #[serde(default)]
     pub exit_speed_mps: f64,
     #[serde(default = "default_exit_gear")]
     pub exit_gear: u8,
@@ -19,6 +21,7 @@ impl Default for SimulatorState {
             tire_wear: 0.0,
             tire_temp_c: 90.0,
             engine_temp_c: 90.0,
+            battery_soc: 0.0,
             exit_speed_mps: 0.0,
             exit_gear: default_exit_gear(),
         }
