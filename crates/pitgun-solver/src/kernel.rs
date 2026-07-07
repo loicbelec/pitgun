@@ -250,6 +250,12 @@ pub struct SimulationSolution {
     pub t: Vec<f64>,
     pub v: Vec<f64>,
     pub power: Vec<f64>,
+    #[serde(default)]
+    pub hybrid_deploy_kw: Vec<f64>,
+    #[serde(default)]
+    pub hybrid_regen_kw: Vec<f64>,
+    #[serde(default)]
+    pub battery_soc: Vec<f64>,
     pub temp: Vec<f64>,
     pub gear: Vec<u8>,
     pub lap_index: Vec<u16>,
@@ -284,6 +290,9 @@ pub struct ResampledTelemetry {
     pub g_vert: Vec<f64>,
     pub engine_temp_c: Vec<f64>,
     pub engine_power_w: Vec<f64>,
+    pub battery_soc_pct: Option<Vec<f64>>,
+    pub hybrid_deploy_kw: Option<Vec<f64>>,
+    pub hybrid_regen_kw: Option<Vec<f64>>,
     pub tire_temp_c: Option<Vec<f64>>,
     pub tire_wear_pct: Option<Vec<f64>>,
     pub tire_mu: Option<Vec<f64>>,
@@ -316,6 +325,9 @@ pub fn run_simulation(input: &SimulationRequest) -> Result<SimulationResult, Str
     let mut out_t = Vec::new();
     let mut out_v = Vec::new();
     let mut out_power = Vec::new();
+    let mut out_hybrid_deploy_kw = Vec::new();
+    let mut out_hybrid_regen_kw = Vec::new();
+    let mut out_battery_soc = Vec::new();
     let mut out_temp = Vec::new();
     let mut out_gear = Vec::new();
     let mut out_lap = Vec::new();
@@ -343,6 +355,8 @@ pub fn run_simulation(input: &SimulationRequest) -> Result<SimulationResult, Str
 
     for lap_idx in 1..=lap_count {
         let mass = vehicle.chassis.mass_empty + state_curr.total_mass_delta();
+        let hybrid = vehicle.hybrid.as_ref();
+        let vehicle_mass = mass + hybrid.map(|params| params.mass_kg.max(0.0)).unwrap_or(0.0);
         let tire_curr = tire_for_lap(&vehicle.tire, &pit_stops, lap_idx);
         let v_corner = corner_speed_limit(
             &input.track,
@@ -358,11 +372,11 @@ pub fn run_simulation(input: &SimulationRequest) -> Result<SimulationResult, Str
             let (drag, downforce) = aero_forces(v_target, &vehicle.aero, &vehicle.chassis, true);
 
             let f_drag = drag;
-            let f_roll = vehicle.chassis.c_rr * (mass * vehicle.chassis.g + downforce);
-            let f_slope = mass * vehicle.chassis.g * input.track.slope[i];
+            let f_roll = vehicle.chassis.c_rr * (vehicle_mass * vehicle.chassis.g + downforce);
+            let f_slope = vehicle_mass * vehicle.chassis.g * input.track.slope[i];
 
             let a_vert = v_target * v_target * slope_change[i] / ds / ds;
-            let normal_load = mass * (vehicle.chassis.g + a_vert) + downforce;
+            let normal_load = vehicle_mass * (vehicle.chassis.g + a_vert) + downforce;
             let mu_eff = effective_mu(
                 vehicle.chassis.mu0,
                 state_curr.tire_wear,
@@ -371,14 +385,14 @@ pub fn run_simulation(input: &SimulationRequest) -> Result<SimulationResult, Str
             );
             let grip_avail = mu_eff * normal_load;
 
-            let f_lat_req = mass * v_target * v_target * input.track.kappa[i].abs();
+            let f_lat_req = vehicle_mass * v_target * v_target * input.track.kappa[i].abs();
             let f_brake_max = if f_lat_req >= grip_avail {
                 0.0
             } else {
                 (grip_avail * grip_avail - f_lat_req * f_lat_req).sqrt()
             };
 
-            let mut a_decel = (f_brake_max + f_drag + f_roll + f_slope) / mass.max(1e-9);
+            let mut a_decel = (f_brake_max + f_drag + f_roll + f_slope) / vehicle_mass.max(1e-9);
             a_decel = a_decel.min(6.0 * vehicle.chassis.g);
 
             let v_max_braking = (v_target * v_target + 2.0 * a_decel * ds).max(0.0).sqrt();
@@ -393,6 +407,9 @@ pub fn run_simulation(input: &SimulationRequest) -> Result<SimulationResult, Str
         let mut tire_wear = vec![0.0; n];
         let mut gear = vec![1u8; n];
         let mut power = vec![0.0; n];
+        let mut hybrid_deploy_kw = vec![0.0; n];
+        let mut hybrid_regen_kw = vec![0.0; n];
+        let mut battery_soc = vec![0.0; n];
 
         v_fwd[n - 1] = match prev_end_speed {
             Some(speed) => speed.min(v_bwd[n - 1]),
@@ -402,12 +419,14 @@ pub fn run_simulation(input: &SimulationRequest) -> Result<SimulationResult, Str
         tire_temp[n - 1] = state_curr.tire_temp;
         tire_wear[n - 1] = state_curr.tire_wear;
         gear[n - 1] = prev_end_gear.unwrap_or(1);
+        battery_soc[n - 1] = state_curr.battery_soc;
 
         v_fwd[0] = v_fwd[n - 1];
         temp[0] = temp[n - 1];
         tire_temp[0] = tire_temp[n - 1];
         tire_wear[0] = tire_wear[n - 1];
         gear[0] = gear[n - 1];
+        battery_soc[0] = battery_soc[n - 1];
 
         for i in 0..(n - 1) {
             let v = v_fwd[i].min(v_bwd[i]);
@@ -421,6 +440,17 @@ pub fn run_simulation(input: &SimulationRequest) -> Result<SimulationResult, Str
             if v_fwd[i] >= v_bwd[i] {
                 power[i] = 0.0;
                 v_fwd[i + 1] = v_bwd[i];
+                let next_soc = apply_hybrid_regen(
+                    hybrid,
+                    input.energy_mode,
+                    battery_soc[i],
+                    v_safe,
+                    v_bwd[i],
+                    dt,
+                    vehicle_mass,
+                );
+                hybrid_regen_kw[i] = next_soc.regen_kw;
+                battery_soc[i + 1] = next_soc.soc;
             } else {
                 let mode_corner = input.track.kappa[i].abs() > 0.001;
                 let (drag, downforce) =
@@ -428,12 +458,17 @@ pub fn run_simulation(input: &SimulationRequest) -> Result<SimulationResult, Str
 
                 let a_vert = v_safe * v_safe * slope_change[i] / ds / ds;
                 let f_drag = drag;
-                let f_roll =
-                    vehicle.chassis.c_rr * (mass * (vehicle.chassis.g + a_vert) + downforce);
-                let f_slope = mass * vehicle.chassis.g * input.track.slope[i];
+                let f_roll = vehicle.chassis.c_rr
+                    * (vehicle_mass * (vehicle.chassis.g + a_vert) + downforce);
+                let f_slope = vehicle_mass * vehicle.chassis.g * input.track.slope[i];
 
+                let deployment =
+                    apply_hybrid_deploy(hybrid, input.energy_mode, battery_soc[i], v_safe, dt);
+                pwr += deployment.deploy_kw;
+                hybrid_deploy_kw[i] = deployment.deploy_kw;
+                battery_soc[i + 1] = deployment.soc;
                 let f_eng_max = 1000.0 * pwr / v_safe.max(10.0);
-                let normal_load = mass * (vehicle.chassis.g + a_vert) + downforce;
+                let normal_load = vehicle_mass * (vehicle.chassis.g + a_vert) + downforce;
                 let mu_eff =
                     effective_mu(vehicle.chassis.mu0, tire_wear[i], tire_temp[i], &tire_curr);
                 let f_drive = f_eng_max.min(mu_eff * normal_load);
@@ -445,7 +480,7 @@ pub fn run_simulation(input: &SimulationRequest) -> Result<SimulationResult, Str
                 };
 
                 let f_net = f_drive - f_drag - f_roll - f_slope;
-                let a = f_net / mass.max(1e-9);
+                let a = f_net / vehicle_mass.max(1e-9);
                 v_fwd[i + 1] = (v_safe * v_safe + 2.0 * a * ds).max(0.0).sqrt();
             }
 
@@ -521,6 +556,9 @@ pub fn run_simulation(input: &SimulationRequest) -> Result<SimulationResult, Str
         out_t.extend(t_scaled[start_idx..].iter().map(|value| value + t_offset));
         out_v.extend_from_slice(&v_final[start_idx..]);
         out_power.extend_from_slice(&power[start_idx..]);
+        out_hybrid_deploy_kw.extend_from_slice(&hybrid_deploy_kw[start_idx..]);
+        out_hybrid_regen_kw.extend_from_slice(&hybrid_regen_kw[start_idx..]);
+        out_battery_soc.extend_from_slice(&battery_soc[start_idx..]);
         out_temp.extend_from_slice(&temp[start_idx..]);
         out_gear.extend_from_slice(&gear[start_idx..]);
         out_tire_temp.extend_from_slice(&tire_temp[start_idx..]);
@@ -554,7 +592,7 @@ pub fn run_simulation(input: &SimulationRequest) -> Result<SimulationResult, Str
             tire_wear: wear_next,
             tire_temp: tire_temp_next,
             engine_temp: *temp.last().unwrap_or(&state_curr.engine_temp),
-            battery_soc: state_curr.battery_soc,
+            battery_soc: *battery_soc.last().unwrap_or(&state_curr.battery_soc),
             exit_speed_mps: prev_end_speed.unwrap_or(0.0),
             exit_gear: prev_end_gear.unwrap_or(default_exit_gear()),
         };
@@ -565,6 +603,9 @@ pub fn run_simulation(input: &SimulationRequest) -> Result<SimulationResult, Str
         t: out_t,
         v: out_v,
         power: out_power,
+        hybrid_deploy_kw: out_hybrid_deploy_kw,
+        hybrid_regen_kw: out_hybrid_regen_kw,
+        battery_soc: out_battery_soc,
         temp: out_temp,
         gear: out_gear,
         lap_index: out_lap,
@@ -653,6 +694,33 @@ pub fn resample_telemetry(
         .iter()
         .map(|value| interp_linear(*value, &solution.t, &solution.tire_wear))
         .collect();
+    let battery_soc_t: Option<Vec<f64>> = if vehicle.hybrid.is_some() {
+        Some(
+            t.iter()
+                .map(|value| interp_linear(*value, &solution.t, &solution.battery_soc))
+                .collect(),
+        )
+    } else {
+        None
+    };
+    let hybrid_deploy_t: Option<Vec<f64>> = if vehicle.hybrid.is_some() {
+        Some(
+            t.iter()
+                .map(|value| interp_linear(*value, &solution.t, &solution.hybrid_deploy_kw))
+                .collect(),
+        )
+    } else {
+        None
+    };
+    let hybrid_regen_t: Option<Vec<f64>> = if vehicle.hybrid.is_some() {
+        Some(
+            t.iter()
+                .map(|value| interp_linear(*value, &solution.t, &solution.hybrid_regen_kw))
+                .collect(),
+        )
+    } else {
+        None
+    };
 
     let track_len = *track.s.last().unwrap_or(&0.0);
     let s_mod: Vec<f64> = if track_len > 0.0 {
@@ -760,6 +828,10 @@ pub fn resample_telemetry(
         g_vert,
         engine_temp_c: temp_t,
         engine_power_w: power_out.iter().map(|value| value * 1000.0).collect(),
+        battery_soc_pct: battery_soc_t
+            .map(|values| values.iter().map(|value| value * 100.0).collect()),
+        hybrid_deploy_kw: hybrid_deploy_t,
+        hybrid_regen_kw: hybrid_regen_t,
         tire_temp_c: Some(tire_temp_t),
         tire_wear_pct: Some(tire_wear_t.iter().map(|value| value * 100.0).collect()),
         tire_mu: Some(tire_mu),
@@ -780,6 +852,112 @@ pub fn apply_driver_to_tire(tire: &TireParams, effects: &DriverEffects) -> TireP
     let mut adjusted = tire.clone();
     adjusted.wear_per_s *= effects.tire_wear_multiplier;
     adjusted
+}
+
+#[derive(Debug, Clone, Copy)]
+struct HybridDeployStep {
+    soc: f64,
+    deploy_kw: f64,
+}
+
+#[derive(Debug, Clone, Copy)]
+struct HybridRegenStep {
+    soc: f64,
+    regen_kw: f64,
+}
+
+fn energy_mode_deploy_factor(mode: EnergyMode) -> f64 {
+    match mode {
+        EnergyMode::Balanced => 0.65,
+        EnergyMode::Attack => 1.0,
+        EnergyMode::Harvest => 0.25,
+    }
+}
+
+fn energy_mode_regen_factor(mode: EnergyMode) -> f64 {
+    match mode {
+        EnergyMode::Balanced => 0.75,
+        EnergyMode::Attack => 0.55,
+        EnergyMode::Harvest => 1.0,
+    }
+}
+
+fn apply_hybrid_deploy(
+    hybrid: Option<&HybridParams>,
+    mode: EnergyMode,
+    soc: f64,
+    speed_mps: f64,
+    dt_s: f64,
+) -> HybridDeployStep {
+    let Some(params) = hybrid else {
+        return HybridDeployStep {
+            soc,
+            deploy_kw: 0.0,
+        };
+    };
+    if params.battery_capacity_kwh <= 0.0 || dt_s <= 0.0 || soc <= params.battery_min_soc {
+        return HybridDeployStep {
+            soc: soc.clamp(params.battery_min_soc, params.battery_max_soc),
+            deploy_kw: 0.0,
+        };
+    }
+
+    let speed_factor = clamp((speed_mps - 18.0) / 38.0, 0.15, 1.0);
+    let requested_kw =
+        params.max_deploy_kw.max(0.0) * energy_mode_deploy_factor(mode) * speed_factor;
+    let available_kwh = ((soc - params.battery_min_soc).max(0.0)) * params.battery_capacity_kwh;
+    let efficiency = params.deploy_efficiency.clamp(0.1, 1.0);
+    let available_kw = available_kwh * 3600.0 * efficiency / dt_s;
+    let deploy_kw = requested_kw.min(available_kw).max(0.0);
+    let used_kwh = deploy_kw * dt_s / 3600.0 / efficiency;
+    let next_soc = (soc - used_kwh / params.battery_capacity_kwh)
+        .clamp(params.battery_min_soc, params.battery_max_soc);
+
+    HybridDeployStep {
+        soc: next_soc,
+        deploy_kw,
+    }
+}
+
+fn apply_hybrid_regen(
+    hybrid: Option<&HybridParams>,
+    mode: EnergyMode,
+    soc: f64,
+    speed_mps: f64,
+    target_speed_mps: f64,
+    dt_s: f64,
+    mass_kg: f64,
+) -> HybridRegenStep {
+    let Some(params) = hybrid else {
+        return HybridRegenStep { soc, regen_kw: 0.0 };
+    };
+    if params.battery_capacity_kwh <= 0.0
+        || dt_s <= 0.0
+        || soc >= params.battery_max_soc
+        || target_speed_mps >= speed_mps
+    {
+        return HybridRegenStep {
+            soc: soc.clamp(params.battery_min_soc, params.battery_max_soc),
+            regen_kw: 0.0,
+        };
+    }
+
+    let kinetic_delta_j =
+        0.5 * mass_kg.max(0.0) * (speed_mps * speed_mps - target_speed_mps * target_speed_mps);
+    let braking_kw = kinetic_delta_j.max(0.0) / dt_s / 1000.0;
+    let requested_kw = braking_kw * energy_mode_regen_factor(mode).min(1.0);
+    let room_kwh = ((params.battery_max_soc - soc).max(0.0)) * params.battery_capacity_kwh;
+    let efficiency = params.regen_efficiency.clamp(0.1, 1.0);
+    let room_kw = room_kwh * 3600.0 / efficiency / dt_s;
+    let regen_kw = params.max_regen_kw.max(0.0).min(requested_kw).min(room_kw);
+    let recovered_kwh = regen_kw * dt_s / 3600.0 * efficiency;
+    let next_soc = (soc + recovered_kwh / params.battery_capacity_kwh)
+        .clamp(params.battery_min_soc, params.battery_max_soc);
+
+    HybridRegenStep {
+        soc: next_soc,
+        regen_kw,
+    }
 }
 
 fn diminishing_tuning_effect(points: i32) -> f64 {
@@ -1297,6 +1475,108 @@ mod tests {
             tuning: Some(tuning),
         })
         .expect("simulation should succeed")
+    }
+
+    fn run_case_with_vehicle(
+        track: Track,
+        vehicle: VehicleParams,
+        energy_mode: EnergyMode,
+    ) -> SimulationResult {
+        run_simulation(&SimulationRequest {
+            track,
+            vehicle,
+            state: VehicleState {
+                fuel_mass: 80.0,
+                tire_wear: 0.0,
+                tire_temp: 90.0,
+                engine_temp: 90.0,
+                battery_soc: 0.8,
+                exit_speed_mps: 0.0,
+                exit_gear: 1,
+            },
+            config: SimConfig {
+                ds: 0.0,
+                max_speed: 400.0,
+                pit_time_penalty_s: 20.0,
+                pit_tire_temp: None,
+                tire_temp_amb: 35.0,
+                sim_seed: 7,
+            },
+            energy_mode,
+            lap_count: 1,
+            pit_plan: PitPlan::default(),
+            driver: Driver::default(),
+            tuning: None,
+        })
+        .expect("simulation should succeed")
+    }
+
+    fn hybrid_vehicle() -> VehicleParams {
+        let mut vehicle = test_vehicle();
+        vehicle.hybrid = Some(HybridParams {
+            battery_capacity_kwh: 4.0,
+            battery_min_soc: 0.15,
+            battery_max_soc: 0.95,
+            max_deploy_kw: 180.0,
+            max_regen_kw: 120.0,
+            deploy_efficiency: 0.92,
+            regen_efficiency: 0.78,
+            mass_kg: 55.0,
+        });
+        vehicle
+    }
+
+    #[test]
+    fn energy_mode_does_not_change_non_hybrid_results() {
+        let track = straight_track(1800.0, 240);
+        let attack = run_case_with_vehicle(track.clone(), test_vehicle(), EnergyMode::Attack);
+        let harvest = run_case_with_vehicle(track, test_vehicle(), EnergyMode::Harvest);
+
+        assert!((attack.total_time_s - harvest.total_time_s).abs() < 1e-9);
+        assert!((attack.final_state.battery_soc - harvest.final_state.battery_soc).abs() < 1e-9);
+        assert!(
+            attack
+                .solution
+                .hybrid_deploy_kw
+                .iter()
+                .all(|value| *value == 0.0)
+        );
+        assert!(
+            attack
+                .solution
+                .hybrid_regen_kw
+                .iter()
+                .all(|value| *value == 0.0)
+        );
+    }
+
+    #[test]
+    fn hybrid_attack_spends_energy_for_faster_straight_line_lap() {
+        let track = straight_track(1800.0, 240);
+        let attack = run_case_with_vehicle(track.clone(), hybrid_vehicle(), EnergyMode::Attack);
+        let harvest = run_case_with_vehicle(track, hybrid_vehicle(), EnergyMode::Harvest);
+
+        assert!(
+            attack.total_time_s < harvest.total_time_s,
+            "attack should be faster: attack={} harvest={}",
+            attack.total_time_s,
+            harvest.total_time_s
+        );
+        assert!(
+            attack.final_state.battery_soc < harvest.final_state.battery_soc,
+            "attack should consume more SoC: attack={} harvest={}",
+            attack.final_state.battery_soc,
+            harvest.final_state.battery_soc
+        );
+        assert!(
+            attack
+                .solution
+                .hybrid_deploy_kw
+                .iter()
+                .copied()
+                .fold(0.0, f64::max)
+                > 0.0
+        );
     }
 
     #[test]
