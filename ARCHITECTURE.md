@@ -1,9 +1,17 @@
 # Pitgun Architecture
 
-Pitgun is a high-performance formula engine and telemetry framework.  
-It ingests raw signals (telemetry, infra metrics, etc.), applies manifest-driven processing, and emits new channels and metrics in real time.
+Pitgun is a Rust framework for real-time telemetry ingestion, contract-governed
+data exchange, manifest-driven processing, and distributed deterministic
+compute.
 
-This document describes the **core architecture** of the Pitgun framework (Rust workspace), its **key concepts**, and how the different crates collaborate.
+The racing game is the first production domain built on top of the framework. It
+generates telemetry and exercises the distributed simulation flow, but racing
+concepts are not the framework boundary. Generic crates should be able to carry
+and validate racing payloads without understanding vehicle, circuit, tire, lap,
+or race semantics.
+
+This document describes the **core architecture** of the Pitgun framework, its
+**key concepts**, and how the workspace crates collaborate.
 
 ## 1. Goals & Non-Goals
 
@@ -14,10 +22,12 @@ Pitgun is designed to:
 - **Evaluate formulas at scale** on high-frequency time series (motorsport, infra, finance, energy, …).
 - **Unify heterogeneous channels** into a **canonical dictionary**, independent of the original provider (F1 Atlas, NASDAQ feeds, cloud metrics, etc.).
 - Provide a **manifest-driven engine**: pipelines and analyses are described as data (YAML / JSON), not hard-coded logic.
+- Provide **contract-first ingestion** through signed envelopes, schemas, registries, and policy-controlled limits.
+- Support **distributed deterministic compute** where a client can run a model locally and the server can verify the submitted configuration and outputs.
 - Be **embeddable**:
   - as a CLI (`pitgun-cli`),
   - as a library (`pitgun-core`),
-  - later as a service behind `api.pitgun.io`.
+  - as deployable services such as `pitgun-gateway` and `pitgun-authority`.
 - Offer a **clean path to productization**: bundle registry, versioned manifests, benchmarks, perf gates.
 - **Ingest telemetry from multiple sources**: UDP, WebSocket, Kafka, MQTT with a unified pipeline.
 
@@ -27,11 +37,14 @@ Pitgun is **not**:
 
 - A charting / dashboard tool (that’s downstream).
 - A general data warehouse.
+- A racing-only simulation stack.
 - A monolithic “platform”.  
   Instead, it’s a **small, composable core** focused on:
   - canonical channels,
   - formula evaluation,
-  - manifest execution.
+  - manifest execution,
+  - contract and policy enforcement,
+  - domain-neutral ingress and compute verification.
 
 ## 2. Workspace & Crate Layout
 
@@ -42,9 +55,9 @@ pitgun/
   README.md
   crates/
     # Contract & Core
-    pitgun-contract/      # TelemetrySource trait, TelemetryFrame, ParameterRegistry
+    pitgun-contract/      # domain-neutral frames, envelopes, contracts, registries
     pitgun-core/          # formula engine, pipeline, converter, manifests
-    pitgun-policy/        # access control, rate limiting, JWT verification
+    pitgun-policy/        # generic policy loading, canonicalization, constraints
     pitgun-signing/       # cryptographic signing utilities
     
     # Codecs
@@ -56,21 +69,17 @@ pitgun/
     pitgun-source-ws/     # WebSocket client source
     pitgun-source-kafka/  # Kafka consumer source
     pitgun-source-mqtt/   # MQTT subscriber source
-    pitgun-source-physics/# Simulated/computed channels
-    
-    # Optional
-    pitgun-emulator/      # dataset playback and synthetic channels
+
+    # Deterministic compute and first domain application
+    pitgun-solver/        # target: generic deterministic compute verification
+    pitgun-simulator/     # racing lap-time simulator and data pack
   apps/
     pitgun-cli/           # CLI for running manifests locally
+    pitgun-replay/        # replay tooling
   services/
-    pitgun-telemetryd/    # telemetry ingestion service
-    pitgun-authority/     # config authority service
+    pitgun-gateway/       # framework ingress service
+    pitgun-authority/     # signed contract and policy authority service
   examples/
-    multi_source.rs       # comprehensive pipeline example
-    udp_binary.rs         # UDP binary format example
-    websocket_game.rs     # game telemetry example
-    kafka_stream.rs       # Kafka streaming example
-    mqtt_iot.rs           # MQTT IoT example
     registries/
       motorsport_full.yaml
       iot_sensors.yaml
@@ -80,25 +89,80 @@ pitgun/
 
 Responsibilities:
 
--  `TelemetrySource` trait: common interface for all sources.
--  `TelemetryFrame` model: canonical data format.
--  `ParameterRegistry`: parameter definitions and metadata.
--  `SourceStats`, `SourceState`, `SourceError`: source lifecycle.
--  `Sample`, `SampleValue`, `SignalQuality`: data types.
+- `TelemetrySource` trait: common interface for all sources.
+- `TelemetryFrame` model: canonical data format.
+- `ParameterRegistry`: parameter definitions and metadata.
+- Generic envelopes, signed contract payloads, schema/version identifiers.
+- `SourceStats`, `SourceState`, `SourceError`: source lifecycle.
+- `Sample`, `SampleValue`, `SignalQuality`: data types.
+
+Target boundary: `pitgun-contract` should remain domain-neutral. Racing-specific
+types currently present in the crate are migration candidates and should be
+extracted or isolated so the generic crate surface does not encode racing
+semantics.
 
 ### 2.2 pitgun-core
 
 Responsibilities:
 
--  `TelemetryPipeline`: multi-source orchestration.
--  `ConverterService`: raw to engineering unit conversion.
--  SAT JSON parsing + canonical dictionary resolution.
--  Manifest models + validation hooks.
--  FormulaProcessor v1: core evaluation loop.
--  AST (Bolts) construction and execution.
--  In-memory data model for channels and timeseries.
+- `TelemetryPipeline`: multi-source orchestration.
+- `ConverterService`: raw to engineering unit conversion.
+- SAT JSON parsing + canonical dictionary resolution.
+- Manifest models + validation hooks.
+- FormulaProcessor v1: core evaluation loop.
+- AST (Bolts) construction and execution.
+- In-memory data model for channels and timeseries.
 
-### 2.3 pitgun-cli
+### 2.3 pitgun-policy
+
+Responsibilities:
+
+- Load and validate policy definitions.
+- Canonicalize submitted configuration payloads.
+- Apply constraints and limits.
+- Produce stable policy hashes.
+- Support anti-cheat validation for distributed client-side simulation.
+
+The engine should stay generic. Racing rules can be supplied as policy data, but
+the reusable policy crate should not be hard-coded to `RaceInput`,
+`CompetitorSpec`, or car setup structures.
+
+### 2.4 pitgun-gateway
+
+Responsibilities:
+
+- Accept framework envelopes over transports such as WebSocket.
+- Validate schema versions, contract references, signatures, sizes, and rates.
+- Route accepted payloads to persistence or downstream consumers.
+
+The gateway is the framework entrypoint. Racing fields belong in payloads or
+metadata, not in the generic envelope.
+
+### 2.5 pitgun-simulator
+
+Responsibilities:
+
+- Own the racing lap-time model and racing simulation behavior.
+- Load and embed the racing data pack.
+- Resolve racing ids such as `vehicle_id`, `track_id`, and `driver_id`.
+- Expose runtime and WASM-friendly APIs for the game and tools.
+
+This crate is the target home for racing physics currently located in
+`pitgun-solver`.
+
+### 2.6 pitgun-solver
+
+Target responsibilities, if retained:
+
+- Generic deterministic job identity.
+- Canonical input and output hashing.
+- Model/version identifiers.
+- Result verification hooks.
+- Reusable execution contracts for distributed compute.
+
+`pitgun-solver` should not own racing physics or racing telemetry semantics.
+
+### 2.7 pitgun-cli
 
 Responsibilities:
 
@@ -107,15 +171,7 @@ Responsibilities:
 -  Wire datasets (CSV, emulator, etc.) into the core.
 -  Provide a UX for quick validation and experimentation.
 
-### 2.4 pitgun-emulator (optional)
-
-Responsibilities:
-
--  Load recorded datasets (CSV, Parquet…).
--  Replay them at configurable speed (real-time, xN, as-fast-as-possible).
--  Provide synthetic/sandbox channels to test formulas and manifests locally.
-
-### 2.5 Services (reference implementations)
+### 2.8 Services (reference implementations)
 
 Deployable binaries live under `services/`, separate from reusable crates. These
 are intentionally thin wrappers around `pitgun-core` and future APIs.
@@ -466,6 +522,5 @@ parameters:
 | `pitgun-source-ws` | WebSocket | Games, web apps, JSON streams |
 | `pitgun-source-kafka` | Kafka | High-volume data platforms |
 | `pitgun-source-mqtt` | MQTT | IoT devices, pub/sub |
-| `pitgun-source-physics` | In-process | Simulated/computed channels |
 
 Each source crate implements `TelemetrySource` and uses the appropriate codec from `pitgun-codec-*`.
