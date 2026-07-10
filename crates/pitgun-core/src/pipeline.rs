@@ -455,7 +455,7 @@ impl FrameProcessor for LoggingProcessor {
             self.prefix,
             frame.sequence,
             frame.sample_count(),
-            &frame.source_id
+            frame.source_id
         );
         Some(frame)
     }
