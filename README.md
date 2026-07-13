@@ -100,6 +100,7 @@ For gateway-specific variables and payload contracts, see:
 
 - `ARCHITECTURE.md` - framework architecture and boundaries
 - `docs/FRAMEWORK_BOUNDARIES.md` - target boundary between framework crates and the racing application
+- `docs/DETERMINISTIC_RUN_CONTRACT_V1.md` - run identity, reproducibility, native/WASM comparison, and replay contract
 - `docs/WIRE_FORMATS.md` - wire protocol specifications
 - `docs/commands.md` - CLI and command usage
 - `docs/index.md` - entry point for technical docs
