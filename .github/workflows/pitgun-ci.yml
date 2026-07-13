@@ -56,5 +56,8 @@ jobs:
       - name: Install wasm-pack
         run: cargo install wasm-pack --locked --version 0.14.0
 
+      - name: Verify deterministic contract primitives in Node/WASM
+        run: wasm-pack test --node crates/pitgun-contract
+
       - name: Verify Racing golden run in Node/WASM
         run: wasm-pack test --node crates/pitgun-solver

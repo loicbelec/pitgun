@@ -1,4 +1,5 @@
 pub mod codec;
+pub mod determinism;
 pub mod frame;
 pub mod racing;
 pub mod registry;
@@ -7,6 +8,10 @@ pub mod source;
 pub use codec::{
     CodecCapabilities, CodecContext, CodecError, CodecResult, DecodeOutput, JsonCodec,
     ProtocolInfo, TelemetryCodec,
+};
+pub use determinism::{
+    CanonicalJsonError, Digest, DigestParseError, canonical_json_bytes, canonical_json_digest,
+    canonicalize_json_str,
 };
 pub use frame::{
     Event, EventData, EventId, EventSeverity, ParameterId, Sample, SampleValue, SessionId,
