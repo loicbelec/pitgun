@@ -21,11 +21,12 @@ It is domain-agnostic by design (industrial, IoT, mobility, finance, and simulat
 | Layer | Responsibility | Main Components |
 |---|---|---|
 | Sources and Codecs | Connect to external systems and normalize inputs | `pitgun-source-*`, `pitgun-codec-*` |
-| Gateway | Receive, validate, and persist incoming envelopes | `services/pitgun-gateway` |
+| Gateway | Receive, validate, and route generic data envelopes | `services/pitgun-gateway` |
 | Core Processing | Transform and derive channels with manifest-defined logic | `crates/pitgun-core` |
-| Contracts | Shared schemas and protocol types | `crates/pitgun-contract` |
-| Policy and Signing | Validation, access control, signing primitives | `crates/pitgun-policy`, `crates/pitgun-signing` |
-| Solver and Compute | Deterministic compute orchestration | `crates/pitgun-solver`, `crates/pitgun-simulator` |
+| Contracts | Domain-neutral envelopes, frames, registries, and signed contracts | `crates/pitgun-contract` |
+| Policy and Signing | Generic policy evaluation, canonicalization, constraints, signing primitives | `crates/pitgun-policy`, `crates/pitgun-signing` |
+| Deterministic Compute | Future generic execution and verification layer for distributed compute | `crates/pitgun-solver` |
+| Racing Simulator | First domain application: lap-time simulation, racing data pack, WASM runtime | `crates/pitgun-simulator` |
 | Tooling | Replay and CLI operations | `apps/pitgun-replay`, `apps/pitgun-cli` |
 | Authority Service | Governance-facing runtime service | `services/pitgun-authority` |
 
@@ -98,6 +99,7 @@ For gateway-specific variables and payload contracts, see:
 ## Documentation Map
 
 - `ARCHITECTURE.md` - framework architecture and boundaries
+- `docs/FRAMEWORK_BOUNDARIES.md` - target boundary between framework crates and the racing application
 - `docs/WIRE_FORMATS.md` - wire protocol specifications
 - `docs/commands.md` - CLI and command usage
 - `docs/index.md` - entry point for technical docs
@@ -124,6 +126,13 @@ If Docker is installed, this script also performs a local gateway image build eq
 
 This repository may include reference assets and examples from specific domains.
 Those examples demonstrate usage patterns only; the framework primitives remain domain-agnostic.
+
+The racing game is the first production domain for Pitgun. Racing-specific
+concepts such as vehicles, circuits, lap times, competitors, setup tuning, tires,
+hybrid energy, and race results belong above the generic framework boundary. The
+framework may carry these values as validated payloads, samples, metadata, or
+registry entries, but generic crates should not need to understand their domain
+meaning.
 
 ## License
 
