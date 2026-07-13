@@ -5,6 +5,11 @@ Racing JSON/WASM boundary while the simulation kernel moves between crates.
 `racing_run_v1.expected.json` deliberately stores a compact observable summary
 instead of the complete telemetry stream.
 
+The target cross-runtime guarantees, run identity, and digest rules are defined
+by [`DeterministicRunContractV1`](../../../../docs/DETERMINISTIC_RUN_CONTRACT_V1.md).
+The fixture is the executable compatibility guard while the typed contract,
+canonical digests, and stable RNG identifiers are implemented.
+
 The fixture covers:
 
 - race and lap timing;
