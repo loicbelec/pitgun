@@ -40,3 +40,21 @@ jobs:
 
       - name: Clippy (lints)
         run: cargo clippy -p pitgun-gateway -p pitgun-authority -- -D warnings
+
+  wasm-golden-run:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust with WASM target
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+
+      - name: Install wasm-pack
+        run: cargo install wasm-pack --locked --version 0.14.0
+
+      - name: Verify Racing golden run in Node/WASM
+        run: wasm-pack test --node crates/pitgun-solver
