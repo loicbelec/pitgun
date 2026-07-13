@@ -1,0 +1,49 @@
+{
+  "total_time_ms": 85284,
+  "player_lap_times_ms": [
+    85284
+  ],
+  "standings": [
+    {
+      "competitor_id": "player",
+      "position": 1,
+      "total_time_ms": 85284,
+      "best_lap_ms": 85284,
+      "laps_completed": 1,
+      "gap_to_leader_ms": 0,
+      "status": "finished"
+    }
+  ],
+  "telemetry": {
+    "batch_count": 7,
+    "frame_count": 427,
+    "first_timestamp_us": 0,
+    "last_timestamp_us": 85200000,
+    "first_sequence": 0,
+    "last_sequence": 426,
+    "samples_per_frame": 17,
+    "parameter_ids": [
+      5000,
+      5001,
+      5002,
+      5003,
+      5004,
+      5005,
+      5006,
+      5007,
+      5008,
+      5009,
+      5010,
+      5011,
+      5012,
+      5013,
+      5014,
+      5015,
+      5016
+    ],
+    "first_lap_number": 1,
+    "last_lap_number": 1,
+    "source_id": "pitwall-sim:player",
+    "sampling_hz": "5"
+  }
+}
