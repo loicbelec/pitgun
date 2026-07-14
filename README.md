@@ -1,4 +1,8 @@
-[![Pitgun](docs/img/pitgun_transparent.png)](https://pitgun.com)
+<p align="center">
+  <a href="https://pitgun.com">
+    <img src="docs/img/logo.svg" width="140" alt="Pitgun">
+  </a>
+</p>
 
 # Pitgun
 
