@@ -256,6 +256,10 @@ comparison manifest. Each non-exact field is selected by JSON Pointer and has:
 - an optional quantization step;
 - an explicit rule for signed zero.
 
+Implementation status: the typed V1 contract fails closed on this profile until
+the comparison-manifest type and verifier are implemented. Producers MUST use
+`portable-exact-v1` in the current implementation.
+
 Comparison passes when, for finite expected value `e` and actual value `a`:
 
 ```text

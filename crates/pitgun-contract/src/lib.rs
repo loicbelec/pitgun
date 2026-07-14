@@ -3,6 +3,7 @@ pub mod determinism;
 pub mod frame;
 pub mod racing;
 pub mod registry;
+pub mod run;
 pub mod source;
 
 pub use codec::{
@@ -25,6 +26,13 @@ pub use racing::{
 pub use registry::{
     AccessLevel, Conversion, DataType, Parameter, ParameterRegistry, Range, RegistryError,
     ValidationResult,
+};
+pub use run::{
+    ArtifactIdentity, ContractVersion, DeterministicRunContractV1, EventOrderingKey,
+    EventOrderingV1, ExecutionId, ExecutionReceiptV1, Identifier, InputCanonicalization,
+    InputIdentity, InputMediaType, LogicalClockKind, LogicalClockV1, RandomAlgorithm,
+    RandomContractV1, RunContractError, RuntimeIdentity, RuntimeProfile, ScenarioIdentity, Seed,
+    SemanticVersion, StreamDerivation, StringOrder,
 };
 pub use source::{
     SourceConfig, SourceError, SourceMetadata, SourceResult, SourceState, SourceStats, SourceType,
