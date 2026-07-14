@@ -197,6 +197,9 @@ The target V1 algorithm identifiers are:
 - `sha256-label-v1` for deriving a stream seed from
   `JCS([root_seed, component_id, entity_id, logical_index])`.
 
+The exact fixed-width operations, domain-separation bytes, string encoding, and
+published compatibility vectors are defined in [`RNG_V1.md`](RNG_V1.md).
+
 The implementation ticket for these identifiers MUST publish test vectors.
 Until that work lands, the current Racing golden run detects regressions but is
 not yet a durable RNG compatibility guarantee.
