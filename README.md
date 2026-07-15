@@ -48,9 +48,10 @@ its own domain model and physical rules.
 - A Racing golden scenario exercised in both native Rust and Node/WASM
 - Published `run_id`, canonical Racing output, and telemetry summary digest vectors
 - Racing physics, lap simulation, data packs, and browser-compatible WASM
-- Domain-neutral envelopes, contracts, manifests, sources, codecs, and gateway
-  ingestion
-- Replay, command-line, policy, signing, and authority building blocks
+- Domain-neutral telemetry envelopes, frames, manifests, and processing pipelines
+- Replay and command-line tooling for operating local data flows
+- Optional adapters for observed telemetry over UDP and WebSocket
+- Policy, signing, gateway, and authority building blocks for hosted deployments
 
 The Racing fixture now produces the same `run_id`, `output_digest`, and
 `telemetry_summary_digest` in native Rust and Node/WASM. The checked-in canonical
@@ -119,17 +120,18 @@ migration as complete.
 
 ## Architecture at a Glance
 
-| Layer | Responsibility | Main components |
+The primary architecture follows the deterministic loop rather than a transport
+stack:
+
+| Role | Responsibility | Main components |
 |---|---|---|
-| Sources and codecs | Connect external systems and normalize inputs | `pitgun-source-*`, `pitgun-codec-*` |
-| Gateway | Receive, validate, and route generic data envelopes | `services/pitgun-gateway` |
-| Core processing | Transform channels with manifest-defined logic | `crates/pitgun-core` |
-| Contracts | Define envelopes, frames, registries, and signed contracts | `crates/pitgun-contract` |
-| Policy and signing | Evaluate policies, canonicalize, constrain, and sign | `crates/pitgun-policy`, `crates/pitgun-signing` |
-| Deterministic compute | Execute and verify reproducible runs | `crates/pitgun-solver` |
-| Racing application | Model lap physics, orchestrate races, and expose WASM | `crates/pitgun-simulator` |
-| Tooling | Operate and replay data flows | `apps/pitgun-cli`, `apps/pitgun-replay` |
-| Authority service | Expose governance-facing runtime operations | `services/pitgun-authority` |
+| **Core contract** | Define versioned scenarios, telemetry frames, run identity, and canonical evidence | `crates/pitgun-contract` |
+| **Deterministic compute** | Execute and verify reproducible runs | `crates/pitgun-solver` |
+| **Reference workload** | Model Racing physics, orchestrate races, and expose WASM | `crates/pitgun-simulator` |
+| **Telemetry processing** | Transform generated channels with manifest-defined logic | `crates/pitgun-core` |
+| **Replay and tooling** | Run, inspect, replay, and verify local artifacts | `apps/pitgun-cli`, `apps/pitgun-replay` |
+| **Hosted governance** | Constrain, sign, receive, and audit distributed runs | `crates/pitgun-policy`, `crates/pitgun-signing`, `services/pitgun-authority`, `services/pitgun-gateway` |
+| **Observed-data integrations** | Capture external telemetry for comparison, calibration, processing, or later replay | `pitgun-source-udp`, `pitgun-source-ws`, `pitgun-codec-*` |
 
 ```text
 crates/     reusable framework and simulation crates
@@ -140,10 +142,27 @@ examples/   manifests, registries, and integration examples
 policies/   policy samples
 ```
 
-## Optional: Run the Gateway
+The complete crate and transport inventory remains available in
+[Architecture](ARCHITECTURE.md). Experimental Kafka and MQTT adapters are not
+part of the primary simulation path or quickstart.
 
-The gateway demonstrates Pitgun's generic telemetry ingress. It is one component
-of the loop, not the primary product entry point.
+## Observed Data Integrations
+
+Pitgun-generated telemetry is the primary data path. UDP and WebSocket adapters
+also allow the framework to capture telemetry from an external system for
+comparison with a model, calibration, processing, or deterministic replay.
+
+An external stream is not deterministic: its timing, ordering, and availability
+belong to the operating environment. Once captured as a versioned artifact,
+however, Pitgun can process and replay that recorded data reproducibly. These
+adapters therefore sit outside the deterministic simulation kernel.
+
+## Optional Hosted Flow
+
+The gateway and authority support distributed deployments in which contracts are
+issued centrally and simulations execute elsewhere. They are optional hosted
+components, not requirements for the local demo or the primary product entry
+point.
 
 ```bash
 PITGUN_GATEWAY_API_KEY=dev-secret \
