@@ -4,6 +4,7 @@
 //! `docs/DETERMINISTIC_RUN_CONTRACT_V1.md`. They identify a logical computation
 //! separately from any concrete native or WASM execution attempt.
 
+use std::collections::BTreeSet;
 use std::fmt;
 use std::str::FromStr;
 
@@ -11,7 +12,7 @@ use semver::Version;
 use serde::{Deserialize, Deserializer, Serialize, Serializer, de};
 use uuid::{Uuid, Variant};
 
-use crate::{CanonicalJsonError, Digest, canonical_json_digest};
+use crate::{CanonicalJsonError, Digest, TelemetryFrame, canonical_json_digest};
 
 const MAX_IDENTIFIER_LENGTH: usize = 128;
 const MAX_SAFE_JSON_INTEGER: u64 = 9_007_199_254_740_991;
@@ -264,6 +265,283 @@ pub enum ContractVersion {
     /// `DeterministicRunContractV1` wire semantics.
     #[serde(rename = "pitgun.deterministic-run/v1")]
     V1,
+}
+
+/// Wire version of the deterministic telemetry summary.
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Serialize, Deserialize)]
+pub enum TelemetrySummaryVersion {
+    /// Domain-neutral telemetry evidence defined by the V1 run contract.
+    #[serde(rename = "pitgun.telemetry-summary/v1")]
+    V1,
+}
+
+/// Errors produced while aggregating deterministic telemetry evidence.
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub enum TelemetrySummaryError {
+    /// A frame or event count exceeded the supported integer range.
+    CountOverflow(&'static str),
+    /// A value cannot be represented exactly by the V1 I-JSON profile.
+    UnsafeInteger {
+        /// Summary field containing the value.
+        field: &'static str,
+        /// Rejected decimal value.
+        value: String,
+    },
+    /// Empty and non-empty streams require different boundary representations.
+    InvalidBoundaries,
+    /// A non-empty stream cannot declare zero transport batches.
+    InvalidBatchCount,
+    /// Parameter identifiers must be strictly increasing and therefore unique.
+    InvalidParameterOrder,
+}
+
+impl fmt::Display for TelemetrySummaryError {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::CountOverflow(field) => {
+                write!(formatter, "telemetry summary {field} overflowed u64")
+            }
+            Self::UnsafeInteger { field, value } => write!(
+                formatter,
+                "telemetry summary {field} is outside the exact I-JSON range: {value}"
+            ),
+            Self::InvalidBoundaries => formatter.write_str(
+                "telemetry summary boundaries must all be null for an empty stream and all present for a non-empty stream",
+            ),
+            Self::InvalidBatchCount => formatter
+                .write_str("a non-empty telemetry summary must declare at least one batch"),
+            Self::InvalidParameterOrder => formatter.write_str(
+                "telemetry summary parameter_ids must be sorted and deduplicated",
+            ),
+        }
+    }
+}
+
+impl std::error::Error for TelemetrySummaryError {}
+
+/// Canonical domain-neutral telemetry evidence for one deterministic run.
+#[derive(Clone, Debug, Eq, PartialEq, Serialize)]
+pub struct TelemetrySummaryV1 {
+    /// Exact summary schema and aggregation semantics.
+    schema_version: TelemetrySummaryVersion,
+    /// Number of transport batches containing the ordered frames.
+    batch_count: u64,
+    /// Number of frames aggregated into this summary.
+    frame_count: u64,
+    /// Timestamp of the first frame, or `null` for an empty stream.
+    first_timestamp_us: Option<i64>,
+    /// Timestamp of the last frame, or `null` for an empty stream.
+    last_timestamp_us: Option<i64>,
+    /// Sequence of the first frame, or `null` for an empty stream.
+    first_sequence: Option<u64>,
+    /// Sequence of the last frame, or `null` for an empty stream.
+    last_sequence: Option<u64>,
+    /// Sorted and deduplicated parameter identifiers observed in all frames.
+    parameter_ids: Vec<u16>,
+    /// Total number of events carried by all frames.
+    event_count: u64,
+    /// Frames known to have been dropped before this evidence was produced.
+    dropped_frame_count: u64,
+}
+
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct TelemetrySummaryWire {
+    schema_version: TelemetrySummaryVersion,
+    batch_count: u64,
+    frame_count: u64,
+    first_timestamp_us: Option<i64>,
+    last_timestamp_us: Option<i64>,
+    first_sequence: Option<u64>,
+    last_sequence: Option<u64>,
+    parameter_ids: Vec<u16>,
+    event_count: u64,
+    dropped_frame_count: u64,
+}
+
+impl<'de> Deserialize<'de> for TelemetrySummaryV1 {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let wire = TelemetrySummaryWire::deserialize(deserializer)?;
+        let summary = Self {
+            schema_version: wire.schema_version,
+            batch_count: wire.batch_count,
+            frame_count: wire.frame_count,
+            first_timestamp_us: wire.first_timestamp_us,
+            last_timestamp_us: wire.last_timestamp_us,
+            first_sequence: wire.first_sequence,
+            last_sequence: wire.last_sequence,
+            parameter_ids: wire.parameter_ids,
+            event_count: wire.event_count,
+            dropped_frame_count: wire.dropped_frame_count,
+        };
+        summary.validate().map_err(de::Error::custom)?;
+        Ok(summary)
+    }
+}
+
+impl TelemetrySummaryV1 {
+    /// Aggregates frames supplied in their deterministic total order.
+    pub fn from_ordered_frames<'a, I>(
+        batch_count: u64,
+        frames: I,
+        dropped_frame_count: u64,
+    ) -> Result<Self, TelemetrySummaryError>
+    where
+        I: IntoIterator<Item = &'a TelemetryFrame>,
+    {
+        validate_summary_u64("batch_count", batch_count)?;
+        validate_summary_u64("dropped_frame_count", dropped_frame_count)?;
+
+        let mut frame_count = 0_u64;
+        let mut event_count = 0_u64;
+        let mut first_timestamp_us = None;
+        let mut last_timestamp_us = None;
+        let mut first_sequence = None;
+        let mut last_sequence = None;
+        let mut parameter_ids = BTreeSet::new();
+
+        for frame in frames {
+            validate_summary_i64("timestamp_us", frame.timestamp_us)?;
+            validate_summary_u64("sequence", frame.sequence)?;
+
+            frame_count = frame_count
+                .checked_add(1)
+                .ok_or(TelemetrySummaryError::CountOverflow("frame_count"))?;
+            let frame_event_count = u64::try_from(frame.events.len())
+                .map_err(|_| TelemetrySummaryError::CountOverflow("event_count"))?;
+            event_count = event_count
+                .checked_add(frame_event_count)
+                .ok_or(TelemetrySummaryError::CountOverflow("event_count"))?;
+
+            first_timestamp_us.get_or_insert(frame.timestamp_us);
+            first_sequence.get_or_insert(frame.sequence);
+            last_timestamp_us = Some(frame.timestamp_us);
+            last_sequence = Some(frame.sequence);
+            parameter_ids.extend(frame.samples.iter().map(|sample| sample.parameter_id));
+        }
+
+        validate_summary_u64("frame_count", frame_count)?;
+        validate_summary_u64("event_count", event_count)?;
+
+        let summary = Self {
+            schema_version: TelemetrySummaryVersion::V1,
+            batch_count,
+            frame_count,
+            first_timestamp_us,
+            last_timestamp_us,
+            first_sequence,
+            last_sequence,
+            parameter_ids: parameter_ids.into_iter().collect(),
+            event_count,
+            dropped_frame_count,
+        };
+        summary.validate()?;
+        Ok(summary)
+    }
+
+    /// Returns the exact summary schema version.
+    #[must_use]
+    pub const fn schema_version(&self) -> TelemetrySummaryVersion {
+        self.schema_version
+    }
+
+    /// Returns the number of transport batches represented by the summary.
+    #[must_use]
+    pub const fn batch_count(&self) -> u64 {
+        self.batch_count
+    }
+
+    /// Returns the number of ordered frames represented by the summary.
+    #[must_use]
+    pub const fn frame_count(&self) -> u64 {
+        self.frame_count
+    }
+
+    /// Returns the first timestamp, or `None` for an empty stream.
+    #[must_use]
+    pub const fn first_timestamp_us(&self) -> Option<i64> {
+        self.first_timestamp_us
+    }
+
+    /// Returns the last timestamp, or `None` for an empty stream.
+    #[must_use]
+    pub const fn last_timestamp_us(&self) -> Option<i64> {
+        self.last_timestamp_us
+    }
+
+    /// Returns the first sequence, or `None` for an empty stream.
+    #[must_use]
+    pub const fn first_sequence(&self) -> Option<u64> {
+        self.first_sequence
+    }
+
+    /// Returns the last sequence, or `None` for an empty stream.
+    #[must_use]
+    pub const fn last_sequence(&self) -> Option<u64> {
+        self.last_sequence
+    }
+
+    /// Returns the strictly ordered unique parameter identifiers.
+    #[must_use]
+    pub fn parameter_ids(&self) -> &[u16] {
+        &self.parameter_ids
+    }
+
+    /// Returns the number of events carried by the ordered frames.
+    #[must_use]
+    pub const fn event_count(&self) -> u64 {
+        self.event_count
+    }
+
+    /// Returns the number of frames known to have been dropped.
+    #[must_use]
+    pub const fn dropped_frame_count(&self) -> u64 {
+        self.dropped_frame_count
+    }
+
+    fn validate(&self) -> Result<(), TelemetrySummaryError> {
+        validate_summary_u64("batch_count", self.batch_count)?;
+        validate_summary_u64("frame_count", self.frame_count)?;
+        validate_summary_u64("event_count", self.event_count)?;
+        validate_summary_u64("dropped_frame_count", self.dropped_frame_count)?;
+        for timestamp in [self.first_timestamp_us, self.last_timestamp_us]
+            .into_iter()
+            .flatten()
+        {
+            validate_summary_i64("timestamp_us", timestamp)?;
+        }
+        for sequence in [self.first_sequence, self.last_sequence]
+            .into_iter()
+            .flatten()
+        {
+            validate_summary_u64("sequence", sequence)?;
+        }
+
+        let boundaries_present = [
+            self.first_timestamp_us.is_some(),
+            self.last_timestamp_us.is_some(),
+            self.first_sequence.is_some(),
+            self.last_sequence.is_some(),
+        ];
+        let valid_boundaries = if self.frame_count == 0 {
+            boundaries_present.iter().all(|present| !present)
+        } else {
+            boundaries_present.iter().all(|present| *present)
+        };
+        if !valid_boundaries {
+            return Err(TelemetrySummaryError::InvalidBoundaries);
+        }
+        if self.frame_count > 0 && self.batch_count == 0 {
+            return Err(TelemetrySummaryError::InvalidBatchCount);
+        }
+        if !self.parameter_ids.windows(2).all(|pair| pair[0] < pair[1]) {
+            return Err(TelemetrySummaryError::InvalidParameterOrder);
+        }
+        Ok(())
+    }
 }
 
 /// Supported cross-runtime comparison profile.
@@ -688,6 +966,28 @@ fn validate_identifier(value: &str) -> Result<(), RunContractError> {
     }
 }
 
+fn validate_summary_u64(field: &'static str, value: u64) -> Result<(), TelemetrySummaryError> {
+    if value <= MAX_SAFE_JSON_INTEGER {
+        Ok(())
+    } else {
+        Err(TelemetrySummaryError::UnsafeInteger {
+            field,
+            value: value.to_string(),
+        })
+    }
+}
+
+fn validate_summary_i64(field: &'static str, value: i64) -> Result<(), TelemetrySummaryError> {
+    if value.unsigned_abs() <= MAX_SAFE_JSON_INTEGER {
+        Ok(())
+    } else {
+        Err(TelemetrySummaryError::UnsafeInteger {
+            field,
+            value: value.to_string(),
+        })
+    }
+}
+
 const fn required_event_keys() -> &'static [EventOrderingKey; 4] {
     &[
         EventOrderingKey::LogicalTick,
@@ -709,6 +1009,8 @@ const fn greatest_common_divisor(mut left: u64, mut right: u64) -> u64 {
 #[cfg(test)]
 mod tests {
     use serde_json::json;
+
+    use crate::{Sample, SampleValue, SignalQuality};
 
     use super::*;
 
@@ -978,5 +1280,98 @@ mod tests {
                 .parse::<ExecutionId>()
                 .is_err()
         );
+    }
+
+    #[test]
+    fn telemetry_summary_aggregates_ordered_frames_and_parameter_set() {
+        let first = TelemetryFrame::builder()
+            .session_id(7)
+            .sequence(10)
+            .timestamp_us(1_000)
+            .received_at_us(1_000)
+            .source_id("source")
+            .samples([
+                Sample::new(5, SampleValue::U16(1), SignalQuality::Good),
+                Sample::new(2, SampleValue::U16(1), SignalQuality::Good),
+            ])
+            .build();
+        let last = TelemetryFrame::builder()
+            .session_id(7)
+            .sequence(11)
+            .timestamp_us(2_000)
+            .received_at_us(2_000)
+            .source_id("source")
+            .sample(Sample::new(5, SampleValue::U16(2), SignalQuality::Good))
+            .build();
+
+        let summary = TelemetrySummaryV1::from_ordered_frames(1, [&first, &last], 0)
+            .expect("telemetry summary");
+
+        assert_eq!(summary.schema_version(), TelemetrySummaryVersion::V1);
+        assert_eq!(summary.batch_count(), 1);
+        assert_eq!(summary.frame_count(), 2);
+        assert_eq!(summary.first_timestamp_us(), Some(1_000));
+        assert_eq!(summary.last_timestamp_us(), Some(2_000));
+        assert_eq!(summary.first_sequence(), Some(10));
+        assert_eq!(summary.last_sequence(), Some(11));
+        assert_eq!(summary.parameter_ids(), &[2, 5]);
+        assert_eq!(summary.event_count(), 0);
+        assert_eq!(summary.dropped_frame_count(), 0);
+    }
+
+    #[test]
+    fn empty_telemetry_summary_uses_null_boundaries() {
+        let frames: [&TelemetryFrame; 0] = [];
+        let summary =
+            TelemetrySummaryV1::from_ordered_frames(0, frames, 0).expect("empty telemetry summary");
+
+        assert_eq!(summary.frame_count(), 0);
+        assert_eq!(summary.first_timestamp_us(), None);
+        assert_eq!(summary.last_timestamp_us(), None);
+        assert_eq!(summary.first_sequence(), None);
+        assert_eq!(summary.last_sequence(), None);
+        assert!(summary.parameter_ids().is_empty());
+    }
+
+    #[test]
+    fn telemetry_summary_rejects_non_portable_integers() {
+        let frame = TelemetryFrame::builder()
+            .session_id(7)
+            .sequence(MAX_SAFE_JSON_INTEGER + 1)
+            .timestamp_us(0)
+            .received_at_us(0)
+            .source_id("source")
+            .build();
+
+        assert!(matches!(
+            TelemetrySummaryV1::from_ordered_frames(1, [&frame], 0),
+            Err(TelemetrySummaryError::UnsafeInteger {
+                field: "sequence",
+                ..
+            })
+        ));
+    }
+
+    #[test]
+    fn telemetry_summary_deserialization_rejects_non_canonical_fields() {
+        let valid = json!({
+            "schema_version": "pitgun.telemetry-summary/v1",
+            "batch_count": 1,
+            "frame_count": 1,
+            "first_timestamp_us": 0,
+            "last_timestamp_us": 0,
+            "first_sequence": 0,
+            "last_sequence": 0,
+            "parameter_ids": [2, 5],
+            "event_count": 0,
+            "dropped_frame_count": 0
+        });
+        let mut unsorted = valid.clone();
+        unsorted["parameter_ids"] = json!([5, 2]);
+        let mut missing_boundary = valid;
+        missing_boundary["last_sequence"] = serde_json::Value::Null;
+
+        assert!(serde_json::from_value::<TelemetrySummaryV1>(unsorted).is_err());
+        assert!(serde_json::from_value::<TelemetrySummaryV1>(missing_boundary).is_err());
     }
 }

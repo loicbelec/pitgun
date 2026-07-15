@@ -1,0 +1,30 @@
+{
+  "schema_version": "pitgun.telemetry-summary/v1",
+  "batch_count": 7,
+  "frame_count": 427,
+  "first_timestamp_us": 0,
+  "last_timestamp_us": 85200000,
+  "first_sequence": 0,
+  "last_sequence": 426,
+  "parameter_ids": [
+    5000,
+    5001,
+    5002,
+    5003,
+    5004,
+    5005,
+    5006,
+    5007,
+    5008,
+    5009,
+    5010,
+    5011,
+    5012,
+    5013,
+    5014,
+    5015,
+    5016
+  ],
+  "event_count": 0,
+  "dropped_frame_count": 0
+}

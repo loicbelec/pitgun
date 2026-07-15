@@ -32,7 +32,8 @@ pub use run::{
     EventOrderingV1, ExecutionId, ExecutionReceiptV1, Identifier, InputCanonicalization,
     InputIdentity, InputMediaType, LogicalClockKind, LogicalClockV1, RandomAlgorithm,
     RandomContractV1, RunContractError, RuntimeIdentity, RuntimeProfile, ScenarioIdentity, Seed,
-    SemanticVersion, StreamDerivation, StringOrder,
+    SemanticVersion, StreamDerivation, StringOrder, TelemetrySummaryError, TelemetrySummaryV1,
+    TelemetrySummaryVersion,
 };
 pub use source::{
     SourceConfig, SourceError, SourceMetadata, SourceResult, SourceState, SourceStats, SourceType,
