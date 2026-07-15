@@ -87,9 +87,10 @@ For the entire Rust workspace:
 cargo test --all
 ```
 
-The planned developer entry point is a single command such as
-`pitgun demo racing --seed 42`. It is tracked in
-[#49](https://github.com/loicbelec/pitgun/issues/49) and is not available yet.
+The planned developer entry point is `pitgun demo racing --seed 42`. Its
+user-facing behavior is specified in the
+[Racing demo CLI contract](docs/RACING_DEMO_CLI_V1.md), tracked in
+[#49](https://github.com/loicbelec/pitgun/issues/49), and not implemented yet.
 
 ## Framework and Racing
 
@@ -194,6 +195,7 @@ The current sequence is intentionally proof-driven:
 
 - [Architecture](ARCHITECTURE.md) — components, data flow, and ownership
 - [Framework boundaries](docs/FRAMEWORK_BOUNDARIES.md) — generic and Racing separation
+- [Racing demo CLI contract](docs/RACING_DEMO_CLI_V1.md) — planned command, bundle layout, report, and failures
 - [Deterministic run contract v1](docs/DETERMINISTIC_RUN_CONTRACT_V1.md) — identity, reproducibility, and replay
 - [Stable RNG v1](docs/RNG_V1.md) — generator and stream derivation algorithms
 - [Wire formats](docs/WIRE_FORMATS.md) — protocol specifications
