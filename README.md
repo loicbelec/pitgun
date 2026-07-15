@@ -46,15 +46,16 @@ its own domain model and physical rules.
 - A versioned [stable RNG contract](docs/RNG_V1.md) with independently derived
   random streams
 - A Racing golden scenario exercised in both native Rust and Node/WASM
+- Published `run_id`, canonical Racing output, and telemetry summary digest vectors
 - Racing physics, lap simulation, data packs, and browser-compatible WASM
 - Domain-neutral envelopes, contracts, manifests, sources, codecs, and gateway
   ingestion
 - Replay, command-line, policy, signing, and authority building blocks
 
-Exact cross-runtime output receipts are the next deterministic milestone; see
-[#55](https://github.com/loicbelec/pitgun/issues/55). Until that lands, the golden
-scenario validates a shared compact summary rather than the complete telemetry
-digest contract.
+The Racing fixture now produces the same `run_id`, `output_digest`, and
+`telemetry_summary_digest` in native Rust and Node/WASM. The checked-in canonical
+artifacts are compared before their hashes so a regression identifies the first
+changed result rather than only reporting a digest mismatch.
 
 ## Try the Deterministic Boundary
 
@@ -162,7 +163,7 @@ Gateway payloads and configuration are documented in
 The current sequence is intentionally proof-driven:
 
 1. Stabilize deterministic contracts and randomness — implemented in v1.
-2. Produce exact native/WASM run and output digests —
+2. Produce exact native/WASM run and output digests — implemented by
    [#55](https://github.com/loicbelec/pitgun/issues/55).
 3. Package the proof as an under-five-minute Racing demo —
    [#49](https://github.com/loicbelec/pitgun/issues/49).

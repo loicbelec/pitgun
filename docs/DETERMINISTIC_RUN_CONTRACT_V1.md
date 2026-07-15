@@ -1,6 +1,8 @@
 # Deterministic Run Contract V1
 
-Status: architecture contract for implementation
+Status: V1 contract with typed identity, canonical JSON, stable RNG, and Racing
+portable-exact evidence implemented; remaining acceptance criteria are noted
+below.
 
 `DeterministicRunContractV1` defines the identity, execution semantics, and
 verification evidence of a deterministic Pitgun run. It is domain-neutral. The
@@ -200,9 +202,8 @@ The target V1 algorithm identifiers are:
 The exact fixed-width operations, domain-separation bytes, string encoding, and
 published compatibility vectors are defined in [`RNG_V1.md`](RNG_V1.md).
 
-The implementation ticket for these identifiers MUST publish test vectors.
-Until that work lands, the current Racing golden run detects regressions but is
-not yet a durable RNG compatibility guarantee.
+The implementation publishes native and WASM compatibility vectors for both
+identifiers in `crates/pitgun-solver/tests/rng_v1.rs`.
 
 ## 6. Clock and event ordering
 
@@ -304,6 +305,10 @@ deduplicated; counts and sequence values are unsigned integers; absent streams
 use `null` for first and last values. A domain MAY extend the summary in a
 namespaced `domain` object whose schema and version are included in the object.
 
+`TelemetrySummaryV1` implements these rules in `pitgun-contract`. It rejects
+unsafe I-JSON integers, incomplete empty/non-empty boundaries, zero batches for
+a non-empty stream, and unsorted or duplicate parameter identifiers.
+
 For audits that require the full telemetry stream, a receipt MAY also contain
 `telemetry_digest`. Frames are then canonicalized individually in total event
 order, length-prefixed as unsigned 64-bit big-endian byte counts, concatenated,
@@ -389,10 +394,23 @@ The expected observable result is:
 }
 ```
 
-The example is complete at the semantic level but its artifact and content
-digests remain illustrative until the canonicalization and stable RNG
-implementation tickets land. The checked-in golden fixture remains the current
-executable source of truth during that transition.
+The JSON contract above remains a semantic illustration. The executable source
+of truth is checked in beside the Racing golden input. It publishes these exact
+portable-exact vectors:
+
+```json
+{
+  "run_id": "sha256:df52c820354d9d56ab7ae8d4596c4cdb2584de43f3d883c68a2cadfcb7e649db",
+  "output_digest": "sha256:af2b6ec0c8e5efeb2d5fdc213cfdff77e4b9b4f455c0db8fc7e05c7afc57e483",
+  "telemetry_summary_digest": "sha256:b69f733ae44dd87a21fe1767b95b19e9e6eaa4bfc73f3a53a9203d33ef920e80"
+}
+```
+
+Native Rust and Node/WASM compare the canonical Racing output and telemetry
+summary artifacts before checking these hashes. The fixture input digest binds
+the actual RFC 8785 input bytes. Its model and data-pack values are fixed
+conformance identities, not runtime artifact attestation; criterion 3 below
+remains separate work.
 
 ## 10. Replay and compatibility
 

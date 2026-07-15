@@ -1,3 +1,4 @@
+pub mod evidence;
 mod kernel;
 pub mod rng;
 
