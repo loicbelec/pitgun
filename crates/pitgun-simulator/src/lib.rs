@@ -5,6 +5,7 @@ mod errors;
 mod models;
 mod profiles;
 mod provider;
+pub mod racing;
 mod runtime;
 mod simulator;
 mod state;

@@ -103,10 +103,18 @@ For the entire Rust workspace:
 cargo test --all
 ```
 
-The planned developer entry point is `pitgun demo racing --seed 42`. Its
-user-facing behavior is specified in the
-[Racing demo CLI contract](docs/RACING_DEMO_CLI_V1.md), tracked in
-[#49](https://github.com/loicbelec/pitgun/issues/49), and not implemented yet.
+The first CLI increment executes the versioned Racing scenario and collects its
+typed telemetry locally:
+
+```bash
+cargo run -p pitgun-cli -- demo racing --seed 42
+```
+
+It currently reports `SIMULATED`. Bundle persistence, derived metrics, replay,
+and the final `VERIFIED` result remain tracked in
+[#49](https://github.com/loicbelec/pitgun/issues/49). Their intended public
+behavior is specified in the
+[Racing demo CLI contract](docs/RACING_DEMO_CLI_V1.md).
 
 ## Framework and Racing
 

@@ -1,0 +1,46 @@
+{
+  "schema_version": "pitgun.racing-demo-scenario/v1",
+  "scenario": {
+    "id": "racing.single-lap",
+    "version": "1.0.0"
+  },
+  "model": {
+    "id": "pitgun.racing",
+    "version": "1.0.0",
+    "digest": "sha256:03541bcc24f946d11071e6fb67915ec5d429dce63362d456aba2c3d339a3fe38"
+  },
+  "data_pack": {
+    "id": "pitgun.racing.2026",
+    "version": "1.0.0",
+    "digest": "sha256:fc6ade498d399cd439cfb33d74ab0e2e6ee1279ed19441ed99b8cea9963875c9"
+  },
+  "clock": {
+    "tick_numerator_us": 200000,
+    "tick_denominator": 1
+  },
+  "request": {
+    "track_id": "it-1922",
+    "laps": 1,
+    "competitors": [
+      {
+        "id": "player",
+        "driver_id": "default",
+        "name": "Player",
+        "team_id": "pitgun",
+        "is_player": true,
+        "tuning": {
+          "engine_points": 25.0,
+          "cooling_points": 25.0,
+          "aero_points": 25.0,
+          "chassis_points": 25.0,
+          "downforce_slider": 0.5,
+          "gear_ratio_slider": 0.5
+        },
+        "budget_cap": 100.0
+      }
+    ],
+    "vehicle_id": "f1_2026",
+    "era": 2026,
+    "hz": 5.0
+  }
+}

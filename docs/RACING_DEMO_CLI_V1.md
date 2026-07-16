@@ -1,7 +1,9 @@
 # Racing Demo CLI Contract V1
 
-Status: planned public interface for [#49](https://github.com/loicbelec/pitgun/issues/49).
-The command is not implemented yet.
+Status: incremental implementation tracked by
+[#49](https://github.com/loicbelec/pitgun/issues/49). The simulation and typed
+telemetry phase is available; persistence, metrics, replay, and verification
+remain planned.
 
 ## Purpose
 
@@ -33,6 +35,9 @@ and prebuilt release binaries may provide the command first.
 ```text
 pitgun demo racing [--seed <U64>] [--output <PATH>]
 ```
+
+The current simulation-only increment accepts `--seed`. The `--output` option
+becomes available with run-bundle persistence in #66.
 
 | Argument | Meaning |
 |---|---|

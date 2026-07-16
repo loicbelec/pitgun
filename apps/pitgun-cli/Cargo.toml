@@ -4,12 +4,18 @@ version = "0.1.0"
 edition = "2021"
 license = "MIT"
 
+[[bin]]
+name = "pitgun"
+path = "src/main.rs"
+
 [dependencies]
 anyhow = { version = "1", default-features = true, features = ["std"] }
 clap = { version = "4.5", features = ["derive"] }
 csv = "1.3"
 pitgun-codec-udp = { path = "../../crates/pitgun-codec-udp" }
+pitgun-contract = { path = "../../crates/pitgun-contract" }
 pitgun-core = { path = "../../crates/pitgun-core" }
+pitgun-simulator = { path = "../../crates/pitgun-simulator" }
 pitgun-source-udp = { path = "../../crates/pitgun-source-udp" }
 pitgun-source-ws = { path = "../../crates/pitgun-source-ws" }
 serde = { version = "1", features = ["derive"] }
