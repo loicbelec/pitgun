@@ -4,23 +4,39 @@
   </a>
 </p>
 
-# Pitgun
+<h1 align="center">Pitgun</h1>
 
-[![CI](https://github.com/loicbelec/pitgun/actions/workflows/pitgun-ci.yml/badge.svg)](https://github.com/loicbelec/pitgun/actions/workflows/pitgun-ci.yml)
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+<p align="center">
+  <strong>Deterministic simulation to telemetry, in Rust.</strong>
+</p>
 
-> Deterministic simulation to telemetry, in Rust.
+<p align="center">
+  Model · Simulate · Observe · Replay · Verify
+</p>
+
+<p align="center">
+  <a href="https://github.com/loicbelec/pitgun/actions/workflows/pitgun-ci.yml"><img src="https://github.com/loicbelec/pitgun/actions/workflows/pitgun-ci.yml/badge.svg" alt="CI"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License: MIT"></a>
+  <br>
+  <img src="https://img.shields.io/badge/macOS-locally_tested-000000?logo=apple&amp;logoColor=white" alt="macOS: locally tested">
+  <a href="https://github.com/loicbelec/pitgun/actions/workflows/pitgun-ci.yml"><img src="https://img.shields.io/badge/Linux-CI_verified-FCC624?logo=linux&amp;logoColor=black" alt="Linux: CI verified"></a>
+  <a href="https://github.com/loicbelec/pitgun/actions/workflows/pitgun-ci.yml"><img src="https://img.shields.io/badge/WebAssembly-golden_tests-654FF0?logo=webassembly&amp;logoColor=white" alt="WebAssembly: golden tests"></a>
+  <img src="https://img.shields.io/badge/Rust-000000?logo=rust&amp;logoColor=white" alt="Written in Rust">
+</p>
+
+<p align="center">
+  <a href="https://pitgun.com">Website</a> ·
+  <a href="https://pitgun.dev">Developer blueprints</a> ·
+  <a href="https://play.pitgun.com">Play Racing</a>
+</p>
 
 Pitgun is an experimental framework for building, running, observing, and
-replaying deterministic time-series simulations. It connects the whole loop:
-
-**Model → Simulate → Observe → Replay and verify**
+replaying deterministic time-series simulations. It connects versioned models
+to reproducible execution, typed telemetry, and auditable replay.
 
 Racing is Pitgun's first reference application and proving ground. The framework
 is designed to become useful beyond motorsport wherever reproducible simulations,
 event streams, and auditable results matter.
-
-[Website](https://pitgun.com) · [Developer blueprints](https://pitgun.dev) · [Play Racing](https://play.pitgun.com)
 
 > [!IMPORTANT]
 > Pitgun is an alpha-stage personal R&D project. Its deterministic contracts are
