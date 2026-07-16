@@ -1,5 +1,17 @@
 # Pitgun command log
 
+## Deterministic Racing demo
+
+Run the built-in versioned scenario with an explicit deterministic seed:
+
+```bash
+cargo run -p pitgun-cli -- demo racing --seed 42
+```
+
+The current increment executes the scenario and collects typed telemetry in
+memory. It reports `SIMULATED`; bundle persistence and `VERIFIED` are delivered
+by the remaining [end-to-end demo work](https://github.com/loicbelec/pitgun/issues/49).
+
 ## Emulator
 cargo run --bin pitgun-emulator -- \
   --target 127.0.0.1:5001 \
@@ -22,7 +34,7 @@ cargo run -p pitgun-cli -- subscribe \
 python scripts/recv_pitgun.py       
 
 ## CLI receiver
-cargo run --bin pitgun-cli -- subscribe \
+cargo run --bin pitgun -- subscribe \
   --bind 127.0.0.1:5001 \
   --json
 
