@@ -122,6 +122,7 @@ fn main() {
 enum CommandError {
     General(anyhow::Error),
     Racing(demo::racing::RacingDemoError),
+    Bundle(demo::bundle::BundleError),
 }
 
 impl CommandError {
@@ -129,6 +130,7 @@ impl CommandError {
         match self {
             Self::General(_) => 1,
             Self::Racing(error) => error.exit_code(),
+            Self::Bundle(error) => error.exit_code(),
         }
     }
 }
@@ -138,6 +140,7 @@ impl fmt::Display for CommandError {
         match self {
             Self::General(error) => error.fmt(formatter),
             Self::Racing(error) => error.fmt(formatter),
+            Self::Bundle(error) => error.fmt(formatter),
         }
     }
 }
@@ -153,6 +156,8 @@ fn run_demo(args: DemoArgs) -> Result<(), CommandError> {
     match args.workload {
         DemoWorkload::Racing(args) => {
             let result = demo::racing::run(&args).map_err(CommandError::Racing)?;
+            let bundle = demo::bundle::persist(&result, args.output.as_deref())
+                .map_err(CommandError::Bundle)?;
             println!("Pitgun Racing deterministic demo\n");
             println!(
                 "scenario    {}@{}",
@@ -169,6 +174,11 @@ fn run_demo(args: DemoArgs) -> Result<(), CommandError> {
                 result.evidence.telemetry_summary.batch_count()
             );
             println!("race_time   {} ms", result.output.total_time_ms);
+            println!(
+                "bundle      {} ({})",
+                bundle.path.display(),
+                bundle.disposition
+            );
             println!("status      SIMULATED");
             Ok(())
         }
@@ -423,7 +433,10 @@ mod tests {
 
         match cli.cmd {
             Cmd::Demo(args) => match args.workload {
-                DemoWorkload::Racing(args) => assert_eq!(args.seed, 42),
+                DemoWorkload::Racing(args) => {
+                    assert_eq!(args.seed, 42);
+                    assert_eq!(args.output, None);
+                }
             },
             Cmd::Subscribe(_) => panic!("expected demo command"),
         }
@@ -446,5 +459,23 @@ mod tests {
     #[test]
     fn rejects_invalid_seed() {
         assert!(Cli::try_parse_from(["pitgun", "demo", "racing", "--seed", "not-a-seed"]).is_err());
+    }
+
+    #[test]
+    fn parses_exact_bundle_destination() {
+        let cli = Cli::try_parse_from(["pitgun", "demo", "racing", "--output", "runs/example"])
+            .expect("valid bundle destination");
+
+        match cli.cmd {
+            Cmd::Demo(args) => match args.workload {
+                DemoWorkload::Racing(args) => {
+                    assert_eq!(
+                        args.output.as_deref(),
+                        Some(std::path::Path::new("runs/example"))
+                    );
+                }
+            },
+            Cmd::Subscribe(_) => panic!("expected demo command"),
+        }
     }
 }

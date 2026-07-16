@@ -2,8 +2,8 @@
 
 Status: incremental implementation tracked by
 [#49](https://github.com/loicbelec/pitgun/issues/49). The simulation and typed
-telemetry phase is available; persistence, metrics, replay, and verification
-remain planned.
+telemetry and run-bundle persistence phases are available; metrics, replay, and
+verification remain planned.
 
 ## Purpose
 
@@ -36,8 +36,7 @@ and prebuilt release binaries may provide the command first.
 pitgun demo racing [--seed <U64>] [--output <PATH>]
 ```
 
-The current simulation-only increment accepts `--seed`. The `--output` option
-becomes available with run-bundle persistence in #66.
+The current persisted-simulation increment accepts both `--seed` and `--output`.
 
 | Argument | Meaning |
 |---|---|
@@ -105,6 +104,11 @@ receipt.json
 `manifest.json` is committed last and identifies the bundle as complete. Paths
 stored inside it are relative so the directory can be moved without changing
 logical evidence.
+
+The current #66 increment writes every listed file except `metrics.json`, which
+is added by #69. Its optional manifest slot and user-visible name are already
+reserved. See [Deterministic Run Bundle V1](RUN_BUNDLE_V1.md) for schema and
+validation details.
 
 ## Collision and Commit Behavior
 

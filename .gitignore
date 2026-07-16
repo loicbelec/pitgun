@@ -1,6 +1,8 @@
 # Rust / Cargo
 /target
 **/*.rs.bk
+/pitgun-runs/
+**/pitgun-runs/
 
 # Logs & dumps
 *.log

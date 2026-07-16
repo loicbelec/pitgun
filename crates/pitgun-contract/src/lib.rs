@@ -1,3 +1,4 @@
+pub mod bundle;
 pub mod codec;
 pub mod determinism;
 pub mod frame;
@@ -6,6 +7,12 @@ pub mod registry;
 pub mod run;
 pub mod source;
 
+pub use bundle::{
+    RunBundleArtifactV1, RunBundleCanonicalArtifactsV1, RunBundleExecutionArtifactsV1,
+    RunBundleManifestError, RunBundleManifestV1, RunBundleManifestVersion, RunBundleMediaType,
+    RunBundleReceiptV1, RunBundleReceiptVersion, RunBundleTelemetryRecordV1,
+    RunBundleTelemetryRecordVersion,
+};
 pub use codec::{
     CodecCapabilities, CodecContext, CodecError, CodecResult, DecodeOutput, JsonCodec,
     ProtocolInfo, TelemetryCodec,

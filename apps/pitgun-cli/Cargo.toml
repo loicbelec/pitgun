@@ -21,3 +21,4 @@ pitgun-source-ws = { path = "../../crates/pitgun-source-ws" }
 serde = { version = "1", features = ["derive"] }
 serde_yaml = "0.9"
 serde_json = "1"
+uuid = { version = "1", features = ["v7"] }

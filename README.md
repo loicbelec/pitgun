@@ -103,18 +103,24 @@ For the entire Rust workspace:
 cargo test --all
 ```
 
-The first CLI increment executes the versioned Racing scenario and collects its
-typed telemetry locally:
+The CLI executes the versioned Racing scenario, collects typed telemetry, and
+persists a validated deterministic run bundle locally:
 
 ```bash
 cargo run -p pitgun-cli -- demo racing --seed 42
 ```
 
-It currently reports `SIMULATED`. Bundle persistence, derived metrics, replay,
-and the final `VERIFIED` result remain tracked in
+By default, the bundle is written below `./pitgun-runs/sha256-<run-id>/`. Use
+`--output <PATH>` to select the exact destination. Repeating the same command
+validates and reuses the immutable bundle rather than overwriting it.
+
+It currently reports `SIMULATED`. Derived metrics, replay, and the final
+`VERIFIED` result remain tracked in
 [#49](https://github.com/loicbelec/pitgun/issues/49). Their intended public
 behavior is specified in the
 [Racing demo CLI contract](docs/RACING_DEMO_CLI_V1.md).
+The portable files and their validation rules are documented in
+[Deterministic Run Bundle V1](docs/RUN_BUNDLE_V1.md).
 
 ## Framework and Racing
 
@@ -219,7 +225,8 @@ The current sequence is intentionally proof-driven:
 
 - [Architecture](ARCHITECTURE.md) — components, data flow, and ownership
 - [Framework boundaries](docs/FRAMEWORK_BOUNDARIES.md) — generic and Racing separation
-- [Racing demo CLI contract](docs/RACING_DEMO_CLI_V1.md) — planned command, bundle layout, report, and failures
+- [Racing demo CLI contract](docs/RACING_DEMO_CLI_V1.md) — command, bundle layout, report, and failures
+- [Deterministic Run Bundle V1](docs/RUN_BUNDLE_V1.md) — portable artifacts, identities, persistence, and validation
 - [Deterministic run contract v1](docs/DETERMINISTIC_RUN_CONTRACT_V1.md) — identity, reproducibility, and replay
 - [Stable RNG v1](docs/RNG_V1.md) — generator and stream derivation algorithms
 - [Wire formats](docs/WIRE_FORMATS.md) — protocol specifications
