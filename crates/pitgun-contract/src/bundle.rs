@@ -71,9 +71,7 @@ pub struct RunBundleCanonicalArtifactsV1 {
     pub output: RunBundleArtifactV1,
     pub telemetry: RunBundleArtifactV1,
     pub telemetry_summary: RunBundleArtifactV1,
-    /// Added by the derived-metric increment; absent before #69.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub metrics: Option<RunBundleArtifactV1>,
+    pub metrics: RunBundleArtifactV1,
 }
 
 /// Evidence tied to one concrete execution rather than the logical run.
@@ -174,14 +172,12 @@ impl RunBundleManifestV1 {
             "telemetry-summary.json",
             RunBundleMediaType::ApplicationJson,
         )?;
-        if let Some(metrics) = &self.canonical_artifacts.metrics {
-            validate_artifact(
-                "metrics",
-                metrics,
-                "metrics.json",
-                RunBundleMediaType::ApplicationJson,
-            )?;
-        }
+        validate_artifact(
+            "metrics",
+            &self.canonical_artifacts.metrics,
+            "metrics.json",
+            RunBundleMediaType::ApplicationJson,
+        )?;
         validate_artifact(
             "receipt",
             &self.execution_artifacts.receipt,
@@ -239,7 +235,7 @@ mod tests {
                     "telemetry-summary.json",
                     RunBundleMediaType::ApplicationJson,
                 ),
-                metrics: None,
+                metrics: artifact("metrics.json", RunBundleMediaType::ApplicationJson),
             },
             execution_artifacts: RunBundleExecutionArtifactsV1 {
                 receipt: artifact("receipt.json", RunBundleMediaType::ApplicationJson),

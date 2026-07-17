@@ -3,8 +3,8 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 use pitgun_contract::{
-    canonical_json_bytes, DeterministicRunContractV1, Digest, ExecutionId, Identifier,
-    RunBundleArtifactV1, RunBundleCanonicalArtifactsV1, RunBundleExecutionArtifactsV1,
+    canonical_json_bytes, DerivedMetricsV1, DeterministicRunContractV1, Digest, ExecutionId,
+    Identifier, RunBundleArtifactV1, RunBundleCanonicalArtifactsV1, RunBundleExecutionArtifactsV1,
     RunBundleManifestV1, RunBundleManifestVersion, RunBundleMediaType, RunBundleReceiptV1,
     RunBundleReceiptVersion, RunBundleTelemetryRecordV1, RunBundleTelemetryRecordVersion,
     RuntimeIdentity, SemanticVersion, TelemetrySummaryV1,
@@ -22,6 +22,7 @@ const CONTRACT_FILE: &str = "contract.json";
 const OUTPUT_FILE: &str = "output.json";
 const TELEMETRY_FILE: &str = "telemetry.jsonl";
 const TELEMETRY_SUMMARY_FILE: &str = "telemetry-summary.json";
+const METRICS_FILE: &str = "metrics.json";
 const RECEIPT_FILE: &str = "receipt.json";
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -76,6 +77,7 @@ struct CanonicalArtifacts {
     output: Vec<u8>,
     telemetry: Vec<u8>,
     telemetry_summary: Vec<u8>,
+    metrics: Vec<u8>,
 }
 
 impl CanonicalArtifacts {
@@ -92,6 +94,7 @@ impl CanonicalArtifacts {
                 .evidence
                 .canonical_telemetry_summary_bytes()
                 .map_err(bundle_error)?,
+            metrics: canonical_json_bytes(&run.metrics).map_err(bundle_error)?,
         })
     }
 
@@ -122,7 +125,11 @@ impl CanonicalArtifacts {
                 RunBundleMediaType::ApplicationJson,
                 &self.telemetry_summary,
             ),
-            metrics: None,
+            metrics: reference(
+                METRICS_FILE,
+                RunBundleMediaType::ApplicationJson,
+                &self.metrics,
+            ),
         }
     }
 }
@@ -203,6 +210,7 @@ fn write_and_commit(
         TELEMETRY_SUMMARY_FILE,
         &artifacts.telemetry_summary,
     )?;
+    write_file(staging, METRICS_FILE, &artifacts.metrics)?;
 
     let receipt = execution_receipt(run)?;
     let receipt_bytes = canonical_json_bytes(&receipt).map_err(bundle_error)?;
@@ -312,9 +320,7 @@ fn validate_bundle(
     validate_reference(root, &manifest.canonical_artifacts.output)?;
     validate_reference(root, &manifest.canonical_artifacts.telemetry)?;
     validate_reference(root, &manifest.canonical_artifacts.telemetry_summary)?;
-    if let Some(metrics) = &manifest.canonical_artifacts.metrics {
-        validate_reference(root, metrics)?;
-    }
+    validate_reference(root, &manifest.canonical_artifacts.metrics)?;
     validate_reference(root, &manifest.execution_artifacts.receipt)?;
 
     let scenario: Value = parse_artifact_json(root, &manifest.canonical_artifacts.scenario)?;
@@ -332,6 +338,9 @@ fn validate_bundle(
     require_schema_version(OUTPUT_FILE, &output)?;
     let summary: TelemetrySummaryV1 =
         parse_artifact_json(root, &manifest.canonical_artifacts.telemetry_summary)?;
+    let metrics: DerivedMetricsV1 =
+        parse_artifact_json(root, &manifest.canonical_artifacts.metrics)?;
+    metrics.validate().map_err(bundle_error)?;
     validate_telemetry(
         root,
         &manifest.canonical_artifacts.telemetry,

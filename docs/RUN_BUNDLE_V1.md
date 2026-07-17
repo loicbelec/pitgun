@@ -19,11 +19,12 @@ validated. `manifest.json` is written last and is the completion marker.
 ├── output.json
 ├── telemetry.jsonl
 ├── telemetry-summary.json
+├── metrics.json
 └── receipt.json
 ```
 
-`metrics.json` is a reserved optional canonical artifact. It becomes present
-when the derived-metric increment tracked by #69 is implemented.
+`metrics.json` contains deterministic values derived from the recorded typed
+telemetry and their complete versioned processor configuration.
 
 All paths in `manifest.json` are fixed relative file names. Moving or copying
 the complete directory therefore does not change any identity.
@@ -38,6 +39,7 @@ the complete directory therefore does not change any identity.
 | Racing output | `pitgun.racing-output/v1` |
 | Each telemetry JSONL record | `pitgun.telemetry-record/v1` |
 | Telemetry summary | `pitgun.telemetry-summary/v1` |
+| Derived metrics | `pitgun.derived-metrics/v1` |
 | Receipt wrapper | `pitgun.run-bundle-receipt/v1` |
 
 JSON artifacts use RFC 8785 canonical encoding. `telemetry.jsonl` contains one
@@ -49,8 +51,8 @@ zero-based ordinal; the file must end with `LF` when it is non-empty.
 The manifest separates two kinds of proof:
 
 - `canonical_artifacts` identifies the scenario, contract, output, telemetry,
-  summary, and eventually metrics. These digests must be identical when the
-  same logical run is repeated.
+  summary, and metrics. These digests must be identical when the same logical
+  run is repeated.
 - `execution_artifacts` identifies `receipt.json`. The receipt records a UUIDv7,
   CLI version, compilation target, and digest of the concrete executable. It may
   differ between genuine execution attempts without changing `run_id`.
@@ -77,7 +79,30 @@ code `30` and remains untouched.
 
 Validation covers the fixed relative layout, canonical JSON encoding, every
 referenced digest, the contract-derived `run_id`, sequential telemetry records,
-the summary frame count, and the receipt bindings.
+the summary frame count, the metrics schema, and the receipt bindings.
+
+## Derived metric V1
+
+The Racing reference workload configures one metric:
+
+```text
+id            racing.observed-maximum-speed
+processor     pitgun.telemetry-aggregate/v1
+parameter     5005
+statistic     maximum
+unit          km/h
+```
+
+This is the maximum speed **observed in the emitted 5 Hz telemetry**, not a
+value copied from the simulator result. The domain-neutral processor considers
+finite numeric samples with `good` or `degraded` quality and records the exact
+sample count alongside the result. Racing supplies only the meaning of
+parameter `5005` and its display unit.
+
+This distinction demonstrates the Observe stage: changing a recorded speed
+sample changes `metrics.json` even if the domain result is left untouched. The
+same aggregate can later calculate a maximum temperature, load, voltage, or any
+other typed scalar without adding domain concepts to `pitgun-core`.
 
 ## Current boundary
 

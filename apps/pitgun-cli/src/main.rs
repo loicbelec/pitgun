@@ -174,6 +174,11 @@ fn run_demo(args: DemoArgs) -> Result<(), CommandError> {
                 result.evidence.telemetry_summary.batch_count()
             );
             println!("race_time   {} ms", result.output.total_time_ms);
+            let metric = &result.metrics.metrics[0];
+            println!(
+                "metric      {} = {:.2} {}",
+                metric.id, metric.value, metric.unit
+            );
             println!(
                 "bundle      {} ({})",
                 bundle.path.display(),

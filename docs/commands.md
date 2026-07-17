@@ -8,9 +8,10 @@ Run the built-in versioned scenario with an explicit deterministic seed:
 cargo run -p pitgun-cli -- demo racing --seed 42
 ```
 
-The command executes the scenario, collects typed telemetry, and persists an
-immutable bundle below `./pitgun-runs/`. It reports `SIMULATED`; derived metrics,
-replay, and `VERIFIED` are delivered by the remaining
+The command executes the scenario, collects typed telemetry, calculates the
+observed maximum speed through a generic telemetry aggregator, and persists an
+immutable bundle below `./pitgun-runs/`. It reports `SIMULATED`; replay and
+`VERIFIED` are delivered by the remaining
 [end-to-end demo work](https://github.com/loicbelec/pitgun/issues/49).
 
 Choose an exact destination when experimenting or scripting:

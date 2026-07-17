@@ -2,8 +2,8 @@
 
 Status: incremental implementation tracked by
 [#49](https://github.com/loicbelec/pitgun/issues/49). The simulation and typed
-telemetry and run-bundle persistence phases are available; metrics, replay, and
-verification remain planned.
+telemetry, derived-metric, and run-bundle persistence phases are available;
+replay and verification remain planned.
 
 ## Purpose
 
@@ -105,10 +105,10 @@ receipt.json
 stored inside it are relative so the directory can be moved without changing
 logical evidence.
 
-The current #66 increment writes every listed file except `metrics.json`, which
-is added by #69. Its optional manifest slot and user-visible name are already
-reserved. See [Deterministic Run Bundle V1](RUN_BUNDLE_V1.md) for schema and
-validation details.
+The current increment writes every listed file. `metrics.json` records the
+versioned generic processor configuration and the observed maximum-speed result.
+See [Deterministic Run Bundle V1](RUN_BUNDLE_V1.md) for schema and validation
+details.
 
 ## Collision and Commit Behavior
 

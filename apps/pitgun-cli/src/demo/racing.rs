@@ -4,9 +4,13 @@ use std::path::PathBuf;
 use clap::Args;
 use pitgun_contract::{
     canonical_json_bytes, canonical_json_digest, ArtifactIdentity, ContractVersion,
-    DeterministicRunContractV1, Digest, EventOrderingV1, InputCanonicalization, InputIdentity,
-    InputMediaType, LogicalClockV1, RandomAlgorithm, RandomContractV1, RuntimeProfile,
-    ScenarioIdentity, Seed, StreamDerivation,
+    DerivedMetricProcessorV1, DerivedMetricStatisticV1, DerivedMetricV1, DerivedMetricsV1,
+    DeterministicRunContractV1, Digest, EventOrderingV1, Identifier, InputCanonicalization,
+    InputIdentity, InputMediaType, LogicalClockV1, RandomAlgorithm, RandomContractV1,
+    RuntimeProfile, ScenarioIdentity, Seed, StreamDerivation,
+};
+use pitgun_core::{
+    aggregate_telemetry_parameter, TelemetryAggregateConfig, TelemetryAggregateKind,
 };
 use pitgun_simulator::racing::{
     run_race, RaceOutput, RacingRunEvidenceV1, RunRaceInput, RunRaceRequest,
@@ -14,6 +18,8 @@ use pitgun_simulator::racing::{
 use serde::{Deserialize, Serialize};
 
 const DEFAULT_SCENARIO: &str = include_str!("../../scenarios/racing-demo-v1.json");
+const PARAM_SPEED_KPH: u16 = 5005;
+const OBSERVED_MAXIMUM_SPEED_ID: &str = "racing.observed-maximum-speed";
 
 #[derive(Args, Clone, Debug, Eq, PartialEq)]
 pub(crate) struct RacingArgs {
@@ -61,6 +67,7 @@ pub(crate) struct RacingDemoRun {
     pub(crate) output: RaceOutput,
     pub(crate) evidence: RacingRunEvidenceV1,
     pub(crate) scenario_json: Vec<u8>,
+    pub(crate) metrics: DerivedMetricsV1,
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -167,6 +174,7 @@ pub(crate) fn run(args: &RacingArgs) -> Result<RacingDemoRun, RacingDemoError> {
     let telemetry_summary_digest = evidence
         .telemetry_summary_digest()
         .map_err(RacingDemoError::simulation)?;
+    let metrics = calculate_metrics(&output).map_err(RacingDemoError::simulation)?;
 
     Ok(RacingDemoRun {
         scenario: contract.scenario.clone(),
@@ -178,12 +186,39 @@ pub(crate) fn run(args: &RacingArgs) -> Result<RacingDemoRun, RacingDemoError> {
         output,
         evidence,
         scenario_json,
+        metrics,
     })
+}
+
+fn calculate_metrics(output: &RaceOutput) -> Result<DerivedMetricsV1, Box<dyn std::error::Error>> {
+    let frames = output
+        .player_batches
+        .iter()
+        .flat_map(|batch| batch.frames.iter());
+    let maximum_speed = aggregate_telemetry_parameter(
+        frames,
+        TelemetryAggregateConfig {
+            parameter_id: PARAM_SPEED_KPH,
+            kind: TelemetryAggregateKind::Maximum,
+        },
+    )?;
+
+    Ok(DerivedMetricsV1::new(vec![DerivedMetricV1 {
+        id: Identifier::new(OBSERVED_MAXIMUM_SPEED_ID)?,
+        processor: DerivedMetricProcessorV1::TelemetryAggregateV1,
+        parameter_id: PARAM_SPEED_KPH,
+        statistic: DerivedMetricStatisticV1::Maximum,
+        unit: "km/h".to_owned(),
+        sample_count: maximum_speed.sample_count,
+        value: maximum_speed.value,
+    }])?)
 }
 
 #[cfg(test)]
 mod tests {
-    use super::{run, RacingArgs};
+    use pitgun_contract::{canonical_json_digest, SampleValue};
+
+    use super::{calculate_metrics, run, RacingArgs, OBSERVED_MAXIMUM_SPEED_ID, PARAM_SPEED_KPH};
 
     #[test]
     fn identical_seed_repeats_logical_results() {
@@ -201,6 +236,7 @@ mod tests {
         assert_eq!(first.contract, second.contract);
         assert_eq!(first.run_id, second.run_id);
         assert_eq!(first.evidence.output, second.evidence.output);
+        assert_eq!(first.metrics, second.metrics);
         assert_eq!(
             first.evidence.telemetry_summary,
             second.evidence.telemetry_summary
@@ -263,5 +299,39 @@ mod tests {
             result.telemetry_summary_digest.to_string(),
             "sha256:b69f733ae44dd87a21fe1767b95b19e9e6eaa4bfc73f3a53a9203d33ef920e80"
         );
+        let metric = &result.metrics.metrics[0];
+        assert_eq!(metric.id.as_str(), OBSERVED_MAXIMUM_SPEED_ID);
+        assert_eq!(metric.parameter_id, PARAM_SPEED_KPH);
+        assert_eq!(metric.sample_count, 427);
+        assert_eq!(metric.value, 355.59540920059794);
+        assert_eq!(
+            canonical_json_digest(&result.metrics)
+                .expect("canonical metrics")
+                .to_string(),
+            "sha256:f360dc83d186a259a6d168b8fb75ee7237fdef09877d9306099dcdc4de44d76d"
+        );
+    }
+
+    #[test]
+    fn changing_a_recorded_speed_changes_the_derived_metric() {
+        let result = run(&RacingArgs {
+            seed: 42,
+            output: None,
+        })
+        .expect("Racing demo");
+        let mut mutated = result.output.clone();
+        let speed = mutated
+            .player_batches
+            .iter_mut()
+            .flat_map(|batch| batch.frames.iter_mut())
+            .flat_map(|frame| frame.samples.iter_mut())
+            .find(|sample| sample.parameter_id == PARAM_SPEED_KPH)
+            .expect("recorded speed sample");
+        speed.value = SampleValue::F64(999.0);
+
+        let changed = calculate_metrics(&mutated).expect("mutated metrics");
+
+        assert_eq!(result.metrics.metrics[0].value, 355.59540920059794);
+        assert_eq!(changed.metrics[0].value, 999.0);
     }
 }
