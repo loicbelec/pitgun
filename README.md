@@ -42,6 +42,28 @@ event streams, and auditable results matter.
 > Pitgun is an alpha-stage personal R&D project. Its deterministic contracts are
 > being stabilized, but APIs and crate boundaries may still change.
 
+## Run a Verified Simulation
+
+Download a versioned binary from the
+[GitHub Releases page](https://github.com/loicbelec/pitgun/releases),
+extract it, enter its directory, then execute the complete local loop:
+
+```bash
+./pitgun --version
+./pitgun demo racing --seed 42 --output ./pitgun-quickstart-run
+```
+
+The final line is the stable automation boundary:
+
+```text
+VERIFIED sha256:89dc458a7460056dd519f5cda74c55c2b2b47f7091f1309ae10d11a2eb46a64a
+```
+
+The [under-five-minute quickstart](docs/QUICKSTART.md) provides copy-paste
+instructions for macOS, Linux, and workspace execution, including checksum
+validation and a safe verification-failure exercise. No hosted Pitgun service,
+account, or external database is required.
+
 ## The Simulation Loop
 
 | Stage | Pitgun responsibility |
@@ -234,6 +256,8 @@ The current sequence is intentionally proof-driven:
 - [Architecture](ARCHITECTURE.md) — components, data flow, and ownership
 - [Framework boundaries](docs/FRAMEWORK_BOUNDARIES.md) — generic and Racing separation
 - [Racing demo CLI contract](docs/RACING_DEMO_CLI_V1.md) — command, bundle layout, report, and failures
+- [Under-five-minute quickstart](docs/QUICKSTART.md) — workspace and prebuilt installation paths
+- [Release process](docs/RELEASING.md) — immutable tags, binary targets, and publication checks
 - [Deterministic Run Bundle V1](docs/RUN_BUNDLE_V1.md) — portable artifacts, identities, persistence, and validation
 - [Deterministic run contract v1](docs/DETERMINISTIC_RUN_CONTRACT_V1.md) — identity, reproducibility, and replay
 - [Stable RNG v1](docs/RNG_V1.md) — generator and stream derivation algorithms
@@ -254,8 +278,8 @@ quality gate used by the project:
 ```
 
 CI protects the general build, the hermetic Racing scenario-to-`VERIFIED` loop,
-and the native/WASM golden boundary through the `build`, `racing-e2e`, and
-`wasm-golden-run` jobs.
+the native/WASM golden boundary, and release packaging through the `build`,
+`racing-e2e`, `wasm-golden-run`, and `release-binary` jobs.
 
 ## License
 

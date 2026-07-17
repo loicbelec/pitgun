@@ -1,0 +1,136 @@
+name: release-cli
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/release-cli.yml"
+      - "Cargo.lock"
+      - "apps/pitgun-cli/**"
+      - "crates/**"
+      - "README.md"
+      - "LICENSE"
+  push:
+    tags:
+      - "v[0-9]*.[0-9]*.[0-9]*"
+
+jobs:
+  build-release-binary:
+    name: release-binary (${{ matrix.target }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+          - os: macos-14
+            target: x86_64-apple-darwin
+          - os: macos-14
+            target: aarch64-apple-darwin
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust target
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Read and validate release version
+        id: version
+        shell: bash
+        run: |
+          version="$(cargo metadata --no-deps --format-version 1 | jq -r '.packages[] | select(.name == "pitgun-cli") | .version')"
+          test -n "${version}"
+          test "${version}" != "null"
+          if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
+            test "${GITHUB_REF_NAME}" = "v${version}"
+          fi
+          echo "version=${version}" >> "${GITHUB_OUTPUT}"
+
+      - name: Build release binary
+        run: cargo build --locked --release -p pitgun-cli --target ${{ matrix.target }}
+
+      - name: Package release archive
+        shell: bash
+        run: |
+          package="pitgun-v${{ steps.version.outputs.version }}-${{ matrix.target }}"
+          mkdir -p "dist/${package}"
+          cp "target/${{ matrix.target }}/release/pitgun" "dist/${package}/pitgun"
+          cp LICENSE README.md "dist/${package}/"
+          tar -C dist -czf "dist/${package}.tar.gz" "${package}"
+
+      - name: Smoke-test packaged native release binary under five minutes
+        shell: bash
+        run: |
+          host="$(rustc -vV | sed -n 's/^host: //p')"
+          if [[ "${host}" != "${{ matrix.target }}" ]]; then
+            echo "Cross-compiled ${{ matrix.target }}; execution is skipped on host ${host}."
+            exit 0
+          fi
+
+          package="pitgun-v${{ steps.version.outputs.version }}-${{ matrix.target }}"
+          smoke_root="${RUNNER_TEMP}/pitgun-release-smoke-${{ matrix.target }}"
+          bundle="${smoke_root}/bundle"
+          mkdir -p "${smoke_root}"
+
+          SECONDS=0
+          tar -C "${smoke_root}" -xzf "dist/${package}.tar.gz"
+          binary="${smoke_root}/${package}/pitgun"
+          "${binary}" --version
+          report="$("${binary}" demo racing --seed 42 --output "${bundle}")"
+          elapsed="${SECONDS}"
+
+          tail -n 1 <<< "${report}" | grep -Fx "VERIFIED sha256:89dc458a7460056dd519f5cda74c55c2b2b47f7091f1309ae10d11a2eb46a64a"
+          test "${elapsed}" -lt 300
+          echo "Packaged quickstart reached VERIFIED in ${elapsed}s."
+
+      - name: Upload release archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: pitgun-${{ matrix.target }}
+          path: dist/*.tar.gz
+          if-no-files-found: error
+
+  publish-release:
+    name: publish-release
+    if: github.ref_type == 'tag'
+    needs: build-release-binary
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download release archives
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Generate and verify checksums
+        working-directory: dist
+        run: |
+          sha256sum *.tar.gz > SHA256SUMS
+          sha256sum --check SHA256SUMS
+          for archive in *.tar.gz; do
+            tar -tzf "${archive}" >/dev/null
+          done
+
+      - name: Publish GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          prerelease=()
+          if [[ "${GITHUB_REF_NAME}" == *-* ]]; then
+            prerelease+=(--prerelease)
+          fi
+          gh release create "${GITHUB_REF_NAME}" \
+            dist/*.tar.gz \
+            dist/SHA256SUMS \
+            --repo "${GITHUB_REPOSITORY}" \
+            --verify-tag \
+            --generate-notes \
+            --title "Pitgun CLI ${GITHUB_REF_NAME}" \
+            "${prerelease[@]}"
