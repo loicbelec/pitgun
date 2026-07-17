@@ -253,7 +253,9 @@ quality gate used by the project:
 ./scripts/pre-commit-checks.sh
 ```
 
-CI protects both the general build and the native/WASM golden boundary.
+CI protects the general build, the hermetic Racing scenario-to-`VERIFIED` loop,
+and the native/WASM golden boundary through the `build`, `racing-e2e`, and
+`wasm-golden-run` jobs.
 
 ## License
 
