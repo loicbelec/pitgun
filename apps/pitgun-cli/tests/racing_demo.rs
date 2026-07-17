@@ -86,6 +86,21 @@ fn mutate_first_telemetry(path: &Path, speed: f64, batch_ordinal: Option<u64>) {
 }
 
 #[test]
+fn distributed_binary_reports_its_version() {
+    let output = Command::new(env!("CARGO_BIN_EXE_pitgun"))
+        .arg("--version")
+        .output()
+        .expect("pitgun version process must start");
+
+    assert!(output.status.success());
+    assert!(output.stderr.is_empty());
+    assert_eq!(
+        String::from_utf8(output.stdout).expect("version stdout must be UTF-8"),
+        format!("pitgun {}\n", env!("CARGO_PKG_VERSION"))
+    );
+}
+
+#[test]
 fn racing_demo_completes_the_verified_loop_and_replays_in_a_fresh_process() {
     let bundle = temporary_bundle("integration");
     let output = run_demo(&bundle);

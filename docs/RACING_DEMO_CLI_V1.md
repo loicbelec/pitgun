@@ -1,7 +1,7 @@
 # Racing Demo CLI Contract V1
 
-Status: the complete V1 loop is implemented. Distribution and hermetic
-quickstart hardening remain tracked by
+Status: the complete V1 loop and its hermetic quality gate are implemented.
+Prebuilt distribution and quickstart delivery remain tracked by
 [#49](https://github.com/loicbelec/pitgun/issues/49).
 
 ## Purpose
@@ -18,16 +18,17 @@ documents.
 ## Distribution Identity
 
 The Cargo package remains named `pitgun-cli`. It exposes a binary named
-`pitgun`, so the eventual installation and invocation are intentionally
-different:
+`pitgun`, so package identity and invocation are intentionally different. V1 is
+distributed through versioned GitHub Release binaries:
 
 ```text
-cargo install pitgun-cli
-pitgun demo racing --seed 42
+./pitgun --version
+./pitgun demo racing --seed 42
 ```
 
-Publishing the package to crates.io is not required by V1. Workspace execution
-and prebuilt release binaries may provide the command first.
+Publishing the package to crates.io is explicitly deferred until internal
+crates and public APIs are ready. Workspace execution and prebuilt release
+binaries provide the command first.
 
 ## Command Grammar
 
