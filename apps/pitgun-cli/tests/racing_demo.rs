@@ -1,7 +1,10 @@
-use std::process::Command;
+use std::fs;
+use std::path::Path;
+use std::process::{Command, Output};
 use std::time::{SystemTime, UNIX_EPOCH};
 
-use pitgun_contract::canonical_json_bytes;
+use pitgun_contract::{canonical_json_bytes, RunBundleTelemetryRecordV1, SampleValue};
+use serde_json::{json, Value};
 
 fn temporary_bundle(label: &str) -> std::path::PathBuf {
     let nonce = SystemTime::now()
@@ -11,14 +14,81 @@ fn temporary_bundle(label: &str) -> std::path::PathBuf {
     std::env::temp_dir().join(format!("pitgun-cli-{label}-{}-{nonce}", std::process::id()))
 }
 
+fn run_demo(bundle: &Path) -> Output {
+    Command::new(env!("CARGO_BIN_EXE_pitgun"))
+        .args(["demo", "racing", "--seed", "42", "--output"])
+        .arg(bundle)
+        .output()
+        .expect("pitgun demo process must start")
+}
+
+fn run_replay(bundle: &Path) -> Output {
+    Command::new(env!("CARGO_BIN_EXE_pitgun"))
+        .arg("replay")
+        .arg(bundle)
+        .output()
+        .expect("pitgun replay process must start")
+}
+
+fn assert_replay_failure(bundle: &Path, exit_code: i32, diagnostic: &str) {
+    let rejected = run_replay(bundle);
+    assert_eq!(
+        rejected.status.code(),
+        Some(exit_code),
+        "unexpected status; stderr:\n{}",
+        String::from_utf8_lossy(&rejected.stderr)
+    );
+    assert!(rejected.stdout.is_empty());
+    let stderr = String::from_utf8(rejected.stderr).expect("failure stderr must be UTF-8");
+    assert!(
+        stderr.contains(diagnostic),
+        "missing diagnostic {diagnostic:?} in:\n{stderr}"
+    );
+    assert!(!stderr.contains("VERIFIED"));
+}
+
+fn mutate_json(path: &Path, mutate: impl FnOnce(&mut Value)) {
+    let mut value: Value =
+        serde_json::from_slice(&fs::read(path).expect("JSON artifact")).expect("valid JSON");
+    mutate(&mut value);
+    fs::write(
+        path,
+        canonical_json_bytes(&value).expect("canonical mutated JSON"),
+    )
+    .expect("write mutated JSON");
+}
+
+fn mutate_first_telemetry(path: &Path, speed: f64, batch_ordinal: Option<u64>) {
+    let bytes = fs::read(path).expect("telemetry artifact");
+    let text = std::str::from_utf8(&bytes).expect("telemetry UTF-8");
+    let mut records: Vec<RunBundleTelemetryRecordV1> = text
+        .lines()
+        .map(|line| serde_json::from_str(line).expect("telemetry record"))
+        .collect();
+    let first = records.first_mut().expect("first telemetry record");
+    if let Some(batch_ordinal) = batch_ordinal {
+        first.batch_ordinal = batch_ordinal;
+    }
+    let speed_sample = first
+        .frame
+        .samples
+        .iter_mut()
+        .find(|sample| sample.parameter_id == 5005)
+        .expect("speed sample");
+    speed_sample.value = SampleValue::F64(speed);
+
+    let mut mutated = Vec::new();
+    for record in records {
+        mutated.extend(canonical_json_bytes(&record).expect("canonical telemetry record"));
+        mutated.push(b'\n');
+    }
+    fs::write(path, mutated).expect("write mutated telemetry");
+}
+
 #[test]
 fn racing_demo_completes_the_verified_loop_and_replays_in_a_fresh_process() {
     let bundle = temporary_bundle("integration");
-    let output = Command::new(env!("CARGO_BIN_EXE_pitgun"))
-        .args(["demo", "racing", "--seed", "42", "--output"])
-        .arg(&bundle)
-        .output()
-        .expect("pitgun binary must start");
+    let output = run_demo(&bundle);
 
     assert!(
         output.status.success(),
@@ -59,11 +129,7 @@ fn racing_demo_completes_the_verified_loop_and_replays_in_a_fresh_process() {
         assert!(bundle.join(name).is_file(), "missing bundle file {name}");
     }
 
-    let replay = Command::new(env!("CARGO_BIN_EXE_pitgun"))
-        .arg("replay")
-        .arg(&bundle)
-        .output()
-        .expect("fresh replay process must start");
+    let replay = run_replay(&bundle);
     assert!(
         replay.status.success(),
         "fresh replay failed with stderr:\n{}",
@@ -77,28 +143,45 @@ fn racing_demo_completes_the_verified_loop_and_replays_in_a_fresh_process() {
         "VERIFIED sha256:89dc458a7460056dd519f5cda74c55c2b2b47f7091f1309ae10d11a2eb46a64a\n"
     ));
 
-    let metrics_path = bundle.join("metrics.json");
-    let mut metrics: serde_json::Value =
-        serde_json::from_slice(&std::fs::read(&metrics_path).expect("metrics artifact"))
-            .expect("metrics JSON");
-    metrics["metrics"][0]["value"] = serde_json::json!(999.0);
-    std::fs::write(
-        &metrics_path,
-        canonical_json_bytes(&metrics).expect("canonical mutated metrics"),
-    )
-    .expect("mutated metrics artifact");
-    let rejected = Command::new(env!("CARGO_BIN_EXE_pitgun"))
-        .arg("replay")
-        .arg(&bundle)
-        .output()
-        .expect("failed replay process must start");
-    assert_eq!(rejected.status.code(), Some(50));
-    assert!(rejected.stdout.is_empty());
-    let rejected_stderr = String::from_utf8(rejected.stderr).expect("failure stderr must be UTF-8");
-    assert!(rejected_stderr.contains("metrics.json digest mismatch"));
-    assert!(!rejected_stderr.contains("VERIFIED"));
+    fs::remove_dir_all(bundle).expect("remove integration bundle");
+}
 
-    std::fs::remove_dir_all(bundle).expect("remove integration bundle");
+#[test]
+fn racing_replay_rejects_contract_output_and_telemetry_mutations() {
+    let bundle = temporary_bundle("mutations");
+    let output = run_demo(&bundle);
+    assert!(
+        output.status.success(),
+        "pitgun failed with stderr:\n{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+
+    let contract_path = bundle.join("contract.json");
+    let original_contract = fs::read(&contract_path).expect("contract artifact");
+    mutate_json(&contract_path, |value| {
+        value["random"]["seed"] = json!("43");
+    });
+    assert_replay_failure(&bundle, 50, "contract.json digest mismatch");
+    fs::write(&contract_path, original_contract).expect("restore contract");
+
+    let output_path = bundle.join("output.json");
+    let original_output = fs::read(&output_path).expect("output artifact");
+    mutate_json(&output_path, |value| {
+        value["total_time_ms"] = json!(1);
+    });
+    assert_replay_failure(&bundle, 50, "output.json digest mismatch");
+    fs::write(&output_path, original_output).expect("restore output");
+
+    let telemetry_path = bundle.join("telemetry.jsonl");
+    let original_telemetry = fs::read(&telemetry_path).expect("telemetry artifact");
+    mutate_first_telemetry(&telemetry_path, 999.0, None);
+    assert_replay_failure(&bundle, 50, "telemetry.jsonl digest mismatch");
+    fs::write(&telemetry_path, &original_telemetry).expect("restore telemetry");
+
+    mutate_first_telemetry(&telemetry_path, 999.0, Some(2));
+    assert_replay_failure(&bundle, 40, "non-contiguous batch ordinal");
+
+    fs::remove_dir_all(bundle).expect("remove mutation bundle");
 }
 
 #[test]
@@ -106,11 +189,7 @@ fn incomplete_existing_destination_fails_as_bundle_error() {
     let bundle = temporary_bundle("incomplete");
     std::fs::create_dir(&bundle).expect("create incomplete destination");
 
-    let output = Command::new(env!("CARGO_BIN_EXE_pitgun"))
-        .args(["demo", "racing", "--seed", "42", "--output"])
-        .arg(&bundle)
-        .output()
-        .expect("pitgun binary must start");
+    let output = run_demo(&bundle);
 
     assert_eq!(output.status.code(), Some(30));
     assert!(output.stdout.is_empty());
@@ -123,5 +202,5 @@ fn incomplete_existing_destination_fails_as_bundle_error() {
         "existing destination must remain untouched"
     );
 
-    std::fs::remove_dir_all(bundle).expect("remove incomplete destination");
+    fs::remove_dir_all(bundle).expect("remove incomplete destination");
 }

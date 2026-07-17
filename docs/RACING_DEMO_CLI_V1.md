@@ -215,5 +215,9 @@ separate from deterministic replay.
 - #66 defines the run-bundle V1 schemas, canonical files, and persistence logic.
 - #69 selects and implements the derived telemetry metric.
 - #67 implements reload, replay, verification, and the final report.
-- #70 protects the public flow and exit behavior in hermetic CI.
+- #70 protects the public flow and exit behavior in the dedicated hermetic
+  `racing-e2e` CI gate. It launches the compiled CLI in fresh processes, writes
+  only below the operating system temporary directory, performs no network or
+  database calls, and covers success plus representative contract, output, and
+  telemetry mutations.
 - #68 packages the binary and validates the under-five-minute quickstart.

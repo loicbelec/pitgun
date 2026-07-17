@@ -8,6 +8,35 @@ on:
       - dev
 
 jobs:
+  racing-e2e:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install native dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            pkg-config \
+            cmake \
+            libcurl4-openssl-dev \
+            libsasl2-dev \
+            zlib1g-dev \
+            libzstd-dev
+
+      - name: Fetch locked dependencies
+        run: cargo fetch --locked
+
+      - name: Run hermetic Racing scenario-to-VERIFIED gate
+        env:
+          CARGO_NET_OFFLINE: "true"
+        run: cargo test --locked -p pitgun-cli --test racing_demo --verbose
+
   build:
     runs-on: ubuntu-latest
 
