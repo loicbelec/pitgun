@@ -1,15 +1,17 @@
 use std::fmt;
+use std::path::PathBuf;
 
 use clap::Args;
 use pitgun_contract::{
-    canonical_json_digest, ArtifactIdentity, ContractVersion, DeterministicRunContractV1, Digest,
-    EventOrderingV1, InputCanonicalization, InputIdentity, InputMediaType, LogicalClockV1,
-    RandomAlgorithm, RandomContractV1, RuntimeProfile, ScenarioIdentity, Seed, StreamDerivation,
+    canonical_json_bytes, canonical_json_digest, ArtifactIdentity, ContractVersion,
+    DeterministicRunContractV1, Digest, EventOrderingV1, InputCanonicalization, InputIdentity,
+    InputMediaType, LogicalClockV1, RandomAlgorithm, RandomContractV1, RuntimeProfile,
+    ScenarioIdentity, Seed, StreamDerivation,
 };
 use pitgun_simulator::racing::{
     run_race, RaceOutput, RacingRunEvidenceV1, RunRaceInput, RunRaceRequest,
 };
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 const DEFAULT_SCENARIO: &str = include_str!("../../scenarios/racing-demo-v1.json");
 
@@ -18,15 +20,19 @@ pub(crate) struct RacingArgs {
     /// Deterministic root seed recorded in the run contract
     #[arg(long, default_value_t = 42)]
     pub(crate) seed: u64,
+
+    /// Exact destination directory for the immutable run bundle
+    #[arg(long, value_name = "PATH")]
+    pub(crate) output: Option<PathBuf>,
 }
 
-#[derive(Clone, Copy, Debug, Eq, PartialEq, Deserialize)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Deserialize, Serialize)]
 enum RacingScenarioVersion {
     #[serde(rename = "pitgun.racing-demo-scenario/v1")]
     V1,
 }
 
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 struct RacingScenarioV1 {
     schema_version: RacingScenarioVersion,
@@ -37,7 +43,7 @@ struct RacingScenarioV1 {
     request: RunRaceInput,
 }
 
-#[derive(Clone, Copy, Debug, Deserialize)]
+#[derive(Clone, Copy, Debug, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 struct ScenarioClock {
     tick_numerator_us: u64,
@@ -54,6 +60,7 @@ pub(crate) struct RacingDemoRun {
     pub(crate) contract: DeterministicRunContractV1,
     pub(crate) output: RaceOutput,
     pub(crate) evidence: RacingRunEvidenceV1,
+    pub(crate) scenario_json: Vec<u8>,
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -114,6 +121,7 @@ pub(crate) fn run(args: &RacingArgs) -> Result<RacingDemoRun, RacingDemoError> {
             "unsupported Racing scenario version",
         ));
     }
+    let scenario_json = canonical_json_bytes(&scenario).map_err(RacingDemoError::contract)?;
 
     let input_digest =
         canonical_json_digest(&scenario.request).map_err(RacingDemoError::contract)?;
@@ -169,6 +177,7 @@ pub(crate) fn run(args: &RacingArgs) -> Result<RacingDemoRun, RacingDemoError> {
         contract,
         output,
         evidence,
+        scenario_json,
     })
 }
 
@@ -178,8 +187,16 @@ mod tests {
 
     #[test]
     fn identical_seed_repeats_logical_results() {
-        let first = run(&RacingArgs { seed: 42 }).expect("first Racing demo");
-        let second = run(&RacingArgs { seed: 42 }).expect("second Racing demo");
+        let first = run(&RacingArgs {
+            seed: 42,
+            output: None,
+        })
+        .expect("first Racing demo");
+        let second = run(&RacingArgs {
+            seed: 42,
+            output: None,
+        })
+        .expect("second Racing demo");
 
         assert_eq!(first.contract, second.contract);
         assert_eq!(first.run_id, second.run_id);
@@ -192,8 +209,16 @@ mod tests {
 
     #[test]
     fn changing_seed_changes_run_identity_and_output() {
-        let first = run(&RacingArgs { seed: 42 }).expect("seed 42 Racing demo");
-        let changed = run(&RacingArgs { seed: 43 }).expect("seed 43 Racing demo");
+        let first = run(&RacingArgs {
+            seed: 42,
+            output: None,
+        })
+        .expect("seed 42 Racing demo");
+        let changed = run(&RacingArgs {
+            seed: 43,
+            output: None,
+        })
+        .expect("seed 43 Racing demo");
 
         assert_ne!(first.run_id, changed.run_id);
         assert_ne!(first.evidence.output, changed.evidence.output);
@@ -203,7 +228,11 @@ mod tests {
 
     #[test]
     fn built_in_scenario_emits_typed_telemetry() {
-        let result = run(&RacingArgs { seed: 42 }).expect("Racing demo");
+        let result = run(&RacingArgs {
+            seed: 42,
+            output: None,
+        })
+        .expect("Racing demo");
 
         assert!(!result.output.player_batches.is_empty());
         assert!(result.evidence.telemetry_summary.frame_count() > 0);
@@ -212,7 +241,11 @@ mod tests {
 
     #[test]
     fn seed_42_matches_the_versioned_scenario_vectors() {
-        let result = run(&RacingArgs { seed: 42 }).expect("Racing demo");
+        let result = run(&RacingArgs {
+            seed: 42,
+            output: None,
+        })
+        .expect("Racing demo");
 
         assert_eq!(
             result.run_id.to_string(),
