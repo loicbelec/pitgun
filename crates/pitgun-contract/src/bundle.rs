@@ -36,6 +36,7 @@ pub enum RunBundleTelemetryRecordVersion {
 pub struct RunBundleTelemetryRecordV1 {
     pub schema_version: RunBundleTelemetryRecordVersion,
     pub ordinal: u64,
+    pub batch_ordinal: u64,
     pub frame: TelemetryFrame,
 }
 

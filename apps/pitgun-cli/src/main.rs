@@ -9,9 +9,11 @@ use pitgun_core::{
 use pitgun_source_udp::UdpSource;
 use pitgun_source_ws::WsSource;
 use std::fmt;
+use std::path::PathBuf;
 
 mod demo;
 mod manifest;
+mod replay;
 mod sinks;
 
 #[derive(Parser, Debug)]
@@ -29,8 +31,17 @@ struct Cli {
 enum Cmd {
     /// Run a complete built-in demonstration workload
     Demo(DemoArgs),
+    /// Replay and verify a committed deterministic run bundle
+    Replay(ReplayArgs),
     /// Subscribe to telemetry and process via core pipeline
     Subscribe(SubscribeArgs),
+}
+
+#[derive(Args, Debug)]
+struct ReplayArgs {
+    /// Path to a committed Run Bundle V1 directory
+    #[arg(value_name = "BUNDLE")]
+    bundle: PathBuf,
 }
 
 #[derive(Args, Debug)]
@@ -123,6 +134,7 @@ enum CommandError {
     General(anyhow::Error),
     Racing(demo::racing::RacingDemoError),
     Bundle(demo::bundle::BundleError),
+    Replay(replay::ReplayError),
 }
 
 impl CommandError {
@@ -131,6 +143,7 @@ impl CommandError {
             Self::General(_) => 1,
             Self::Racing(error) => error.exit_code(),
             Self::Bundle(error) => error.exit_code(),
+            Self::Replay(error) => error.exit_code(),
         }
     }
 }
@@ -141,6 +154,7 @@ impl fmt::Display for CommandError {
             Self::General(error) => error.fmt(formatter),
             Self::Racing(error) => error.fmt(formatter),
             Self::Bundle(error) => error.fmt(formatter),
+            Self::Replay(error) => error.fmt(formatter),
         }
     }
 }
@@ -148,6 +162,7 @@ impl fmt::Display for CommandError {
 fn execute(cli: Cli) -> Result<(), CommandError> {
     match cli.cmd {
         Cmd::Demo(args) => run_demo(args),
+        Cmd::Replay(args) => run_replay(args),
         Cmd::Subscribe(args) => run_subscribe(args).map_err(CommandError::General),
     }
 }
@@ -158,6 +173,7 @@ fn run_demo(args: DemoArgs) -> Result<(), CommandError> {
             let result = demo::racing::run(&args).map_err(CommandError::Racing)?;
             let bundle = demo::bundle::persist(&result, args.output.as_deref())
                 .map_err(CommandError::Bundle)?;
+            let replay = replay::replay_and_verify(&bundle.path).map_err(CommandError::Replay)?;
             println!("Pitgun Racing deterministic demo\n");
             println!(
                 "scenario    {}@{}",
@@ -174,7 +190,7 @@ fn run_demo(args: DemoArgs) -> Result<(), CommandError> {
                 result.evidence.telemetry_summary.batch_count()
             );
             println!("race_time   {} ms", result.output.total_time_ms);
-            let metric = &result.metrics.metrics[0];
+            let metric = &replay.metrics.metrics[0];
             println!(
                 "metric      {} = {:.2} {}",
                 metric.id, metric.value, metric.unit
@@ -184,10 +200,33 @@ fn run_demo(args: DemoArgs) -> Result<(), CommandError> {
                 bundle.path.display(),
                 bundle.disposition
             );
-            println!("status      SIMULATED");
+            println!("replay      OK");
+            println!("verification VERIFIED\n");
+            println!("VERIFIED {}", replay.run_id);
             Ok(())
         }
     }
+}
+
+fn run_replay(args: ReplayArgs) -> Result<(), CommandError> {
+    let report = replay::replay_and_verify(&args.bundle).map_err(CommandError::Replay)?;
+    println!("Pitgun deterministic bundle replay\n");
+    println!("run_id      {}", report.run_id);
+    println!(
+        "telemetry   {} frames in {} batches",
+        report.frame_count, report.batch_count
+    );
+    for metric in &report.metrics.metrics {
+        println!(
+            "metric      {} = {:.2} {}",
+            metric.id, metric.value, metric.unit
+        );
+    }
+    println!("bundle      {}", report.root.display());
+    println!("replay      OK");
+    println!("verification VERIFIED\n");
+    println!("VERIFIED {}", report.run_id);
+    Ok(())
 }
 
 fn run_subscribe(args: SubscribeArgs) -> Result<()> {
@@ -443,7 +482,7 @@ mod tests {
                     assert_eq!(args.output, None);
                 }
             },
-            Cmd::Subscribe(_) => panic!("expected demo command"),
+            Cmd::Replay(_) | Cmd::Subscribe(_) => panic!("expected demo command"),
         }
     }
 
@@ -457,7 +496,7 @@ mod tests {
             Cmd::Demo(args) => match args.workload {
                 DemoWorkload::Racing(args) => assert_eq!(args.seed, u64::MAX),
             },
-            Cmd::Subscribe(_) => panic!("expected demo command"),
+            Cmd::Replay(_) | Cmd::Subscribe(_) => panic!("expected demo command"),
         }
     }
 
@@ -480,7 +519,20 @@ mod tests {
                     );
                 }
             },
-            Cmd::Subscribe(_) => panic!("expected demo command"),
+            Cmd::Replay(_) | Cmd::Subscribe(_) => panic!("expected demo command"),
+        }
+    }
+
+    #[test]
+    fn parses_replay_bundle_path() {
+        let cli = Cli::try_parse_from(["pitgun", "replay", "runs/example"])
+            .expect("valid replay command");
+
+        match cli.cmd {
+            Cmd::Replay(args) => {
+                assert_eq!(args.bundle, std::path::Path::new("runs/example"));
+            }
+            Cmd::Demo(_) | Cmd::Subscribe(_) => panic!("expected replay command"),
         }
     }
 }
