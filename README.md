@@ -64,6 +64,7 @@ its own domain model and physical rules.
 - A Racing golden scenario exercised in both native Rust and Node/WASM
 - Published `run_id`, canonical Racing output, and telemetry summary digest vectors
 - A versioned maximum-speed metric calculated from emitted typed telemetry
+- Portable Run Bundle V1 replay and deterministic verification in a fresh process
 - Racing physics, lap simulation, data packs, and browser-compatible WASM
 - Domain-neutral telemetry envelopes, frames, manifests, and processing pipelines
 - Replay and command-line tooling for operating local data flows
@@ -115,11 +116,16 @@ By default, the bundle is written below `./pitgun-runs/sha256-<run-id>/`. Use
 `--output <PATH>` to select the exact destination. Repeating the same command
 validates and reuses the immutable bundle rather than overwriting it.
 
-It currently reports `SIMULATED` and the observed maximum speed calculated by a
-domain-neutral telemetry aggregator. Replay and the final `VERIFIED` result
-remain tracked in
-[#49](https://github.com/loicbelec/pitgun/issues/49). Their intended public
-behavior is specified in the
+It reports the observed maximum speed calculated by a domain-neutral telemetry
+aggregator, reloads the committed bundle, replays its telemetry, and prints the
+final `VERIFIED <run-id>` boundary. The standalone reader can verify the same
+bundle in a fresh process:
+
+```bash
+cargo run -p pitgun-cli -- replay /path/to/run-bundle
+```
+
+The public behavior is specified in the
 [Racing demo CLI contract](docs/RACING_DEMO_CLI_V1.md).
 The portable files and their validation rules are documented in
 [Deterministic Run Bundle V1](docs/RUN_BUNDLE_V1.md).

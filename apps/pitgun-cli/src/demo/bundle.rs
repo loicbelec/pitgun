@@ -279,22 +279,23 @@ fn execution_receipt(run: &RacingDemoRun) -> Result<RunBundleReceiptV1, BundleEr
 
 fn encode_telemetry(run: &RacingDemoRun) -> Result<Vec<u8>, BundleError> {
     let mut bytes = Vec::new();
-    for (ordinal, frame) in run
-        .output
-        .player_batches
-        .iter()
-        .flat_map(|batch| batch.frames.iter())
-        .enumerate()
-    {
-        let ordinal = u64::try_from(ordinal)
-            .map_err(|_| BundleError::new("telemetry ordinal overflowed u64"))?;
-        let record = RunBundleTelemetryRecordV1 {
-            schema_version: RunBundleTelemetryRecordVersion::V1,
-            ordinal,
-            frame: frame.clone(),
-        };
-        bytes.extend(canonical_json_bytes(&record).map_err(bundle_error)?);
-        bytes.push(b'\n');
+    let mut ordinal = 0_u64;
+    for (batch_index, batch) in run.output.player_batches.iter().enumerate() {
+        let batch_ordinal = u64::try_from(batch_index)
+            .map_err(|_| BundleError::new("telemetry batch ordinal overflowed u64"))?;
+        for frame in &batch.frames {
+            let record = RunBundleTelemetryRecordV1 {
+                schema_version: RunBundleTelemetryRecordVersion::V1,
+                ordinal,
+                batch_ordinal,
+                frame: frame.clone(),
+            };
+            bytes.extend(canonical_json_bytes(&record).map_err(bundle_error)?);
+            bytes.push(b'\n');
+            ordinal = ordinal
+                .checked_add(1)
+                .ok_or_else(|| BundleError::new("telemetry ordinal overflowed u64"))?;
+        }
     }
     Ok(bytes)
 }
@@ -345,6 +346,7 @@ fn validate_bundle(
         root,
         &manifest.canonical_artifacts.telemetry,
         summary.frame_count(),
+        summary.batch_count(),
     )?;
     let receipt: RunBundleReceiptV1 =
         parse_artifact_json(root, &manifest.execution_artifacts.receipt)?;
@@ -371,11 +373,13 @@ fn validate_telemetry(
     root: &Path,
     artifact: &RunBundleArtifactV1,
     expected_frames: u64,
+    expected_batches: u64,
 ) -> Result<(), BundleError> {
     let bytes = read_file(root, &artifact.path)?;
     let text = std::str::from_utf8(&bytes)
         .map_err(|error| BundleError::new(format!("{} is not UTF-8: {error}", artifact.path)))?;
     let mut count = 0_u64;
+    let mut batch_count = 0_u64;
     for (index, line) in text.lines().enumerate() {
         let record: RunBundleTelemetryRecordV1 =
             parse_canonical_json(&artifact.path, line.as_bytes())?;
@@ -386,6 +390,18 @@ fn validate_telemetry(
                 index + 1,
                 record.ordinal,
                 count
+            )));
+        }
+        if record.batch_ordinal == batch_count {
+            batch_count = batch_count
+                .checked_add(1)
+                .ok_or_else(|| BundleError::new("telemetry batch count overflowed u64"))?;
+        } else if batch_count == 0 || record.batch_ordinal != batch_count - 1 {
+            return Err(BundleError::new(format!(
+                "{} line {} has non-contiguous batch ordinal {}",
+                artifact.path,
+                index + 1,
+                record.batch_ordinal
             )));
         }
         count = count
@@ -401,6 +417,12 @@ fn validate_telemetry(
     if count != expected_frames {
         return Err(BundleError::new(format!(
             "{} contains {count} frames, summary declares {expected_frames}",
+            artifact.path
+        )));
+    }
+    if batch_count != expected_batches {
+        return Err(BundleError::new(format!(
+            "{} contains {batch_count} batches, summary declares {expected_batches}",
             artifact.path
         )));
     }

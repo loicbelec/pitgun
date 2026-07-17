@@ -1,9 +1,8 @@
 # Racing Demo CLI Contract V1
 
-Status: incremental implementation tracked by
-[#49](https://github.com/loicbelec/pitgun/issues/49). The simulation and typed
-telemetry, derived-metric, and run-bundle persistence phases are available;
-replay and verification remain planned.
+Status: the complete V1 loop is implemented. Distribution and hermetic
+quickstart hardening remain tracked by
+[#49](https://github.com/loicbelec/pitgun/issues/49).
 
 ## Purpose
 
@@ -34,6 +33,7 @@ and prebuilt release binaries may provide the command first.
 
 ```text
 pitgun demo racing [--seed <U64>] [--output <PATH>]
+pitgun replay <BUNDLE>
 ```
 
 The current persisted-simulation increment accepts both `--seed` and `--output`.
@@ -42,6 +42,7 @@ The current persisted-simulation increment accepts both `--seed` and `--output`.
 |---|---|
 | `--seed <U64>` | Unsigned decimal seed recorded in the deterministic run contract. Defaults to `42`. |
 | `--output <PATH>` | Exact destination directory for the run bundle. It must not contain an unrelated or conflicting bundle. |
+| `replay <BUNDLE>` | Load and verify one already committed bundle in a fresh process without running the simulator. |
 
 The documented quickstart uses an explicit `--seed 42` even though `42` is the
 default. This makes the source of randomness visible to a new user.
@@ -65,6 +66,9 @@ One successful invocation performs every phase in the same process:
 
 `VERIFIED` describes the complete committed bundle. It must never be printed
 after simulation alone or before replay and verification have succeeded.
+
+The standalone `replay` command performs phases 7 and 8 only. It is the public
+proof that verification has no dependency on the simulation process's memory.
 
 ## Run Directory
 
@@ -191,6 +195,18 @@ The following remain presentation details:
 
 Any future output that may vary by operating system, build, or wall clock stays
 outside the logical run evidence.
+
+## Trust boundary
+
+`VERIFIED` means that every declared artifact digest and identity is internally
+consistent and that replaying the recorded telemetry reproduces its summary and
+derived metrics. It detects accidental corruption and individual artifact
+mutations.
+
+V1 does not claim provenance against an adversary who can rewrite the entire
+bundle and all its digests coherently. That stronger guarantee requires a
+signature, transparency log, or externally trusted digest and is intentionally
+separate from deterministic replay.
 
 ## Implementation Boundaries
 

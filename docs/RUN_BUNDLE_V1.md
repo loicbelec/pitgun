@@ -44,7 +44,9 @@ the complete directory therefore does not change any identity.
 
 JSON artifacts use RFC 8785 canonical encoding. `telemetry.jsonl` contains one
 RFC 8785 value followed by `LF` per ordered frame. Every record includes a
-zero-based ordinal; the file must end with `LF` when it is non-empty.
+zero-based global `ordinal` and zero-based `batch_ordinal`; the file must end
+with `LF` when it is non-empty. Batch ordinals are contiguous and preserve the
+transport boundaries required to reproduce the telemetry summary exactly.
 
 ## Logical evidence and execution evidence
 
@@ -104,8 +106,32 @@ sample changes `metrics.json` even if the domain result is left untouched. The
 same aggregate can later calculate a maximum temperature, load, voltage, or any
 other typed scalar without adding domain concepts to `pitgun-core`.
 
-## Current boundary
+## Replay and verification
 
-Bundle persistence proves **Scenario → Simulate → Observe → Persist** and still
-reports `SIMULATED`. Loading the committed telemetry as a replay source,
-recalculating evidence, and printing `VERIFIED` belong to #67.
+```bash
+pitgun replay <BUNDLE>
+```
+
+The reader operates exclusively on the committed directory. It:
+
+1. loads canonical schemas and the fixed portable layout;
+2. replays telemetry records by global and batch ordinal;
+3. verifies every referenced stored-byte digest;
+4. derives `run_id` from `contract.json` and checks scenario/model/input bindings;
+5. verifies the execution receipt's output and telemetry-summary bindings;
+6. recalculates the telemetry summary from all replayed frames;
+7. executes each declared metric processor against those frames;
+8. prints `VERIFIED <run-id>` only when every comparison succeeds.
+
+Missing, malformed, non-canonical, or non-replayable evidence exits with code
+`40`. A loaded bundle whose declared and recalculated evidence differs exits
+with code `50`. Diagnostics identify the first failing artifact or invariant.
+
+This completes **Scenario → Simulate → Observe → Persist → Replay → Verify**.
+
+### Trust model
+
+Verification establishes deterministic self-consistency, not independently
+trusted provenance. A coordinated adversarial rewrite of all artifacts and
+digests requires a separate signature or external trusted root to detect. The
+V1 receipt records concrete runtime identity but is not itself a signature.
