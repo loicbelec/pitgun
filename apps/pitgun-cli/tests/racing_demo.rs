@@ -35,6 +35,8 @@ fn racing_demo_command_completes_offline_and_reports_simulation() {
         "run_id      sha256:89dc458a7460056dd519f5cda74c55c2b2b47f7091f1309ae10d11a2eb46a64a"
     ));
     assert!(stdout.contains("frames      427 in 7 batches"));
+    assert!(stdout.contains("metric      racing.observed-maximum-speed = "));
+    assert!(stdout.contains(" km/h"));
     assert!(stdout.contains(&format!("bundle      {} (created)", bundle.display())));
     assert!(stdout.contains("status      SIMULATED"));
     assert!(!stdout.contains("VERIFIED"));
@@ -46,11 +48,11 @@ fn racing_demo_command_completes_offline_and_reports_simulation() {
         "output.json",
         "telemetry.jsonl",
         "telemetry-summary.json",
+        "metrics.json",
         "receipt.json",
     ] {
         assert!(bundle.join(name).is_file(), "missing bundle file {name}");
     }
-    assert!(!bundle.join("metrics.json").exists());
     std::fs::remove_dir_all(bundle).expect("remove integration bundle");
 }
 

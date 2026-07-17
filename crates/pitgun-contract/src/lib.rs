@@ -2,6 +2,7 @@ pub mod bundle;
 pub mod codec;
 pub mod determinism;
 pub mod frame;
+pub mod metrics;
 pub mod racing;
 pub mod registry;
 pub mod run;
@@ -24,6 +25,10 @@ pub use determinism::{
 pub use frame::{
     Event, EventData, EventId, EventSeverity, ParameterId, Sample, SampleValue, SessionId,
     SignalQuality, TelemetryFrame, TelemetryFrameBuilder,
+};
+pub use metrics::{
+    DerivedMetricProcessorV1, DerivedMetricStatisticV1, DerivedMetricV1, DerivedMetricsError,
+    DerivedMetricsV1, DerivedMetricsVersion,
 };
 pub use racing::{
     CircuitCatalogEntry, CompetitorSpec, CompetitorStatus, CompetitorStintStrategy,
