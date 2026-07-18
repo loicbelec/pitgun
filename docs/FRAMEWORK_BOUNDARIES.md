@@ -58,6 +58,21 @@ hard-coded to `RaceInput` or player car setup structures.
 Owns signing and verification primitives for contracts and authority-issued
 configuration.
 
+### `pitgun-runtime` (target)
+
+Owns domain-neutral deterministic execution:
+
+- stable seeded random streams
+- deterministic execution context and logical ordering
+- workload and model/version identity binding
+- run and receipt verification orchestration
+- comparison-profile dispatch and domain verifier hooks
+
+It does not contain a universal numerical Solver, domain equations, filesystem
+persistence, network transports, or CLI presentation. The first workload
+interface links Rust implementations at compile time; loading external WASM
+plugins is a later, separately governed capability.
+
 ### `pitgun-gateway`
 
 Owns framework ingress:
@@ -71,42 +86,56 @@ Owns framework ingress:
 The gateway can receive racing events, but racing fields should live in payloads
 or metadata rather than in the generic envelope model.
 
-### `pitgun-solver`
-
-Target role, if retained: generic deterministic compute and verification.
-
-It should focus on concepts such as:
-
-- deterministic job identity
-- canonical input and output hashing
-- model/version identifiers
-- result verification hooks
-- reusable execution contracts
-
-It should not own racing physics or racing telemetry semantics.
-
 ## Racing Domain
 
-### `pitgun-simulator`
+The target Racing implementation uses explicit domain-prefixed crates. The
+current `pitgun-solver` and `pitgun-simulator` packages remain transitional
+until the migration issues land.
+
+### `pitgun-racing-contract` (target)
+
+Owns Racing input, output, evidence, catalog, and cross-process payload schemas.
+It may build on generic contract identifiers and telemetry frames without
+adding Racing fields to `pitgun-contract`.
+
+### `pitgun-racing-solver` (target)
+
+Owns the Racing physical and mathematical solution:
+
+- vehicle, engine, tire, aero, chassis, track, driver, and hybrid energy models
+- velocity, braking, acceleration, energy, and integration algorithms
+- deterministic physical solution types and numerical invariants
+
+It does not orchestrate races, strategies, sessions, or leaderboards.
+
+### `pitgun-racing-simulator` (target)
 
 Owns the racing simulator:
 
-- lap-time and race simulation
-- vehicle, engine, tire, aero, chassis, track, driver, pit stop, and hybrid
-  energy models
+- race, session, lap, competitor, strategy, pit stop, and event orchestration
 - racing data pack loading and embedded WASM distribution
 - mapping racing asset ids to resolved simulation inputs
 - racing telemetry generated from simulation output
+- the linked workload adapter used by `pitgun-runtime`
 
-This crate is the right home for racing model code currently living in
-`pitgun-solver`.
+It intentionally depends on `pitgun-racing-solver`; the reverse dependency is
+forbidden.
+
+### `pitgun-racing-policy` (target)
+
+Owns Racing setup canonicalization and validation while delegating generic
+policy loading, constraints, and hashing to `pitgun-policy`.
+
+The complete decision and dependency graph are fixed by
+[ADR 0001](adr/0001-runtime-and-domain-workloads.md).
 
 ## Distributed Simulation Flow
 
 The intended product flow is:
 
 1. The authority service issues a signed simulation contract.
-2. The client receives the contract and runs the racing simulator locally.
+2. The client receives the contract and the generic runtime executes the linked
+   Racing workload locally.
 3. The client submits configuration, outputs, telemetry summaries, and contract
    references through the gateway.
 4. The gateway validates the generic envelope and contract limits.
@@ -124,4 +153,9 @@ Before merging a framework change, ask:
 - Could this be represented as a schema, payload, registry entry, or metadata?
 - Is the policy engine generic, with domain rules supplied as data?
 - Is the gateway acting as framework ingress rather than a game API?
-- Is racing simulation behavior isolated in `pitgun-simulator`?
+- Is generic execution logic owned by `pitgun-runtime` rather than a domain
+  Solver?
+- Are the domain Solver and Simulator still separate, with the Simulator
+  depending on the Solver only?
+- Would a proposed generic abstraction still make sense for a materially
+  different second domain?

@@ -164,20 +164,22 @@ Motorsport remains central as the showcase: it makes simulation results visible,
 creates useful datasets, and continuously tests native/WASM portability. It is
 not intended to define the framework's generic abstractions.
 
-## Solver and Simulator
+## Runtime, Solver, and Simulator
 
-Pitgun deliberately preserves two different responsibilities:
+Pitgun deliberately preserves three different responsibilities:
 
 | Component | Responsibility |
 |---|---|
-| **Solver** | Deterministic execution, stable randomness, run identity, hashing, and verification primitives |
-| **Simulator** | Domain state, physical rules, time evolution, events, and application-specific outputs |
+| **Runtime** | Domain-neutral deterministic context, stable randomness, workload identity, and verification orchestration |
+| **Solver** | Compute one domain's physical or mathematical solution |
+| **Simulator** | Evolve domain state through logical time, invoke its Solver, and emit events and telemetry |
 
-The repository is currently migrating toward this boundary. Some Racing golden
-logic still lives in `pitgun-solver`; the target separation is documented in
-[Framework Boundaries](docs/FRAMEWORK_BOUNDARIES.md). The README describes both
-the current implementation and the intended direction rather than presenting the
-migration as complete.
+The target Racing pair is `pitgun-racing-solver` and
+`pitgun-racing-simulator`, executed through `pitgun-runtime`. The repository is
+currently migrating from the transitional `pitgun-solver` and
+`pitgun-simulator` packages. [ADR 0001](docs/adr/0001-runtime-and-domain-workloads.md)
+fixes the dependency direction and explains why Pitgun does not claim a
+universal Solver before a second domain proves the abstraction.
 
 ## Architecture at a Glance
 
@@ -187,8 +189,8 @@ stack:
 | Role | Responsibility | Main components |
 |---|---|---|
 | **Core contract** | Define versioned scenarios, telemetry frames, run identity, and canonical evidence | `crates/pitgun-contract` |
-| **Deterministic compute** | Execute and verify reproducible runs | `crates/pitgun-solver` |
-| **Reference workload** | Model Racing physics, orchestrate races, and expose WASM | `crates/pitgun-simulator` |
+| **Deterministic runtime** | Execute linked workloads and verify reproducible runs | target `crates/pitgun-runtime` |
+| **Reference workload** | Solve Racing physics, orchestrate races, and expose WASM | target `pitgun-racing-solver` and `pitgun-racing-simulator` |
 | **Telemetry processing** | Transform generated channels with manifest-defined logic | `crates/pitgun-core` |
 | **Replay and tooling** | Run, inspect, replay, and verify local artifacts | `apps/pitgun-cli`, `apps/pitgun-replay` |
 | **Hosted governance** | Constrain, sign, receive, and audit distributed runs | `crates/pitgun-policy`, `crates/pitgun-signing`, `services/pitgun-authority`, `services/pitgun-gateway` |
@@ -258,6 +260,7 @@ The current sequence is intentionally proof-driven:
 - [Racing demo CLI contract](docs/RACING_DEMO_CLI_V1.md) — command, bundle layout, report, and failures
 - [Under-five-minute quickstart](docs/QUICKSTART.md) — workspace and prebuilt installation paths
 - [Release process](docs/RELEASING.md) — immutable tags, binary targets, and publication checks
+- [ADR 0001](docs/adr/0001-runtime-and-domain-workloads.md) — generic runtime and domain Solver/Simulator ownership
 - [Deterministic Run Bundle V1](docs/RUN_BUNDLE_V1.md) — portable artifacts, identities, persistence, and validation
 - [Deterministic run contract v1](docs/DETERMINISTIC_RUN_CONTRACT_V1.md) — identity, reproducibility, and replay
 - [Stable RNG v1](docs/RNG_V1.md) — generator and stream derivation algorithms
