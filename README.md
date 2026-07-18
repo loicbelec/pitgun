@@ -177,9 +177,11 @@ Pitgun deliberately preserves three different responsibilities:
 The target Racing pair is `pitgun-racing-solver` and
 `pitgun-racing-simulator`, executed through `pitgun-runtime`. The repository is
 currently migrating from the transitional `pitgun-solver` and
-`pitgun-simulator` packages. [ADR 0001](docs/adr/0001-runtime-and-domain-workloads.md)
-fixes the dependency direction and explains why Pitgun does not claim a
-universal Solver before a second domain proves the abstraction.
+`pitgun-simulator` packages. The first runtime increment already owns RNG V1;
+the linked workload and verification boundaries remain in progress.
+[ADR 0001](docs/adr/0001-runtime-and-domain-workloads.md) fixes the dependency
+direction and explains why Pitgun does not claim a universal Solver before a
+second domain proves the abstraction.
 
 ## Architecture at a Glance
 
@@ -189,7 +191,7 @@ stack:
 | Role | Responsibility | Main components |
 |---|---|---|
 | **Core contract** | Define versioned scenarios, telemetry frames, run identity, and canonical evidence | `crates/pitgun-contract` |
-| **Deterministic runtime** | Execute linked workloads and verify reproducible runs | target `crates/pitgun-runtime` |
+| **Deterministic runtime** | Execute linked workloads and verify reproducible runs | `crates/pitgun-runtime` (migration in progress) |
 | **Reference workload** | Solve Racing physics, orchestrate races, and expose WASM | target `pitgun-racing-solver` and `pitgun-racing-simulator` |
 | **Telemetry processing** | Transform generated channels with manifest-defined logic | `crates/pitgun-core` |
 | **Replay and tooling** | Run, inspect, replay, and verify local artifacts | `apps/pitgun-cli`, `apps/pitgun-replay` |

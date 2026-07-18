@@ -1,0 +1,14 @@
+[package]
+name = "pitgun-runtime"
+version = "0.1.0"
+edition = "2024"
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+pitgun-contract = { path = "../pitgun-contract" }
+serde = { version = "1.0", features = ["derive"] }
+sha2 = "0.10"
+
+[dev-dependencies]
+wasm-bindgen-test = "0.3"
