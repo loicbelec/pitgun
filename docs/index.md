@@ -9,6 +9,11 @@
 - [Under-five-minute Racing quickstart](QUICKSTART.md)
 - [CLI release process](RELEASING.md)
 
+## Architecture Decisions
+
+- [ADR index](adr/README.md)
+- [ADR 0001: generic runtime and domain workloads](adr/0001-runtime-and-domain-workloads.md)
+
 ## Deterministic Execution
 
 - [Deterministic run contract V1](DETERMINISTIC_RUN_CONTRACT_V1.md)

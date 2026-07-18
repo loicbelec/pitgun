@@ -70,9 +70,14 @@ pitgun/
     pitgun-source-kafka/  # Kafka consumer source
     pitgun-source-mqtt/   # MQTT subscriber source
 
-    # Deterministic compute and first domain application
-    pitgun-solver/        # target: generic deterministic compute verification
-    pitgun-simulator/     # racing lap-time simulator and data pack
+    # Target deterministic runtime
+    pitgun-runtime/       # execution context, RNG, workload and verification
+
+    # Target Racing domain family
+    pitgun-racing-contract/   # Racing wire and evidence schemas
+    pitgun-racing-solver/     # Racing physical solution
+    pitgun-racing-simulator/  # Racing orchestration, telemetry and WASM facade
+    pitgun-racing-policy/     # Racing rules using the generic policy engine
   apps/
     pitgun-cli/           # CLI for running manifests locally
     pitgun-replay/        # replay tooling
@@ -138,29 +143,53 @@ Responsibilities:
 The gateway is the framework entrypoint. Racing fields belong in payloads or
 metadata, not in the generic envelope.
 
-### 2.5 pitgun-simulator
+The target names above describe the accepted migration boundary. The current
+workspace still contains transitional `pitgun-solver` and `pitgun-simulator`
+packages while the linked implementation issues are delivered.
+
+### 2.5 pitgun-runtime (target)
 
 Responsibilities:
 
-- Own the racing lap-time model and racing simulation behavior.
+- Stable deterministic random streams.
+- Deterministic execution context and logical ordering.
+- Workload and model/version binding.
+- Run and receipt verification orchestration.
+- Comparison-profile dispatch and domain verifier hooks.
+
+It is an execution runtime, not a universal numerical Solver. Versioned wire
+types remain in `pitgun-contract`; filesystem and network adapters remain in
+applications and services.
+
+### 2.6 Racing domain family (target)
+
+#### pitgun-racing-solver
+
+Responsibilities:
+
+- Solve the Racing vehicle and track physical problem.
+- Own velocity, braking, acceleration, energy, and integration algorithms.
+- Publish deterministic physical solution types and numerical invariants.
+
+#### pitgun-racing-simulator
+
+Responsibilities:
+
+- Own race, session, lap, strategy, and event orchestration.
 - Load and embed the racing data pack.
 - Resolve racing ids such as `vehicle_id`, `track_id`, and `driver_id`.
-- Expose runtime and WASM-friendly APIs for the game and tools.
+- Produce Racing telemetry and expose the complete workload through WASM.
+- Invoke `pitgun-racing-solver` when it needs a physical solution.
 
-This crate is the target home for racing physics currently located in
-`pitgun-solver`.
+#### pitgun-racing-contract and pitgun-racing-policy
 
-### 2.6 pitgun-solver
+Racing schemas shared across processes and repositories live in
+`pitgun-racing-contract`. Racing validation lives in `pitgun-racing-policy`,
+which uses the generic policy engine.
 
-Target responsibilities, if retained:
-
-- Generic deterministic job identity.
-- Canonical input and output hashing.
-- Model/version identifiers.
-- Result verification hooks.
-- Reusable execution contracts for distributed compute.
-
-`pitgun-solver` should not own racing physics or racing telemetry semantics.
+The accepted rationale, dependency direction, static Rust/WASM integration
+model, and migration table are defined by
+[ADR 0001](docs/adr/0001-runtime-and-domain-workloads.md).
 
 ### 2.7 pitgun-cli
 
