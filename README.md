@@ -177,8 +177,8 @@ Pitgun deliberately preserves three different responsibilities:
 The target Racing pair is `pitgun-racing-solver` and
 `pitgun-racing-simulator`, executed through `pitgun-runtime`. The repository is
 currently migrating from the transitional `pitgun-solver` and
-`pitgun-simulator` packages. The first runtime increment already owns RNG V1;
-the linked workload and verification boundaries remain in progress.
+`pitgun-simulator` packages. The runtime now owns RNG V1 and the statically
+linked workload boundary; generic replay verification remains in progress.
 [ADR 0001](docs/adr/0001-runtime-and-domain-workloads.md) fixes the dependency
 direction and explains why Pitgun does not claim a universal Solver before a
 second domain proves the abstraction.
@@ -266,6 +266,7 @@ The current sequence is intentionally proof-driven:
 - [Deterministic Run Bundle V1](docs/RUN_BUNDLE_V1.md) — portable artifacts, identities, persistence, and validation
 - [Deterministic run contract v1](docs/DETERMINISTIC_RUN_CONTRACT_V1.md) — identity, reproducibility, and replay
 - [Stable RNG v1](docs/RNG_V1.md) — generator and stream derivation algorithms
+- [Statically linked workloads](docs/LINKED_WORKLOAD.md) — model/input binding, execution context, and evidence hooks
 - [Wire formats](docs/WIRE_FORMATS.md) — protocol specifications
 - [Command reference](docs/commands.md) — current CLI usage
 - [Documentation index](docs/index.md) — complete technical map

@@ -73,8 +73,9 @@ persistence, network transports, or CLI presentation. The first workload
 interface links Rust implementations at compile time; loading external WASM
 plugins is a later, separately governed capability.
 
-The crate currently owns RNG V1. Its linked workload and generic verification
-boundaries are delivered incrementally through #83.
+The crate currently owns RNG V1 and the statically linked workload boundary.
+Generic replay verification is delivered incrementally through #83. The
+workload lifecycle is documented in [Statically Linked Workloads](LINKED_WORKLOAD.md).
 
 ### `pitgun-gateway`
 
