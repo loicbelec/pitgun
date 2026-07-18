@@ -58,7 +58,7 @@ hard-coded to `RaceInput` or player car setup structures.
 Owns signing and verification primitives for contracts and authority-issued
 configuration.
 
-### `pitgun-runtime` (target)
+### `pitgun-runtime` (migration in progress)
 
 Owns domain-neutral deterministic execution:
 
@@ -72,6 +72,9 @@ It does not contain a universal numerical Solver, domain equations, filesystem
 persistence, network transports, or CLI presentation. The first workload
 interface links Rust implementations at compile time; loading external WASM
 plugins is a later, separately governed capability.
+
+The crate currently owns RNG V1. Its linked workload and generic verification
+boundaries are delivered incrementally through #83.
 
 ### `pitgun-gateway`
 

@@ -70,8 +70,8 @@ pitgun/
     pitgun-source-kafka/  # Kafka consumer source
     pitgun-source-mqtt/   # MQTT subscriber source
 
-    # Target deterministic runtime
-    pitgun-runtime/       # execution context, RNG, workload and verification
+    # Deterministic runtime (migration in progress)
+    pitgun-runtime/       # RNG V1 today; execution and verification target
 
     # Target Racing domain family
     pitgun-racing-contract/   # Racing wire and evidence schemas

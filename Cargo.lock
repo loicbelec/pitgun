@@ -1520,6 +1520,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "pitgun-runtime"
+version = "0.1.0"
+dependencies = [
+ "pitgun-contract",
+ "serde",
+ "sha2",
+ "wasm-bindgen-test",
+]
+
+[[package]]
 name = "pitgun-signing"
 version = "0.1.0"
 dependencies = [
@@ -1548,10 +1558,10 @@ dependencies = [
  "md-5",
  "pitgun-contract",
  "pitgun-policy",
+ "pitgun-runtime",
  "rand",
  "serde",
  "serde_json",
- "sha2",
  "wasm-bindgen",
  "wasm-bindgen-test",
 ]

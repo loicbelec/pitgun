@@ -199,13 +199,13 @@ abstraction.
 
 | Current ownership | Target ownership | Delivery |
 |---|---|---|
-| `pitgun-solver::rng` | `pitgun-runtime` | New runtime implementation ticket |
+| `pitgun-solver::rng` | `pitgun-runtime` | #83 |
 | `pitgun-solver::kernel` physical solution code | `pitgun-racing-solver` | Revised #39 |
 | Race/session orchestration in `pitgun-solver` | `pitgun-racing-simulator` | Revised #39 |
 | Racing WASM facade | `pitgun-racing-simulator` | Revised #39 and coordinated game PR |
 | Racing schemas in `pitgun-contract` | `pitgun-racing-contract` | Revised #42 |
 | Racing validation in `pitgun-policy` | `pitgun-racing-policy` | Revised #43 |
-| Generic replay and verification logic in `pitgun-cli` | `pitgun-runtime` plus CLI filesystem adapter | Runtime implementation ticket |
+| Generic replay and verification logic in `pitgun-cli` | `pitgun-runtime` plus CLI filesystem adapter | #83 |
 | Racing golden workload under `pitgun-solver` | Simulator-level conformance test, with Solver fixtures kept separately | Revised #39 |
 
 Every migration must preserve the published seed-42 `run_id`, canonical output,

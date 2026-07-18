@@ -203,7 +203,9 @@ The exact fixed-width operations, domain-separation bytes, string encoding, and
 published compatibility vectors are defined in [`RNG_V1.md`](RNG_V1.md).
 
 The implementation publishes native and WASM compatibility vectors for both
-identifiers in `crates/pitgun-solver/tests/rng_v1.rs`.
+identifiers in `crates/pitgun-runtime/tests/rng_v1.rs`. The transitional
+`pitgun_solver::rng` path re-exports the same implementation while existing
+consumers migrate.
 
 ## 6. Clock and event ordering
 
