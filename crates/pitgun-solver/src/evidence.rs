@@ -11,6 +11,16 @@ use serde::{Deserialize, Serialize};
 
 use crate::{RaceOutput, StandingStatus};
 
+impl pitgun_runtime::WorkloadEvidence for RacingRunEvidenceV1 {
+    fn output_digest(&self) -> Result<Digest, CanonicalJsonError> {
+        RacingRunEvidenceV1::output_digest(self)
+    }
+
+    fn telemetry_summary_digest(&self) -> Result<Digest, CanonicalJsonError> {
+        RacingRunEvidenceV1::telemetry_summary_digest(self)
+    }
+}
+
 /// Wire version of the canonical Racing domain output.
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub enum RacingOutputVersion {

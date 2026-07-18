@@ -1418,6 +1418,7 @@ dependencies = [
  "pitgun-codec-udp",
  "pitgun-contract",
  "pitgun-core",
+ "pitgun-runtime",
  "pitgun-simulator",
  "pitgun-source-udp",
  "pitgun-source-ws",
@@ -1543,6 +1544,7 @@ name = "pitgun-simulator"
 version = "0.1.0"
 dependencies = [
  "pitgun-contract",
+ "pitgun-runtime",
  "pitgun-solver",
  "serde",
  "serde_json",

@@ -3,18 +3,17 @@ use std::path::PathBuf;
 
 use clap::Args;
 use pitgun_contract::{
-    canonical_json_bytes, canonical_json_digest, ArtifactIdentity, ContractVersion,
-    DerivedMetricProcessorV1, DerivedMetricStatisticV1, DerivedMetricV1, DerivedMetricsV1,
-    DeterministicRunContractV1, Digest, EventOrderingV1, Identifier, InputCanonicalization,
-    InputIdentity, InputMediaType, LogicalClockV1, RandomAlgorithm, RandomContractV1,
-    RuntimeProfile, ScenarioIdentity, Seed, StreamDerivation,
+    ArtifactIdentity, ContractVersion, DerivedMetricProcessorV1, DerivedMetricStatisticV1,
+    DerivedMetricV1, DerivedMetricsV1, DeterministicRunContractV1, Digest, EventOrderingV1,
+    Identifier, InputCanonicalization, InputIdentity, InputMediaType, LogicalClockV1,
+    RandomAlgorithm, RandomContractV1, RuntimeProfile, ScenarioIdentity, Seed, StreamDerivation,
+    canonical_json_bytes, canonical_json_digest,
 };
 use pitgun_core::{
-    aggregate_telemetry_parameter, TelemetryAggregateConfig, TelemetryAggregateKind,
+    TelemetryAggregateConfig, TelemetryAggregateKind, aggregate_telemetry_parameter,
 };
-use pitgun_simulator::racing::{
-    run_race, RaceOutput, RacingRunEvidenceV1, RunRaceInput, RunRaceRequest,
-};
+use pitgun_runtime::execute_linked;
+use pitgun_simulator::racing::{RaceOutput, RacingRunEvidenceV1, RacingWorkload, RunRaceInput};
 use serde::{Deserialize, Serialize};
 
 const DEFAULT_SCENARIO: &str = include_str!("../../scenarios/racing-demo-v1.json");
@@ -157,34 +156,20 @@ pub(crate) fn run(args: &RacingArgs) -> Result<RacingDemoRun, RacingDemoError> {
             digest: input_digest,
         },
     };
-    let run_id = contract.run_id().map_err(RacingDemoError::contract)?;
-
-    let output = run_race(RunRaceRequest {
-        era: Some(scenario.request.era),
-        hz: Some(scenario.request.hz),
-        input: scenario.request,
-        seed: args.seed,
-    })
-    .map_err(RacingDemoError::simulation)?;
-    let evidence =
-        RacingRunEvidenceV1::from_race_output(&output).map_err(RacingDemoError::simulation)?;
-    let output_digest = evidence
-        .output_digest()
+    let workload = RacingWorkload::v1();
+    let executed = execute_linked(&workload, &contract, scenario.request)
         .map_err(RacingDemoError::simulation)?;
-    let telemetry_summary_digest = evidence
-        .telemetry_summary_digest()
-        .map_err(RacingDemoError::simulation)?;
-    let metrics = calculate_metrics(&output).map_err(RacingDemoError::simulation)?;
+    let metrics = calculate_metrics(&executed.output).map_err(RacingDemoError::simulation)?;
 
     Ok(RacingDemoRun {
         scenario: contract.scenario.clone(),
         seed,
-        run_id,
-        output_digest,
-        telemetry_summary_digest,
+        run_id: executed.run_id,
+        output_digest: executed.output_digest,
+        telemetry_summary_digest: executed.telemetry_summary_digest,
         contract,
-        output,
-        evidence,
+        output: executed.output,
+        evidence: executed.evidence,
         scenario_json,
         metrics,
     })
@@ -216,9 +201,9 @@ fn calculate_metrics(output: &RaceOutput) -> Result<DerivedMetricsV1, Box<dyn st
 
 #[cfg(test)]
 mod tests {
-    use pitgun_contract::{canonical_json_digest, SampleValue};
+    use pitgun_contract::{SampleValue, canonical_json_digest};
 
-    use super::{calculate_metrics, run, RacingArgs, OBSERVED_MAXIMUM_SPEED_ID, PARAM_SPEED_KPH};
+    use super::{OBSERVED_MAXIMUM_SPEED_ID, PARAM_SPEED_KPH, RacingArgs, calculate_metrics, run};
 
     #[test]
     fn identical_seed_repeats_logical_results() {

@@ -71,7 +71,7 @@ pitgun/
     pitgun-source-mqtt/   # MQTT subscriber source
 
     # Deterministic runtime (migration in progress)
-    pitgun-runtime/       # RNG V1 today; execution and verification target
+    pitgun-runtime/       # RNG V1 and linked execution; verification target
 
     # Target Racing domain family
     pitgun-racing-contract/   # Racing wire and evidence schemas
