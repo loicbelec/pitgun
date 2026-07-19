@@ -78,8 +78,8 @@ pub struct StandingEntry {
 #[serde(rename_all = "snake_case")]
 pub enum CompetitorStatus {
     Finished,
-    Dnf(String), // Reason
-    Dsq(String), // Reason
+    Dnf(String),
+    Dsq(String),
 }
 
 #[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq, Eq)]

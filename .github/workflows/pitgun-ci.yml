@@ -88,6 +88,9 @@ jobs:
       - name: Verify deterministic contract primitives in Node/WASM
         run: wasm-pack test --node crates/pitgun-contract
 
+      - name: Verify Racing contract compatibility in Node/WASM
+        run: wasm-pack test --node crates/pitgun-racing-contract
+
       - name: Verify deterministic runtime RNG in Node/WASM
         run: wasm-pack test --node crates/pitgun-runtime
 
