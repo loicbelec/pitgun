@@ -22,11 +22,11 @@ Telemetry payloads reuse existing Pitgun contract types from `pitgun-contract`:
 
 Public envelope schema:
 
-- `https://pitgun.io/schemas/pitgun-envelope/v1.json`
+- `https://schemas.pitgun.io/pitgun-envelope/v1.json`
 
 Source schema:
 
-- `portal/schemas/pitgun-envelope/v1.json`
+- `schemas/pitgun-envelope/v1.json`
 
 See `docs/event-model.md` for details.
 
@@ -47,7 +47,7 @@ For the insights pipeline, gateway currently evaluates telemetry with a strict
 
 Reference dictionary:
 
-- `portal/schemas/metrics-dictionary/sim.v1.json`
+- `schemas/metrics-dictionary/sim.v1.json`
 
 ## Event envelope
 Every message over `/ws` must follow:

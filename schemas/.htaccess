@@ -1,0 +1,21 @@
+Options -Indexes
+
+AddType application/schema+json .json
+
+<IfModule mod_headers.c>
+  Header always set Access-Control-Allow-Origin "*"
+  Header always set X-Content-Type-Options "nosniff"
+  Header set Cache-Control "public, max-age=300"
+
+  <FilesMatch "\.json$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+
+  <Files "index.json">
+    Header set Cache-Control "public, max-age=300"
+  </Files>
+</IfModule>
+
+<Files "index.json">
+  ForceType application/json
+</Files>

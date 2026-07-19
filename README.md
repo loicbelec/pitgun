@@ -259,6 +259,7 @@ The current sequence is intentionally proof-driven:
 
 ## Documentation
 
+- [Public schemas](https://schemas.pitgun.io) — versioned telemetry, manifest, and integration contracts
 - [Architecture](ARCHITECTURE.md) — components, data flow, and ownership
 - [Framework boundaries](docs/FRAMEWORK_BOUNDARIES.md) — generic and Racing separation
 - [Racing demo CLI contract](docs/RACING_DEMO_CLI_V1.md) — command, bundle layout, report, and failures

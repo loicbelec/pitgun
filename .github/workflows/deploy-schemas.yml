@@ -1,0 +1,65 @@
+name: Deploy Public Schemas
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "schemas/**"
+      - ".github/workflows/deploy-schemas.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: schemas-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: schemas-production
+      url: https://schemas.pitgun.io
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+
+      - name: Validate schemas and examples
+        run: |
+          python -m pip install -r requirements-dev.txt
+          python scripts/validate-schemas.py
+
+      - name: Deploy schemas to OVH
+        uses: wangyucode/sftp-upload-action@v2.0.2
+        with:
+          host: ${{ secrets.SFTP_HOST }}
+          username: ${{ secrets.SFTP_USER }}
+          password: ${{ secrets.SFTP_PASSWORD }}
+          port: ${{ secrets.SFTP_PORT || 22 }}
+          localDir: schemas
+          remoteDir: ${{ secrets.SFTP_PATH }}
+          removeExtraFilesOnServer: true
+
+      - name: Verify public catalog and canonical schema
+        run: |
+          curl --fail --silent --show-error --retry 5 --retry-all-errors \
+            https://schemas.pitgun.io/index.json -o /tmp/pitgun-schema-index.json
+          python -m json.tool /tmp/pitgun-schema-index.json >/dev/null
+          curl --fail --silent --show-error --retry 5 --retry-all-errors \
+            https://schemas.pitgun.io/pitgun-envelope/v1.json -o /tmp/pitgun-envelope-v1.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          schema = json.loads(Path("/tmp/pitgun-envelope-v1.json").read_text())
+          expected = "https://schemas.pitgun.io/pitgun-envelope/v1.json"
+          if schema.get("$id") != expected:
+              raise SystemExit(f"unexpected public schema id: {schema.get('$id')!r}")
+          PY

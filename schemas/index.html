@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Pitgun Schemas</title>
+    <meta name="description" content="Versioned public schemas for Pitgun contracts, telemetry, and manifests.">
+    <style>
+      :root { color-scheme: light; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+      body { max-width: 64rem; margin: 0 auto; padding: 3rem 1.5rem; color: #1a1a1a; background: #f2e6d6; }
+      h1 { margin-bottom: .25rem; color: #c44d29; }
+      p { line-height: 1.6; }
+      table { width: 100%; margin-top: 2rem; border-collapse: collapse; background: #fffaf3; }
+      th, td { padding: .8rem; border: 1px solid #2f4858; text-align: left; }
+      th { color: #f2e6d6; background: #2f4858; }
+      a { color: #a6381b; }
+      code { overflow-wrap: anywhere; }
+      .experimental { color: #7a5516; }
+    </style>
+  </head>
+  <body>
+    <h1>Pitgun Schemas</h1>
+    <p>Versioned contracts published from the canonical Pitgun repository.</p>
+    <p>Files marked <strong>active</strong> protect a current executable boundary. Experimental files may evolve before their next version.</p>
+    <table>
+      <thead><tr><th>Schema</th><th>Status</th><th>Owner</th></tr></thead>
+      <tbody>
+        <tr><td><a href="pitgun-envelope/v1.json">pitgun-envelope/v1</a></td><td>active</td><td>pitgun-gateway</td></tr>
+        <tr><td><a href="pipeline-manifest/v1.json">pipeline-manifest/v1</a></td><td>active</td><td>pitgun-cli</td></tr>
+        <tr><td><a href="metrics-dictionary/sim.v1.json">metrics-dictionary/sim.v1</a></td><td>active</td><td>pitgun-gateway</td></tr>
+        <tr><td><a href="insight-contract/v1.json">insight-contract/v1</a></td><td class="experimental">experimental</td><td>pitgun-gateway</td></tr>
+        <tr><td><a href="analysis-manifest/v1.json">analysis-manifest/v1</a></td><td class="experimental">experimental</td><td>pitgun-core</td></tr>
+        <tr><td><a href="analysis-manifest/v2.json">analysis-manifest/v2</a></td><td class="experimental">experimental</td><td>pitgun-core</td></tr>
+        <tr><td><a href="bolt-manifest/v1.json">bolt-manifest/v1</a></td><td class="experimental">experimental</td><td>pitgun-core</td></tr>
+        <tr><td><a href="bundle-manifest/v1.json">bundle-manifest/v1</a></td><td class="experimental">experimental</td><td>pitgun-core</td></tr>
+      </tbody>
+    </table>
+    <p>Machine-readable catalog: <a href="index.json"><code>index.json</code></a>.</p>
+  </body>
+</html>

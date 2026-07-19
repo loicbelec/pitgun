@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://pitgun.io/schemas/metrics-dictionary/sim.v1",
+  "$id": "https://schemas.pitgun.io/metrics-dictionary/sim.v1.json",
   "schema_version": "pitgun-sim-dictionary-v1",
   "scope": "insight_ingress",
   "description": "Canonical sim.* parameter dictionary for telemetry -> insights ingestion in staging/prod.",
