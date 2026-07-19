@@ -200,7 +200,9 @@ Recommended repository secrets:
 
 Recommended deployment model:
 - app repo (`pitgun`) builds and pushes immutable images
-- infra repo updates compose with digest-pinned images and performs VPS deployment
+- `loicbelec/infra-vps` is the only staging/production configuration source
+- infra workflows deploy tagged images to the VPS and verify public health endpoints
+- framework-local systemd units and production Compose files are unsupported
 
 ## Milestones and acceptance criteria
 See `docs/roadmap.md`.

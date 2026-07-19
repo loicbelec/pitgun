@@ -244,6 +244,31 @@ curl -fsS http://127.0.0.1:8080/health
 Gateway payloads and configuration are documented in
 [`services/pitgun-gateway`](services/pitgun-gateway/README.md).
 
+## Deployment Ownership
+
+This repository builds and tests the framework, publishes CLI artifacts, and
+publishes immutable service images. It does not own staging or production
+runtime configuration.
+
+- `docker-compose.dev.yml` is the only supported Compose entry point in this
+  repository and is intended for local development.
+- `loicbelec/infra-vps` is the canonical source for staging and production
+  Compose stacks, routing, persistence, observability, and deployment workflows.
+- Production services run from published container images; repository checkouts,
+  systemd units, and framework-local production Compose files are unsupported.
+
+For a minimal local service stack:
+
+```bash
+docker compose -f docker-compose.dev.yml up -d --build
+curl -fsS http://127.0.0.1:8080/health
+docker compose -f docker-compose.dev.yml down
+```
+
+This starts PostgreSQL, `pitgun-gateway`, and `pitgun-authority`. Use the local
+stack in `loicbelec/infra-vps` when development also requires QuestDB, the game
+APIs, or the observability services.
+
 ## Roadmap
 
 The current sequence is intentionally proof-driven:

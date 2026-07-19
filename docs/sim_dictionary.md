@@ -35,13 +35,9 @@ Examples:
 
 - `telemetry.sample_batch` frames are scanned for mapped `sim.*` parameters.
 - Bad quality (`bad` / `no_signal` / `unknown`) and non-numeric values are dropped.
-- Aggregations (`min`, `max`, `mean`, `stddev`, etc.) are selected through a declared
-  pipeline manifest (`segment_aggregate.targets[*].metrics`).
-- A `pitgun-insight-request-v1` payload is generated from accepted points/stats.
-- Insight requests are persisted in SQLite table `insight_requests`.
+- Accepted event envelopes and lap summaries are persisted in PostgreSQL.
+- Canonical telemetry points and generated summaries are projected into QuestDB
+  when `PITGUN_GATEWAY_QUESTDB_URL` is configured.
+- Summary aggregations are selected by the gateway statistics plan.
 - The service logs extraction counters (`sim_points`, dropped counts, unknown IDs)
-  for observability.
-
-Example manifest:
-
-- [`examples/manifests/pipeline/sim_insight_requests.yaml`](../examples/manifests/pipeline/sim_insight_requests.yaml)
+  and exposes Prometheus metrics for observability.

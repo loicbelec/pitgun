@@ -3,6 +3,7 @@
 **/*.rs.bk
 /pitgun-runs/
 **/pitgun-runs/
+/volumes/
 
 # Logs & dumps
 *.log
