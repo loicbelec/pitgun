@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://pitgun.io/schemas/pitgun-envelope/v1",
+  "$id": "https://schemas.pitgun.io/pitgun-envelope/v1.json",
   "title": "Pitgun Event Envelope v1",
   "description": "Canonical runtime event envelope accepted by pitgun-gateway.",
   "type": "object",

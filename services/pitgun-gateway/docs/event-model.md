@@ -2,9 +2,9 @@
 
 The public JSON Schema for this envelope is:
 
-- `https://pitgun.io/schemas/pitgun-envelope/v1.json`
+- `https://schemas.pitgun.io/pitgun-envelope/v1.json`
 
-The schema source lives in `framework/portal/schemas/pitgun-envelope/v1.json`.
+The schema source lives in `schemas/pitgun-envelope/v1.json`.
 Published schema versions must remain backward compatible; incompatible changes require a new version.
 
 Validate schemas and gateway examples from the workspace root with:

@@ -5,7 +5,7 @@ gateway insight ingress path.
 
 Source file:
 
-- [`portal/schemas/metrics-dictionary/sim.v1.json`](../portal/schemas/metrics-dictionary/sim.v1.json)
+- [`schemas/metrics-dictionary/sim.v1.json`](../schemas/metrics-dictionary/sim.v1.json)
 
 ## Scope
 

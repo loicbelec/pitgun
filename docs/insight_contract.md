@@ -8,8 +8,8 @@ This document defines the canonical `metrics -> insights` exchange format betwee
 
 Source schema:
 
-- [`portal/schemas/insight-contract/v1.json`](../portal/schemas/insight-contract/v1.json)
-- [`portal/schemas/metrics-dictionary/sim.v1.json`](../portal/schemas/metrics-dictionary/sim.v1.json)
+- [`schemas/insight-contract/v1.json`](../schemas/insight-contract/v1.json)
+- [`schemas/metrics-dictionary/sim.v1.json`](../schemas/metrics-dictionary/sim.v1.json)
 
 ## Design goals
 

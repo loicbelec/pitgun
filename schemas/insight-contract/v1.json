@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://pitgun.io/schemas/insight-contract/v1",
+  "$id": "https://schemas.pitgun.io/insight-contract/v1.json",
   "title": "Pitgun Insight Contract v1",
   "description": "Canonical contract for metrics to insights exchange between Pitgun Core and LLM services.",
   "oneOf": [

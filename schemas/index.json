@@ -1,0 +1,54 @@
+{
+  "catalog_version": 1,
+  "base_url": "https://schemas.pitgun.io",
+  "schemas": [
+    {
+      "id": "https://schemas.pitgun.io/pitgun-envelope/v1.json",
+      "path": "pitgun-envelope/v1.json",
+      "status": "active",
+      "owner": "pitgun-gateway"
+    },
+    {
+      "id": "https://schemas.pitgun.io/pipeline-manifest/v1.json",
+      "path": "pipeline-manifest/v1.json",
+      "status": "active",
+      "owner": "pitgun-cli"
+    },
+    {
+      "id": "https://schemas.pitgun.io/metrics-dictionary/sim.v1.json",
+      "path": "metrics-dictionary/sim.v1.json",
+      "status": "active",
+      "owner": "pitgun-gateway"
+    },
+    {
+      "id": "https://schemas.pitgun.io/insight-contract/v1.json",
+      "path": "insight-contract/v1.json",
+      "status": "experimental",
+      "owner": "pitgun-gateway"
+    },
+    {
+      "id": "https://schemas.pitgun.io/analysis-manifest/v1.json",
+      "path": "analysis-manifest/v1.json",
+      "status": "experimental",
+      "owner": "pitgun-core"
+    },
+    {
+      "id": "https://schemas.pitgun.io/analysis-manifest/v2.json",
+      "path": "analysis-manifest/v2.json",
+      "status": "experimental",
+      "owner": "pitgun-core"
+    },
+    {
+      "id": "https://schemas.pitgun.io/bolt-manifest/v1.json",
+      "path": "bolt-manifest/v1.json",
+      "status": "experimental",
+      "owner": "pitgun-core"
+    },
+    {
+      "id": "https://schemas.pitgun.io/bundle-manifest/v1.json",
+      "path": "bundle-manifest/v1.json",
+      "status": "experimental",
+      "owner": "pitgun-core"
+    }
+  ]
+}

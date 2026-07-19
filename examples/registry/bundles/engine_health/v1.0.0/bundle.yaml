@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=https://pitgun.io/schemas/bundle-manifest/v1
+# yaml-language-server: $schema=https://schemas.pitgun.io/bundle-manifest/v1.json
 manifest_version: 1
 
 bundle:

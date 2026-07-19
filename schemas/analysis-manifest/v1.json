@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://pitgun.io/schemas/analysis-manifest/v1",
+  "$id": "https://schemas.pitgun.io/analysis-manifest/v1.json",
   "title": "Pitgun Analysis Manifest v1",
   "type": "object",
   "additionalProperties": false,
