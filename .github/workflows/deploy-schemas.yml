@@ -36,16 +36,40 @@ jobs:
           python -m pip install -r requirements-dev.txt
           python scripts/validate-schemas.py
 
+      - name: Install SFTP client
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes lftp
+
+      - name: Pin OVH SSH host key
+        run: |
+          install -d -m 700 "$HOME/.ssh"
+          printf '%s\n' \
+            'ftp.cluster005.hosting.ovh.net ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEk5m6vt7XKr8ntcIa15U/402qpVsErwQJVTKZYlVj0s' \
+            > "$HOME/.ssh/known_hosts"
+          chmod 600 "$HOME/.ssh/known_hosts"
+
       - name: Deploy schemas to OVH
-        uses: wangyucode/sftp-upload-action@v2.0.2
-        with:
-          host: ${{ secrets.SFTP_HOST }}
-          username: ${{ secrets.SFTP_USER }}
-          password: ${{ secrets.SFTP_PASSWORD }}
-          port: ${{ secrets.SFTP_PORT || 22 }}
-          localDir: schemas
-          remoteDir: ${{ secrets.SFTP_PATH }}
-          removeExtraFilesOnServer: true
+        env:
+          LFTP_PASSWORD: ${{ secrets.SFTP_PASSWORD }}
+          SFTP_HOST: ${{ secrets.SFTP_HOST }}
+          SFTP_PATH: ${{ secrets.SFTP_PATH }}
+          SFTP_PORT: ${{ secrets.SFTP_PORT }}
+          SFTP_USER: ${{ secrets.SFTP_USER }}
+        run: |
+          set -euo pipefail
+          lftp --env-password \
+            --user "$SFTP_USER" \
+            --port "${SFTP_PORT:-22}" \
+            "sftp://$SFTP_HOST" <<LFTP
+          set cmd:fail-exit true
+          set net:max-retries 2
+          set net:timeout 20
+          set sftp:auto-confirm no
+          set sftp:connect-program "ssh -a -x -o BatchMode=no -o StrictHostKeyChecking=yes -o UserKnownHostsFile=$HOME/.ssh/known_hosts"
+          mirror --reverse --delete --verbose schemas/ "$SFTP_PATH"
+          bye
+          LFTP
 
       - name: Verify public catalog and canonical schema
         run: |
