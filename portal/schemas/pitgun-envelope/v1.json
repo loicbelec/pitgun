@@ -1,0 +1,569 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pitgun.io/schemas/pitgun-envelope/v1",
+  "title": "Pitgun Event Envelope v1",
+  "description": "Canonical runtime event envelope accepted by pitgun-gateway.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "event_id",
+    "ts",
+    "player_id",
+    "session_id",
+    "event_type",
+    "payload"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "pitgun-envelope-v1"
+    },
+    "event_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "ts": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "player_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "weekend_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "session_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "event_type": {
+      "type": "string",
+      "enum": [
+        "session.start",
+        "telemetry.sample_batch",
+        "session.end",
+        "purchase.order_completed",
+        "pitwall.session_configured"
+      ]
+    },
+    "payload": {
+      "type": "object"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "event_type": {
+            "const": "session.start"
+          }
+        },
+        "required": ["event_type"]
+      },
+      "then": {
+        "properties": {
+          "payload": {
+            "$ref": "#/$defs/sessionStartPayload"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event_type": {
+            "const": "telemetry.sample_batch"
+          }
+        },
+        "required": ["event_type"]
+      },
+      "then": {
+        "properties": {
+          "payload": {
+            "$ref": "#/$defs/telemetrySampleBatchPayload"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event_type": {
+            "const": "session.end"
+          }
+        },
+        "required": ["event_type"]
+      },
+      "then": {
+        "properties": {
+          "payload": {
+            "$ref": "#/$defs/sessionEndPayload"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event_type": {
+            "const": "purchase.order_completed"
+          }
+        },
+        "required": ["event_type"]
+      },
+      "then": {
+        "properties": {
+          "payload": {
+            "$ref": "#/$defs/purchaseOrderCompletedPayload"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event_type": {
+            "const": "pitwall.session_configured"
+          }
+        },
+        "required": ["event_type"]
+      },
+      "then": {
+        "properties": {
+          "payload": {
+            "$ref": "#/$defs/pitwallSessionConfiguredPayload"
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "stringMap": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "jsonValue": {
+      "description": "Any JSON value.",
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "string"
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/jsonValue"
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/jsonValue"
+          }
+        }
+      ]
+    },
+    "sessionStartPayload": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "game_version": {
+          "type": "string"
+        },
+        "source_id": {
+          "type": "string"
+        },
+        "track_id": {
+          "type": "string"
+        },
+        "metadata": {
+          "$ref": "#/$defs/stringMap"
+        }
+      }
+    },
+    "telemetrySampleBatchPayload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["frames"],
+      "properties": {
+        "frames": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/telemetryFrame"
+          }
+        }
+      }
+    },
+    "sessionEndPayload": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "reason": {
+          "type": "string"
+        },
+        "duration_ms": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "laps_completed": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 65535
+        },
+        "best_lap_ms": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "metadata": {
+          "$ref": "#/$defs/stringMap"
+        }
+      }
+    },
+    "purchaseOrderCompletedPayload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["order_id", "currency", "subtotal", "total", "line_items"],
+      "properties": {
+        "order_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "currency": {
+          "type": "string",
+          "pattern": "^[A-Za-z]{3}$"
+        },
+        "subtotal": {
+          "type": "number",
+          "minimum": 0
+        },
+        "total": {
+          "type": "number",
+          "minimum": 0
+        },
+        "tax": {
+          "type": "number",
+          "minimum": 0
+        },
+        "discount": {
+          "type": "number",
+          "minimum": 0
+        },
+        "line_items": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/purchaseOrderLineItem"
+          }
+        },
+        "purchased_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "purchaseOrderLineItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["upgrade_id", "quantity", "unit_price", "line_total"],
+      "properties": {
+        "upgrade_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "quantity": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "unit_price": {
+          "type": "number",
+          "minimum": 0
+        },
+        "line_total": {
+          "type": "number",
+          "minimum": 0
+        }
+      }
+    },
+    "pitwallSessionConfiguredPayload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "run_id",
+        "track_id",
+        "vehicle_id",
+        "session_type",
+        "seed",
+        "sampling_hz",
+        "setup",
+        "setup_offsets",
+        "effective_setup"
+      ],
+      "properties": {
+        "weekend_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "run_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "track_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "vehicle_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "session_type": {
+          "type": "string",
+          "minLength": 1
+        },
+        "seed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sampling_hz": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "game_version": {
+          "type": "string"
+        },
+        "wasm_source_commit": {
+          "type": "string"
+        },
+        "wasm_build_time": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "setup": {
+          "$ref": "#/$defs/jsonValue"
+        },
+        "setup_offsets": {
+          "$ref": "#/$defs/jsonValue"
+        },
+        "effective_setup": {
+          "$ref": "#/$defs/jsonValue"
+        },
+        "stint_strategy": {
+          "$ref": "#/$defs/jsonValue"
+        }
+      }
+    },
+    "telemetryFrame": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "session_id",
+        "sequence",
+        "timestamp_us",
+        "received_at_us",
+        "source_id",
+        "samples",
+        "events"
+      ],
+      "properties": {
+        "session_id": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sequence": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "timestamp_us": {
+          "type": "integer"
+        },
+        "received_at_us": {
+          "type": "integer"
+        },
+        "source_id": {
+          "type": "string"
+        },
+        "samples": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/sample"
+          }
+        },
+        "events": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/telemetryEvent"
+          }
+        },
+        "lap_number": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 65535
+        },
+        "sector": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255
+        },
+        "lap_distance_m": {
+          "type": "number"
+        },
+        "metadata": {
+          "$ref": "#/$defs/stringMap"
+        }
+      }
+    },
+    "sample": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["parameter_id", "value", "quality"],
+      "properties": {
+        "parameter_id": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 65535
+        },
+        "value": {
+          "$ref": "#/$defs/sampleValue"
+        },
+        "quality": {
+          "type": "string",
+          "enum": ["good", "degraded", "bad", "no_signal", "unknown"]
+        },
+        "timestamp_offset_us": {
+          "type": "integer",
+          "minimum": -2147483648,
+          "maximum": 2147483647
+        }
+      }
+    },
+    "sampleValue": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "value"],
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "value": true
+      },
+      "oneOf": [
+        {
+          "properties": {
+            "type": {
+              "const": "Bool"
+            },
+            "value": {
+              "type": "boolean"
+            }
+          }
+        },
+        {
+          "properties": {
+            "type": {
+              "enum": ["U8", "U16", "U32", "U64", "I8", "I16", "I32", "I64"]
+            },
+            "value": {
+              "type": "integer"
+            }
+          }
+        },
+        {
+          "properties": {
+            "type": {
+              "enum": ["F32", "F64"]
+            },
+            "value": {
+              "type": "number"
+            }
+          }
+        },
+        {
+          "properties": {
+            "type": {
+              "const": "Bytes"
+            },
+            "value": {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 255
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "type": {
+              "const": "String"
+            },
+            "value": {
+              "type": "string"
+            }
+          }
+        }
+      ]
+    },
+    "telemetryEvent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["event_id", "name", "severity"],
+      "properties": {
+        "event_id": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 65535
+        },
+        "name": {
+          "type": "string"
+        },
+        "severity": {
+          "type": "string",
+          "enum": ["trace", "debug", "info", "warning", "error", "critical"]
+        },
+        "data": {
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            },
+            {
+              "$ref": "#/$defs/stringMap"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 255
+              }
+            }
+          ]
+        },
+        "timestamp_offset_us": {
+          "type": "integer",
+          "minimum": -2147483648,
+          "maximum": 2147483647
+        }
+      }
+    }
+  }
+}

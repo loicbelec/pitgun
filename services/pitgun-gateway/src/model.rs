@@ -19,6 +19,7 @@ pub struct EventEnvelope {
     pub event_id: Uuid,
     pub ts: OffsetDateTime,
     pub player_id: String,
+    pub weekend_id: Option<String>,
     pub session_id: String,
     pub event_type: String,
     pub payload: EventPayload,
@@ -107,6 +108,8 @@ pub struct PurchaseOrderLineItem {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct PitWallSessionConfiguredPayload {
+    #[serde(default)]
+    pub weekend_id: Option<String>,
     pub run_id: String,
     pub track_id: String,
     pub vehicle_id: String,
@@ -133,6 +136,8 @@ struct EventEnvelopeWire {
     event_id: Uuid,
     ts: String,
     player_id: String,
+    #[serde(default)]
+    weekend_id: Option<String>,
     session_id: String,
     event_type: String,
     payload: Value,
@@ -148,6 +153,8 @@ pub enum EnvelopeValidationError {
     InvalidTimestamp,
     #[error("player_id must be a non-empty string")]
     InvalidPlayerId,
+    #[error("weekend_id must be a non-empty string when provided")]
+    InvalidWeekendId,
     #[error("session_id must be a non-empty string")]
     InvalidSessionId,
     #[error("unsupported event_type: {0}")]
@@ -177,6 +184,17 @@ pub fn parse_event_envelope(
         return Err(EnvelopeValidationError::InvalidPlayerId);
     }
 
+    let weekend_id = match wire.weekend_id {
+        Some(value) => {
+            let trimmed = value.trim().to_string();
+            if trimmed.is_empty() {
+                return Err(EnvelopeValidationError::InvalidWeekendId);
+            }
+            Some(trimmed)
+        }
+        None => None,
+    };
+
     let session_id = wire.session_id.trim().to_string();
     if session_id.is_empty() {
         return Err(EnvelopeValidationError::InvalidSessionId);
@@ -189,6 +207,7 @@ pub fn parse_event_envelope(
         event_id: wire.event_id,
         ts,
         player_id,
+        weekend_id,
         session_id,
         event_type: wire.event_type,
         payload,
@@ -350,6 +369,15 @@ fn validate_pitwall_session_payload(
     event_type: &str,
     payload: &PitWallSessionConfiguredPayload,
 ) -> Result<(), EnvelopeValidationError> {
+    if let Some(weekend_id) = &payload.weekend_id
+        && weekend_id.trim().is_empty()
+    {
+        return Err(EnvelopeValidationError::InvalidPayload {
+            event_type: event_type.to_string(),
+            message: "weekend_id must be a non-empty string when provided".to_string(),
+        });
+    }
+
     if payload.run_id.trim().is_empty() {
         return Err(EnvelopeValidationError::InvalidPayload {
             event_type: event_type.to_string(),
@@ -403,6 +431,7 @@ mod tests {
         EVENT_TYPE_PITWALL_SESSION_CONFIGURED, EVENT_TYPE_TELEMETRY_SAMPLE_BATCH,
         parse_event_envelope,
     };
+    use std::fs;
 
     #[test]
     fn parses_telemetry_sample_batch() {
@@ -412,6 +441,7 @@ mod tests {
                 "event_id": "9a593a28-22f3-48c8-bafe-d3076aad89ad",
                 "ts": "2026-02-11T09:00:00Z",
                 "player_id": "player-1",
+                "weekend_id": "weekend-42",
                 "session_id": "session-abc",
                 "event_type": "{EVENT_TYPE_TELEMETRY_SAMPLE_BATCH}",
                 "payload": {{
@@ -433,6 +463,7 @@ mod tests {
             parse_event_envelope(&payload, "pitgun-envelope-v1").expect("payload should parse");
 
         assert_eq!(envelope.player_id, "player-1");
+        assert_eq!(envelope.weekend_id.as_deref(), Some("weekend-42"));
     }
 
     #[test]
@@ -462,9 +493,11 @@ mod tests {
                 "event_id": "11111111-2222-4333-8444-555555555555",
                 "ts": "2026-02-11T09:00:00Z",
                 "player_id": "player-1",
+                "weekend_id": "weekend-monza",
                 "session_id": "session-abc",
                 "event_type": "{EVENT_TYPE_PITWALL_SESSION_CONFIGURED}",
                 "payload": {{
+                    "weekend_id": "weekend-monza",
                     "run_id": "run-1",
                     "track_id": "SPA",
                     "vehicle_id": "f1_2026",
@@ -511,6 +544,23 @@ mod tests {
             parse_event_envelope(&payload, "pitgun-envelope-v1").expect("payload should parse");
 
         assert_eq!(envelope.player_id, "player-1");
+        assert_eq!(envelope.weekend_id.as_deref(), Some("weekend-monza"));
         assert_eq!(envelope.event_type, EVENT_TYPE_PITWALL_SESSION_CONFIGURED);
+    }
+
+    #[test]
+    fn parses_documented_examples() {
+        let examples_dir = format!("{}/examples", env!("CARGO_MANIFEST_DIR"));
+        for entry in fs::read_dir(&examples_dir).expect("read examples dir") {
+            let entry = entry.expect("read example dir entry");
+            let path = entry.path();
+            if path.extension().and_then(|ext| ext.to_str()) != Some("json") {
+                continue;
+            }
+
+            let payload = fs::read_to_string(&path).expect("read example payload");
+            parse_event_envelope(&payload, "pitgun-envelope-v1")
+                .unwrap_or_else(|err| panic!("{} should parse: {err}", path.display()));
+        }
     }
 }

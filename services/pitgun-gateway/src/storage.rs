@@ -1,9 +1,8 @@
-use std::path::Path;
-
 use anyhow::Context;
-use sqlx::{SqlitePool, sqlite::SqlitePoolOptions};
-use time::{OffsetDateTime, UtcOffset, format_description::well_known::Rfc3339};
+use sqlx::{PgPool, postgres::PgPoolOptions};
+use time::OffsetDateTime;
 
+use crate::insight_requests::LapSummaryPayload;
 use crate::model::EventEnvelope;
 
 #[derive(Clone, Debug)]
@@ -32,8 +31,8 @@ impl QueueMessage {
 }
 
 #[derive(Clone)]
-pub struct SqliteEventStore {
-    pool: SqlitePool,
+pub struct PgEventStore {
+    pool: PgPool,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -42,75 +41,102 @@ pub enum EventInsertOutcome {
     Duplicate,
 }
 
-impl SqliteEventStore {
-    pub async fn new(db_path: &str) -> anyhow::Result<Self> {
-        ensure_parent_dir_exists(db_path).await?;
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum LapSummaryInsertOutcome {
+    Inserted,
+    Duplicate,
+}
 
-        let db_url = sqlite_url(db_path);
-        let pool = SqlitePoolOptions::new()
+impl PgEventStore {
+    pub async fn new(database_url: &str) -> anyhow::Result<Self> {
+        let pool = PgPoolOptions::new()
             .max_connections(10)
-            .connect(&db_url)
+            .connect(database_url)
             .await
-            .with_context(|| format!("failed to connect to sqlite database at {db_path}"))?;
+            .with_context(|| format!("failed to connect to PostgreSQL at {database_url}"))?;
 
-        sqlx::query("PRAGMA journal_mode = WAL;")
-            .execute(&pool)
-            .await?;
-        sqlx::query("PRAGMA synchronous = NORMAL;")
-            .execute(&pool)
-            .await?;
+        Self::init_schema(&pool).await?;
+        Ok(Self { pool })
+    }
 
+    async fn init_schema(pool: &PgPool) -> anyhow::Result<()> {
         sqlx::query(
             r#"
             CREATE TABLE IF NOT EXISTS events (
-                seq_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                seq_id BIGSERIAL PRIMARY KEY,
                 event_id TEXT NOT NULL UNIQUE,
                 schema_version TEXT NOT NULL,
-                ts TEXT NOT NULL,
+                ts TIMESTAMPTZ NOT NULL,
                 player_id TEXT NOT NULL,
+                weekend_id TEXT,
                 session_id TEXT NOT NULL,
                 event_type TEXT NOT NULL,
                 payload_json TEXT NOT NULL,
                 envelope_json TEXT NOT NULL,
-                received_at TEXT NOT NULL,
+                received_at TIMESTAMPTZ NOT NULL,
                 remote_ip TEXT,
                 user_agent TEXT
             );
             "#,
         )
-        .execute(&pool)
-        .await?;
+        .execute(pool)
+        .await
+        .context("failed to create events table")?;
 
         sqlx::query("CREATE INDEX IF NOT EXISTS idx_events_session_ts ON events(session_id, ts);")
-            .execute(&pool)
+            .execute(pool)
             .await?;
-
         sqlx::query("CREATE INDEX IF NOT EXISTS idx_events_player_ts ON events(player_id, ts);")
-            .execute(&pool)
+            .execute(pool)
             .await?;
-
+        sqlx::query("CREATE INDEX IF NOT EXISTS idx_events_weekend_ts ON events(weekend_id, ts);")
+            .execute(pool)
+            .await?;
         sqlx::query("CREATE INDEX IF NOT EXISTS idx_events_type_ts ON events(event_type, ts);")
-            .execute(&pool)
+            .execute(pool)
             .await?;
 
-        Ok(Self { pool })
+        sqlx::query(
+            r#"
+            CREATE TABLE IF NOT EXISTS lap_summaries (
+                seq_id BIGSERIAL PRIMARY KEY,
+                summary_id TEXT NOT NULL UNIQUE,
+                run_id TEXT NOT NULL,
+                weekend_id TEXT,
+                session_id TEXT NOT NULL,
+                lap_number BIGINT NOT NULL,
+                started_at_us BIGINT NOT NULL,
+                ended_at_us BIGINT NOT NULL,
+                payload_json TEXT NOT NULL,
+                created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+            );
+            "#,
+        )
+        .execute(pool)
+        .await
+        .context("failed to create lap_summaries table")?;
+
+        sqlx::query(
+            "CREATE INDEX IF NOT EXISTS idx_lap_summaries_run_lap ON lap_summaries(run_id, lap_number);",
+        )
+        .execute(pool)
+        .await?;
+        sqlx::query(
+            "CREATE INDEX IF NOT EXISTS idx_lap_summaries_session_lap ON lap_summaries(session_id, lap_number);",
+        )
+        .execute(pool)
+        .await?;
+        sqlx::query(
+            "CREATE INDEX IF NOT EXISTS idx_lap_summaries_weekend_lap ON lap_summaries(weekend_id, lap_number);",
+        )
+        .execute(pool)
+        .await?;
+
+        Ok(())
     }
 
     pub async fn insert_event(&self, msg: QueueMessage) -> anyhow::Result<EventInsertOutcome> {
-        let event_ts = msg
-            .envelope
-            .ts
-            .to_offset(UtcOffset::UTC)
-            .format(&Rfc3339)
-            .map_err(|err| anyhow::anyhow!("failed to format event ts: {err}"))?;
-
-        let received_at = msg
-            .received_at
-            .format(&Rfc3339)
-            .map_err(|err| anyhow::anyhow!("failed to format received_at: {err}"))?;
-
         let payload_json = serde_json::to_string(&msg.envelope.payload_json()?)?;
-
         let result = sqlx::query(
             r#"
             INSERT INTO events (
@@ -118,6 +144,7 @@ impl SqliteEventStore {
                 schema_version,
                 ts,
                 player_id,
+                weekend_id,
                 session_id,
                 event_type,
                 payload_json,
@@ -126,19 +153,20 @@ impl SqliteEventStore {
                 remote_ip,
                 user_agent
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
             ON CONFLICT(event_id) DO NOTHING;
             "#,
         )
         .bind(msg.envelope.event_id.to_string())
         .bind(msg.envelope.schema_version)
-        .bind(event_ts)
+        .bind(msg.envelope.ts)
         .bind(msg.envelope.player_id)
+        .bind(msg.envelope.weekend_id)
         .bind(msg.envelope.session_id)
         .bind(msg.envelope.event_type)
         .bind(payload_json)
         .bind(msg.raw_json)
-        .bind(received_at)
+        .bind(msg.received_at)
         .bind(msg.meta.remote_ip)
         .bind(msg.meta.user_agent)
         .execute(&self.pool)
@@ -152,48 +180,68 @@ impl SqliteEventStore {
     }
 
     pub async fn health_check(&self) -> anyhow::Result<()> {
-        let _: i64 = sqlx::query_scalar("SELECT 1;")
-            .fetch_one(&self.pool)
-            .await?;
+        let _: i32 = sqlx::query_scalar("SELECT 1").fetch_one(&self.pool).await?;
         Ok(())
     }
-}
 
-fn sqlite_url(path: &str) -> String {
-    if path.starts_with("sqlite:") {
-        path.to_string()
-    } else {
-        format!("sqlite://{path}")
+    pub async fn insert_lap_summary(
+        &self,
+        summary: &LapSummaryPayload,
+    ) -> anyhow::Result<LapSummaryInsertOutcome> {
+        let payload_json = serde_json::to_string(summary)?;
+
+        let result = sqlx::query(
+            r#"
+            INSERT INTO lap_summaries (
+                summary_id,
+                run_id,
+                weekend_id,
+                session_id,
+                lap_number,
+                started_at_us,
+                ended_at_us,
+                payload_json
+            )
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+            ON CONFLICT(summary_id) DO NOTHING;
+            "#,
+        )
+        .bind(&summary.summary_id)
+        .bind(&summary.run_id)
+        .bind(summary.weekend_id.as_deref())
+        .bind(&summary.session_id)
+        .bind(summary.lap_number as i64)
+        .bind(summary.started_at_us)
+        .bind(summary.ended_at_us)
+        .bind(payload_json)
+        .execute(&self.pool)
+        .await?;
+
+        if result.rows_affected() == 0 {
+            Ok(LapSummaryInsertOutcome::Duplicate)
+        } else {
+            Ok(LapSummaryInsertOutcome::Inserted)
+        }
     }
-}
-
-async fn ensure_parent_dir_exists(path: &str) -> anyhow::Result<()> {
-    if path.starts_with("sqlite::memory:") {
-        return Ok(());
-    }
-
-    if path.starts_with("sqlite:") {
-        return Ok(());
-    }
-
-    let db_path = Path::new(path);
-    if let Some(parent) = db_path.parent() {
-        tokio::fs::create_dir_all(parent)
-            .await
-            .with_context(|| format!("failed to create db directory {}", parent.display()))?;
-    }
-
-    Ok(())
 }
 
 #[cfg(test)]
 mod tests {
-    use super::{EventInsertOutcome, IngestMetadata, QueueMessage, SqliteEventStore};
+    use super::{
+        EventInsertOutcome, IngestMetadata, LapSummaryInsertOutcome, PgEventStore, QueueMessage,
+    };
+    use crate::insight_requests::{InsightContext, InsightMetric, LapSummaryPayload};
     use crate::model::parse_event_envelope;
 
+    // These tests require a live PostgreSQL instance.
+    // Set DATABASE_URL before running: e.g. DATABASE_URL=postgresql://user:pass@localhost/pitgun_test
+    // Run with: cargo test -- --ignored
+
+    #[ignore]
     #[tokio::test]
     async fn deduplicates_by_event_id() {
-        let store = SqliteEventStore::new("sqlite::memory:")
+        let db_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
+        let store = PgEventStore::new(&db_url)
             .await
             .expect("store should be created");
 
@@ -241,5 +289,55 @@ mod tests {
             .await
             .expect("second insert should work");
         assert_eq!(second, EventInsertOutcome::Duplicate);
+    }
+
+    #[ignore]
+    #[tokio::test]
+    async fn deduplicates_lap_summary_by_summary_id() {
+        let db_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
+        let store = PgEventStore::new(&db_url)
+            .await
+            .expect("store should be created");
+
+        let summary = LapSummaryPayload {
+            schema_version: "pitgun-lap-summary-v1".to_string(),
+            summary_id: "session-001:lap:12".to_string(),
+            player_id: "player_001".to_string(),
+            run_id: "run_001".to_string(),
+            weekend_id: Some("weekend_001".to_string()),
+            session_id: "session_001".to_string(),
+            session_type: Some("FP1".to_string()),
+            lap_number: 12,
+            started_at_us: 1_773_401_000_000,
+            ended_at_us: 1_773_491_000_000,
+            context: InsightContext {
+                circuit_id: "MONZA".to_string(),
+                era: 2026,
+                lap: 12,
+                position: Some(3),
+                weather: Some("clear".to_string()),
+                track_status: Some("green".to_string()),
+            },
+            metrics: vec![InsightMetric {
+                key: "pace.speed_kph.mean".to_string(),
+                value: 210.2,
+                unit: "kph".to_string(),
+                trend: "unknown".to_string(),
+                horizon: "lap".to_string(),
+                confidence: 0.9,
+            }],
+        };
+
+        let first = store
+            .insert_lap_summary(&summary)
+            .await
+            .expect("first insert should work");
+        assert_eq!(first, LapSummaryInsertOutcome::Inserted);
+
+        let second = store
+            .insert_lap_summary(&summary)
+            .await
+            .expect("second insert should work");
+        assert_eq!(second, LapSummaryInsertOutcome::Duplicate);
     }
 }

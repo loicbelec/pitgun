@@ -1,0 +1,299 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pitgun.io/schemas/insight-contract/v1",
+  "title": "Pitgun Insight Contract v1",
+  "description": "Canonical contract for metrics to insights exchange between Pitgun Core and LLM services.",
+  "oneOf": [
+    { "$ref": "#/$defs/InsightRequest" },
+    { "$ref": "#/$defs/InsightResponse" }
+  ],
+  "$defs": {
+    "Metric": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["key", "value"],
+      "properties": {
+        "key": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[a-z0-9_.-]+$"
+        },
+        "value": {
+          "type": "number"
+        },
+        "unit": {
+          "type": "string",
+          "maxLength": 24
+        },
+        "trend": {
+          "type": "string",
+          "enum": ["up", "down", "flat", "unknown"]
+        },
+        "horizon": {
+          "type": "string",
+          "enum": ["instant", "lap", "stint", "race"]
+        },
+        "confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        }
+      }
+    },
+    "InsightContext": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["circuit_id", "era", "lap"],
+      "properties": {
+        "circuit_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 32
+        },
+        "era": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "lap": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "position": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "weather": {
+          "type": "string",
+          "maxLength": 32
+        },
+        "track_status": {
+          "type": "string",
+          "maxLength": 32
+        }
+      }
+    },
+    "InsightConstraints": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "max_insights": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 8
+        },
+        "max_words_per_insight": {
+          "type": "integer",
+          "minimum": 6,
+          "maximum": 80
+        },
+        "language": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 12
+        }
+      }
+    },
+    "InsightItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "severity", "confidence", "title", "rationale", "recommendation"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 48,
+          "pattern": "^[a-z0-9_.-]+$"
+        },
+        "severity": {
+          "type": "string",
+          "enum": ["info", "advisory", "warning", "critical"]
+        },
+        "confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "title": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 90
+        },
+        "rationale": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 260
+        },
+        "recommendation": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 260
+        },
+        "metric_keys": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "pattern": "^[a-z0-9_.-]+$"
+          },
+          "uniqueItems": true,
+          "maxItems": 8
+        },
+        "ttl_ms": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 32
+          },
+          "uniqueItems": true,
+          "maxItems": 8
+        }
+      }
+    },
+    "InsightRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "run_id",
+        "session_id",
+        "emitted_at_ms",
+        "context",
+        "metrics"
+      ],
+      "properties": {
+        "schema_version": {
+          "type": "string",
+          "const": "pitgun-insight-request-v1"
+        },
+        "run_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "session_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "trace_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "emitted_at_ms": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "context": {
+          "$ref": "#/$defs/InsightContext"
+        },
+        "metrics": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 128,
+          "items": {
+            "$ref": "#/$defs/Metric"
+          }
+        },
+        "constraints": {
+          "$ref": "#/$defs/InsightConstraints"
+        },
+        "policy_version": {
+          "type": "string",
+          "maxLength": 32
+        },
+        "prompt_version": {
+          "type": "string",
+          "maxLength": 32
+        }
+      }
+    },
+    "InsightResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "run_id",
+        "session_id",
+        "generated_at_ms",
+        "status",
+        "insights"
+      ],
+      "properties": {
+        "schema_version": {
+          "type": "string",
+          "const": "pitgun-insight-response-v1"
+        },
+        "run_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "session_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "trace_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "generated_at_ms": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "latency_ms": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "source_model": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "status": {
+          "type": "string",
+          "enum": ["ok", "degraded", "insufficient_data", "error"]
+        },
+        "insights": {
+          "type": "array",
+          "maxItems": 8,
+          "items": {
+            "$ref": "#/$defs/InsightItem"
+          }
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "maxItems": 16
+        },
+        "error": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["code", "message"],
+          "properties": {
+            "code": {
+              "type": "string",
+              "maxLength": 48
+            },
+            "message": {
+              "type": "string",
+              "maxLength": 180
+            }
+          }
+        }
+      }
+    }
+  }
+}

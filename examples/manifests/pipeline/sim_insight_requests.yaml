@@ -1,0 +1,44 @@
+# yaml-language-server: $schema=https://pitgun.io/schemas/pipeline-manifest/v1
+
+manifest_version: 1
+
+source:
+  type: websocket
+
+processors:
+  - type: channel_filter
+    channels:
+      - "sim.speed_kph"
+      - "sim.rpm"
+      - "sim.throttle_pct"
+      - "sim.brake_pct"
+      - "sim.g_lat"
+      - "sim.g_long"
+      - "sim.engine_temp_c"
+      - "sim.tire_temp_c"
+      - "sim.tire_wear_pct"
+
+  - type: segment_aggregate
+    segment_key: "sim.time_s"
+    targets:
+      - channel: "sim.speed_kph"
+        metrics: ["min", "max", "mean", "stddev"]
+      - channel: "sim.rpm"
+        metrics: ["min", "max", "mean"]
+      - channel: "sim.throttle_pct"
+        metrics: ["mean"]
+      - channel: "sim.brake_pct"
+        metrics: ["mean"]
+      - channel: "sim.g_lat"
+        metrics: ["max", "mean"]
+      - channel: "sim.g_long"
+        metrics: ["min", "max", "mean"]
+      - channel: "sim.engine_temp_c"
+        metrics: ["max", "mean"]
+      - channel: "sim.tire_temp_c"
+        metrics: ["max", "mean"]
+      - channel: "sim.tire_wear_pct"
+        metrics: ["max", "mean"]
+
+sink:
+  type: console

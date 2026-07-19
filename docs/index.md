@@ -27,3 +27,5 @@
 
 - [Command reference](commands.md)
 - [Development journal](journal.md)
+- [Metrics to Insights Contract V1](insight_contract.md)
+- [Simulation metrics dictionary V1](sim_dictionary.md)
