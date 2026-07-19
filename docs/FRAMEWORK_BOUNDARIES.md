@@ -58,7 +58,7 @@ hard-coded to `RaceInput` or player car setup structures.
 Owns signing and verification primitives for contracts and authority-issued
 configuration.
 
-### `pitgun-runtime` (migration in progress)
+### `pitgun-runtime`
 
 Owns domain-neutral deterministic execution:
 
@@ -73,9 +73,10 @@ persistence, network transports, or CLI presentation. The first workload
 interface links Rust implementations at compile time; loading external WASM
 plugins is a later, separately governed capability.
 
-The crate currently owns RNG V1 and the statically linked workload boundary.
-Generic replay verification is delivered incrementally through #83. The
-workload lifecycle is documented in [Statically Linked Workloads](LINKED_WORKLOAD.md).
+The crate owns RNG V1, the statically linked workload boundary, and pure loaded
+Run Bundle verification. The workload lifecycle is documented in
+[Statically Linked Workloads](LINKED_WORKLOAD.md); the storage boundary is
+documented in [Loaded Run Bundle Verification](RUN_BUNDLE_VERIFICATION.md).
 
 ### `pitgun-gateway`
 

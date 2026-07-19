@@ -33,6 +33,9 @@ order:
 Model and input mismatches fail before domain execution. Filesystem
 persistence, execution identifiers, concrete runtime identity, receipt
 creation, and Run Bundle layout remain application-adapter responsibilities.
+Once those artifacts are loaded, their domain-neutral verification is owned by
+`pitgun-runtime` as documented in
+[Loaded Run Bundle Verification](RUN_BUNDLE_VERIFICATION.md).
 
 ## Domain Ownership
 

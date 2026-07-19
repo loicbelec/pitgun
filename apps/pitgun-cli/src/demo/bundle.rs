@@ -3,11 +3,16 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 use pitgun_contract::{
-    canonical_json_bytes, DerivedMetricsV1, DeterministicRunContractV1, Digest, ExecutionId,
-    Identifier, RunBundleArtifactV1, RunBundleCanonicalArtifactsV1, RunBundleExecutionArtifactsV1,
-    RunBundleManifestV1, RunBundleManifestVersion, RunBundleMediaType, RunBundleReceiptV1,
-    RunBundleReceiptVersion, RunBundleTelemetryRecordV1, RunBundleTelemetryRecordVersion,
-    RuntimeIdentity, SemanticVersion, TelemetrySummaryV1,
+    canonical_json_bytes, canonical_json_digest, ArtifactIdentity, DerivedMetricsV1,
+    DeterministicRunContractV1, Digest, ExecutionId, Identifier, RunBundleArtifactV1,
+    RunBundleCanonicalArtifactsV1, RunBundleExecutionArtifactsV1, RunBundleManifestV1,
+    RunBundleManifestVersion, RunBundleMediaType, RunBundleReceiptV1, RunBundleReceiptVersion,
+    RunBundleTelemetryRecordV1, RunBundleTelemetryRecordVersion, RuntimeIdentity, ScenarioIdentity,
+    SemanticVersion, TelemetrySummaryV1,
+};
+use pitgun_runtime::{
+    verify_loaded_run_bundle, verify_run_bundle_artifacts, LoadedRunBundle, RunBundleArtifactBytes,
+    ScenarioBinding,
 };
 use serde::de::DeserializeOwned;
 use serde::Serialize;
@@ -316,125 +321,86 @@ fn validate_bundle(
         )));
     }
 
-    validate_reference(root, &manifest.canonical_artifacts.scenario)?;
-    validate_reference(root, &manifest.canonical_artifacts.contract)?;
-    validate_reference(root, &manifest.canonical_artifacts.output)?;
-    validate_reference(root, &manifest.canonical_artifacts.telemetry)?;
-    validate_reference(root, &manifest.canonical_artifacts.telemetry_summary)?;
-    validate_reference(root, &manifest.canonical_artifacts.metrics)?;
-    validate_reference(root, &manifest.execution_artifacts.receipt)?;
+    let scenario_bytes = read_file(root, &manifest.canonical_artifacts.scenario.path)?;
+    let contract_bytes = read_file(root, &manifest.canonical_artifacts.contract.path)?;
+    let output_bytes = read_file(root, &manifest.canonical_artifacts.output.path)?;
+    let telemetry_bytes = read_file(root, &manifest.canonical_artifacts.telemetry.path)?;
+    let telemetry_summary_bytes =
+        read_file(root, &manifest.canonical_artifacts.telemetry_summary.path)?;
+    let metrics_bytes = read_file(root, &manifest.canonical_artifacts.metrics.path)?;
+    let receipt_bytes = read_file(root, &manifest.execution_artifacts.receipt.path)?;
 
-    let scenario: Value = parse_artifact_json(root, &manifest.canonical_artifacts.scenario)?;
+    let artifact_bytes = RunBundleArtifactBytes {
+        scenario: &scenario_bytes,
+        contract: &contract_bytes,
+        output: &output_bytes,
+        telemetry: &telemetry_bytes,
+        telemetry_summary: &telemetry_summary_bytes,
+        metrics: &metrics_bytes,
+        receipt: &receipt_bytes,
+    };
+    verify_run_bundle_artifacts(&manifest, artifact_bytes).map_err(bundle_error)?;
+
+    let scenario: Value = parse_canonical_json(SCENARIO_FILE, &scenario_bytes)?;
     require_schema_version(SCENARIO_FILE, &scenario)?;
     let contract: DeterministicRunContractV1 =
-        parse_artifact_json(root, &manifest.canonical_artifacts.contract)?;
-    let contract_run_id = contract.run_id().map_err(bundle_error)?;
-    if contract_run_id != manifest.run_id {
-        return Err(BundleError::new(format!(
-            "contract run_id {contract_run_id} does not match manifest {}",
-            manifest.run_id
-        )));
-    }
-    let output: Value = parse_artifact_json(root, &manifest.canonical_artifacts.output)?;
+        parse_canonical_json(CONTRACT_FILE, &contract_bytes)?;
+    let output: Value = parse_canonical_json(OUTPUT_FILE, &output_bytes)?;
     require_schema_version(OUTPUT_FILE, &output)?;
     let summary: TelemetrySummaryV1 =
-        parse_artifact_json(root, &manifest.canonical_artifacts.telemetry_summary)?;
-    let metrics: DerivedMetricsV1 =
-        parse_artifact_json(root, &manifest.canonical_artifacts.metrics)?;
+        parse_canonical_json(TELEMETRY_SUMMARY_FILE, &telemetry_summary_bytes)?;
+    let metrics: DerivedMetricsV1 = parse_canonical_json(METRICS_FILE, &metrics_bytes)?;
     metrics.validate().map_err(bundle_error)?;
-    validate_telemetry(
-        root,
-        &manifest.canonical_artifacts.telemetry,
-        summary.frame_count(),
-        summary.batch_count(),
-    )?;
-    let receipt: RunBundleReceiptV1 =
-        parse_artifact_json(root, &manifest.execution_artifacts.receipt)?;
-    contract
-        .verify_receipt(&receipt.receipt)
-        .map_err(bundle_error)?;
-    if receipt.receipt.output_digest != manifest.canonical_artifacts.output.digest {
-        return Err(BundleError::new(
-            "receipt output digest does not match manifest",
-        ));
-    }
-    if receipt.receipt.telemetry_summary_digest
-        != manifest.canonical_artifacts.telemetry_summary.digest
-    {
-        return Err(BundleError::new(
-            "receipt telemetry summary digest does not match manifest",
-        ));
-    }
+    let receipt: RunBundleReceiptV1 = parse_canonical_json(RECEIPT_FILE, &receipt_bytes)?;
+    let telemetry = parse_telemetry(&telemetry_bytes)?;
+
+    let scenario_identity: ScenarioIdentity = scenario_field(&scenario, "scenario")?;
+    let model: ArtifactIdentity = scenario_field(&scenario, "model")?;
+    let data_pack: ArtifactIdentity = scenario_field(&scenario, "data_pack")?;
+    let request = scenario
+        .get("request")
+        .ok_or_else(|| BundleError::new("scenario.json has no request field"))?;
+    let input_digest = canonical_json_digest(request).map_err(bundle_error)?;
+
+    verify_loaded_run_bundle(LoadedRunBundle {
+        manifest: &manifest,
+        contract: &contract,
+        receipt: &receipt,
+        scenario: ScenarioBinding {
+            scenario: &scenario_identity,
+            model: &model,
+            data_pack: &data_pack,
+            input_digest,
+        },
+        artifacts: artifact_bytes,
+        declared_telemetry_summary: &summary,
+        telemetry_records: &telemetry,
+    })
+    .map_err(bundle_error)?;
 
     Ok(manifest)
 }
 
-fn validate_telemetry(
-    root: &Path,
-    artifact: &RunBundleArtifactV1,
-    expected_frames: u64,
-    expected_batches: u64,
-) -> Result<(), BundleError> {
-    let bytes = read_file(root, &artifact.path)?;
-    let text = std::str::from_utf8(&bytes)
-        .map_err(|error| BundleError::new(format!("{} is not UTF-8: {error}", artifact.path)))?;
-    let mut count = 0_u64;
-    let mut batch_count = 0_u64;
-    for (index, line) in text.lines().enumerate() {
-        let record: RunBundleTelemetryRecordV1 =
-            parse_canonical_json(&artifact.path, line.as_bytes())?;
-        if record.ordinal != count {
-            return Err(BundleError::new(format!(
-                "{} line {} has ordinal {}, expected {}",
-                artifact.path,
-                index + 1,
-                record.ordinal,
-                count
-            )));
-        }
-        if record.batch_ordinal == batch_count {
-            batch_count = batch_count
-                .checked_add(1)
-                .ok_or_else(|| BundleError::new("telemetry batch count overflowed u64"))?;
-        } else if batch_count == 0 || record.batch_ordinal != batch_count - 1 {
-            return Err(BundleError::new(format!(
-                "{} line {} has non-contiguous batch ordinal {}",
-                artifact.path,
-                index + 1,
-                record.batch_ordinal
-            )));
-        }
-        count = count
-            .checked_add(1)
-            .ok_or_else(|| BundleError::new("telemetry frame count overflowed u64"))?;
-    }
+fn parse_telemetry(bytes: &[u8]) -> Result<Vec<RunBundleTelemetryRecordV1>, BundleError> {
     if !bytes.is_empty() && !bytes.ends_with(b"\n") {
         return Err(BundleError::new(format!(
-            "{} must end with a newline",
-            artifact.path
+            "{TELEMETRY_FILE} must end with a newline"
         )));
     }
-    if count != expected_frames {
-        return Err(BundleError::new(format!(
-            "{} contains {count} frames, summary declares {expected_frames}",
-            artifact.path
-        )));
-    }
-    if batch_count != expected_batches {
-        return Err(BundleError::new(format!(
-            "{} contains {batch_count} batches, summary declares {expected_batches}",
-            artifact.path
-        )));
-    }
-    Ok(())
+    let text = std::str::from_utf8(bytes)
+        .map_err(|error| BundleError::new(format!("{TELEMETRY_FILE} is not UTF-8: {error}")))?;
+    text.lines()
+        .map(|line| parse_canonical_json(TELEMETRY_FILE, line.as_bytes()))
+        .collect()
 }
 
-fn parse_artifact_json<T: DeserializeOwned + Serialize>(
-    root: &Path,
-    artifact: &RunBundleArtifactV1,
-) -> Result<T, BundleError> {
-    let bytes = read_file(root, &artifact.path)?;
-    parse_canonical_json(&artifact.path, &bytes)
+fn scenario_field<T: DeserializeOwned>(scenario: &Value, name: &str) -> Result<T, BundleError> {
+    let value = scenario
+        .get(name)
+        .cloned()
+        .ok_or_else(|| BundleError::new(format!("scenario.json has no {name} field")))?;
+    serde_json::from_value(value)
+        .map_err(|error| BundleError::new(format!("invalid scenario.json {name}: {error}")))
 }
 
 fn parse_canonical_json<T: DeserializeOwned + Serialize>(
@@ -461,18 +427,6 @@ fn require_schema_version(name: &str, value: &Value) -> Result<(), BundleError> 
     {
         return Err(BundleError::new(format!(
             "{name} has no string schema_version"
-        )));
-    }
-    Ok(())
-}
-
-fn validate_reference(root: &Path, artifact: &RunBundleArtifactV1) -> Result<(), BundleError> {
-    let bytes = read_file(root, &artifact.path)?;
-    let actual = Digest::from_bytes(&bytes);
-    if actual != artifact.digest {
-        return Err(BundleError::new(format!(
-            "{} digest mismatch: expected {}, got {}",
-            artifact.path, artifact.digest, actual
         )));
     }
     Ok(())

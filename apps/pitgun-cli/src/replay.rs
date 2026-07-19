@@ -11,6 +11,10 @@ use pitgun_contract::{
 use pitgun_core::{
     aggregate_telemetry_parameter, TelemetryAggregateConfig, TelemetryAggregateKind,
 };
+use pitgun_runtime::{
+    verify_loaded_run_bundle, LoadedRunBundle, RunBundleArtifactBytes, RunBundleVerificationError,
+    ScenarioBinding,
+};
 use serde::de::DeserializeOwned;
 use serde::Serialize;
 use serde_json::Value;
@@ -88,7 +92,6 @@ struct ArtifactBytes {
 
 struct LoadedTelemetry {
     records: Vec<RunBundleTelemetryRecordV1>,
-    batch_count: u64,
 }
 
 /// Loads, deterministically replays, and verifies a committed Run Bundle V1.
@@ -107,6 +110,15 @@ pub(crate) fn replay_and_verify(root: &Path) -> Result<ReplayReport, ReplayError
         .map_err(|error| ReplayError::replay(format!("invalid manifest.json: {error}")))?;
 
     let bytes = load_artifacts(root, &manifest)?;
+    let artifact_bytes = RunBundleArtifactBytes {
+        scenario: &bytes.scenario,
+        contract: &bytes.contract,
+        output: &bytes.output,
+        telemetry: &bytes.telemetry,
+        telemetry_summary: &bytes.telemetry_summary,
+        metrics: &bytes.metrics,
+        receipt: &bytes.receipt,
+    };
     let scenario: Value = parse_canonical_json("scenario.json", &bytes.scenario)?;
     require_schema_version("scenario.json", &scenario)?;
     let contract: DeterministicRunContractV1 =
@@ -121,34 +133,31 @@ pub(crate) fn replay_and_verify(root: &Path) -> Result<ReplayReport, ReplayError
         .map_err(|error| ReplayError::replay(format!("invalid metrics.json: {error}")))?;
     let receipt: RunBundleReceiptV1 = parse_canonical_json("receipt.json", &bytes.receipt)?;
     let telemetry = load_telemetry(&bytes.telemetry)?;
+    let scenario_identity: ScenarioIdentity = scenario_field(&scenario, "scenario")?;
+    let model: ArtifactIdentity = scenario_field(&scenario, "model")?;
+    let data_pack: ArtifactIdentity = scenario_field(&scenario, "data_pack")?;
+    let request = scenario
+        .get("request")
+        .ok_or_else(|| ReplayError::replay("scenario.json has no request field"))?;
+    let input_digest = canonical_json_digest(request).map_err(|error| {
+        ReplayError::replay(format!("cannot calculate scenario request digest: {error}"))
+    })?;
 
-    verify_artifact_digests(&manifest, &bytes)?;
-    verify_contract_and_scenario(&manifest, &contract, &scenario)?;
-    contract
-        .verify_receipt(&receipt.receipt)
-        .map_err(|error| ReplayError::verification(format!("receipt.json: {error}")))?;
-    verify_equal(
-        "receipt output digest",
-        receipt.receipt.output_digest,
-        manifest.canonical_artifacts.output.digest,
-    )?;
-    verify_equal(
-        "receipt telemetry summary digest",
-        receipt.receipt.telemetry_summary_digest,
-        manifest.canonical_artifacts.telemetry_summary.digest,
-    )?;
-
-    let recalculated_summary = TelemetrySummaryV1::from_ordered_frames(
-        telemetry.batch_count,
-        telemetry.records.iter().map(|record| &record.frame),
-        0,
-    )
-    .map_err(|error| ReplayError::replay(format!("cannot summarize telemetry.jsonl: {error}")))?;
-    if recalculated_summary != declared_summary {
-        return Err(ReplayError::verification(
-            "telemetry-summary.json does not match replayed telemetry.jsonl",
-        ));
-    }
+    let verified = verify_loaded_run_bundle(LoadedRunBundle {
+        manifest: &manifest,
+        contract: &contract,
+        receipt: &receipt,
+        scenario: ScenarioBinding {
+            scenario: &scenario_identity,
+            model: &model,
+            data_pack: &data_pack,
+            input_digest,
+        },
+        artifacts: artifact_bytes,
+        declared_telemetry_summary: &declared_summary,
+        telemetry_records: &telemetry.records,
+    })
+    .map_err(runtime_verification_error)?;
 
     let recalculated_metrics = recalculate_metrics(&declared_metrics, &telemetry)?;
     if recalculated_metrics != declared_metrics {
@@ -159,9 +168,9 @@ pub(crate) fn replay_and_verify(root: &Path) -> Result<ReplayReport, ReplayError
 
     Ok(ReplayReport {
         root: root.to_path_buf(),
-        run_id: manifest.run_id,
-        frame_count: recalculated_summary.frame_count(),
-        batch_count: recalculated_summary.batch_count(),
+        run_id: verified.run_id,
+        frame_count: verified.telemetry_summary.frame_count(),
+        batch_count: verified.telemetry_summary.batch_count(),
         metrics: recalculated_metrics,
     })
 }
@@ -238,125 +247,29 @@ fn load_telemetry(bytes: &[u8]) -> Result<LoadedTelemetry, ReplayError> {
     let text = std::str::from_utf8(bytes)
         .map_err(|error| ReplayError::replay(format!("telemetry.jsonl is not UTF-8: {error}")))?;
     let mut records = Vec::new();
-    let mut batch_count = 0_u64;
-    for (index, line) in text.lines().enumerate() {
+    for line in text.lines() {
         let record: RunBundleTelemetryRecordV1 =
             parse_canonical_json("telemetry.jsonl record", line.as_bytes())?;
-        let expected_ordinal = u64::try_from(index)
-            .map_err(|_| ReplayError::replay("telemetry record ordinal overflowed u64"))?;
-        if record.ordinal != expected_ordinal {
-            return Err(ReplayError::replay(format!(
-                "telemetry.jsonl line {} has ordinal {}, expected {}",
-                index + 1,
-                record.ordinal,
-                expected_ordinal
-            )));
-        }
-        if record.batch_ordinal == batch_count {
-            batch_count = batch_count
-                .checked_add(1)
-                .ok_or_else(|| ReplayError::replay("telemetry batch count overflowed u64"))?;
-        } else if batch_count == 0 || record.batch_ordinal != batch_count - 1 {
-            return Err(ReplayError::replay(format!(
-                "telemetry.jsonl line {} has non-contiguous batch ordinal {}",
-                index + 1,
-                record.batch_ordinal
-            )));
-        }
         records.push(record);
     }
-    Ok(LoadedTelemetry {
-        records,
-        batch_count,
-    })
+    Ok(LoadedTelemetry { records })
 }
 
-fn verify_artifact_digests(
-    manifest: &RunBundleManifestV1,
-    bytes: &ArtifactBytes,
-) -> Result<(), ReplayError> {
-    for (name, expected, actual_bytes) in [
-        (
-            "scenario.json",
-            manifest.canonical_artifacts.scenario.digest,
-            bytes.scenario.as_slice(),
-        ),
-        (
-            "contract.json",
-            manifest.canonical_artifacts.contract.digest,
-            bytes.contract.as_slice(),
-        ),
-        (
-            "output.json",
-            manifest.canonical_artifacts.output.digest,
-            bytes.output.as_slice(),
-        ),
-        (
-            "telemetry.jsonl",
-            manifest.canonical_artifacts.telemetry.digest,
-            bytes.telemetry.as_slice(),
-        ),
-        (
-            "telemetry-summary.json",
-            manifest.canonical_artifacts.telemetry_summary.digest,
-            bytes.telemetry_summary.as_slice(),
-        ),
-        (
-            "metrics.json",
-            manifest.canonical_artifacts.metrics.digest,
-            bytes.metrics.as_slice(),
-        ),
-        (
-            "receipt.json",
-            manifest.execution_artifacts.receipt.digest,
-            bytes.receipt.as_slice(),
-        ),
-    ] {
-        let actual = Digest::from_bytes(actual_bytes);
-        if actual != expected {
-            return Err(ReplayError::verification(format!(
-                "{name} digest mismatch: expected {expected}, got {actual}"
-            )));
-        }
+fn runtime_verification_error(error: RunBundleVerificationError) -> ReplayError {
+    let replay_phase = matches!(
+        &error,
+        RunBundleVerificationError::InvalidManifest(_)
+            | RunBundleVerificationError::CanonicalIdentity(_)
+            | RunBundleVerificationError::TelemetryOrdinalMismatch { .. }
+            | RunBundleVerificationError::TelemetryBatchOrdinalMismatch { .. }
+            | RunBundleVerificationError::TelemetryCountOverflow(_)
+            | RunBundleVerificationError::TelemetrySummary(_)
+    );
+    if replay_phase {
+        ReplayError::replay(error.to_string())
+    } else {
+        ReplayError::verification(error.to_string())
     }
-    Ok(())
-}
-
-fn verify_contract_and_scenario(
-    manifest: &RunBundleManifestV1,
-    contract: &DeterministicRunContractV1,
-    scenario: &Value,
-) -> Result<(), ReplayError> {
-    let calculated_run_id = contract.run_id().map_err(|error| {
-        ReplayError::replay(format!("cannot calculate contract run_id: {error}"))
-    })?;
-    verify_equal("manifest run_id", manifest.run_id, calculated_run_id)?;
-
-    let scenario_identity: ScenarioIdentity = scenario_field(scenario, "scenario")?;
-    let model: ArtifactIdentity = scenario_field(scenario, "model")?;
-    let data_pack: ArtifactIdentity = scenario_field(scenario, "data_pack")?;
-    if scenario_identity != contract.scenario {
-        return Err(ReplayError::verification(
-            "scenario.json identity does not match contract.json",
-        ));
-    }
-    if model != contract.model {
-        return Err(ReplayError::verification(
-            "scenario.json model does not match contract.json",
-        ));
-    }
-    if data_pack != contract.data_pack {
-        return Err(ReplayError::verification(
-            "scenario.json data pack does not match contract.json",
-        ));
-    }
-    let request = scenario
-        .get("request")
-        .ok_or_else(|| ReplayError::replay("scenario.json has no request field"))?;
-    let input_digest = canonical_json_digest(request).map_err(|error| {
-        ReplayError::replay(format!("cannot calculate scenario request digest: {error}"))
-    })?;
-    verify_equal("scenario input digest", contract.input.digest, input_digest)
 }
 
 fn scenario_field<T: DeserializeOwned>(scenario: &Value, name: &str) -> Result<T, ReplayError> {
@@ -406,19 +319,6 @@ fn recalculate_metrics(
     }
     DerivedMetricsV1::new(recalculated)
         .map_err(|error| ReplayError::replay(format!("invalid recalculated metrics: {error}")))
-}
-
-fn verify_equal<T>(name: &str, expected: T, actual: T) -> Result<(), ReplayError>
-where
-    T: fmt::Display + PartialEq,
-{
-    if expected == actual {
-        Ok(())
-    } else {
-        Err(ReplayError::verification(format!(
-            "{name} mismatch: expected {expected}, got {actual}"
-        )))
-    }
 }
 
 #[cfg(test)]
@@ -596,6 +496,12 @@ mod tests {
 
         let order_root = copy_bundle(&base, "telemetry-order");
         mutate_first_speed(&order_root.join("telemetry.jsonl"), 999.0, Some(2));
+        let mutated_telemetry =
+            fs::read(order_root.join("telemetry.jsonl")).expect("mutated telemetry bytes");
+        mutate_json(&order_root.join("manifest.json"), |value| {
+            value["canonical_artifacts"]["telemetry"]["digest"] =
+                json!(Digest::from_bytes(&mutated_telemetry).to_string());
+        });
         let order_error = replay_and_verify(&order_root).expect_err("invalid replay order");
         assert_eq!(order_error.exit_code(), 40);
         assert!(order_error.to_string().contains("batch ordinal"));
