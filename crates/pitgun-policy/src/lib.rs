@@ -11,7 +11,7 @@ pub use access::{
 // TODO: Consider trimming crate-root re-exports once internal users (e.g. configd) migrate.
 pub use tuning::{
     CanonicalTuningParameters, ParameterSpec, ParameterSpecV1, PlayerTuningRequest, StrictMode,
-    TuningEvalContext, TuningPolicy, TuningPolicyV1,
+    TuningEvalContext, TuningParam, TuningPolicy, TuningPolicyV1,
 };
 pub use tuning::{
     DerivedConstraint, DeterminismMeta, FloatRange, PolicyError, SigningMeta, TelemetrySchemaHint,

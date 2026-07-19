@@ -330,9 +330,9 @@ fn gateway_frames(
                 sample(PARAM_TIRE_WEAR_PCT, tire_wear[idx]),
             ],
             events: Vec::new(),
-            lap_number: Some(lap_numbers[idx]),
-            sector: None,
-            lap_distance_m: Some(telemetry.s_m[idx] as f32),
+            cycle_index: Some(lap_numbers[idx]),
+            segment_index: None,
+            progress_m: Some(telemetry.s_m[idx] as f32),
             metadata: metadata.clone(),
         });
     }

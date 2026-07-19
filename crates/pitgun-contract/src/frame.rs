@@ -69,12 +69,15 @@ pub struct TelemetryFrame {
     pub samples: Vec<Sample>,
     /// Collection of events in this frame.
     pub events: Vec<Event>,
-    /// Optional lap number for motorsport applications.
-    pub lap_number: Option<u16>,
-    /// Optional sector number (1-3 typically).
-    pub sector: Option<u8>,
-    /// Optional distance into lap (meters).
-    pub lap_distance_m: Option<f32>,
+    /// Optional domain cycle index.
+    #[serde(rename = "lap_number")]
+    pub cycle_index: Option<u16>,
+    /// Optional domain segment index.
+    #[serde(rename = "sector")]
+    pub segment_index: Option<u8>,
+    /// Optional progress along the modeled path, in meters.
+    #[serde(rename = "lap_distance_m")]
+    pub progress_m: Option<f32>,
     /// Custom metadata as key-value pairs.
     #[serde(default, skip_serializing_if = "HashMap::is_empty")]
     pub metadata: HashMap<String, String>,
@@ -96,9 +99,9 @@ impl TelemetryFrame {
             source_id: source_id.into(),
             samples: Vec::new(),
             events: Vec::new(),
-            lap_number: None,
-            sector: None,
-            lap_distance_m: None,
+            cycle_index: None,
+            segment_index: None,
+            progress_m: None,
             metadata: HashMap::new(),
         }
     }
@@ -160,9 +163,9 @@ pub struct TelemetryFrameBuilder {
     source_id: Option<String>,
     samples: Vec<Sample>,
     events: Vec<Event>,
-    lap_number: Option<u16>,
-    sector: Option<u8>,
-    lap_distance_m: Option<f32>,
+    cycle_index: Option<u16>,
+    segment_index: Option<u8>,
+    progress_m: Option<f32>,
     metadata: HashMap<String, String>,
 }
 
@@ -226,21 +229,21 @@ impl TelemetryFrameBuilder {
         self
     }
 
-    /// Sets the lap number.
-    pub fn lap_number(mut self, lap: u16) -> Self {
-        self.lap_number = Some(lap);
+    /// Sets the domain cycle index.
+    pub fn cycle_index(mut self, cycle: u16) -> Self {
+        self.cycle_index = Some(cycle);
         self
     }
 
-    /// Sets the sector number.
-    pub fn sector(mut self, sector: u8) -> Self {
-        self.sector = Some(sector);
+    /// Sets the domain segment index.
+    pub fn segment_index(mut self, segment: u8) -> Self {
+        self.segment_index = Some(segment);
         self
     }
 
-    /// Sets the lap distance in meters.
-    pub fn lap_distance_m(mut self, distance: f32) -> Self {
-        self.lap_distance_m = Some(distance);
+    /// Sets progress along the modeled path, in meters.
+    pub fn progress_m(mut self, progress: f32) -> Self {
+        self.progress_m = Some(progress);
         self
     }
 
@@ -264,9 +267,9 @@ impl TelemetryFrameBuilder {
             source_id: self.source_id.expect("source_id is required"),
             samples: self.samples,
             events: self.events,
-            lap_number: self.lap_number,
-            sector: self.sector,
-            lap_distance_m: self.lap_distance_m,
+            cycle_index: self.cycle_index,
+            segment_index: self.segment_index,
+            progress_m: self.progress_m,
             metadata: self.metadata,
         }
     }
@@ -281,9 +284,9 @@ impl TelemetryFrameBuilder {
             source_id: self.source_id?,
             samples: self.samples,
             events: self.events,
-            lap_number: self.lap_number,
-            sector: self.sector,
-            lap_distance_m: self.lap_distance_m,
+            cycle_index: self.cycle_index,
+            segment_index: self.segment_index,
+            progress_m: self.progress_m,
             metadata: self.metadata,
         })
     }
@@ -754,8 +757,8 @@ mod tests {
             .source_id("test")
             .sample(Sample::good(1, SampleValue::F32(3.14)))
             .event(Event::info(1, "test_event"))
-            .lap_number(5)
-            .sector(2)
+            .cycle_index(5)
+            .segment_index(2)
             .build();
 
         let json = serde_json::to_string(&frame).unwrap();
@@ -764,8 +767,8 @@ mod tests {
         assert_eq!(parsed.session_id, frame.session_id);
         assert_eq!(parsed.sample_count(), 1);
         assert_eq!(parsed.event_count(), 1);
-        assert_eq!(parsed.lap_number, Some(5));
-        assert_eq!(parsed.sector, Some(2));
+        assert_eq!(parsed.cycle_index, Some(5));
+        assert_eq!(parsed.segment_index, Some(2));
     }
 
     #[test]

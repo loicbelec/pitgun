@@ -1,7 +1,7 @@
 use std::collections::{BTreeMap, BTreeSet};
 use std::sync::OnceLock;
 
-use pitgun_contract::{CompetitorSpec, RaceInput, TuningSpec};
+use pitgun_racing_contract::{CompetitorSpec, RaceInput, TuningSpec};
 use serde_json::Value as JsonValue;
 use thiserror::Error;
 

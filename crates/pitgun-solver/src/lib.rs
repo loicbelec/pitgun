@@ -7,11 +7,11 @@ use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 
 use kernel::{resample_telemetry, run_simulation};
-use pitgun_contract::{
-    CircuitCatalogEntry, CompetitorSpec, CompetitorStintStrategy, EngineCatalogEntry, RaceInput,
-    Sample, SampleValue, SignalQuality, TelemetryFrame,
-};
+use pitgun_contract::{Sample, SampleValue, SignalQuality, TelemetryFrame};
 use pitgun_policy::validation::normalize_and_validate_race_input;
+use pitgun_racing_contract::{
+    CircuitCatalogEntry, CompetitorSpec, CompetitorStintStrategy, EngineCatalogEntry, RaceInput,
+};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use wasm_bindgen::prelude::*;
@@ -1180,9 +1180,9 @@ fn gateway_frames_from_resampled(
                 gateway_sample(PARAM_TIRE_WEAR_PCT, tire_wear[idx]),
             ],
             events: Vec::new(),
-            lap_number: Some(lap_numbers[idx]),
-            sector: None,
-            lap_distance_m: Some(telemetry.s_m[idx] as f32),
+            cycle_index: Some(lap_numbers[idx]),
+            segment_index: None,
+            progress_m: Some(telemetry.s_m[idx] as f32),
             metadata: metadata.clone(),
         });
     }
@@ -1654,7 +1654,7 @@ fn json_error(message: &str) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pitgun_contract::{CompetitorSpec, RaceInput, TuningSpec};
+    use pitgun_racing_contract::{CompetitorSpec, RaceInput, TuningSpec};
     use serde::Deserialize;
 
     #[derive(Debug, Deserialize)]
@@ -1754,12 +1754,7 @@ mod tests {
             fixture.expected.sample_count,
             "sample_count mismatch"
         );
-        approx_eq(
-            solution.v[0],
-            0.0,
-            0.001,
-            "speed_head[0]",
-        );
+        approx_eq(solution.v[0], 0.0, 0.001, "speed_head[0]");
         approx_slice_eq(
             &solution.v[solution.v.len() - fixture.expected.speed_tail.len()..],
             &fixture.expected.speed_tail,

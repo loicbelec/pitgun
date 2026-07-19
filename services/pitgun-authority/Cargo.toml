@@ -9,8 +9,8 @@ license.workspace = true
 axum = "0.7"
 hex = "0.4"
 pitgun-codec-json = { path = "../../crates/pitgun-codec-json" }
-pitgun-contract = { path = "../../crates/pitgun-contract" }
 pitgun-policy = { path = "../../crates/pitgun-policy" }
+pitgun-racing-contract = { path = "../../crates/pitgun-racing-contract" }
 pitgun-signing = { path = "../../crates/pitgun-signing" }
 rand = "0.8"
 serde = { version = "1", features = ["derive"] }

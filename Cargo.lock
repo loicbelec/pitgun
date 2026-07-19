@@ -1396,8 +1396,8 @@ dependencies = [
  "axum",
  "hex",
  "pitgun-codec-json",
- "pitgun-contract",
  "pitgun-policy",
+ "pitgun-racing-contract",
  "pitgun-signing",
  "rand",
  "serde",
@@ -1450,8 +1450,6 @@ name = "pitgun-contract"
 version = "0.1.0"
 dependencies = [
  "async-trait",
- "pitgun-racing-contract",
- "pitgun-signing",
  "semver",
  "serde",
  "serde-value",
@@ -1502,6 +1500,7 @@ name = "pitgun-policy"
 version = "0.1.0"
 dependencies = [
  "pitgun-contract",
+ "pitgun-racing-contract",
  "serde",
  "serde_json",
  "serde_yaml",
@@ -1575,6 +1574,7 @@ dependencies = [
  "md-5",
  "pitgun-contract",
  "pitgun-policy",
+ "pitgun-racing-contract",
  "pitgun-runtime",
  "rand",
  "serde",

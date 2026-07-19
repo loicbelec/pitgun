@@ -179,8 +179,8 @@ The target Racing pair is `pitgun-racing-solver` and
 currently migrating from the transitional `pitgun-solver` and
 `pitgun-simulator` packages. The runtime now owns RNG V1 and the statically
 linked workload boundary, plus filesystem-independent Run Bundle verification.
-`pitgun-racing-contract` now owns Racing wire schemas; `pitgun-contract`
-temporarily re-exports them until consumer migration #89 removes the bridge.
+`pitgun-racing-contract` owns Racing wire schemas and domain consumers import it
+directly; `pitgun-contract` remains domain-neutral.
 [ADR 0001](docs/adr/0001-runtime-and-domain-workloads.md) fixes the dependency
 direction and explains why Pitgun does not claim a universal Solver before a
 second domain proves the abstraction.

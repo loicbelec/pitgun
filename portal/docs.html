@@ -646,14 +646,14 @@
                     </ul>
                 </div>
                 <div class="border-2 border-pit-dark bg-white p-6 shadow-hard-sm">
-                    <div class="text-sm font-mono uppercase tracking-[0.2em] text-pit-rust mb-3">Config Contracts</div>
-                    <p class="text-sm text-pit-dark/80 mb-3 leading-relaxed">Signed configuration payloads for
-                        Authority:</p>
+                    <div class="text-sm font-mono uppercase tracking-[0.2em] text-pit-rust mb-3">Contract Ownership</div>
+                    <p class="text-sm text-pit-dark/80 mb-3 leading-relaxed">Generic evidence and domain payloads
+                        have separate owners:</p>
                     <ul class="text-sm text-pit-dark/80 space-y-2 font-mono leading-relaxed">
-                        <li><code>ConfigContractV1</code> — Signed config with limits</li>
-                        <li><code>SimulationContractV1</code> — Era, upgrades, policy hash</li>
-                        <li><code>TuningParam</code> — Key-value tuning pairs</li>
-                        <li><code>ContractLimitsV1</code> — max_hz, max_duration_s</li>
+                        <li><code>pitgun-contract</code> — Run identity and evidence</li>
+                        <li><code>pitgun-runtime</code> — Execution and verification</li>
+                        <li><code>pitgun-racing-contract</code> — Racing wire schemas</li>
+                        <li><code>SimulationContractV1</code> — Racing authority payload</li>
                     </ul>
                 </div>
             </div>
@@ -730,7 +730,7 @@
                     </div>
                     <div class="bg-pit-dark text-pit-cream p-4 font-mono text-xs leading-6 overflow-x-auto rounded-sm">
                         {<br>
-                        &nbsp;&nbsp;"base_config": { <span class="text-gray-500">/* CanonicalConfigV1 */</span> },<br>
+                        &nbsp;&nbsp;"model_input": { <span class="text-gray-500">/* Domain-owned schema */</span> },<br>
                         &nbsp;&nbsp;"laps": 58,<br>
                         &nbsp;&nbsp;"scenarios_count": 10000,<br>
                         &nbsp;&nbsp;"risk_factors": {<br>
@@ -829,7 +829,7 @@
                 <div class="text-sm font-mono uppercase tracking-[0.2em] text-pit-rust mb-3">Key Features</div>
                 <ul class="text-sm text-pit-dark/80 space-y-2 leading-relaxed">
                     <li><strong>PhysicsSource:</strong> Synchronous lap simulation without async overhead.</li>
-                    <li><strong>CanonicalConfigV1:</strong> Shared configuration contract with the Solver.</li>
+                    <li><strong>Versioned inputs:</strong> Domain-owned schemas shared with the Solver.</li>
                     <li><strong>Deterministic:</strong> Same inputs → same outputs, enabling reproducible analysis.</li>
                 </ul>
             </div>
