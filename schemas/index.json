@@ -1,54 +1,73 @@
 {
-  "catalog_version": 1,
+  "catalog_version": 2,
   "base_url": "https://schemas.pitgun.io",
-  "schemas": [
+  "artifacts": [
     {
       "id": "https://schemas.pitgun.io/pitgun-envelope/v1.json",
       "path": "pitgun-envelope/v1.json",
-      "status": "active",
-      "owner": "pitgun-gateway"
+      "kind": "json-schema",
+      "lifecycle": "active",
+      "owner": "pitgun-gateway",
+      "evidence": [
+        "services/pitgun-gateway/src/model.rs",
+        "services/pitgun-gateway/examples"
+      ]
     },
     {
       "id": "https://schemas.pitgun.io/pipeline-manifest/v1.json",
       "path": "pipeline-manifest/v1.json",
-      "status": "active",
-      "owner": "pitgun-cli"
+      "kind": "json-schema",
+      "lifecycle": "legacy",
+      "owner": "pitgun-cli-legacy",
+      "evidence": ["apps/pitgun-cli/src/manifest.rs"]
     },
     {
       "id": "https://schemas.pitgun.io/metrics-dictionary/sim.v1.json",
       "path": "metrics-dictionary/sim.v1.json",
-      "status": "active",
-      "owner": "pitgun-gateway"
+      "kind": "data-dictionary",
+      "lifecycle": "active",
+      "owner": "pitgun-gateway",
+      "evidence": ["services/pitgun-gateway/src/insight_ingress.rs"]
     },
     {
       "id": "https://schemas.pitgun.io/insight-contract/v1.json",
       "path": "insight-contract/v1.json",
-      "status": "experimental",
-      "owner": "pitgun-gateway"
+      "kind": "json-schema",
+      "lifecycle": "legacy",
+      "owner": "unowned",
+      "evidence": []
     },
     {
       "id": "https://schemas.pitgun.io/analysis-manifest/v1.json",
       "path": "analysis-manifest/v1.json",
-      "status": "experimental",
-      "owner": "pitgun-core"
+      "kind": "json-schema",
+      "lifecycle": "legacy",
+      "owner": "unowned",
+      "evidence": []
     },
     {
       "id": "https://schemas.pitgun.io/analysis-manifest/v2.json",
       "path": "analysis-manifest/v2.json",
-      "status": "experimental",
-      "owner": "pitgun-core"
+      "kind": "json-schema",
+      "lifecycle": "legacy",
+      "owner": "unowned",
+      "evidence": []
     },
     {
       "id": "https://schemas.pitgun.io/bolt-manifest/v1.json",
       "path": "bolt-manifest/v1.json",
-      "status": "experimental",
-      "owner": "pitgun-core"
+      "kind": "json-schema",
+      "lifecycle": "legacy",
+      "owner": "unowned",
+      "evidence": []
     },
     {
       "id": "https://schemas.pitgun.io/bundle-manifest/v1.json",
       "path": "bundle-manifest/v1.json",
-      "status": "experimental",
-      "owner": "pitgun-core"
+      "kind": "json-schema",
+      "lifecycle": "legacy",
+      "owner": "unowned",
+      "evidence": []
     }
   ]
 }

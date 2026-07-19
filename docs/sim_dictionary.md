@@ -1,9 +1,10 @@
 # Sim Dictionary (v1)
 
-This document defines the canonical `sim.*` telemetry dictionary used by the
-gateway insight ingress path.
+This document describes the canonical `sim.*` telemetry data dictionary used
+by the gateway insight ingress path. The published JSON file is a versioned
+registry, not a JSON Schema.
 
-Source file:
+Published dictionary:
 
 - [`schemas/metrics-dictionary/sim.v1.json`](../schemas/metrics-dictionary/sim.v1.json)
 
