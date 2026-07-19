@@ -1450,6 +1450,7 @@ name = "pitgun-contract"
 version = "0.1.0"
 dependencies = [
  "async-trait",
+ "pitgun-racing-contract",
  "pitgun-signing",
  "semver",
  "serde",
@@ -1505,6 +1506,19 @@ dependencies = [
  "serde_json",
  "serde_yaml",
  "thiserror 1.0.69",
+]
+
+[[package]]
+name = "pitgun-racing-contract"
+version = "0.1.0"
+dependencies = [
+ "hex",
+ "pitgun-signing",
+ "serde",
+ "serde_json",
+ "serde_json_canonicalizer",
+ "sha2",
+ "wasm-bindgen-test",
 ]
 
 [[package]]

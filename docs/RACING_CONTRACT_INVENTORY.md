@@ -65,5 +65,14 @@ representative payloads and their canonical SHA-256 identities. It covers:
 - the active signed simulation contract, including its exact signing bytes.
 
 Both native and WASM tests consume this same fixture. The future
-`pitgun-racing-contract` crate and the TypeScript mirror must reuse it rather
-than create new expected values during migration.
+`pitgun-racing-contract` crate consumes it directly, and the TypeScript mirror
+must reuse it rather than create new expected values during migration.
+
+## Migration State
+
+Issue #88 moves the definitions into `pitgun-racing-contract`. During that
+increment, `pitgun-contract` depends on the domain crate and re-exports the
+types solely as a compatibility bridge for existing consumers. New code must
+import the domain crate directly. Issue #89 migrates those consumers, moves the
+fixture to its final owner, and removes the temporary reverse dependency and
+re-exports.

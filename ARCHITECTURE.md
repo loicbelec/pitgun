@@ -73,7 +73,7 @@ pitgun/
     # Deterministic runtime
     pitgun-runtime/       # RNG V1, linked execution and evidence verification
 
-    # Target Racing domain family
+    # Racing domain family (migration in progress)
     pitgun-racing-contract/   # Racing wire and evidence schemas
     pitgun-racing-solver/     # Racing physical solution
     pitgun-racing-simulator/  # Racing orchestration, telemetry and WASM facade
@@ -161,7 +161,7 @@ It is an execution runtime, not a universal numerical Solver. Versioned wire
 types remain in `pitgun-contract`; filesystem and network adapters remain in
 applications and services.
 
-### 2.6 Racing domain family (target)
+### 2.6 Racing domain family (migration in progress)
 
 #### pitgun-racing-solver
 

@@ -3,7 +3,6 @@ pub mod codec;
 pub mod determinism;
 pub mod frame;
 pub mod metrics;
-pub mod racing;
 pub mod registry;
 pub mod run;
 pub mod source;
@@ -30,10 +29,12 @@ pub use metrics::{
     DerivedMetricProcessorV1, DerivedMetricStatisticV1, DerivedMetricV1, DerivedMetricsError,
     DerivedMetricsV1, DerivedMetricsVersion,
 };
-pub use racing::{
+// Temporary compatibility bridge. New consumers must depend on
+// `pitgun-racing-contract`; issue #89 removes these re-exports.
+pub use pitgun_racing_contract::{
     CircuitCatalogEntry, CompetitorSpec, CompetitorStatus, CompetitorStintStrategy,
-    EngineCatalogEntry, RaceInput, RaceOutput, RaceStint, RunPackage, StandingEntry, TuningSpec,
-    VehicleClass, resolve_vehicle_class,
+    EngineCatalogEntry, RaceInput, RaceOutput, RaceStint, RunPackage, SignedSimulationContractV1,
+    SimulationContractV1, StandingEntry, TuningSpec, VehicleClass, resolve_vehicle_class,
 };
 pub use registry::{
     AccessLevel, Conversion, DataType, Parameter, ParameterRegistry, Range, RegistryError,
@@ -53,8 +54,6 @@ pub use source::{
 };
 
 use serde::{Deserialize, Serialize};
-use serde_json::Value as JsonValue;
-use std::collections::BTreeMap;
 
 pub const MODEL_VERSION_V1: &str = "perf-eq-v1";
 pub const SCHEMA_VERSION_V1: &str = "telemetry-schema-v1";
@@ -116,26 +115,6 @@ pub struct ConfigContractV1 {
     pub signature: String,
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct SimulationContractV1 {
-    pub version: String,
-    pub issued_at_ms: i64,
-    pub expires_at_ms: i64,
-    pub era: u32,
-    pub category_levels: BTreeMap<String, i64>,
-    pub owned_upgrades: Vec<String>,
-    pub parameters: JsonValue,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub derived_constraints: Option<Vec<String>>,
-    pub policy_hash: String,
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct SignedSimulationContractV1 {
-    pub contract: SimulationContractV1,
-    pub signature: String,
-}
-
 impl ConfigContractPayloadV1 {
     pub fn signing_bytes(&self) -> Result<Vec<u8>, serde_json::Error> {
         serde_json::to_vec(self)
@@ -158,35 +137,10 @@ impl ConfigContractV1 {
     }
 }
 
-impl SimulationContractV1 {
-    pub fn signing_bytes(&self) -> Result<Vec<u8>, serde_json::Error> {
-        let mut canonical = self.clone();
-        canonical.owned_upgrades.sort();
-        canonical.parameters = canonicalize_json(canonical.parameters);
-        serde_json::to_vec(&canonical)
-    }
-}
-
-fn canonicalize_json(value: JsonValue) -> JsonValue {
-    match value {
-        JsonValue::Object(map) => {
-            let mut items: Vec<(String, JsonValue)> = map.into_iter().collect();
-            items.sort_by(|(left, _), (right, _)| left.cmp(right));
-            let mut ordered = serde_json::Map::new();
-            for (key, value) in items {
-                ordered.insert(key, canonicalize_json(value));
-            }
-            JsonValue::Object(ordered)
-        }
-        JsonValue::Array(values) => {
-            JsonValue::Array(values.into_iter().map(canonicalize_json).collect())
-        }
-        other => other,
-    }
-}
-
 #[cfg(test)]
 mod tests {
+    use std::collections::BTreeMap;
+
     use super::*;
     use pitgun_signing::SigningKey;
     use serde_json::json;
