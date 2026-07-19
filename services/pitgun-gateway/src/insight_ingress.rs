@@ -210,18 +210,57 @@ fn sim_metric_by_parameter_id(parameter_id: u16) -> Option<&'static SimMetricDef
 #[cfg(test)]
 mod tests {
     use pitgun_contract::{Sample, SampleValue, SignalQuality, TelemetryFrame};
+    use serde::Deserialize;
+    use std::fs;
 
     use super::{
-        InsightMetricPoint, SimMetricDef, extract_sim_metric_points,
+        InsightMetricPoint, SIM_METRIC_DEFS, SimMetricDef, extract_sim_metric_points,
         extract_sim_metric_points_from_frame, sim_metric_dictionary,
     };
     use crate::model::TelemetrySampleBatchPayload;
+
+    #[derive(Debug, Deserialize)]
+    struct PublishedDictionary {
+        document_type: String,
+        schema_version: String,
+        entries: Vec<PublishedMetricDef>,
+    }
+
+    #[derive(Debug, Deserialize, PartialEq, Eq)]
+    struct PublishedMetricDef {
+        parameter_id: u16,
+        channel: String,
+        metric_key: String,
+        unit: String,
+    }
 
     #[test]
     fn dictionary_is_strictly_sim_namespace() {
         let dict = sim_metric_dictionary();
         assert_eq!(dict.len(), 17);
         assert!(dict.iter().all(|entry| entry.channel.starts_with("sim.")));
+    }
+
+    #[test]
+    fn published_dictionary_matches_runtime_definitions() {
+        let path = format!(
+            "{}/../../schemas/metrics-dictionary/sim.v1.json",
+            env!("CARGO_MANIFEST_DIR")
+        );
+        let bytes = fs::read(path).expect("read published metric dictionary");
+        let published: PublishedDictionary =
+            serde_json::from_slice(&bytes).expect("parse published metric dictionary");
+
+        assert_eq!(published.document_type, "pitgun.metric-dictionary/v1");
+        assert_eq!(published.schema_version, "pitgun-sim-dictionary-v1");
+        assert_eq!(published.entries.len(), SIM_METRIC_DEFS.len());
+
+        for (published, runtime) in published.entries.iter().zip(SIM_METRIC_DEFS) {
+            assert_eq!(published.parameter_id, runtime.parameter_id);
+            assert_eq!(published.channel, runtime.channel);
+            assert_eq!(published.metric_key, runtime.metric_key);
+            assert_eq!(published.unit, runtime.unit);
+        }
     }
 
     #[test]
