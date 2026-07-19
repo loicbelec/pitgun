@@ -4,8 +4,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use pitgun_contract::TuningParam;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 pub mod v1;
 
@@ -21,6 +20,13 @@ pub use v1::{PolicyError, load_tuning_v1_from_path, load_tuning_v1_from_str};
 pub const POLICY_VERSION_V1: &str = "tuning-policy-v1";
 pub const POLICY_PATH_ENV: &str = "PITGUN_TUNING_POLICY_PATH";
 pub const POLICY_STRICT_ENV: &str = "PITGUN_POLICY_STRICT";
+
+/// Generic key-value parameter accepted by the policy normalization engine.
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct TuningParam {
+    pub key: String,
+    pub value: f64,
+}
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct TuningPolicy {

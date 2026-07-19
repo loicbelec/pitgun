@@ -9,8 +9,7 @@ use sha2::{Digest, Sha256};
 #[cfg(target_arch = "wasm32")]
 use wasm_bindgen_test::wasm_bindgen_test;
 
-const FIXTURE_JSON: &str =
-    include_str!("../../pitgun-contract/tests/fixtures/racing_contract_v1.json");
+const FIXTURE_JSON: &str = include_str!("fixtures/racing_contract_v1.json");
 const FIXTURE_SCHEMA: &str = "pitgun.racing-contract-compatibility/v1";
 const SIGNING_SECRET: &[u8] = b"pitgun-racing-contract-compatibility-v1";
 

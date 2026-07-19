@@ -94,10 +94,9 @@ or metadata rather than in the generic envelope model.
 ## Racing Domain
 
 The Racing implementation uses explicit domain-prefixed crates.
-`pitgun-racing-contract` now owns the domain schemas, with temporary re-exports
-from `pitgun-contract` until #89 migrates consumers. The current
-`pitgun-solver` and `pitgun-simulator` packages remain transitional until their
-migration issues land.
+`pitgun-racing-contract` owns the domain schemas and Racing consumers import it
+directly. The current `pitgun-solver` and `pitgun-simulator` packages remain
+transitional until their migration issues land.
 
 ### `pitgun-racing-contract`
 

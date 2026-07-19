@@ -1,6 +1,7 @@
-use pitgun_contract::SignedSimulationContractV1;
-use pitgun_signing::SigningKey;
 use std::fs;
+
+use pitgun_racing_contract::SignedSimulationContractV1;
+use pitgun_signing::SigningKey;
 
 fn main() {
     let path = std::env::args()

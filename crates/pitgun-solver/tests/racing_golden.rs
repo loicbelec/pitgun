@@ -112,8 +112,8 @@ fn summarize(output: RaceOutput) -> GoldenSummary {
                 .iter()
                 .map(|sample| sample.parameter_id)
                 .collect(),
-            first_lap_number: first.lap_number,
-            last_lap_number: last.lap_number,
+            first_lap_number: first.cycle_index,
+            last_lap_number: last.cycle_index,
             source_id: first.source_id.clone(),
             sampling_hz: first
                 .metadata

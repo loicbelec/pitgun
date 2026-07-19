@@ -29,7 +29,8 @@ therefore appear generic even though their fields are game-specific.
 | Types | Usage evidence | Decision |
 |---|---|---|
 | `SimulationContractV1`, `SignedSimulationContractV1` | active in `pitgun-authority` and its HTTP response | Move to `pitgun-racing-contract` |
-| `ConfigRequestV1`, `TuningParam`, `CanonicalConfigV1`, `ContractLimitsV1`, `ConfigContractPayloadV1`, `ConfigContractV1` | no executable consumer remains; only defining-crate tests and a historical portal documentation entry remain, while the authority endpoint returns HTTP 410 | Remove during consumer cleanup rather than promote into the new crate |
+| `ConfigRequestV1`, `CanonicalConfigV1`, `ContractLimitsV1`, `ConfigContractPayloadV1`, `ConfigContractV1` | no executable consumer remains; only defining-crate tests and a historical portal documentation entry remain, while the authority endpoint returns HTTP 410 | Remove during consumer cleanup rather than promote into the new crate |
+| `TuningParam` | used by the generic policy normalizer, not by a live contract payload | Move to `pitgun-policy` as its owning API |
 | `MODEL_VERSION_V1`, `SCHEMA_VERSION_V1` | only used by the obsolete configuration-contract test | Remove with the obsolete configuration contracts |
 
 Removal happens only after the compatibility PR has demonstrated that no live
@@ -55,7 +56,7 @@ workspace, service, game, or API consumer depends on these symbols.
 
 ## Published Compatibility Fixture
 
-`crates/pitgun-contract/tests/fixtures/racing_contract_v1.json` publishes
+`crates/pitgun-racing-contract/tests/fixtures/racing_contract_v1.json` publishes
 representative payloads and their canonical SHA-256 identities. It covers:
 
 - nested Racing input, tuning, and stint strategy;
@@ -70,9 +71,14 @@ must reuse it rather than create new expected values during migration.
 
 ## Migration State
 
-Issue #88 moves the definitions into `pitgun-racing-contract`. During that
-increment, `pitgun-contract` depends on the domain crate and re-exports the
-types solely as a compatibility bridge for existing consumers. New code must
-import the domain crate directly. Issue #89 migrates those consumers, moves the
-fixture to its final owner, and removes the temporary reverse dependency and
-re-exports.
+Issue #88 moved the definitions into `pitgun-racing-contract`. Issue #89 then
+migrated every Rust consumer, moved the fixture to its final owner, relocated
+the generic `TuningParam` policy input to `pitgun-policy`, removed obsolete
+configuration contracts, and deleted the temporary reverse dependency and
+re-exports. `pitgun-contract` is now independent of the Racing crate.
+
+The generic `TelemetryFrame` Rust API also renames its former motorsport
+coordinates to `cycle_index`, `segment_index`, and `progress_m`. Serde mappings
+retain the V1 JSON keys `lap_number`, `sector`, and `lap_distance_m`, so existing
+telemetry, Run Bundles, WASM output, and canonical digests remain byte-compatible.
+Those legacy wire names can only change in a future versioned frame format.
