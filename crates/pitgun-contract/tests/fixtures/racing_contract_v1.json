@@ -1,0 +1,123 @@
+{
+  "schema_version": "pitgun.racing-contract-compatibility/v1",
+  "race_input": {
+    "track_id": "monza",
+    "laps": 3,
+    "competitors": [
+      {
+        "id": "player-1",
+        "driver_id": "driver-42",
+        "name": "Player One",
+        "team_id": "pitgun",
+        "is_player": true,
+        "tuning": {
+          "engine_points": 12.5,
+          "cooling_points": 7.5,
+          "aero_points": 10.0,
+          "chassis_points": 8.0,
+          "downforce_slider": 0.6,
+          "gear_ratio_slider": 0.45
+        },
+        "budget_cap": 40.0,
+        "stint_strategy": {
+          "stints": [
+            { "tire_id": "soft", "laps": 2 },
+            { "tire_id": "medium", "laps": 1 }
+          ],
+          "pit_laps": [2]
+        }
+      }
+    ]
+  },
+  "race_input_digest": "sha256:3b6912f00a2379d712d78bf45c493425420d3f4894ea23ebf7f82e0a4d05f52d",
+  "race_output": {
+    "standings": [
+      {
+        "competitor_id": "player-1",
+        "position": 1,
+        "total_time_ms": 271234,
+        "best_lap_ms": 89321,
+        "laps_completed": 3,
+        "gap_to_leader_ms": 0,
+        "status": "finished"
+      },
+      {
+        "competitor_id": "rival-1",
+        "position": 2,
+        "total_time_ms": 0,
+        "best_lap_ms": 90123,
+        "laps_completed": 2,
+        "gap_to_leader_ms": 0,
+        "status": { "dnf": "engine" }
+      }
+    ],
+    "total_time_ms": 271234
+  },
+  "race_output_digest": "sha256:595e3d4329ae39ca187137aaf2f89a63c316b48719ef91d22cef1598cef7abd1",
+  "run_package": {
+    "input": {
+      "track_id": "monza",
+      "laps": 1,
+      "competitors": []
+    },
+    "output": {
+      "standings": [],
+      "total_time_ms": 0
+    },
+    "seed": 42,
+    "engine_version": "0.1.0-alpha.1",
+    "policy_version": "racing-tuning-v1"
+  },
+  "run_package_digest": "sha256:97a98b9ffdfa54e7833e3e821cd38864a9c61a80d95e71274d955e2b27658034",
+  "vehicle_class": "hybrid_modern",
+  "vehicle_class_digest": "sha256:e99cb5e3b2b18243d4a1adfaf7e5af338a1215b6ea1b955a53f942731cc20ff0",
+  "circuit_catalog_entry": {
+    "id": "monza",
+    "country_code": "IT",
+    "sample_count": 1024,
+    "distance_m": 5793.0,
+    "pit_loss_ms": 23500
+  },
+  "circuit_catalog_entry_digest": "sha256:5d0a6cdd4715280a732383bd93a1f2c03b5b169afce7258d45619553cb52ead5",
+  "engine_catalog_entry": {
+    "id": "hybrid-v6",
+    "idle_rpm": 4000.0,
+    "max_rpm": 15000.0,
+    "gear_count": 8
+  },
+  "engine_catalog_entry_digest": "sha256:b274bee2b1a5a051592abba854c9f51fcea8d14f90d58eb483605dbb00a6a0c3",
+  "signed_simulation_contract": {
+    "contract": {
+      "version": "SimulationContractV1",
+      "issued_at_ms": 1710000000000,
+      "expires_at_ms": 1710000300000,
+      "era": 5,
+      "category_levels": {
+        "mech_lvl": 5,
+        "testing_lvl": 10
+      },
+      "owned_upgrades": [
+        "e2_hybrid_sys",
+        "e2_turbocharger"
+      ],
+      "parameters": {
+        "powertrain": {
+          "turbo_boost_pressure": 1.6,
+          "fuel_mixture": "standard"
+        },
+        "aero": {
+          "rear_wing_angle": 22.0,
+          "front_wing_angle": 18.0
+        }
+      },
+      "derived_constraints": [
+        "maximum-energy-per-lap"
+      ],
+      "policy_hash": "sha256:policy-fixture"
+    },
+    "signature": "80f0ddde55a25060ea18d5b52f3cffdcce82389a342e4f7226aa94c4b60daed2"
+  },
+  "signed_simulation_contract_digest": "sha256:2ae4ca5f0c8215913491d7251f6db950f012d88a0e3733973133f5d29bc49b82",
+  "simulation_contract_signing_json": "{\"version\":\"SimulationContractV1\",\"issued_at_ms\":1710000000000,\"expires_at_ms\":1710000300000,\"era\":5,\"category_levels\":{\"mech_lvl\":5,\"testing_lvl\":10},\"owned_upgrades\":[\"e2_hybrid_sys\",\"e2_turbocharger\"],\"parameters\":{\"aero\":{\"front_wing_angle\":18.0,\"rear_wing_angle\":22.0},\"powertrain\":{\"fuel_mixture\":\"standard\",\"turbo_boost_pressure\":1.6}},\"derived_constraints\":[\"maximum-energy-per-lap\"],\"policy_hash\":\"sha256:policy-fixture\"}",
+  "simulation_contract_signing_digest": "sha256:f98d33be27f49494af6131abbedf356f69ac2e76d6a70dd216dcaad41cf966bb"
+}
