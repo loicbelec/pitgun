@@ -178,7 +178,7 @@ The target Racing pair is `pitgun-racing-solver` and
 `pitgun-racing-simulator`, executed through `pitgun-runtime`. The repository is
 currently migrating from the transitional `pitgun-solver` and
 `pitgun-simulator` packages. The runtime now owns RNG V1 and the statically
-linked workload boundary; generic replay verification remains in progress.
+linked workload boundary, plus filesystem-independent Run Bundle verification.
 [ADR 0001](docs/adr/0001-runtime-and-domain-workloads.md) fixes the dependency
 direction and explains why Pitgun does not claim a universal Solver before a
 second domain proves the abstraction.
@@ -191,7 +191,7 @@ stack:
 | Role | Responsibility | Main components |
 |---|---|---|
 | **Core contract** | Define versioned scenarios, telemetry frames, run identity, and canonical evidence | `crates/pitgun-contract` |
-| **Deterministic runtime** | Execute linked workloads and verify reproducible runs | `crates/pitgun-runtime` (migration in progress) |
+| **Deterministic runtime** | Execute linked workloads and verify reproducible runs | `crates/pitgun-runtime` |
 | **Reference workload** | Solve Racing physics, orchestrate races, and expose WASM | target `pitgun-racing-solver` and `pitgun-racing-simulator` |
 | **Telemetry processing** | Transform generated channels with manifest-defined logic | `crates/pitgun-core` |
 | **Replay and tooling** | Run, inspect, replay, and verify local artifacts | `apps/pitgun-cli`, `apps/pitgun-replay` |
@@ -267,6 +267,7 @@ The current sequence is intentionally proof-driven:
 - [Deterministic run contract v1](docs/DETERMINISTIC_RUN_CONTRACT_V1.md) — identity, reproducibility, and replay
 - [Stable RNG v1](docs/RNG_V1.md) — generator and stream derivation algorithms
 - [Statically linked workloads](docs/LINKED_WORKLOAD.md) — model/input binding, execution context, and evidence hooks
+- [Loaded Run Bundle verification](docs/RUN_BUNDLE_VERIFICATION.md) — pure evidence verification and storage-adapter boundary
 - [Wire formats](docs/WIRE_FORMATS.md) — protocol specifications
 - [Command reference](docs/commands.md) — current CLI usage
 - [Documentation index](docs/index.md) — complete technical map

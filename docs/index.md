@@ -19,6 +19,7 @@
 - [Deterministic run contract V1](DETERMINISTIC_RUN_CONTRACT_V1.md)
 - [Stable RNG V1](RNG_V1.md)
 - [Statically linked workload boundary](LINKED_WORKLOAD.md)
+- [Loaded Run Bundle verification](RUN_BUNDLE_VERIFICATION.md)
 - [Wire formats](WIRE_FORMATS.md)
 
 ## Operation and Development

@@ -70,8 +70,8 @@ pitgun/
     pitgun-source-kafka/  # Kafka consumer source
     pitgun-source-mqtt/   # MQTT subscriber source
 
-    # Deterministic runtime (migration in progress)
-    pitgun-runtime/       # RNG V1 and linked execution; verification target
+    # Deterministic runtime
+    pitgun-runtime/       # RNG V1, linked execution and evidence verification
 
     # Target Racing domain family
     pitgun-racing-contract/   # Racing wire and evidence schemas
@@ -147,7 +147,7 @@ The target names above describe the accepted migration boundary. The current
 workspace still contains transitional `pitgun-solver` and `pitgun-simulator`
 packages while the linked implementation issues are delivered.
 
-### 2.5 pitgun-runtime (target)
+### 2.5 pitgun-runtime
 
 Responsibilities:
 

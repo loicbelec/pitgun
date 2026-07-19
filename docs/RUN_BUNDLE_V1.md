@@ -123,6 +123,11 @@ The reader operates exclusively on the committed directory. It:
 7. executes each declared metric processor against those frames;
 8. prints `VERIFIED <run-id>` only when every comparison succeeds.
 
+The CLI owns filesystem safety, canonical parsing, and metric execution. It
+passes the loaded typed evidence and exact artifact bytes to the pure
+`pitgun-runtime` verifier described in
+[Loaded Run Bundle Verification](RUN_BUNDLE_VERIFICATION.md).
+
 Missing, malformed, non-canonical, or non-replayable evidence exits with code
 `40`. A loaded bundle whose declared and recalculated evidence differs exits
 with code `50`. Diagnostics identify the first failing artifact or invariant.
