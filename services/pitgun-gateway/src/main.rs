@@ -1252,9 +1252,9 @@ fn build_telemetry_points(
             frame_sequence: frame.sequence,
             timestamp_us: point.timestamp_us,
             received_at_us: frame.received_at_us,
-            lap_number: frame.lap_number,
-            sector: frame.sector,
-            lap_distance_m: frame.lap_distance_m,
+            lap_number: frame.cycle_index,
+            sector: frame.segment_index,
+            lap_distance_m: frame.progress_m,
             parameter_id: point.parameter_id,
             channel: point.channel.to_string(),
             metric_key: point.metric_key.to_string(),
@@ -1381,7 +1381,7 @@ impl SessionAggregationState {
         }
 
         let Some(lap_number) = frame
-            .lap_number
+            .cycle_index
             .map(|value| value as u32)
             .filter(|value| *value >= 1)
         else {
@@ -1533,9 +1533,9 @@ mod tests {
             source_id: "test".to_string(),
             samples: Vec::new(),
             events: Vec::new(),
-            lap_number: None,
-            sector: None,
-            lap_distance_m: None,
+            cycle_index: None,
+            segment_index: None,
+            progress_m: None,
             metadata: HashMap::new(),
         }
     }

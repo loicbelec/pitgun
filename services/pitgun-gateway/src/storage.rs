@@ -59,12 +59,6 @@ impl PgEventStore {
         Ok(Self { pool })
     }
 
-    #[cfg(test)]
-    pub async fn from_pool(pool: PgPool) -> anyhow::Result<Self> {
-        Self::init_schema(&pool).await?;
-        Ok(Self { pool })
-    }
-
     async fn init_schema(pool: &PgPool) -> anyhow::Result<()> {
         sqlx::query(
             r#"
