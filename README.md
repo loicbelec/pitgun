@@ -269,8 +269,8 @@ docker compose -f docker-compose.dev.yml down
 ```
 
 This starts PostgreSQL, `pitgun-gateway`, and `pitgun-authority`. Use the local
-stack in `loicbelec/infra-vps` when development also requires QuestDB, the game
-APIs, or the observability services.
+stack in `loicbelec/infra-vps` when development also requires the game APIs or
+the observability services.
 
 ## Roadmap
 

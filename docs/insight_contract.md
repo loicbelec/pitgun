@@ -1,5 +1,9 @@
 # Metrics to Insights Contract (v1)
 
+> Legacy experiment: the current gateway does not produce or consume this
+> contract. It is retained as architectural history and may inform a future
+> domain-owned analytics service.
+
 This document defines the canonical `metrics -> insights` exchange format between:
 
 - Pitgun Core (deterministic metrics producer)

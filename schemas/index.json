@@ -25,9 +25,9 @@
       "id": "https://schemas.pitgun.io/metrics-dictionary/sim.v1.json",
       "path": "metrics-dictionary/sim.v1.json",
       "kind": "data-dictionary",
-      "lifecycle": "active",
-      "owner": "pitgun-gateway",
-      "evidence": ["services/pitgun-gateway/src/insight_ingress.rs"]
+      "lifecycle": "legacy",
+      "owner": "unowned",
+      "evidence": []
     },
     {
       "id": "https://schemas.pitgun.io/insight-contract/v1.json",
