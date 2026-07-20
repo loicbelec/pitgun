@@ -54,7 +54,8 @@ pub const F1_MIN_PACKET_SIZE: usize = F1_HEADER_SIZE;
 /// Parameter ID ranges for F1 telemetry
 pub mod param_ids {
     //! Parameter ID assignments for F1 telemetry
-    //! These map to the f1_generic.yaml registry
+    //! These IDs are part of this codec's current wire mapping. A future
+    //! observed-data registry may attach canonical names and units to them.
 
     // Motion (1-50)
     pub const POSITION_X: u16 = 120;

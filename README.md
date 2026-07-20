@@ -88,7 +88,7 @@ its own domain model and physical rules.
 - A versioned maximum-speed metric calculated from emitted typed telemetry
 - Portable Run Bundle V1 replay and deterministic verification in a fresh process
 - Racing physics, lap simulation, data packs, and browser-compatible WASM
-- Domain-neutral telemetry envelopes, frames, manifests, and processing pipelines
+- Domain-neutral telemetry envelopes, frames, and processing pipelines
 - Replay and command-line tooling for operating local data flows
 - Optional adapters for observed telemetry over UDP and WebSocket
 - Policy, signing, gateway, and authority building blocks for hosted deployments
@@ -157,7 +157,7 @@ The portable files and their validation rules are documented in
 | | Framework | Racing |
 |---|---|---|
 | **Role** | Reusable deterministic simulation, telemetry, replay, and governance infrastructure | Reference application and realistic telemetry generator |
-| **Owns** | Execution contracts, envelopes, pipelines, manifests, run identity, verification primitives | Cars, circuits, setups, strategies, lap physics, and race orchestration |
+| **Owns** | Execution contracts, envelopes, pipelines, versioned run manifests, run identity, verification primitives | Cars, circuits, setups, strategies, lap physics, and race orchestration |
 | **Purpose** | Support multiple deterministic time-series domains | Prove the framework against a concrete, engaging domain |
 
 Motorsport remains central as the showcase: it makes simulation results visible,
@@ -195,7 +195,7 @@ stack:
 | **Core contract** | Define versioned scenarios, telemetry frames, run identity, and canonical evidence | `crates/pitgun-contract` |
 | **Deterministic runtime** | Execute linked workloads and verify reproducible runs | `crates/pitgun-runtime` |
 | **Reference workload** | Solve Racing physics, orchestrate races, and expose WASM | target `pitgun-racing-solver` and `pitgun-racing-simulator` |
-| **Telemetry processing** | Transform generated channels with manifest-defined logic | `crates/pitgun-core` |
+| **Telemetry processing** | Transform and aggregate generated or observed channels | `crates/pitgun-core` |
 | **Replay and tooling** | Run, inspect, replay, and verify local artifacts | `apps/pitgun-cli`, `apps/pitgun-replay` |
 | **Hosted governance** | Constrain, sign, receive, and audit distributed runs | `crates/pitgun-policy`, `crates/pitgun-signing`, `services/pitgun-authority`, `services/pitgun-gateway` |
 | **Observed-data integrations** | Capture external telemetry for comparison, calibration, processing, or later replay | `pitgun-source-udp`, `pitgun-source-ws`, `pitgun-codec-*` |
@@ -205,13 +205,16 @@ crates/     reusable framework and simulation crates
 apps/       operator and developer tools
 services/   deployable runtime services
 docs/       contracts, architecture, and technical documentation
-examples/   manifests, registries, and integration examples
 policies/   policy samples
 ```
 
 The complete crate and transport inventory remains available in
 [Architecture](ARCHITECTURE.md). Experimental Kafka and MQTT adapters are not
 part of the primary simulation path or quickstart.
+
+The supported [executable examples](docs/EXAMPLES.md) distinguish the primary
+verified Racing loop from optional observed-data processing. Historical
+manifest prototypes are not public compatibility contracts.
 
 ## Observed Data Integrations
 

@@ -13,14 +13,21 @@
 //!
 //! # Example
 //!
-//! ```rust,ignore
-//! use pitgun_contract::registry::{ParameterRegistry, Parameter, DataType};
+//! ```rust
+//! use pitgun_contract::registry::{DataType, Parameter, ParameterRegistry};
 //!
-//! let registry = ParameterRegistry::load_from_yaml("registries/f1_generic.yaml")?;
+//! let mut registry = ParameterRegistry::with_name("Observed telemetry");
+//! registry.add(
+//!     Parameter::new(1, "provider_engine_speed")
+//!         .with_canonical_name("engine_speed")
+//!         .with_unit("rpm")
+//!         .with_data_type(DataType::U16),
+//! )?;
 //!
 //! if let Some(param) = registry.get(1) {
 //!     println!("{}: {} ({})", param.id, param.name, param.unit);
 //! }
+//! # Ok::<(), pitgun_contract::registry::RegistryError>(())
 //! ```
 
 use serde::{Deserialize, Serialize};

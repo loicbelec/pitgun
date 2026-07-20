@@ -1,86 +1,43 @@
-# Pitgun command log
+# Supported Pitgun commands
 
-## Deterministic Racing demo
+This page contains commands that run against the current workspace. Historical
+emulator, dataset, and prototype-manifest commands were removed because their
+inputs or binaries no longer existed.
 
-Run the built-in versioned scenario with an explicit deterministic seed:
+## Verified deterministic Racing demo
 
 ```bash
 cargo run -p pitgun-cli -- demo racing --seed 42
 ```
 
-The command executes the scenario, collects typed telemetry, calculates the
-observed maximum speed through a generic telemetry aggregator, persists an
-immutable bundle below `./pitgun-runs/`, reloads it, and prints `VERIFIED` only
-after deterministic replay succeeds.
-
-Choose an exact destination when experimenting or scripting:
+Choose an exact Run Bundle destination when experimenting or scripting:
 
 ```bash
 cargo run -p pitgun-cli -- demo racing --seed 42 --output /tmp/pitgun-racing-42
 ```
 
-The V1 files and collision rules are described in the
-[run-bundle contract](RUN_BUNDLE_V1.md).
-
-Verify an existing directory without executing the simulator:
+Verify that bundle in a fresh process without executing the simulator:
 
 ```bash
 cargo run -p pitgun-cli -- replay /tmp/pitgun-racing-42
 ```
 
-This starts a fresh process and recalculates the summary and metrics exclusively
-from the committed bundle.
+The bundle layout and collision rules are defined by
+[Run Bundle V1](RUN_BUNDLE_V1.md).
 
-## Emulator
-cargo run --bin pitgun-emulator -- \
-  --target 127.0.0.1:5001 \
-  --input nEngine=datasets/telemetry/FIA-nEngine.csv \
-  --input rThrottleR=datasets/telemetry/Controller-rThrottleR.csv \
-  --pace
+## Observed-data aggregation
 
-## Segment aggregation demo (NLap + nEngine)
-cargo run -p pitgun-emulator --release -- \
-  --target 127.0.0.1:5001 \
-  --input NLap=datasets/synthetic/NLap-demo.csv \
-  --input nEngine=datasets/synthetic/nEngine-demo.csv \
-  --pace
+```bash
+cargo run -p pitgun-core --example observed_segment_aggregation
+```
 
-cargo run -p pitgun-cli -- subscribe \
-  --bind 127.0.0.1:5001 \
-  --config examples/manifests/pipeline/segment_aggregate_engine.yaml
+This secondary example aggregates observed samples by a segment key. See
+[Segment aggregation](segment_aggregation.md) for its semantics and its future
+role in simulation-to-operation comparison.
 
-## Python emulator receiver
-python scripts/recv_pitgun.py       
+## Workspace validation
 
-## CLI receiver
-cargo run --bin pitgun -- subscribe \
-  --bind 127.0.0.1:5001 \
-  --json
-
-## Dummy Pitgun
-cargo run -p pitgun-cli -- subscribe --config pitgun.yaml
-
-## Benchmark
+```bash
+cargo test --all
 cargo bench -p pitgun-core --bench formula_processor_bench
-
-# Suspension load
-cargo run -p pitgun-emulator --release -- \
-  --target 127.0.0.1:5001 \
-  --input ChassisMaths-FPushRodFL=datasets/telemetry/ChassisMaths-FPushRodFL.csv \
-  --input ChassisMaths-FPushRodFR=datasets/telemetry/ChassisMaths-FPushRodFR.csv \
-  --input Chassis-FPushRodRR=datasets/telemetry/Chassis-FPushRodRR.csv \
-  --input Chassis-FPushRodRL=datasets/telemetry/Chassis-FPushRodRL.csv \
-  --pace
-
-
-# Emulator (replays NLap and nEngine)
-cargo run -p pitgun-emulator --release -- \
-  --target 127.0.0.1:5001 \
-  --input NLap=datasets/telemetry/Chassis-NLap.csv \
-  --input nEngine=datasets/telemetry/FIA-nEngine.csv \
-  --pace
-
-# CLI
-  cargo run -p pitgun-cli -- subscribe \
-  --bind 127.0.0.1:5001 \
-  --config examples/manifests/pipeline/segment_aggregate_engine.yaml
+```
