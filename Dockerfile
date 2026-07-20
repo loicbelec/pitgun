@@ -9,7 +9,7 @@ FROM rust:${RUST_VERSION}-slim AS builder
 WORKDIR /app
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    pkg-config libssl-dev libsqlite3-dev ca-certificates \
+    pkg-config libssl-dev ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
 # Copie du workspace complet
