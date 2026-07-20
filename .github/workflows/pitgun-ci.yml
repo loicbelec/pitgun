@@ -75,6 +75,9 @@ jobs:
       - name: Run tests
         run: cargo test --all --verbose
 
+      - name: Run supported observed-data example
+        run: cargo run --locked -p pitgun-core --example observed_segment_aggregation
+
       - name: Format check
         run: cargo fmt -p pitgun-gateway -p pitgun-authority -- --check
 

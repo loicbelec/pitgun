@@ -1,8 +1,7 @@
 # Pitgun Architecture
 
-Pitgun is a Rust framework for real-time telemetry ingestion, contract-governed
-data exchange, manifest-driven processing, and distributed deterministic
-compute.
+Pitgun is a Rust framework for executing, observing, replaying, and verifying
+deterministic time-series simulations.
 
 The racing game is the first production domain built on top of the framework. It
 generates telemetry and exercises the distributed simulation flow, but racing
@@ -19,17 +18,16 @@ This document describes the **core architecture** of the Pitgun framework, its
 
 Pitgun is designed to:
 
-- **Evaluate formulas at scale** on high-frequency time series (motorsport, infra, finance, energy, …).
-- **Unify heterogeneous channels** into a **canonical dictionary**, independent of the original provider (F1 Atlas, NASDAQ feeds, cloud metrics, etc.).
-- Provide a **manifest-driven engine**: pipelines and analyses are described as data (YAML / JSON), not hard-coded logic.
-- Provide **contract-first ingestion** through signed envelopes, schemas, registries, and policy-controlled limits.
-- Support **distributed deterministic compute** where a client can run a model locally and the server can verify the submitted configuration and outputs.
-- Be **embeddable**:
-  - as a CLI (`pitgun-cli`),
-  - as a library (`pitgun-core`),
-  - as deployable services such as `pitgun-gateway` and `pitgun-authority`.
-- Offer a **clean path to productization**: bundle registry, versioned manifests, benchmarks, perf gates.
-- **Ingest telemetry from multiple sources**: UDP, WebSocket, Kafka, MQTT with a unified pipeline.
+- Execute versioned domain workloads with stable randomness and explicit
+  logical ordering.
+- Emit typed telemetry and canonical evidence from each run.
+- Persist portable Run Bundles that can be replayed and verified independently.
+- Produce equivalent deterministic results across native Rust and WebAssembly.
+- Support distributed compute where clients execute simulations and hosted
+  services validate contracts, policies, and submitted artifacts.
+- Keep domain solvers and simulators outside the reusable runtime boundary.
+- Process captured operational telemetry for later comparison with simulation.
+- Be usable through a CLI, composable Rust crates, and optional hosted services.
 
 ### 1.2 Non-Goals
 
@@ -38,13 +36,11 @@ Pitgun is **not**:
 - A charting / dashboard tool (that’s downstream).
 - A general data warehouse.
 - A racing-only simulation stack.
-- A monolithic “platform”.  
-  Instead, it’s a **small, composable core** focused on:
-  - canonical channels,
-  - formula evaluation,
-  - manifest execution,
-  - contract and policy enforcement,
-  - domain-neutral ingress and compute verification.
+- A universal physics Solver: each domain supplies its own mathematical model.
+- A guarantee that a live external stream is deterministic.
+- A stable implementation of the historical Pipeline, Analysis, Bolt, or Bundle
+  prototype manifests.
+- A monolithic platform: local execution does not require hosted services.
 
 ## 2. Workspace & Crate Layout
 
@@ -56,7 +52,7 @@ pitgun/
   crates/
     # Contract & Core
     pitgun-contract/      # domain-neutral frames, envelopes, contracts, registries
-    pitgun-core/          # formula engine, pipeline, converter, manifests
+    pitgun-core/          # telemetry transforms and aggregation
     pitgun-policy/        # generic policy loading, canonicalization, constraints
     pitgun-signing/       # cryptographic signing utilities
     
@@ -79,15 +75,11 @@ pitgun/
     pitgun-racing-simulator/  # Racing orchestration, telemetry and WASM facade
     pitgun-racing-policy/     # Racing rules using the generic policy engine
   apps/
-    pitgun-cli/           # CLI for running manifests locally
+    pitgun-cli/           # deterministic demo, replay, optional live subscription
     pitgun-replay/        # replay tooling
   services/
     pitgun-gateway/       # framework ingress service
     pitgun-authority/     # signed contract and policy authority service
-  examples/
-    registries/
-      motorsport_full.yaml
-      iot_sensors.yaml
 ```
 
 Deployment definitions intentionally do not appear in this repository map.
@@ -115,13 +107,11 @@ semantics.
 
 Responsibilities:
 
-- `TelemetryPipeline`: multi-source orchestration.
+- Telemetry pipeline primitives and source/sink orchestration.
 - `ConverterService`: raw to engineering unit conversion.
-- SAT JSON parsing + canonical dictionary resolution.
-- Manifest models + validation hooks.
-- FormulaProcessor v1: core evaluation loop.
-- AST (Bolts) construction and execution.
-- In-memory data model for channels and timeseries.
+- Formula, filtering, scaling, statistics, and segment aggregation processors.
+- Domain-neutral aggregation over simulated or observed channels.
+- In-memory events, batches, and aggregate records.
 
 ### 2.3 pitgun-policy
 
@@ -200,214 +190,109 @@ model, and migration table are defined by
 
 Responsibilities:
 
--  CLI entrypoint (`pitgun run`, `pitgun bench`, `pitgun inspect` etc).
--  Load manifests from disk.
--  Wire datasets (CSV, emulator, etc.) into the core.
--  Provide a UX for quick validation and experimentation.
+- Execute the built-in versioned Racing demonstration.
+- Persist and verify portable deterministic Run Bundles.
+- Replay an existing bundle in a fresh process.
+- Expose optional telemetry subscription tooling while it remains supported.
 
 ### 2.8 Services (reference implementations)
 
 Deployable binaries live under `services/`, separate from reusable crates. These
 are intentionally thin wrappers around `pitgun-core` and future APIs.
 
-## 3. Canonical Dictionary & SAT JSON
+## 3. Simulation and Observed-Data Dictionaries
 
-Pitgun separates two concerns:
+Pitgun separates two kinds of semantics:
 
-1.	**Provider dictionaries** (e.g. Atlas, NASDAQ, Datadog):
-    -  Raw channel names, raw units, raw quirks.
-2.	A **canonical dictionary:**
-    -  Stable names (engine_speed, brake_pressure_front_left, lap_phase),
-    -  Domain semantics (motorsport, infra, finance, energy),
-    -  Units, sampling conventions, constraints.
+1. A domain simulation dictionary defines the physical quantities emitted by a
+   versioned workload. Racing owns its own dictionary and wire contract.
+2. An observed-data registry describes provider channels, units, conversions,
+   quality metadata, and mappings needed to compare operations with a model.
 
-When ingesting data:
-1.	A SAT JSON file describes how provider channels map into the canonical dictionary.
-2.	The ingestion layer builds a canonical view of all channels.
-3.	The formula engine only sees canonical names, never "FIA-nEngine" or "cpu_load_15".
+Observed data must be captured before it can participate in reproducible
+processing. `ParameterRegistry` can attach canonical names, units, ranges, and
+conversions to provider parameter identifiers. Provider-specific names must not
+leak into the deterministic runtime contract.
 
-Example SAT JSON excerpt:
-
-```json
-{
-  "provider": "atlas",
-  "session_type": "race",
-  "mappings": [
-    {
-      "provider_name": "FIA-nEngine",
-      "canonical_name": "engine_speed",
-      "unit": "rpm"
-    },
-    {
-      "provider_name": "FIA-ThrottlePedal",
-      "canonical_name": "throttle_pedal_ratio",
-      "unit": "%"
-    }
-  ]
-}
-```
-
-This makes it possible to reuse the same analysis manifest across:
+This makes it possible to apply the same aggregation or comparison logic across:
 
 -  different cars,
 -  different seasons,
--  different providers (motorsport vs infra vs finance), 
-as long as there is a SAT mapping into the canonical space.
+-  different providers (motorsport vs infrastructure vs finance),
+
+as long as an explicit, versioned mapping exists into the domain vocabulary.
 
 ## 4. Core Concepts
 
 ### 4.1 Channel
 
-A channel is a time series identified by a name and metadata:
+A processing channel is identified by a name and carries timestamped numeric
+events. Rich typed simulation telemetry uses the separate `TelemetryFrame` and
+`Sample` contract types.
 
-- A **canonical name** (engine_speed, throttle, norm_acc, etc.).
-- A **provider-specific name** (e.g. FIA-nEngine, Car_Speed, cpu_usage).
-- Units, sampling rate, domain (motorsport, infra, finance…), tags.
+- A generated channel name belongs to the workload's versioned output contract.
+- An observed provider channel may be mapped to a canonical name through a
+  registry before comparison.
+- Units and valid ranges belong to the corresponding domain dictionary or
+  observed-data registry.
 
-Internally, channels are described using a **SAT JSON** schema:
+The lightweight processing representation is:
 
-```json
-{
-  "canonical_name": "engine_speed",
-  "provider": "atlas",
-  "provider_name": "FIA-nEngine",
-  "unit": "rpm",
-  "domain": "motorsport",
-  "sampling_hz": 1000,
-  "tags": ["powertrain", "telemetry"]
+```rust
+pub struct Event {
+    pub channel: String,
+    pub ts_ns: u64,
+    pub value: f64,
 }
 ```
 
-The canonical layer allows the engine to stay agnostic to the original source.
+This lets processors remain agnostic to the original source while the richer
+contract types retain identity, quality, and versioning at system boundaries.
 
 ### 4.2 Sample & Timeseries
 
-A **sample** is a (timestamp, value) pair; a **timeseries** is a vector/array of samples.
+A sample is a typed value inside a `TelemetryFrame`. Processing adapters may
+project samples into numeric events. Alignment and interpolation are explicit
+domain or processing decisions; the framework does not assume that live source
+timestamps are already aligned.
 
-Pitgun assumes:
+### 4.3 Manifests
 
--  **aligned timestamps** across channels for a given session/lap (or uses interpolation when configured),
--  numeric values (float / integer) for the first versions.
+A manifest is a versioned, declarative identity or execution description. The
+implemented public manifest today is the Run Bundle manifest: it binds a run to
+its canonical scenario, contract, output, telemetry, metrics, and execution
+receipt artifacts.
 
-### 4.3 Manifest
+The repository previously contained Pipeline, Analysis, Bolt, and Bundle YAML
+prototypes. They described useful research directions but did not form one
+executable simulation lifecycle, and no compatibility guarantee was published.
+They are not part of the current architecture.
 
-A **manifest** is a declarative description of what the engine should do.
+A future run manifest may provide a user-authored entry point for model and
+scenario selection, seeded execution, telemetry analysis, replay, and
+verification. It must be designed from the implemented Run Contract and Run
+Bundle invariants rather than evolved implicitly from those historical files.
 
-Pitgun introduces several manifest types:
+### 4.4 Formula and aggregation processors
 
--  **Pipeline manifest:** how to ingest, route and pre-process channels.
--  **Analysis manifest:** which formulas to apply, in which order, with which inputs.
--  **Bundle manifest:** how formulas are grouped by topic (tyres, engine, infra, trading…).
--  **Bolt manifest:** AST description of a single formula.
+A formula consumes one or more channels and produces a derived channel or
+metric. Aggregation processors summarize generated or captured streams across
+explicit boundaries. These are reusable data-processing primitives, not a
+substitute for the domain Solver or Simulator.
 
-All manifests are versioned and validated against published schemas.
+## 5. Manifest Lifecycle
 
-### 4.4 Formula, Bolt, Bundle
+Public manifests require:
 
--  A **Formula** is a computation that consumes one or more channels and produces a new channel or metric.
--  A **Bolt** is the **AST representation** of a formula (the low-level, engine-friendly form).
--  A **Bundle** is a toolbox: a curated set of related formulas (e.g. “tyre degradation”, “engine monitoring”, “CPU health”).
+- an owned Rust wire type;
+- strict validation and unknown-field rejection;
+- a published schema and lifecycle status;
+- an executable producer and consumer;
+- canonicalization rules when the manifest contributes to run identity;
+- compatibility and migration rules for every new version.
 
-## 5. Manifest Types
-
-### 5.1 Pipeline Manifest
-
-Describes how data flows through Pitgun:
-
--  sources (UDP, gRPC, Kafka, CSV…),
--  processors (filters, resamplers, normalizers),
--  sinks (exporters, API hooks…).
-
-Example (simplified):
-
-```yaml
-version: v1
-kind: pipeline
-sources:
-  - name: atlas_udp
-    type: udp
-    host: 0.0.0.0
-    port: 20777
-    sat_file: ./sat/atlas_race.json
-
-processors:
-  - name: baseline_filters
-    type: standard_filters
-    config:
-      drop_nan: true
-      low_pass_cutoff_hz: 100
-
-sinks:
-  - name: stdout_debug
-    type: stdout
-    channels:
-      - engine_speed
-      - throttle_pedal_ratio
-```
-
-### 5.2 Analysis Manifest
-
-Describes the higher-level physics / math layer:
-
--  Which bundles are used.
--  Which formulas to run.
--  Dependencies between formulas.
-
-```yaml
-version: v1
-kind: analysis
-name: engine_health_v1
-bundles:
-  - engine_core
-  - engine_anomaly_detection
-
-graph:
-  - formula: engine_speed_norm
-    inputs: [engine_speed]
-  - formula: throttle_smoothness
-    inputs: [throttle_pedal_ratio]
-  - formula: engine_stress_index
-    inputs:
-      - engine_speed_norm
-      - throttle_smoothness
-```
-
-### 5.3 Bundle Manifest
-
-Describes a bundle as a toolbox of formulas:
-
-```yaml
-version: v1
-kind: bundle
-name: engine_core
-description: Core engine metrics (normalized speed, torque proxies, etc.)
-formulas:
-  - engine_speed_norm
-  - engine_speed_ramp
-  - engine_overrev_events
-```
-
-### 5.4 Bolt Manifest (Formula AST)
-
-Describes a single formula in AST form, consumable by FormulaProcessor v1:
-
-```yaml
-{
-  "version": "v1",
-  "kind": "bolt",
-  "name": "engine_speed_norm",
-  "inputs": ["engine_speed"],
-  "output": "engine_speed_norm",
-  "ast": {
-    "type": "BinaryOp",
-    "op": "Div",
-    "left": { "type": "Input", "name": "engine_speed" },
-    "right": { "type": "Constant", "value": 18000.0 }
-  }
-}
-```
-
-Later, FormulaEngine v2 can evolve this AST without breaking the higher-level manifests.
+Historical research formats that do not meet these requirements remain in Git
+history. The current schema catalog labels superseded schema families as legacy.
 
 ## 6. Multi-Source Architecture
 
@@ -515,38 +400,34 @@ The `TelemetryPipeline` manages multiple sources concurrently:
 │                          │                                   │
 │                          ▼                                   │
 │                   ┌─────────────┐                            │
-│                   │   Formula   │ → Apply analysis manifests │
-│                   │   Engine    │                            │
+│                   │ Processors  │ → Transform and aggregate  │
+│                   │             │                            │
 │                   └─────────────┘                            │
 └──────────────────────────────────────────────────────────────┘
 ```
 
 ### 6.5 ParameterRegistry
 
-Parameters are defined in YAML registries:
+Observed-data parameters can be defined in YAML registries parsed by
+`ParameterRegistry`:
 
 ```yaml
-version: v1
-domain: motorsport
+version: "1.0"
+name: observed-racing-telemetry
 parameters:
-  - id: 0x0001
-    name: engine_speed
+  - id: 1
+    name: provider_engine_speed
+    canonical_name: engine_speed
     unit: rpm
-    data_type: u16
+    data_type: U16
     conversion:
-      formula: linear
+      type: linear
       scale: 1.0
       offset: 0.0
-    
-  - id: 0x0002
-    name: throttle_position
-    unit: percent
-    data_type: u8
-    conversion:
-      formula: linear
-      scale: 0.392157  # 100/255
-      offset: 0.0
 ```
+
+This registry is an integration concern. It does not define the physical
+dictionary or output contract owned by a domain simulator.
 
 ### 6.6 Source Crates
 

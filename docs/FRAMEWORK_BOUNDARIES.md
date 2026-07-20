@@ -34,7 +34,7 @@ Owns reusable processing primitives:
 
 - event batches
 - pipelines
-- formula and manifest execution
+- formula and segment-aggregation execution
 - conversion and derived-channel processing
 
 It should process data described by contracts and registries without coupling to

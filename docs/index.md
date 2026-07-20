@@ -8,6 +8,7 @@
 - [Framework boundaries](FRAMEWORK_BOUNDARIES.md)
 - [Racing demo CLI contract](RACING_DEMO_CLI_V1.md)
 - [Under-five-minute Racing quickstart](QUICKSTART.md)
+- [Executable examples and their status](EXAMPLES.md)
 - [CLI release process](RELEASING.md)
 
 ## Architecture Decisions
@@ -27,6 +28,7 @@
 ## Operation and Development
 
 - [Command reference](commands.md)
+- [Observed-data segment aggregation](segment_aggregation.md)
 - [Development journal](journal.md)
 - [Metrics to Insights Contract V1](insight_contract.md)
 - [Simulation metrics dictionary V1](sim_dictionary.md)
