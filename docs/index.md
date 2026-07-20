@@ -30,5 +30,8 @@
 - [Command reference](commands.md)
 - [Observed-data segment aggregation](segment_aggregation.md)
 - [Development journal](journal.md)
+
+## Legacy Experiments
+
 - [Metrics to Insights Contract V1](insight_contract.md)
 - [Simulation metrics dictionary V1](sim_dictionary.md)

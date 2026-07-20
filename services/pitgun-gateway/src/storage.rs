@@ -2,7 +2,6 @@ use anyhow::Context;
 use sqlx::{PgPool, postgres::PgPoolOptions};
 use time::OffsetDateTime;
 
-use crate::insight_requests::LapSummaryPayload;
 use crate::model::EventEnvelope;
 
 #[derive(Clone, Debug)]
@@ -37,12 +36,6 @@ pub struct PgEventStore {
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum EventInsertOutcome {
-    Inserted,
-    Duplicate,
-}
-
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum LapSummaryInsertOutcome {
     Inserted,
     Duplicate,
 }
@@ -96,42 +89,6 @@ impl PgEventStore {
             .execute(pool)
             .await?;
 
-        sqlx::query(
-            r#"
-            CREATE TABLE IF NOT EXISTS lap_summaries (
-                seq_id BIGSERIAL PRIMARY KEY,
-                summary_id TEXT NOT NULL UNIQUE,
-                run_id TEXT NOT NULL,
-                weekend_id TEXT,
-                session_id TEXT NOT NULL,
-                lap_number BIGINT NOT NULL,
-                started_at_us BIGINT NOT NULL,
-                ended_at_us BIGINT NOT NULL,
-                payload_json TEXT NOT NULL,
-                created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-            );
-            "#,
-        )
-        .execute(pool)
-        .await
-        .context("failed to create lap_summaries table")?;
-
-        sqlx::query(
-            "CREATE INDEX IF NOT EXISTS idx_lap_summaries_run_lap ON lap_summaries(run_id, lap_number);",
-        )
-        .execute(pool)
-        .await?;
-        sqlx::query(
-            "CREATE INDEX IF NOT EXISTS idx_lap_summaries_session_lap ON lap_summaries(session_id, lap_number);",
-        )
-        .execute(pool)
-        .await?;
-        sqlx::query(
-            "CREATE INDEX IF NOT EXISTS idx_lap_summaries_weekend_lap ON lap_summaries(weekend_id, lap_number);",
-        )
-        .execute(pool)
-        .await?;
-
         Ok(())
     }
 
@@ -183,54 +140,11 @@ impl PgEventStore {
         let _: i32 = sqlx::query_scalar("SELECT 1").fetch_one(&self.pool).await?;
         Ok(())
     }
-
-    pub async fn insert_lap_summary(
-        &self,
-        summary: &LapSummaryPayload,
-    ) -> anyhow::Result<LapSummaryInsertOutcome> {
-        let payload_json = serde_json::to_string(summary)?;
-
-        let result = sqlx::query(
-            r#"
-            INSERT INTO lap_summaries (
-                summary_id,
-                run_id,
-                weekend_id,
-                session_id,
-                lap_number,
-                started_at_us,
-                ended_at_us,
-                payload_json
-            )
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-            ON CONFLICT(summary_id) DO NOTHING;
-            "#,
-        )
-        .bind(&summary.summary_id)
-        .bind(&summary.run_id)
-        .bind(summary.weekend_id.as_deref())
-        .bind(&summary.session_id)
-        .bind(summary.lap_number as i64)
-        .bind(summary.started_at_us)
-        .bind(summary.ended_at_us)
-        .bind(payload_json)
-        .execute(&self.pool)
-        .await?;
-
-        if result.rows_affected() == 0 {
-            Ok(LapSummaryInsertOutcome::Duplicate)
-        } else {
-            Ok(LapSummaryInsertOutcome::Inserted)
-        }
-    }
 }
 
 #[cfg(test)]
 mod tests {
-    use super::{
-        EventInsertOutcome, IngestMetadata, LapSummaryInsertOutcome, PgEventStore, QueueMessage,
-    };
-    use crate::insight_requests::{InsightContext, InsightMetric, LapSummaryPayload};
+    use super::{EventInsertOutcome, IngestMetadata, PgEventStore, QueueMessage};
     use crate::model::parse_event_envelope;
 
     // These tests require a live PostgreSQL instance.
@@ -289,55 +203,5 @@ mod tests {
             .await
             .expect("second insert should work");
         assert_eq!(second, EventInsertOutcome::Duplicate);
-    }
-
-    #[ignore]
-    #[tokio::test]
-    async fn deduplicates_lap_summary_by_summary_id() {
-        let db_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
-        let store = PgEventStore::new(&db_url)
-            .await
-            .expect("store should be created");
-
-        let summary = LapSummaryPayload {
-            schema_version: "pitgun-lap-summary-v1".to_string(),
-            summary_id: "session-001:lap:12".to_string(),
-            player_id: "player_001".to_string(),
-            run_id: "run_001".to_string(),
-            weekend_id: Some("weekend_001".to_string()),
-            session_id: "session_001".to_string(),
-            session_type: Some("FP1".to_string()),
-            lap_number: 12,
-            started_at_us: 1_773_401_000_000,
-            ended_at_us: 1_773_491_000_000,
-            context: InsightContext {
-                circuit_id: "MONZA".to_string(),
-                era: 2026,
-                lap: 12,
-                position: Some(3),
-                weather: Some("clear".to_string()),
-                track_status: Some("green".to_string()),
-            },
-            metrics: vec![InsightMetric {
-                key: "pace.speed_kph.mean".to_string(),
-                value: 210.2,
-                unit: "kph".to_string(),
-                trend: "unknown".to_string(),
-                horizon: "lap".to_string(),
-                confidence: 0.9,
-            }],
-        };
-
-        let first = store
-            .insert_lap_summary(&summary)
-            .await
-            .expect("first insert should work");
-        assert_eq!(first, LapSummaryInsertOutcome::Inserted);
-
-        let second = store
-            .insert_lap_summary(&summary)
-            .await
-            .expect("second insert should work");
-        assert_eq!(second, LapSummaryInsertOutcome::Duplicate);
     }
 }

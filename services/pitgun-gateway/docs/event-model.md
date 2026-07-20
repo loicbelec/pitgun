@@ -54,7 +54,9 @@ The JSON Schema mirrors the serialized Rust shape:
 - `metadata` maps string keys to string values.
 
 ## Pit Wall session payload
-`pitwall.session_configured.payload` declares the run metadata mirrored to the run registry:
+
+`pitwall.session_configured` remains part of envelope v1 for backward
+compatibility. Its payload declares the following Racing run metadata:
 - `run_id`
 - `track_id`
 - `vehicle_id`
@@ -65,6 +67,9 @@ The JSON Schema mirrors the serialized Rust shape:
 - `setup_offsets`
 - `effective_setup`
 - optional build metadata and `stint_strategy`
+
+The gateway validates and persists this event like any other supported
+envelope. It does not mirror the payload or interpret its Racing semantics.
 
 ## Purchase payload (game-native, PO-like)
 `purchase.order_completed.payload` includes:

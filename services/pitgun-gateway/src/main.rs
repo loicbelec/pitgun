@@ -1,15 +1,10 @@
-mod insight_ingress;
-mod insight_requests;
-mod insight_stats_plan;
 mod model;
-mod questdb;
-mod run_registry;
 mod storage;
 
 use anyhow::Context;
 
 use std::{
-    collections::{BTreeMap, HashMap, HashSet},
+    collections::{HashMap, HashSet},
     net::SocketAddr,
     sync::{
         Arc, Mutex,
@@ -28,26 +23,13 @@ use axum::{
     response::IntoResponse,
     routing::get,
 };
-use insight_ingress::{extract_sim_metric_points, extract_sim_metric_points_from_frame};
-use insight_requests::{
-    LapSummaryInput, LapSummaryPayload, MetricAggregate, SessionSummaryInput,
-    SessionSummaryPayload, accumulate_metric_point, build_lap_summary,
-    build_race_summary_from_session, build_session_summary,
-};
-use model::{EventPayload, parse_event_envelope};
-use pitgun_contract::TelemetryFrame;
-use questdb::{QuestDbStore, TelemetryPointRow};
-use run_registry::{RunRegistryClient, RunRegistryUpsertRequest};
+use model::parse_event_envelope;
 use serde::Deserialize;
-use storage::{
-    EventInsertOutcome, IngestMetadata, LapSummaryInsertOutcome, PgEventStore, QueueMessage,
-};
-use time::OffsetDateTime;
+use storage::{EventInsertOutcome, IngestMetadata, PgEventStore, QueueMessage};
 use tokio::{
     net::TcpListener,
     signal,
     sync::mpsc::{self, error::TrySendError},
-    time::sleep,
 };
 use tracing::{debug, error, info, warn};
 
@@ -67,8 +49,6 @@ struct GatewayConfig {
     max_messages_per_sec: u32,
     ingest_queue_size: usize,
     api_keys: HashSet<String>,
-    questdb_url: Option<String>,
-    run_registry_url: Option<String>,
 }
 
 #[derive(Clone)]
@@ -83,16 +63,11 @@ struct AppState {
 struct GatewayMetrics {
     ws_messages_total: AtomicU64,
     ws_message_bytes_total: AtomicU64,
-    timestamp_normalizations_total: AtomicU64,
     events_ingested_total: Mutex<HashMap<String, u64>>,
     events_rejected_total: Mutex<HashMap<String, u64>>,
     postgres_writes_total: Mutex<HashMap<String, u64>>,
-    questdb_writes_total: Mutex<HashMap<String, u64>>,
-    run_registry_mirrors_total: Mutex<HashMap<String, u64>>,
     parse_latency: LatencyMetric,
     postgres_write_latency: LatencyMetric,
-    questdb_write_latency: LatencyMetric,
-    run_registry_latency: LatencyMetric,
 }
 
 #[derive(Default)]
@@ -139,23 +114,8 @@ impl GatewayMetrics {
         self.postgres_write_latency.observe(elapsed);
     }
 
-    fn record_questdb_write(&self, outcome: &str, elapsed: Duration) {
-        increment_labelled(&self.questdb_writes_total, outcome);
-        self.questdb_write_latency.observe(elapsed);
-    }
-
-    fn record_run_registry_mirror(&self, outcome: &str, elapsed: Duration) {
-        increment_labelled(&self.run_registry_mirrors_total, outcome);
-        self.run_registry_latency.observe(elapsed);
-    }
-
     fn record_parse_latency(&self, elapsed: Duration) {
         self.parse_latency.observe(elapsed);
-    }
-
-    fn record_timestamp_normalizations(&self, count: u64) {
-        self.timestamp_normalizations_total
-            .fetch_add(count, Ordering::Relaxed);
     }
 
     fn render_prometheus(&self) -> String {
@@ -172,12 +132,6 @@ impl GatewayMetrics {
             "pitgun_gateway_ws_message_bytes_total",
             "Total bytes received in WebSocket text messages.",
             self.ws_message_bytes_total.load(Ordering::Relaxed),
-        );
-        render_counter(
-            &mut output,
-            "pitgun_gateway_timestamp_normalizations_total",
-            "Total telemetry frames whose relative or implausible timestamp was normalized.",
-            self.timestamp_normalizations_total.load(Ordering::Relaxed),
         );
         render_labelled_counter(
             &mut output,
@@ -200,20 +154,6 @@ impl GatewayMetrics {
             "outcome",
             &self.postgres_writes_total,
         );
-        render_labelled_counter(
-            &mut output,
-            "pitgun_gateway_questdb_writes_total",
-            "Total QuestDB write attempts by outcome.",
-            "outcome",
-            &self.questdb_writes_total,
-        );
-        render_labelled_counter(
-            &mut output,
-            "pitgun_gateway_run_registry_mirrors_total",
-            "Total run-registry mirror attempts by outcome.",
-            "outcome",
-            &self.run_registry_mirrors_total,
-        );
         render_latency(
             &mut output,
             "pitgun_gateway_parse_latency_seconds",
@@ -226,19 +166,6 @@ impl GatewayMetrics {
             "PostgreSQL event write latency.",
             &self.postgres_write_latency,
         );
-        render_latency(
-            &mut output,
-            "pitgun_gateway_questdb_write_latency_seconds",
-            "QuestDB write latency.",
-            &self.questdb_write_latency,
-        );
-        render_latency(
-            &mut output,
-            "pitgun_gateway_run_registry_latency_seconds",
-            "Run-registry mirror latency.",
-            &self.run_registry_latency,
-        );
-
         output
     }
 }
@@ -307,8 +234,6 @@ async fn main() -> anyhow::Result<()> {
     tracing_subscriber::fmt().with_env_filter(log_filter).init();
 
     let config = Arc::new(GatewayConfig::from_env()?);
-    let insight_stats_plan = Arc::new(insight_stats_plan::InsightStatsPlan::default_sim_plan());
-
     validate_bind_addr(config.bind_addr, config.allow_non_loopback)?;
 
     if config.api_keys.is_empty() {
@@ -317,19 +242,8 @@ async fn main() -> anyhow::Result<()> {
 
     let store = Arc::new(PgEventStore::new(&config.database_url).await?);
     let metrics = Arc::new(GatewayMetrics::default());
-    let questdb_store = build_questdb_store(&config).await?;
-    backfill_practice_summaries(questdb_store.as_deref()).await?;
-    backfill_race_summaries(questdb_store.as_deref()).await?;
-    let run_registry_client = build_run_registry_client(&config)?;
     let (tx, rx) = mpsc::channel(config.ingest_queue_size);
-    let queue_task = tokio::spawn(process_queue(
-        store.clone(),
-        questdb_store,
-        run_registry_client,
-        insight_stats_plan,
-        metrics.clone(),
-        rx,
-    ));
+    let queue_task = tokio::spawn(process_queue(store.clone(), metrics.clone(), rx));
 
     let app_state = AppState {
         tx,
@@ -383,130 +297,10 @@ async fn shutdown_signal() {
 
 async fn process_queue(
     store: Arc<PgEventStore>,
-    questdb_store: Option<Arc<QuestDbStore>>,
-    run_registry_client: Option<Arc<RunRegistryClient>>,
-    insight_stats_plan: Arc<insight_stats_plan::InsightStatsPlan>,
     metrics: Arc<GatewayMetrics>,
     mut rx: mpsc::Receiver<QueueMessage>,
 ) {
-    let mut session_states: HashMap<String, SessionAggregationState> = HashMap::new();
-
     while let Some(msg) = rx.recv().await {
-        if let EventPayload::TelemetrySampleBatch(payload) = &msg.envelope.payload {
-            let extraction = extract_sim_metric_points(payload);
-            debug!(
-                event_id = %msg.envelope.event_id,
-                session_id = %msg.envelope.session_id,
-                frame_count = payload.frames.len(),
-                sim_points = extraction.points.len(),
-                dropped_non_sim = extraction.dropped_non_sim,
-                dropped_non_numeric = extraction.dropped_non_numeric,
-                dropped_bad_quality = extraction.dropped_bad_quality,
-                unknown_parameter_ids = ?extraction.unknown_parameter_ids,
-                "telemetry batch evaluated for sim-only insight ingress"
-            );
-
-            let session_state = session_states
-                .entry(msg.envelope.session_id.clone())
-                .or_insert_with(|| {
-                    SessionAggregationState::new(
-                        msg.envelope.player_id.clone(),
-                        msg.envelope.session_id.clone(),
-                        msg.envelope.event_id.to_string(),
-                    )
-                });
-
-            let envelope_timestamp_us =
-                (msg.envelope.ts.unix_timestamp_nanos() / 1_000).max(0) as i64;
-            let normalized_timestamp_count = payload
-                .frames
-                .iter()
-                .filter(|frame| {
-                    timestamp_needs_normalization(frame.timestamp_us, envelope_timestamp_us)
-                })
-                .count() as u64;
-            metrics.record_timestamp_normalizations(normalized_timestamp_count);
-            let frames = normalize_frame_timestamps(&payload.frames, envelope_timestamp_us);
-            let mut telemetry_points = Vec::new();
-            for frame in &frames {
-                let frame_extraction = extract_sim_metric_points_from_frame(frame);
-                telemetry_points.extend(build_telemetry_points(
-                    &msg.envelope,
-                    frame,
-                    &frame_extraction,
-                ));
-                let completed_laps =
-                    session_state.ingest_frame(frame, &frame_extraction, &insight_stats_plan);
-                for summary in completed_laps {
-                    persist_lap_summary_and_dispatch(
-                        &store,
-                        questdb_store.as_ref(),
-                        &metrics,
-                        summary,
-                    )
-                    .await;
-                }
-            }
-
-            persist_telemetry_points(questdb_store.as_ref(), &metrics, &telemetry_points).await;
-        }
-
-        if let EventPayload::PitWallSessionConfigured(payload) = &msg.envelope.payload {
-            persist_run_configuration(
-                run_registry_client.as_ref(),
-                &metrics,
-                &msg.envelope.player_id,
-                &msg.envelope.session_id,
-                payload,
-            )
-            .await;
-        }
-
-        if matches!(msg.envelope.payload, EventPayload::SessionEnd(_)) {
-            let session_id = msg.envelope.session_id.clone();
-            if let Some(mut state) = session_states.remove(&session_id) {
-                if let Some(summary) = state.finalize_open_lap(&insight_stats_plan) {
-                    persist_lap_summary_and_dispatch(
-                        &store,
-                        questdb_store.as_ref(),
-                        &metrics,
-                        summary,
-                    )
-                    .await;
-                }
-
-                let emitted_at_ms =
-                    (msg.envelope.ts.unix_timestamp_nanos() / 1_000_000).max(0) as i64;
-                if let Some(summary) =
-                    state.build_session_summary_payload(emitted_at_ms, &insight_stats_plan)
-                {
-                    persist_session_summary(questdb_store.as_ref(), &metrics, summary.clone())
-                        .await;
-
-                    persist_practice_summary(
-                        questdb_store.as_ref(),
-                        &metrics,
-                        summary.weekend_id.as_deref(),
-                        emitted_at_ms,
-                    )
-                    .await;
-                    persist_race_summary(questdb_store.as_ref(), &metrics, &summary).await;
-                } else {
-                    debug!(
-                        event_id = %msg.envelope.event_id,
-                        session_id = %msg.envelope.session_id,
-                        "no compact session summary produced for session.end"
-                    );
-                }
-            } else {
-                debug!(
-                    event_id = %msg.envelope.event_id,
-                    session_id = %msg.envelope.session_id,
-                    "no telemetry aggregation state found for session.end"
-                );
-            }
-        }
-
         let started = Instant::now();
         match store.insert_event(msg).await {
             Ok(EventInsertOutcome::Inserted) => {
@@ -525,371 +319,6 @@ async fn process_queue(
 
     info!("ingestion queue closed");
 }
-
-async fn persist_lap_summary_and_dispatch(
-    store: &Arc<PgEventStore>,
-    questdb_store: Option<&Arc<QuestDbStore>>,
-    metrics: &GatewayMetrics,
-    summary: LapSummaryPayload,
-) {
-    let started = Instant::now();
-    match store.insert_lap_summary(&summary).await {
-        Ok(LapSummaryInsertOutcome::Inserted) => {
-            metrics.record_postgres_write("lap_summary_inserted", started.elapsed());
-            debug!(
-                summary_id = %summary.summary_id,
-                lap = summary.lap_number,
-                metric_count = summary.metrics.len(),
-                "lap summary stored"
-            );
-
-            if let Some(questdb_store) = questdb_store {
-                let started = Instant::now();
-                match questdb_store.insert_lap_summary(&summary).await {
-                    Ok(()) => {
-                        metrics.record_questdb_write("success", started.elapsed());
-                        debug!(
-                            summary_id = %summary.summary_id,
-                            lap = summary.lap_number,
-                            "lap summary mirrored to QuestDB"
-                        );
-                    }
-                    Err(err) => {
-                        metrics.record_questdb_write("error", started.elapsed());
-                        warn!(
-                            ?err,
-                            summary_id = %summary.summary_id,
-                            "failed to mirror lap summary to QuestDB"
-                        );
-                    }
-                }
-            }
-        }
-        Ok(LapSummaryInsertOutcome::Duplicate) => {
-            metrics.record_postgres_write("lap_summary_duplicate", started.elapsed());
-            debug!(
-                summary_id = %summary.summary_id,
-                "duplicate lap summary dropped"
-            );
-        }
-        Err(err) => {
-            metrics.record_postgres_write("lap_summary_error", started.elapsed());
-            warn!(
-                ?err,
-                summary_id = %summary.summary_id,
-                "failed to persist lap summary"
-            );
-        }
-    }
-}
-
-async fn persist_telemetry_points(
-    questdb_store: Option<&Arc<QuestDbStore>>,
-    metrics: &GatewayMetrics,
-    points: &[TelemetryPointRow],
-) {
-    let Some(questdb_store) = questdb_store else {
-        return;
-    };
-
-    if points.is_empty() {
-        return;
-    }
-
-    let started = Instant::now();
-    match questdb_store.insert_telemetry_points(points).await {
-        Ok(()) => {
-            metrics.record_questdb_write("success", started.elapsed());
-            debug!(
-                point_count = points.len(),
-                "telemetry points mirrored to QuestDB"
-            );
-        }
-        Err(err) => {
-            metrics.record_questdb_write("error", started.elapsed());
-            warn!(
-                ?err,
-                point_count = points.len(),
-                "failed to mirror telemetry points to QuestDB"
-            );
-        }
-    }
-}
-
-async fn persist_run_configuration(
-    run_registry_client: Option<&Arc<RunRegistryClient>>,
-    metrics: &GatewayMetrics,
-    player_id: &str,
-    session_id: &str,
-    payload: &model::PitWallSessionConfiguredPayload,
-) {
-    let Some(run_registry_client) = run_registry_client else {
-        return;
-    };
-
-    let request = RunRegistryUpsertRequest::from_configured_event(player_id, session_id, payload);
-    let started = Instant::now();
-    match run_registry_client.upsert_run(&request).await {
-        Ok(()) => {
-            metrics.record_run_registry_mirror("success", started.elapsed());
-            debug!(run_id = %payload.run_id, "pitwall run mirrored to run registry");
-        }
-        Err(err) => {
-            metrics.record_run_registry_mirror("error", started.elapsed());
-            warn!(?err, run_id = %payload.run_id, "failed to mirror pitwall run to run registry");
-        }
-    }
-}
-
-async fn persist_session_summary(
-    questdb_store: Option<&Arc<QuestDbStore>>,
-    metrics: &GatewayMetrics,
-    summary: SessionSummaryPayload,
-) {
-    let Some(questdb_store) = questdb_store else {
-        return;
-    };
-
-    let started = Instant::now();
-    match questdb_store.insert_session_summary(&summary).await {
-        Ok(()) => {
-            metrics.record_questdb_write("success", started.elapsed());
-            debug!(
-                summary_id = %summary.summary_id,
-                lap_count = summary.lap_count,
-                metric_count = summary.metrics.len(),
-                "session summary mirrored to QuestDB"
-            );
-        }
-        Err(err) => {
-            metrics.record_questdb_write("error", started.elapsed());
-            warn!(
-                ?err,
-                summary_id = %summary.summary_id,
-                "failed to mirror session summary to QuestDB"
-            );
-        }
-    }
-}
-
-async fn persist_practice_summary(
-    questdb_store: Option<&Arc<QuestDbStore>>,
-    metrics: &GatewayMetrics,
-    weekend_id: Option<&str>,
-    emitted_at_ms: i64,
-) {
-    let Some(questdb_store) = questdb_store else {
-        return;
-    };
-    let Some(weekend_id) = weekend_id.filter(|value| !value.is_empty()) else {
-        return;
-    };
-
-    match questdb_store.has_practice_summary(weekend_id).await {
-        Ok(true) => {
-            debug!(weekend_id = %weekend_id, "practice summary already present in QuestDB; skipping");
-            return;
-        }
-        Ok(false) => {}
-        Err(err) => {
-            warn!(
-                ?err,
-                weekend_id = %weekend_id,
-                "failed to check existing practice summary before rebuild"
-            );
-        }
-    }
-
-    for attempt in 1..=5 {
-        let started = Instant::now();
-        match questdb_store
-            .rebuild_practice_summary(weekend_id, emitted_at_ms)
-            .await
-        {
-            Ok(Some(summary)) => {
-                metrics.record_questdb_write("success", started.elapsed());
-                debug!(
-                    summary_id = %summary.summary_id,
-                    weekend_id = %summary.weekend_id,
-                    session_count = summary.session_count,
-                    metric_count = summary.metrics.len(),
-                    attempt,
-                    "practice summary mirrored to QuestDB"
-                );
-                return;
-            }
-            Ok(None) if attempt < 5 => {
-                metrics.record_questdb_write("not_ready", started.elapsed());
-                debug!(
-                    weekend_id = %weekend_id,
-                    attempt,
-                    "practice summary not visible yet in QuestDB; retrying"
-                );
-                sleep(Duration::from_millis(250)).await;
-            }
-            Ok(None) => {
-                metrics.record_questdb_write("not_ready", started.elapsed());
-                warn!(
-                    weekend_id = %weekend_id,
-                    attempt,
-                    "practice summary not emitted after retries; waiting for enough practice sessions or fresh QuestDB visibility"
-                );
-                return;
-            }
-            Err(err) => {
-                metrics.record_questdb_write("error", started.elapsed());
-                warn!(
-                    ?err,
-                    weekend_id = %weekend_id,
-                    attempt,
-                    "failed to rebuild practice summary in QuestDB"
-                );
-                return;
-            }
-        }
-    }
-}
-
-async fn persist_race_summary(
-    questdb_store: Option<&Arc<QuestDbStore>>,
-    metrics: &GatewayMetrics,
-    summary: &SessionSummaryPayload,
-) {
-    let Some(questdb_store) = questdb_store else {
-        return;
-    };
-    let Some(race_summary) = build_race_summary_from_session(summary) else {
-        return;
-    };
-
-    match questdb_store
-        .has_race_summary(&race_summary.session_id)
-        .await
-    {
-        Ok(true) => {
-            debug!(
-                session_id = %race_summary.session_id,
-                "race summary already present in QuestDB; skipping"
-            );
-            return;
-        }
-        Ok(false) => {}
-        Err(err) => {
-            warn!(
-                ?err,
-                session_id = %race_summary.session_id,
-                "failed to check existing race summary before insert"
-            );
-        }
-    }
-
-    let started = Instant::now();
-    match questdb_store.insert_race_summary(&race_summary).await {
-        Ok(()) => {
-            metrics.record_questdb_write("success", started.elapsed());
-            debug!(
-                summary_id = %race_summary.summary_id,
-                session_id = %race_summary.session_id,
-                metric_count = race_summary.metrics.len(),
-                "race summary mirrored to QuestDB"
-            );
-        }
-        Err(err) => {
-            metrics.record_questdb_write("error", started.elapsed());
-            warn!(
-                ?err,
-                summary_id = %race_summary.summary_id,
-                "failed to mirror race summary to QuestDB"
-            );
-        }
-    }
-}
-
-async fn backfill_practice_summaries(questdb_store: Option<&QuestDbStore>) -> anyhow::Result<()> {
-    let Some(questdb_store) = questdb_store else {
-        return Ok(());
-    };
-
-    let candidate_weekend_ids = questdb_store
-        .list_backfillable_practice_weekend_ids()
-        .await?;
-    if candidate_weekend_ids.is_empty() {
-        return Ok(());
-    }
-
-    let emitted_at_ms = (OffsetDateTime::now_utc().unix_timestamp_nanos() / 1_000_000) as i64;
-    for weekend_id in candidate_weekend_ids {
-        if questdb_store.has_practice_summary(&weekend_id).await? {
-            continue;
-        }
-
-        match questdb_store
-            .rebuild_practice_summary(&weekend_id, emitted_at_ms)
-            .await
-        {
-            Ok(Some(summary)) => {
-                info!(
-                    summary_id = %summary.summary_id,
-                    weekend_id = %summary.weekend_id,
-                    session_count = summary.session_count,
-                    metric_count = summary.metrics.len(),
-                    "backfilled practice summary from existing practice sessions"
-                );
-            }
-            Ok(None) => {
-                warn!(
-                    weekend_id,
-                    "skipped practice summary backfill because practice sessions were still incomplete"
-                );
-            }
-            Err(err) => {
-                warn!(weekend_id, %err, "failed to backfill practice summary");
-            }
-        }
-    }
-
-    Ok(())
-}
-
-async fn backfill_race_summaries(questdb_store: Option<&QuestDbStore>) -> anyhow::Result<()> {
-    let Some(questdb_store) = questdb_store else {
-        return Ok(());
-    };
-
-    let candidate_session_ids = questdb_store.list_backfillable_race_session_ids().await?;
-    if candidate_session_ids.is_empty() {
-        return Ok(());
-    }
-
-    for session_id in candidate_session_ids {
-        if questdb_store.has_race_summary(&session_id).await? {
-            continue;
-        }
-
-        match questdb_store.rebuild_race_summary(&session_id).await {
-            Ok(Some(summary)) => {
-                info!(
-                    summary_id = %summary.summary_id,
-                    session_id = %summary.session_id,
-                    metric_count = summary.metrics.len(),
-                    "backfilled race summary from existing race session"
-                );
-            }
-            Ok(None) => {
-                warn!(
-                    session_id,
-                    "skipped race summary backfill because race session data was incomplete"
-                );
-            }
-            Err(err) => {
-                warn!(session_id, %err, "failed to backfill race summary");
-            }
-        }
-    }
-
-    Ok(())
-}
-
 async fn health(State(state): State<AppState>) -> impl IntoResponse {
     match state.store.health_check().await {
         Ok(()) => StatusCode::OK,
@@ -1176,14 +605,6 @@ impl GatewayConfig {
         )?;
 
         let api_keys = read_api_keys();
-        let questdb_url = std::env::var("PITGUN_GATEWAY_QUESTDB_URL")
-            .ok()
-            .map(|value| value.trim().to_string())
-            .filter(|value| !value.is_empty());
-        let run_registry_url = std::env::var("PITGUN_GATEWAY_RUN_REGISTRY_URL")
-            .ok()
-            .map(|value| value.trim().to_string())
-            .filter(|value| !value.is_empty());
 
         Ok(Self {
             bind_addr,
@@ -1194,110 +615,8 @@ impl GatewayConfig {
             max_messages_per_sec,
             ingest_queue_size,
             api_keys,
-            questdb_url,
-            run_registry_url,
         })
     }
-}
-
-async fn build_questdb_store(config: &GatewayConfig) -> anyhow::Result<Option<Arc<QuestDbStore>>> {
-    let Some(url) = config.questdb_url.as_ref() else {
-        info!("QuestDB integration disabled (PITGUN_GATEWAY_QUESTDB_URL not set)");
-        return Ok(None);
-    };
-
-    let store = QuestDbStore::new(url).await?;
-    info!(questdb_url = %url, "QuestDB integration enabled");
-    Ok(Some(Arc::new(store)))
-}
-
-fn build_run_registry_client(
-    config: &GatewayConfig,
-) -> anyhow::Result<Option<Arc<RunRegistryClient>>> {
-    let Some(url) = config.run_registry_url.as_ref() else {
-        info!("run registry integration disabled (PITGUN_GATEWAY_RUN_REGISTRY_URL not set)");
-        return Ok(None);
-    };
-
-    let client = RunRegistryClient::new(url.clone())?;
-    info!(run_registry_url = %url, "run registry integration enabled");
-    Ok(Some(Arc::new(client)))
-}
-
-fn build_telemetry_points(
-    envelope: &model::EventEnvelope,
-    frame: &TelemetryFrame,
-    extraction: &insight_ingress::InsightExtraction,
-) -> Vec<TelemetryPointRow> {
-    let run_id = frame.metadata.get("run_id").cloned();
-    let session_type = frame.metadata.get("session_type").cloned();
-    let track_id = frame.metadata.get("track_id").cloned();
-    let weekend_id = envelope
-        .weekend_id
-        .clone()
-        .or_else(|| frame.metadata.get("weekend_id").cloned());
-
-    extraction
-        .points
-        .iter()
-        .map(|point| TelemetryPointRow {
-            player_id: envelope.player_id.clone(),
-            weekend_id: weekend_id.clone(),
-            session_id: envelope.session_id.clone(),
-            run_id: run_id.clone(),
-            session_type: session_type.clone(),
-            track_id: track_id.clone(),
-            source_id: point.source_id.clone(),
-            frame_session_id: frame.session_id,
-            frame_sequence: frame.sequence,
-            timestamp_us: point.timestamp_us,
-            received_at_us: frame.received_at_us,
-            lap_number: frame.cycle_index,
-            sector: frame.segment_index,
-            lap_distance_m: frame.progress_m,
-            parameter_id: point.parameter_id,
-            channel: point.channel.to_string(),
-            metric_key: point.metric_key.to_string(),
-            unit: point.unit.to_string(),
-            value: point.value,
-        })
-        .collect()
-}
-
-const MIN_ABSOLUTE_TIMESTAMP_US: i64 = 946_684_800_000_000;
-const MAX_FUTURE_TIMESTAMP_SKEW_US: i64 = 86_400_000_000;
-
-fn timestamp_needs_normalization(timestamp_us: i64, envelope_timestamp_us: i64) -> bool {
-    timestamp_us < MIN_ABSOLUTE_TIMESTAMP_US
-        || timestamp_us > envelope_timestamp_us.saturating_add(MAX_FUTURE_TIMESTAMP_SKEW_US)
-}
-
-fn normalize_frame_timestamps(
-    frames: &[TelemetryFrame],
-    envelope_timestamp_us: i64,
-) -> Vec<TelemetryFrame> {
-    let max_relative_timestamp_us = frames
-        .iter()
-        .filter(|frame| frame.timestamp_us < MIN_ABSOLUTE_TIMESTAMP_US)
-        .map(|frame| frame.timestamp_us.max(0))
-        .max()
-        .unwrap_or(0);
-    let relative_origin_us = envelope_timestamp_us.saturating_sub(max_relative_timestamp_us);
-
-    frames
-        .iter()
-        .cloned()
-        .map(|mut frame| {
-            if frame.timestamp_us < MIN_ABSOLUTE_TIMESTAMP_US {
-                frame.timestamp_us = relative_origin_us.saturating_add(frame.timestamp_us.max(0));
-                frame.received_at_us = envelope_timestamp_us;
-            } else if timestamp_needs_normalization(frame.timestamp_us, envelope_timestamp_us) {
-                frame.timestamp_us = envelope_timestamp_us;
-                frame.received_at_us = envelope_timestamp_us;
-            }
-            frame
-        })
-        .collect()
 }
 
 fn read_env_u32(key: &str, default: u32) -> anyhow::Result<u32> {
@@ -1342,146 +661,6 @@ fn read_api_keys() -> HashSet<String> {
     keys
 }
 
-#[derive(Clone, Debug)]
-struct SessionAggregationState {
-    player_id: String,
-    session_id: String,
-    fallback_run_id: String,
-    latest_metadata: HashMap<String, String>,
-    max_lap: u32,
-    current_lap: Option<OpenLapState>,
-    session_aggregates: BTreeMap<String, MetricAggregate>,
-}
-
-impl SessionAggregationState {
-    fn new(player_id: String, session_id: String, fallback_run_id: String) -> Self {
-        Self {
-            player_id,
-            session_id,
-            fallback_run_id,
-            latest_metadata: HashMap::new(),
-            max_lap: 0,
-            current_lap: None,
-            session_aggregates: BTreeMap::new(),
-        }
-    }
-
-    fn ingest_frame(
-        &mut self,
-        frame: &TelemetryFrame,
-        extraction: &insight_ingress::InsightExtraction,
-        stats_plan: &insight_stats_plan::InsightStatsPlan,
-    ) -> Vec<LapSummaryPayload> {
-        if !frame.metadata.is_empty() {
-            self.latest_metadata = frame.metadata.clone();
-        }
-
-        if extraction.points.is_empty() {
-            return Vec::new();
-        }
-
-        let Some(lap_number) = frame
-            .cycle_index
-            .map(|value| value as u32)
-            .filter(|value| *value >= 1)
-        else {
-            return Vec::new();
-        };
-
-        self.max_lap = self.max_lap.max(lap_number);
-
-        let mut completed = Vec::new();
-        if self
-            .current_lap
-            .as_ref()
-            .is_some_and(|open_lap| open_lap.lap_number != lap_number)
-            && let Some(summary) = self.finalize_open_lap(stats_plan)
-        {
-            completed.push(summary);
-        }
-
-        let open_lap = self
-            .current_lap
-            .get_or_insert_with(|| OpenLapState::new(lap_number, frame.timestamp_us));
-        open_lap.ended_at_us = frame.timestamp_us;
-        if !frame.metadata.is_empty() {
-            open_lap.latest_metadata = frame.metadata.clone();
-        }
-
-        for point in &extraction.points {
-            accumulate_metric_point(&mut open_lap.aggregates, point);
-            accumulate_metric_point(&mut self.session_aggregates, point);
-        }
-
-        completed
-    }
-
-    fn finalize_open_lap(
-        &mut self,
-        stats_plan: &insight_stats_plan::InsightStatsPlan,
-    ) -> Option<LapSummaryPayload> {
-        let open_lap = self.current_lap.take()?;
-        let summary_id = format!("{}:lap:{}", self.session_id, open_lap.lap_number);
-        let metadata = if open_lap.latest_metadata.is_empty() {
-            &self.latest_metadata
-        } else {
-            &open_lap.latest_metadata
-        };
-
-        build_lap_summary(LapSummaryInput {
-            summary_id,
-            player_id: &self.player_id,
-            session_id: self.session_id.clone(),
-            lap_number: open_lap.lap_number,
-            started_at_us: open_lap.started_at_us,
-            ended_at_us: open_lap.ended_at_us,
-            metadata,
-            fallback_run_id: &self.fallback_run_id,
-            aggregates: &open_lap.aggregates,
-            stats_plan,
-        })
-    }
-
-    fn build_session_summary_payload(
-        &self,
-        emitted_at_ms: i64,
-        stats_plan: &insight_stats_plan::InsightStatsPlan,
-    ) -> Option<SessionSummaryPayload> {
-        build_session_summary(SessionSummaryInput {
-            summary_id: format!("{}:session", self.session_id),
-            player_id: &self.player_id,
-            session_id: self.session_id.clone(),
-            emitted_at_ms,
-            lap: self.max_lap,
-            metadata: &self.latest_metadata,
-            fallback_run_id: &self.fallback_run_id,
-            aggregates: &self.session_aggregates,
-            stats_plan,
-        })
-    }
-}
-
-#[derive(Clone, Debug)]
-struct OpenLapState {
-    lap_number: u32,
-    started_at_us: i64,
-    ended_at_us: i64,
-    latest_metadata: HashMap<String, String>,
-    aggregates: BTreeMap<String, MetricAggregate>,
-}
-
-impl OpenLapState {
-    fn new(lap_number: u32, started_at_us: i64) -> Self {
-        Self {
-            lap_number,
-            started_at_us,
-            ended_at_us: started_at_us,
-            latest_metadata: HashMap::new(),
-            aggregates: BTreeMap::new(),
-        }
-    }
-}
-
 struct ConnectionRateLimiter {
     max_per_sec: u32,
     window_started_at: Instant,
@@ -1516,66 +695,10 @@ impl ConnectionRateLimiter {
 #[cfg(test)]
 mod tests {
     use super::{
-        ConnectionRateLimiter, GatewayMetrics, allow_non_loopback_enabled,
-        normalize_frame_timestamps, parse_bearer_token, parse_query_token, read_api_keys,
-        validate_bind_addr,
+        ConnectionRateLimiter, GatewayMetrics, allow_non_loopback_enabled, parse_bearer_token,
+        parse_query_token, read_api_keys, validate_bind_addr,
     };
-    use pitgun_contract::TelemetryFrame;
-    use std::collections::HashMap;
     use std::{net::SocketAddr, time::Duration};
-
-    fn telemetry_frame(timestamp_us: i64) -> TelemetryFrame {
-        TelemetryFrame {
-            session_id: 1,
-            sequence: 0,
-            timestamp_us,
-            received_at_us: timestamp_us,
-            source_id: "test".to_string(),
-            samples: Vec::new(),
-            events: Vec::new(),
-            cycle_index: None,
-            segment_index: None,
-            progress_m: None,
-            metadata: HashMap::new(),
-        }
-    }
-
-    #[test]
-    fn anchors_relative_frame_timestamps_to_envelope_time() {
-        let envelope_timestamp_us = 1_788_000_000_000_000;
-        let frames = vec![telemetry_frame(1_000_000), telemetry_frame(3_000_000)];
-
-        let normalized = normalize_frame_timestamps(&frames, envelope_timestamp_us);
-
-        assert_eq!(
-            normalized[0].timestamp_us,
-            envelope_timestamp_us - 2_000_000
-        );
-        assert_eq!(normalized[1].timestamp_us, envelope_timestamp_us);
-        assert_eq!(normalized[0].received_at_us, envelope_timestamp_us);
-    }
-
-    #[test]
-    fn preserves_absolute_frame_timestamps() {
-        let timestamp_us = 1_788_000_000_000_000;
-        let frames = vec![telemetry_frame(timestamp_us)];
-
-        let normalized = normalize_frame_timestamps(&frames, timestamp_us + 1_000_000);
-
-        assert_eq!(normalized[0].timestamp_us, timestamp_us);
-        assert_eq!(normalized[0].received_at_us, timestamp_us);
-    }
-
-    #[test]
-    fn clamps_implausible_future_timestamps_to_envelope_time() {
-        let envelope_timestamp_us = 1_788_000_000_000_000;
-        let frames = vec![telemetry_frame(envelope_timestamp_us + 172_800_000_000)];
-
-        let normalized = normalize_frame_timestamps(&frames, envelope_timestamp_us);
-
-        assert_eq!(normalized[0].timestamp_us, envelope_timestamp_us);
-        assert_eq!(normalized[0].received_at_us, envelope_timestamp_us);
-    }
 
     #[test]
     fn non_loopback_fails_without_flag() {
@@ -1653,19 +776,15 @@ mod tests {
         let metrics = GatewayMetrics::default();
 
         metrics.record_ws_message(42);
-        metrics.record_timestamp_normalizations(3);
         metrics.record_ingested_event("telemetry.sample_batch");
         metrics.record_rejected_event("invalid_payload");
         metrics.record_postgres_write("inserted", Duration::from_millis(2));
-        metrics.record_questdb_write("success", Duration::from_millis(3));
-        metrics.record_run_registry_mirror("error", Duration::from_millis(4));
         metrics.record_parse_latency(Duration::from_millis(1));
 
         let rendered = metrics.render_prometheus();
 
         assert!(rendered.contains("pitgun_gateway_ws_messages_total 1"));
         assert!(rendered.contains("pitgun_gateway_ws_message_bytes_total 42"));
-        assert!(rendered.contains("pitgun_gateway_timestamp_normalizations_total 3"));
         assert!(rendered.contains(
             "pitgun_gateway_events_ingested_total{event_type=\"telemetry.sample_batch\"} 1"
         ));
@@ -1673,10 +792,6 @@ mod tests {
             rendered.contains("pitgun_gateway_events_rejected_total{reason=\"invalid_payload\"} 1")
         );
         assert!(rendered.contains("pitgun_gateway_postgres_writes_total{outcome=\"inserted\"} 1"));
-        assert!(rendered.contains("pitgun_gateway_questdb_writes_total{outcome=\"success\"} 1"));
-        assert!(
-            rendered.contains("pitgun_gateway_run_registry_mirrors_total{outcome=\"error\"} 1")
-        );
         assert!(rendered.contains("pitgun_gateway_parse_latency_seconds_count 1"));
         assert!(rendered.contains("pitgun_gateway_parse_latency_seconds_sum 0.001000000"));
     }
