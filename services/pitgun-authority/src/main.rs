@@ -14,10 +14,10 @@ use axum::{
     routing::{get, post},
 };
 use pitgun_policy::{
-    PlayerTuningRequest, TuningEvalContext, TuningPolicyV1, default_policy_path,
-    load_tuning_v1_from_str,
+    PlayerTuningRequest, TuningEvalContext, TuningPolicyV1, load_tuning_v1_from_str,
 };
 use pitgun_racing_contract::{SignedSimulationContractV1, SimulationContractV1};
+use pitgun_racing_policy::default_policy_path;
 use pitgun_signing::SigningKey;
 use serde_json::Value as JsonValue;
 use sha2::{Digest, Sha256};

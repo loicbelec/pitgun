@@ -1,0 +1,13 @@
+[package]
+name = "pitgun-racing-policy"
+version = "0.1.0"
+edition = "2024"
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+pitgun-policy = { path = "../pitgun-policy" }
+pitgun-racing-contract = { path = "../pitgun-racing-contract" }
+serde_json = "1"
+thiserror = "1.0"
+

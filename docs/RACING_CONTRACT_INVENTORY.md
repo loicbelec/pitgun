@@ -77,6 +77,11 @@ the generic `TuningParam` policy input to `pitgun-policy`, removed obsolete
 configuration contracts, and deleted the temporary reverse dependency and
 re-exports. `pitgun-contract` is now independent of the Racing crate.
 
+Issue #43 subsequently moved `RaceInput`, competitor, setup, and tuning
+validation into `pitgun-racing-policy`. The generic `pitgun-policy` crate now
+owns only policy loading, canonicalization, constraints, expressions, and
+domain-neutral access primitives.
+
 The generic `TelemetryFrame` Rust API also renames its former motorsport
 coordinates to `cycle_index`, `segment_index`, and `progress_m`. Serde mappings
 retain the V1 JSON keys `lap_number`, `sector`, and `lap_distance_m`, so existing

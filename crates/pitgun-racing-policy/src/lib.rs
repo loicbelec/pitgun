@@ -1,17 +1,24 @@
 use std::collections::{BTreeMap, BTreeSet};
+use std::path::PathBuf;
 use std::sync::OnceLock;
 
+use pitgun_policy::{
+    PlayerTuningRequest, TuningEvalContext, TuningPolicyV1, load_tuning_v1_from_str,
+};
 use pitgun_racing_contract::{CompetitorSpec, RaceInput, TuningSpec};
 use serde_json::Value as JsonValue;
 use thiserror::Error;
 
-use crate::tuning::{
-    PlayerTuningRequest, TuningEvalContext, TuningPolicyV1, load_tuning_v1_from_str,
-};
-
 pub const POLICY_VERSION: &str = "tuning.v1";
+pub const POLICY_PATH_ENV: &str = "PITGUN_TUNING_POLICY_PATH";
 const BUDGET_LEVEL_KEY: &str = "budget_lvl";
 const EMBEDDED_TUNING_POLICY_V1: &str = include_str!("../../../policies/gametuning.v1.yaml");
+
+pub fn default_policy_path() -> PathBuf {
+    std::env::var(POLICY_PATH_ENV)
+        .map(PathBuf::from)
+        .unwrap_or_else(|_| PathBuf::from("policies/gametuning.v1.yaml"))
+}
 
 #[derive(Error, Debug)]
 pub enum PolicyError {
@@ -217,6 +224,47 @@ mod tests {
             )],
         };
         assert!(normalize_and_validate_race_input(&input, 1).is_err());
+    }
+
+    #[test]
+    fn rejects_empty_track_and_invalid_lap_counts() {
+        let competitor = base_competitor(TuningSpec::default(), 100.0);
+
+        let empty_track = RaceInput {
+            track_id: "  ".into(),
+            laps: 10,
+            competitors: vec![competitor.clone()],
+        };
+        assert!(matches!(
+            validate_race_input(&empty_track),
+            Err(PolicyError::InvalidTrackId(_))
+        ));
+
+        for laps in [0, 101] {
+            let invalid_laps = RaceInput {
+                track_id: "spa".into(),
+                laps,
+                competitors: vec![competitor.clone()],
+            };
+            assert!(matches!(
+                validate_race_input(&invalid_laps),
+                Err(PolicyError::InvalidLapCount(_, 100))
+            ));
+        }
+    }
+
+    #[test]
+    fn rejects_non_finite_competitor_budget() {
+        let input = RaceInput {
+            track_id: "spa".into(),
+            laps: 10,
+            competitors: vec![base_competitor(TuningSpec::default(), f64::NAN)],
+        };
+
+        assert!(matches!(
+            validate_race_input(&input),
+            Err(PolicyError::CompetitorError(_, _))
+        ));
     }
 
     #[test]

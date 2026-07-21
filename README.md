@@ -180,7 +180,9 @@ currently migrating from the transitional `pitgun-solver` and
 `pitgun-simulator` packages. The runtime now owns RNG V1 and the statically
 linked workload boundary, plus filesystem-independent Run Bundle verification.
 `pitgun-racing-contract` owns Racing wire schemas and domain consumers import it
-directly; `pitgun-contract` remains domain-neutral.
+directly. `pitgun-racing-policy` adapts those schemas to the generic policy
+engine without introducing Racing semantics into `pitgun-policy`;
+`pitgun-contract` remains domain-neutral.
 [ADR 0001](docs/adr/0001-runtime-and-domain-workloads.md) fixes the dependency
 direction and explains why Pitgun does not claim a universal Solver before a
 second domain proves the abstraction.
@@ -197,7 +199,7 @@ stack:
 | **Reference workload** | Solve Racing physics, orchestrate races, and expose WASM | target `pitgun-racing-solver` and `pitgun-racing-simulator` |
 | **Telemetry processing** | Transform and aggregate generated or observed channels | `crates/pitgun-core` |
 | **Replay and tooling** | Run, inspect, replay, and verify local artifacts | `apps/pitgun-cli`, `apps/pitgun-replay` |
-| **Hosted governance** | Constrain, sign, receive, and audit distributed runs | `crates/pitgun-policy`, `crates/pitgun-signing`, `services/pitgun-authority`, `services/pitgun-gateway` |
+| **Hosted governance** | Constrain, sign, receive, and audit distributed runs | `crates/pitgun-policy`, `crates/pitgun-racing-policy`, `crates/pitgun-signing`, `services/pitgun-authority`, `services/pitgun-gateway` |
 | **Observed-data integrations** | Capture external telemetry for comparison, calibration, processing, or later replay | `pitgun-source-udp`, `pitgun-source-ws`, `pitgun-codec-*` |
 
 ```text

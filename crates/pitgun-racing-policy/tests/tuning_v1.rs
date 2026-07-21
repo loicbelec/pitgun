@@ -3,10 +3,10 @@ use std::collections::{BTreeMap, BTreeSet};
 use pitgun_policy::{PlayerTuningRequest, PolicyError, TuningEvalContext, load_tuning_v1_from_str};
 use serde_json::json;
 
-const TUNING_POLICY_V1_YAML: &str = include_str!("fixtures/gametuning.v1.yaml");
+const RACING_TUNING_POLICY_V1_YAML: &str = include_str!("fixtures/gametuning.v1.yaml");
 
 fn tuning_policy_v1() -> pitgun_policy::TuningPolicyV1 {
-    load_tuning_v1_from_str(TUNING_POLICY_V1_YAML).expect("policy parses")
+    load_tuning_v1_from_str(RACING_TUNING_POLICY_V1_YAML).expect("policy parses")
 }
 
 fn gameplay_ctx() -> TuningEvalContext {
