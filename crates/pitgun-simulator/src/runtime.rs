@@ -3,13 +3,13 @@ use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 
 use pitgun_contract::{Sample, SampleValue, SignalQuality, TelemetryFrame};
-use pitgun_solver::{
+use pitgun_racing_solver::{
     AeroParams as SolverAeroParams, ChassisParams as SolverChassisParams, Driver as SolverDriver,
-    PitPlan as SolverPitPlan, PitStop as SolverPitStop, ResampledTelemetry,
-    SimConfig as SolverSimConfig, SimulationRequest as SolverSimulationRequest, SimulationResult,
-    TireParams as SolverTireParams, Track as SolverTrack, Tuning as SolverTuning,
-    VehicleParams as SolverVehicleParams, VehicleState as SolverVehicleState, resample_solution,
-    solve,
+    EngineParams as SolverEngineParams, PitPlan as SolverPitPlan, PitStop as SolverPitStop,
+    ResampledTelemetry, SimConfig as SolverSimConfig, SimulationRequest as SolverSimulationRequest,
+    SimulationResult, TireParams as SolverTireParams, Track as SolverTrack, Tuning as SolverTuning,
+    VehicleParams as SolverVehicleParams, VehicleState as SolverVehicleState,
+    resample_telemetry as resample_solution, run_simulation as solve,
 };
 
 use crate::errors::SimulatorError;
@@ -206,8 +206,8 @@ fn map_chassis(value: &crate::models::ChassisConfig) -> SolverChassisParams {
     }
 }
 
-fn map_engine(value: &crate::models::EngineConfig) -> pitgun_solver::EngineParams {
-    pitgun_solver::EngineParams {
+fn map_engine(value: &crate::models::EngineConfig) -> SolverEngineParams {
+    SolverEngineParams {
         n_rpm: value.rpm_samples.clone(),
         trq: value.torque_samples.clone(),
         gear_ratios: value.gear_ratios.clone(),

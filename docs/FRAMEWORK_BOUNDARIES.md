@@ -104,7 +104,7 @@ Owns Racing input, output, evidence, catalog, and cross-process payload schemas.
 It may build on generic contract identifiers and telemetry frames without
 adding Racing fields to `pitgun-contract`.
 
-### `pitgun-racing-solver` (target)
+### `pitgun-racing-solver`
 
 Owns the Racing physical and mathematical solution:
 
@@ -113,6 +113,10 @@ Owns the Racing physical and mathematical solution:
 - deterministic physical solution types and numerical invariants
 
 It does not orchestrate races, strategies, sessions, or leaderboards.
+
+The physical kernel is now owned here. The transitional `pitgun-solver` crate
+temporarily re-exports its Rust API while race/session orchestration and the
+browser facade migrate to `pitgun-racing-simulator` under #39.
 
 ### `pitgun-racing-simulator` (target)
 

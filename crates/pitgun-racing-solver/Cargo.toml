@@ -1,0 +1,12 @@
+[package]
+name = "pitgun-racing-solver"
+version = "0.1.0"
+edition = "2024"
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+rand = "0.8"
+getrandom = { version = "0.2", features = ["js"] }
+md-5 = "0.10.6"

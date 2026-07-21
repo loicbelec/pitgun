@@ -1530,6 +1530,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "pitgun-racing-solver"
+version = "0.1.0"
+dependencies = [
+ "getrandom 0.2.16",
+ "md-5",
+ "rand",
+ "serde",
+]
+
+[[package]]
 name = "pitgun-replay"
 version = "0.1.0"
 dependencies = [
@@ -1567,6 +1577,7 @@ name = "pitgun-simulator"
 version = "0.1.0"
 dependencies = [
  "pitgun-contract",
+ "pitgun-racing-solver",
  "pitgun-runtime",
  "pitgun-solver",
  "serde",
@@ -1579,13 +1590,11 @@ dependencies = [
 name = "pitgun-solver"
 version = "0.1.0"
 dependencies = [
- "getrandom 0.2.16",
- "md-5",
  "pitgun-contract",
  "pitgun-racing-contract",
  "pitgun-racing-policy",
+ "pitgun-racing-solver",
  "pitgun-runtime",
- "rand",
  "serde",
  "serde_json",
  "wasm-bindgen",
