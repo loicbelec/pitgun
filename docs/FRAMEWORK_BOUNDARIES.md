@@ -127,7 +127,7 @@ Owns the racing simulator:
 It intentionally depends on `pitgun-racing-solver`; the reverse dependency is
 forbidden.
 
-### `pitgun-racing-policy` (target)
+### `pitgun-racing-policy`
 
 Owns Racing setup canonicalization and validation while delegating generic
 policy loading, constraints, and hashing to `pitgun-policy`.

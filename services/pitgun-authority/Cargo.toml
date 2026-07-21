@@ -11,6 +11,7 @@ hex = "0.4"
 pitgun-codec-json = { path = "../../crates/pitgun-codec-json" }
 pitgun-policy = { path = "../../crates/pitgun-policy" }
 pitgun-racing-contract = { path = "../../crates/pitgun-racing-contract" }
+pitgun-racing-policy = { path = "../../crates/pitgun-racing-policy" }
 pitgun-signing = { path = "../../crates/pitgun-signing" }
 rand = "0.8"
 serde = { version = "1", features = ["derive"] }

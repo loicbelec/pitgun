@@ -8,10 +8,10 @@ use std::hash::{Hash, Hasher};
 
 use kernel::{resample_telemetry, run_simulation};
 use pitgun_contract::{Sample, SampleValue, SignalQuality, TelemetryFrame};
-use pitgun_policy::validation::normalize_and_validate_race_input;
 use pitgun_racing_contract::{
     CircuitCatalogEntry, CompetitorSpec, CompetitorStintStrategy, EngineCatalogEntry, RaceInput,
 };
+use pitgun_racing_policy::normalize_and_validate_race_input;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use wasm_bindgen::prelude::*;

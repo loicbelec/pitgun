@@ -1397,6 +1397,7 @@ dependencies = [
  "pitgun-codec-json",
  "pitgun-policy",
  "pitgun-racing-contract",
+ "pitgun-racing-policy",
  "pitgun-signing",
  "rand",
  "serde",
@@ -1499,7 +1500,6 @@ name = "pitgun-policy"
 version = "0.1.0"
 dependencies = [
  "pitgun-contract",
- "pitgun-racing-contract",
  "serde",
  "serde_json",
  "serde_yaml",
@@ -1517,6 +1517,16 @@ dependencies = [
  "serde_json_canonicalizer",
  "sha2",
  "wasm-bindgen-test",
+]
+
+[[package]]
+name = "pitgun-racing-policy"
+version = "0.1.0"
+dependencies = [
+ "pitgun-policy",
+ "pitgun-racing-contract",
+ "serde_json",
+ "thiserror 1.0.69",
 ]
 
 [[package]]
@@ -1572,8 +1582,8 @@ dependencies = [
  "getrandom 0.2.16",
  "md-5",
  "pitgun-contract",
- "pitgun-policy",
  "pitgun-racing-contract",
+ "pitgun-racing-policy",
  "pitgun-runtime",
  "rand",
  "serde",

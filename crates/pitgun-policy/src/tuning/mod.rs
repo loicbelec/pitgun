@@ -1,8 +1,4 @@
-use std::{
-    collections::HashMap,
-    fs,
-    path::{Path, PathBuf},
-};
+use std::{collections::HashMap, fs, path::Path};
 
 use serde::{Deserialize, Serialize};
 
@@ -18,7 +14,6 @@ pub use v1::{
 pub use v1::{PolicyError, load_tuning_v1_from_path, load_tuning_v1_from_str};
 
 pub const POLICY_VERSION_V1: &str = "tuning-policy-v1";
-pub const POLICY_PATH_ENV: &str = "PITGUN_TUNING_POLICY_PATH";
 pub const POLICY_STRICT_ENV: &str = "PITGUN_POLICY_STRICT";
 
 /// Generic key-value parameter accepted by the policy normalization engine.
@@ -107,12 +102,6 @@ impl TuningPolicy {
         output.sort_by(|a, b| a.key.cmp(&b.key));
         Ok(output)
     }
-}
-
-pub fn default_policy_path() -> PathBuf {
-    std::env::var(POLICY_PATH_ENV)
-        .map(PathBuf::from)
-        .unwrap_or_else(|_| PathBuf::from("policies/gametuning.v1.yaml"))
 }
 
 pub fn strict_mode_from_env() -> StrictMode {

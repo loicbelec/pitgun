@@ -79,10 +79,10 @@ jobs:
         run: cargo run --locked -p pitgun-core --example observed_segment_aggregation
 
       - name: Format check
-        run: cargo fmt -p pitgun-gateway -p pitgun-authority -- --check
+        run: cargo fmt -p pitgun-policy -p pitgun-racing-policy -p pitgun-gateway -p pitgun-authority -- --check
 
       - name: Clippy (lints)
-        run: cargo clippy -p pitgun-gateway -p pitgun-authority -- -D warnings
+        run: cargo clippy -p pitgun-policy -p pitgun-racing-policy -p pitgun-gateway -p pitgun-authority -- -D warnings
 
   wasm-golden-run:
     runs-on: ubuntu-latest
