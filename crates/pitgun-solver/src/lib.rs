@@ -1,22 +1,21 @@
 pub mod evidence;
-mod kernel;
 pub mod rng;
 
 use std::collections::HashMap;
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 
-use kernel::{resample_telemetry, run_simulation};
 use pitgun_contract::{Sample, SampleValue, SignalQuality, TelemetryFrame};
 use pitgun_racing_contract::{
     CircuitCatalogEntry, CompetitorSpec, CompetitorStintStrategy, EngineCatalogEntry, RaceInput,
 };
 use pitgun_racing_policy::normalize_and_validate_race_input;
+use pitgun_racing_solver::{resample_telemetry, run_simulation};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use wasm_bindgen::prelude::*;
 
-pub use kernel::{
+pub use pitgun_racing_solver::{
     AeroParams, ChassisParams, Driver, DriverEffects, EngineParams, PitPlan, PitStop,
     ResampledTelemetry, SimConfig, SimulationRequest, SimulationResult, SimulationSolution,
     TireParams, Track, Tuning, VehicleParams, VehicleState, apply_driver_to_tire, apply_tuning,

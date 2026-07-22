@@ -1,3 +1,10 @@
+//! Deterministic physical and mathematical Solver for the Racing domain.
+//!
+//! This crate owns resolved vehicle, track and state inputs plus the numerical
+//! algorithms that produce a physical solution. Race/session orchestration,
+//! catalog lookup, telemetry envelopes and browser bindings belong to the
+//! Racing Simulator.
+
 use md5::{Digest, Md5};
 use rand::rngs::StdRng;
 use rand::{RngCore, SeedableRng};
@@ -879,7 +886,7 @@ fn tire_for_lap(default_tire: &TireParams, pit_stops: &[PitStop], lap: u16) -> T
     pit_stops
         .iter()
         .filter(|stop| stop.lap < lap)
-        .last()
+        .next_back()
         .map(|stop| stop.tire.clone())
         .unwrap_or_else(|| default_tire.clone())
 }
