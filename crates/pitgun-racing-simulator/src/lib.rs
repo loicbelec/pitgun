@@ -154,17 +154,52 @@ pub struct SessionRunOutput {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CatalogSnapshot {
-    pub circuits: Vec<CircuitCatalogEntry>,
+    pub circuits: Vec<BrowserCircuitCatalogEntry>,
     pub engines: Vec<EngineCatalogEntry>,
-    pub vehicles: Vec<String>,
-    pub drivers: Vec<String>,
+    pub vehicles: Vec<VehicleCatalogEntry>,
+    pub drivers: Vec<DriverCatalogEntry>,
+    pub tires: Vec<TireCatalogEntry>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct BrowserCircuitCatalogEntry {
+    pub id: String,
+    pub display_name: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub country_code: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub laps: Option<u16>,
+    pub sample_count: usize,
+    pub distance_m: f64,
+    pub pit_loss_ms: u64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct DriverCatalogEntry {
+    pub id: String,
+    pub display_name: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct VehicleCatalogEntry {
+    pub id: String,
+    pub engine_id: String,
+    pub default_tire_id: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct TireCatalogEntry {
+    pub id: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CircuitDetail {
     pub id: String,
+    pub display_name: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub country_code: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub laps: Option<u16>,
     pub s_m: Vec<f64>,
     pub x_m: Vec<f64>,
     pub y_m: Vec<f64>,
@@ -202,7 +237,10 @@ struct VehicleRecord {
 #[derive(Debug, Clone)]
 struct TrackRecord {
     id: String,
+    browser_id: String,
+    display_name: String,
     country_code: Option<String>,
+    laps: Option<u16>,
     track: Track,
     pit_loss_ms: u64,
 }
@@ -736,7 +774,7 @@ pub fn catalog_json() -> String {
 
 #[cfg_attr(feature = "wasm", wasm_bindgen)]
 pub fn list_circuits_json() -> String {
-    match list_circuits() {
+    match list_browser_circuits() {
         Ok(output) => serialize_json(&output),
         Err(error) => json_error(&error),
     }
@@ -766,23 +804,57 @@ pub fn get_engine_json(engine_id: String) -> String {
     }
 }
 
+#[cfg_attr(feature = "wasm", wasm_bindgen)]
+pub fn list_drivers_json() -> String {
+    match list_drivers() {
+        Ok(output) => serialize_json(&output),
+        Err(error) => json_error(&error),
+    }
+}
+
+#[cfg_attr(feature = "wasm", wasm_bindgen)]
+pub fn list_vehicles_json() -> String {
+    match list_vehicles() {
+        Ok(output) => serialize_json(&output),
+        Err(error) => json_error(&error),
+    }
+}
+
+#[cfg_attr(feature = "wasm", wasm_bindgen)]
+pub fn list_tires_json() -> String {
+    match list_tires() {
+        Ok(output) => serialize_json(&output),
+        Err(error) => json_error(&error),
+    }
+}
+
 pub fn catalog_snapshot() -> Result<CatalogSnapshot, String> {
-    let catalog = EmbeddedCatalog::load_default()?;
-    let mut vehicles = catalog.vehicles.keys().cloned().collect::<Vec<_>>();
-    vehicles.sort();
-    let mut drivers = catalog
-        .drivers
-        .keys()
-        .filter(|id| id.as_str() != "default")
-        .cloned()
-        .collect::<Vec<_>>();
-    drivers.sort();
     Ok(CatalogSnapshot {
-        circuits: list_circuits()?,
+        circuits: list_browser_circuits()?,
         engines: list_engines()?,
-        vehicles,
-        drivers,
+        vehicles: list_vehicles()?,
+        drivers: list_drivers()?,
+        tires: list_tires()?,
     })
+}
+
+pub fn list_browser_circuits() -> Result<Vec<BrowserCircuitCatalogEntry>, String> {
+    let catalog = EmbeddedCatalog::load_default()?;
+    let mut items = catalog
+        .tracks
+        .values()
+        .map(|track| BrowserCircuitCatalogEntry {
+            id: track.browser_id.clone(),
+            display_name: track.display_name.clone(),
+            country_code: track.country_code.clone(),
+            laps: track.laps,
+            sample_count: track.track.s.len(),
+            distance_m: track.track.s.last().copied().unwrap_or(0.0),
+            pit_loss_ms: track.pit_loss_ms,
+        })
+        .collect::<Vec<_>>();
+    items.sort_by(|left, right| left.id.cmp(&right.id));
+    Ok(items)
 }
 
 pub fn list_circuits() -> Result<Vec<CircuitCatalogEntry>, String> {
@@ -806,8 +878,10 @@ pub fn get_circuit(track_id: &str) -> Result<CircuitDetail, String> {
     let catalog = EmbeddedCatalog::load_default()?;
     let record = catalog.get_track(track_id)?;
     Ok(CircuitDetail {
-        id: record.id.clone(),
+        id: record.browser_id.clone(),
+        display_name: record.display_name.clone(),
         country_code: record.country_code.clone(),
+        laps: record.laps,
         s_m: record.track.s.clone(),
         x_m: record.track.x.clone(),
         y_m: record.track.y.clone(),
@@ -849,6 +923,47 @@ pub fn get_engine(engine_id: &str) -> Result<EngineDetail, String> {
         idle_rpm: engine.n_idle,
         max_rpm: engine.n_max,
     })
+}
+
+pub fn list_drivers() -> Result<Vec<DriverCatalogEntry>, String> {
+    let catalog = EmbeddedCatalog::load_default()?;
+    let mut items = catalog
+        .drivers
+        .values()
+        .filter(|driver| driver.id != "default")
+        .map(|driver| DriverCatalogEntry {
+            id: driver.id.clone(),
+            display_name: driver.display_name.clone(),
+        })
+        .collect::<Vec<_>>();
+    items.sort_by(|left, right| left.id.cmp(&right.id));
+    Ok(items)
+}
+
+pub fn list_vehicles() -> Result<Vec<VehicleCatalogEntry>, String> {
+    let catalog = EmbeddedCatalog::load_default()?;
+    let mut items = catalog
+        .vehicles
+        .iter()
+        .map(|(id, vehicle)| VehicleCatalogEntry {
+            id: id.clone(),
+            engine_id: vehicle.engine_id.clone(),
+            default_tire_id: vehicle.tire_id.clone(),
+        })
+        .collect::<Vec<_>>();
+    items.sort_by(|left, right| left.id.cmp(&right.id));
+    Ok(items)
+}
+
+pub fn list_tires() -> Result<Vec<TireCatalogEntry>, String> {
+    let catalog = EmbeddedCatalog::load_default()?;
+    let mut items = catalog
+        .tires
+        .keys()
+        .map(|id| TireCatalogEntry { id: id.clone() })
+        .collect::<Vec<_>>();
+    items.sort_by(|left, right| left.id.cmp(&right.id));
+    Ok(items)
 }
 
 impl EmbeddedCatalog {
@@ -909,6 +1024,7 @@ impl EmbeddedCatalog {
         let id = normalize_track_id(track_id);
         self.tracks
             .get(&id)
+            .or_else(|| self.tracks.values().find(|track| track.browser_id == id))
             .ok_or_else(|| format!("unknown circuit '{id}'"))
     }
 
@@ -1203,6 +1319,11 @@ fn normalize_track_id(track_id: &str) -> String {
         .collect()
 }
 
+fn browser_track_id(file_stem: &str) -> String {
+    let slug = file_stem.split('-').next().unwrap_or(file_stem);
+    normalize_track_id(slug)
+}
+
 fn track_from_payload(
     track_id: &str,
     payload: &SolverTrackProfile,
@@ -1233,7 +1354,10 @@ fn track_from_payload(
 
     Ok(TrackRecord {
         id: normalize_track_id(track_id),
+        browser_id: normalize_track_id(track_id),
+        display_name: normalize_track_id(track_id),
         country_code: None,
+        laps: None,
         track: Track {
             s: payload.s.clone(),
             x: payload.x.clone(),
@@ -1384,7 +1508,10 @@ fn parse_track(stem: &str, value: &Value) -> Result<TrackRecord, String> {
 
     Ok(TrackRecord {
         id,
+        browser_id: browser_track_id(stem),
+        display_name: derive_track_display_name(value).unwrap_or_else(|| stem.to_string()),
         country_code: derive_track_country_code(value),
+        laps: derive_track_laps(value),
         track: Track {
             s,
             x,
@@ -1440,7 +1567,11 @@ fn parse_compact_track(stem: &str, value: &Value) -> Result<TrackRecord, String>
 
     Ok(TrackRecord {
         id,
+        browser_id: browser_track_id(stem),
+        display_name: read_optional_string(value, &["name"])
+            .unwrap_or_else(|| stem.replace('_', " ")),
         country_code: None,
+        laps: read_optional_u16(value, &["laps"]),
         track: Track {
             s,
             x,
@@ -1465,6 +1596,16 @@ fn derive_track_country_code(value: &Value) -> Option<String> {
     }
 }
 
+fn derive_track_display_name(value: &Value) -> Option<String> {
+    let meta = value.get("meta")?;
+    read_optional_string(meta, &["Name", "name", "Location", "location"])
+}
+
+fn derive_track_laps(value: &Value) -> Option<u16> {
+    let meta = value.get("meta")?;
+    read_optional_u16(meta, &["laps"])
+}
+
 fn read_required_f64(value: &Value, keys: &[&str]) -> Result<f64, String> {
     read_optional_f64(value, keys)
         .ok_or_else(|| format!("missing numeric field '{}'", keys.join("' or '")))
@@ -1483,6 +1624,10 @@ fn read_required_u64(value: &Value, keys: &[&str]) -> Result<u64, String> {
 fn read_optional_u64(value: &Value, keys: &[&str]) -> Option<u64> {
     keys.iter()
         .find_map(|key| value.get(*key).and_then(Value::as_u64))
+}
+
+fn read_optional_u16(value: &Value, keys: &[&str]) -> Option<u16> {
+    read_optional_u64(value, keys).and_then(|value| u16::try_from(value).ok())
 }
 
 fn read_required_string(value: &Value, keys: &[&str]) -> Result<String, String> {
@@ -1805,13 +1950,29 @@ mod tests {
         let catalog: CatalogSnapshot =
             serde_json::from_str(&catalog_json()).expect("catalog_json must return valid JSON");
         assert!(
-            catalog.circuits.iter().any(|entry| entry.id == "IT1922"),
-            "catalog must expose IT1922"
-        );
-        assert!(
             catalog.engines.iter().any(|entry| entry.id == "v6t_hybrid"),
             "catalog must expose v6t_hybrid"
         );
+        let monza = catalog
+            .circuits
+            .iter()
+            .find(|entry| entry.id == "MONZA")
+            .expect("browser catalog must preserve the MONZA identifier");
+        assert_eq!(monza.display_name, "Autodromo Nazionale Monza");
+        assert_eq!(monza.country_code.as_deref(), Some("IT"));
+        assert_eq!(monza.laps, Some(53));
+        assert!(catalog.vehicles.iter().any(|entry| {
+            entry.id == "f1_2026"
+                && entry.engine_id == "v6t_hybrid"
+                && entry.default_tire_id == "medium"
+        }));
+        assert!(catalog.tires.iter().any(|entry| entry.id == "medium"));
+
+        for browser_catalog_json in [list_drivers_json(), list_vehicles_json(), list_tires_json()] {
+            let value: serde_json::Value =
+                serde_json::from_str(&browser_catalog_json).expect("browser catalog JSON");
+            assert!(value.is_array(), "browser catalog export must be an array");
+        }
 
         let request = RunRaceRequest {
             input: RunRaceInput {
