@@ -237,6 +237,7 @@ struct VehicleRecord {
 #[derive(Debug, Clone)]
 struct TrackRecord {
     id: String,
+    browser_id: String,
     display_name: String,
     country_code: Option<String>,
     laps: Option<u16>,
@@ -843,7 +844,7 @@ pub fn list_browser_circuits() -> Result<Vec<BrowserCircuitCatalogEntry>, String
         .tracks
         .values()
         .map(|track| BrowserCircuitCatalogEntry {
-            id: track.id.clone(),
+            id: track.browser_id.clone(),
             display_name: track.display_name.clone(),
             country_code: track.country_code.clone(),
             laps: track.laps,
@@ -877,7 +878,7 @@ pub fn get_circuit(track_id: &str) -> Result<CircuitDetail, String> {
     let catalog = EmbeddedCatalog::load_default()?;
     let record = catalog.get_track(track_id)?;
     Ok(CircuitDetail {
-        id: record.id.clone(),
+        id: record.browser_id.clone(),
         display_name: record.display_name.clone(),
         country_code: record.country_code.clone(),
         laps: record.laps,
@@ -1023,6 +1024,7 @@ impl EmbeddedCatalog {
         let id = normalize_track_id(track_id);
         self.tracks
             .get(&id)
+            .or_else(|| self.tracks.values().find(|track| track.browser_id == id))
             .ok_or_else(|| format!("unknown circuit '{id}'"))
     }
 
@@ -1317,6 +1319,11 @@ fn normalize_track_id(track_id: &str) -> String {
         .collect()
 }
 
+fn browser_track_id(file_stem: &str) -> String {
+    let slug = file_stem.split('-').next().unwrap_or(file_stem);
+    normalize_track_id(slug)
+}
+
 fn track_from_payload(
     track_id: &str,
     payload: &SolverTrackProfile,
@@ -1347,6 +1354,7 @@ fn track_from_payload(
 
     Ok(TrackRecord {
         id: normalize_track_id(track_id),
+        browser_id: normalize_track_id(track_id),
         display_name: normalize_track_id(track_id),
         country_code: None,
         laps: None,
@@ -1500,6 +1508,7 @@ fn parse_track(stem: &str, value: &Value) -> Result<TrackRecord, String> {
 
     Ok(TrackRecord {
         id,
+        browser_id: browser_track_id(stem),
         display_name: derive_track_display_name(value).unwrap_or_else(|| stem.to_string()),
         country_code: derive_track_country_code(value),
         laps: derive_track_laps(value),
@@ -1558,6 +1567,7 @@ fn parse_compact_track(stem: &str, value: &Value) -> Result<TrackRecord, String>
 
     Ok(TrackRecord {
         id,
+        browser_id: browser_track_id(stem),
         display_name: read_optional_string(value, &["name"])
             .unwrap_or_else(|| stem.replace('_', " ")),
         country_code: None,
@@ -1940,18 +1950,14 @@ mod tests {
         let catalog: CatalogSnapshot =
             serde_json::from_str(&catalog_json()).expect("catalog_json must return valid JSON");
         assert!(
-            catalog.circuits.iter().any(|entry| entry.id == "IT1922"),
-            "catalog must expose IT1922"
-        );
-        assert!(
             catalog.engines.iter().any(|entry| entry.id == "v6t_hybrid"),
             "catalog must expose v6t_hybrid"
         );
         let monza = catalog
             .circuits
             .iter()
-            .find(|entry| entry.id == "IT1922")
-            .expect("catalog must expose IT1922");
+            .find(|entry| entry.id == "MONZA")
+            .expect("browser catalog must preserve the MONZA identifier");
         assert_eq!(monza.display_name, "Autodromo Nazionale Monza");
         assert_eq!(monza.country_code.as_deref(), Some("IT"));
         assert_eq!(monza.laps, Some(53));
