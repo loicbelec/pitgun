@@ -12,8 +12,9 @@ use pitgun_contract::{
 use pitgun_core::{
     TelemetryAggregateConfig, TelemetryAggregateKind, aggregate_telemetry_parameter,
 };
+use pitgun_racing_simulator::evidence::RacingRunEvidenceV1;
+use pitgun_racing_simulator::{RaceOutput, RacingWorkload, RunRaceInput};
 use pitgun_runtime::execute_linked;
-use pitgun_simulator::racing::{RaceOutput, RacingRunEvidenceV1, RacingWorkload, RunRaceInput};
 use serde::{Deserialize, Serialize};
 
 const DEFAULT_SCENARIO: &str = include_str!("../../scenarios/racing-demo-v1.json");

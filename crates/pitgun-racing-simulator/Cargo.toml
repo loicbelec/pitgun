@@ -1,0 +1,24 @@
+[package]
+name = "pitgun-racing-simulator"
+version = "0.1.0"
+edition = "2024"
+authors.workspace = true
+license.workspace = true
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[features]
+default = []
+wasm = ["dep:wasm-bindgen"]
+
+[dependencies]
+pitgun-contract = { path = "../pitgun-contract" }
+pitgun-racing-contract = { path = "../pitgun-racing-contract" }
+pitgun-racing-policy = { path = "../pitgun-racing-policy" }
+pitgun-racing-solver = { path = "../pitgun-racing-solver" }
+pitgun-runtime = { path = "../pitgun-runtime" }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+thiserror = "2.0"
+wasm-bindgen = { version = "0.2", optional = true }

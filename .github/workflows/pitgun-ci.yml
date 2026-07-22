@@ -113,3 +113,6 @@ jobs:
 
       - name: Verify Racing Solver compiles for WASM
         run: cargo check -p pitgun-racing-solver --target wasm32-unknown-unknown
+
+      - name: Verify Racing Simulator compiles for WASM
+        run: cargo check -p pitgun-racing-simulator --features wasm --target wasm32-unknown-unknown

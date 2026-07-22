@@ -16,7 +16,7 @@ pitgun-codec-udp = { path = "../../crates/pitgun-codec-udp" }
 pitgun-contract = { path = "../../crates/pitgun-contract" }
 pitgun-core = { path = "../../crates/pitgun-core" }
 pitgun-runtime = { path = "../../crates/pitgun-runtime" }
-pitgun-simulator = { path = "../../crates/pitgun-simulator" }
+pitgun-racing-simulator = { path = "../../crates/pitgun-racing-simulator" }
 pitgun-source-udp = { path = "../../crates/pitgun-source-udp" }
 pitgun-source-ws = { path = "../../crates/pitgun-source-ws" }
 serde = { version = "1", features = ["derive"] }
