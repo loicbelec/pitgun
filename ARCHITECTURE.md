@@ -138,9 +138,9 @@ Responsibilities:
 The gateway is the framework entrypoint. Racing fields belong in payloads or
 metadata, not in the generic envelope.
 
-The target names above describe the accepted migration boundary. The current
+The domain-prefixed crates above implement the accepted ownership boundary. The
 workspace still contains transitional `pitgun-solver` and `pitgun-simulator`
-packages while the linked implementation issues are delivered.
+packages as compatibility surfaces while downstream consumers migrate.
 
 ### 2.5 pitgun-runtime
 

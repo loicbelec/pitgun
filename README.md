@@ -174,12 +174,12 @@ Pitgun deliberately preserves three different responsibilities:
 | **Solver** | Compute one domain's physical or mathematical solution |
 | **Simulator** | Evolve domain state through logical time, invoke its Solver, and emit events and telemetry |
 
-The Racing physical kernel is owned by `pitgun-racing-solver`; the target
-orchestration crate is `pitgun-racing-simulator`, executed through
-`pitgun-runtime`. The repository is still migrating orchestration and browser
-bindings from the transitional `pitgun-solver` and `pitgun-simulator` packages.
-The runtime now owns RNG V1 and the statically
-linked workload boundary, plus filesystem-independent Run Bundle verification.
+The Racing physical kernel is owned by `pitgun-racing-solver`; orchestration,
+evidence and the statically linked workload are owned by
+`pitgun-racing-simulator`, executed through `pitgun-runtime`. Transitional
+`pitgun-solver` and `pitgun-simulator` compatibility paths remain while the game
+and downstream consumers migrate. The runtime owns RNG V1, the generic linked
+workload boundary, and filesystem-independent Run Bundle verification.
 `pitgun-racing-contract` owns Racing wire schemas and domain consumers import it
 directly. `pitgun-racing-policy` adapts those schemas to the generic policy
 engine without introducing Racing semantics into `pitgun-policy`;
@@ -197,7 +197,7 @@ stack:
 |---|---|---|
 | **Core contract** | Define versioned scenarios, telemetry frames, run identity, and canonical evidence | `crates/pitgun-contract` |
 | **Deterministic runtime** | Execute linked workloads and verify reproducible runs | `crates/pitgun-runtime` |
-| **Reference workload** | Solve Racing physics, orchestrate races, and expose WASM | `pitgun-racing-solver` and target `pitgun-racing-simulator` |
+| **Reference workload** | Solve Racing physics, orchestrate races, and expose WASM | `pitgun-racing-solver`, `pitgun-racing-simulator` |
 | **Telemetry processing** | Transform and aggregate generated or observed channels | `crates/pitgun-core` |
 | **Replay and tooling** | Run, inspect, replay, and verify local artifacts | `apps/pitgun-cli`, `apps/pitgun-replay` |
 | **Hosted governance** | Constrain, sign, receive, and audit distributed runs | `crates/pitgun-policy`, `crates/pitgun-racing-policy`, `crates/pitgun-signing`, `services/pitgun-authority`, `services/pitgun-gateway` |

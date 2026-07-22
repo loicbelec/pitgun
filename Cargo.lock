@@ -1418,8 +1418,8 @@ dependencies = [
  "pitgun-codec-udp",
  "pitgun-contract",
  "pitgun-core",
+ "pitgun-racing-simulator",
  "pitgun-runtime",
- "pitgun-simulator",
  "pitgun-source-udp",
  "pitgun-source-ws",
  "serde",
@@ -1530,6 +1530,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "pitgun-racing-simulator"
+version = "0.1.0"
+dependencies = [
+ "pitgun-contract",
+ "pitgun-racing-contract",
+ "pitgun-racing-policy",
+ "pitgun-racing-solver",
+ "pitgun-runtime",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.18",
+ "wasm-bindgen",
+]
+
+[[package]]
 name = "pitgun-racing-solver"
 version = "0.1.0"
 dependencies = [
@@ -1577,9 +1592,9 @@ name = "pitgun-simulator"
 version = "0.1.0"
 dependencies = [
  "pitgun-contract",
+ "pitgun-racing-simulator",
  "pitgun-racing-solver",
  "pitgun-runtime",
- "pitgun-solver",
  "serde",
  "serde_json",
  "tempfile",
@@ -1591,9 +1606,7 @@ name = "pitgun-solver"
 version = "0.1.0"
 dependencies = [
  "pitgun-contract",
- "pitgun-racing-contract",
- "pitgun-racing-policy",
- "pitgun-racing-solver",
+ "pitgun-racing-simulator",
  "pitgun-runtime",
  "serde",
  "serde_json",

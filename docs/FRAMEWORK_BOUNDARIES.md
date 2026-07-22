@@ -95,8 +95,8 @@ or metadata rather than in the generic envelope model.
 
 The Racing implementation uses explicit domain-prefixed crates.
 `pitgun-racing-contract` owns the domain schemas and Racing consumers import it
-directly. The current `pitgun-solver` and `pitgun-simulator` packages remain
-transitional until their migration issues land.
+directly. The current `pitgun-solver` and `pitgun-simulator` packages remain as
+transitional compatibility surfaces while downstream migration completes.
 
 ### `pitgun-racing-contract`
 
@@ -115,10 +115,9 @@ Owns the Racing physical and mathematical solution:
 It does not orchestrate races, strategies, sessions, or leaderboards.
 
 The physical kernel is now owned here. The transitional `pitgun-solver` crate
-temporarily re-exports its Rust API while race/session orchestration and the
-browser facade migrate to `pitgun-racing-simulator` under #39.
+temporarily re-exports its Rust API.
 
-### `pitgun-racing-simulator` (target)
+### `pitgun-racing-simulator`
 
 Owns the racing simulator:
 
@@ -130,6 +129,11 @@ Owns the racing simulator:
 
 It intentionally depends on `pitgun-racing-solver`; the reverse dependency is
 forbidden.
+
+Race and session orchestration, catalog resolution, telemetry projection,
+canonical Racing evidence, and `RacingWorkload` are now owned here. The
+transitional crates keep compatibility re-exports and the existing WASM package
+until the coordinated game migration.
 
 ### `pitgun-racing-policy`
 

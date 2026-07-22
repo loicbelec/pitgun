@@ -38,14 +38,17 @@ workspace, service, game, or API consumer depends on these symbols.
 
 ## Repository Consumers
 
-- `pitgun-solver` directly consumes Racing inputs, strategies, catalog entries,
-  tuning, and vehicle classes.
-- `pitgun-simulator` exposes the transitional Racing workload and output through
-  its WASM facade.
+- `pitgun-racing-simulator` directly consumes Racing inputs, strategies, catalog
+  entries, tuning, and vehicle classes and owns the linked workload.
+- `pitgun-solver` retains the existing WASM package and compatibility exports
+  until the coordinated game migration.
+- `pitgun-simulator::racing` preserves the former Rust workload path for
+  downstream compatibility.
 - `pitgun-policy` directly validates Racing inputs, competitors, and tuning; its
   ownership moves separately under issue #43.
 - `pitgun-authority` creates and signs `SimulationContractV1` responses.
-- `pitgun-cli` consumes the Racing output indirectly through the Simulator.
+- `pitgun-cli` consumes `pitgun-racing-simulator` directly through the generic
+  linked runtime boundary.
 - `pitgun-game` mirrors and extends several wire types in
   `src/engine/contract.ts`. In particular, its `RaceOutput` describes the active
   Solver output rather than the unused `pitgun-contract::RaceOutput`, and its

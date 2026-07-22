@@ -1,4 +1,4 @@
-//! Canonical evidence emitted by the Racing reference workload.
+//! Canonical evidence emitted by the Racing Simulator workload.
 
 use std::fmt;
 

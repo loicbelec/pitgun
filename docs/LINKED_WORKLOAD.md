@@ -43,15 +43,15 @@ The interface does not prescribe how a domain computes its output. A domain
 Simulator may call one or more domain Solvers, evolve state, emit events, and
 produce telemetry before projecting its canonical evidence.
 
-The transitional `RacingWorkload` adapter currently lives behind
-`pitgun-simulator::racing`. The CLI constructs the deterministic contract and
-then invokes Racing through `pitgun-runtime::execute_linked`; it no longer calls
-the Racing simulation function directly.
+`RacingWorkload` is owned by `pitgun-racing-simulator`. The CLI depends on that
+crate directly, constructs the deterministic contract, and invokes Racing
+through `pitgun-runtime::execute_linked`; it does not call the Racing simulation
+function directly. `pitgun-simulator::racing` remains a compatibility path.
 
 Racing continues to own:
 
 - `RunRaceInput` and `RaceOutput`;
-- race orchestration and physical computation during the crate migration;
+- race orchestration, telemetry projection, and physical Solver invocation;
 - `RacingRunEvidenceV1` and its canonical schema;
 - Racing-specific execution failures.
 

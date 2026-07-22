@@ -13,9 +13,9 @@ serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 thiserror = "2.0"
 pitgun-contract = { path = "../pitgun-contract" }
+pitgun-racing-simulator = { path = "../pitgun-racing-simulator" }
 pitgun-racing-solver = { path = "../pitgun-racing-solver" }
 pitgun-runtime = { path = "../pitgun-runtime" }
-pitgun-solver = { path = "../pitgun-solver" }
 
 [dev-dependencies]
 tempfile = "3"
