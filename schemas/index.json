@@ -14,6 +14,26 @@
       ]
     },
     {
+      "id": "https://schemas.pitgun.io/resource-catalog/v1.json",
+      "path": "resource-catalog/v1.json",
+      "kind": "json-schema",
+      "lifecycle": "active",
+      "owner": "pitgun-contract",
+      "evidence": [
+        "crates/pitgun-contract/src/catalog.rs"
+      ]
+    },
+    {
+      "id": "https://schemas.pitgun.io/catalog-release-identity/v1.json",
+      "path": "catalog-release-identity/v1.json",
+      "kind": "json-schema",
+      "lifecycle": "active",
+      "owner": "pitgun-contract",
+      "evidence": [
+        "crates/pitgun-contract/src/catalog.rs"
+      ]
+    },
+    {
       "id": "https://schemas.pitgun.io/pipeline-manifest/v1.json",
       "path": "pipeline-manifest/v1.json",
       "kind": "json-schema",

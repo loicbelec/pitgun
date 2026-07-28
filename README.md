@@ -81,6 +81,8 @@ its own domain model and physical rules.
 
 - A [deterministic run contract](docs/DETERMINISTIC_RUN_CONTRACT_V1.md) covering
   run identity, replay inputs, artifacts, and native/WASM comparison
+- An optional [Resource Catalog contract](docs/RESOURCE_CATALOG_V1.md) separating
+  simulation data from presentation metadata without changing V1 `run_id`
 - A versioned [stable RNG contract](docs/RNG_V1.md) with independently derived
   random streams
 - A Racing golden scenario exercised in both native Rust and Node/WASM

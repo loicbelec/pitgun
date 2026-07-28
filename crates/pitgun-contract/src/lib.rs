@@ -1,4 +1,5 @@
 pub mod bundle;
+pub mod catalog;
 pub mod codec;
 pub mod determinism;
 pub mod frame;
@@ -12,6 +13,13 @@ pub use bundle::{
     RunBundleManifestError, RunBundleManifestV1, RunBundleManifestVersion, RunBundleMediaType,
     RunBundleReceiptV1, RunBundleReceiptVersion, RunBundleTelemetryRecordV1,
     RunBundleTelemetryRecordVersion,
+};
+pub use catalog::{
+    CatalogCompatibilityV1, CatalogCompatibilityVersion, CatalogContractError,
+    CatalogIndexMediaType, CatalogIndexV1, CatalogPackV1, CatalogPath, CatalogRelease,
+    CatalogReleaseIdentityV1, CatalogReleaseIdentityVersion, CatalogResourceMediaType,
+    CatalogResourceV1, CompatibleModelV1, ResolvedScenario, ResourceCatalogManifestV1,
+    ResourceCatalogManifestVersion,
 };
 pub use codec::{
     CodecCapabilities, CodecContext, CodecError, CodecResult, DecodeOutput, JsonCodec,

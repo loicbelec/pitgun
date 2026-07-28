@@ -21,5 +21,10 @@ The historical `bundle-manifest/v1` describes a prototype registry bundle. It
 is unrelated to the deterministic Run Bundle contract implemented by
 `pitgun-contract`.
 
+`resource-catalog/v1` describes an optional immutable catalog release.
+`catalog-release-identity/v1` binds that manifest to its canonical digest.
+`ResolvedScenario` intentionally has no JSON Schema: it is a validated
+in-memory boundary whose concrete input and resources remain domain-owned.
+
 The OVH shared host is only the publication layer. Changes originate here,
 pass schema and example validation in CI, and are deployed from `main`.
