@@ -17,6 +17,10 @@ The same test compares the readable canonical artifacts before their hashes in
 native Rust and Node/WASM. A failure therefore identifies whether the Racing
 output or telemetry summary changed before reporting the digest vector.
 
+The fixture is owned by `pitgun-racing-simulator`. The transitional
+`pitgun-solver` compatibility package still executes it so the game-facing WASM
+package remains covered until its coordinated retirement under #117.
+
 The fixture covers:
 
 - race and lap timing;

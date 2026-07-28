@@ -1733,7 +1733,7 @@ mod tests {
     #[test]
     fn python_monza_reference_stays_close_except_launch_override() {
         let fixture: GoldenFixture = serde_json::from_str(include_str!(
-            "../../pitgun-solver/tests/golden/python_monza_f1_2026_default.json"
+            "../tests/golden/python_monza_f1_2026_default.json"
         ))
         .expect("golden fixture");
 
