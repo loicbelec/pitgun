@@ -122,3 +122,18 @@ an independently cached verifier.
 
 The architectural rationale and operational policy are fixed by
 [ADR 0002](adr/0002-optional-versioned-catalogs.md).
+
+## Racing reference release
+
+The first concrete implementation is
+[`pitgun.racing@1.0.0`](../catalogs/racing/v1.0.0/catalog.json). Its
+domain-specific public schemas are:
+
+- `https://schemas.pitgun.io/racing-simulation-index/v1.json`;
+- `https://schemas.pitgun.io/racing-presentation-index/v1.json`.
+
+The release contains 55 content-addressed physical resources and a separate
+presentation index used by the game UI. The native and WASM fallback is
+generated from those same checked-in resources. Release identities, every
+resource digest, the browser catalog facade, and the historical deterministic
+golden vectors are tested together.

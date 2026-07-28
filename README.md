@@ -190,6 +190,12 @@ engine without introducing Racing semantics into `pitgun-policy`;
 direction and explains why Pitgun does not claim a universal Solver before a
 second domain proves the abstraction.
 
+The Racing workload is backed by the immutable
+[`pitgun.racing@1.0.0`](catalogs/racing/v1.0.0/catalog.json) reference catalog.
+Its Simulation Pack contains the physical resources used by native and WASM
+execution; its separate Presentation Pack supplies the browser-facing labels
+without affecting deterministic identity.
+
 ## Architecture at a Glance
 
 The primary architecture follows the deterministic loop rather than a transport

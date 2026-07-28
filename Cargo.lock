@@ -1511,6 +1511,7 @@ name = "pitgun-racing-contract"
 version = "0.1.0"
 dependencies = [
  "hex",
+ "pitgun-contract",
  "pitgun-signing",
  "serde",
  "serde_json",

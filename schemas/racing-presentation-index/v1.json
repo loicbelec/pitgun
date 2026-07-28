@@ -1,0 +1,92 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.pitgun.io/racing-presentation-index/v1.json",
+  "title": "Pitgun Racing Presentation Index V1",
+  "description": "Browser-facing Racing metadata that cannot influence deterministic physical execution.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "circuits", "drivers"],
+  "properties": {
+    "schema_version": {
+      "const": "pitgun.racing-presentation-index/v1"
+    },
+    "circuits": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/circuit"
+      }
+    },
+    "drivers": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/driver"
+      }
+    }
+  },
+  "$defs": {
+    "source_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9_]*$"
+    },
+    "browser_id": {
+      "type": "string",
+      "pattern": "^[A-Z0-9]+$"
+    },
+    "model_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+    },
+    "display_name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "circuit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_id",
+        "id",
+        "model_id",
+        "display_name",
+        "country_code",
+        "laps"
+      ],
+      "properties": {
+        "source_id": {
+          "$ref": "#/$defs/source_id"
+        },
+        "id": {
+          "$ref": "#/$defs/browser_id"
+        },
+        "model_id": {
+          "$ref": "#/$defs/model_id"
+        },
+        "display_name": {
+          "$ref": "#/$defs/display_name"
+        },
+        "country_code": {
+          "type": ["string", "null"],
+          "pattern": "^[A-Z]{2}$"
+        },
+        "laps": {
+          "type": ["integer", "null"],
+          "minimum": 1,
+          "maximum": 65535
+        }
+      }
+    },
+    "driver": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "display_name"],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/source_id"
+        },
+        "display_name": {
+          "$ref": "#/$defs/display_name"
+        }
+      }
+    }
+  }
+}
