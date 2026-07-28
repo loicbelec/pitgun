@@ -15,6 +15,7 @@
 
 - [ADR index](adr/README.md)
 - [ADR 0001: generic runtime and domain workloads](adr/0001-runtime-and-domain-workloads.md)
+- [ADR 0002: optional versioned catalogs and resolved scenarios](adr/0002-optional-versioned-catalogs.md)
 
 ## Deterministic Execution
 
