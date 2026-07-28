@@ -12,13 +12,18 @@ use serde::{Deserialize, Serialize};
 #[cfg(target_arch = "wasm32")]
 use wasm_bindgen_test::wasm_bindgen_test;
 
-const INPUT: &str = include_str!("golden/racing_run_v1.input.json");
-const EXPECTED: &str = include_str!("golden/racing_run_v1.expected.json");
-const CONTRACT: &str = include_str!("golden/racing_run_v1.contract.json");
-const EXPECTED_OUTPUT: &str = include_str!("golden/racing_run_v1.output.json");
+const INPUT: &str =
+    include_str!("../../pitgun-racing-simulator/tests/golden/racing_run_v1.input.json");
+const EXPECTED: &str =
+    include_str!("../../pitgun-racing-simulator/tests/golden/racing_run_v1.expected.json");
+const CONTRACT: &str =
+    include_str!("../../pitgun-racing-simulator/tests/golden/racing_run_v1.contract.json");
+const EXPECTED_OUTPUT: &str =
+    include_str!("../../pitgun-racing-simulator/tests/golden/racing_run_v1.output.json");
 const EXPECTED_TELEMETRY_SUMMARY: &str =
-    include_str!("golden/racing_run_v1.telemetry-summary.json");
-const EXPECTED_DIGESTS: &str = include_str!("golden/racing_run_v1.digests.json");
+    include_str!("../../pitgun-racing-simulator/tests/golden/racing_run_v1.telemetry-summary.json");
+const EXPECTED_DIGESTS: &str =
+    include_str!("../../pitgun-racing-simulator/tests/golden/racing_run_v1.digests.json");
 const MODEL_IDENTITY: &str = "pitgun.racing:model:1.0.0:conformance-vector";
 const DATA_PACK_IDENTITY: &str = "pitgun.racing.2026:data-pack:1.0.0:conformance-vector";
 

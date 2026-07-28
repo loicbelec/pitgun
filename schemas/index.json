@@ -34,6 +34,28 @@
       ]
     },
     {
+      "id": "https://schemas.pitgun.io/racing-simulation-index/v1.json",
+      "path": "racing-simulation-index/v1.json",
+      "kind": "json-schema",
+      "lifecycle": "active",
+      "owner": "pitgun-racing-contract",
+      "evidence": [
+        "crates/pitgun-racing-contract/src/catalog.rs",
+        "catalogs/racing/v1.0.0/simulation/index.json"
+      ]
+    },
+    {
+      "id": "https://schemas.pitgun.io/racing-presentation-index/v1.json",
+      "path": "racing-presentation-index/v1.json",
+      "kind": "json-schema",
+      "lifecycle": "active",
+      "owner": "pitgun-racing-contract",
+      "evidence": [
+        "crates/pitgun-racing-contract/src/catalog.rs",
+        "catalogs/racing/v1.0.0/presentation/index.json"
+      ]
+    },
+    {
       "id": "https://schemas.pitgun.io/pipeline-manifest/v1.json",
       "path": "pipeline-manifest/v1.json",
       "kind": "json-schema",

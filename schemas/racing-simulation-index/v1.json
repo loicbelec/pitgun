@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.pitgun.io/racing-simulation-index/v1.json",
+  "title": "Pitgun Racing Simulation Index V1",
+  "description": "Content-addressed physical resources that may influence a deterministic Racing execution.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "resources"],
+  "properties": {
+    "schema_version": {
+      "const": "pitgun.racing-simulation-index/v1"
+    },
+    "resources": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "https://schemas.pitgun.io/resource-catalog/v1.json#/$defs/catalog_resource"
+      }
+    }
+  }
+}

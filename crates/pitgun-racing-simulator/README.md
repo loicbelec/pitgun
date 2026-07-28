@@ -14,9 +14,10 @@ The `wasm` feature exposes the browser-facing JSON facade from this crate. The
 existing `pitgun-solver` package forwards the same functions until the game
 switches to the new package in a coordinated release.
 
-The browser catalog facade deliberately keeps circuit display metadata and the
-driver, vehicle, and tire list exports consumed by the game. These presentation
-views are owned here rather than by the canonical cross-process Racing contract.
+The browser catalog facade deliberately preserves the circuit, driver, vehicle,
+and tire exports consumed by the game. It combines the immutable Racing
+Simulation Pack with its separate Presentation Pack.
 
-The embedded data pack remains temporarily stored under the transitional
-`pitgun-simulator` directory until that crate is retired.
+The source release lives under `catalogs/racing/v1.0.0`. A generated Rust file
+embeds the same Simulation Pack for native and WASM recovery, so hosted and
+fallback resources cannot drift through two manually maintained file lists.

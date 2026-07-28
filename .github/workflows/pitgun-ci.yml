@@ -69,6 +69,9 @@ jobs:
       - name: Validate public schemas
         run: python scripts/validate-schemas.py
 
+      - name: Validate generated Racing Catalog
+        run: python scripts/generate-racing-catalog.py --check
+
       - name: Build project
         run: cargo build --all --verbose
 
