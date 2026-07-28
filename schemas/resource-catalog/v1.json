@@ -1,0 +1,180 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.pitgun.io/resource-catalog/v1.json",
+  "title": "Pitgun Resource Catalog Manifest V1",
+  "description": "Immutable domain-neutral release manifest for optional Pitgun resource catalogs.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "catalog",
+    "simulation_pack",
+    "presentation_pack",
+    "compatibility"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "pitgun.resource-catalog/v1"
+    },
+    "catalog": {
+      "$ref": "#/$defs/catalog_release"
+    },
+    "simulation_pack": {
+      "$ref": "#/$defs/catalog_pack"
+    },
+    "presentation_pack": {
+      "$ref": "#/$defs/catalog_pack"
+    },
+    "compatibility": {
+      "$ref": "#/$defs/compatibility"
+    }
+  },
+  "$defs": {
+    "identifier": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[a-z0-9][a-z0-9._-]{0,127}$"
+    },
+    "semantic_version": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(-((0|[1-9][0-9]*|[0-9]*[A-Za-z-][0-9A-Za-z-]*)(\\.(0|[1-9][0-9]*|[0-9]*[A-Za-z-][0-9A-Za-z-]*))*))?(\\+([0-9A-Za-z-]+(\\.[0-9A-Za-z-]+)*))?$"
+    },
+    "digest": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "catalog_path": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512,
+      "pattern": "^(\\.{3,}|\\.*[a-z0-9_-][a-z0-9._-]*)(/(\\.{3,}|\\.*[a-z0-9_-][a-z0-9._-]*))*$"
+    },
+    "resource_media_type": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 127,
+      "pattern": "^[a-z0-9!#$&^_.+-]+/[a-z0-9!#$&^_.+-]+$"
+    },
+    "catalog_release": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "version"],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "version": {
+          "$ref": "#/$defs/semantic_version"
+        }
+      }
+    },
+    "artifact_identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "version", "digest"],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "version": {
+          "$ref": "#/$defs/semantic_version"
+        },
+        "digest": {
+          "$ref": "#/$defs/digest"
+        }
+      }
+    },
+    "catalog_index": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "media_type", "digest"],
+      "properties": {
+        "path": {
+          "$ref": "#/$defs/catalog_path"
+        },
+        "media_type": {
+          "const": "application/json"
+        },
+        "digest": {
+          "$ref": "#/$defs/digest"
+        }
+      }
+    },
+    "catalog_resource": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "path", "media_type", "digest"],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "path": {
+          "$ref": "#/$defs/catalog_path"
+        },
+        "media_type": {
+          "$ref": "#/$defs/resource_media_type"
+        },
+        "digest": {
+          "$ref": "#/$defs/digest"
+        }
+      }
+    },
+    "catalog_pack": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["identity", "index"],
+      "properties": {
+        "identity": {
+          "$ref": "#/$defs/artifact_identity"
+        },
+        "index": {
+          "$ref": "#/$defs/catalog_index"
+        }
+      }
+    },
+    "compatible_model": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "versions"],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "versions": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/semantic_version"
+          }
+        }
+      }
+    },
+    "compatibility": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema_version", "contract_versions", "models"],
+      "properties": {
+        "schema_version": {
+          "const": "pitgun.catalog-compatibility/v1"
+        },
+        "contract_versions": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "enum": ["pitgun.deterministic-run/v1"]
+          }
+        },
+        "models": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/compatible_model"
+          }
+        }
+      }
+    }
+  }
+}
