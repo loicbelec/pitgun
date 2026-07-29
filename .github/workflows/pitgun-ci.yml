@@ -72,6 +72,9 @@ jobs:
       - name: Validate generated Racing Catalog
         run: python scripts/generate-racing-catalog.py --check
 
+      - name: Validate static catalog publication
+        run: python scripts/build-catalog-site.py --output /tmp/pitgun-catalog-site
+
       - name: Build project
         run: cargo build --all --verbose
 

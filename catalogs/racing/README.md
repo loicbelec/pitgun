@@ -6,6 +6,7 @@ reference workload.
 `v1.0.0` is one immutable release:
 
 ```text
+LATEST
 v1.0.0/
 ├── catalog.json
 ├── release.json
@@ -44,6 +45,14 @@ release to a new semantic version, update the generator's selected release, and
 generate new pack and release identities. A presentation-only change also
 creates a new catalog release, but it may retain the unchanged Simulation Pack
 identity.
+
+`LATEST` explicitly selects the release exposed by the mutable public
+`latest.json` pointer. Adding a release does not promote it automatically.
+Pointing `LATEST` back to an existing historical version is the rollback
+mechanism; it never deletes or changes immutable release bytes.
+
+See [Catalog Publication](../../docs/CATALOG_PUBLISHING.md) for deployment,
+verification, and rollback operations.
 
 The legacy Racing golden vector intentionally retains its historical
 catalog-free `data_pack` identity. This preserves its published `run_id`; new

@@ -34,6 +34,17 @@
       ]
     },
     {
+      "id": "https://schemas.pitgun.io/catalog-pointer/v1.json",
+      "path": "catalog-pointer/v1.json",
+      "kind": "json-schema",
+      "lifecycle": "active",
+      "owner": "catalog-publication",
+      "evidence": [
+        "scripts/build-catalog-site.py",
+        ".github/workflows/deploy-catalog.yml"
+      ]
+    },
+    {
       "id": "https://schemas.pitgun.io/racing-simulation-index/v1.json",
       "path": "racing-simulation-index/v1.json",
       "kind": "json-schema",

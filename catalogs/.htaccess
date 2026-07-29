@@ -1,0 +1,13 @@
+Options -Indexes
+
+AddType application/json .json
+AddType application/wasm .wasm
+AddType image/svg+xml .svg
+
+<IfModule mod_headers.c>
+  Header always set Access-Control-Allow-Origin "*"
+  Header always set Access-Control-Allow-Methods "GET, HEAD, OPTIONS"
+  Header always set Access-Control-Allow-Headers "Content-Type, If-Modified-Since, If-None-Match"
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set Cache-Control "no-cache, must-revalidate"
+</IfModule>

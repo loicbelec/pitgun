@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.pitgun.io/catalog-pointer/v1.json",
+  "title": "Pitgun Catalog Pointer V1",
+  "description": "Mutable discovery pointer to one immutable Resource Catalog release.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "catalog",
+    "manifest",
+    "release_identity"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "pitgun.catalog-pointer/v1"
+    },
+    "catalog": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "version"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-z0-9][a-z0-9._-]{0,127}$"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"
+        }
+      }
+    },
+    "manifest": {
+      "$ref": "#/$defs/content_reference"
+    },
+    "release_identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path"],
+      "properties": {
+        "path": {
+          "$ref": "#/$defs/relative_json_path"
+        }
+      }
+    }
+  },
+  "$defs": {
+    "relative_json_path": {
+      "type": "string",
+      "minLength": 6,
+      "maxLength": 512,
+      "pattern": "^v(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(/[a-z0-9][a-z0-9._-]*)+\\.json$"
+    },
+    "digest": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "content_reference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "digest"],
+      "properties": {
+        "path": {
+          "$ref": "#/$defs/relative_json_path"
+        },
+        "digest": {
+          "$ref": "#/$defs/digest"
+        }
+      }
+    }
+  }
+}
