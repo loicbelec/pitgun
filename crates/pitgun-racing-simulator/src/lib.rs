@@ -1,6 +1,10 @@
+mod catalog;
 pub mod evidence;
 pub mod workload;
 
+pub use catalog::{
+    RacingCatalogBundleV1, RacingCatalogFileV1, RacingCatalogResolutionError, RacingCatalogSnapshot,
+};
 pub use workload::{RacingWorkload, RacingWorkloadError};
 
 use std::collections::HashMap;
@@ -302,6 +306,16 @@ const PRESENTATION_INDEX: &[u8] = include_bytes!(concat!(
 ));
 
 pub fn run_race(request: RunRaceRequest) -> Result<RaceOutput, String> {
+    let catalog = RacingCatalogSnapshot::embedded()
+        .map_err(|error| format!("invalid embedded Racing catalog: {error}"))?;
+    run_race_with_catalog(request, &catalog)
+}
+
+/// Runs one race against a fully validated immutable catalog snapshot.
+pub fn run_race_with_catalog(
+    request: RunRaceRequest,
+    snapshot: &RacingCatalogSnapshot,
+) -> Result<RaceOutput, String> {
     if request.input.race.competitors.is_empty() {
         return Err("race requires at least one competitor".to_string());
     }
@@ -318,7 +332,7 @@ pub fn run_race(request: RunRaceRequest) -> Result<RaceOutput, String> {
     .map_err(|err| format!("invalid race input: {err}"))?;
 
     let vehicle_id = resolve_vehicle_id(request.input.vehicle_id.as_deref())?;
-    let catalog = EmbeddedCatalog::load_default()?;
+    let catalog = EmbeddedCatalog::from_snapshot(snapshot)?;
     run_single_session(
         &catalog,
         &normalized_race,
@@ -331,6 +345,16 @@ pub fn run_race(request: RunRaceRequest) -> Result<RaceOutput, String> {
 }
 
 pub fn run_sessions(request: SessionRunRequest) -> Result<SessionRunOutput, String> {
+    let catalog = RacingCatalogSnapshot::embedded()
+        .map_err(|error| format!("invalid embedded Racing catalog: {error}"))?;
+    run_sessions_with_catalog(request, &catalog)
+}
+
+/// Runs a session sequence against one pinned validated catalog snapshot.
+pub fn run_sessions_with_catalog(
+    request: SessionRunRequest,
+    snapshot: &RacingCatalogSnapshot,
+) -> Result<SessionRunOutput, String> {
     if request.sessions.is_empty() {
         return Err("sessions must be provided explicitly".to_string());
     }
@@ -345,7 +369,7 @@ pub fn run_sessions(request: SessionRunRequest) -> Result<SessionRunOutput, Stri
     )
     .map_err(|err| format!("invalid race input: {err}"))?;
     let vehicle_id = resolve_vehicle_id(request.vehicle_id.as_deref())?;
-    let catalog = EmbeddedCatalog::load_default()?;
+    let catalog = EmbeddedCatalog::from_snapshot(snapshot)?;
     let mut sessions = Vec::with_capacity(request.sessions.len());
 
     for session in &request.sessions {
@@ -515,8 +539,39 @@ pub fn run_simulation_json(input_json: String) -> String {
 
 #[cfg_attr(feature = "wasm", wasm_bindgen)]
 pub fn run_race_json(input_json: String) -> String {
-    let parsed = serde_json::from_str::<RunRacePayload>(&input_json);
-    let request = match parsed {
+    let request = match parse_run_race_request(&input_json) {
+        Ok(request) => request,
+        Err(error) => return json_error(&error),
+    };
+
+    match run_race(request) {
+        Ok(output) => serialize_json(&output),
+        Err(error) => json_error(&error),
+    }
+}
+
+/// Browser facade for a race using caller-fetched immutable catalog bytes.
+#[cfg_attr(feature = "wasm", wasm_bindgen)]
+pub fn run_race_with_catalog_json(input_json: String, catalog_bundle_json: String) -> String {
+    let request = match parse_run_race_request(&input_json) {
+        Ok(request) => request,
+        Err(error) => return json_error(&error),
+    };
+    let catalog = match RacingCatalogSnapshot::from_bundle_json(&catalog_bundle_json) {
+        Ok(catalog) => catalog,
+        Err(error) => {
+            return json_error(&format!("invalid Racing catalog: {error}"));
+        }
+    };
+
+    match run_race_with_catalog(request, &catalog) {
+        Ok(output) => serialize_json(&output),
+        Err(error) => json_error(&error),
+    }
+}
+
+fn parse_run_race_request(input_json: &str) -> Result<RunRaceRequest, String> {
+    Ok(match serde_json::from_str::<RunRacePayload>(input_json) {
         Ok(RunRacePayload::Wrapped(request)) => request,
         Ok(RunRacePayload::Bare(input)) => RunRaceRequest {
             input,
@@ -524,13 +579,10 @@ pub fn run_race_json(input_json: String) -> String {
             era: None,
             hz: None,
         },
-        Err(err) => return json_error(&format!("invalid request: {err}")),
-    };
-
-    match run_race(request) {
-        Ok(output) => serialize_json(&output),
-        Err(error) => json_error(&error),
-    }
+        Err(error) => {
+            return Err(format!("invalid request: {error}"));
+        }
+    })
 }
 
 #[cfg_attr(feature = "wasm", wasm_bindgen)]
@@ -546,6 +598,28 @@ pub fn run_sessions_json(input_json: String) -> String {
     }
 }
 
+/// Browser facade for sessions using one caller-fetched immutable catalog.
+#[cfg_attr(feature = "wasm", wasm_bindgen)]
+pub fn run_sessions_with_catalog_json(input_json: String, catalog_bundle_json: String) -> String {
+    let request = match serde_json::from_str::<SessionRunRequest>(&input_json) {
+        Ok(value) => value,
+        Err(error) => {
+            return json_error(&format!("invalid request: {error}"));
+        }
+    };
+    let catalog = match RacingCatalogSnapshot::from_bundle_json(&catalog_bundle_json) {
+        Ok(catalog) => catalog,
+        Err(error) => {
+            return json_error(&format!("invalid Racing catalog: {error}"));
+        }
+    };
+
+    match run_sessions_with_catalog(request, &catalog) {
+        Ok(output) => serialize_json(&output),
+        Err(error) => json_error(&error),
+    }
+}
+
 #[cfg_attr(feature = "wasm", wasm_bindgen)]
 pub fn solve_baseline_json(_: String) -> String {
     json_error("baseline optimizer has been disabled")
@@ -554,6 +628,21 @@ pub fn solve_baseline_json(_: String) -> String {
 #[cfg_attr(feature = "wasm", wasm_bindgen)]
 pub fn catalog_json() -> String {
     match catalog_snapshot() {
+        Ok(output) => serialize_json(&output),
+        Err(error) => json_error(&error),
+    }
+}
+
+/// Browser facade exposing presentation derived from caller-fetched bytes.
+#[cfg_attr(feature = "wasm", wasm_bindgen)]
+pub fn catalog_json_from_bundle(catalog_bundle_json: String) -> String {
+    let catalog = match RacingCatalogSnapshot::from_bundle_json(&catalog_bundle_json) {
+        Ok(catalog) => catalog,
+        Err(error) => {
+            return json_error(&format!("invalid Racing catalog: {error}"));
+        }
+    };
+    match catalog_snapshot_with_catalog(&catalog) {
         Ok(output) => serialize_json(&output),
         Err(error) => json_error(&error),
     }
@@ -616,12 +705,79 @@ pub fn list_tires_json() -> String {
 }
 
 pub fn catalog_snapshot() -> Result<CatalogSnapshot, String> {
+    let catalog = RacingCatalogSnapshot::embedded()
+        .map_err(|error| format!("invalid embedded Racing catalog: {error}"))?;
+    catalog_snapshot_with_catalog(&catalog)
+}
+
+/// Builds application-facing data from one validated immutable snapshot.
+pub fn catalog_snapshot_with_catalog(
+    snapshot: &RacingCatalogSnapshot,
+) -> Result<CatalogSnapshot, String> {
+    let catalog = EmbeddedCatalog::from_snapshot(snapshot)?;
+
+    let mut circuits = catalog
+        .tracks
+        .values()
+        .map(|track| BrowserCircuitCatalogEntry {
+            id: track.browser_id.clone(),
+            display_name: track.display_name.clone(),
+            country_code: track.country_code.clone(),
+            laps: track.laps,
+            sample_count: track.track.s.len(),
+            distance_m: track.track.s.last().copied().unwrap_or(0.0),
+            pit_loss_ms: track.pit_loss_ms,
+        })
+        .collect::<Vec<_>>();
+    circuits.sort_by(|left, right| left.id.cmp(&right.id));
+
+    let mut engines = catalog
+        .engines
+        .iter()
+        .map(|(id, engine)| EngineCatalogEntry {
+            id: id.clone(),
+            idle_rpm: engine.n_idle,
+            max_rpm: engine.n_max,
+            gear_count: engine.gear_ratios.len(),
+        })
+        .collect::<Vec<_>>();
+    engines.sort_by(|left, right| left.id.cmp(&right.id));
+
+    let mut vehicles = catalog
+        .vehicles
+        .iter()
+        .map(|(id, vehicle)| VehicleCatalogEntry {
+            id: id.clone(),
+            engine_id: vehicle.engine_id.clone(),
+            default_tire_id: vehicle.tire_id.clone(),
+        })
+        .collect::<Vec<_>>();
+    vehicles.sort_by(|left, right| left.id.cmp(&right.id));
+
+    let mut drivers = catalog
+        .drivers
+        .values()
+        .filter(|driver| driver.id != "default")
+        .map(|driver| DriverCatalogEntry {
+            id: driver.id.clone(),
+            display_name: driver.display_name.clone(),
+        })
+        .collect::<Vec<_>>();
+    drivers.sort_by(|left, right| left.id.cmp(&right.id));
+
+    let mut tires = catalog
+        .tires
+        .keys()
+        .map(|id| TireCatalogEntry { id: id.clone() })
+        .collect::<Vec<_>>();
+    tires.sort_by(|left, right| left.id.cmp(&right.id));
+
     Ok(CatalogSnapshot {
-        circuits: list_browser_circuits()?,
-        engines: list_engines()?,
-        vehicles: list_vehicles()?,
-        drivers: list_drivers()?,
-        tires: list_tires()?,
+        circuits,
+        engines,
+        vehicles,
+        drivers,
+        tires,
     })
 }
 
@@ -755,11 +911,21 @@ pub fn list_tires() -> Result<Vec<TireCatalogEntry>, String> {
 
 impl EmbeddedCatalog {
     fn load_default() -> Result<Self, String> {
+        let snapshot = RacingCatalogSnapshot::embedded()
+            .map_err(|error| format!("invalid embedded Racing catalog: {error}"))?;
+        Self::from_snapshot(&snapshot)
+    }
+
+    fn from_snapshot(snapshot: &RacingCatalogSnapshot) -> Result<Self, String> {
         let mut catalog = Self::default();
-        for (path, raw) in EMBEDDED_FILES {
-            catalog.apply_file(path, raw)?;
+        for (path, raw) in snapshot.resources() {
+            let relative_path = path
+                .as_str()
+                .strip_prefix("simulation/")
+                .ok_or_else(|| format!("Racing resource is outside simulation/: {path}"))?;
+            catalog.apply_file(relative_path, raw)?;
         }
-        catalog.apply_presentation(PRESENTATION_INDEX)?;
+        catalog.apply_presentation(snapshot.presentation_index().clone())?;
         catalog.validate()?;
         Ok(catalog)
     }
@@ -770,6 +936,9 @@ impl EmbeddedCatalog {
         let (category, file_name) = path
             .split_once('/')
             .ok_or_else(|| format!("invalid embedded path '{path}'"))?;
+        if file_name.contains('/') || !file_name.ends_with(".json") {
+            return Err(format!("invalid Racing simulation resource path '{path}'"));
+        }
         let stem = file_name.trim_end_matches(".json");
 
         match category {
@@ -799,17 +968,19 @@ impl EmbeddedCatalog {
                 let track = parse_track(stem, &value)?;
                 self.tracks.insert(track.id.clone(), track);
             }
-            _ => {}
+            _ => {
+                return Err(format!(
+                    "unsupported Racing simulation resource category '{category}'"
+                ));
+            }
         }
         Ok(())
     }
 
-    fn apply_presentation(&mut self, raw: &[u8]) -> Result<(), String> {
-        let presentation: RacingPresentationIndexV1 = serde_json::from_slice(raw)
-            .map_err(|error| format!("failed to parse Racing presentation index: {error}"))?;
-        presentation
-            .validate()
-            .map_err(|error| format!("invalid Racing presentation index: {error}"))?;
+    fn apply_presentation(
+        &mut self,
+        presentation: RacingPresentationIndexV1,
+    ) -> Result<(), String> {
         if presentation.circuits.len() != self.tracks.len() {
             return Err(format!(
                 "presentation index contains {} circuits for {} simulation resources",

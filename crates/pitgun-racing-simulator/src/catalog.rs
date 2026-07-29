@@ -1,0 +1,663 @@
+//! Pure validation and resolution of immutable Racing Catalog releases.
+//!
+//! This module deliberately accepts bytes supplied by its caller. HTTP,
+//! filesystem discovery and mutable `latest` selection remain application
+//! concerns and never become part of deterministic execution.
+
+use std::collections::{BTreeMap, BTreeSet};
+
+#[cfg(not(target_arch = "wasm32"))]
+use std::path::Path;
+
+use pitgun_contract::{
+    ArtifactIdentity, CatalogPath, CatalogReleaseIdentityV1, ContractVersion,
+    DeterministicRunContractV1, Digest, ResolvedScenario, ResourceCatalogManifestV1,
+    canonical_json_digest, canonicalize_json_str,
+};
+use pitgun_racing_contract::{RacingPresentationIndexV1, RacingSimulationIndexV1};
+use serde::de::DeserializeOwned;
+use serde::{Deserialize, Serialize};
+
+use crate::{EMBEDDED_FILES, PRESENTATION_INDEX};
+
+const CATALOG_MANIFEST: &[u8] = include_bytes!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../catalogs/racing/v1.0.0/catalog.json"
+));
+const RELEASE_IDENTITY: &[u8] = include_bytes!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../catalogs/racing/v1.0.0/release.json"
+));
+const SIMULATION_INDEX: &[u8] = include_bytes!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../catalogs/racing/v1.0.0/simulation/index.json"
+));
+
+/// One exact release-relative file supplied by a browser or another adapter.
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct RacingCatalogFileV1 {
+    /// Immutable path declared by the Simulation Pack index.
+    pub path: String,
+    /// Exact UTF-8 JSON file contents.
+    pub contents: String,
+}
+
+/// Transport-neutral bundle accepted by the browser compatibility facade.
+///
+/// It is an application interchange shape, not a deterministic Pitgun
+/// contract. Every durable identity is recalculated from the contained bytes.
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct RacingCatalogBundleV1 {
+    /// Exact catalog manifest text.
+    pub manifest: String,
+    /// Exact release identity text.
+    pub release_identity: String,
+    /// Exact Simulation Pack index text.
+    pub simulation_index: String,
+    /// Exact Presentation Pack index text.
+    pub presentation_index: String,
+    /// Exact Simulation Pack resources.
+    pub resources: Vec<RacingCatalogFileV1>,
+}
+
+/// Fully validated immutable Racing Catalog release.
+#[derive(Clone, Debug)]
+pub struct RacingCatalogSnapshot {
+    manifest: ResourceCatalogManifestV1,
+    release_identity: CatalogReleaseIdentityV1,
+    simulation_index: RacingSimulationIndexV1,
+    presentation_index: RacingPresentationIndexV1,
+    resources: BTreeMap<CatalogPath, Vec<u8>>,
+}
+
+/// Failure produced before a Racing Catalog may enter simulation.
+#[derive(Debug, thiserror::Error)]
+pub enum RacingCatalogResolutionError {
+    /// One JSON document is not strict, UTF-8 or compatible with its schema.
+    #[error("invalid {document}: {reason}")]
+    InvalidDocument {
+        /// Stable document name.
+        document: &'static str,
+        /// Parser or schema failure.
+        reason: String,
+    },
+    /// The generic manifest violates a structural or identity invariant.
+    #[error("invalid catalog manifest: {0}")]
+    InvalidManifest(String),
+    /// The Racing pack index violates its domain invariants.
+    #[error("invalid Racing {pack} index: {reason}")]
+    InvalidIndex {
+        /// Pack whose index failed.
+        pack: &'static str,
+        /// Structural failure.
+        reason: String,
+    },
+    /// Canonical index bytes do not match the manifest.
+    #[error("{pack} index digest mismatch: expected {expected}, calculated {actual}")]
+    IndexDigestMismatch {
+        /// Pack whose index failed.
+        pack: &'static str,
+        /// Digest declared by the manifest.
+        expected: Digest,
+        /// Digest calculated from canonical index bytes.
+        actual: Digest,
+    },
+    /// A supplied resource path is not a canonical release-relative path.
+    #[error("invalid Racing catalog resource path {path:?}: {reason}")]
+    InvalidResourcePath {
+        /// Rejected path.
+        path: String,
+        /// Path validation failure.
+        reason: String,
+    },
+    /// The caller supplied the same path more than once.
+    #[error("duplicate Racing catalog resource {0}")]
+    DuplicateResource(CatalogPath),
+    /// An indexed resource was not supplied.
+    #[error("missing Racing catalog resource {0}")]
+    MissingResource(CatalogPath),
+    /// A supplied resource is not declared by the immutable index.
+    #[error("unexpected Racing catalog resource {0}")]
+    UnexpectedResource(CatalogPath),
+    /// Exact stored resource bytes do not match their declared digest.
+    #[error("resource digest mismatch for {path}: expected {expected}, calculated {actual}")]
+    ResourceDigestMismatch {
+        /// Release-relative resource path.
+        path: CatalogPath,
+        /// Digest declared by the index.
+        expected: Digest,
+        /// Digest calculated from the exact supplied bytes.
+        actual: Digest,
+    },
+    /// Racing V1 only accepts JSON physical resources.
+    #[error("unsupported media type {media_type} for Racing resource {path}")]
+    UnsupportedResourceMediaType {
+        /// Release-relative resource path.
+        path: CatalogPath,
+        /// Declared media type.
+        media_type: String,
+    },
+    /// One physical JSON resource violates the strict input profile.
+    #[error("invalid Racing resource {path}: {reason}")]
+    InvalidResource {
+        /// Release-relative resource path.
+        path: CatalogPath,
+        /// UTF-8 or strict JSON failure.
+        reason: String,
+    },
+    /// Physical resources or their domain references are incomplete.
+    #[error("invalid resolved Racing resources: {0}")]
+    InvalidResolvedResources(String),
+    /// A run does not bind the model and Simulation Pack selected by this release.
+    #[error("Racing catalog is incompatible with the run contract: {0}")]
+    IncompatibleRun(String),
+    /// A native filesystem adapter could not read one release file.
+    #[cfg(not(target_arch = "wasm32"))]
+    #[error("cannot read Racing catalog file {path}: {reason}")]
+    FileRead {
+        /// Filesystem path.
+        path: String,
+        /// I/O failure.
+        reason: String,
+    },
+}
+
+impl RacingCatalogSnapshot {
+    /// Validates one immutable release from caller-provided bytes.
+    ///
+    /// No simulation state is created until every document, digest, resource
+    /// and Racing-specific reference boundary has passed validation.
+    pub fn from_bytes(
+        manifest_bytes: &[u8],
+        release_identity_bytes: &[u8],
+        simulation_index_bytes: &[u8],
+        presentation_index_bytes: &[u8],
+        resources: impl IntoIterator<Item = (String, Vec<u8>)>,
+    ) -> Result<Self, RacingCatalogResolutionError> {
+        let manifest: ResourceCatalogManifestV1 =
+            parse_strict_document("catalog manifest", manifest_bytes)?;
+        manifest
+            .validate()
+            .map_err(|error| RacingCatalogResolutionError::InvalidManifest(error.to_string()))?;
+        let racing_model = ArtifactIdentity {
+            id: "pitgun.racing"
+                .parse()
+                .expect("static Racing model identifier"),
+            version: "1.0.0".parse().expect("static Racing model version"),
+            // Compatibility is intentionally based on ID and version. The
+            // executable model digest remains bound by the run contract.
+            digest: Digest::from_bytes(b"pitgun.racing:model-compatibility:1.0.0"),
+        };
+        manifest
+            .compatibility
+            .validate_for(&racing_model, ContractVersion::V1)
+            .map_err(|error| RacingCatalogResolutionError::InvalidManifest(error.to_string()))?;
+
+        let release_identity: CatalogReleaseIdentityV1 =
+            parse_strict_document("release identity", release_identity_bytes)?;
+        manifest
+            .verify_release_identity(&release_identity)
+            .map_err(|error| RacingCatalogResolutionError::InvalidManifest(error.to_string()))?;
+
+        let simulation_index: RacingSimulationIndexV1 =
+            parse_strict_document("simulation index", simulation_index_bytes)?;
+        simulation_index.validate().map_err(|error| {
+            RacingCatalogResolutionError::InvalidIndex {
+                pack: "simulation",
+                reason: error.to_string(),
+            }
+        })?;
+        verify_index_digest(
+            "simulation",
+            &simulation_index,
+            manifest.simulation_pack.index.digest,
+        )?;
+
+        let presentation_index: RacingPresentationIndexV1 =
+            parse_strict_document("presentation index", presentation_index_bytes)?;
+        presentation_index.validate().map_err(|error| {
+            RacingCatalogResolutionError::InvalidIndex {
+                pack: "presentation",
+                reason: error.to_string(),
+            }
+        })?;
+        verify_index_digest(
+            "presentation",
+            &presentation_index,
+            manifest.presentation_pack.index.digest,
+        )?;
+
+        let mut supplied = BTreeMap::new();
+        for (path, bytes) in resources {
+            let parsed = CatalogPath::new(path.clone()).map_err(|error| {
+                RacingCatalogResolutionError::InvalidResourcePath {
+                    path,
+                    reason: error.to_string(),
+                }
+            })?;
+            if supplied.insert(parsed.clone(), bytes).is_some() {
+                return Err(RacingCatalogResolutionError::DuplicateResource(parsed));
+            }
+        }
+
+        let expected_paths = simulation_index
+            .resources
+            .iter()
+            .map(|resource| resource.path.clone())
+            .collect::<BTreeSet<_>>();
+        for resource in &simulation_index.resources {
+            if resource.media_type.as_str() != "application/json" {
+                return Err(RacingCatalogResolutionError::UnsupportedResourceMediaType {
+                    path: resource.path.clone(),
+                    media_type: resource.media_type.to_string(),
+                });
+            }
+            let bytes = supplied.get(&resource.path).ok_or_else(|| {
+                RacingCatalogResolutionError::MissingResource(resource.path.clone())
+            })?;
+            let text = std::str::from_utf8(bytes).map_err(|error| {
+                RacingCatalogResolutionError::InvalidResource {
+                    path: resource.path.clone(),
+                    reason: error.to_string(),
+                }
+            })?;
+            canonicalize_json_str(text).map_err(|error| {
+                RacingCatalogResolutionError::InvalidResource {
+                    path: resource.path.clone(),
+                    reason: error.to_string(),
+                }
+            })?;
+            let actual = Digest::from_bytes(bytes);
+            if actual != resource.digest {
+                return Err(RacingCatalogResolutionError::ResourceDigestMismatch {
+                    path: resource.path.clone(),
+                    expected: resource.digest,
+                    actual,
+                });
+            }
+        }
+        if let Some(path) = supplied
+            .keys()
+            .find(|path| !expected_paths.contains(*path))
+            .cloned()
+        {
+            return Err(RacingCatalogResolutionError::UnexpectedResource(path));
+        }
+
+        let snapshot = Self {
+            manifest,
+            release_identity,
+            simulation_index,
+            presentation_index,
+            resources: supplied,
+        };
+        crate::EmbeddedCatalog::from_snapshot(&snapshot)
+            .map_err(RacingCatalogResolutionError::InvalidResolvedResources)?;
+        Ok(snapshot)
+    }
+
+    /// Resolves the checked-in offline fallback through the same validator.
+    pub fn embedded() -> Result<Self, RacingCatalogResolutionError> {
+        let resources = EMBEDDED_FILES
+            .iter()
+            .map(|(path, bytes)| (format!("simulation/{path}"), bytes.to_vec()));
+        Self::from_bytes(
+            CATALOG_MANIFEST,
+            RELEASE_IDENTITY,
+            SIMULATION_INDEX,
+            PRESENTATION_INDEX,
+            resources,
+        )
+    }
+
+    /// Resolves a bundle assembled by a browser or another byte transport.
+    pub fn from_bundle(
+        bundle: RacingCatalogBundleV1,
+    ) -> Result<Self, RacingCatalogResolutionError> {
+        Self::from_bytes(
+            bundle.manifest.as_bytes(),
+            bundle.release_identity.as_bytes(),
+            bundle.simulation_index.as_bytes(),
+            bundle.presentation_index.as_bytes(),
+            bundle
+                .resources
+                .into_iter()
+                .map(|file| (file.path, file.contents.into_bytes())),
+        )
+    }
+
+    /// Parses and resolves the browser interchange bundle.
+    pub fn from_bundle_json(bundle_json: &str) -> Result<Self, RacingCatalogResolutionError> {
+        let canonical = canonicalize_json_str(bundle_json).map_err(|error| {
+            RacingCatalogResolutionError::InvalidDocument {
+                document: "Racing catalog bundle",
+                reason: error.to_string(),
+            }
+        })?;
+        let bundle = serde_json::from_slice(&canonical).map_err(|error| {
+            RacingCatalogResolutionError::InvalidDocument {
+                document: "Racing catalog bundle",
+                reason: error.to_string(),
+            }
+        })?;
+        Self::from_bundle(bundle)
+    }
+
+    /// Loads an immutable release directory for native CLI and verifier use.
+    #[cfg(not(target_arch = "wasm32"))]
+    pub fn from_release_dir(root: impl AsRef<Path>) -> Result<Self, RacingCatalogResolutionError> {
+        let root = root.as_ref();
+        let manifest_bytes = read_file(root.join("catalog.json"))?;
+        let release_identity_bytes = read_file(root.join("release.json"))?;
+        let manifest: ResourceCatalogManifestV1 =
+            parse_strict_document("catalog manifest", &manifest_bytes)?;
+        let simulation_index_bytes =
+            read_file(root.join(manifest.simulation_pack.index.path.as_str()))?;
+        let presentation_index_bytes =
+            read_file(root.join(manifest.presentation_pack.index.path.as_str()))?;
+        let simulation_index: RacingSimulationIndexV1 =
+            parse_strict_document("simulation index", &simulation_index_bytes)?;
+        let mut resources = Vec::with_capacity(simulation_index.resources.len());
+        for resource in &simulation_index.resources {
+            resources.push((
+                resource.path.to_string(),
+                read_file(root.join(resource.path.as_str()))?,
+            ));
+        }
+        Self::from_bytes(
+            &manifest_bytes,
+            &release_identity_bytes,
+            &simulation_index_bytes,
+            &presentation_index_bytes,
+            resources,
+        )
+    }
+
+    /// Returns the validated generic release manifest.
+    #[must_use]
+    pub const fn manifest(&self) -> &ResourceCatalogManifestV1 {
+        &self.manifest
+    }
+
+    /// Returns the exact release identity verified from the manifest.
+    #[must_use]
+    pub const fn release_identity(&self) -> &CatalogReleaseIdentityV1 {
+        &self.release_identity
+    }
+
+    /// Returns the validated Racing Simulation Pack index.
+    #[must_use]
+    pub const fn simulation_index(&self) -> &RacingSimulationIndexV1 {
+        &self.simulation_index
+    }
+
+    /// Returns the validated Racing Presentation Pack index.
+    #[must_use]
+    pub const fn presentation_index(&self) -> &RacingPresentationIndexV1 {
+        &self.presentation_index
+    }
+
+    /// Binds validated resources to one exact deterministic run contract.
+    ///
+    /// The contract must select this release's Simulation Pack through its
+    /// existing `data_pack` identity. `latest` and presentation metadata never
+    /// become part of the logical run identity.
+    pub fn resolve_scenario<Input>(
+        &self,
+        contract: DeterministicRunContractV1,
+        input: Input,
+    ) -> Result<ResolvedScenario<Input, RacingCatalogSnapshot>, RacingCatalogResolutionError> {
+        ResolvedScenario::catalog_backed(
+            contract,
+            &self.manifest,
+            self.release_identity.clone(),
+            input,
+            self.clone(),
+        )
+        .map_err(|error| RacingCatalogResolutionError::IncompatibleRun(error.to_string()))
+    }
+
+    pub(crate) fn resources(&self) -> impl Iterator<Item = (&CatalogPath, &[u8])> {
+        self.resources
+            .iter()
+            .map(|(path, bytes)| (path, bytes.as_slice()))
+    }
+}
+
+fn parse_strict_document<T>(
+    document: &'static str,
+    bytes: &[u8],
+) -> Result<T, RacingCatalogResolutionError>
+where
+    T: DeserializeOwned,
+{
+    let text = std::str::from_utf8(bytes).map_err(|error| {
+        RacingCatalogResolutionError::InvalidDocument {
+            document,
+            reason: error.to_string(),
+        }
+    })?;
+    let canonical = canonicalize_json_str(text).map_err(|error| {
+        RacingCatalogResolutionError::InvalidDocument {
+            document,
+            reason: error.to_string(),
+        }
+    })?;
+    serde_json::from_slice(&canonical).map_err(|error| {
+        RacingCatalogResolutionError::InvalidDocument {
+            document,
+            reason: error.to_string(),
+        }
+    })
+}
+
+fn verify_index_digest<T>(
+    pack: &'static str,
+    index: &T,
+    expected: Digest,
+) -> Result<(), RacingCatalogResolutionError>
+where
+    T: Serialize,
+{
+    let actual = canonical_json_digest(index).map_err(|error| {
+        RacingCatalogResolutionError::InvalidDocument {
+            document: "catalog index",
+            reason: error.to_string(),
+        }
+    })?;
+    if actual == expected {
+        Ok(())
+    } else {
+        Err(RacingCatalogResolutionError::IndexDigestMismatch {
+            pack,
+            expected,
+            actual,
+        })
+    }
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+fn read_file(path: impl AsRef<Path>) -> Result<Vec<u8>, RacingCatalogResolutionError> {
+    let path = path.as_ref();
+    std::fs::read(path).map_err(|error| RacingCatalogResolutionError::FileRead {
+        path: path.display().to_string(),
+        reason: error.to_string(),
+    })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use pitgun_contract::{
+        EventOrderingV1, InputCanonicalization, InputIdentity, InputMediaType, LogicalClockV1,
+        RandomAlgorithm, RandomContractV1, RuntimeProfile, ScenarioIdentity, Seed,
+        StreamDerivation,
+    };
+
+    fn embedded_bundle() -> RacingCatalogBundleV1 {
+        RacingCatalogBundleV1 {
+            manifest: std::str::from_utf8(CATALOG_MANIFEST)
+                .expect("manifest UTF-8")
+                .to_owned(),
+            release_identity: std::str::from_utf8(RELEASE_IDENTITY)
+                .expect("release identity UTF-8")
+                .to_owned(),
+            simulation_index: std::str::from_utf8(SIMULATION_INDEX)
+                .expect("simulation index UTF-8")
+                .to_owned(),
+            presentation_index: std::str::from_utf8(PRESENTATION_INDEX)
+                .expect("presentation index UTF-8")
+                .to_owned(),
+            resources: EMBEDDED_FILES
+                .iter()
+                .map(|(path, contents)| RacingCatalogFileV1 {
+                    path: format!("simulation/{path}"),
+                    contents: std::str::from_utf8(contents)
+                        .expect("Racing V1 resources are UTF-8 JSON")
+                        .to_owned(),
+                })
+                .collect(),
+        }
+    }
+
+    fn compatible_contract(snapshot: &RacingCatalogSnapshot) -> DeterministicRunContractV1 {
+        DeterministicRunContractV1 {
+            contract_version: ContractVersion::V1,
+            scenario: ScenarioIdentity {
+                id: "racing.weekend".parse().expect("scenario id"),
+                version: "1.0.0".parse().expect("scenario version"),
+            },
+            model: ArtifactIdentity {
+                id: "pitgun.racing".parse().expect("model id"),
+                version: "1.0.0".parse().expect("model version"),
+                digest: Digest::from_bytes(b"model"),
+            },
+            data_pack: snapshot.manifest().simulation_pack.identity.clone(),
+            runtime_profile: RuntimeProfile::PortableExactV1,
+            random: RandomContractV1 {
+                seed: Seed::new(42),
+                algorithm: RandomAlgorithm::PitgunSplitMix64V1,
+                stream_derivation: StreamDerivation::Sha256LabelV1,
+            },
+            clock: LogicalClockV1::new(0, 50_000, 1).expect("logical clock"),
+            event_ordering: EventOrderingV1::v1(),
+            input: InputIdentity {
+                media_type: InputMediaType::ApplicationJson,
+                canonicalization: InputCanonicalization::JcsRfc8785,
+                digest: Digest::from_bytes(b"input"),
+            },
+        }
+    }
+
+    #[test]
+    fn embedded_release_passes_the_complete_resolution_boundary() {
+        let snapshot = RacingCatalogSnapshot::embedded().expect("embedded catalog");
+
+        assert_eq!(snapshot.manifest().catalog.id.to_string(), "pitgun.racing");
+        assert_eq!(snapshot.manifest().catalog.version.to_string(), "1.0.0");
+        assert_eq!(
+            snapshot.resources().count(),
+            snapshot.simulation_index().resources.len()
+        );
+    }
+
+    #[cfg(not(target_arch = "wasm32"))]
+    #[test]
+    fn filesystem_and_embedded_adapters_resolve_identically() {
+        let embedded = RacingCatalogSnapshot::embedded().expect("embedded catalog");
+        let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../catalogs/racing/v1.0.0");
+        let filesystem = RacingCatalogSnapshot::from_release_dir(root).expect("filesystem catalog");
+
+        assert_eq!(filesystem.manifest(), embedded.manifest());
+        assert_eq!(filesystem.release_identity(), embedded.release_identity());
+        assert_eq!(filesystem.simulation_index(), embedded.simulation_index());
+        assert_eq!(
+            filesystem.presentation_index(),
+            embedded.presentation_index()
+        );
+    }
+
+    #[test]
+    fn browser_bundle_and_embedded_adapters_resolve_identically() {
+        let embedded = RacingCatalogSnapshot::embedded().expect("embedded catalog");
+        let json = serde_json::to_string(&embedded_bundle()).expect("bundle JSON");
+        let browser = RacingCatalogSnapshot::from_bundle_json(&json).expect("browser catalog");
+
+        assert_eq!(browser.manifest(), embedded.manifest());
+        assert_eq!(browser.release_identity(), embedded.release_identity());
+        assert_eq!(browser.simulation_index(), embedded.simulation_index());
+        assert_eq!(browser.presentation_index(), embedded.presentation_index());
+    }
+
+    #[test]
+    fn resolved_scenario_binds_the_exact_simulation_pack() {
+        let snapshot = RacingCatalogSnapshot::embedded().expect("embedded catalog");
+        let contract = compatible_contract(&snapshot);
+        let resolved = snapshot
+            .resolve_scenario(contract.clone(), "input")
+            .expect("compatible run");
+
+        assert_eq!(resolved.contract(), &contract);
+        assert_eq!(
+            resolved.catalog_release(),
+            Some(snapshot.release_identity())
+        );
+
+        let mut incompatible = contract;
+        incompatible.data_pack.digest = Digest::from_bytes(b"other pack");
+        let error = snapshot
+            .resolve_scenario(incompatible, "input")
+            .expect_err("different Simulation Pack must fail");
+        assert!(matches!(
+            error,
+            RacingCatalogResolutionError::IncompatibleRun(_)
+        ));
+    }
+
+    #[test]
+    fn resource_digest_mismatch_fails_before_resolution() {
+        let mut resources = EMBEDDED_FILES
+            .iter()
+            .map(|(path, bytes)| (format!("simulation/{path}"), bytes.to_vec()))
+            .collect::<Vec<_>>();
+        resources[0].1.push(b' ');
+
+        let error = RacingCatalogSnapshot::from_bytes(
+            CATALOG_MANIFEST,
+            RELEASE_IDENTITY,
+            SIMULATION_INDEX,
+            PRESENTATION_INDEX,
+            resources,
+        )
+        .expect_err("mutated resource must fail");
+
+        assert!(matches!(
+            error,
+            RacingCatalogResolutionError::ResourceDigestMismatch { .. }
+        ));
+    }
+
+    #[test]
+    fn missing_resource_fails_closed() {
+        let resources = EMBEDDED_FILES
+            .iter()
+            .skip(1)
+            .map(|(path, bytes)| (format!("simulation/{path}"), bytes.to_vec()));
+
+        let error = RacingCatalogSnapshot::from_bytes(
+            CATALOG_MANIFEST,
+            RELEASE_IDENTITY,
+            SIMULATION_INDEX,
+            PRESENTATION_INDEX,
+            resources,
+        )
+        .expect_err("missing resource must fail");
+
+        assert!(matches!(
+            error,
+            RacingCatalogResolutionError::MissingResource(_)
+        ));
+    }
+}

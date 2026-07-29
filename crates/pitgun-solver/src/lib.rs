@@ -9,15 +9,17 @@ pub use pitgun_racing_simulator::evidence;
 pub use pitgun_racing_simulator::{
     AeroParams, BrowserCircuitCatalogEntry, CatalogSnapshot, ChassisParams, CircuitDetail, Driver,
     DriverCatalogEntry, DriverEffects, EngineDetail, EngineParams, PitPlan, PitStop,
-    PitStrategyConfig, RaceOutput, RacingWorkload, RacingWorkloadError, ResampledTelemetry,
-    RunRaceInput, RunRaceRequest, RunSimulationRequest, SessionConfig, SessionRunOutput,
-    SessionRunRequest, SessionRunResult, SimConfig, SimulationRequest, SimulationResult,
-    SimulationSolution, SolverTrackProfile, StandingEntry, StandingStatus, TelemetryEnvelope,
-    TireCatalogEntry, TireParams, Track, Tuning, VehicleCatalogEntry, VehicleParams, VehicleState,
-    apply_driver_to_tire, apply_tuning, best_power_at_speed, catalog_snapshot, derating_factor,
-    driver_effects, effective_mu, get_circuit, get_engine, list_browser_circuits, list_circuits,
-    list_drivers, list_engines, list_tires, list_vehicles, power_kw_from_rpm, resample_solution,
-    rpm_from_speed_gear, run_race, run_sessions, solve,
+    PitStrategyConfig, RaceOutput, RacingCatalogBundleV1, RacingCatalogFileV1,
+    RacingCatalogResolutionError, RacingCatalogSnapshot, RacingWorkload, RacingWorkloadError,
+    ResampledTelemetry, RunRaceInput, RunRaceRequest, RunSimulationRequest, SessionConfig,
+    SessionRunOutput, SessionRunRequest, SessionRunResult, SimConfig, SimulationRequest,
+    SimulationResult, SimulationSolution, SolverTrackProfile, StandingEntry, StandingStatus,
+    TelemetryEnvelope, TireCatalogEntry, TireParams, Track, Tuning, VehicleCatalogEntry,
+    VehicleParams, VehicleState, apply_driver_to_tire, apply_tuning, best_power_at_speed,
+    catalog_snapshot, catalog_snapshot_with_catalog, derating_factor, driver_effects, effective_mu,
+    get_circuit, get_engine, list_browser_circuits, list_circuits, list_drivers, list_engines,
+    list_tires, list_vehicles, power_kw_from_rpm, resample_solution, rpm_from_speed_gear, run_race,
+    run_race_with_catalog, run_sessions, run_sessions_with_catalog, solve,
 };
 use wasm_bindgen::prelude::*;
 
@@ -32,8 +34,18 @@ pub fn run_race_json(input_json: String) -> String {
 }
 
 #[wasm_bindgen]
+pub fn run_race_with_catalog_json(input_json: String, catalog_bundle_json: String) -> String {
+    pitgun_racing_simulator::run_race_with_catalog_json(input_json, catalog_bundle_json)
+}
+
+#[wasm_bindgen]
 pub fn run_sessions_json(input_json: String) -> String {
     pitgun_racing_simulator::run_sessions_json(input_json)
+}
+
+#[wasm_bindgen]
+pub fn run_sessions_with_catalog_json(input_json: String, catalog_bundle_json: String) -> String {
+    pitgun_racing_simulator::run_sessions_with_catalog_json(input_json, catalog_bundle_json)
 }
 
 #[wasm_bindgen]
@@ -44,6 +56,11 @@ pub fn solve_baseline_json(input_json: String) -> String {
 #[wasm_bindgen]
 pub fn catalog_json() -> String {
     pitgun_racing_simulator::catalog_json()
+}
+
+#[wasm_bindgen]
+pub fn catalog_json_from_bundle(catalog_bundle_json: String) -> String {
+    pitgun_racing_simulator::catalog_json_from_bundle(catalog_bundle_json)
 }
 
 #[wasm_bindgen]
