@@ -664,6 +664,21 @@ pub fn get_circuit_json(track_id: String) -> String {
     }
 }
 
+/// Browser facade exposing one circuit from caller-fetched catalog bytes.
+#[cfg_attr(feature = "wasm", wasm_bindgen)]
+pub fn get_circuit_json_from_bundle(track_id: String, catalog_bundle_json: String) -> String {
+    let catalog = match RacingCatalogSnapshot::from_bundle_json(&catalog_bundle_json) {
+        Ok(catalog) => catalog,
+        Err(error) => {
+            return json_error(&format!("invalid Racing catalog: {error}"));
+        }
+    };
+    match get_circuit_with_catalog(&catalog, &track_id) {
+        Ok(output) => serialize_json(&output),
+        Err(error) => json_error(&error),
+    }
+}
+
 #[cfg_attr(feature = "wasm", wasm_bindgen)]
 pub fn list_engines_json() -> String {
     match list_engines() {
@@ -675,6 +690,21 @@ pub fn list_engines_json() -> String {
 #[cfg_attr(feature = "wasm", wasm_bindgen)]
 pub fn get_engine_json(engine_id: String) -> String {
     match get_engine(&engine_id) {
+        Ok(output) => serialize_json(&output),
+        Err(error) => json_error(&error),
+    }
+}
+
+/// Browser facade exposing one engine from caller-fetched catalog bytes.
+#[cfg_attr(feature = "wasm", wasm_bindgen)]
+pub fn get_engine_json_from_bundle(engine_id: String, catalog_bundle_json: String) -> String {
+    let catalog = match RacingCatalogSnapshot::from_bundle_json(&catalog_bundle_json) {
+        Ok(catalog) => catalog,
+        Err(error) => {
+            return json_error(&format!("invalid Racing catalog: {error}"));
+        }
+    };
+    match get_engine_with_catalog(&catalog, &engine_id) {
         Ok(output) => serialize_json(&output),
         Err(error) => json_error(&error),
     }
@@ -818,7 +848,17 @@ pub fn list_circuits() -> Result<Vec<CircuitCatalogEntry>, String> {
 }
 
 pub fn get_circuit(track_id: &str) -> Result<CircuitDetail, String> {
-    let catalog = EmbeddedCatalog::load_default()?;
+    let snapshot = RacingCatalogSnapshot::embedded()
+        .map_err(|error| format!("invalid embedded Racing catalog: {error}"))?;
+    get_circuit_with_catalog(&snapshot, track_id)
+}
+
+/// Resolves one circuit detail from a validated immutable snapshot.
+pub fn get_circuit_with_catalog(
+    snapshot: &RacingCatalogSnapshot,
+    track_id: &str,
+) -> Result<CircuitDetail, String> {
+    let catalog = EmbeddedCatalog::from_snapshot(snapshot)?;
     let record = catalog.get_track(track_id)?;
     Ok(CircuitDetail {
         id: record.browser_id.clone(),
@@ -853,7 +893,17 @@ pub fn list_engines() -> Result<Vec<EngineCatalogEntry>, String> {
 }
 
 pub fn get_engine(engine_id: &str) -> Result<EngineDetail, String> {
-    let catalog = EmbeddedCatalog::load_default()?;
+    let snapshot = RacingCatalogSnapshot::embedded()
+        .map_err(|error| format!("invalid embedded Racing catalog: {error}"))?;
+    get_engine_with_catalog(&snapshot, engine_id)
+}
+
+/// Resolves one engine detail from a validated immutable snapshot.
+pub fn get_engine_with_catalog(
+    snapshot: &RacingCatalogSnapshot,
+    engine_id: &str,
+) -> Result<EngineDetail, String> {
+    let catalog = EmbeddedCatalog::from_snapshot(snapshot)?;
     let engine = catalog
         .engines
         .get(engine_id)
@@ -2085,5 +2135,17 @@ mod tests {
             200_000,
             "5 Hz telemetry must be sampled every 200 ms"
         );
+    }
+
+    #[test]
+    fn catalog_detail_views_use_the_selected_snapshot() {
+        let snapshot = RacingCatalogSnapshot::embedded().expect("catalog");
+        let circuit = get_circuit_with_catalog(&snapshot, "MONZA").expect("circuit");
+        let engine = get_engine_with_catalog(&snapshot, "v6t_hybrid").expect("engine");
+
+        assert_eq!(circuit.id, "MONZA");
+        assert!(circuit.s_m.len() > 100);
+        assert_eq!(engine.id, "v6t_hybrid");
+        assert!(!engine.rpm_samples.is_empty());
     }
 }
