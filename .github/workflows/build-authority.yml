@@ -1,0 +1,159 @@
+name: build-authority
+
+on:
+  pull_request:
+    paths:
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - "services/pitgun-authority/**"
+      - "crates/pitgun-contract/**"
+      - "crates/pitgun-signing/**"
+      - "crates/pitgun-policy/**"
+      - "crates/pitgun-racing-contract/**"
+      - "crates/pitgun-racing-policy/**"
+      - "crates/pitgun-racing-simulator/**"
+      - "crates/pitgun-racing-solver/**"
+      - "crates/pitgun-runtime/**"
+      - "crates/pitgun-core/**"
+      - "policies/**"
+      - "catalogs/racing/**"
+      - ".github/workflows/build-authority.yml"
+  push:
+    branches: ["main"]
+    paths:
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - "services/pitgun-authority/**"
+      - "crates/pitgun-contract/**"
+      - "crates/pitgun-signing/**"
+      - "crates/pitgun-policy/**"
+      - "crates/pitgun-racing-contract/**"
+      - "crates/pitgun-racing-policy/**"
+      - "crates/pitgun-racing-simulator/**"
+      - "crates/pitgun-racing-solver/**"
+      - "crates/pitgun-runtime/**"
+      - "crates/pitgun-core/**"
+      - "policies/**"
+      - "catalogs/racing/**"
+      - ".github/workflows/build-authority.yml"
+  workflow_dispatch:
+
+env:
+  IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/pitgun-authority
+  LOCAL_IMAGE: pitgun-authority:pr-${{ github.sha }}
+
+jobs:
+  build-authority-image:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      image_tag: ${{ steps.meta.outputs.image_tag }}
+      image_digest: ${{ steps.push.outputs.digest }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Compute image tag
+        id: meta
+        run: echo "image_tag=${IMAGE_NAME}:${GITHUB_SHA}" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GHCR
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build authority image for PR validation
+        if: github.event_name == 'pull_request'
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./services/pitgun-authority/Dockerfile
+          load: true
+          push: false
+          tags: ${{ env.LOCAL_IMAGE }}
+          build-args: |
+            RUST_VERSION=1.89
+          cache-from: type=gha,scope=pitgun-authority
+          cache-to: type=gha,mode=max,scope=pitgun-authority
+
+      - name: Smoke-test authority image
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          trap 'docker logs pitgun-authority-smoke || true; docker rm -f pitgun-authority-smoke || true' EXIT
+          docker run --detach \
+            --name pitgun-authority-smoke \
+            --publish 127.0.0.1:18080:8080 \
+            --env PITGUN_SIGNING_SECRET=ci-only-authority-smoke-secret \
+            --env PITGUN_SIGNING_KEY_ID=ci-smoke \
+            "${LOCAL_IMAGE}"
+
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:18080/readyz >/dev/null; then
+              break
+            fi
+            if [ "${attempt}" -eq 30 ]; then
+              echo "Authority did not become ready" >&2
+              exit 1
+            fi
+            sleep 1
+          done
+
+          curl --fail --silent http://127.0.0.1:18080/healthz >/dev/null
+
+          curl --fail --silent --show-error \
+            --request POST http://127.0.0.1:18080/v1/authorizations/racing \
+            --header "content-type: application/json" \
+            --data '{
+              "subject": "ci-smoke",
+              "seed": "42",
+              "catalog_release": {
+                "schema_version": "pitgun.catalog-release-identity/v1",
+                "id": "pitgun.racing",
+                "version": "1.0.0",
+                "manifest_digest": "sha256:5f36612a3ce265750051ca913747c0c05bc08a534dc307bbc7b02b8cb2f6e156"
+              },
+              "input": {
+                "track_id": "LASVEGAS",
+                "laps": 1,
+                "competitors": [],
+                "vehicle_id": "f1_2026",
+                "era": 6,
+                "hz": 20
+              }
+            }' \
+            --output /tmp/authority-response.json
+
+          grep --fixed-strings \
+            '"id":"pitgun.racing.simulation","version":"1.0.0","digest":"sha256:5404395fc56d3f16cc74e4acbbdbcc21ea3be35c7fc80f11c4babfcc6becdaef"' \
+            /tmp/authority-response.json
+
+      - name: Build and push authority image
+        if: github.event_name != 'pull_request'
+        id: push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./services/pitgun-authority/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.image_tag }}
+          build-args: |
+            RUST_VERSION=1.89
+          cache-from: type=gha,scope=pitgun-authority
+          cache-to: type=gha,mode=max,scope=pitgun-authority
+
+      - name: Publish image details
+        if: github.event_name != 'pull_request'
+        run: |
+          echo "Image tag: ${{ steps.meta.outputs.image_tag }}"
+          echo "Image digest: ${{ steps.push.outputs.digest }}"
