@@ -5,6 +5,7 @@
 - [Repository overview](../README.md)
 - [Public schema catalog](https://schemas.pitgun.io)
 - [Resource Catalog publication](CATALOG_PUBLISHING.md)
+- [Racing Catalog resolution](CATALOG_RESOLUTION.md)
 - [Architecture](../ARCHITECTURE.md)
 - [Framework boundaries](FRAMEWORK_BOUNDARIES.md)
 - [Racing demo CLI contract](RACING_DEMO_CLI_V1.md)

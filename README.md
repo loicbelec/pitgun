@@ -83,6 +83,8 @@ its own domain model and physical rules.
   run identity, replay inputs, artifacts, and native/WASM comparison
 - An optional [Resource Catalog contract](docs/RESOURCE_CATALOG_V1.md) separating
   simulation data from presentation metadata without changing V1 `run_id`
+- Pure [Racing Catalog resolution](docs/CATALOG_RESOLUTION.md) for embedded,
+  filesystem, and browser-provided bytes without network access in the core
 - A versioned [stable RNG contract](docs/RNG_V1.md) with independently derived
   random streams
 - A Racing golden scenario exercised in both native Rust and Node/WASM
@@ -305,6 +307,7 @@ The current sequence is intentionally proof-driven:
 - [Under-five-minute quickstart](docs/QUICKSTART.md) — workspace and prebuilt installation paths
 - [Release process](docs/RELEASING.md) — immutable tags, binary targets, and publication checks
 - [Catalog publication](docs/CATALOG_PUBLISHING.md) — immutable Resource Catalog deployment and rollback
+- [Catalog resolution](docs/CATALOG_RESOLUTION.md) — native and browser byte validation before execution
 - [ADR 0001](docs/adr/0001-runtime-and-domain-workloads.md) — generic runtime and domain Solver/Simulator ownership
 - [ADR 0002](docs/adr/0002-optional-versioned-catalogs.md) — optional versioned Resource Catalogs and resolved scenarios
 - [Deterministic Run Bundle V1](docs/RUN_BUNDLE_V1.md) — portable artifacts, identities, persistence, and validation
