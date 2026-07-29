@@ -115,3 +115,27 @@ reports only process liveness.
 `POST /v1/contracts/simulation` remains temporarily available for existing
 consumers of `SimulationContractV1`. New integrations must use the deterministic
 authorization endpoint.
+
+## Container image
+
+The dedicated image is published as:
+
+```text
+ghcr.io/loicbelec/pitgun-authority:<git-commit-sha>
+```
+
+It contains the authority binary plus the exact checked-in policy and immutable
+Racing `v1.0.0` catalog release:
+
+```text
+/opt/pitgun/policies/gametuning.v1.yaml
+/opt/pitgun/catalogs/racing/v1.0.0
+```
+
+The corresponding path variables are configured as non-secret image defaults.
+`PITGUN_SIGNING_SECRET`, key rotation and environment-specific routing remain
+deployment concerns and are never baked into the image.
+
+Pull requests build and smoke-test the container without publishing it. A merge
+to `main` publishes only the immutable commit-SHA tag consumed by
+`infra-vps`.
