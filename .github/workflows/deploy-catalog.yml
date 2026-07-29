@@ -1,0 +1,125 @@
+name: Deploy Resource Catalog
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "catalogs/**"
+      - "schemas/catalog-pointer/**"
+      - "scripts/build-catalog-site.py"
+      - "scripts/generate-racing-catalog.py"
+      - "scripts/verify-catalog-publication.py"
+      - ".github/workflows/deploy-catalog.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: catalog-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: catalog-production
+      url: https://catalog.pitgun.io/racing/latest.json
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+
+      - name: Validate source release and public schemas
+        run: |
+          python -m pip install -r requirements-dev.txt
+          python scripts/generate-racing-catalog.py --check
+          python scripts/validate-schemas.py
+
+      - name: Build static catalog site
+        run: python scripts/build-catalog-site.py --output /tmp/pitgun-catalog-site
+
+      - name: Protect existing immutable releases
+        run: |
+          python scripts/verify-catalog-publication.py \
+            --site /tmp/pitgun-catalog-site \
+            --base-url https://catalog.pitgun.io \
+            --mode preflight \
+            --missing-output /tmp/pitgun-catalog-missing.txt
+
+      - name: Install SFTP client
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes lftp
+
+      - name: Pin OVH SSH host key
+        run: |
+          install -d -m 700 "$HOME/.ssh"
+          printf '%s\n' \
+            'ftp.cluster005.hosting.ovh.net ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEk5m6vt7XKr8ntcIa15U/402qpVsErwQJVTKZYlVj0s' \
+            > "$HOME/.ssh/known_hosts"
+          chmod 600 "$HOME/.ssh/known_hosts"
+
+      - name: Publish new releases atomically and update discovery pointers
+        env:
+          LFTP_PASSWORD: ${{ secrets.SFTP_PASSWORD }}
+          SFTP_HOST: ${{ secrets.SFTP_HOST }}
+          SFTP_PATH: ${{ secrets.SFTP_PATH }}
+          SFTP_PORT: ${{ secrets.SFTP_PORT }}
+          SFTP_USER: ${{ secrets.SFTP_USER }}
+        run: |
+          set -euo pipefail
+          SFTP_PATH="${SFTP_PATH%/}"
+
+          {
+            printf '%s\n' \
+              'set cmd:fail-exit true' \
+              'set net:max-retries 2' \
+              'set net:timeout 20' \
+              'set sftp:auto-confirm no'
+            printf '%s\n' \
+              "set sftp:connect-program \"ssh -a -x -o BatchMode=no -o StrictHostKeyChecking=yes -o UserKnownHostsFile=$HOME/.ssh/known_hosts\""
+            printf 'mkdir -p "%s"\n' "$SFTP_PATH"
+            printf 'put "%s" -o "%s"\n' \
+              '/tmp/pitgun-catalog-site/.htaccess' \
+              "$SFTP_PATH/.htaccess"
+
+            while IFS= read -r release; do
+              [ -n "$release" ] || continue
+              local_release="/tmp/pitgun-catalog-site/$release"
+              remote_parent="$SFTP_PATH/$(dirname "$release")"
+              remote_final="$SFTP_PATH/$release"
+              remote_stage="$remote_parent/.$(basename "$release").upload-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+              printf 'mkdir -p "%s"\n' "$remote_parent"
+              printf 'mirror --reverse --verbose "%s" "%s"\n' \
+                "$local_release" \
+                "$remote_stage"
+              printf 'mv "%s" "%s"\n' "$remote_stage" "$remote_final"
+            done < /tmp/pitgun-catalog-missing.txt
+
+            while IFS= read -r pointer; do
+              relative="${pointer#/tmp/pitgun-catalog-site/}"
+              remote_parent="$SFTP_PATH/$(dirname "$relative")"
+              printf 'mkdir -p "%s"\n' "$remote_parent"
+              printf 'put "%s" -o "%s"\n' \
+                "$pointer" \
+                "$SFTP_PATH/$relative"
+            done < <(find /tmp/pitgun-catalog-site -mindepth 2 -maxdepth 2 -name latest.json -type f | sort)
+
+            printf '%s\n' 'bye'
+          } | lftp --env-password \
+            --user "$SFTP_USER" \
+            --port "${SFTP_PORT:-22}" \
+            "sftp://$SFTP_HOST"
+
+      - name: Verify public bytes, identities, CORS and caching
+        run: |
+          python scripts/verify-catalog-publication.py \
+            --site /tmp/pitgun-catalog-site \
+            --base-url https://catalog.pitgun.io \
+            --mode verify

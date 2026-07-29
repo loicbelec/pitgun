@@ -122,6 +122,8 @@ an independently cached verifier.
 
 The architectural rationale and operational policy are fixed by
 [ADR 0002](adr/0002-optional-versioned-catalogs.md).
+Static publication and rollback are documented in
+[Catalog Publication](CATALOG_PUBLISHING.md).
 
 ## Racing reference release
 

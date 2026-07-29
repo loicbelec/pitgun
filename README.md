@@ -304,6 +304,7 @@ The current sequence is intentionally proof-driven:
 - [Racing demo CLI contract](docs/RACING_DEMO_CLI_V1.md) — command, bundle layout, report, and failures
 - [Under-five-minute quickstart](docs/QUICKSTART.md) — workspace and prebuilt installation paths
 - [Release process](docs/RELEASING.md) — immutable tags, binary targets, and publication checks
+- [Catalog publication](docs/CATALOG_PUBLISHING.md) — immutable Resource Catalog deployment and rollback
 - [ADR 0001](docs/adr/0001-runtime-and-domain-workloads.md) — generic runtime and domain Solver/Simulator ownership
 - [ADR 0002](docs/adr/0002-optional-versioned-catalogs.md) — optional versioned Resource Catalogs and resolved scenarios
 - [Deterministic Run Bundle V1](docs/RUN_BUNDLE_V1.md) — portable artifacts, identities, persistence, and validation
