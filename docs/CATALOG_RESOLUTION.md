@@ -82,6 +82,8 @@ The application assembles those exact UTF-8 JSON texts into:
 The transitional `pitgun-solver` WASM facade exposes:
 
 - `catalog_json_from_bundle(bundle)` for the UI;
+- `get_circuit_json_from_bundle(id, bundle)` for circuit geometry;
+- `get_engine_json_from_bundle(id, bundle)` for engine curves;
 - `run_race_with_catalog_json(request, bundle)` for one race;
 - `run_sessions_with_catalog_json(request, bundle)` for a session sequence.
 
@@ -105,4 +107,3 @@ Durable execution binds:
 
 Presentation metadata remains independently versioned and does not affect
 physical execution identity.
-
