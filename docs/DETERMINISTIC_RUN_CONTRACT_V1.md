@@ -458,6 +458,10 @@ wrap a deterministic contract, but MUST NOT alter the logical simulation unless
 they are explicitly copied into canonical input. A valid signature without
 re-execution is authorization, not proof of correct execution.
 
+The implemented envelope, validity rules, outage behavior and key-rotation
+procedure are defined in
+[`RUN_AUTHORIZATION_V1.md`](RUN_AUTHORIZATION_V1.md).
+
 ## 12. Stable implementation acceptance criteria
 
 Follow-up work can cite these requirements directly:

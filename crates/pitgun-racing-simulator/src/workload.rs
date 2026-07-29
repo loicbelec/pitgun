@@ -8,6 +8,16 @@ use crate::{RaceOutput, RunRaceInput, RunRaceRequest, run_race};
 
 const RACING_MODEL_V1_MANIFEST: &[u8] = b"pitgun.racing:model:1.0.0:conformance-vector";
 
+/// Returns the exact logical Racing model identity authorized by V1 services.
+#[must_use]
+pub fn racing_model_v1_identity() -> ArtifactIdentity {
+    ArtifactIdentity {
+        id: "pitgun.racing".parse().expect("static Racing model id"),
+        version: "1.0.0".parse().expect("static Racing model version"),
+        digest: pitgun_contract::Digest::from_bytes(RACING_MODEL_V1_MANIFEST),
+    }
+}
+
 /// Statically linked adapter for one exact Racing model identity.
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct RacingWorkload {
@@ -19,11 +29,7 @@ impl RacingWorkload {
     #[must_use]
     pub fn v1() -> Self {
         Self {
-            model: ArtifactIdentity {
-                id: "pitgun.racing".parse().expect("static Racing model id"),
-                version: "1.0.0".parse().expect("static Racing model version"),
-                digest: pitgun_contract::Digest::from_bytes(RACING_MODEL_V1_MANIFEST),
-            },
+            model: racing_model_v1_identity(),
         }
     }
 }

@@ -1395,9 +1395,11 @@ dependencies = [
  "axum",
  "hex",
  "pitgun-codec-json",
+ "pitgun-contract",
  "pitgun-policy",
  "pitgun-racing-contract",
  "pitgun-racing-policy",
+ "pitgun-racing-simulator",
  "pitgun-signing",
  "rand",
  "serde",
@@ -1585,6 +1587,8 @@ version = "0.1.0"
 dependencies = [
  "hex",
  "hmac",
+ "pitgun-contract",
+ "serde_json",
  "sha2",
 ]
 
