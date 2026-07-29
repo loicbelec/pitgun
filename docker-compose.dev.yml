@@ -38,13 +38,12 @@ services:
   pitgun-authority:
     build:
       context: .
-      dockerfile: Dockerfile
-      args:
-        BIN_NAME: pitgun-authority
+      dockerfile: services/pitgun-authority/Dockerfile
     environment:
-      PITGUN_AUTHORITY_BIND: "0.0.0.0:8081"
-      PITGUN_SIGNING_SECRET: "${PITGUN_SIGNING_SECRET:-pitgun-local-signing-secret}"
+      PITGUN_AUTHORITY_BIND: "0.0.0.0:8080"
+      PITGUN_SIGNING_SECRET: "${PITGUN_SIGNING_SECRET:-pitgun-framework-local-signing-secret-not-for-shared-environments}"
+      PITGUN_SIGNING_KEY_ID: "${PITGUN_SIGNING_KEY_ID:-pitgun-framework-local-v1}"
       RUST_LOG: "${PITGUN_AUTHORITY_RUST_LOG:-info}"
     ports:
-      - "127.0.0.1:${PITGUN_AUTHORITY_PORT:-8081}:8081"
+      - "127.0.0.1:${PITGUN_AUTHORITY_PORT:-8081}:8080"
     restart: unless-stopped

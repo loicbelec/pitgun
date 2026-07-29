@@ -83,9 +83,10 @@ pitgun/
 ```
 
 Deployment definitions intentionally do not appear in this repository map.
-The workspace Dockerfile and `docker-compose.dev.yml` support local development;
-`loicbelec/infra-vps` exclusively owns staging and production topology,
-persistence, routing, and observability.
+The workspace Dockerfile, the authority-specific image, and
+`docker-compose.dev.yml` support framework component development;
+`loicbelec/infra-vps` owns complete local platform integration plus staging and
+production topology, persistence, routing, and observability.
 
 ### 2.1 pitgun-contract
 

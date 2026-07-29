@@ -267,9 +267,10 @@ publishes immutable service images. It does not own staging or production
 runtime configuration.
 
 - `docker-compose.dev.yml` is the only supported Compose entry point in this
-  repository and is intended for local development.
+  repository and is a narrow gateway/authority component-development harness.
 - `loicbelec/infra-vps` is the canonical source for staging and production
-  Compose stacks, routing, persistence, observability, and deployment workflows.
+  Compose stacks, routing, persistence, observability, deployment workflows,
+  and complete local platform integration.
 - Production services run from published container images; repository checkouts,
   systemd units, and framework-local production Compose files are unsupported.
 
@@ -278,12 +279,13 @@ For a minimal local service stack:
 ```bash
 docker compose -f docker-compose.dev.yml up -d --build
 curl -fsS http://127.0.0.1:8080/health
+curl -fsS http://127.0.0.1:8081/readyz
 docker compose -f docker-compose.dev.yml down
 ```
 
 This starts PostgreSQL, `pitgun-gateway`, and `pitgun-authority`. Use the local
-stack in `loicbelec/infra-vps` when development also requires the game APIs or
-the observability services.
+stack in `loicbelec/infra-vps` for end-to-end platform integration with the game
+APIs and optional observability services.
 
 ## Roadmap
 
