@@ -84,18 +84,18 @@ jobs:
               'set sftp:auto-confirm no'
             printf '%s\n' \
               "set sftp:connect-program \"ssh -a -x -o BatchMode=no -o StrictHostKeyChecking=yes -o UserKnownHostsFile=$HOME/.ssh/known_hosts\""
-            printf 'mkdir -p "%s"\n' "$SFTP_PATH"
+            printf 'cd "%s"\n' "$SFTP_PATH"
             printf 'put "%s" -o "%s"\n' \
               '/tmp/pitgun-catalog-site/.htaccess' \
-              "$SFTP_PATH/.htaccess"
+              '.htaccess'
 
             while IFS= read -r release; do
               [ -n "$release" ] || continue
               local_release="/tmp/pitgun-catalog-site/$release"
-              remote_parent="$SFTP_PATH/$(dirname "$release")"
-              remote_final="$SFTP_PATH/$release"
+              remote_parent="$(dirname "$release")"
+              remote_final="$release"
               remote_stage="$remote_parent/.$(basename "$release").upload-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
-              printf 'mkdir -p "%s"\n' "$remote_parent"
+              printf 'mkdir -p -f "%s"\n' "$remote_parent"
               printf 'mirror --reverse --verbose "%s" "%s"\n' \
                 "$local_release" \
                 "$remote_stage"
@@ -104,11 +104,9 @@ jobs:
 
             while IFS= read -r pointer; do
               relative="${pointer#/tmp/pitgun-catalog-site/}"
-              remote_parent="$SFTP_PATH/$(dirname "$relative")"
-              printf 'mkdir -p "%s"\n' "$remote_parent"
               printf 'put "%s" -o "%s"\n' \
                 "$pointer" \
-                "$SFTP_PATH/$relative"
+                "$relative"
             done < <(find /tmp/pitgun-catalog-site -mindepth 2 -maxdepth 2 -name latest.json -type f | sort)
 
             printf '%s\n' 'bye'

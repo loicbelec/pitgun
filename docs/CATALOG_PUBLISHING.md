@@ -41,10 +41,11 @@ these environment secrets:
 - `SFTP_PORT`;
 - `SFTP_USER`;
 - `SFTP_PASSWORD`;
-- `SFTP_PATH`, set to `/home/loicbelehy/pitgun/catalog`.
+- `SFTP_PATH`, set to the session-relative path `pitgun/catalog`.
 
-The OVH multisite document root for `catalog.pitgun.io` must be that same
-directory.
+The OVH control panel displays the corresponding absolute multisite document
+root as `/home/loicbelehy/pitgun/catalog`. The SFTP session is already rooted
+inside the account and must therefore use the relative form.
 
 ## Publishing a release
 
