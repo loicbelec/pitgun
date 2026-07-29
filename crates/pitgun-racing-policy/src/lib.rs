@@ -40,6 +40,20 @@ pub fn normalize_and_validate_race_input(
     input: &RaceInput,
     era: u32,
 ) -> Result<RaceInput, PolicyError> {
+    let policy = tuning_policy()?;
+    normalize_and_validate_race_input_with_policy(input, era, policy)
+}
+
+/// Canonicalizes and validates Racing input with the exact caller-selected
+/// policy artifact.
+///
+/// Hosted authorities use this entry point so the policy bytes named in a
+/// signed authorization are the same bytes that produced canonical input.
+pub fn normalize_and_validate_race_input_with_policy(
+    input: &RaceInput,
+    era: u32,
+    policy: &TuningPolicyV1,
+) -> Result<RaceInput, PolicyError> {
     if input.laps == 0 || input.laps > 100 {
         return Err(PolicyError::InvalidLapCount(input.laps, 100));
     }
@@ -47,8 +61,6 @@ pub fn normalize_and_validate_race_input(
     if input.track_id.trim().is_empty() {
         return Err(PolicyError::InvalidTrackId("empty".to_string()));
     }
-
-    let policy = tuning_policy()?;
 
     let mut normalized_competitors = Vec::with_capacity(input.competitors.len());
     for comp in &input.competitors {

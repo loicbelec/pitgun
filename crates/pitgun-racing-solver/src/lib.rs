@@ -885,8 +885,7 @@ fn validate_track(track: &Track) -> Result<(), String> {
 fn tire_for_lap(default_tire: &TireParams, pit_stops: &[PitStop], lap: u16) -> TireParams {
     pit_stops
         .iter()
-        .filter(|stop| stop.lap < lap)
-        .next_back()
+        .rfind(|stop| stop.lap < lap)
         .map(|stop| stop.tire.clone())
         .unwrap_or_else(|| default_tire.clone())
 }

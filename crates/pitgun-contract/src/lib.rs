@@ -1,3 +1,4 @@
+pub mod authorization;
 pub mod bundle;
 pub mod catalog;
 pub mod codec;
@@ -8,6 +9,10 @@ pub mod registry;
 pub mod run;
 pub mod source;
 
+pub use authorization::{
+    AuthorizationSignatureAlgorithm, AuthorizationValidityV1, RunAuthorizationError,
+    RunAuthorizationV1, RunAuthorizationVersion, SignedRunAuthorizationV1,
+};
 pub use bundle::{
     RunBundleArtifactV1, RunBundleCanonicalArtifactsV1, RunBundleExecutionArtifactsV1,
     RunBundleManifestError, RunBundleManifestV1, RunBundleManifestVersion, RunBundleMediaType,

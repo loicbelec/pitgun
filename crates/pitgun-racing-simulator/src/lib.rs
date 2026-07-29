@@ -5,7 +5,7 @@ pub mod workload;
 pub use catalog::{
     RacingCatalogBundleV1, RacingCatalogFileV1, RacingCatalogResolutionError, RacingCatalogSnapshot,
 };
-pub use workload::{RacingWorkload, RacingWorkloadError};
+pub use workload::{RacingWorkload, RacingWorkloadError, racing_model_v1_identity};
 
 use std::collections::HashMap;
 use std::collections::hash_map::DefaultHasher;
