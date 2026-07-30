@@ -90,11 +90,15 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          trap 'docker logs pitgun-authority-smoke || true; docker rm -f pitgun-authority-smoke || true' EXIT
+          trap 'docker logs pitgun-authority-smoke || true; docker rm -f pitgun-authority-smoke || true; rm -f /tmp/pitgun-authority-signing-secret' EXIT
+          umask 077
+          printf '%s' 'ci-only-authority-smoke-secret' > /tmp/pitgun-authority-signing-secret
+          chmod 0444 /tmp/pitgun-authority-signing-secret
           docker run --detach \
             --name pitgun-authority-smoke \
             --publish 127.0.0.1:18080:8080 \
-            --env PITGUN_SIGNING_SECRET=ci-only-authority-smoke-secret \
+            --volume /tmp/pitgun-authority-signing-secret:/run/secrets/pitgun_authority_signing_secret:ro \
+            --env PITGUN_SIGNING_SECRET_FILE=/run/secrets/pitgun_authority_signing_secret \
             --env PITGUN_SIGNING_KEY_ID=ci-smoke \
             "${LOCAL_IMAGE}"
 
