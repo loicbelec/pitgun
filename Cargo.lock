@@ -1672,6 +1672,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "pitgun-verifier"
+version = "0.1.0"
+dependencies = [
+ "pitgun-contract",
+ "pitgun-racing-simulator",
+ "pitgun-runtime",
+ "pitgun-signing",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "pkcs1"
 version = "0.7.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
