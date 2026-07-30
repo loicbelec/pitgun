@@ -10,6 +10,9 @@ The portable-exact evidence is split into additional versioned artifacts:
 - `racing_run_v1.telemetry-summary.json` is the domain-neutral V1 summary;
 - `racing_run_v1.digests.json` publishes `run_id`, `output_digest`, and
   `telemetry_summary_digest`.
+- `racing_hosted_wasm_v1.digests.json` pins the complete hosted-execution
+  identities emitted by the browser-facing WASM evidence API, including the
+  exact caller-supplied module digest recorded in the receipt.
 
 The target cross-runtime guarantees, run identity, and digest rules are defined
 by [`DeterministicRunContractV1`](../../../../docs/DETERMINISTIC_RUN_CONTRACT_V1.md).

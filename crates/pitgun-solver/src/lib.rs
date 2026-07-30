@@ -6,6 +6,10 @@
 pub mod rng;
 
 pub use pitgun_racing_simulator::evidence;
+pub use pitgun_racing_simulator::evidence::{
+    RacingHostedExecutionRequestV1, RacingHostedExecutionRequestVersion,
+    RacingVerificationSubmissionV1,
+};
 pub use pitgun_racing_simulator::{
     AeroParams, BrowserCircuitCatalogEntry, CatalogSnapshot, ChassisParams, CircuitDetail, Driver,
     DriverCatalogEntry, DriverEffects, EngineDetail, EngineParams, PitPlan, PitStop,
@@ -17,12 +21,34 @@ pub use pitgun_racing_simulator::{
     TelemetryEnvelope, TireCatalogEntry, TireParams, Track, Tuning, VehicleCatalogEntry,
     VehicleParams, VehicleState, apply_driver_to_tire, apply_tuning, best_power_at_speed,
     catalog_snapshot, catalog_snapshot_with_catalog, derating_factor, driver_effects, effective_mu,
-    get_circuit, get_circuit_with_catalog, get_engine, get_engine_with_catalog,
-    list_browser_circuits, list_circuits, list_drivers, list_engines, list_tires, list_vehicles,
-    power_kw_from_rpm, resample_solution, rpm_from_speed_gear, run_race, run_race_with_catalog,
-    run_sessions, run_sessions_with_catalog, solve,
+    execute_authorized_race, get_circuit, get_circuit_with_catalog, get_engine,
+    get_engine_with_catalog, list_browser_circuits, list_circuits, list_drivers, list_engines,
+    list_tires, list_vehicles, power_kw_from_rpm, racing_model_v1_identity, resample_solution,
+    rpm_from_speed_gear, run_race, run_race_with_catalog, run_sessions, run_sessions_with_catalog,
+    solve,
 };
 use wasm_bindgen::prelude::*;
+
+#[wasm_bindgen(typescript_custom_section)]
+const HOSTED_RACING_TYPES: &'static str = r#"
+export type PitgunSha256Digest = `sha256:${string}`;
+
+export interface RacingHostedExecutionRequestV1 {
+  schema_version: "pitgun.racing-hosted-execution/v1";
+  signed_authorization: unknown;
+  input: unknown;
+  execution_id: string;
+  wasm_artifact_digest: PitgunSha256Digest;
+}
+
+export interface RacingVerificationSubmissionV1 {
+  signed_authorization: unknown;
+  input: unknown;
+  receipt: unknown;
+  output: unknown;
+  telemetry_summary: unknown;
+}
+"#;
 
 #[wasm_bindgen]
 pub fn run_simulation_json(input_json: String) -> String {
@@ -37,6 +63,22 @@ pub fn run_race_json(input_json: String) -> String {
 #[wasm_bindgen]
 pub fn run_race_with_catalog_json(input_json: String, catalog_bundle_json: String) -> String {
     pitgun_racing_simulator::run_race_with_catalog_json(input_json, catalog_bundle_json)
+}
+
+#[wasm_bindgen]
+pub fn execute_authorized_race_json(request_json: String) -> String {
+    pitgun_racing_simulator::execute_authorized_race_json(request_json)
+}
+
+#[wasm_bindgen]
+pub fn execute_authorized_race_with_catalog_json(
+    request_json: String,
+    catalog_bundle_json: String,
+) -> String {
+    pitgun_racing_simulator::execute_authorized_race_with_catalog_json(
+        request_json,
+        catalog_bundle_json,
+    )
 }
 
 #[wasm_bindgen]

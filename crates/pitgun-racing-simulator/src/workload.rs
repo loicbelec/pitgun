@@ -4,7 +4,10 @@ use pitgun_contract::ArtifactIdentity;
 use pitgun_runtime::{ExecutionContext, LinkedWorkload, WorkloadExecution};
 
 use crate::evidence::{RacingEvidenceError, RacingRunEvidenceV1};
-use crate::{RaceOutput, RunRaceInput, RunRaceRequest, run_race};
+use crate::{
+    RaceOutput, RacingCatalogSnapshot, RunRaceInput, RunRaceRequest, run_race,
+    run_race_with_catalog,
+};
 
 const RACING_MODEL_V1_MANIFEST: &[u8] = b"pitgun.racing:model:1.0.0:conformance-vector";
 
@@ -19,9 +22,10 @@ pub fn racing_model_v1_identity() -> ArtifactIdentity {
 }
 
 /// Statically linked adapter for one exact Racing model identity.
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(Clone, Debug)]
 pub struct RacingWorkload {
     model: ArtifactIdentity,
+    catalog: Option<RacingCatalogSnapshot>,
 }
 
 impl RacingWorkload {
@@ -30,6 +34,16 @@ impl RacingWorkload {
     pub fn v1() -> Self {
         Self {
             model: racing_model_v1_identity(),
+            catalog: None,
+        }
+    }
+
+    /// Creates the V1 adapter pinned to a validated immutable catalog snapshot.
+    #[must_use]
+    pub fn with_catalog(catalog: RacingCatalogSnapshot) -> Self {
+        Self {
+            model: racing_model_v1_identity(),
+            catalog: Some(catalog),
         }
     }
 }
@@ -62,12 +76,16 @@ impl LinkedWorkload for RacingWorkload {
     ) -> Result<WorkloadExecution<Self::Output, Self::Evidence>, Self::Error> {
         let era = input.era;
         let hz = input.hz;
-        let output = run_race(RunRaceRequest {
+        let request = RunRaceRequest {
             input,
             seed: context.seed().get(),
             era: Some(era),
             hz: Some(hz),
-        })
+        };
+        let output = match &self.catalog {
+            Some(catalog) => run_race_with_catalog(request, catalog),
+            None => run_race(request),
+        }
         .map_err(RacingWorkloadError::Simulation)?;
         let evidence = RacingRunEvidenceV1::from_race_output(&output)?;
 

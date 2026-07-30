@@ -8,37 +8,21 @@ use std::fmt;
 
 use pitgun_contract::{
     ArtifactIdentity, CanonicalJsonError, ContractVersion, EventOrderingV1, InputCanonicalization,
-    InputMediaType, LogicalClockV1, RandomAlgorithm, RunAuthorizationError, RunBundleReceiptV1,
-    RuntimeProfile, SignedRunAuthorizationV1, StreamDerivation, SubmittedEvidenceV1,
-    TelemetrySummaryV1, VerificationReasonCode, VerificationStatus, VerificationVerdictError,
-    VerificationVerdictV1, VerificationVerdictVersion, VerifiedResolutionV1, canonical_json_digest,
+    InputMediaType, LogicalClockV1, RandomAlgorithm, RunAuthorizationError, RuntimeProfile,
+    StreamDerivation, SubmittedEvidenceV1, VerificationReasonCode, VerificationStatus,
+    VerificationVerdictError, VerificationVerdictV1, VerificationVerdictVersion,
+    VerifiedResolutionV1, canonical_json_digest,
 };
-use pitgun_racing_simulator::evidence::RacingOutputV1;
 use pitgun_racing_simulator::{
     RacingCatalogSnapshot, RacingWorkload, RunRaceInput, racing_model_v1_identity,
 };
 use pitgun_runtime::{LinkedWorkloadError, execute_linked};
 use pitgun_signing::{AuthorizationVerificationError, VerificationKeyring};
-use serde::{Deserialize, Serialize};
+
+pub use pitgun_racing_simulator::evidence::RacingVerificationSubmissionV1;
 
 const RACING_SCENARIO_ID: &str = "racing.race";
 const RACING_SCENARIO_VERSION: &str = "1.0.0";
-
-/// Strict execution submission accepted by the Racing verifier.
-#[derive(Clone, Debug, Deserialize, Serialize)]
-#[serde(deny_unknown_fields)]
-pub struct RacingVerificationSubmissionV1 {
-    /// Authority-issued authorization for the exact deterministic contract.
-    pub signed_authorization: SignedRunAuthorizationV1,
-    /// Exact canonical input whose digest is bound by the signed contract.
-    pub input: RunRaceInput,
-    /// Concrete execution receipt created by the browser, native client, or worker.
-    pub receipt: RunBundleReceiptV1,
-    /// Canonical Racing domain output produced by that execution.
-    pub output: RacingOutputV1,
-    /// Canonical domain-neutral summary of the execution telemetry.
-    pub telemetry_summary: TelemetrySummaryV1,
-}
 
 /// Trusted dependencies and retained identities used to verify Racing V1.
 #[derive(Clone, Debug)]
@@ -187,8 +171,11 @@ impl RacingVerifier {
             );
         }
 
-        let replay = match execute_linked(&RacingWorkload::v1(), contract, submission.input.clone())
-        {
+        let replay = match execute_linked(
+            &RacingWorkload::with_catalog(catalog.clone()),
+            contract,
+            submission.input.clone(),
+        ) {
             Ok(replay) => replay,
             Err(error) => {
                 return self.rejected(
@@ -405,14 +392,16 @@ mod tests {
         ContractVersion, DeterministicRunContractV1, Digest, EventOrderingV1, ExecutionId,
         Identifier, InputCanonicalization, InputIdentity, InputMediaType, LogicalClockV1,
         RandomAlgorithm, RandomContractV1, RunAuthorizationV1, RunAuthorizationVersion,
-        RunBundleReceiptVersion, RuntimeIdentity, RuntimeProfile, ScenarioIdentity, Seed,
-        SemanticVersion, SignedRunAuthorizationV1, StreamDerivation, TelemetryFrame,
-        TelemetrySummaryV1, VerificationReasonCode, VerificationStatus, canonical_json_digest,
+        RuntimeIdentity, RuntimeProfile, ScenarioIdentity, Seed, SemanticVersion,
+        SignedRunAuthorizationV1, StreamDerivation, TelemetryFrame, TelemetrySummaryV1,
+        VerificationReasonCode, VerificationStatus, canonical_json_digest,
+    };
+    use pitgun_racing_simulator::evidence::{
+        RacingHostedExecutionRequestV1, RacingHostedExecutionRequestVersion,
     };
     use pitgun_racing_simulator::{
-        RacingCatalogSnapshot, RacingWorkload, RunRaceInput, racing_model_v1_identity,
+        RacingCatalogSnapshot, RunRaceInput, execute_authorized_race, racing_model_v1_identity,
     };
-    use pitgun_runtime::execute_linked;
     use pitgun_signing::{SigningKey, VerificationKeyring};
 
     use super::{RacingVerificationSubmissionV1, RacingVerifier};
@@ -507,29 +496,20 @@ mod tests {
             signature,
         };
 
-        let replay =
-            execute_linked(&RacingWorkload::v1(), &contract, input.clone()).expect("Racing replay");
         let execution_id: ExecutionId = "018f3b78-7e9a-7d20-a5e1-4ed92f02a591"
             .parse()
             .expect("execution id");
-        let receipt = replay
-            .evidence
-            .execution_receipt(
-                &contract,
+        let submission = execute_authorized_race(
+            RacingHostedExecutionRequestV1 {
+                schema_version: RacingHostedExecutionRequestVersion::V1,
+                signed_authorization,
+                input,
                 execution_id,
-                runtime("pitgun-wasm", "wasm32-browser", b"wasm"),
-            )
-            .expect("execution receipt");
-        let submission = RacingVerificationSubmissionV1 {
-            signed_authorization,
-            input,
-            receipt: pitgun_contract::RunBundleReceiptV1 {
-                schema_version: RunBundleReceiptVersion::V1,
-                receipt,
+                wasm_artifact_digest: Digest::from_bytes(b"wasm"),
             },
-            output: replay.evidence.output,
-            telemetry_summary: replay.evidence.telemetry_summary,
-        };
+            &catalog,
+        )
+        .expect("hosted WASM execution");
 
         let verifier = RacingVerifier::new(
             retained_keyring(&signing_key),
