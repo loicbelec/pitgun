@@ -11,13 +11,17 @@ use std::collections::HashMap;
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 
-use pitgun_contract::{Sample, SampleValue, SignalQuality, TelemetryFrame};
+use pitgun_contract::{
+    RunBundleReceiptV1, RunBundleReceiptVersion, RuntimeIdentity, Sample, SampleValue,
+    SignalQuality, TelemetryFrame,
+};
 use pitgun_racing_contract::{
     CircuitCatalogEntry, CompetitorSpec, CompetitorStintStrategy, EngineCatalogEntry, RaceInput,
     RacingPresentationIndexV1,
 };
 use pitgun_racing_policy::normalize_and_validate_race_input;
 use pitgun_racing_solver::{resample_telemetry, run_simulation};
+use pitgun_runtime::execute_linked;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 #[cfg(feature = "wasm")]
@@ -568,6 +572,98 @@ pub fn run_race_with_catalog_json(input_json: String, catalog_bundle_json: Strin
         Ok(output) => serialize_json(&output),
         Err(error) => json_error(&error),
     }
+}
+
+/// Executes one signed Racing contract through the embedded immutable catalog.
+#[cfg_attr(feature = "wasm", wasm_bindgen)]
+pub fn execute_authorized_race_json(request_json: String) -> String {
+    let request =
+        match serde_json::from_str::<evidence::RacingHostedExecutionRequestV1>(&request_json) {
+            Ok(request) => request,
+            Err(error) => return json_error(&format!("invalid hosted execution request: {error}")),
+        };
+    let catalog = match RacingCatalogSnapshot::embedded() {
+        Ok(catalog) => catalog,
+        Err(error) => return json_error(&format!("invalid embedded Racing catalog: {error}")),
+    };
+
+    match execute_authorized_race(request, &catalog) {
+        Ok(submission) => serialize_json(&submission),
+        Err(error) => json_error(&error),
+    }
+}
+
+/// Executes one signed Racing contract through caller-fetched immutable catalog bytes.
+#[cfg_attr(feature = "wasm", wasm_bindgen)]
+pub fn execute_authorized_race_with_catalog_json(
+    request_json: String,
+    catalog_bundle_json: String,
+) -> String {
+    let request =
+        match serde_json::from_str::<evidence::RacingHostedExecutionRequestV1>(&request_json) {
+            Ok(request) => request,
+            Err(error) => return json_error(&format!("invalid hosted execution request: {error}")),
+        };
+    let catalog = match RacingCatalogSnapshot::from_bundle_json(&catalog_bundle_json) {
+        Ok(catalog) => catalog,
+        Err(error) => return json_error(&format!("invalid Racing catalog: {error}")),
+    };
+
+    match execute_authorized_race(request, &catalog) {
+        Ok(submission) => serialize_json(&submission),
+        Err(error) => json_error(&error),
+    }
+}
+
+/// Produces the complete hosted-verification evidence for one browser attempt.
+pub fn execute_authorized_race(
+    request: evidence::RacingHostedExecutionRequestV1,
+    catalog: &RacingCatalogSnapshot,
+) -> Result<evidence::RacingVerificationSubmissionV1, String> {
+    request
+        .signed_authorization
+        .authorization
+        .validate_integrity()
+        .map_err(|error| format!("invalid signed authorization: {error}"))?;
+    let contract = &request.signed_authorization.authorization.contract;
+    catalog
+        .manifest()
+        .validate_for_run(contract)
+        .map_err(|error| format!("authorized catalog is unavailable: {error}"))?;
+
+    let execution = execute_linked(
+        &RacingWorkload::with_catalog(catalog.clone()),
+        contract,
+        request.input.clone(),
+    )
+    .map_err(|error| format!("authorized Racing execution failed: {error}"))?;
+    let runtime = RuntimeIdentity {
+        engine: "pitgun-wasm"
+            .parse()
+            .expect("static WASM runtime engine identifier"),
+        engine_version: env!("CARGO_PKG_VERSION")
+            .parse()
+            .expect("crate version is semantic"),
+        target: "wasm32-unknown-unknown"
+            .parse()
+            .expect("static WASM target identifier"),
+        artifact_digest: request.wasm_artifact_digest,
+    };
+    let receipt = execution
+        .evidence
+        .execution_receipt(contract, request.execution_id, runtime)
+        .map_err(|error| format!("cannot create Racing execution receipt: {error}"))?;
+
+    Ok(evidence::RacingVerificationSubmissionV1 {
+        signed_authorization: request.signed_authorization,
+        input: request.input,
+        receipt: RunBundleReceiptV1 {
+            schema_version: RunBundleReceiptVersion::V1,
+            receipt,
+        },
+        output: execution.evidence.output,
+        telemetry_summary: execution.evidence.telemetry_summary,
+    })
 }
 
 fn parse_run_race_request(input_json: &str) -> Result<RunRaceRequest, String> {

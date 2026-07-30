@@ -1,11 +1,21 @@
 use std::fmt::Debug;
 
 use pitgun_contract::{
-    DeterministicRunContractV1, Digest, Identifier, RuntimeIdentity, Seed, SemanticVersion,
-    canonical_json_bytes, canonical_json_digest, canonicalize_json_str,
+    ArtifactIdentity, AuthorizationSignatureAlgorithm, AuthorizationValidityV1, ContractVersion,
+    DeterministicRunContractV1, Digest, EventOrderingV1, Identifier, InputCanonicalization,
+    InputIdentity, InputMediaType, LogicalClockV1, RandomAlgorithm, RandomContractV1,
+    RunAuthorizationV1, RunAuthorizationVersion, RuntimeIdentity, RuntimeProfile, ScenarioIdentity,
+    Seed, SemanticVersion, SignedRunAuthorizationV1, StreamDerivation, canonical_json_bytes,
+    canonical_json_digest, canonicalize_json_str,
 };
-use pitgun_solver::evidence::RacingRunEvidenceV1;
-use pitgun_solver::{RaceOutput, run_race_json};
+use pitgun_solver::evidence::{
+    RacingHostedExecutionRequestV1, RacingHostedExecutionRequestVersion, RacingRunEvidenceV1,
+    RacingVerificationSubmissionV1,
+};
+use pitgun_solver::{
+    RaceOutput, RacingCatalogSnapshot, RunRaceInput, execute_authorized_race_json,
+    racing_model_v1_identity, run_race_json,
+};
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 
@@ -24,6 +34,8 @@ const EXPECTED_TELEMETRY_SUMMARY: &str =
     include_str!("../../pitgun-racing-simulator/tests/golden/racing_run_v1.telemetry-summary.json");
 const EXPECTED_DIGESTS: &str =
     include_str!("../../pitgun-racing-simulator/tests/golden/racing_run_v1.digests.json");
+const EXPECTED_HOSTED_WASM_DIGESTS: &str =
+    include_str!("../../pitgun-racing-simulator/tests/golden/racing_hosted_wasm_v1.digests.json");
 const MODEL_IDENTITY: &str = "pitgun.racing:model:1.0.0:conformance-vector";
 const DATA_PACK_IDENTITY: &str = "pitgun.racing.2026:data-pack:1.0.0:conformance-vector";
 
@@ -72,6 +84,14 @@ struct GoldenDigests {
     run_id: Digest,
     output_digest: Digest,
     telemetry_summary_digest: Digest,
+}
+
+#[derive(Debug, Deserialize, PartialEq, Serialize)]
+struct HostedWasmGoldenDigests {
+    run_id: Digest,
+    output_digest: Digest,
+    telemetry_summary_digest: Digest,
+    wasm_artifact_digest: Digest,
 }
 
 fn summarize(output: RaceOutput) -> GoldenSummary {
@@ -245,6 +265,113 @@ fn racing_run_v1_digests_reject_semantic_mutations() {
         original_summary_digest,
         "a telemetry summary mutation must change telemetry_summary_digest"
     );
+}
+
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
+fn hosted_racing_execution_emits_complete_portable_evidence() {
+    let document: serde_json::Value = serde_json::from_str(include_str!(
+        "../../../apps/pitgun-cli/scenarios/racing-demo-v1.json"
+    ))
+    .expect("Racing demo");
+    let input: RunRaceInput =
+        serde_json::from_value(document["request"].clone()).expect("Racing input");
+    let catalog = RacingCatalogSnapshot::embedded().expect("embedded catalog");
+    let contract = DeterministicRunContractV1 {
+        contract_version: ContractVersion::V1,
+        scenario: ScenarioIdentity {
+            id: "racing.race".parse().expect("scenario id"),
+            version: "1.0.0".parse().expect("scenario version"),
+        },
+        model: racing_model_v1_identity(),
+        data_pack: catalog.manifest().simulation_pack.identity.clone(),
+        runtime_profile: RuntimeProfile::PortableExactV1,
+        random: RandomContractV1 {
+            seed: Seed::new(42),
+            algorithm: RandomAlgorithm::PitgunSplitMix64V1,
+            stream_derivation: StreamDerivation::Sha256LabelV1,
+        },
+        clock: LogicalClockV1::new(0, 200_000, 1).expect("clock"),
+        event_ordering: EventOrderingV1::v1(),
+        input: InputIdentity {
+            media_type: InputMediaType::ApplicationJson,
+            canonicalization: InputCanonicalization::JcsRfc8785,
+            digest: canonical_json_digest(&input).expect("input digest"),
+        },
+    };
+    let run_id = contract.run_id().expect("run id");
+    let request = RacingHostedExecutionRequestV1 {
+        schema_version: RacingHostedExecutionRequestVersion::V1,
+        signed_authorization: SignedRunAuthorizationV1 {
+            authorization: RunAuthorizationV1 {
+                authorization_version: RunAuthorizationVersion::V1,
+                nonce: Digest::from_bytes(b"wasm-golden-nonce"),
+                subject: "career.wasm-golden".parse().expect("subject"),
+                audience: "pitgun.verifier".parse().expect("audience"),
+                contract,
+                run_id,
+                policy: ArtifactIdentity {
+                    id: "pitgun.racing.tuning".parse().expect("policy id"),
+                    version: "1.0.0".parse().expect("policy version"),
+                    digest: Digest::from_bytes(include_bytes!(
+                        "../../../policies/gametuning.v1.yaml"
+                    )),
+                },
+                signing_key_id: "wasm-golden-v1".parse().expect("key id"),
+                validity: AuthorizationValidityV1 {
+                    issued_at_ms: 1_722_345_600_000,
+                    expires_at_ms: 1_722_345_900_000,
+                    late_submission_grace_ms: 900_000,
+                },
+            },
+            algorithm: AuthorizationSignatureAlgorithm::HmacSha256,
+            signature: "fixture-only-signature".to_string(),
+        },
+        input,
+        execution_id: "018f3b78-7e9a-7d20-a5e1-4ed92f02a591"
+            .parse()
+            .expect("execution id"),
+        wasm_artifact_digest: Digest::from_bytes(b"exact-golden-wasm-module"),
+    };
+    let response = execute_authorized_race_json(
+        serde_json::to_string(&request).expect("hosted execution request"),
+    );
+    let submission: RacingVerificationSubmissionV1 = serde_json::from_str(&response)
+        .unwrap_or_else(|error| panic!("invalid hosted evidence: {error}: {response}"));
+
+    let actual = HostedWasmGoldenDigests {
+        run_id: submission.receipt.receipt.run_id,
+        output_digest: submission.receipt.receipt.output_digest,
+        telemetry_summary_digest: submission.receipt.receipt.telemetry_summary_digest,
+        wasm_artifact_digest: submission.receipt.receipt.runtime.artifact_digest,
+    };
+    let expected: HostedWasmGoldenDigests =
+        serde_json::from_str(EXPECTED_HOSTED_WASM_DIGESTS).expect("hosted WASM digest fixture");
+    assert_eq!(actual, expected, "hosted WASM evidence changed");
+    assert_eq!(submission.receipt.receipt.run_id, run_id);
+    assert_eq!(
+        submission.receipt.receipt.runtime.engine.to_string(),
+        "pitgun-wasm"
+    );
+    assert_eq!(
+        submission.receipt.receipt.runtime.target.to_string(),
+        "wasm32-unknown-unknown"
+    );
+    assert_eq!(
+        submission.receipt.receipt.runtime.artifact_digest,
+        request.wasm_artifact_digest
+    );
+    assert_eq!(
+        submission.receipt.receipt.output_digest,
+        canonical_json_digest(&submission.output).expect("output digest")
+    );
+    assert_eq!(
+        submission.receipt.receipt.telemetry_summary_digest,
+        canonical_json_digest(&submission.telemetry_summary).expect("telemetry digest")
+    );
+    let round_trip = serde_json::to_string(&submission).expect("submission JSON");
+    serde_json::from_str::<RacingVerificationSubmissionV1>(&round_trip)
+        .expect("strict Verifier submission");
 }
 
 fn run_golden_race() -> RaceOutput {
