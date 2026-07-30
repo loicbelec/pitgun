@@ -26,6 +26,7 @@
 - [Stable RNG V1](RNG_V1.md)
 - [Statically linked workload boundary](LINKED_WORKLOAD.md)
 - [Loaded Run Bundle verification](RUN_BUNDLE_VERIFICATION.md)
+- [Verification Verdict V1](VERIFICATION_VERDICT_V1.md)
 - [Racing contract inventory and compatibility boundary](RACING_CONTRACT_INVENTORY.md)
 - [Wire formats](WIRE_FORMATS.md)
 
