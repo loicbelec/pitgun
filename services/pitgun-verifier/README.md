@@ -27,17 +27,41 @@ different identity produces terminal `REJECTED`.
 
 ## Boundaries
 
-This crate currently contains transport-independent verification logic. It does
-not:
+The pure engine does not:
 
 - trust a client-provided verdict;
 - persist leaderboard rows;
 - consume an authorization nonce;
 - claim durable idempotency;
 - perform mutable `latest` discovery;
-- expose an HTTP API.
 
-Those responsibilities belong to the hosted API and persistence increments
-around this engine. Keeping the engine pure also allows the same verifier to
-move from the VPS to another worker, including a future Mac mini, without
-changing the verdict contract.
+The `pitgun-verifier` binary exposes an internal worker API:
+
+- `GET /healthz`;
+- `GET /readyz`;
+- `POST /v1/verifications/racing`.
+
+`PENDING` uses HTTP 202. Terminal `VERIFIED` and `REJECTED` decisions use HTTP
+200 because both are successfully processed, server-owned verdicts. Malformed
+transport input and internal failures are not verdicts.
+
+Deterministic replay runs on bounded blocking workers. Configure the limit with
+`PITGUN_VERIFIER_MAX_CONCURRENT_REPLAYS`; the VPS-oriented default is `2`.
+
+The worker loads:
+
+- retained Authority HMAC verification material from
+  `PITGUN_SIGNING_SECRET_FILE` (or inline material only for local development);
+- its retained key identifier from `PITGUN_SIGNING_KEY_ID`;
+- its expected audience from `PITGUN_VERIFIER_AUDIENCE`;
+- the immutable Racing release from `PITGUN_RACING_CATALOG_RELEASE_DIR`;
+- the accepted tuning policy from `PITGUN_TUNING_POLICY_PATH`.
+
+`/readyz` fails closed when signing-key verification material or retained
+catalog bytes are unavailable.
+
+The HTTP endpoint is an internal boundary. It must not be routed directly to a
+browser. Durable nonce consumption and idempotent verdict persistence belong to
+the game/backend submission transaction. Keeping the engine separate also
+allows the worker to move from the VPS to another machine, including a future
+Mac mini, without changing the verdict contract.

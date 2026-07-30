@@ -1,0 +1,161 @@
+name: build-verifier
+
+on:
+  pull_request:
+    paths:
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - "services/pitgun-verifier/**"
+      - "crates/pitgun-contract/**"
+      - "crates/pitgun-signing/**"
+      - "crates/pitgun-policy/**"
+      - "crates/pitgun-racing-contract/**"
+      - "crates/pitgun-racing-policy/**"
+      - "crates/pitgun-racing-simulator/**"
+      - "crates/pitgun-racing-solver/**"
+      - "crates/pitgun-runtime/**"
+      - "crates/pitgun-core/**"
+      - "policies/**"
+      - "catalogs/racing/**"
+      - ".github/workflows/build-verifier.yml"
+  push:
+    branches: ["main"]
+    paths:
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - "services/pitgun-verifier/**"
+      - "crates/pitgun-contract/**"
+      - "crates/pitgun-signing/**"
+      - "crates/pitgun-policy/**"
+      - "crates/pitgun-racing-contract/**"
+      - "crates/pitgun-racing-policy/**"
+      - "crates/pitgun-racing-simulator/**"
+      - "crates/pitgun-racing-solver/**"
+      - "crates/pitgun-runtime/**"
+      - "crates/pitgun-core/**"
+      - "policies/**"
+      - "catalogs/racing/**"
+      - ".github/workflows/build-verifier.yml"
+  workflow_dispatch:
+
+env:
+  IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/pitgun-verifier
+  LOCAL_IMAGE: pitgun-verifier:pr-${{ github.sha }}
+
+jobs:
+  build-verifier-image:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      image_tag: ${{ steps.meta.outputs.image_tag }}
+      image_digest: ${{ steps.push.outputs.digest }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Compute image tag
+        id: meta
+        run: echo "image_tag=${IMAGE_NAME}:${GITHUB_SHA}" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GHCR
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build verifier image for PR validation
+        if: github.event_name == 'pull_request'
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./services/pitgun-verifier/Dockerfile
+          load: true
+          push: false
+          tags: ${{ env.LOCAL_IMAGE }}
+          build-args: |
+            RUST_VERSION=1.89
+          cache-from: type=gha,scope=pitgun-verifier
+          cache-to: type=gha,mode=max,scope=pitgun-verifier
+
+      - name: Smoke-test verifier image
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          trap 'docker logs pitgun-verifier-smoke || true; docker logs pitgun-verifier-unready || true; docker rm -f pitgun-verifier-smoke pitgun-verifier-unready || true; rm -f /tmp/pitgun-verifier-signing-secret /tmp/pitgun-verifier-error' EXIT
+          umask 077
+          printf '%s' 'ci-only-verifier-smoke-secret' > /tmp/pitgun-verifier-signing-secret
+          chmod 0444 /tmp/pitgun-verifier-signing-secret
+          docker run --detach \
+            --name pitgun-verifier-smoke \
+            --publish 127.0.0.1:18081:8080 \
+            --volume /tmp/pitgun-verifier-signing-secret:/run/secrets/pitgun_verifier_signing_secret:ro \
+            --env PITGUN_SIGNING_SECRET_FILE=/run/secrets/pitgun_verifier_signing_secret \
+            --env PITGUN_SIGNING_KEY_ID=ci-smoke \
+            "${LOCAL_IMAGE}"
+
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:18081/readyz >/dev/null; then
+              break
+            fi
+            if [ "${attempt}" -eq 30 ]; then
+              echo "Verifier did not become ready" >&2
+              exit 1
+            fi
+            sleep 1
+          done
+
+          curl --fail --silent http://127.0.0.1:18081/healthz >/dev/null
+          test "$(docker inspect --format '{{.Config.User}}' pitgun-verifier-smoke)" = "appuser"
+          test "$(docker inspect --format '{{range .Mounts}}{{if eq .Destination \"/run/secrets/pitgun_verifier_signing_secret\"}}{{.RW}}{{end}}{{end}}' pitgun-verifier-smoke)" = "false"
+
+          test "$(curl --silent --output /tmp/pitgun-verifier-error --write-out '%{http_code}' \
+            --request POST http://127.0.0.1:18081/v1/verifications/racing \
+            --header 'content-type: application/json' \
+            --data '{}')" = "422"
+          ! grep --fixed-strings 'ci-only-verifier-smoke-secret' /tmp/pitgun-verifier-error
+
+          docker run --detach \
+            --name pitgun-verifier-unready \
+            --publish 127.0.0.1:18082:8080 \
+            "${LOCAL_IMAGE}"
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:18082/healthz >/dev/null; then
+              break
+            fi
+            if [ "${attempt}" -eq 30 ]; then
+              echo "Unready verifier did not become healthy" >&2
+              exit 1
+            fi
+            sleep 1
+          done
+          test "$(curl --silent --output /dev/null --write-out '%{http_code}' \
+            http://127.0.0.1:18082/readyz)" = "503"
+
+      - name: Build and push verifier image
+        if: github.event_name != 'pull_request'
+        id: push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./services/pitgun-verifier/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.image_tag }}
+          build-args: |
+            RUST_VERSION=1.89
+          cache-from: type=gha,scope=pitgun-verifier
+          cache-to: type=gha,mode=max,scope=pitgun-verifier
+
+      - name: Publish image details
+        if: github.event_name != 'pull_request'
+        run: |
+          echo "Image tag: ${{ steps.meta.outputs.image_tag }}"
+          echo "Image digest: ${{ steps.push.outputs.digest }}"

@@ -1675,12 +1675,17 @@ dependencies = [
 name = "pitgun-verifier"
 version = "0.1.0"
 dependencies = [
+ "axum",
  "pitgun-contract",
+ "pitgun-racing-policy",
  "pitgun-racing-simulator",
  "pitgun-runtime",
  "pitgun-signing",
  "serde",
  "serde_json",
+ "tokio",
+ "tracing",
+ "tracing-subscriber",
 ]
 
 [[package]]
