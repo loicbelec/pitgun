@@ -8,6 +8,7 @@ pub mod metrics;
 pub mod registry;
 pub mod run;
 pub mod source;
+pub mod verification;
 
 pub use authorization::{
     AuthorizationSignatureAlgorithm, AuthorizationValidityV1, RunAuthorizationError,
@@ -57,4 +58,8 @@ pub use run::{
 pub use source::{
     SourceConfig, SourceError, SourceMetadata, SourceResult, SourceState, SourceStats, SourceType,
     TelemetrySource,
+};
+pub use verification::{
+    SubmittedEvidenceV1, VerificationReasonCode, VerificationStatus, VerificationVerdictError,
+    VerificationVerdictV1, VerificationVerdictVersion, VerifiedResolutionV1,
 };

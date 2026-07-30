@@ -1,0 +1,35 @@
+{
+  "schema_version": "pitgun.verification-verdict/v1",
+  "run_id": "sha256:acba25512100f80b56fc3ccd14c65be55d94800cda77585c5f41a887e398f9be",
+  "execution_id": "018f3b78-7e9a-7d20-a5e1-4ed92f02a591",
+  "status": "VERIFIED",
+  "reason_code": null,
+  "submitted_evidence": {
+    "receipt_digest": "sha256:6f32860910ca0fb2a20c7fda143666b09dbf8db5238195c90a586fb542ff0cad",
+    "output_digest": "sha256:e0ee8bb50685e05fa0f47ed04203ae953fdfd055f5bd2892ea186504254f8c3a",
+    "telemetry_summary_digest": "sha256:934af03e5f9ab5ad3a3729e48f2d9f32729f79f52480fce20823425d50ced657"
+  },
+  "verified_resolution": {
+    "model": {
+      "id": "pitgun.racing",
+      "version": "1.0.0",
+      "digest": "sha256:9372c470eeadd5ecd9c3c74c2b3cb633f8e2f2fad799250a0f70d652b6b825e4"
+    },
+    "data_pack": {
+      "id": "pitgun.racing.simulation",
+      "version": "1.0.0",
+      "digest": "sha256:2b610c94827d2ebde9405ba0f11a9689a21f7abbd24cebc1e3c0f0e5ad52a035"
+    },
+    "policy": {
+      "id": "pitgun.racing.tuning",
+      "version": "1.0.0",
+      "digest": "sha256:823412d1eacb67956220e532959f0104603057c88704863ca38e7cd188fda812"
+    }
+  },
+  "verifier": {
+    "id": "pitgun.verifier",
+    "version": "1.0.0",
+    "digest": "sha256:88c9eae68eb300b2971a2bec9e5a26ff4179fd661d6b7d861e4c6557b9aaee14"
+  },
+  "recorded_at_ms": 1722345678901
+}
