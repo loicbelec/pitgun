@@ -115,7 +115,7 @@ jobs:
 
           curl --fail --silent http://127.0.0.1:18081/healthz >/dev/null
           test "$(docker inspect --format '{{.Config.User}}' pitgun-verifier-smoke)" = "appuser"
-          test "$(docker inspect --format '{{range .Mounts}}{{if eq .Destination \"/run/secrets/pitgun_verifier_signing_secret\"}}{{.RW}}{{end}}{{end}}' pitgun-verifier-smoke)" = "false"
+          test "$(docker inspect --format '{{range .Mounts}}{{if eq .Destination "/run/secrets/pitgun_verifier_signing_secret"}}{{.RW}}{{end}}{{end}}' pitgun-verifier-smoke)" = "false"
 
           test "$(curl --silent --output /tmp/pitgun-verifier-error --write-out '%{http_code}' \
             --request POST http://127.0.0.1:18081/v1/verifications/racing \
