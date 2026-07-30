@@ -510,7 +510,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     tracing_subscriber::fmt().with_env_filter(log_filter).init();
 
     let config = load_config();
-    let signing_key = match SigningKey::from_env() {
+    let signing_key = match SigningKey::from_env_or_file() {
         Ok(key) => Some(key),
         Err(err) => {
             error!(?err, "signing secret unavailable; /readyz will report 503");

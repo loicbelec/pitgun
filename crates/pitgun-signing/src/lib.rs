@@ -1,5 +1,8 @@
 use std::collections::BTreeMap;
 use std::fmt;
+use std::fs;
+use std::io;
+use std::path::{Path, PathBuf};
 
 use hmac::{Hmac, Mac};
 use pitgun_contract::{
@@ -8,27 +11,51 @@ use pitgun_contract::{
 use sha2::Sha256;
 
 pub const SIGNING_SECRET_ENV: &str = "PITGUN_SIGNING_SECRET";
+pub const SIGNING_SECRET_FILE_ENV: &str = "PITGUN_SIGNING_SECRET_FILE";
 
 type HmacSha256 = Hmac<Sha256>;
 
 #[derive(Debug)]
 pub enum SigningError {
     MissingSecret,
+    ConflictingSecretSources,
     EmptySecret,
+    SecretFile { path: PathBuf, source: io::Error },
 }
 
 impl std::fmt::Display for SigningError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             SigningError::MissingSecret => {
-                write!(f, "{SIGNING_SECRET_ENV} is not set")
+                write!(
+                    f,
+                    "neither {SIGNING_SECRET_ENV} nor {SIGNING_SECRET_FILE_ENV} is set"
+                )
             }
-            SigningError::EmptySecret => write!(f, "{SIGNING_SECRET_ENV} must not be empty"),
+            SigningError::ConflictingSecretSources => write!(
+                f,
+                "{SIGNING_SECRET_ENV} and {SIGNING_SECRET_FILE_ENV} cannot both be set"
+            ),
+            SigningError::EmptySecret => write!(f, "signing secret must not be empty"),
+            SigningError::SecretFile { path, source } => {
+                write!(
+                    f,
+                    "failed to read signing secret file {}: {source}",
+                    path.display()
+                )
+            }
         }
     }
 }
 
-impl std::error::Error for SigningError {}
+impl std::error::Error for SigningError {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        match self {
+            SigningError::SecretFile { source, .. } => Some(source),
+            _ => None,
+        }
+    }
+}
 
 #[derive(Clone)]
 pub struct SigningKey {
@@ -45,6 +72,34 @@ impl SigningKey {
     pub fn from_env() -> Result<Self, SigningError> {
         let raw = std::env::var(SIGNING_SECRET_ENV).map_err(|_| SigningError::MissingSecret)?;
         Self::from_secret(raw.trim().as_bytes())
+    }
+
+    pub fn from_env_or_file() -> Result<Self, SigningError> {
+        Self::from_sources(
+            std::env::var_os(SIGNING_SECRET_ENV).map(|value| value.as_encoded_bytes().to_vec()),
+            std::env::var_os(SIGNING_SECRET_FILE_ENV).map(PathBuf::from),
+        )
+    }
+
+    pub fn from_secret_file(path: impl AsRef<Path>) -> Result<Self, SigningError> {
+        let path = path.as_ref();
+        let secret = fs::read(path).map_err(|source| SigningError::SecretFile {
+            path: path.to_path_buf(),
+            source,
+        })?;
+        Self::from_secret(trim_ascii_whitespace(&secret))
+    }
+
+    fn from_sources(
+        inline_secret: Option<Vec<u8>>,
+        secret_file: Option<PathBuf>,
+    ) -> Result<Self, SigningError> {
+        match (inline_secret, secret_file) {
+            (Some(_), Some(_)) => Err(SigningError::ConflictingSecretSources),
+            (Some(secret), None) => Self::from_secret(trim_ascii_whitespace(&secret)),
+            (None, Some(path)) => Self::from_secret_file(path),
+            (None, None) => Err(SigningError::MissingSecret),
+        }
     }
 
     pub fn from_secret(secret: &[u8]) -> Result<Self, SigningError> {
@@ -75,6 +130,16 @@ impl SigningKey {
         mac.update(bytes);
         mac.verify_slice(&expected).is_ok()
     }
+}
+
+fn trim_ascii_whitespace(mut bytes: &[u8]) -> &[u8] {
+    while bytes.first().is_some_and(u8::is_ascii_whitespace) {
+        bytes = &bytes[1..];
+    }
+    while bytes.last().is_some_and(u8::is_ascii_whitespace) {
+        bytes = &bytes[..bytes.len() - 1];
+    }
+    bytes
 }
 
 /// Verification material retained by stable key identifier.
@@ -200,11 +265,11 @@ impl std::error::Error for AuthorizationVerificationError {
 }
 
 pub fn sign(bytes: &[u8]) -> Result<String, SigningError> {
-    SigningKey::from_env().map(|key| key.sign(bytes))
+    SigningKey::from_env_or_file().map(|key| key.sign(bytes))
 }
 
 pub fn verify(bytes: &[u8], signature: &str) -> Result<bool, SigningError> {
-    SigningKey::from_env().map(|key| key.verify(bytes, signature))
+    SigningKey::from_env_or_file().map(|key| key.verify(bytes, signature))
 }
 
 #[cfg(test)]
@@ -290,6 +355,53 @@ mod tests {
         let debug = format!("{key:?}");
         assert_eq!(debug, "SigningKey([REDACTED])");
         assert!(!debug.contains("very-private-secret"));
+    }
+
+    #[test]
+    fn signing_key_loads_trimmed_binary_secret_from_file() {
+        let path = std::env::temp_dir().join(format!(
+            "pitgun-signing-{}-{}.secret",
+            std::process::id(),
+            "file-test"
+        ));
+        fs::write(&path, b"\n file-backed-secret \r\n").expect("write secret fixture");
+
+        let key = SigningKey::from_secret_file(&path).expect("file-backed key");
+        let expected = SigningKey::from_secret(b"file-backed-secret").expect("expected key");
+        let payload = b"deterministic-payload";
+
+        assert_eq!(key.sign(payload), expected.sign(payload));
+        fs::remove_file(path).expect("remove secret fixture");
+    }
+
+    #[test]
+    fn signing_key_sources_fail_closed_when_missing_or_ambiguous() {
+        assert!(matches!(
+            SigningKey::from_sources(None, None),
+            Err(SigningError::MissingSecret)
+        ));
+        assert!(matches!(
+            SigningKey::from_sources(
+                Some(b"inline".to_vec()),
+                Some(PathBuf::from("/run/secrets/pitgun"))
+            ),
+            Err(SigningError::ConflictingSecretSources)
+        ));
+    }
+
+    #[test]
+    fn signing_key_rejects_empty_secret_file_without_exposing_bytes() {
+        let path = std::env::temp_dir().join(format!(
+            "pitgun-signing-{}-{}.secret",
+            std::process::id(),
+            "empty-test"
+        ));
+        fs::write(&path, b" \n\t").expect("write empty secret fixture");
+
+        let error = SigningKey::from_secret_file(&path).expect_err("empty secret must fail");
+        assert!(matches!(error, SigningError::EmptySecret));
+        assert!(!error.to_string().contains("secret fixture"));
+        fs::remove_file(path).expect("remove secret fixture");
     }
 
     #[test]

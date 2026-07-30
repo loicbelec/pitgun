@@ -75,7 +75,9 @@ atomically record the nonce when accepting a result and reject any later reuse.
 
 The active authority key is selected by:
 
-- `PITGUN_SIGNING_SECRET`: private HMAC material;
+- exactly one of `PITGUN_SIGNING_SECRET` or `PITGUN_SIGNING_SECRET_FILE`:
+  private HMAC material for local development or its mounted secret-file path
+  for hosted environments;
 - `PITGUN_SIGNING_KEY_ID`: stable public identifier included in signed bytes.
 
 To rotate:
@@ -97,7 +99,8 @@ signature algorithm rather than distributing the HMAC secret.
 
 | Variable | Default | Meaning |
 |---|---:|---|
-| `PITGUN_SIGNING_SECRET` | required | Active private HMAC material |
+| `PITGUN_SIGNING_SECRET` | optional | Active private HMAC material for local development |
+| `PITGUN_SIGNING_SECRET_FILE` | optional | Mounted HMAC secret path for hosted environments |
 | `PITGUN_SIGNING_KEY_ID` | `pitgun-authority-v1` | Active verification-key ID |
 | `PITGUN_AUTHORITY_AUDIENCE` | `pitgun.verifier` | Only intended verifier |
 | `PITGUN_SIM_CONTRACT_TTL_SECONDS` | `300` | New-execution authorization window |
@@ -109,6 +112,10 @@ signature algorithm rather than distributing the HMAC secret.
 
 `/readyz` returns `503` when signing material is unavailable. `/healthz`
 reports only process liveness.
+
+Exactly one signing source must be configured. Setting both fails closed. A
+hosted Compose stack should mount a read-only Docker secret and set
+`PITGUN_SIGNING_SECRET_FILE=/run/secrets/pitgun_authority_signing_secret`.
 
 ## Legacy setup contract
 
