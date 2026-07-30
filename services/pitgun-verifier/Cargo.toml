@@ -6,11 +6,16 @@ authors.workspace = true
 license.workspace = true
 
 [dependencies]
+axum = "0.7"
 pitgun-contract = { path = "../../crates/pitgun-contract" }
+pitgun-racing-policy = { path = "../../crates/pitgun-racing-policy" }
 pitgun-racing-simulator = { path = "../../crates/pitgun-racing-simulator" }
 pitgun-runtime = { path = "../../crates/pitgun-runtime" }
 pitgun-signing = { path = "../../crates/pitgun-signing" }
 serde = { version = "1", features = ["derive"] }
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "sync"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt"] }
 
 [dev-dependencies]
 serde_json = "1"

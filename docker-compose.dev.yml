@@ -47,3 +47,18 @@ services:
     ports:
       - "127.0.0.1:${PITGUN_AUTHORITY_PORT:-8081}:8080"
     restart: unless-stopped
+
+  pitgun-verifier:
+    build:
+      context: .
+      dockerfile: services/pitgun-verifier/Dockerfile
+    environment:
+      PITGUN_VERIFIER_BIND: "0.0.0.0:8080"
+      PITGUN_SIGNING_SECRET: "${PITGUN_SIGNING_SECRET:-pitgun-framework-local-signing-secret-not-for-shared-environments}"
+      PITGUN_SIGNING_KEY_ID: "${PITGUN_SIGNING_KEY_ID:-pitgun-framework-local-v1}"
+      PITGUN_VERIFIER_AUDIENCE: "${PITGUN_VERIFIER_AUDIENCE:-pitgun.verifier}"
+      PITGUN_VERIFIER_MAX_CONCURRENT_REPLAYS: "${PITGUN_VERIFIER_MAX_CONCURRENT_REPLAYS:-2}"
+      RUST_LOG: "${PITGUN_VERIFIER_RUST_LOG:-info}"
+    ports:
+      - "127.0.0.1:${PITGUN_VERIFIER_PORT:-8082}:8080"
+    restart: unless-stopped
