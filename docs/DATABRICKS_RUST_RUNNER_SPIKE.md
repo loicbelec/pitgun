@@ -89,10 +89,10 @@ Measurements from the successful Free Edition run on 2026-08-10:
 
 | Boundary | Local ARM64 container | Databricks serverless |
 |---|---:|---:|
-| Compute/environment setup | not applicable | 195,000 ms |
-| Complete notebook execution | not applicable | 27,000 ms |
-| Native version/startup probe | 1 ms | 4 ms |
-| Deterministic Rust execution | 183 ms | 512 ms |
+| Compute/environment setup | not applicable | 217,000 ms |
+| Complete notebook execution | not applicable | 28,000 ms |
+| Native version/startup probe | 1 ms | 17 ms |
+| Deterministic Rust execution | 196 ms | 637 ms |
 
 The first two Databricks values include platform scheduling, environment
 installation, Python startup, and notebook overhead. They are operational cost,
