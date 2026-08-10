@@ -25,6 +25,32 @@ cargo run -p pitgun-cli -- replay /tmp/pitgun-racing-42
 The bundle layout and collision rules are defined by
 [Run Bundle V1](RUN_BUNDLE_V1.md).
 
+## Machine-readable Racing runs
+
+Execute one fully resolved scenario and emit a compact canonical JSON result:
+
+```bash
+cargo run -p pitgun-cli -- run racing \
+  --scenario apps/pitgun-cli/scenarios/racing-demo-v1.json \
+  --seed 42
+```
+
+Write the compact result to a file and optionally retain the full immutable
+evidence bundle:
+
+```bash
+cargo run -p pitgun-cli -- run racing \
+  --scenario apps/pitgun-cli/scenarios/racing-demo-v1.json \
+  --seed 42 \
+  --result /tmp/pitgun-result.json \
+  --bundle /tmp/pitgun-run-bundle
+```
+
+This command is the local automation boundary for parameter sweeps. It has no
+network, database, or Databricks dependency. Its input, output, and structured
+failure contracts are documented in
+[Racing Batch Runner V1](RACING_BATCH_RUNNER_V1.md).
+
 ## Observed-data aggregation
 
 ```bash

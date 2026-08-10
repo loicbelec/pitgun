@@ -11,6 +11,7 @@ use pitgun_source_ws::WsSource;
 use std::fmt;
 use std::path::PathBuf;
 
+mod batch;
 mod demo;
 mod manifest;
 mod replay;
@@ -31,10 +32,24 @@ struct Cli {
 enum Cmd {
     /// Run a complete built-in demonstration workload
     Demo(DemoArgs),
+    /// Execute one resolved scenario and emit a compact machine-readable result
+    Run(RunArgs),
     /// Replay and verify a committed deterministic run bundle
     Replay(ReplayArgs),
     /// Subscribe to telemetry and process via core pipeline
     Subscribe(SubscribeArgs),
+}
+
+#[derive(Args, Debug)]
+struct RunArgs {
+    #[command(subcommand)]
+    workload: RunWorkload,
+}
+
+#[derive(Subcommand, Debug)]
+enum RunWorkload {
+    /// Execute one resolved Racing scenario
+    Racing(batch::RacingBatchArgs),
 }
 
 #[derive(Args, Debug)]
@@ -132,6 +147,7 @@ fn main() {
 #[derive(Debug)]
 enum CommandError {
     General(anyhow::Error),
+    Batch(batch::BatchRunError),
     Racing(demo::racing::RacingDemoError),
     Bundle(demo::bundle::BundleError),
     Replay(replay::ReplayError),
@@ -141,6 +157,7 @@ impl CommandError {
     const fn exit_code(&self) -> u8 {
         match self {
             Self::General(_) => 1,
+            Self::Batch(error) => error.exit_code(),
             Self::Racing(error) => error.exit_code(),
             Self::Bundle(error) => error.exit_code(),
             Self::Replay(error) => error.exit_code(),
@@ -152,6 +169,7 @@ impl fmt::Display for CommandError {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::General(error) => error.fmt(formatter),
+            Self::Batch(error) => error.fmt(formatter),
             Self::Racing(error) => error.fmt(formatter),
             Self::Bundle(error) => error.fmt(formatter),
             Self::Replay(error) => error.fmt(formatter),
@@ -162,8 +180,15 @@ impl fmt::Display for CommandError {
 fn execute(cli: Cli) -> Result<(), CommandError> {
     match cli.cmd {
         Cmd::Demo(args) => run_demo(args),
+        Cmd::Run(args) => run_batch(args),
         Cmd::Replay(args) => run_replay(args),
         Cmd::Subscribe(args) => run_subscribe(args).map_err(CommandError::General),
+    }
+}
+
+fn run_batch(args: RunArgs) -> Result<(), CommandError> {
+    match args.workload {
+        RunWorkload::Racing(args) => batch::run_racing(&args).map_err(CommandError::Batch),
     }
 }
 
@@ -469,7 +494,7 @@ impl Sink for CompositeSink {
 mod tests {
     use clap::Parser;
 
-    use super::{Cli, Cmd, DemoWorkload};
+    use super::{Cli, Cmd, DemoWorkload, RunWorkload};
 
     #[test]
     fn parses_racing_demo_with_default_seed() {
@@ -482,7 +507,7 @@ mod tests {
                     assert_eq!(args.output, None);
                 }
             },
-            Cmd::Replay(_) | Cmd::Subscribe(_) => panic!("expected demo command"),
+            Cmd::Replay(_) | Cmd::Run(_) | Cmd::Subscribe(_) => panic!("expected demo command"),
         }
     }
 
@@ -496,7 +521,7 @@ mod tests {
             Cmd::Demo(args) => match args.workload {
                 DemoWorkload::Racing(args) => assert_eq!(args.seed, u64::MAX),
             },
-            Cmd::Replay(_) | Cmd::Subscribe(_) => panic!("expected demo command"),
+            Cmd::Replay(_) | Cmd::Run(_) | Cmd::Subscribe(_) => panic!("expected demo command"),
         }
     }
 
@@ -519,7 +544,7 @@ mod tests {
                     );
                 }
             },
-            Cmd::Replay(_) | Cmd::Subscribe(_) => panic!("expected demo command"),
+            Cmd::Replay(_) | Cmd::Run(_) | Cmd::Subscribe(_) => panic!("expected demo command"),
         }
     }
 
@@ -532,7 +557,42 @@ mod tests {
             Cmd::Replay(args) => {
                 assert_eq!(args.bundle, std::path::Path::new("runs/example"));
             }
-            Cmd::Demo(_) | Cmd::Subscribe(_) => panic!("expected replay command"),
+            Cmd::Demo(_) | Cmd::Run(_) | Cmd::Subscribe(_) => panic!("expected replay command"),
+        }
+    }
+
+    #[test]
+    fn parses_machine_readable_racing_run() {
+        let cli = Cli::try_parse_from([
+            "pitgun",
+            "run",
+            "racing",
+            "--scenario",
+            "scenario.json",
+            "--seed",
+            "42",
+            "--result",
+            "result.json",
+            "--bundle",
+            "bundle",
+        ])
+        .expect("valid batch run command");
+
+        match cli.cmd {
+            Cmd::Run(args) => match args.workload {
+                RunWorkload::Racing(args) => {
+                    assert_eq!(args.scenario, std::path::Path::new("scenario.json"));
+                    assert_eq!(args.seed, 42);
+                    assert_eq!(
+                        args.result.as_deref(),
+                        Some(std::path::Path::new("result.json"))
+                    );
+                    assert_eq!(args.bundle.as_deref(), Some(std::path::Path::new("bundle")));
+                }
+            },
+            Cmd::Demo(_) | Cmd::Replay(_) | Cmd::Subscribe(_) => {
+                panic!("expected run command")
+            }
         }
     }
 }

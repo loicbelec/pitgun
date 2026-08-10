@@ -33,8 +33,8 @@
           "cooling_points": 25.0,
           "aero_points": 25.0,
           "chassis_points": 25.0,
-          "downforce_slider": 0.5,
-          "gear_ratio_slider": 0.5
+          "downforce_slider": 0.2,
+          "gear_ratio_slider": 0.3
         },
         "budget_cap": 100.0
       }

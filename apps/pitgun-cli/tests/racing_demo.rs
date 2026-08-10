@@ -30,6 +30,23 @@ fn run_replay(bundle: &Path) -> Output {
         .expect("pitgun replay process must start")
 }
 
+fn racing_scenario() -> std::path::PathBuf {
+    Path::new(env!("CARGO_MANIFEST_DIR")).join("scenarios/racing-demo-v1.json")
+}
+
+fn racing_batch_scenarios() -> std::path::PathBuf {
+    Path::new(env!("CARGO_MANIFEST_DIR")).join("scenarios/racing-batch-v1")
+}
+
+fn run_batch(scenario: &Path, seed: &str) -> Output {
+    Command::new(env!("CARGO_BIN_EXE_pitgun"))
+        .args(["run", "racing", "--scenario"])
+        .arg(scenario)
+        .args(["--seed", seed])
+        .output()
+        .expect("pitgun batch process must start")
+}
+
 fn assert_replay_failure(bundle: &Path, exit_code: i32, diagnostic: &str) {
     let rejected = run_replay(bundle);
     assert_eq!(
@@ -159,6 +176,140 @@ fn racing_demo_completes_the_verified_loop_and_replays_in_a_fresh_process() {
     ));
 
     fs::remove_dir_all(bundle).expect("remove integration bundle");
+}
+
+#[test]
+fn racing_batch_emits_byte_identical_compact_results() {
+    let first = run_batch(&racing_scenario(), "42");
+    let second = run_batch(&racing_scenario(), "42");
+
+    assert!(
+        first.status.success(),
+        "first batch failed with stderr:\n{}",
+        String::from_utf8_lossy(&first.stderr)
+    );
+    assert!(
+        second.status.success(),
+        "second batch failed with stderr:\n{}",
+        String::from_utf8_lossy(&second.stderr)
+    );
+    assert!(first.stderr.is_empty());
+    assert!(second.stderr.is_empty());
+    assert_eq!(first.stdout, second.stdout);
+
+    let result: Value = serde_json::from_slice(&first.stdout).expect("compact result JSON");
+    assert_eq!(result["schema_version"], "pitgun.batch-run-result/v1");
+    assert_eq!(result["runtime"]["name"], "pitgun-cli");
+    assert_eq!(result["scenario"]["id"], "racing.single-lap");
+    assert_eq!(
+        result["configuration_id"],
+        "sha256:12a4207b2c26c814763a2a488054f7421e7cc3836a35e26fc16d96477c8744d7"
+    );
+    assert_eq!(
+        result["run_id"],
+        "sha256:89dc458a7460056dd519f5cda74c55c2b2b47f7091f1309ae10d11a2eb46a64a"
+    );
+    assert_eq!(result["summary"]["telemetry_frame_count"], 427);
+    assert_eq!(result["summary"]["telemetry_batch_count"], 7);
+    assert_eq!(
+        result["summary"]["metrics"]["metrics"][0]["id"],
+        "racing.observed-maximum-speed"
+    );
+    assert!(result["summary"].get("player_batches").is_none());
+}
+
+#[test]
+fn racing_batch_fixture_executes_distinct_materialized_configurations() {
+    let mut scenarios: Vec<_> = fs::read_dir(racing_batch_scenarios())
+        .expect("batch fixture directory")
+        .map(|entry| entry.expect("batch fixture entry").path())
+        .filter(|path| {
+            path.extension()
+                .is_some_and(|extension| extension == "json")
+        })
+        .collect();
+    scenarios.sort();
+    assert_eq!(scenarios.len(), 3);
+
+    let mut configuration_ids = std::collections::BTreeSet::new();
+    let mut run_ids = std::collections::BTreeSet::new();
+    for scenario in scenarios {
+        let first = run_batch(&scenario, "42");
+        let second = run_batch(&scenario, "42");
+        assert!(
+            first.status.success(),
+            "{} failed with stderr:\n{}",
+            scenario.display(),
+            String::from_utf8_lossy(&first.stderr)
+        );
+        assert_eq!(first.stdout, second.stdout);
+
+        let result: Value = serde_json::from_slice(&first.stdout).expect("batch result JSON");
+        configuration_ids.insert(
+            result["configuration_id"]
+                .as_str()
+                .expect("configuration identity")
+                .to_owned(),
+        );
+        run_ids.insert(result["run_id"].as_str().expect("run identity").to_owned());
+    }
+
+    assert_eq!(configuration_ids.len(), 3);
+    assert_eq!(run_ids.len(), 3);
+}
+
+#[test]
+fn racing_batch_optionally_persists_result_and_full_bundle() {
+    let root = temporary_bundle("batch-artifacts");
+    let result_path = root.join("result.json");
+    let bundle_path = root.join("bundle");
+    let output = Command::new(env!("CARGO_BIN_EXE_pitgun"))
+        .args(["run", "racing", "--scenario"])
+        .arg(racing_scenario())
+        .args(["--seed", "42", "--result"])
+        .arg(&result_path)
+        .arg("--bundle")
+        .arg(&bundle_path)
+        .output()
+        .expect("pitgun batch process must start");
+
+    assert!(
+        output.status.success(),
+        "batch failed with stderr:\n{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    assert!(output.stdout.is_empty());
+    assert!(output.stderr.is_empty());
+    let result: Value =
+        serde_json::from_slice(&fs::read(&result_path).expect("result file")).expect("result JSON");
+    assert_eq!(result["schema_version"], "pitgun.batch-run-result/v1");
+    assert!(bundle_path.join("manifest.json").is_file());
+    assert!(bundle_path.join("telemetry.jsonl").is_file());
+
+    fs::remove_dir_all(root).expect("remove batch artifacts");
+}
+
+#[test]
+fn racing_batch_emits_structured_contract_failures() {
+    let root = temporary_bundle("batch-invalid");
+    fs::create_dir(&root).expect("create invalid fixture root");
+    let scenario = root.join("invalid.json");
+    fs::write(&scenario, br#"{"schema_version":"unknown"}"#).expect("write invalid scenario");
+
+    let output = run_batch(&scenario, "42");
+    let repeated = run_batch(&scenario, "42");
+
+    assert_eq!(output.status.code(), Some(10));
+    assert!(output.stdout.is_empty());
+    assert_eq!(output.status.code(), repeated.status.code());
+    assert_eq!(output.stdout, repeated.stdout);
+    assert_eq!(output.stderr, repeated.stderr);
+    let error: Value = serde_json::from_slice(&output.stderr).expect("structured batch error");
+    assert_eq!(error["schema_version"], "pitgun.batch-run-error/v1");
+    assert_eq!(error["phase"], "contract");
+    assert_eq!(error["code"], "invalid_scenario");
+
+    fs::remove_dir_all(root).expect("remove invalid fixture root");
 }
 
 #[test]

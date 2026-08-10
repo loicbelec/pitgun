@@ -34,7 +34,7 @@ the complete directory therefore does not change any identity.
 | Artifact | V1 schema identity |
 |---|---|
 | Manifest | `pitgun.run-bundle-manifest/v1` |
-| Built-in Racing scenario | `pitgun.racing-demo-scenario/v1` |
+| Built-in Racing scenario | `pitgun.racing-resolved-scenario/v1` |
 | Deterministic contract | `pitgun.deterministic-run-contract/v1` |
 | Racing output | `pitgun.racing-output/v1` |
 | Each telemetry JSONL record | `pitgun.telemetry-record/v1` |

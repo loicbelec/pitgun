@@ -19,7 +19,7 @@ use serde::Serialize;
 use serde_json::Value;
 use uuid::Uuid;
 
-use super::racing::RacingDemoRun;
+use super::racing::RacingRun;
 
 const MANIFEST_FILE: &str = "manifest.json";
 const SCENARIO_FILE: &str = "scenario.json";
@@ -86,7 +86,7 @@ struct CanonicalArtifacts {
 }
 
 impl CanonicalArtifacts {
-    fn from_run(run: &RacingDemoRun) -> Result<Self, BundleError> {
+    fn from_run(run: &RacingRun) -> Result<Self, BundleError> {
         Ok(Self {
             scenario: run.scenario_json.clone(),
             contract: canonical_json_bytes(&run.contract).map_err(bundle_error)?,
@@ -140,7 +140,7 @@ impl CanonicalArtifacts {
 }
 
 pub(crate) fn persist(
-    run: &RacingDemoRun,
+    run: &RacingRun,
     requested_path: Option<&Path>,
 ) -> Result<PersistedBundle, BundleError> {
     let artifacts = CanonicalArtifacts::from_run(run)?;
@@ -201,7 +201,7 @@ pub(crate) fn persist(
 }
 
 fn write_and_commit(
-    run: &RacingDemoRun,
+    run: &RacingRun,
     artifacts: &CanonicalArtifacts,
     staging: &Path,
     destination: &Path,
@@ -247,7 +247,7 @@ fn write_and_commit(
     })
 }
 
-fn execution_receipt(run: &RacingDemoRun) -> Result<RunBundleReceiptV1, BundleError> {
+fn execution_receipt(run: &RacingRun) -> Result<RunBundleReceiptV1, BundleError> {
     let executable = std::env::current_exe()
         .map_err(|error| BundleError::new(format!("cannot locate current executable: {error}")))?;
     let executable_bytes = fs::read(&executable).map_err(|error| {
@@ -282,7 +282,7 @@ fn execution_receipt(run: &RacingDemoRun) -> Result<RunBundleReceiptV1, BundleEr
     })
 }
 
-fn encode_telemetry(run: &RacingDemoRun) -> Result<Vec<u8>, BundleError> {
+fn encode_telemetry(run: &RacingRun) -> Result<Vec<u8>, BundleError> {
     let mut bytes = Vec::new();
     let mut ordinal = 0_u64;
     for (batch_index, batch) in run.output.player_batches.iter().enumerate() {
