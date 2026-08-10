@@ -1,0 +1,9 @@
+resources:
+  experiments:
+    calibration_experiment:
+      name: /Shared/pitgun-calibration-v1
+      tags:
+        - key: pitgun.domain
+          value: calibration
+        - key: pitgun.version
+          value: v1

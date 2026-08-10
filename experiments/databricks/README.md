@@ -6,15 +6,17 @@ calibration campaigns. The target architecture and acceptance criteria live in
 
 ## Status
 
-The directory currently records the delivery boundary only. It does not yet
-contain a deployable Databricks bundle. Issue #154 adds the bundle after issue
-#153 defines the machine-readable Rust runner contract.
+This directory contains the Declarative Automation Bundle for Calibration V1.
+It provisions only the dedicated `workspace.pitgun_calibration` and
+`workspace.pitgun_policies` data plane, its MLflow experiment, and its
+parameterized serverless bootstrap job. The existing `workspace.default`
+objects remain outside the bundle and are never modified.
 
 The initial workspace is Databricks Free Edition. Local attended development
 uses the OAuth profile `pitgun-free`; that profile and its credentials belong to
 the developer machine and must never be committed.
 
-## Intended layout
+## Layout
 
 ```text
 experiments/databricks/
@@ -24,15 +26,68 @@ experiments/databricks/
 │   ├── jobs.yml
 │   └── schemas.yml
 ├── src/
-│   └── pitgun_calibration/
-├── tests/
+│   └── bootstrap_tables.py
 └── README.md
 ```
 
-The exact layout may change during #154 when it is validated against the current
-Declarative Automation Bundles schema. Configuration must remain portable: no
-workspace URL, user identity, catalog storage path, token, or secret belongs in
-the repository.
+Configuration is portable: no workspace URL, user identity, catalog storage
+path, token, or secret belongs in the repository.
+
+## Attended development
+
+Run commands from this directory. The local OAuth profile selects the workspace
+without becoming part of bundle configuration:
+
+```bash
+cd experiments/databricks
+databricks bundle validate -t dev -p pitgun-free --strict
+python3 -m unittest discover -s tests
+databricks bundle plan -t dev -p pitgun-free
+databricks bundle deploy -t dev -p pitgun-free
+databricks bundle run bootstrap_job -t dev -p pitgun-free \
+  --params operation=bootstrap,campaign_id=bundle-smoke
+```
+
+Repeat `deploy` and `run`: schema and table creation are idempotent. The job may
+also use `operation=validate` to check the complete data plane without executing
+DDL.
+
+The job uses a declared serverless environment and no cluster identifier. Free
+Edition quota exhaustion delays a run but does not change its logical result.
+
+The target is named `dev`, but uses bundle `production` naming semantics. This
+does not make the workspace a production service: it prevents development mode
+from silently prefixing the stable Unity Catalog schema names. Bundle files and
+state remain isolated below the attended user's `dev` deployment root.
+
+## Governed table ownership
+
+The attended deployment identity owns both bundle-created schemas. The job run
+identity owns the Delta tables it creates inside them. Every table has a SQL
+comment and `pitgun.grain`, `pitgun.owner_domain`, and
+`pitgun.contract_version` properties. V1 tables are:
+
+| Table | Grain |
+|---|---|
+| `pitgun_calibration.campaigns` | one campaign |
+| `pitgun_calibration.runs` | one campaign, materialized configuration, and seed |
+| `pitgun_calibration.metrics` | one successful run and metric |
+| `pitgun_calibration.candidates` | one reviewed candidate and difficulty band |
+| `pitgun_policies.releases` | one immutable policy release version |
+
+No personal or player data belongs in these V1 tables.
+
+## Destruction boundary
+
+`databricks bundle destroy -t dev -p pitgun-free` is destructive: it attempts
+to remove resources owned by this deployment. Non-empty Unity Catalog schemas
+may first require an explicit, separately reviewed table-retirement operation.
+Always inspect `databricks bundle plan` and retain approved policy artifacts
+elsewhere before destruction.
+
+The command cannot remove the legacy `workspace.default` assets because those
+objects are neither declared nor bound to this bundle. Destruction must remain
+an explicit human operation; it is never part of CI or a campaign job.
 
 ## Delivery sequence
 
