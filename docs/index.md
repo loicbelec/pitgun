@@ -14,6 +14,7 @@
 - [Executable examples and their status](EXAMPLES.md)
 - [CLI release process](RELEASING.md)
 - [Databricks Calibration V1](DATABRICKS_CALIBRATION_V1.md)
+- [Databricks Rust runner spike](DATABRICKS_RUST_RUNNER_SPIKE.md)
 
 ## Architecture Decisions
 

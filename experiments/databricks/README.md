@@ -46,6 +46,8 @@ databricks bundle plan -t dev -p pitgun-free
 databricks bundle deploy -t dev -p pitgun-free
 databricks bundle run bootstrap_job -t dev -p pitgun-free \
   --params operation=bootstrap,campaign_id=bundle-smoke
+databricks bundle run runner_spike_job -t dev -p pitgun-free \
+  --params seed=42
 ```
 
 Repeat `deploy` and `run`: schema and table creation are idempotent. The job may
@@ -59,6 +61,18 @@ The target is named `dev`, but uses bundle `production` naming semantics. This
 does not make the workspace a production service: it prevents development mode
 from silently prefixing the stable Unity Catalog schema names. Bundle files and
 state remain isolated below the attended user's `dev` deployment root.
+
+## Packaged Rust runner
+
+`adapter/build.sh` builds the existing Rust CLI for Linux/arm64 and places
+it inside a platform wheel. The bundle uploads that wheel as the only custom
+library of `runner_spike_job`. Generated binaries and wheels are ignored by Git.
+
+The bounded adapter accepts only a seed, executes the embedded scenario, and
+records the exact runner and result digests. See
+[Databricks Rust Runner Spike](../../docs/DATABRICKS_RUST_RUNNER_SPIKE.md) for
+the decision, local parity fixture, measurements, rejected alternatives, and
+security boundary.
 
 ## Governed table ownership
 

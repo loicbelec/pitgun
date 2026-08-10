@@ -75,6 +75,9 @@ jobs:
       - name: Validate static catalog publication
         run: python scripts/build-catalog-site.py --output /tmp/pitgun-catalog-site
 
+      - name: Validate Databricks bundle contracts
+        run: python -m unittest discover -s experiments/databricks/tests -v
+
       - name: Build project
         run: cargo build --all --verbose
 
