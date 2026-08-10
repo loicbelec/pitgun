@@ -17,6 +17,7 @@ from typing import Any
 RESULT_VERSION = "pitgun.databricks-runner-result/v1"
 RUNNER_TARGET = "aarch64-unknown-linux-gnu"
 PROCESS_TIMEOUT_SECONDS = 120
+SCENARIO_FAMILIES = frozenset({"balanced", "high-downforce", "low-downforce"})
 
 
 class RunnerExecutionError(RuntimeError):
@@ -111,10 +112,18 @@ def _execute(runner_bytes: bytes, scenario_bytes: bytes, seed: int) -> dict[str,
         }
 
 
-def execute_packaged_racing(seed: int = 42) -> dict[str, Any]:
-    """Execute only the scenario and native binary embedded in this wheel."""
+def execute_packaged_racing(
+    seed: int = 42, configuration_family: str = "balanced"
+) -> dict[str, Any]:
+    """Execute one allowlisted scenario and the native binary embedded in this wheel."""
+
+    if configuration_family not in SCENARIO_FAMILIES:
+        allowed = ", ".join(sorted(SCENARIO_FAMILIES))
+        raise ValueError(f"unsupported configuration family; expected one of: {allowed}")
 
     package = importlib.resources.files("pitgun_databricks_adapter")
     runner_bytes = package.joinpath("bin", "pitgun").read_bytes()
-    scenario_bytes = package.joinpath("scenarios", "balanced.json").read_bytes()
+    scenario_bytes = package.joinpath(
+        "scenarios", f"{configuration_family}.json"
+    ).read_bytes()
     return _execute(runner_bytes, scenario_bytes, seed)

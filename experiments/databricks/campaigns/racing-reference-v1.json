@@ -1,0 +1,73 @@
+{
+  "schema_version": "pitgun.calibration-campaign/v1",
+  "campaign_id": "racing-reference-it-1922-2026-v1",
+  "question": "Which bounded setup family is fast, robust across seeds, and materially different on the 2026 it-1922 reference circuit?",
+  "parameter_space_version": "1.0.0",
+  "scenario": {
+    "id": "racing.single-lap",
+    "version": "1.0.0"
+  },
+  "model": {
+    "id": "pitgun.racing",
+    "version": "1.0.0",
+    "digest": "sha256:03541bcc24f946d11071e6fb67915ec5d429dce63362d456aba2c3d339a3fe38"
+  },
+  "data_pack": {
+    "id": "pitgun.racing.2026",
+    "version": "1.0.0",
+    "digest": "sha256:fc6ade498d399cd439cfb33d74ab0e2e6ee1279ed19441ed99b8cea9963875c9"
+  },
+  "circuit_id": "it-1922",
+  "era": 2026,
+  "seeds": [
+    "42",
+    "2026",
+    "20260810"
+  ],
+  "configuration_families": [
+    {
+      "id": "balanced",
+      "scenario_resource": "balanced.json",
+      "expected_configuration_id": "sha256:12a4207b2c26c814763a2a488054f7421e7cc3836a35e26fc16d96477c8744d7",
+      "expected_scenario_digest": "sha256:754ae51f7752005b52884cd9d9b524528459f9aa9c35c4af5e897f381ebe5820",
+      "setup": {
+        "downforce_slider": 0.5,
+        "gear_ratio_slider": 0.5
+      },
+      "strategy": {
+        "id": "single-lap-no-stop"
+      }
+    },
+    {
+      "id": "high-downforce",
+      "scenario_resource": "high-downforce.json",
+      "expected_configuration_id": "sha256:f61df371a9cb5470410842e52a02e97b6763d71cbbe28b1f27b6cb7a83534611",
+      "expected_scenario_digest": "sha256:423c0e7b91fecae2aa9d4dcd97cba8ba0d5f73c249a61a8e3ec34683d19da4cd",
+      "setup": {
+        "downforce_slider": 0.8,
+        "gear_ratio_slider": 0.7
+      },
+      "strategy": {
+        "id": "single-lap-no-stop"
+      }
+    },
+    {
+      "id": "low-downforce",
+      "scenario_resource": "low-downforce.json",
+      "expected_configuration_id": "sha256:0dae0f776d53d34a4806b0b7a013c52b5bdf0e7e751560ffd0e4ea7b563651bf",
+      "expected_scenario_digest": "sha256:02fa2155cbe3c80334427b83b492251dfb0349b7db81e12c1ac23257faa88314",
+      "setup": {
+        "downforce_slider": 0.2,
+        "gear_ratio_slider": 0.3
+      },
+      "strategy": {
+        "id": "single-lap-no-stop"
+      }
+    }
+  ],
+  "planned_run_count": 9,
+  "audit_sample": {
+    "retain_complete_run_bundles": 0,
+    "reason": "The first campaign validates compact-result governance before retaining larger artifacts."
+  }
+}

@@ -220,6 +220,20 @@ fn racing_batch_emits_byte_identical_compact_results() {
 
 #[test]
 fn racing_batch_fixture_executes_distinct_materialized_configurations() {
+    let expected_configuration_ids = std::collections::BTreeMap::from([
+        (
+            "balanced",
+            "sha256:12a4207b2c26c814763a2a488054f7421e7cc3836a35e26fc16d96477c8744d7",
+        ),
+        (
+            "high-downforce",
+            "sha256:f61df371a9cb5470410842e52a02e97b6763d71cbbe28b1f27b6cb7a83534611",
+        ),
+        (
+            "low-downforce",
+            "sha256:0dae0f776d53d34a4806b0b7a013c52b5bdf0e7e751560ffd0e4ea7b563651bf",
+        ),
+    ]);
     let mut scenarios: Vec<_> = fs::read_dir(racing_batch_scenarios())
         .expect("batch fixture directory")
         .map(|entry| entry.expect("batch fixture entry").path())
@@ -245,6 +259,14 @@ fn racing_batch_fixture_executes_distinct_materialized_configurations() {
         assert_eq!(first.stdout, second.stdout);
 
         let result: Value = serde_json::from_slice(&first.stdout).expect("batch result JSON");
+        let family = scenario
+            .file_stem()
+            .and_then(|value| value.to_str())
+            .expect("scenario family");
+        assert_eq!(
+            result["configuration_id"].as_str(),
+            expected_configuration_ids.get(family).copied()
+        );
         configuration_ids.insert(
             result["configuration_id"]
                 .as_str()

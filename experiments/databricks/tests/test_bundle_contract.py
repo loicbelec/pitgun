@@ -1,4 +1,6 @@
 import ast
+import hashlib
+import json
 import pathlib
 import unittest
 
@@ -54,9 +56,33 @@ class BundleContractTest(unittest.TestCase):
         self.assertIn("- name: seed", job)
         for forbidden_parameter in ("runner_url", "runner_path", "command", "scenario"):
             self.assertNotIn(f"- name: {forbidden_parameter}", job)
+        self.assertIn("- name: configuration_family", job)
+        self.assertIn('SCENARIO_FAMILIES = frozenset(', runner)
         self.assertNotIn("shell=True", runner)
         self.assertNotIn("http://", runner)
         self.assertNotIn("https://", runner)
+
+    def test_reference_campaign_manifest_is_frozen_and_reconciled(self):
+        campaign_root = ROOT / "campaigns"
+        manifest_path = campaign_root / "racing-reference-v1.json"
+        checksum_path = campaign_root / "racing-reference-v1.sha256"
+        expected_digest, expected_name = checksum_path.read_text().split()
+        self.assertEqual(expected_name, manifest_path.name)
+        self.assertEqual(
+            hashlib.sha256(manifest_path.read_bytes()).hexdigest(), expected_digest
+        )
+
+        manifest = json.loads(manifest_path.read_text())
+        families = manifest["configuration_families"]
+        seeds = manifest["seeds"]
+        self.assertEqual(manifest["planned_run_count"], len(families) * len(seeds))
+        self.assertGreaterEqual(len(families), 3)
+        self.assertGreaterEqual(len(seeds), 2)
+        self.assertEqual(len({family["id"] for family in families}), len(families))
+        self.assertEqual(
+            len({family["expected_configuration_id"] for family in families}),
+            len(families),
+        )
 
 
 if __name__ == "__main__":
