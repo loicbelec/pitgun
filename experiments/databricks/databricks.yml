@@ -5,6 +5,12 @@ bundle:
 include:
   - resources/*.yml
 
+artifacts:
+  runner_adapter:
+    type: whl
+    path: adapter
+    build: ./build.sh
+
 variables:
   catalog_name:
     description: Existing Unity Catalog catalog dedicated to the target workspace.

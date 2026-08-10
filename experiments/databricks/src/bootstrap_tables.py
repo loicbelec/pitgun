@@ -8,6 +8,7 @@ deletes objects in ``workspace.default``.
 # COMMAND ----------
 
 import json
+import platform
 import re
 
 
@@ -226,6 +227,7 @@ result = {
     "operation": operation,
     "campaign_id": campaign_id,
     "experiment_id": experiment_id,
+    "host": {"machine": platform.machine(), "system": platform.system()},
     "tables": observed,
 }
 dbutils.notebook.exit(json.dumps(result, sort_keys=True, separators=(",", ":")))

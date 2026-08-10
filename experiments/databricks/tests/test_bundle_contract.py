@@ -7,9 +7,10 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 
 
 class BundleContractTest(unittest.TestCase):
-    def test_bootstrap_notebook_is_valid_python(self):
-        source = (ROOT / "src" / "bootstrap_tables.py").read_text()
-        ast.parse(source)
+    def test_python_sources_are_syntactically_valid(self):
+        for path in ROOT.rglob("*.py"):
+            if path != pathlib.Path(__file__):
+                ast.parse(path.read_text(), filename=str(path))
 
     def test_bootstrap_owns_only_the_five_governed_tables(self):
         source = (ROOT / "src" / "bootstrap_tables.py").read_text()
@@ -40,6 +41,22 @@ class BundleContractTest(unittest.TestCase):
             "host:",
         ):
             self.assertNotIn(forbidden, configuration)
+
+    def test_runner_job_exposes_no_arbitrary_code_boundary(self):
+        job = (ROOT / "resources" / "jobs.yml").read_text()
+        runner = (
+            ROOT
+            / "adapter"
+            / "pitgun_databricks_adapter"
+            / "runner.py"
+        ).read_text()
+        self.assertIn("runner_spike_job:", job)
+        self.assertIn("- name: seed", job)
+        for forbidden_parameter in ("runner_url", "runner_path", "command", "scenario"):
+            self.assertNotIn(f"- name: {forbidden_parameter}", job)
+        self.assertNotIn("shell=True", runner)
+        self.assertNotIn("http://", runner)
+        self.assertNotIn("https://", runner)
 
 
 if __name__ == "__main__":
