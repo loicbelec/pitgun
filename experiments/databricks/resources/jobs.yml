@@ -1,0 +1,37 @@
+resources:
+  jobs:
+    bootstrap_job:
+      name: pitgun-calibration-v1
+      description: >-
+        Bootstrap and validate the governed data plane used by deterministic
+        Pitgun Racing calibration campaigns.
+      max_concurrent_runs: 1
+      performance_target: STANDARD
+      parameters:
+        - name: operation
+          default: bootstrap
+        - name: campaign_id
+          default: bundle-smoke
+      environments:
+        - environment_key: serverless
+          spec:
+            environment_version: "4"
+      tasks:
+        - task_key: bootstrap_governed_tables
+          description: Create the five documented Delta tables idempotently.
+          environment_key: serverless
+          notebook_task:
+            notebook_path: ../src/bootstrap_tables.py
+            source: WORKSPACE
+            base_parameters:
+              operation: "{{job.parameters.operation}}"
+              campaign_id: "{{job.parameters.campaign_id}}"
+              catalog_name: ${var.catalog_name}
+              calibration_schema: ${resources.schemas.calibration.name}
+              policies_schema: ${resources.schemas.policies.name}
+              experiment_id: ${resources.experiments.calibration_experiment.id}
+          timeout_seconds: 900
+      tags:
+        pitgun.domain: calibration
+        pitgun.compute: serverless
+        pitgun.version: v1

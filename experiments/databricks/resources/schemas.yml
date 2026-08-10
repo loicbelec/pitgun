@@ -1,0 +1,22 @@
+resources:
+  schemas:
+    calibration:
+      catalog_name: ${var.catalog_name}
+      name: ${var.calibration_schema_name}
+      comment: >-
+        Pitgun offline deterministic calibration campaigns, run identities,
+        metrics, and reviewed candidate decisions. One deployment identity owns
+        this schema; game traffic never depends on it.
+      properties:
+        pitgun.domain: calibration
+        pitgun.lifecycle: offline-experiment
+
+    policies:
+      catalog_name: ${var.catalog_name}
+      name: ${var.policies_schema_name}
+      comment: >-
+        Metadata for reviewed, immutable Pitgun policy releases. Exploratory
+        calibration jobs cannot publish directly to the game catalog.
+      properties:
+        pitgun.domain: policies
+        pitgun.lifecycle: reviewed-release

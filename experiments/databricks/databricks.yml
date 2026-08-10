@@ -1,0 +1,27 @@
+bundle:
+  name: pitgun-calibration
+  databricks_cli_version: ">= 0.275.0"
+
+include:
+  - resources/*.yml
+
+variables:
+  catalog_name:
+    description: Existing Unity Catalog catalog dedicated to the target workspace.
+    default: workspace
+  calibration_schema_name:
+    description: Schema containing governed calibration campaign data.
+    default: pitgun_calibration
+  policies_schema_name:
+    description: Schema containing reviewed policy release metadata.
+    default: pitgun_policies
+
+targets:
+  dev:
+    default: true
+    # These schema names are stable integration boundaries. Production mode
+    # disables development-mode resource renaming while the target and bundle
+    # root still isolate this attended Free Edition deployment.
+    mode: production
+    workspace:
+      root_path: /Workspace/Users/${workspace.current_user.userName}/.bundle/${bundle.name}/${bundle.target}
