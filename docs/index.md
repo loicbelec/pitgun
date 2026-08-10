@@ -9,6 +9,7 @@
 - [Architecture](../ARCHITECTURE.md)
 - [Framework boundaries](FRAMEWORK_BOUNDARIES.md)
 - [Racing demo CLI contract](RACING_DEMO_CLI_V1.md)
+- [Racing batch runner V1](RACING_BATCH_RUNNER_V1.md)
 - [Under-five-minute Racing quickstart](QUICKSTART.md)
 - [Executable examples and their status](EXAMPLES.md)
 - [CLI release process](RELEASING.md)

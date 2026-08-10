@@ -48,9 +48,11 @@ The current persisted-simulation increment accepts both `--seed` and `--output`.
 The documented quickstart uses an explicit `--seed 42` even though `42` is the
 default. This makes the source of randomness visible to a new user.
 
-V1 deliberately has no remote endpoint, custom scenario, registry, database,
-quiet mode, machine-report mode, or destructive `--force` option. Those options
-must be justified independently rather than inferred from this contract.
+The demo command deliberately has no remote endpoint, custom scenario,
+registry, database, quiet mode, machine-report mode, or destructive `--force`
+option. Machine-readable custom-scenario execution is a separate interface,
+documented in [Racing Batch Runner V1](RACING_BATCH_RUNNER_V1.md), so automation
+does not weaken this human-oriented proof contract.
 
 ## Execution Flow
 

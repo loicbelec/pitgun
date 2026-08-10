@@ -3,14 +3,14 @@ use std::path::PathBuf;
 
 use clap::Args;
 use pitgun_contract::{
-    ArtifactIdentity, ContractVersion, DerivedMetricProcessorV1, DerivedMetricStatisticV1,
-    DerivedMetricV1, DerivedMetricsV1, DeterministicRunContractV1, Digest, EventOrderingV1,
-    Identifier, InputCanonicalization, InputIdentity, InputMediaType, LogicalClockV1,
-    RandomAlgorithm, RandomContractV1, RuntimeProfile, ScenarioIdentity, Seed, StreamDerivation,
-    canonical_json_bytes, canonical_json_digest,
+    canonical_json_bytes, canonical_json_digest, ArtifactIdentity, ContractVersion,
+    DerivedMetricProcessorV1, DerivedMetricStatisticV1, DerivedMetricV1, DerivedMetricsV1,
+    DeterministicRunContractV1, Digest, EventOrderingV1, Identifier, InputCanonicalization,
+    InputIdentity, InputMediaType, LogicalClockV1, RandomAlgorithm, RandomContractV1,
+    RuntimeProfile, ScenarioIdentity, Seed, StreamDerivation,
 };
 use pitgun_core::{
-    TelemetryAggregateConfig, TelemetryAggregateKind, aggregate_telemetry_parameter,
+    aggregate_telemetry_parameter, TelemetryAggregateConfig, TelemetryAggregateKind,
 };
 use pitgun_racing_simulator::evidence::RacingRunEvidenceV1;
 use pitgun_racing_simulator::{RaceOutput, RacingWorkload, RunRaceInput};
@@ -34,7 +34,7 @@ pub(crate) struct RacingArgs {
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Deserialize, Serialize)]
 enum RacingScenarioVersion {
-    #[serde(rename = "pitgun.racing-demo-scenario/v1")]
+    #[serde(rename = "pitgun.racing-resolved-scenario/v1")]
     V1,
 }
 
@@ -57,7 +57,7 @@ struct ScenarioClock {
 }
 
 #[derive(Debug)]
-pub(crate) struct RacingDemoRun {
+pub(crate) struct RacingRun {
     pub(crate) scenario: ScenarioIdentity,
     pub(crate) seed: Seed,
     pub(crate) run_id: Digest,
@@ -120,9 +120,16 @@ impl fmt::Display for RacingDemoError {
 
 impl std::error::Error for RacingDemoError {}
 
-pub(crate) fn run(args: &RacingArgs) -> Result<RacingDemoRun, RacingDemoError> {
+pub(crate) fn run(args: &RacingArgs) -> Result<RacingRun, RacingDemoError> {
+    run_scenario(DEFAULT_SCENARIO.as_bytes(), args.seed)
+}
+
+pub(crate) fn run_scenario(
+    scenario_bytes: &[u8],
+    seed_value: u64,
+) -> Result<RacingRun, RacingDemoError> {
     let scenario: RacingScenarioV1 =
-        serde_json::from_str(DEFAULT_SCENARIO).map_err(RacingDemoError::contract)?;
+        serde_json::from_slice(scenario_bytes).map_err(RacingDemoError::contract)?;
     if scenario.schema_version != RacingScenarioVersion::V1 {
         return Err(RacingDemoError::contract(
             "unsupported Racing scenario version",
@@ -132,7 +139,7 @@ pub(crate) fn run(args: &RacingArgs) -> Result<RacingDemoRun, RacingDemoError> {
 
     let input_digest =
         canonical_json_digest(&scenario.request).map_err(RacingDemoError::contract)?;
-    let seed = Seed::new(args.seed);
+    let seed = Seed::new(seed_value);
     let contract = DeterministicRunContractV1 {
         contract_version: ContractVersion::V1,
         scenario: scenario.scenario.clone(),
@@ -162,7 +169,7 @@ pub(crate) fn run(args: &RacingArgs) -> Result<RacingDemoRun, RacingDemoError> {
         .map_err(RacingDemoError::simulation)?;
     let metrics = calculate_metrics(&executed.output).map_err(RacingDemoError::simulation)?;
 
-    Ok(RacingDemoRun {
+    Ok(RacingRun {
         scenario: contract.scenario.clone(),
         seed,
         run_id: executed.run_id,
@@ -202,9 +209,9 @@ fn calculate_metrics(output: &RaceOutput) -> Result<DerivedMetricsV1, Box<dyn st
 
 #[cfg(test)]
 mod tests {
-    use pitgun_contract::{SampleValue, canonical_json_digest};
+    use pitgun_contract::{canonical_json_digest, SampleValue};
 
-    use super::{OBSERVED_MAXIMUM_SPEED_ID, PARAM_SPEED_KPH, RacingArgs, calculate_metrics, run};
+    use super::{calculate_metrics, run, RacingArgs, OBSERVED_MAXIMUM_SPEED_ID, PARAM_SPEED_KPH};
 
     #[test]
     fn identical_seed_repeats_logical_results() {

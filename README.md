@@ -156,6 +156,19 @@ The public behavior is specified in the
 The portable files and their validation rules are documented in
 [Deterministic Run Bundle V1](docs/RUN_BUNDLE_V1.md).
 
+For offline experiment campaigns, including Databricks parameter sweeps, the
+same Racing workload exposes a compact machine-readable boundary:
+
+```bash
+cargo run -p pitgun-cli -- run racing \
+  --scenario apps/pitgun-cli/scenarios/racing-demo-v1.json \
+  --seed 42
+```
+
+The command emits canonical JSON and does not require any network service or
+database. See [Racing Batch Runner V1](docs/RACING_BATCH_RUNNER_V1.md) for the
+input, output, failure, and optional full-bundle contracts.
+
 ## Framework and Racing
 
 | | Framework | Racing |
@@ -306,6 +319,7 @@ The current sequence is intentionally proof-driven:
 - [Architecture](ARCHITECTURE.md) — components, data flow, and ownership
 - [Framework boundaries](docs/FRAMEWORK_BOUNDARIES.md) — generic and Racing separation
 - [Racing demo CLI contract](docs/RACING_DEMO_CLI_V1.md) — command, bundle layout, report, and failures
+- [Racing batch runner V1](docs/RACING_BATCH_RUNNER_V1.md) — resolved scenario input and canonical compact result
 - [Under-five-minute quickstart](docs/QUICKSTART.md) — workspace and prebuilt installation paths
 - [Release process](docs/RELEASING.md) — immutable tags, binary targets, and publication checks
 - [Catalog publication](docs/CATALOG_PUBLISHING.md) — immutable Resource Catalog deployment and rollback
