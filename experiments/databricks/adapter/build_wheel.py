@@ -42,6 +42,7 @@ def wheel_entries(version: str) -> dict[str, bytes]:
         / "scenarios"
         / "racing-batch-v1"
     )
+    campaigns = FRAMEWORK / "experiments" / "databricks" / "campaigns"
     if not runner.is_file():
         raise SystemExit(f"missing Linux runner: {runner}")
 
@@ -49,6 +50,7 @@ def wheel_entries(version: str) -> dict[str, bytes]:
     entries = {
         f"{PACKAGE}/__init__.py": (package_root / "__init__.py").read_bytes(),
         f"{PACKAGE}/runner.py": (package_root / "runner.py").read_bytes(),
+        f"{PACKAGE}/campaign.py": (package_root / "campaign.py").read_bytes(),
         f"{PACKAGE}/bin/pitgun": runner.read_bytes(),
         f"{dist_info}/METADATA": (
             "Metadata-Version: 2.1\n"
@@ -66,6 +68,8 @@ def wheel_entries(version: str) -> dict[str, bytes]:
     }
     for scenario in sorted(scenarios.glob("*.json")):
         entries[f"{PACKAGE}/scenarios/{scenario.name}"] = scenario.read_bytes()
+    for campaign in sorted(campaigns.glob("racing-reference-v1.*")):
+        entries[f"{PACKAGE}/campaigns/{campaign.name}"] = campaign.read_bytes()
     return entries
 
 

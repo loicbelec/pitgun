@@ -1,6 +1,7 @@
 # Databricks Reference Campaign V1
 
-Status: parameter space frozen for the first governed execution of issue #156.
+Status: immutable inputs and idempotent Delta/MLflow execution implemented for
+issue #156; observed campaign evidence is recorded after the first live run.
 
 ## Question
 
@@ -39,6 +40,32 @@ URL, arbitrary command, or partial physics override. This preserves the
 security property established by the serverless packaging spike while allowing
 the campaign orchestrator to select among governed configurations.
 
-The next increment materializes these nine rows, executes them idempotently,
-persists structured successes and failures to Delta, and logs campaign-level
-parameters and aggregates to MLflow.
+## Governed execution
+
+`reference_campaign_job` first applies additive schema evolution, then executes
+only natural keys that do not already have an accepted result. The natural key
+is `(campaign_id, configuration_id, seed)`. A retry may replace a failed or
+invalid attempt with a successful result, but it cannot duplicate or overwrite
+an accepted run.
+
+Every run row binds the manifest, family, seed, scenario, model, data pack,
+adapter Git revision, CLI version, native runner digest, and compact-result
+digest. Identity mismatches are stored as `INVALID`; execution exceptions are
+stored as `FAILED`. Planned, successful, invalid, and failed counts must
+reconcile before the campaign can finish.
+
+Successful runs contribute lap time, maximum speed, and telemetry frame-count
+rows to the governed metrics table. MLflow resumes one stable run for the
+campaign and records inputs, terminal counts, per-family mean pace, seed
+dispersion, speed, overall family pace spread, duration, and a JSON report.
+
+Run from `experiments/databricks`:
+
+```bash
+databricks bundle deploy -t dev -p pitgun-free
+databricks bundle run reference_campaign_job -t dev -p pitgun-free
+```
+
+Running the job again is the explicit idempotency check: all nine accepted runs
+must be skipped while the Delta row counts and MLflow run identity remain
+unchanged.

@@ -66,6 +66,7 @@ table_definitions = {
     "campaigns": f"""
         CREATE TABLE IF NOT EXISTS {calibration}.campaigns (
           campaign_id STRING NOT NULL COMMENT 'Stable campaign identifier; table grain key.',
+          manifest_digest STRING COMMENT 'SHA-256 digest of the exact immutable campaign manifest.',
           question STRING NOT NULL COMMENT 'Bounded calibration question answered by the campaign.',
           parameter_space_version STRING NOT NULL COMMENT 'Version of the materialized configuration space.',
           scenario_id STRING NOT NULL,
@@ -82,7 +83,9 @@ table_definitions = {
           status STRING NOT NULL,
           planned_run_count BIGINT,
           created_at TIMESTAMP NOT NULL,
-          updated_at TIMESTAMP NOT NULL
+          updated_at TIMESTAMP NOT NULL,
+          mlflow_run_id STRING COMMENT 'Stable MLflow run resumed by idempotent retries.',
+          completed_at TIMESTAMP
         )
         USING DELTA
         COMMENT 'Grain: one row per Pitgun calibration campaign.'
@@ -96,6 +99,7 @@ table_definitions = {
         CREATE TABLE IF NOT EXISTS {calibration}.runs (
           campaign_id STRING NOT NULL COMMENT 'Parent campaign identifier.',
           configuration_id STRING NOT NULL COMMENT 'Content-derived resolved model-input identity.',
+          configuration_family STRING COMMENT 'Bounded family identifier selected by the campaign manifest.',
           seed STRING NOT NULL COMMENT 'Unsigned deterministic seed encoded losslessly as decimal text.',
           run_id STRING COMMENT 'Deterministic run identity when execution succeeds.',
           scenario_id STRING NOT NULL,
@@ -108,6 +112,9 @@ table_definitions = {
           data_pack_version STRING NOT NULL,
           data_pack_digest STRING NOT NULL,
           runner_version STRING NOT NULL,
+          adapter_version STRING COMMENT 'Versioned Databricks wheel adapter.',
+          runner_artifact_digest STRING COMMENT 'SHA-256 digest of the exact native runner bytes.',
+          canonical_result_digest STRING COMMENT 'SHA-256 digest of the exact compact result bytes.',
           source_git_revision STRING NOT NULL,
           circuit_id STRING,
           era INT,
@@ -203,6 +210,32 @@ table_definitions = {
 if operation == "bootstrap":
     for ddl in table_definitions.values():
         spark.sql(ddl)
+
+    additive_columns = {
+        f"{calibration}.campaigns": {
+            "manifest_digest": "STRING COMMENT 'SHA-256 digest of the exact immutable campaign manifest.'",
+            "mlflow_run_id": "STRING COMMENT 'Stable MLflow run resumed by idempotent retries.'",
+            "completed_at": "TIMESTAMP",
+        },
+        f"{calibration}.runs": {
+            "configuration_family": "STRING COMMENT 'Bounded family identifier selected by the campaign manifest.'",
+            "adapter_version": "STRING COMMENT 'Versioned Databricks wheel adapter.'",
+            "runner_artifact_digest": "STRING COMMENT 'SHA-256 digest of the exact native runner bytes.'",
+            "canonical_result_digest": "STRING COMMENT 'SHA-256 digest of the exact compact result bytes.'",
+        },
+    }
+    for table_name, columns in additive_columns.items():
+        existing_columns = {field.name for field in spark.table(table_name).schema.fields}
+        missing_definitions = [
+            f"`{name}` {definition}"
+            for name, definition in columns.items()
+            if name not in existing_columns
+        ]
+        if missing_definitions:
+            spark.sql(
+                f"ALTER TABLE {table_name} ADD COLUMNS "
+                f"({', '.join(missing_definitions)})"
+            )
 
 # COMMAND ----------
 

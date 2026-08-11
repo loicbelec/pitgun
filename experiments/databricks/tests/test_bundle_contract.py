@@ -84,6 +84,29 @@ class BundleContractTest(unittest.TestCase):
             len(families),
         )
 
+    def test_reference_campaign_job_is_idempotent_and_governed(self):
+        job = (ROOT / "resources" / "jobs.yml").read_text()
+        notebook = (ROOT / "src" / "execute_reference_campaign.py").read_text()
+        bootstrap = (ROOT / "src" / "bootstrap_tables.py").read_text()
+
+        self.assertIn("reference_campaign_job:", job)
+        self.assertIn("depends_on:", job)
+        self.assertIn("execute_reference_campaign.py", job)
+        self.assertIn("DeltaTable.forName", notebook)
+        self.assertIn("whenNotMatchedInsertAll", notebook)
+        self.assertIn("target.execution_status <> 'SUCCESS'", notebook)
+        self.assertIn("mlflow.start_run", notebook)
+        self.assertIn("successful_count + invalid_count + failed_count", notebook)
+        for governed_column in (
+            "manifest_digest",
+            "mlflow_run_id",
+            "configuration_family",
+            "adapter_version",
+            "runner_artifact_digest",
+            "canonical_result_digest",
+        ):
+            self.assertIn(f'"{governed_column}"', bootstrap)
+
 
 if __name__ == "__main__":
     unittest.main()

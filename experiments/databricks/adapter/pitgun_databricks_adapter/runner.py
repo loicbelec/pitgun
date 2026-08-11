@@ -127,3 +127,23 @@ def execute_packaged_racing(
         "scenarios", f"{configuration_family}.json"
     ).read_bytes()
     return _execute(runner_bytes, scenario_bytes, seed)
+
+
+def inspect_packaged_runner() -> dict[str, str | int]:
+    """Return the exact embedded runner identity without executing a scenario."""
+
+    package = importlib.resources.files("pitgun_databricks_adapter")
+    runner_bytes = package.joinpath("bin", "pitgun").read_bytes()
+    with tempfile.TemporaryDirectory(prefix="pitgun-runner-inspect-") as temporary:
+        runner = pathlib.Path(temporary) / "pitgun"
+        runner.write_bytes(runner_bytes)
+        runner.chmod(0o500)
+        process, duration_ms = _run([str(runner), "--version"])
+        if process.returncode != 0:
+            raise RunnerExecutionError("packaged runner identity probe failed")
+        return {
+            "version": process.stdout.decode("utf-8").strip(),
+            "target": RUNNER_TARGET,
+            "digest": _sha256(runner_bytes),
+            "startup_probe_duration_ms": duration_ms,
+        }

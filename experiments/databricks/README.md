@@ -48,6 +48,7 @@ databricks bundle run bootstrap_job -t dev -p pitgun-free \
   --params operation=bootstrap,campaign_id=bundle-smoke
 databricks bundle run runner_spike_job -t dev -p pitgun-free \
   --params seed=42
+databricks bundle run reference_campaign_job -t dev -p pitgun-free
 ```
 
 Repeat `deploy` and `run`: schema and table creation are idempotent. The job may
@@ -81,6 +82,9 @@ The frozen V1 campaign manifest is
 It plans nine deterministic executions across three embedded setup families
 and three seeds. Its scope and current limitations are documented in
 [Databricks Reference Campaign V1](../../docs/DATABRICKS_REFERENCE_CAMPAIGN_V1.md).
+The campaign job bootstraps additive schema changes, skips accepted natural
+keys on retry, merges compact run and metric evidence into Delta, and resumes
+one campaign-level MLflow run.
 
 ## Governed table ownership
 
