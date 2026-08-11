@@ -1,7 +1,12 @@
 #!/usr/bin/env python3
 """Verify the packaged Linux runner against the published Racing fixture."""
 
-from pitgun_databricks_adapter import execute_packaged_racing
+from pitgun_databricks_adapter import (
+    execute_packaged_racing,
+    inspect_packaged_runner,
+    load_reference_campaign,
+    materialize_plan,
+)
 
 
 EXPECTED_CONFIGURATION_ID = (
@@ -16,11 +21,17 @@ EXPECTED_RESULT_DIGEST = (
 
 
 result = execute_packaged_racing(42)
+runner_identity = inspect_packaged_runner()
+manifest, manifest_digest = load_reference_campaign()
+plan = materialize_plan(manifest)
 assert result["result"]["configuration_id"] == EXPECTED_CONFIGURATION_ID
 assert result["result"]["run_id"] == EXPECTED_RUN_ID
 assert result["canonical_result_digest"] == EXPECTED_RESULT_DIGEST
 assert result["host"] == {"machine": "aarch64", "system": "Linux"}
 assert result["adapter"]["version"].startswith("0.2.0a1+g")
+assert result["runner_artifact"]["digest"] == runner_identity["digest"]
+assert manifest_digest.startswith("sha256:")
+assert len(plan) == manifest["planned_run_count"] == 9
 print(
     "local packaged runner verified: "
     f"adapter={result['adapter']['version']} "
