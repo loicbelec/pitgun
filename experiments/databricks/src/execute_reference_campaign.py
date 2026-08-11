@@ -189,6 +189,7 @@ if existing_campaign:
 existing_mlflow_run_id = (
     existing_campaign.get("mlflow_run_id") if existing_campaign else None
 )
+is_new_tracking_run = not existing_mlflow_run_id
 tracking_context = (
     mlflow.start_run(run_id=existing_mlflow_run_id)
     if existing_mlflow_run_id
@@ -254,22 +255,25 @@ with tracking_context as tracking_run:
         .execute()
     )
 
-    mlflow.log_params(
-        {
-            "campaign_id": campaign_id,
-            "manifest_digest": manifest_digest,
-            "parameter_space_version": manifest["parameter_space_version"],
-            "circuit_id": manifest["circuit_id"],
-            "era": manifest["era"],
-            "configuration_family_count": len(manifest["configuration_families"]),
-            "seed_count": len(manifest["seeds"]),
-            "runner_version": runner_identity["version"],
-            "runner_artifact_digest": runner_identity["digest"],
-            "adapter_version": adapter_version,
-            "source_git_revision": source_git_revision,
-        }
-    )
-    mlflow.log_dict(manifest, "inputs/campaign-manifest.json")
+    if is_new_tracking_run:
+        mlflow.log_params(
+            {
+                "campaign_id": campaign_id,
+                "manifest_digest": manifest_digest,
+                "parameter_space_version": manifest["parameter_space_version"],
+                "circuit_id": manifest["circuit_id"],
+                "era": manifest["era"],
+                "configuration_family_count": len(
+                    manifest["configuration_families"]
+                ),
+                "seed_count": len(manifest["seeds"]),
+                "runner_version": runner_identity["version"],
+                "runner_artifact_digest": runner_identity["digest"],
+                "adapter_version": adapter_version,
+                "source_git_revision": source_git_revision,
+            }
+        )
+        mlflow.log_dict(manifest, "inputs/campaign-manifest.json")
 
     existing_run_rows = (
         spark.table(runs_table)
