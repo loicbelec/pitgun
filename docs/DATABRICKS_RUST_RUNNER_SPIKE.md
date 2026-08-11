@@ -11,8 +11,10 @@ ephemeral storage, applies executable permissions, invokes it without a shell,
 and returns its compact canonical JSON result.
 
 Python performs orchestration only. It contains no Solver or Simulator equation
-and cannot select another executable, URL, scenario, model, or data pack. The
-Databricks job exposes only the unsigned 64-bit seed.
+and cannot select another executable, URL, arbitrary scenario, model, or data
+pack. The initial spike exposed only an unsigned 64-bit seed. The reference
+campaign subsequently added a closed allowlist of embedded resolved scenarios;
+it still accepts no path, URL, or partial physics override.
 
 This boundary was selected because wheels are a supported Databricks job
 library lifecycle, can carry package data, are uploaded by Declarative
@@ -131,9 +133,10 @@ campaign tasks execute immutable bytes only.
 ## Security boundary
 
 - no shell is used to invoke Pitgun;
-- no executable path, command, URL, model, data pack, or scenario is accepted
-  from job parameters;
-- the only variable input in the spike is the validated seed;
+- no executable path, command, URL, model, data pack, or arbitrary scenario is
+  accepted from job parameters;
+- variable inputs are the validated seed and one embedded configuration-family
+  identifier from a fixed allowlist;
 - execution has a fixed 120-second process timeout;
 - successful runs must keep stderr empty and return the expected versioned JSON
   contract;

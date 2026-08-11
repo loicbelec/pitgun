@@ -20,7 +20,7 @@ assert result["result"]["configuration_id"] == EXPECTED_CONFIGURATION_ID
 assert result["result"]["run_id"] == EXPECTED_RUN_ID
 assert result["canonical_result_digest"] == EXPECTED_RESULT_DIGEST
 assert result["host"] == {"machine": "aarch64", "system": "Linux"}
-assert result["adapter"]["version"].startswith("0.1.0a1+g")
+assert result["adapter"]["version"].startswith("0.2.0a1+g")
 print(
     "local packaged runner verified: "
     f"adapter={result['adapter']['version']} "
@@ -28,3 +28,16 @@ print(
     f"startup={result['measurements']['startup_probe_duration_ms']}ms "
     f"execution={result['measurements']['execution_duration_ms']}ms"
 )
+
+families = {
+    family: execute_packaged_racing(42, family)["result"]["configuration_id"]
+    for family in ("balanced", "high-downforce", "low-downforce")
+}
+assert len(set(families.values())) == len(families)
+
+try:
+    execute_packaged_racing(42, "../../arbitrary")
+except ValueError:
+    pass
+else:
+    raise AssertionError("an arbitrary scenario path was accepted")

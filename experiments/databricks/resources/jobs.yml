@@ -46,6 +46,8 @@ resources:
       parameters:
         - name: seed
           default: "42"
+        - name: configuration_family
+          default: balanced
       environments:
         - environment_key: serverless_runner
           spec:
@@ -61,6 +63,7 @@ resources:
             source: WORKSPACE
             base_parameters:
               seed: "{{job.parameters.seed}}"
+              configuration_family: "{{job.parameters.configuration_family}}"
           timeout_seconds: 900
       tags:
         pitgun.domain: calibration

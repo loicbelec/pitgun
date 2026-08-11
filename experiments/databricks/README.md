@@ -74,6 +74,14 @@ records the exact runner and result digests. See
 the decision, local parity fixture, measurements, rejected alternatives, and
 security boundary.
 
+## Reference campaign
+
+The frozen V1 campaign manifest is
+[`campaigns/racing-reference-v1.json`](campaigns/racing-reference-v1.json).
+It plans nine deterministic executions across three embedded setup families
+and three seeds. Its scope and current limitations are documented in
+[Databricks Reference Campaign V1](../../docs/DATABRICKS_REFERENCE_CAMPAIGN_V1.md).
+
 ## Governed table ownership
 
 The attended deployment identity owns both bundle-created schemas. The job run

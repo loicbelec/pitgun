@@ -16,7 +16,7 @@ ROOT = pathlib.Path(__file__).resolve().parent
 FRAMEWORK = ROOT.parents[2]
 PACKAGE = "pitgun_databricks_adapter"
 DISTRIBUTION = "pitgun_databricks_adapter"
-BASE_VERSION = "0.1.0a1"
+BASE_VERSION = "0.2.0a1"
 TAG = "py3-none-linux_aarch64"
 TIMESTAMP = (2020, 1, 1, 0, 0, 0)
 
@@ -35,23 +35,21 @@ def git_revision() -> str:
 def wheel_entries(version: str) -> dict[str, bytes]:
     package_root = ROOT / PACKAGE
     runner = ROOT / "build" / "pitgun"
-    scenario = (
+    scenarios = (
         FRAMEWORK
         / "apps"
         / "pitgun-cli"
         / "scenarios"
         / "racing-batch-v1"
-        / "balanced.json"
     )
     if not runner.is_file():
         raise SystemExit(f"missing Linux runner: {runner}")
 
     dist_info = f"{DISTRIBUTION}-{version}.dist-info"
-    return {
+    entries = {
         f"{PACKAGE}/__init__.py": (package_root / "__init__.py").read_bytes(),
         f"{PACKAGE}/runner.py": (package_root / "runner.py").read_bytes(),
         f"{PACKAGE}/bin/pitgun": runner.read_bytes(),
-        f"{PACKAGE}/scenarios/balanced.json": scenario.read_bytes(),
         f"{dist_info}/METADATA": (
             "Metadata-Version: 2.1\n"
             "Name: pitgun-databricks-adapter\n"
@@ -66,6 +64,9 @@ def wheel_entries(version: str) -> dict[str, bytes]:
             f"Tag: {TAG}\n"
         ).encode(),
     }
+    for scenario in sorted(scenarios.glob("*.json")):
+        entries[f"{PACKAGE}/scenarios/{scenario.name}"] = scenario.read_bytes()
+    return entries
 
 
 def main() -> None:
