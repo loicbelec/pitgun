@@ -69,3 +69,29 @@ databricks bundle run reference_campaign_job -t dev -p pitgun-free
 Running the job again is the explicit idempotency check: all nine accepted runs
 must be skipped while the Delta row counts and MLflow run identity remain
 unchanged.
+
+## Observed execution
+
+The first Free Edition campaign completed on 2026-08-11 with all nine planned
+runs accepted, no invalid input, and no execution failure. The campaign-level
+orchestrator took 27,971 ms; the complete two-task Databricks job took 286,506
+ms, including 185,000 ms of cold serverless setup and 44,000 ms of bootstrap
+task execution.
+
+| Family | Mean lap | Seed std. dev. | Range | Mean maximum speed |
+|---|---:|---:|---:|---:|
+| `high-downforce` | 83,869.67 ms | 30.71 ms | 71 ms | 351.92 km/h |
+| `balanced` | 85,281.33 ms | 30.55 ms | 71 ms | 355.57 km/h |
+| `low-downforce` | 86,807.00 ms | 31.02 ms | 72 ms | 359.04 km/h |
+
+The family pace spread was 2,937.33 ms. On this fixture, maximum straight-line
+speed alone is therefore a poor selection objective: the low-downforce family
+was fastest in that metric and slowest over the lap.
+
+The immediate retry completed with the same nine successful Delta rows and the
+same MLflow run identity. It attempted zero simulations and skipped all nine
+accepted natural keys. Its campaign-level reconciliation took 6,244 ms; the
+complete serverless job still took 266,024 ms, including 205,000 ms of cold
+setup. This is the main observed Free Edition limitation: orchestration latency
+dominates tiny deterministic workloads even when compute cost is monetarily
+zero.
