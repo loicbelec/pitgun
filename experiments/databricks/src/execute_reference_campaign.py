@@ -5,6 +5,7 @@
 
 from collections import Counter, defaultdict
 from datetime import datetime, timezone
+import html
 import importlib.metadata
 import json
 import math
@@ -37,6 +38,59 @@ def validated_identifier(label: str, value: str) -> str:
     if not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", value):
         raise ValueError(f"{label} is not a portable SQL identifier: {value!r}")
     return value
+
+
+def render_family_pace_svg(families: dict) -> str:
+    """Render a dependency-free mean/range plot suitable for MLflow artifacts."""
+
+    width = 900
+    height = 120 + 90 * len(families)
+    plot_left = 210
+    plot_right = width - 70
+    observations = [
+        value["mean_lap_time_ms"] + offset * value["lap_time_range_ms"] / 2
+        for value in families.values()
+        for offset in (-1, 1)
+    ]
+    minimum = min(observations) - 100
+    maximum = max(observations) + 100
+
+    def x_position(value: float) -> float:
+        return plot_left + (value - minimum) * (plot_right - plot_left) / (
+            maximum - minimum
+        )
+
+    rows = []
+    for index, (family, values) in enumerate(sorted(families.items())):
+        y = 105 + index * 90
+        mean = values["mean_lap_time_ms"]
+        half_range = values["lap_time_range_ms"] / 2
+        low = x_position(mean - half_range)
+        high = x_position(mean + half_range)
+        mean_x = x_position(mean)
+        rows.extend(
+            [
+                f'<text x="25" y="{y + 6}" class="label">{html.escape(family)}</text>',
+                f'<line x1="{low:.2f}" y1="{y}" x2="{high:.2f}" y2="{y}" class="range"/>',
+                f'<line x1="{low:.2f}" y1="{y - 9}" x2="{low:.2f}" y2="{y + 9}" class="range"/>',
+                f'<line x1="{high:.2f}" y1="{y - 9}" x2="{high:.2f}" y2="{y + 9}" class="range"/>',
+                f'<circle cx="{mean_x:.2f}" cy="{y}" r="7" class="mean"/>',
+                f'<text x="{plot_right}" y="{y + 28}" text-anchor="end" class="value">{mean:,.2f} ms mean · {values["lap_time_range_ms"]:.0f} ms range</text>',
+            ]
+        )
+
+    return "\n".join(
+        [
+            f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}">',
+            "<style>.title{font:700 22px sans-serif;fill:#182934}.subtitle,.value{font:14px monospace;fill:#55636b}.label{font:700 17px monospace;fill:#182934}.axis,.range{stroke:#87939a;stroke-width:3}.mean{fill:#d54b2a;stroke:#182934;stroke-width:2}</style>",
+            '<rect width="100%" height="100%" fill="#f6ead7"/>',
+            '<text x="25" y="38" class="title">Pitgun Racing reference campaign</text>',
+            '<text x="25" y="64" class="subtitle">Mean deterministic lap time and observed three-seed range · lower is faster</text>',
+            f'<line x1="{plot_left}" y1="78" x2="{plot_right}" y2="78" class="axis"/>',
+            *rows,
+            "</svg>",
+        ]
+    )
 
 
 catalog_name = validated_identifier("catalog_name", catalog_name)
@@ -499,6 +553,7 @@ with tracking_context as tracking_run:
         }
     )
     mlflow.log_dict(report, "reports/campaign-report.json")
+    mlflow.log_text(render_family_pace_svg(family_report), "plots/family-pace.svg")
 
     completed_at = datetime.now(timezone.utc)
     completion_source = spark.createDataFrame(

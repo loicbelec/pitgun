@@ -57,7 +57,8 @@ reconcile before the campaign can finish.
 Successful runs contribute lap time, maximum speed, and telemetry frame-count
 rows to the governed metrics table. MLflow resumes one stable run for the
 campaign and records inputs, terminal counts, per-family mean pace, seed
-dispersion, speed, overall family pace spread, duration, and a JSON report.
+dispersion, speed, overall family pace spread, duration, a JSON report, and an
+SVG comparison of mean lap time with the observed three-seed range.
 
 Run from `experiments/databricks`:
 
