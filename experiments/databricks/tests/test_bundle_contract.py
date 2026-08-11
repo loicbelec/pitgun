@@ -97,6 +97,9 @@ class BundleContractTest(unittest.TestCase):
         self.assertIn("target.execution_status <> 'SUCCESS'", notebook)
         self.assertIn("mlflow.start_run", notebook)
         self.assertIn("successful_count + invalid_count + failed_count", notebook)
+        self.assertNotIn(
+            '"source_git_revision": "source.source_git_revision"', notebook
+        )
         for governed_column in (
             "manifest_digest",
             "mlflow_run_id",

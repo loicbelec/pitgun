@@ -194,8 +194,6 @@ with tracking_context as tracking_run:
                 "status": "source.status",
                 "updated_at": "source.updated_at",
                 "mlflow_run_id": "source.mlflow_run_id",
-                "runner_version": "source.runner_version",
-                "source_git_revision": "source.source_git_revision",
             }
         )
         .whenNotMatchedInsertAll()
