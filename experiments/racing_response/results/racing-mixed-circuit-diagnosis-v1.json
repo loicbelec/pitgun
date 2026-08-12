@@ -1,0 +1,4386 @@
+{
+  "schema_version": "pitgun.racing-mixed-circuit-diagnosis/v1",
+  "question": "Does the Suzuka review failure require a physics change or a finer review grid?",
+  "runner": {
+    "path": "target/release/examples/tuning_response_probe",
+    "digest": "sha256:6a3ee006f7c7c60ce6edf98853ede1b060a2499341e2c83b78667f96f5ecafa0"
+  },
+  "seed": "42",
+  "slider_levels": [
+    0.0,
+    0.1,
+    0.2,
+    0.3,
+    0.4,
+    0.5,
+    0.6,
+    0.7,
+    0.8,
+    0.9,
+    1.0
+  ],
+  "candidate_count": 35,
+  "calibration_circuit_count": 5,
+  "holdout_circuit_count": 2,
+  "planned_run_count": 29645,
+  "execution_point_set_digest": "sha256:6ccedd15635e2e547835d7fa7422b9777ba4068b5317057754085b37b6989e37",
+  "parameter_space": {
+    "downforce_slider_gain": [
+      0.375,
+      0.3875,
+      0.4,
+      0.4125,
+      0.425,
+      0.4375,
+      0.45
+    ],
+    "corner_aero_scale": [
+      1.05,
+      1.0625,
+      1.075,
+      1.0875,
+      1.1
+    ],
+    "fixed_drag_base": 0.65,
+    "fixed_drag_slider_gain": 0.95,
+    "fixed_downforce_base": 1.05625
+  },
+  "expected_continuous_downforce_bounds": {
+    "it-1922": [
+      0.0,
+      0.2
+    ],
+    "mc-1929": [
+      0.8,
+      1.0
+    ],
+    "hu-1986": [
+      0.7,
+      1.0
+    ],
+    "jp-1962": [
+      0.25,
+      0.55
+    ],
+    "sg-2008": [
+      0.7,
+      1.0
+    ]
+  },
+  "review_grid_diagnosis": {
+    "classification": "review-grid-aliasing",
+    "continuous_optimum": {
+      "downforce_slider": 0.3,
+      "gear_ratio_slider": 0.0,
+      "total_time_ms": 88413
+    },
+    "reviewed_configuration_ranking": [
+      {
+        "configuration_family": "low-downforce",
+        "downforce_slider": 0.2,
+        "gear_ratio_slider": 0.3,
+        "total_time_ms": 88440
+      },
+      {
+        "configuration_family": "low-downforce-long-gearing",
+        "downforce_slider": 0.2,
+        "gear_ratio_slider": 0.7,
+        "total_time_ms": 88476
+      },
+      {
+        "configuration_family": "balanced-short-gearing",
+        "downforce_slider": 0.5,
+        "gear_ratio_slider": 0.3,
+        "total_time_ms": 88515
+      },
+      {
+        "configuration_family": "balanced",
+        "downforce_slider": 0.5,
+        "gear_ratio_slider": 0.5,
+        "total_time_ms": 88553
+      },
+      {
+        "configuration_family": "balanced-long-gearing",
+        "downforce_slider": 0.5,
+        "gear_ratio_slider": 0.7,
+        "total_time_ms": 88584
+      },
+      {
+        "configuration_family": "high-downforce-short-gearing",
+        "downforce_slider": 0.8,
+        "gear_ratio_slider": 0.3,
+        "total_time_ms": 88830
+      },
+      {
+        "configuration_family": "high-downforce",
+        "downforce_slider": 0.8,
+        "gear_ratio_slider": 0.7,
+        "total_time_ms": 88921
+      }
+    ],
+    "distance_to_continuous_downforce_optimum": {
+      "low-downforce": 0.09999999999999998,
+      "balanced": 0.2
+    },
+    "meaning": "A coarse named setup family must not override the continuous physical optimum."
+  },
+  "recommendation": "KEEP_MIXED_RESPONSE_OPEN_GLOBAL_GUARDRAIL_REFINEMENT",
+  "automatic_model_change": false,
+  "candidates": [
+    {
+      "candidate_id": "mixed-df-0.3750-corner-1.0500",
+      "kind": "current_reference",
+      "tuning_response_digest": "sha256:41b02277d070cee10b101194d25f396d6f24d59c9126cbf16925305e20925816",
+      "downforce_slider_gain": 0.375,
+      "corner_aero_scale": 1.05,
+      "coefficient_distance_from_current": 0.0,
+      "assessment": {
+        "calibration_eligible": true,
+        "global_guardrails_pass": false,
+        "eligible": false,
+        "continuous_optimum_within_expected_bounds": {
+          "it-1922": true,
+          "mc-1929": true,
+          "hu-1986": true,
+          "jp-1962": true,
+          "sg-2008": true
+        },
+        "calibration_physical_invariant_failure_count": 0,
+        "global_physical_invariant_failure_count": 11,
+        "calibration_maximum_observed_speed_kph": 384.44944173282335,
+        "global_maximum_observed_speed_kph": 406.392679991782,
+        "global_speed_cap_headroom_kph": -6.392679991782018
+      },
+      "circuits": [
+        {
+          "circuit_id": "it-1922",
+          "circuit_archetype": "power",
+          "circuit_slug": "monza",
+          "fastest": {
+            "downforce_slider": 0.0,
+            "gear_ratio_slider": 0.4,
+            "total_time_ms": 82717
+          },
+          "downforce_decision_margin_ms": 82,
+          "maximum_observed_speed_kph": 384.44944173282335,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "mc-1929",
+          "circuit_archetype": "high-downforce",
+          "circuit_slug": "monaco",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 63149
+          },
+          "downforce_decision_margin_ms": 139,
+          "maximum_observed_speed_kph": 331.1369805518737,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "hu-1986",
+          "circuit_archetype": "mechanical-grip",
+          "circuit_slug": "budapest",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 75708
+          },
+          "downforce_decision_margin_ms": 209,
+          "maximum_observed_speed_kph": 331.5411151739376,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "jp-1962",
+          "circuit_archetype": "mixed",
+          "circuit_slug": "suzuka",
+          "fastest": {
+            "downforce_slider": 0.3,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 88413
+          },
+          "downforce_decision_margin_ms": 6,
+          "maximum_observed_speed_kph": 380.9150944950582,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "sg-2008",
+          "circuit_archetype": "street-thermal",
+          "circuit_slug": "singapore",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 87320
+          },
+          "downforce_decision_margin_ms": 39,
+          "maximum_observed_speed_kph": 351.51048287791224,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "gb-1948",
+          "circuit_archetype": "mixed-fast",
+          "circuit_slug": "silverstone",
+          "fastest": {
+            "downforce_slider": 0.7,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 87354
+          },
+          "downforce_decision_margin_ms": 41,
+          "maximum_observed_speed_kph": 381.12153417653775,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "be-1925",
+          "circuit_archetype": "mixed-elevation",
+          "circuit_slug": "spa",
+          "fastest": {
+            "downforce_slider": 0.0,
+            "gear_ratio_slider": 0.9,
+            "total_time_ms": 99992
+          },
+          "downforce_decision_margin_ms": 270,
+          "maximum_observed_speed_kph": 406.392679991782,
+          "physical_invariant_failure_count": 11
+        }
+      ]
+    },
+    {
+      "candidate_id": "mixed-df-0.3750-corner-1.0625",
+      "kind": "bounded_diagnostic",
+      "tuning_response_digest": "sha256:15c51c2c69925107403e77d954c20e9fb31d2acf32b2a3989214ef3803543587",
+      "downforce_slider_gain": 0.375,
+      "corner_aero_scale": 1.0625,
+      "coefficient_distance_from_current": 0.0125,
+      "assessment": {
+        "calibration_eligible": true,
+        "global_guardrails_pass": false,
+        "eligible": false,
+        "continuous_optimum_within_expected_bounds": {
+          "it-1922": true,
+          "mc-1929": true,
+          "hu-1986": true,
+          "jp-1962": true,
+          "sg-2008": true
+        },
+        "calibration_physical_invariant_failure_count": 0,
+        "global_physical_invariant_failure_count": 11,
+        "calibration_maximum_observed_speed_kph": 384.54505984843115,
+        "global_maximum_observed_speed_kph": 406.07738006035066,
+        "global_speed_cap_headroom_kph": -6.077380060350663
+      },
+      "circuits": [
+        {
+          "circuit_id": "it-1922",
+          "circuit_archetype": "power",
+          "circuit_slug": "monza",
+          "fastest": {
+            "downforce_slider": 0.0,
+            "gear_ratio_slider": 0.4,
+            "total_time_ms": 82572
+          },
+          "downforce_decision_margin_ms": 85,
+          "maximum_observed_speed_kph": 384.54505984843115,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "mc-1929",
+          "circuit_archetype": "high-downforce",
+          "circuit_slug": "monaco",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 63027
+          },
+          "downforce_decision_margin_ms": 150,
+          "maximum_observed_speed_kph": 330.77742932458796,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "hu-1986",
+          "circuit_archetype": "mechanical-grip",
+          "circuit_slug": "budapest",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 75535
+          },
+          "downforce_decision_margin_ms": 211,
+          "maximum_observed_speed_kph": 330.9174811084455,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "jp-1962",
+          "circuit_archetype": "mixed",
+          "circuit_slug": "suzuka",
+          "fastest": {
+            "downforce_slider": 0.3,
+            "gear_ratio_slider": 0.1,
+            "total_time_ms": 88264
+          },
+          "downforce_decision_margin_ms": 7,
+          "maximum_observed_speed_kph": 380.7091906631285,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "sg-2008",
+          "circuit_archetype": "street-thermal",
+          "circuit_slug": "singapore",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 87183
+          },
+          "downforce_decision_margin_ms": 55,
+          "maximum_observed_speed_kph": 351.73635926897214,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "gb-1948",
+          "circuit_archetype": "mixed-fast",
+          "circuit_slug": "silverstone",
+          "fastest": {
+            "downforce_slider": 0.7,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 87188
+          },
+          "downforce_decision_margin_ms": 10,
+          "maximum_observed_speed_kph": 380.99469108510385,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "be-1925",
+          "circuit_archetype": "mixed-elevation",
+          "circuit_slug": "spa",
+          "fastest": {
+            "downforce_slider": 0.0,
+            "gear_ratio_slider": 0.8,
+            "total_time_ms": 99833
+          },
+          "downforce_decision_margin_ms": 290,
+          "maximum_observed_speed_kph": 406.07738006035066,
+          "physical_invariant_failure_count": 11
+        }
+      ]
+    },
+    {
+      "candidate_id": "mixed-df-0.3750-corner-1.0750",
+      "kind": "bounded_diagnostic",
+      "tuning_response_digest": "sha256:9ffdc3de0797ecf56f4ce6bd2e759c9b86eee6af4bc3f42ef96375b908ea7412",
+      "downforce_slider_gain": 0.375,
+      "corner_aero_scale": 1.075,
+      "coefficient_distance_from_current": 0.025,
+      "assessment": {
+        "calibration_eligible": true,
+        "global_guardrails_pass": false,
+        "eligible": false,
+        "continuous_optimum_within_expected_bounds": {
+          "it-1922": true,
+          "mc-1929": true,
+          "hu-1986": true,
+          "jp-1962": true,
+          "sg-2008": true
+        },
+        "calibration_physical_invariant_failure_count": 0,
+        "global_physical_invariant_failure_count": 11,
+        "calibration_maximum_observed_speed_kph": 384.8243794642534,
+        "global_maximum_observed_speed_kph": 405.8435600640497,
+        "global_speed_cap_headroom_kph": -5.843560064049711
+      },
+      "circuits": [
+        {
+          "circuit_id": "it-1922",
+          "circuit_archetype": "power",
+          "circuit_slug": "monza",
+          "fastest": {
+            "downforce_slider": 0.0,
+            "gear_ratio_slider": 0.5,
+            "total_time_ms": 82426
+          },
+          "downforce_decision_margin_ms": 83,
+          "maximum_observed_speed_kph": 384.8243794642534,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "mc-1929",
+          "circuit_archetype": "high-downforce",
+          "circuit_slug": "monaco",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 62908
+          },
+          "downforce_decision_margin_ms": 146,
+          "maximum_observed_speed_kph": 330.4414716064132,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "hu-1986",
+          "circuit_archetype": "mechanical-grip",
+          "circuit_slug": "budapest",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 75352
+          },
+          "downforce_decision_margin_ms": 210,
+          "maximum_observed_speed_kph": 330.80778402550254,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "jp-1962",
+          "circuit_archetype": "mixed",
+          "circuit_slug": "suzuka",
+          "fastest": {
+            "downforce_slider": 0.3,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 88112
+          },
+          "downforce_decision_margin_ms": 3,
+          "maximum_observed_speed_kph": 380.61255315331425,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "sg-2008",
+          "circuit_archetype": "street-thermal",
+          "circuit_slug": "singapore",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 87055
+          },
+          "downforce_decision_margin_ms": 62,
+          "maximum_observed_speed_kph": 351.3432802473779,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "gb-1948",
+          "circuit_archetype": "mixed-fast",
+          "circuit_slug": "silverstone",
+          "fastest": {
+            "downforce_slider": 0.6,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 87009
+          },
+          "downforce_decision_margin_ms": 18,
+          "maximum_observed_speed_kph": 381.0121309594274,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "be-1925",
+          "circuit_archetype": "mixed-elevation",
+          "circuit_slug": "spa",
+          "fastest": {
+            "downforce_slider": 0.0,
+            "gear_ratio_slider": 1.0,
+            "total_time_ms": 99656
+          },
+          "downforce_decision_margin_ms": 340,
+          "maximum_observed_speed_kph": 405.8435600640497,
+          "physical_invariant_failure_count": 11
+        }
+      ]
+    },
+    {
+      "candidate_id": "mixed-df-0.3750-corner-1.0875",
+      "kind": "bounded_diagnostic",
+      "tuning_response_digest": "sha256:f17972ca2aa62d2fd67c66b4b88adf8a80a790a50b2426bdeb7d14fb0699339d",
+      "downforce_slider_gain": 0.375,
+      "corner_aero_scale": 1.0875,
+      "coefficient_distance_from_current": 0.0375,
+      "assessment": {
+        "calibration_eligible": false,
+        "global_guardrails_pass": false,
+        "eligible": false,
+        "continuous_optimum_within_expected_bounds": {
+          "it-1922": true,
+          "mc-1929": true,
+          "hu-1986": true,
+          "jp-1962": false,
+          "sg-2008": true
+        },
+        "calibration_physical_invariant_failure_count": 0,
+        "global_physical_invariant_failure_count": 11,
+        "calibration_maximum_observed_speed_kph": 385.10706356307395,
+        "global_maximum_observed_speed_kph": 405.52580686873836,
+        "global_speed_cap_headroom_kph": -5.525806868738357
+      },
+      "circuits": [
+        {
+          "circuit_id": "it-1922",
+          "circuit_archetype": "power",
+          "circuit_slug": "monza",
+          "fastest": {
+            "downforce_slider": 0.0,
+            "gear_ratio_slider": 0.4,
+            "total_time_ms": 82285
+          },
+          "downforce_decision_margin_ms": 63,
+          "maximum_observed_speed_kph": 385.10706356307395,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "mc-1929",
+          "circuit_archetype": "high-downforce",
+          "circuit_slug": "monaco",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 62798
+          },
+          "downforce_decision_margin_ms": 128,
+          "maximum_observed_speed_kph": 330.1024810121931,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "hu-1986",
+          "circuit_archetype": "mechanical-grip",
+          "circuit_slug": "budapest",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 75177
+          },
+          "downforce_decision_margin_ms": 221,
+          "maximum_observed_speed_kph": 330.69271378744253,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "jp-1962",
+          "circuit_archetype": "mixed",
+          "circuit_slug": "suzuka",
+          "fastest": {
+            "downforce_slider": 0.2,
+            "gear_ratio_slider": 0.1,
+            "total_time_ms": 87960
+          },
+          "downforce_decision_margin_ms": 15,
+          "maximum_observed_speed_kph": 380.44673092218386,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "sg-2008",
+          "circuit_archetype": "street-thermal",
+          "circuit_slug": "singapore",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 86922
+          },
+          "downforce_decision_margin_ms": 59,
+          "maximum_observed_speed_kph": 350.8777498668215,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "gb-1948",
+          "circuit_archetype": "mixed-fast",
+          "circuit_slug": "silverstone",
+          "fastest": {
+            "downforce_slider": 0.6,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 86821
+          },
+          "downforce_decision_margin_ms": 48,
+          "maximum_observed_speed_kph": 380.9958079983325,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "be-1925",
+          "circuit_archetype": "mixed-elevation",
+          "circuit_slug": "spa",
+          "fastest": {
+            "downforce_slider": 0.0,
+            "gear_ratio_slider": 1.0,
+            "total_time_ms": 99513
+          },
+          "downforce_decision_margin_ms": 356,
+          "maximum_observed_speed_kph": 405.52580686873836,
+          "physical_invariant_failure_count": 11
+        }
+      ]
+    },
+    {
+      "candidate_id": "mixed-df-0.3750-corner-1.1000",
+      "kind": "bounded_diagnostic",
+      "tuning_response_digest": "sha256:2d1df1c2d75b4975fe7ad9b6784cf9477e951a78b5faa57457ff17fa4cc2374b",
+      "downforce_slider_gain": 0.375,
+      "corner_aero_scale": 1.1,
+      "coefficient_distance_from_current": 0.05,
+      "assessment": {
+        "calibration_eligible": false,
+        "global_guardrails_pass": false,
+        "eligible": false,
+        "continuous_optimum_within_expected_bounds": {
+          "it-1922": true,
+          "mc-1929": true,
+          "hu-1986": true,
+          "jp-1962": false,
+          "sg-2008": true
+        },
+        "calibration_physical_invariant_failure_count": 0,
+        "global_physical_invariant_failure_count": 11,
+        "calibration_maximum_observed_speed_kph": 385.2270195781647,
+        "global_maximum_observed_speed_kph": 405.211033569566,
+        "global_speed_cap_headroom_kph": -5.211033569565984
+      },
+      "circuits": [
+        {
+          "circuit_id": "it-1922",
+          "circuit_archetype": "power",
+          "circuit_slug": "monza",
+          "fastest": {
+            "downforce_slider": 0.0,
+            "gear_ratio_slider": 0.4,
+            "total_time_ms": 82136
+          },
+          "downforce_decision_margin_ms": 62,
+          "maximum_observed_speed_kph": 385.2270195781647,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "mc-1929",
+          "circuit_archetype": "high-downforce",
+          "circuit_slug": "monaco",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 62681
+          },
+          "downforce_decision_margin_ms": 137,
+          "maximum_observed_speed_kph": 329.6933018844623,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "hu-1986",
+          "circuit_archetype": "mechanical-grip",
+          "circuit_slug": "budapest",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 74985
+          },
+          "downforce_decision_margin_ms": 233,
+          "maximum_observed_speed_kph": 330.44399465785233,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "jp-1962",
+          "circuit_archetype": "mixed",
+          "circuit_slug": "suzuka",
+          "fastest": {
+            "downforce_slider": 0.2,
+            "gear_ratio_slider": 0.1,
+            "total_time_ms": 87812
+          },
+          "downforce_decision_margin_ms": 23,
+          "maximum_observed_speed_kph": 380.26435354127005,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "sg-2008",
+          "circuit_archetype": "street-thermal",
+          "circuit_slug": "singapore",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 86794
+          },
+          "downforce_decision_margin_ms": 70,
+          "maximum_observed_speed_kph": 350.8491118479825,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "gb-1948",
+          "circuit_archetype": "mixed-fast",
+          "circuit_slug": "silverstone",
+          "fastest": {
+            "downforce_slider": 0.6,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 86654
+          },
+          "downforce_decision_margin_ms": 36,
+          "maximum_observed_speed_kph": 380.9881918001773,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "be-1925",
+          "circuit_archetype": "mixed-elevation",
+          "circuit_slug": "spa",
+          "fastest": {
+            "downforce_slider": 0.0,
+            "gear_ratio_slider": 1.0,
+            "total_time_ms": 99377
+          },
+          "downforce_decision_margin_ms": 335,
+          "maximum_observed_speed_kph": 405.211033569566,
+          "physical_invariant_failure_count": 11
+        }
+      ]
+    },
+    {
+      "candidate_id": "mixed-df-0.3875-corner-1.0500",
+      "kind": "bounded_diagnostic",
+      "tuning_response_digest": "sha256:cc23d497430e3155141d5dd8e20547484099f8dc1a77dfed7de0a293e0772ea9",
+      "downforce_slider_gain": 0.3875,
+      "corner_aero_scale": 1.05,
+      "coefficient_distance_from_current": 0.0125,
+      "assessment": {
+        "calibration_eligible": true,
+        "global_guardrails_pass": false,
+        "eligible": false,
+        "continuous_optimum_within_expected_bounds": {
+          "it-1922": true,
+          "mc-1929": true,
+          "hu-1986": true,
+          "jp-1962": true,
+          "sg-2008": true
+        },
+        "calibration_physical_invariant_failure_count": 0,
+        "global_physical_invariant_failure_count": 11,
+        "calibration_maximum_observed_speed_kph": 384.44944173282335,
+        "global_maximum_observed_speed_kph": 406.392679991782,
+        "global_speed_cap_headroom_kph": -6.392679991782018
+      },
+      "circuits": [
+        {
+          "circuit_id": "it-1922",
+          "circuit_archetype": "power",
+          "circuit_slug": "monza",
+          "fastest": {
+            "downforce_slider": 0.0,
+            "gear_ratio_slider": 0.4,
+            "total_time_ms": 82717
+          },
+          "downforce_decision_margin_ms": 65,
+          "maximum_observed_speed_kph": 384.44944173282335,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "mc-1929",
+          "circuit_archetype": "high-downforce",
+          "circuit_slug": "monaco",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 63027
+          },
+          "downforce_decision_margin_ms": 162,
+          "maximum_observed_speed_kph": 331.1369805518737,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "hu-1986",
+          "circuit_archetype": "mechanical-grip",
+          "circuit_slug": "budapest",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 75544
+          },
+          "downforce_decision_margin_ms": 233,
+          "maximum_observed_speed_kph": 331.5411151739376,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "jp-1962",
+          "circuit_archetype": "mixed",
+          "circuit_slug": "suzuka",
+          "fastest": {
+            "downforce_slider": 0.3,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 88361
+          },
+          "downforce_decision_margin_ms": 9,
+          "maximum_observed_speed_kph": 380.9150944950582,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "sg-2008",
+          "circuit_archetype": "street-thermal",
+          "circuit_slug": "singapore",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 87177
+          },
+          "downforce_decision_margin_ms": 68,
+          "maximum_observed_speed_kph": 351.51048287791224,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "gb-1948",
+          "circuit_archetype": "mixed-fast",
+          "circuit_slug": "silverstone",
+          "fastest": {
+            "downforce_slider": 0.7,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 87223
+          },
+          "downforce_decision_margin_ms": 44,
+          "maximum_observed_speed_kph": 381.12153417653775,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "be-1925",
+          "circuit_archetype": "mixed-elevation",
+          "circuit_slug": "spa",
+          "fastest": {
+            "downforce_slider": 0.0,
+            "gear_ratio_slider": 0.9,
+            "total_time_ms": 99992
+          },
+          "downforce_decision_margin_ms": 249,
+          "maximum_observed_speed_kph": 406.392679991782,
+          "physical_invariant_failure_count": 11
+        }
+      ]
+    },
+    {
+      "candidate_id": "mixed-df-0.3875-corner-1.0625",
+      "kind": "bounded_diagnostic",
+      "tuning_response_digest": "sha256:4272111a2e2c32df72f640f966af0ea74f4174c4ca0faf0da7456a2114668580",
+      "downforce_slider_gain": 0.3875,
+      "corner_aero_scale": 1.0625,
+      "coefficient_distance_from_current": 0.025,
+      "assessment": {
+        "calibration_eligible": true,
+        "global_guardrails_pass": false,
+        "eligible": false,
+        "continuous_optimum_within_expected_bounds": {
+          "it-1922": true,
+          "mc-1929": true,
+          "hu-1986": true,
+          "jp-1962": true,
+          "sg-2008": true
+        },
+        "calibration_physical_invariant_failure_count": 0,
+        "global_physical_invariant_failure_count": 11,
+        "calibration_maximum_observed_speed_kph": 384.54505984843115,
+        "global_maximum_observed_speed_kph": 406.07738006035066,
+        "global_speed_cap_headroom_kph": -6.077380060350663
+      },
+      "circuits": [
+        {
+          "circuit_id": "it-1922",
+          "circuit_archetype": "power",
+          "circuit_slug": "monza",
+          "fastest": {
+            "downforce_slider": 0.0,
+            "gear_ratio_slider": 0.4,
+            "total_time_ms": 82572
+          },
+          "downforce_decision_margin_ms": 68,
+          "maximum_observed_speed_kph": 384.54505984843115,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "mc-1929",
+          "circuit_archetype": "high-downforce",
+          "circuit_slug": "monaco",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 62908
+          },
+          "downforce_decision_margin_ms": 168,
+          "maximum_observed_speed_kph": 330.77742932458796,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "hu-1986",
+          "circuit_archetype": "mechanical-grip",
+          "circuit_slug": "budapest",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 75361
+          },
+          "downforce_decision_margin_ms": 223,
+          "maximum_observed_speed_kph": 330.9174811084455,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "jp-1962",
+          "circuit_archetype": "mixed",
+          "circuit_slug": "suzuka",
+          "fastest": {
+            "downforce_slider": 0.3,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 88204
+          },
+          "downforce_decision_margin_ms": 31,
+          "maximum_observed_speed_kph": 380.7091906631285,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "sg-2008",
+          "circuit_archetype": "street-thermal",
+          "circuit_slug": "singapore",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 87046
+          },
+          "downforce_decision_margin_ms": 76,
+          "maximum_observed_speed_kph": 351.73635926897214,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "gb-1948",
+          "circuit_archetype": "mixed-fast",
+          "circuit_slug": "silverstone",
+          "fastest": {
+            "downforce_slider": 0.7,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 87062
+          },
+          "downforce_decision_margin_ms": 10,
+          "maximum_observed_speed_kph": 380.99469108510385,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "be-1925",
+          "circuit_archetype": "mixed-elevation",
+          "circuit_slug": "spa",
+          "fastest": {
+            "downforce_slider": 0.0,
+            "gear_ratio_slider": 0.8,
+            "total_time_ms": 99833
+          },
+          "downforce_decision_margin_ms": 272,
+          "maximum_observed_speed_kph": 406.07738006035066,
+          "physical_invariant_failure_count": 11
+        }
+      ]
+    },
+    {
+      "candidate_id": "mixed-df-0.3875-corner-1.0750",
+      "kind": "bounded_diagnostic",
+      "tuning_response_digest": "sha256:c694709a6fafad14a22a777104a2cbf6f197747f7f613f04f3a1e68e9887bd61",
+      "downforce_slider_gain": 0.3875,
+      "corner_aero_scale": 1.075,
+      "coefficient_distance_from_current": 0.0375,
+      "assessment": {
+        "calibration_eligible": true,
+        "global_guardrails_pass": false,
+        "eligible": false,
+        "continuous_optimum_within_expected_bounds": {
+          "it-1922": true,
+          "mc-1929": true,
+          "hu-1986": true,
+          "jp-1962": true,
+          "sg-2008": true
+        },
+        "calibration_physical_invariant_failure_count": 0,
+        "global_physical_invariant_failure_count": 11,
+        "calibration_maximum_observed_speed_kph": 384.8243794642534,
+        "global_maximum_observed_speed_kph": 405.8435600640497,
+        "global_speed_cap_headroom_kph": -5.843560064049711
+      },
+      "circuits": [
+        {
+          "circuit_id": "it-1922",
+          "circuit_archetype": "power",
+          "circuit_slug": "monza",
+          "fastest": {
+            "downforce_slider": 0.0,
+            "gear_ratio_slider": 0.5,
+            "total_time_ms": 82426
+          },
+          "downforce_decision_margin_ms": 53,
+          "maximum_observed_speed_kph": 384.8243794642534,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "mc-1929",
+          "circuit_archetype": "high-downforce",
+          "circuit_slug": "monaco",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 62797
+          },
+          "downforce_decision_margin_ms": 137,
+          "maximum_observed_speed_kph": 330.4414716064132,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "hu-1986",
+          "circuit_archetype": "mechanical-grip",
+          "circuit_slug": "budapest",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 75191
+          },
+          "downforce_decision_margin_ms": 226,
+          "maximum_observed_speed_kph": 330.80778402550254,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "jp-1962",
+          "circuit_archetype": "mixed",
+          "circuit_slug": "suzuka",
+          "fastest": {
+            "downforce_slider": 0.3,
+            "gear_ratio_slider": 0.1,
+            "total_time_ms": 88062
+          },
+          "downforce_decision_margin_ms": 7,
+          "maximum_observed_speed_kph": 380.61255315331425,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "sg-2008",
+          "circuit_archetype": "street-thermal",
+          "circuit_slug": "singapore",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 86912
+          },
+          "downforce_decision_margin_ms": 80,
+          "maximum_observed_speed_kph": 351.3432802473779,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "gb-1948",
+          "circuit_archetype": "mixed-fast",
+          "circuit_slug": "silverstone",
+          "fastest": {
+            "downforce_slider": 0.6,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 86878
+          },
+          "downforce_decision_margin_ms": 20,
+          "maximum_observed_speed_kph": 381.0121309594274,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "be-1925",
+          "circuit_archetype": "mixed-elevation",
+          "circuit_slug": "spa",
+          "fastest": {
+            "downforce_slider": 0.0,
+            "gear_ratio_slider": 1.0,
+            "total_time_ms": 99656
+          },
+          "downforce_decision_margin_ms": 322,
+          "maximum_observed_speed_kph": 405.8435600640497,
+          "physical_invariant_failure_count": 11
+        }
+      ]
+    },
+    {
+      "candidate_id": "mixed-df-0.3875-corner-1.0875",
+      "kind": "bounded_diagnostic",
+      "tuning_response_digest": "sha256:d840851723fb74a79dd42b16f71ea790f9013b4aab444350a0f8d88a57da3132",
+      "downforce_slider_gain": 0.3875,
+      "corner_aero_scale": 1.0875,
+      "coefficient_distance_from_current": 0.05,
+      "assessment": {
+        "calibration_eligible": true,
+        "global_guardrails_pass": false,
+        "eligible": false,
+        "continuous_optimum_within_expected_bounds": {
+          "it-1922": true,
+          "mc-1929": true,
+          "hu-1986": true,
+          "jp-1962": true,
+          "sg-2008": true
+        },
+        "calibration_physical_invariant_failure_count": 0,
+        "global_physical_invariant_failure_count": 11,
+        "calibration_maximum_observed_speed_kph": 385.10706356307395,
+        "global_maximum_observed_speed_kph": 405.52580686873836,
+        "global_speed_cap_headroom_kph": -5.525806868738357
+      },
+      "circuits": [
+        {
+          "circuit_id": "it-1922",
+          "circuit_archetype": "power",
+          "circuit_slug": "monza",
+          "fastest": {
+            "downforce_slider": 0.0,
+            "gear_ratio_slider": 0.4,
+            "total_time_ms": 82285
+          },
+          "downforce_decision_margin_ms": 42,
+          "maximum_observed_speed_kph": 385.10706356307395,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "mc-1929",
+          "circuit_archetype": "high-downforce",
+          "circuit_slug": "monaco",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 62679
+          },
+          "downforce_decision_margin_ms": 146,
+          "maximum_observed_speed_kph": 330.1024810121931,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "hu-1986",
+          "circuit_archetype": "mechanical-grip",
+          "circuit_slug": "budapest",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 75002
+          },
+          "downforce_decision_margin_ms": 242,
+          "maximum_observed_speed_kph": 330.69271378744253,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "jp-1962",
+          "circuit_archetype": "mixed",
+          "circuit_slug": "suzuka",
+          "fastest": {
+            "downforce_slider": 0.3,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 87922
+          },
+          "downforce_decision_margin_ms": 2,
+          "maximum_observed_speed_kph": 380.44673092218386,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "sg-2008",
+          "circuit_archetype": "street-thermal",
+          "circuit_slug": "singapore",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 86796
+          },
+          "downforce_decision_margin_ms": 69,
+          "maximum_observed_speed_kph": 350.8777498668215,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "gb-1948",
+          "circuit_archetype": "mixed-fast",
+          "circuit_slug": "silverstone",
+          "fastest": {
+            "downforce_slider": 0.6,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 86704
+          },
+          "downforce_decision_margin_ms": 23,
+          "maximum_observed_speed_kph": 380.9958079983325,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "be-1925",
+          "circuit_archetype": "mixed-elevation",
+          "circuit_slug": "spa",
+          "fastest": {
+            "downforce_slider": 0.0,
+            "gear_ratio_slider": 1.0,
+            "total_time_ms": 99513
+          },
+          "downforce_decision_margin_ms": 338,
+          "maximum_observed_speed_kph": 405.52580686873836,
+          "physical_invariant_failure_count": 11
+        }
+      ]
+    },
+    {
+      "candidate_id": "mixed-df-0.3875-corner-1.1000",
+      "kind": "bounded_diagnostic",
+      "tuning_response_digest": "sha256:3478b94ad2cf457480ad7669696b13ea757218dd6305a1f28351ca0ba4c85653",
+      "downforce_slider_gain": 0.3875,
+      "corner_aero_scale": 1.1,
+      "coefficient_distance_from_current": 0.0625,
+      "assessment": {
+        "calibration_eligible": false,
+        "global_guardrails_pass": false,
+        "eligible": false,
+        "continuous_optimum_within_expected_bounds": {
+          "it-1922": true,
+          "mc-1929": true,
+          "hu-1986": true,
+          "jp-1962": false,
+          "sg-2008": true
+        },
+        "calibration_physical_invariant_failure_count": 0,
+        "global_physical_invariant_failure_count": 11,
+        "calibration_maximum_observed_speed_kph": 385.2270195781647,
+        "global_maximum_observed_speed_kph": 405.211033569566,
+        "global_speed_cap_headroom_kph": -5.211033569565984
+      },
+      "circuits": [
+        {
+          "circuit_id": "it-1922",
+          "circuit_archetype": "power",
+          "circuit_slug": "monza",
+          "fastest": {
+            "downforce_slider": 0.0,
+            "gear_ratio_slider": 0.4,
+            "total_time_ms": 82136
+          },
+          "downforce_decision_margin_ms": 46,
+          "maximum_observed_speed_kph": 385.2270195781647,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "mc-1929",
+          "circuit_archetype": "high-downforce",
+          "circuit_slug": "monaco",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 62564
+          },
+          "downforce_decision_margin_ms": 143,
+          "maximum_observed_speed_kph": 329.6933018844623,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "hu-1986",
+          "circuit_archetype": "mechanical-grip",
+          "circuit_slug": "budapest",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 74821
+          },
+          "downforce_decision_margin_ms": 241,
+          "maximum_observed_speed_kph": 330.44399465785233,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "jp-1962",
+          "circuit_archetype": "mixed",
+          "circuit_slug": "suzuka",
+          "fastest": {
+            "downforce_slider": 0.2,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 87777
+          },
+          "downforce_decision_margin_ms": 8,
+          "maximum_observed_speed_kph": 380.26435354127005,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "sg-2008",
+          "circuit_archetype": "street-thermal",
+          "circuit_slug": "singapore",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 86653
+          },
+          "downforce_decision_margin_ms": 79,
+          "maximum_observed_speed_kph": 350.8491118479825,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "gb-1948",
+          "circuit_archetype": "mixed-fast",
+          "circuit_slug": "silverstone",
+          "fastest": {
+            "downforce_slider": 0.6,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 86542
+          },
+          "downforce_decision_margin_ms": 28,
+          "maximum_observed_speed_kph": 380.9881918001773,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "be-1925",
+          "circuit_archetype": "mixed-elevation",
+          "circuit_slug": "spa",
+          "fastest": {
+            "downforce_slider": 0.0,
+            "gear_ratio_slider": 1.0,
+            "total_time_ms": 99377
+          },
+          "downforce_decision_margin_ms": 317,
+          "maximum_observed_speed_kph": 405.211033569566,
+          "physical_invariant_failure_count": 11
+        }
+      ]
+    },
+    {
+      "candidate_id": "mixed-df-0.4000-corner-1.0500",
+      "kind": "bounded_diagnostic",
+      "tuning_response_digest": "sha256:bafff80c74bb3d68f9515d1b3b42bb25fbebf1f1daa10f780e602a2c4fecded7",
+      "downforce_slider_gain": 0.4,
+      "corner_aero_scale": 1.05,
+      "coefficient_distance_from_current": 0.025,
+      "assessment": {
+        "calibration_eligible": true,
+        "global_guardrails_pass": false,
+        "eligible": false,
+        "continuous_optimum_within_expected_bounds": {
+          "it-1922": true,
+          "mc-1929": true,
+          "hu-1986": true,
+          "jp-1962": true,
+          "sg-2008": true
+        },
+        "calibration_physical_invariant_failure_count": 0,
+        "global_physical_invariant_failure_count": 11,
+        "calibration_maximum_observed_speed_kph": 384.44944173282335,
+        "global_maximum_observed_speed_kph": 406.392679991782,
+        "global_speed_cap_headroom_kph": -6.392679991782018
+      },
+      "circuits": [
+        {
+          "circuit_id": "it-1922",
+          "circuit_archetype": "power",
+          "circuit_slug": "monza",
+          "fastest": {
+            "downforce_slider": 0.0,
+            "gear_ratio_slider": 0.4,
+            "total_time_ms": 82717
+          },
+          "downforce_decision_margin_ms": 49,
+          "maximum_observed_speed_kph": 384.44944173282335,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "mc-1929",
+          "circuit_archetype": "high-downforce",
+          "circuit_slug": "monaco",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 62919
+          },
+          "downforce_decision_margin_ms": 170,
+          "maximum_observed_speed_kph": 331.1369805518737,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "hu-1986",
+          "circuit_archetype": "mechanical-grip",
+          "circuit_slug": "budapest",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 75381
+          },
+          "downforce_decision_margin_ms": 240,
+          "maximum_observed_speed_kph": 331.5411151739376,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "jp-1962",
+          "circuit_archetype": "mixed",
+          "circuit_slug": "suzuka",
+          "fastest": {
+            "downforce_slider": 0.4,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 88304
+          },
+          "downforce_decision_margin_ms": 3,
+          "maximum_observed_speed_kph": 380.9150944950582,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "sg-2008",
+          "circuit_archetype": "street-thermal",
+          "circuit_slug": "singapore",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 87054
+          },
+          "downforce_decision_margin_ms": 76,
+          "maximum_observed_speed_kph": 351.51048287791224,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "gb-1948",
+          "circuit_archetype": "mixed-fast",
+          "circuit_slug": "silverstone",
+          "fastest": {
+            "downforce_slider": 0.7,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 87093
+          },
+          "downforce_decision_margin_ms": 23,
+          "maximum_observed_speed_kph": 381.12153417653775,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "be-1925",
+          "circuit_archetype": "mixed-elevation",
+          "circuit_slug": "spa",
+          "fastest": {
+            "downforce_slider": 0.0,
+            "gear_ratio_slider": 0.9,
+            "total_time_ms": 99992
+          },
+          "downforce_decision_margin_ms": 231,
+          "maximum_observed_speed_kph": 406.392679991782,
+          "physical_invariant_failure_count": 11
+        }
+      ]
+    },
+    {
+      "candidate_id": "mixed-df-0.4000-corner-1.0625",
+      "kind": "bounded_diagnostic",
+      "tuning_response_digest": "sha256:9e5cc6b4bd34b3368e97a45b8035a462ea0cc2e3799c429e2cc0264024891d61",
+      "downforce_slider_gain": 0.4,
+      "corner_aero_scale": 1.0625,
+      "coefficient_distance_from_current": 0.0375,
+      "assessment": {
+        "calibration_eligible": true,
+        "global_guardrails_pass": false,
+        "eligible": false,
+        "continuous_optimum_within_expected_bounds": {
+          "it-1922": true,
+          "mc-1929": true,
+          "hu-1986": true,
+          "jp-1962": true,
+          "sg-2008": true
+        },
+        "calibration_physical_invariant_failure_count": 0,
+        "global_physical_invariant_failure_count": 11,
+        "calibration_maximum_observed_speed_kph": 384.54505984843115,
+        "global_maximum_observed_speed_kph": 406.07738006035066,
+        "global_speed_cap_headroom_kph": -6.077380060350663
+      },
+      "circuits": [
+        {
+          "circuit_id": "it-1922",
+          "circuit_archetype": "power",
+          "circuit_slug": "monza",
+          "fastest": {
+            "downforce_slider": 0.0,
+            "gear_ratio_slider": 0.4,
+            "total_time_ms": 82572
+          },
+          "downforce_decision_margin_ms": 51,
+          "maximum_observed_speed_kph": 384.54505984843115,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "mc-1929",
+          "circuit_archetype": "high-downforce",
+          "circuit_slug": "monaco",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 62797
+          },
+          "downforce_decision_margin_ms": 158,
+          "maximum_observed_speed_kph": 330.77742932458796,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "hu-1986",
+          "circuit_archetype": "mechanical-grip",
+          "circuit_slug": "budapest",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 75202
+          },
+          "downforce_decision_margin_ms": 240,
+          "maximum_observed_speed_kph": 330.9174811084455,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "jp-1962",
+          "circuit_archetype": "mixed",
+          "circuit_slug": "suzuka",
+          "fastest": {
+            "downforce_slider": 0.3,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 88151
+          },
+          "downforce_decision_margin_ms": 17,
+          "maximum_observed_speed_kph": 380.7091906631285,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "sg-2008",
+          "circuit_archetype": "street-thermal",
+          "circuit_slug": "singapore",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 86918
+          },
+          "downforce_decision_margin_ms": 88,
+          "maximum_observed_speed_kph": 351.73635926897214,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "gb-1948",
+          "circuit_archetype": "mixed-fast",
+          "circuit_slug": "silverstone",
+          "fastest": {
+            "downforce_slider": 0.7,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 86929
+          },
+          "downforce_decision_margin_ms": 20,
+          "maximum_observed_speed_kph": 380.99469108510385,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "be-1925",
+          "circuit_archetype": "mixed-elevation",
+          "circuit_slug": "spa",
+          "fastest": {
+            "downforce_slider": 0.0,
+            "gear_ratio_slider": 0.8,
+            "total_time_ms": 99833
+          },
+          "downforce_decision_margin_ms": 254,
+          "maximum_observed_speed_kph": 406.07738006035066,
+          "physical_invariant_failure_count": 11
+        }
+      ]
+    },
+    {
+      "candidate_id": "mixed-df-0.4000-corner-1.0750",
+      "kind": "bounded_diagnostic",
+      "tuning_response_digest": "sha256:d9d1fce203d2dc8eff20bbbab04a266711ee41b31ed15ab08cf75401b9e85dcc",
+      "downforce_slider_gain": 0.4,
+      "corner_aero_scale": 1.075,
+      "coefficient_distance_from_current": 0.05,
+      "assessment": {
+        "calibration_eligible": true,
+        "global_guardrails_pass": false,
+        "eligible": false,
+        "continuous_optimum_within_expected_bounds": {
+          "it-1922": true,
+          "mc-1929": true,
+          "hu-1986": true,
+          "jp-1962": true,
+          "sg-2008": true
+        },
+        "calibration_physical_invariant_failure_count": 0,
+        "global_physical_invariant_failure_count": 11,
+        "calibration_maximum_observed_speed_kph": 384.8243794642534,
+        "global_maximum_observed_speed_kph": 405.8435600640497,
+        "global_speed_cap_headroom_kph": -5.843560064049711
+      },
+      "circuits": [
+        {
+          "circuit_id": "it-1922",
+          "circuit_archetype": "power",
+          "circuit_slug": "monza",
+          "fastest": {
+            "downforce_slider": 0.0,
+            "gear_ratio_slider": 0.5,
+            "total_time_ms": 82426
+          },
+          "downforce_decision_margin_ms": 37,
+          "maximum_observed_speed_kph": 384.8243794642534,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "mc-1929",
+          "circuit_archetype": "high-downforce",
+          "circuit_slug": "monaco",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 62679
+          },
+          "downforce_decision_margin_ms": 154,
+          "maximum_observed_speed_kph": 330.4414716064132,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "hu-1986",
+          "circuit_archetype": "mechanical-grip",
+          "circuit_slug": "budapest",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 75011
+          },
+          "downforce_decision_margin_ms": 255,
+          "maximum_observed_speed_kph": 330.80778402550254,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "jp-1962",
+          "circuit_archetype": "mixed",
+          "circuit_slug": "suzuka",
+          "fastest": {
+            "downforce_slider": 0.3,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 88013
+          },
+          "downforce_decision_margin_ms": 16,
+          "maximum_observed_speed_kph": 380.61255315331425,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "sg-2008",
+          "circuit_archetype": "street-thermal",
+          "circuit_slug": "singapore",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 86788
+          },
+          "downforce_decision_margin_ms": 78,
+          "maximum_observed_speed_kph": 351.3432802473779,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "gb-1948",
+          "circuit_archetype": "mixed-fast",
+          "circuit_slug": "silverstone",
+          "fastest": {
+            "downforce_slider": 0.6,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 86758
+          },
+          "downforce_decision_margin_ms": 9,
+          "maximum_observed_speed_kph": 381.0121309594274,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "be-1925",
+          "circuit_archetype": "mixed-elevation",
+          "circuit_slug": "spa",
+          "fastest": {
+            "downforce_slider": 0.0,
+            "gear_ratio_slider": 1.0,
+            "total_time_ms": 99656
+          },
+          "downforce_decision_margin_ms": 304,
+          "maximum_observed_speed_kph": 405.8435600640497,
+          "physical_invariant_failure_count": 11
+        }
+      ]
+    },
+    {
+      "candidate_id": "mixed-df-0.4000-corner-1.0875",
+      "kind": "bounded_diagnostic",
+      "tuning_response_digest": "sha256:3a9d8a162ed6f2c1c2348dbee051f373227f05d4e0ee9af7a7d68916acce8d17",
+      "downforce_slider_gain": 0.4,
+      "corner_aero_scale": 1.0875,
+      "coefficient_distance_from_current": 0.0625,
+      "assessment": {
+        "calibration_eligible": true,
+        "global_guardrails_pass": false,
+        "eligible": false,
+        "continuous_optimum_within_expected_bounds": {
+          "it-1922": true,
+          "mc-1929": true,
+          "hu-1986": true,
+          "jp-1962": true,
+          "sg-2008": true
+        },
+        "calibration_physical_invariant_failure_count": 0,
+        "global_physical_invariant_failure_count": 11,
+        "calibration_maximum_observed_speed_kph": 385.10706356307395,
+        "global_maximum_observed_speed_kph": 405.52580686873836,
+        "global_speed_cap_headroom_kph": -5.525806868738357
+      },
+      "circuits": [
+        {
+          "circuit_id": "it-1922",
+          "circuit_archetype": "power",
+          "circuit_slug": "monza",
+          "fastest": {
+            "downforce_slider": 0.0,
+            "gear_ratio_slider": 0.4,
+            "total_time_ms": 82285
+          },
+          "downforce_decision_margin_ms": 26,
+          "maximum_observed_speed_kph": 385.10706356307395,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "mc-1929",
+          "circuit_archetype": "high-downforce",
+          "circuit_slug": "monaco",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 62565
+          },
+          "downforce_decision_margin_ms": 150,
+          "maximum_observed_speed_kph": 330.1024810121931,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "hu-1986",
+          "circuit_archetype": "mechanical-grip",
+          "circuit_slug": "budapest",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 74828
+          },
+          "downforce_decision_margin_ms": 254,
+          "maximum_observed_speed_kph": 330.69271378744253,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "jp-1962",
+          "circuit_archetype": "mixed",
+          "circuit_slug": "suzuka",
+          "fastest": {
+            "downforce_slider": 0.3,
+            "gear_ratio_slider": 0.2,
+            "total_time_ms": 87870
+          },
+          "downforce_decision_margin_ms": 1,
+          "maximum_observed_speed_kph": 380.44673092218386,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "sg-2008",
+          "circuit_archetype": "street-thermal",
+          "circuit_slug": "singapore",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 86651
+          },
+          "downforce_decision_margin_ms": 83,
+          "maximum_observed_speed_kph": 350.8777498668215,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "gb-1948",
+          "circuit_archetype": "mixed-fast",
+          "circuit_slug": "silverstone",
+          "fastest": {
+            "downforce_slider": 0.6,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 86587
+          },
+          "downforce_decision_margin_ms": 15,
+          "maximum_observed_speed_kph": 380.9958079983325,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "be-1925",
+          "circuit_archetype": "mixed-elevation",
+          "circuit_slug": "spa",
+          "fastest": {
+            "downforce_slider": 0.0,
+            "gear_ratio_slider": 1.0,
+            "total_time_ms": 99513
+          },
+          "downforce_decision_margin_ms": 297,
+          "maximum_observed_speed_kph": 405.52580686873836,
+          "physical_invariant_failure_count": 11
+        }
+      ]
+    },
+    {
+      "candidate_id": "mixed-df-0.4000-corner-1.1000",
+      "kind": "bounded_diagnostic",
+      "tuning_response_digest": "sha256:46ebe53de291ccb9a7fd6b1685e235402f7e8ccad86f885a11bf05dfff2602c1",
+      "downforce_slider_gain": 0.4,
+      "corner_aero_scale": 1.1,
+      "coefficient_distance_from_current": 0.075,
+      "assessment": {
+        "calibration_eligible": false,
+        "global_guardrails_pass": false,
+        "eligible": false,
+        "continuous_optimum_within_expected_bounds": {
+          "it-1922": true,
+          "mc-1929": true,
+          "hu-1986": true,
+          "jp-1962": false,
+          "sg-2008": true
+        },
+        "calibration_physical_invariant_failure_count": 0,
+        "global_physical_invariant_failure_count": 11,
+        "calibration_maximum_observed_speed_kph": 385.2270195781647,
+        "global_maximum_observed_speed_kph": 405.211033569566,
+        "global_speed_cap_headroom_kph": -5.211033569565984
+      },
+      "circuits": [
+        {
+          "circuit_id": "it-1922",
+          "circuit_archetype": "power",
+          "circuit_slug": "monza",
+          "fastest": {
+            "downforce_slider": 0.0,
+            "gear_ratio_slider": 0.4,
+            "total_time_ms": 82136
+          },
+          "downforce_decision_margin_ms": 27,
+          "maximum_observed_speed_kph": 385.2270195781647,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "mc-1929",
+          "circuit_archetype": "high-downforce",
+          "circuit_slug": "monaco",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 62458
+          },
+          "downforce_decision_margin_ms": 145,
+          "maximum_observed_speed_kph": 329.6933018844623,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "hu-1986",
+          "circuit_archetype": "mechanical-grip",
+          "circuit_slug": "budapest",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 74655
+          },
+          "downforce_decision_margin_ms": 250,
+          "maximum_observed_speed_kph": 330.44399465785233,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "jp-1962",
+          "circuit_archetype": "mixed",
+          "circuit_slug": "suzuka",
+          "fastest": {
+            "downforce_slider": 0.2,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 87732
+          },
+          "downforce_decision_margin_ms": 1,
+          "maximum_observed_speed_kph": 380.26435354127005,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "sg-2008",
+          "circuit_archetype": "street-thermal",
+          "circuit_slug": "singapore",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 86507
+          },
+          "downforce_decision_margin_ms": 92,
+          "maximum_observed_speed_kph": 350.8491118479825,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "gb-1948",
+          "circuit_archetype": "mixed-fast",
+          "circuit_slug": "silverstone",
+          "fastest": {
+            "downforce_slider": 0.6,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 86422
+          },
+          "downforce_decision_margin_ms": 41,
+          "maximum_observed_speed_kph": 380.9881918001773,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "be-1925",
+          "circuit_archetype": "mixed-elevation",
+          "circuit_slug": "spa",
+          "fastest": {
+            "downforce_slider": 0.0,
+            "gear_ratio_slider": 1.0,
+            "total_time_ms": 99377
+          },
+          "downforce_decision_margin_ms": 299,
+          "maximum_observed_speed_kph": 405.211033569566,
+          "physical_invariant_failure_count": 11
+        }
+      ]
+    },
+    {
+      "candidate_id": "mixed-df-0.4125-corner-1.0500",
+      "kind": "bounded_diagnostic",
+      "tuning_response_digest": "sha256:5cda5a394aba08d17269de7bd352a30d0d114ea2e12bc1dcec5d7faab1b6ca2c",
+      "downforce_slider_gain": 0.4125,
+      "corner_aero_scale": 1.05,
+      "coefficient_distance_from_current": 0.0375,
+      "assessment": {
+        "calibration_eligible": true,
+        "global_guardrails_pass": false,
+        "eligible": false,
+        "continuous_optimum_within_expected_bounds": {
+          "it-1922": true,
+          "mc-1929": true,
+          "hu-1986": true,
+          "jp-1962": true,
+          "sg-2008": true
+        },
+        "calibration_physical_invariant_failure_count": 0,
+        "global_physical_invariant_failure_count": 11,
+        "calibration_maximum_observed_speed_kph": 384.44944173282335,
+        "global_maximum_observed_speed_kph": 406.392679991782,
+        "global_speed_cap_headroom_kph": -6.392679991782018
+      },
+      "circuits": [
+        {
+          "circuit_id": "it-1922",
+          "circuit_archetype": "power",
+          "circuit_slug": "monza",
+          "fastest": {
+            "downforce_slider": 0.0,
+            "gear_ratio_slider": 0.4,
+            "total_time_ms": 82717
+          },
+          "downforce_decision_margin_ms": 32,
+          "maximum_observed_speed_kph": 384.44944173282335,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "mc-1929",
+          "circuit_archetype": "high-downforce",
+          "circuit_slug": "monaco",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 62802
+          },
+          "downforce_decision_margin_ms": 174,
+          "maximum_observed_speed_kph": 331.1369805518737,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "hu-1986",
+          "circuit_archetype": "mechanical-grip",
+          "circuit_slug": "budapest",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 75215
+          },
+          "downforce_decision_margin_ms": 253,
+          "maximum_observed_speed_kph": 331.5411151739376,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "jp-1962",
+          "circuit_archetype": "mixed",
+          "circuit_slug": "suzuka",
+          "fastest": {
+            "downforce_slider": 0.5,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 88231
+          },
+          "downforce_decision_margin_ms": 10,
+          "maximum_observed_speed_kph": 380.9150944950582,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "sg-2008",
+          "circuit_archetype": "street-thermal",
+          "circuit_slug": "singapore",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 86915
+          },
+          "downforce_decision_margin_ms": 99,
+          "maximum_observed_speed_kph": 351.51048287791224,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "gb-1948",
+          "circuit_archetype": "mixed-fast",
+          "circuit_slug": "silverstone",
+          "fastest": {
+            "downforce_slider": 0.7,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 86969
+          },
+          "downforce_decision_margin_ms": 17,
+          "maximum_observed_speed_kph": 381.12153417653775,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "be-1925",
+          "circuit_archetype": "mixed-elevation",
+          "circuit_slug": "spa",
+          "fastest": {
+            "downforce_slider": 0.0,
+            "gear_ratio_slider": 0.9,
+            "total_time_ms": 99992
+          },
+          "downforce_decision_margin_ms": 214,
+          "maximum_observed_speed_kph": 406.392679991782,
+          "physical_invariant_failure_count": 11
+        }
+      ]
+    },
+    {
+      "candidate_id": "mixed-df-0.4125-corner-1.0625",
+      "kind": "bounded_diagnostic",
+      "tuning_response_digest": "sha256:a00e0a288e63e486dff09a5c8abc4ef76ff1ee2037578171239be7ccbbdec48a",
+      "downforce_slider_gain": 0.4125,
+      "corner_aero_scale": 1.0625,
+      "coefficient_distance_from_current": 0.05,
+      "assessment": {
+        "calibration_eligible": true,
+        "global_guardrails_pass": false,
+        "eligible": false,
+        "continuous_optimum_within_expected_bounds": {
+          "it-1922": true,
+          "mc-1929": true,
+          "hu-1986": true,
+          "jp-1962": true,
+          "sg-2008": true
+        },
+        "calibration_physical_invariant_failure_count": 0,
+        "global_physical_invariant_failure_count": 11,
+        "calibration_maximum_observed_speed_kph": 384.54505984843115,
+        "global_maximum_observed_speed_kph": 406.07738006035066,
+        "global_speed_cap_headroom_kph": -6.077380060350663
+      },
+      "circuits": [
+        {
+          "circuit_id": "it-1922",
+          "circuit_archetype": "power",
+          "circuit_slug": "monza",
+          "fastest": {
+            "downforce_slider": 0.0,
+            "gear_ratio_slider": 0.4,
+            "total_time_ms": 82572
+          },
+          "downforce_decision_margin_ms": 34,
+          "maximum_observed_speed_kph": 384.54505984843115,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "mc-1929",
+          "circuit_archetype": "high-downforce",
+          "circuit_slug": "monaco",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 62687
+          },
+          "downforce_decision_margin_ms": 158,
+          "maximum_observed_speed_kph": 330.77742932458796,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "hu-1986",
+          "circuit_archetype": "mechanical-grip",
+          "circuit_slug": "budapest",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 75026
+          },
+          "downforce_decision_margin_ms": 271,
+          "maximum_observed_speed_kph": 330.9174811084455,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "jp-1962",
+          "circuit_archetype": "mixed",
+          "circuit_slug": "suzuka",
+          "fastest": {
+            "downforce_slider": 0.5,
+            "gear_ratio_slider": 0.1,
+            "total_time_ms": 88091
+          },
+          "downforce_decision_margin_ms": 7,
+          "maximum_observed_speed_kph": 380.7091906631285,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "sg-2008",
+          "circuit_archetype": "street-thermal",
+          "circuit_slug": "singapore",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 86783
+          },
+          "downforce_decision_margin_ms": 90,
+          "maximum_observed_speed_kph": 351.73635926897214,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "gb-1948",
+          "circuit_archetype": "mixed-fast",
+          "circuit_slug": "silverstone",
+          "fastest": {
+            "downforce_slider": 0.7,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 86801
+          },
+          "downforce_decision_margin_ms": 18,
+          "maximum_observed_speed_kph": 380.99469108510385,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "be-1925",
+          "circuit_archetype": "mixed-elevation",
+          "circuit_slug": "spa",
+          "fastest": {
+            "downforce_slider": 0.0,
+            "gear_ratio_slider": 0.8,
+            "total_time_ms": 99833
+          },
+          "downforce_decision_margin_ms": 230,
+          "maximum_observed_speed_kph": 406.07738006035066,
+          "physical_invariant_failure_count": 11
+        }
+      ]
+    },
+    {
+      "candidate_id": "mixed-df-0.4125-corner-1.0750",
+      "kind": "bounded_diagnostic",
+      "tuning_response_digest": "sha256:38c4109b1b7df6e51f451ca9696db220326644a208312298f8c53a6d5a085c04",
+      "downforce_slider_gain": 0.4125,
+      "corner_aero_scale": 1.075,
+      "coefficient_distance_from_current": 0.0625,
+      "assessment": {
+        "calibration_eligible": true,
+        "global_guardrails_pass": false,
+        "eligible": false,
+        "continuous_optimum_within_expected_bounds": {
+          "it-1922": true,
+          "mc-1929": true,
+          "hu-1986": true,
+          "jp-1962": true,
+          "sg-2008": true
+        },
+        "calibration_physical_invariant_failure_count": 0,
+        "global_physical_invariant_failure_count": 11,
+        "calibration_maximum_observed_speed_kph": 384.8243794642534,
+        "global_maximum_observed_speed_kph": 405.8435600640497,
+        "global_speed_cap_headroom_kph": -5.843560064049711
+      },
+      "circuits": [
+        {
+          "circuit_id": "it-1922",
+          "circuit_archetype": "power",
+          "circuit_slug": "monza",
+          "fastest": {
+            "downforce_slider": 0.0,
+            "gear_ratio_slider": 0.5,
+            "total_time_ms": 82426
+          },
+          "downforce_decision_margin_ms": 20,
+          "maximum_observed_speed_kph": 384.8243794642534,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "mc-1929",
+          "circuit_archetype": "high-downforce",
+          "circuit_slug": "monaco",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 62566
+          },
+          "downforce_decision_margin_ms": 167,
+          "maximum_observed_speed_kph": 330.4414716064132,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "hu-1986",
+          "circuit_archetype": "mechanical-grip",
+          "circuit_slug": "budapest",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 74835
+          },
+          "downforce_decision_margin_ms": 278,
+          "maximum_observed_speed_kph": 330.80778402550254,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "jp-1962",
+          "circuit_archetype": "mixed",
+          "circuit_slug": "suzuka",
+          "fastest": {
+            "downforce_slider": 0.4,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 87949
+          },
+          "downforce_decision_margin_ms": 1,
+          "maximum_observed_speed_kph": 380.61255315331425,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "sg-2008",
+          "circuit_archetype": "street-thermal",
+          "circuit_slug": "singapore",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 86644
+          },
+          "downforce_decision_margin_ms": 96,
+          "maximum_observed_speed_kph": 351.3432802473779,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "gb-1948",
+          "circuit_archetype": "mixed-fast",
+          "circuit_slug": "silverstone",
+          "fastest": {
+            "downforce_slider": 0.7,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 86627
+          },
+          "downforce_decision_margin_ms": 15,
+          "maximum_observed_speed_kph": 381.0121309594274,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "be-1925",
+          "circuit_archetype": "mixed-elevation",
+          "circuit_slug": "spa",
+          "fastest": {
+            "downforce_slider": 0.0,
+            "gear_ratio_slider": 1.0,
+            "total_time_ms": 99656
+          },
+          "downforce_decision_margin_ms": 287,
+          "maximum_observed_speed_kph": 405.8435600640497,
+          "physical_invariant_failure_count": 11
+        }
+      ]
+    },
+    {
+      "candidate_id": "mixed-df-0.4125-corner-1.0875",
+      "kind": "bounded_diagnostic",
+      "tuning_response_digest": "sha256:b3ccc301a2fba80fe8fb8e8e0584be4512be2201b2987488efcfb9c04f9b2af8",
+      "downforce_slider_gain": 0.4125,
+      "corner_aero_scale": 1.0875,
+      "coefficient_distance_from_current": 0.075,
+      "assessment": {
+        "calibration_eligible": true,
+        "global_guardrails_pass": false,
+        "eligible": false,
+        "continuous_optimum_within_expected_bounds": {
+          "it-1922": true,
+          "mc-1929": true,
+          "hu-1986": true,
+          "jp-1962": true,
+          "sg-2008": true
+        },
+        "calibration_physical_invariant_failure_count": 0,
+        "global_physical_invariant_failure_count": 11,
+        "calibration_maximum_observed_speed_kph": 385.10706356307395,
+        "global_maximum_observed_speed_kph": 405.52580686873836,
+        "global_speed_cap_headroom_kph": -5.525806868738357
+      },
+      "circuits": [
+        {
+          "circuit_id": "it-1922",
+          "circuit_archetype": "power",
+          "circuit_slug": "monza",
+          "fastest": {
+            "downforce_slider": 0.1,
+            "gear_ratio_slider": 0.3,
+            "total_time_ms": 82283
+          },
+          "downforce_decision_margin_ms": 2,
+          "maximum_observed_speed_kph": 385.10706356307395,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "mc-1929",
+          "circuit_archetype": "high-downforce",
+          "circuit_slug": "monaco",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 62453
+          },
+          "downforce_decision_margin_ms": 160,
+          "maximum_observed_speed_kph": 330.1024810121931,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "hu-1986",
+          "circuit_archetype": "mechanical-grip",
+          "circuit_slug": "budapest",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 74663
+          },
+          "downforce_decision_margin_ms": 271,
+          "maximum_observed_speed_kph": 330.69271378744253,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "jp-1962",
+          "circuit_archetype": "mixed",
+          "circuit_slug": "suzuka",
+          "fastest": {
+            "downforce_slider": 0.4,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 87802
+          },
+          "downforce_decision_margin_ms": 10,
+          "maximum_observed_speed_kph": 380.44673092218386,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "sg-2008",
+          "circuit_archetype": "street-thermal",
+          "circuit_slug": "singapore",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 86497
+          },
+          "downforce_decision_margin_ms": 110,
+          "maximum_observed_speed_kph": 350.8777498668215,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "gb-1948",
+          "circuit_archetype": "mixed-fast",
+          "circuit_slug": "silverstone",
+          "fastest": {
+            "downforce_slider": 0.6,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 86475
+          },
+          "downforce_decision_margin_ms": 8,
+          "maximum_observed_speed_kph": 380.9958079983325,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "be-1925",
+          "circuit_archetype": "mixed-elevation",
+          "circuit_slug": "spa",
+          "fastest": {
+            "downforce_slider": 0.0,
+            "gear_ratio_slider": 1.0,
+            "total_time_ms": 99513
+          },
+          "downforce_decision_margin_ms": 278,
+          "maximum_observed_speed_kph": 405.52580686873836,
+          "physical_invariant_failure_count": 11
+        }
+      ]
+    },
+    {
+      "candidate_id": "mixed-df-0.4125-corner-1.1000",
+      "kind": "bounded_diagnostic",
+      "tuning_response_digest": "sha256:0ea9f91d3627094a6785c93435172c000ecc3a8c96c9e3eaeb58a6c379877beb",
+      "downforce_slider_gain": 0.4125,
+      "corner_aero_scale": 1.1,
+      "coefficient_distance_from_current": 0.0875,
+      "assessment": {
+        "calibration_eligible": true,
+        "global_guardrails_pass": false,
+        "eligible": false,
+        "continuous_optimum_within_expected_bounds": {
+          "it-1922": true,
+          "mc-1929": true,
+          "hu-1986": true,
+          "jp-1962": true,
+          "sg-2008": true
+        },
+        "calibration_physical_invariant_failure_count": 0,
+        "global_physical_invariant_failure_count": 11,
+        "calibration_maximum_observed_speed_kph": 385.2270195781647,
+        "global_maximum_observed_speed_kph": 405.211033569566,
+        "global_speed_cap_headroom_kph": -5.211033569565984
+      },
+      "circuits": [
+        {
+          "circuit_id": "it-1922",
+          "circuit_archetype": "power",
+          "circuit_slug": "monza",
+          "fastest": {
+            "downforce_slider": 0.0,
+            "gear_ratio_slider": 0.4,
+            "total_time_ms": 82136
+          },
+          "downforce_decision_margin_ms": 12,
+          "maximum_observed_speed_kph": 385.2270195781647,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "mc-1929",
+          "circuit_archetype": "high-downforce",
+          "circuit_slug": "monaco",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 62354
+          },
+          "downforce_decision_margin_ms": 140,
+          "maximum_observed_speed_kph": 329.6933018844623,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "hu-1986",
+          "circuit_archetype": "mechanical-grip",
+          "circuit_slug": "budapest",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 74476
+          },
+          "downforce_decision_margin_ms": 270,
+          "maximum_observed_speed_kph": 330.44399465785233,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "jp-1962",
+          "circuit_archetype": "mixed",
+          "circuit_slug": "suzuka",
+          "fastest": {
+            "downforce_slider": 0.4,
+            "gear_ratio_slider": 0.1,
+            "total_time_ms": 87661
+          },
+          "downforce_decision_margin_ms": 19,
+          "maximum_observed_speed_kph": 380.26435354127005,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "sg-2008",
+          "circuit_archetype": "street-thermal",
+          "circuit_slug": "singapore",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 86376
+          },
+          "downforce_decision_margin_ms": 113,
+          "maximum_observed_speed_kph": 350.8491118479825,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "gb-1948",
+          "circuit_archetype": "mixed-fast",
+          "circuit_slug": "silverstone",
+          "fastest": {
+            "downforce_slider": 0.6,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 86308
+          },
+          "downforce_decision_margin_ms": 30,
+          "maximum_observed_speed_kph": 380.9881918001773,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "be-1925",
+          "circuit_archetype": "mixed-elevation",
+          "circuit_slug": "spa",
+          "fastest": {
+            "downforce_slider": 0.0,
+            "gear_ratio_slider": 1.0,
+            "total_time_ms": 99377
+          },
+          "downforce_decision_margin_ms": 280,
+          "maximum_observed_speed_kph": 405.211033569566,
+          "physical_invariant_failure_count": 11
+        }
+      ]
+    },
+    {
+      "candidate_id": "mixed-df-0.4250-corner-1.0500",
+      "kind": "bounded_diagnostic",
+      "tuning_response_digest": "sha256:506a3e3248cfff29931decdc6d321592d639390a097d77a0631a69d05d1a1b27",
+      "downforce_slider_gain": 0.425,
+      "corner_aero_scale": 1.05,
+      "coefficient_distance_from_current": 0.05,
+      "assessment": {
+        "calibration_eligible": false,
+        "global_guardrails_pass": false,
+        "eligible": false,
+        "continuous_optimum_within_expected_bounds": {
+          "it-1922": true,
+          "mc-1929": true,
+          "hu-1986": true,
+          "jp-1962": false,
+          "sg-2008": true
+        },
+        "calibration_physical_invariant_failure_count": 0,
+        "global_physical_invariant_failure_count": 11,
+        "calibration_maximum_observed_speed_kph": 384.44944173282335,
+        "global_maximum_observed_speed_kph": 406.392679991782,
+        "global_speed_cap_headroom_kph": -6.392679991782018
+      },
+      "circuits": [
+        {
+          "circuit_id": "it-1922",
+          "circuit_archetype": "power",
+          "circuit_slug": "monza",
+          "fastest": {
+            "downforce_slider": 0.0,
+            "gear_ratio_slider": 0.4,
+            "total_time_ms": 82717
+          },
+          "downforce_decision_margin_ms": 16,
+          "maximum_observed_speed_kph": 384.44944173282335,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "mc-1929",
+          "circuit_archetype": "high-downforce",
+          "circuit_slug": "monaco",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 62692
+          },
+          "downforce_decision_margin_ms": 167,
+          "maximum_observed_speed_kph": 331.1369805518737,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "hu-1986",
+          "circuit_archetype": "mechanical-grip",
+          "circuit_slug": "budapest",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 75057
+          },
+          "downforce_decision_margin_ms": 270,
+          "maximum_observed_speed_kph": 331.5411151739376,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "jp-1962",
+          "circuit_archetype": "mixed",
+          "circuit_slug": "suzuka",
+          "fastest": {
+            "downforce_slider": 0.6,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 88150
+          },
+          "downforce_decision_margin_ms": 2,
+          "maximum_observed_speed_kph": 380.9150944950582,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "sg-2008",
+          "circuit_archetype": "street-thermal",
+          "circuit_slug": "singapore",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 86775
+          },
+          "downforce_decision_margin_ms": 125,
+          "maximum_observed_speed_kph": 351.51048287791224,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "gb-1948",
+          "circuit_archetype": "mixed-fast",
+          "circuit_slug": "silverstone",
+          "fastest": {
+            "downforce_slider": 0.7,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 86837
+          },
+          "downforce_decision_margin_ms": 18,
+          "maximum_observed_speed_kph": 381.12153417653775,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "be-1925",
+          "circuit_archetype": "mixed-elevation",
+          "circuit_slug": "spa",
+          "fastest": {
+            "downforce_slider": 0.0,
+            "gear_ratio_slider": 0.9,
+            "total_time_ms": 99992
+          },
+          "downforce_decision_margin_ms": 196,
+          "maximum_observed_speed_kph": 406.392679991782,
+          "physical_invariant_failure_count": 11
+        }
+      ]
+    },
+    {
+      "candidate_id": "mixed-df-0.4250-corner-1.0625",
+      "kind": "bounded_diagnostic",
+      "tuning_response_digest": "sha256:bc7ef2d7e94cbf45df72b2c0f64d204f60773c1e9c2a73692b98ad9614767763",
+      "downforce_slider_gain": 0.425,
+      "corner_aero_scale": 1.0625,
+      "coefficient_distance_from_current": 0.0625,
+      "assessment": {
+        "calibration_eligible": true,
+        "global_guardrails_pass": false,
+        "eligible": false,
+        "continuous_optimum_within_expected_bounds": {
+          "it-1922": true,
+          "mc-1929": true,
+          "hu-1986": true,
+          "jp-1962": true,
+          "sg-2008": true
+        },
+        "calibration_physical_invariant_failure_count": 0,
+        "global_physical_invariant_failure_count": 11,
+        "calibration_maximum_observed_speed_kph": 384.54505984843115,
+        "global_maximum_observed_speed_kph": 406.07738006035066,
+        "global_speed_cap_headroom_kph": -6.077380060350663
+      },
+      "circuits": [
+        {
+          "circuit_id": "it-1922",
+          "circuit_archetype": "power",
+          "circuit_slug": "monza",
+          "fastest": {
+            "downforce_slider": 0.0,
+            "gear_ratio_slider": 0.4,
+            "total_time_ms": 82572
+          },
+          "downforce_decision_margin_ms": 17,
+          "maximum_observed_speed_kph": 384.54505984843115,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "mc-1929",
+          "circuit_archetype": "high-downforce",
+          "circuit_slug": "monaco",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 62570
+          },
+          "downforce_decision_margin_ms": 176,
+          "maximum_observed_speed_kph": 330.77742932458796,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "hu-1986",
+          "circuit_archetype": "mechanical-grip",
+          "circuit_slug": "budapest",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 74854
+          },
+          "downforce_decision_margin_ms": 293,
+          "maximum_observed_speed_kph": 330.9174811084455,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "jp-1962",
+          "circuit_archetype": "mixed",
+          "circuit_slug": "suzuka",
+          "fastest": {
+            "downforce_slider": 0.5,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 88004
+          },
+          "downforce_decision_margin_ms": 24,
+          "maximum_observed_speed_kph": 380.7091906631285,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "sg-2008",
+          "circuit_archetype": "street-thermal",
+          "circuit_slug": "singapore",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 86639
+          },
+          "downforce_decision_margin_ms": 122,
+          "maximum_observed_speed_kph": 351.73635926897214,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "gb-1948",
+          "circuit_archetype": "mixed-fast",
+          "circuit_slug": "silverstone",
+          "fastest": {
+            "downforce_slider": 0.7,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 86672
+          },
+          "downforce_decision_margin_ms": 32,
+          "maximum_observed_speed_kph": 380.99469108510385,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "be-1925",
+          "circuit_archetype": "mixed-elevation",
+          "circuit_slug": "spa",
+          "fastest": {
+            "downforce_slider": 0.0,
+            "gear_ratio_slider": 0.8,
+            "total_time_ms": 99833
+          },
+          "downforce_decision_margin_ms": 212,
+          "maximum_observed_speed_kph": 406.07738006035066,
+          "physical_invariant_failure_count": 11
+        }
+      ]
+    },
+    {
+      "candidate_id": "mixed-df-0.4250-corner-1.0750",
+      "kind": "bounded_diagnostic",
+      "tuning_response_digest": "sha256:3889065955de0cc7213920e3b2fe0600383d038e98ef9503afc41eef9fdd07cb",
+      "downforce_slider_gain": 0.425,
+      "corner_aero_scale": 1.075,
+      "coefficient_distance_from_current": 0.075,
+      "assessment": {
+        "calibration_eligible": true,
+        "global_guardrails_pass": false,
+        "eligible": false,
+        "continuous_optimum_within_expected_bounds": {
+          "it-1922": true,
+          "mc-1929": true,
+          "hu-1986": true,
+          "jp-1962": true,
+          "sg-2008": true
+        },
+        "calibration_physical_invariant_failure_count": 0,
+        "global_physical_invariant_failure_count": 11,
+        "calibration_maximum_observed_speed_kph": 384.8243794642534,
+        "global_maximum_observed_speed_kph": 405.8435600640497,
+        "global_speed_cap_headroom_kph": -5.843560064049711
+      },
+      "circuits": [
+        {
+          "circuit_id": "it-1922",
+          "circuit_archetype": "power",
+          "circuit_slug": "monza",
+          "fastest": {
+            "downforce_slider": 0.0,
+            "gear_ratio_slider": 0.5,
+            "total_time_ms": 82426
+          },
+          "downforce_decision_margin_ms": 1,
+          "maximum_observed_speed_kph": 384.8243794642534,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "mc-1929",
+          "circuit_archetype": "high-downforce",
+          "circuit_slug": "monaco",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 62452
+          },
+          "downforce_decision_margin_ms": 172,
+          "maximum_observed_speed_kph": 330.4414716064132,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "hu-1986",
+          "circuit_archetype": "mechanical-grip",
+          "circuit_slug": "budapest",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 74675
+          },
+          "downforce_decision_margin_ms": 283,
+          "maximum_observed_speed_kph": 330.80778402550254,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "jp-1962",
+          "circuit_archetype": "mixed",
+          "circuit_slug": "suzuka",
+          "fastest": {
+            "downforce_slider": 0.5,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 87870
+          },
+          "downforce_decision_margin_ms": 6,
+          "maximum_observed_speed_kph": 380.61255315331425,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "sg-2008",
+          "circuit_archetype": "street-thermal",
+          "circuit_slug": "singapore",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 86505
+          },
+          "downforce_decision_margin_ms": 118,
+          "maximum_observed_speed_kph": 351.3432802473779,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "gb-1948",
+          "circuit_archetype": "mixed-fast",
+          "circuit_slug": "silverstone",
+          "fastest": {
+            "downforce_slider": 0.7,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 86504
+          },
+          "downforce_decision_margin_ms": 20,
+          "maximum_observed_speed_kph": 381.0121309594274,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "be-1925",
+          "circuit_archetype": "mixed-elevation",
+          "circuit_slug": "spa",
+          "fastest": {
+            "downforce_slider": 0.0,
+            "gear_ratio_slider": 1.0,
+            "total_time_ms": 99656
+          },
+          "downforce_decision_margin_ms": 269,
+          "maximum_observed_speed_kph": 405.8435600640497,
+          "physical_invariant_failure_count": 11
+        }
+      ]
+    },
+    {
+      "candidate_id": "mixed-df-0.4250-corner-1.0875",
+      "kind": "bounded_diagnostic",
+      "tuning_response_digest": "sha256:e45c488daeba4f6191a1aef2af044e8cd8f1e459d1d8c780f3f19cf27822181e",
+      "downforce_slider_gain": 0.425,
+      "corner_aero_scale": 1.0875,
+      "coefficient_distance_from_current": 0.0875,
+      "assessment": {
+        "calibration_eligible": true,
+        "global_guardrails_pass": false,
+        "eligible": false,
+        "continuous_optimum_within_expected_bounds": {
+          "it-1922": true,
+          "mc-1929": true,
+          "hu-1986": true,
+          "jp-1962": true,
+          "sg-2008": true
+        },
+        "calibration_physical_invariant_failure_count": 0,
+        "global_physical_invariant_failure_count": 11,
+        "calibration_maximum_observed_speed_kph": 385.10706356307395,
+        "global_maximum_observed_speed_kph": 405.52580686873836,
+        "global_speed_cap_headroom_kph": -5.525806868738357
+      },
+      "circuits": [
+        {
+          "circuit_id": "it-1922",
+          "circuit_archetype": "power",
+          "circuit_slug": "monza",
+          "fastest": {
+            "downforce_slider": 0.1,
+            "gear_ratio_slider": 0.3,
+            "total_time_ms": 82267
+          },
+          "downforce_decision_margin_ms": 18,
+          "maximum_observed_speed_kph": 385.10706356307395,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "mc-1929",
+          "circuit_archetype": "high-downforce",
+          "circuit_slug": "monaco",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 62349
+          },
+          "downforce_decision_margin_ms": 161,
+          "maximum_observed_speed_kph": 330.1024810121931,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "hu-1986",
+          "circuit_archetype": "mechanical-grip",
+          "circuit_slug": "budapest",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 74498
+          },
+          "downforce_decision_margin_ms": 272,
+          "maximum_observed_speed_kph": 330.69271378744253,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "jp-1962",
+          "circuit_archetype": "mixed",
+          "circuit_slug": "suzuka",
+          "fastest": {
+            "downforce_slider": 0.5,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 87724
+          },
+          "downforce_decision_margin_ms": 9,
+          "maximum_observed_speed_kph": 380.44673092218386,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "sg-2008",
+          "circuit_archetype": "street-thermal",
+          "circuit_slug": "singapore",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 86367
+          },
+          "downforce_decision_margin_ms": 123,
+          "maximum_observed_speed_kph": 350.8777498668215,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "gb-1948",
+          "circuit_archetype": "mixed-fast",
+          "circuit_slug": "silverstone",
+          "fastest": {
+            "downforce_slider": 0.7,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 86357
+          },
+          "downforce_decision_margin_ms": 4,
+          "maximum_observed_speed_kph": 380.9958079983325,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "be-1925",
+          "circuit_archetype": "mixed-elevation",
+          "circuit_slug": "spa",
+          "fastest": {
+            "downforce_slider": 0.0,
+            "gear_ratio_slider": 1.0,
+            "total_time_ms": 99513
+          },
+          "downforce_decision_margin_ms": 260,
+          "maximum_observed_speed_kph": 405.52580686873836,
+          "physical_invariant_failure_count": 11
+        }
+      ]
+    },
+    {
+      "candidate_id": "mixed-df-0.4250-corner-1.1000",
+      "kind": "bounded_diagnostic",
+      "tuning_response_digest": "sha256:b3244e7573372487debb2fc1b11f704bedac4f01215e8056d0f064c0a5c3d63a",
+      "downforce_slider_gain": 0.425,
+      "corner_aero_scale": 1.1,
+      "coefficient_distance_from_current": 0.1,
+      "assessment": {
+        "calibration_eligible": true,
+        "global_guardrails_pass": false,
+        "eligible": false,
+        "continuous_optimum_within_expected_bounds": {
+          "it-1922": true,
+          "mc-1929": true,
+          "hu-1986": true,
+          "jp-1962": true,
+          "sg-2008": true
+        },
+        "calibration_physical_invariant_failure_count": 0,
+        "global_physical_invariant_failure_count": 11,
+        "calibration_maximum_observed_speed_kph": 385.2270195781647,
+        "global_maximum_observed_speed_kph": 405.211033569566,
+        "global_speed_cap_headroom_kph": -5.211033569565984
+      },
+      "circuits": [
+        {
+          "circuit_id": "it-1922",
+          "circuit_archetype": "power",
+          "circuit_slug": "monza",
+          "fastest": {
+            "downforce_slider": 0.1,
+            "gear_ratio_slider": 0.3,
+            "total_time_ms": 82132
+          },
+          "downforce_decision_margin_ms": 4,
+          "maximum_observed_speed_kph": 385.2270195781647,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "mc-1929",
+          "circuit_archetype": "high-downforce",
+          "circuit_slug": "monaco",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 62249
+          },
+          "downforce_decision_margin_ms": 141,
+          "maximum_observed_speed_kph": 329.6933018844623,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "hu-1986",
+          "circuit_archetype": "mechanical-grip",
+          "circuit_slug": "budapest",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 74306
+          },
+          "downforce_decision_margin_ms": 273,
+          "maximum_observed_speed_kph": 330.44399465785233,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "jp-1962",
+          "circuit_archetype": "mixed",
+          "circuit_slug": "suzuka",
+          "fastest": {
+            "downforce_slider": 0.4,
+            "gear_ratio_slider": 0.1,
+            "total_time_ms": 87592
+          },
+          "downforce_decision_margin_ms": 9,
+          "maximum_observed_speed_kph": 380.26435354127005,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "sg-2008",
+          "circuit_archetype": "street-thermal",
+          "circuit_slug": "singapore",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 86251
+          },
+          "downforce_decision_margin_ms": 98,
+          "maximum_observed_speed_kph": 350.8491118479825,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "gb-1948",
+          "circuit_archetype": "mixed-fast",
+          "circuit_slug": "silverstone",
+          "fastest": {
+            "downforce_slider": 0.6,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 86192
+          },
+          "downforce_decision_margin_ms": 25,
+          "maximum_observed_speed_kph": 380.9881918001773,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "be-1925",
+          "circuit_archetype": "mixed-elevation",
+          "circuit_slug": "spa",
+          "fastest": {
+            "downforce_slider": 0.0,
+            "gear_ratio_slider": 1.0,
+            "total_time_ms": 99377
+          },
+          "downforce_decision_margin_ms": 261,
+          "maximum_observed_speed_kph": 405.211033569566,
+          "physical_invariant_failure_count": 11
+        }
+      ]
+    },
+    {
+      "candidate_id": "mixed-df-0.4375-corner-1.0500",
+      "kind": "bounded_diagnostic",
+      "tuning_response_digest": "sha256:e9723a58b7e7dabf522af88310f15dfe6ff5c9285240fb545a259770e660c4f0",
+      "downforce_slider_gain": 0.4375,
+      "corner_aero_scale": 1.05,
+      "coefficient_distance_from_current": 0.0625,
+      "assessment": {
+        "calibration_eligible": false,
+        "global_guardrails_pass": false,
+        "eligible": false,
+        "continuous_optimum_within_expected_bounds": {
+          "it-1922": true,
+          "mc-1929": true,
+          "hu-1986": true,
+          "jp-1962": false,
+          "sg-2008": true
+        },
+        "calibration_physical_invariant_failure_count": 0,
+        "global_physical_invariant_failure_count": 11,
+        "calibration_maximum_observed_speed_kph": 384.44944173282335,
+        "global_maximum_observed_speed_kph": 406.392679991782,
+        "global_speed_cap_headroom_kph": -6.392679991782018
+      },
+      "circuits": [
+        {
+          "circuit_id": "it-1922",
+          "circuit_archetype": "power",
+          "circuit_slug": "monza",
+          "fastest": {
+            "downforce_slider": 0.2,
+            "gear_ratio_slider": 0.3,
+            "total_time_ms": 82712
+          },
+          "downforce_decision_margin_ms": 4,
+          "maximum_observed_speed_kph": 384.44944173282335,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "mc-1929",
+          "circuit_archetype": "high-downforce",
+          "circuit_slug": "monaco",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 62577
+          },
+          "downforce_decision_margin_ms": 183,
+          "maximum_observed_speed_kph": 331.1369805518737,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "hu-1986",
+          "circuit_archetype": "mechanical-grip",
+          "circuit_slug": "budapest",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 74883
+          },
+          "downforce_decision_margin_ms": 296,
+          "maximum_observed_speed_kph": 331.5411151739376,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "jp-1962",
+          "circuit_archetype": "mixed",
+          "circuit_slug": "suzuka",
+          "fastest": {
+            "downforce_slider": 0.6,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 88060
+          },
+          "downforce_decision_margin_ms": 6,
+          "maximum_observed_speed_kph": 380.9150944950582,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "sg-2008",
+          "circuit_archetype": "street-thermal",
+          "circuit_slug": "singapore",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 86658
+          },
+          "downforce_decision_margin_ms": 110,
+          "maximum_observed_speed_kph": 351.51048287791224,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "gb-1948",
+          "circuit_archetype": "mixed-fast",
+          "circuit_slug": "silverstone",
+          "fastest": {
+            "downforce_slider": 0.7,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 86710
+          },
+          "downforce_decision_margin_ms": 7,
+          "maximum_observed_speed_kph": 381.12153417653775,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "be-1925",
+          "circuit_archetype": "mixed-elevation",
+          "circuit_slug": "spa",
+          "fastest": {
+            "downforce_slider": 0.0,
+            "gear_ratio_slider": 0.9,
+            "total_time_ms": 99992
+          },
+          "downforce_decision_margin_ms": 176,
+          "maximum_observed_speed_kph": 406.392679991782,
+          "physical_invariant_failure_count": 11
+        }
+      ]
+    },
+    {
+      "candidate_id": "mixed-df-0.4375-corner-1.0625",
+      "kind": "bounded_diagnostic",
+      "tuning_response_digest": "sha256:9739eada19eb241d15ce6767758a3260a6df112ea23fa87efc046e568bca4641",
+      "downforce_slider_gain": 0.4375,
+      "corner_aero_scale": 1.0625,
+      "coefficient_distance_from_current": 0.075,
+      "assessment": {
+        "calibration_eligible": true,
+        "global_guardrails_pass": false,
+        "eligible": false,
+        "continuous_optimum_within_expected_bounds": {
+          "it-1922": true,
+          "mc-1929": true,
+          "hu-1986": true,
+          "jp-1962": true,
+          "sg-2008": true
+        },
+        "calibration_physical_invariant_failure_count": 0,
+        "global_physical_invariant_failure_count": 11,
+        "calibration_maximum_observed_speed_kph": 384.54505984843115,
+        "global_maximum_observed_speed_kph": 406.07738006035066,
+        "global_speed_cap_headroom_kph": -6.077380060350663
+      },
+      "circuits": [
+        {
+          "circuit_id": "it-1922",
+          "circuit_archetype": "power",
+          "circuit_slug": "monza",
+          "fastest": {
+            "downforce_slider": 0.0,
+            "gear_ratio_slider": 0.4,
+            "total_time_ms": 82572
+          },
+          "downforce_decision_margin_ms": 0,
+          "maximum_observed_speed_kph": 384.54505984843115,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "mc-1929",
+          "circuit_archetype": "high-downforce",
+          "circuit_slug": "monaco",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 62459
+          },
+          "downforce_decision_margin_ms": 179,
+          "maximum_observed_speed_kph": 330.77742932458796,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "hu-1986",
+          "circuit_archetype": "mechanical-grip",
+          "circuit_slug": "budapest",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 74691
+          },
+          "downforce_decision_margin_ms": 297,
+          "maximum_observed_speed_kph": 330.9174811084455,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "jp-1962",
+          "circuit_archetype": "mixed",
+          "circuit_slug": "suzuka",
+          "fastest": {
+            "downforce_slider": 0.5,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 87922
+          },
+          "downforce_decision_margin_ms": 12,
+          "maximum_observed_speed_kph": 380.7091906631285,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "sg-2008",
+          "circuit_archetype": "street-thermal",
+          "circuit_slug": "singapore",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 86511
+          },
+          "downforce_decision_margin_ms": 121,
+          "maximum_observed_speed_kph": 351.73635926897214,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "gb-1948",
+          "circuit_archetype": "mixed-fast",
+          "circuit_slug": "silverstone",
+          "fastest": {
+            "downforce_slider": 0.7,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 86532
+          },
+          "downforce_decision_margin_ms": 43,
+          "maximum_observed_speed_kph": 380.99469108510385,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "be-1925",
+          "circuit_archetype": "mixed-elevation",
+          "circuit_slug": "spa",
+          "fastest": {
+            "downforce_slider": 0.0,
+            "gear_ratio_slider": 0.8,
+            "total_time_ms": 99833
+          },
+          "downforce_decision_margin_ms": 194,
+          "maximum_observed_speed_kph": 406.07738006035066,
+          "physical_invariant_failure_count": 11
+        }
+      ]
+    },
+    {
+      "candidate_id": "mixed-df-0.4375-corner-1.0750",
+      "kind": "bounded_diagnostic",
+      "tuning_response_digest": "sha256:f84396c060de51920ed134afe7e1e39340421a71df7a6b0aaa764bd07124626b",
+      "downforce_slider_gain": 0.4375,
+      "corner_aero_scale": 1.075,
+      "coefficient_distance_from_current": 0.0875,
+      "assessment": {
+        "calibration_eligible": true,
+        "global_guardrails_pass": false,
+        "eligible": false,
+        "continuous_optimum_within_expected_bounds": {
+          "it-1922": true,
+          "mc-1929": true,
+          "hu-1986": true,
+          "jp-1962": true,
+          "sg-2008": true
+        },
+        "calibration_physical_invariant_failure_count": 0,
+        "global_physical_invariant_failure_count": 11,
+        "calibration_maximum_observed_speed_kph": 384.8243794642534,
+        "global_maximum_observed_speed_kph": 405.8435600640497,
+        "global_speed_cap_headroom_kph": -5.843560064049711
+      },
+      "circuits": [
+        {
+          "circuit_id": "it-1922",
+          "circuit_archetype": "power",
+          "circuit_slug": "monza",
+          "fastest": {
+            "downforce_slider": 0.1,
+            "gear_ratio_slider": 0.4,
+            "total_time_ms": 82410
+          },
+          "downforce_decision_margin_ms": 16,
+          "maximum_observed_speed_kph": 384.8243794642534,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "mc-1929",
+          "circuit_archetype": "high-downforce",
+          "circuit_slug": "monaco",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 62347
+          },
+          "downforce_decision_margin_ms": 176,
+          "maximum_observed_speed_kph": 330.4414716064132,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "hu-1986",
+          "circuit_archetype": "mechanical-grip",
+          "circuit_slug": "budapest",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 74511
+          },
+          "downforce_decision_margin_ms": 301,
+          "maximum_observed_speed_kph": 330.80778402550254,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "jp-1962",
+          "circuit_archetype": "mixed",
+          "circuit_slug": "suzuka",
+          "fastest": {
+            "downforce_slider": 0.5,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 87778
+          },
+          "downforce_decision_margin_ms": 31,
+          "maximum_observed_speed_kph": 380.61255315331425,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "sg-2008",
+          "circuit_archetype": "street-thermal",
+          "circuit_slug": "singapore",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 86362
+          },
+          "downforce_decision_margin_ms": 134,
+          "maximum_observed_speed_kph": 351.3432802473779,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "gb-1948",
+          "circuit_archetype": "mixed-fast",
+          "circuit_slug": "silverstone",
+          "fastest": {
+            "downforce_slider": 0.7,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 86385
+          },
+          "downforce_decision_margin_ms": 29,
+          "maximum_observed_speed_kph": 381.0121309594274,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "be-1925",
+          "circuit_archetype": "mixed-elevation",
+          "circuit_slug": "spa",
+          "fastest": {
+            "downforce_slider": 0.0,
+            "gear_ratio_slider": 1.0,
+            "total_time_ms": 99656
+          },
+          "downforce_decision_margin_ms": 250,
+          "maximum_observed_speed_kph": 405.8435600640497,
+          "physical_invariant_failure_count": 11
+        }
+      ]
+    },
+    {
+      "candidate_id": "mixed-df-0.4375-corner-1.0875",
+      "kind": "bounded_diagnostic",
+      "tuning_response_digest": "sha256:32c049368e7130d8e7208ab7186d990f646f10e50edecead4c0c1fd6bf56acea",
+      "downforce_slider_gain": 0.4375,
+      "corner_aero_scale": 1.0875,
+      "coefficient_distance_from_current": 0.1,
+      "assessment": {
+        "calibration_eligible": true,
+        "global_guardrails_pass": false,
+        "eligible": false,
+        "continuous_optimum_within_expected_bounds": {
+          "it-1922": true,
+          "mc-1929": true,
+          "hu-1986": true,
+          "jp-1962": true,
+          "sg-2008": true
+        },
+        "calibration_physical_invariant_failure_count": 0,
+        "global_physical_invariant_failure_count": 11,
+        "calibration_maximum_observed_speed_kph": 385.10706356307395,
+        "global_maximum_observed_speed_kph": 405.52580686873836,
+        "global_speed_cap_headroom_kph": -5.525806868738357
+      },
+      "circuits": [
+        {
+          "circuit_id": "it-1922",
+          "circuit_archetype": "power",
+          "circuit_slug": "monza",
+          "fastest": {
+            "downforce_slider": 0.1,
+            "gear_ratio_slider": 0.3,
+            "total_time_ms": 82251
+          },
+          "downforce_decision_margin_ms": 34,
+          "maximum_observed_speed_kph": 385.10706356307395,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "mc-1929",
+          "circuit_archetype": "high-downforce",
+          "circuit_slug": "monaco",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 62246
+          },
+          "downforce_decision_margin_ms": 155,
+          "maximum_observed_speed_kph": 330.1024810121931,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "hu-1986",
+          "circuit_archetype": "mechanical-grip",
+          "circuit_slug": "budapest",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 74321
+          },
+          "downforce_decision_margin_ms": 299,
+          "maximum_observed_speed_kph": 330.69271378744253,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "jp-1962",
+          "circuit_archetype": "mixed",
+          "circuit_slug": "suzuka",
+          "fastest": {
+            "downforce_slider": 0.5,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 87646
+          },
+          "downforce_decision_margin_ms": 13,
+          "maximum_observed_speed_kph": 380.44673092218386,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "sg-2008",
+          "circuit_archetype": "street-thermal",
+          "circuit_slug": "singapore",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 86238
+          },
+          "downforce_decision_margin_ms": 123,
+          "maximum_observed_speed_kph": 350.8777498668215,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "gb-1948",
+          "circuit_archetype": "mixed-fast",
+          "circuit_slug": "silverstone",
+          "fastest": {
+            "downforce_slider": 0.7,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 86237
+          },
+          "downforce_decision_margin_ms": 6,
+          "maximum_observed_speed_kph": 380.9958079983325,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "be-1925",
+          "circuit_archetype": "mixed-elevation",
+          "circuit_slug": "spa",
+          "fastest": {
+            "downforce_slider": 0.0,
+            "gear_ratio_slider": 1.0,
+            "total_time_ms": 99513
+          },
+          "downforce_decision_margin_ms": 242,
+          "maximum_observed_speed_kph": 405.52580686873836,
+          "physical_invariant_failure_count": 11
+        }
+      ]
+    },
+    {
+      "candidate_id": "mixed-df-0.4375-corner-1.1000",
+      "kind": "bounded_diagnostic",
+      "tuning_response_digest": "sha256:29506d0857ef3307a5ced1cabd39eb18b8c1068c9fb7b75270c3bd89aa94e135",
+      "downforce_slider_gain": 0.4375,
+      "corner_aero_scale": 1.1,
+      "coefficient_distance_from_current": 0.1125,
+      "assessment": {
+        "calibration_eligible": true,
+        "global_guardrails_pass": false,
+        "eligible": false,
+        "continuous_optimum_within_expected_bounds": {
+          "it-1922": true,
+          "mc-1929": true,
+          "hu-1986": true,
+          "jp-1962": true,
+          "sg-2008": true
+        },
+        "calibration_physical_invariant_failure_count": 0,
+        "global_physical_invariant_failure_count": 11,
+        "calibration_maximum_observed_speed_kph": 385.2270195781647,
+        "global_maximum_observed_speed_kph": 405.211033569566,
+        "global_speed_cap_headroom_kph": -5.211033569565984
+      },
+      "circuits": [
+        {
+          "circuit_id": "it-1922",
+          "circuit_archetype": "power",
+          "circuit_slug": "monza",
+          "fastest": {
+            "downforce_slider": 0.1,
+            "gear_ratio_slider": 0.4,
+            "total_time_ms": 82114
+          },
+          "downforce_decision_margin_ms": 22,
+          "maximum_observed_speed_kph": 385.2270195781647,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "mc-1929",
+          "circuit_archetype": "high-downforce",
+          "circuit_slug": "monaco",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 62145
+          },
+          "downforce_decision_margin_ms": 138,
+          "maximum_observed_speed_kph": 329.6933018844623,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "hu-1986",
+          "circuit_archetype": "mechanical-grip",
+          "circuit_slug": "budapest",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 74130
+          },
+          "downforce_decision_margin_ms": 301,
+          "maximum_observed_speed_kph": 330.44399465785233,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "jp-1962",
+          "circuit_archetype": "mixed",
+          "circuit_slug": "suzuka",
+          "fastest": {
+            "downforce_slider": 0.5,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 87519
+          },
+          "downforce_decision_margin_ms": 3,
+          "maximum_observed_speed_kph": 380.26435354127005,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "sg-2008",
+          "circuit_archetype": "street-thermal",
+          "circuit_slug": "singapore",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 86110
+          },
+          "downforce_decision_margin_ms": 110,
+          "maximum_observed_speed_kph": 350.8491118479825,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "gb-1948",
+          "circuit_archetype": "mixed-fast",
+          "circuit_slug": "silverstone",
+          "fastest": {
+            "downforce_slider": 0.6,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 86066
+          },
+          "downforce_decision_margin_ms": 31,
+          "maximum_observed_speed_kph": 380.9881918001773,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "be-1925",
+          "circuit_archetype": "mixed-elevation",
+          "circuit_slug": "spa",
+          "fastest": {
+            "downforce_slider": 0.0,
+            "gear_ratio_slider": 1.0,
+            "total_time_ms": 99377
+          },
+          "downforce_decision_margin_ms": 238,
+          "maximum_observed_speed_kph": 405.211033569566,
+          "physical_invariant_failure_count": 11
+        }
+      ]
+    },
+    {
+      "candidate_id": "mixed-df-0.4500-corner-1.0500",
+      "kind": "bounded_diagnostic",
+      "tuning_response_digest": "sha256:d7eafa703bba1dbb331539fb182811ecf62aee2d4cd870f3fdb5f849cd1bae9c",
+      "downforce_slider_gain": 0.45,
+      "corner_aero_scale": 1.05,
+      "coefficient_distance_from_current": 0.075,
+      "assessment": {
+        "calibration_eligible": false,
+        "global_guardrails_pass": false,
+        "eligible": false,
+        "continuous_optimum_within_expected_bounds": {
+          "it-1922": true,
+          "mc-1929": true,
+          "hu-1986": true,
+          "jp-1962": false,
+          "sg-2008": true
+        },
+        "calibration_physical_invariant_failure_count": 0,
+        "global_physical_invariant_failure_count": 9,
+        "calibration_maximum_observed_speed_kph": 384.44944173282335,
+        "global_maximum_observed_speed_kph": 406.392679991782,
+        "global_speed_cap_headroom_kph": -6.392679991782018
+      },
+      "circuits": [
+        {
+          "circuit_id": "it-1922",
+          "circuit_archetype": "power",
+          "circuit_slug": "monza",
+          "fastest": {
+            "downforce_slider": 0.2,
+            "gear_ratio_slider": 0.4,
+            "total_time_ms": 82683
+          },
+          "downforce_decision_margin_ms": 17,
+          "maximum_observed_speed_kph": 384.44944173282335,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "mc-1929",
+          "circuit_archetype": "high-downforce",
+          "circuit_slug": "monaco",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 62467
+          },
+          "downforce_decision_margin_ms": 195,
+          "maximum_observed_speed_kph": 331.1369805518737,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "hu-1986",
+          "circuit_archetype": "mechanical-grip",
+          "circuit_slug": "budapest",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 74707
+          },
+          "downforce_decision_margin_ms": 322,
+          "maximum_observed_speed_kph": 331.5411151739376,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "jp-1962",
+          "circuit_archetype": "mixed",
+          "circuit_slug": "suzuka",
+          "fastest": {
+            "downforce_slider": 0.6,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 87969
+          },
+          "downforce_decision_margin_ms": 11,
+          "maximum_observed_speed_kph": 380.9150944950582,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "sg-2008",
+          "circuit_archetype": "street-thermal",
+          "circuit_slug": "singapore",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 86511
+          },
+          "downforce_decision_margin_ms": 146,
+          "maximum_observed_speed_kph": 351.51048287791224,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "gb-1948",
+          "circuit_archetype": "mixed-fast",
+          "circuit_slug": "silverstone",
+          "fastest": {
+            "downforce_slider": 0.7,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 86582
+          },
+          "downforce_decision_margin_ms": 4,
+          "maximum_observed_speed_kph": 381.12153417653775,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "be-1925",
+          "circuit_archetype": "mixed-elevation",
+          "circuit_slug": "spa",
+          "fastest": {
+            "downforce_slider": 0.0,
+            "gear_ratio_slider": 0.9,
+            "total_time_ms": 99992
+          },
+          "downforce_decision_margin_ms": 152,
+          "maximum_observed_speed_kph": 406.392679991782,
+          "physical_invariant_failure_count": 9
+        }
+      ]
+    },
+    {
+      "candidate_id": "mixed-df-0.4500-corner-1.0625",
+      "kind": "bounded_diagnostic",
+      "tuning_response_digest": "sha256:507f4dc0660f1d52564523a4aa2903a4dd4b7ab16a8dd6fd0b18abbb0847b664",
+      "downforce_slider_gain": 0.45,
+      "corner_aero_scale": 1.0625,
+      "coefficient_distance_from_current": 0.0875,
+      "assessment": {
+        "calibration_eligible": true,
+        "global_guardrails_pass": false,
+        "eligible": false,
+        "continuous_optimum_within_expected_bounds": {
+          "it-1922": true,
+          "mc-1929": true,
+          "hu-1986": true,
+          "jp-1962": true,
+          "sg-2008": true
+        },
+        "calibration_physical_invariant_failure_count": 0,
+        "global_physical_invariant_failure_count": 10,
+        "calibration_maximum_observed_speed_kph": 384.54505984843115,
+        "global_maximum_observed_speed_kph": 406.07738006035066,
+        "global_speed_cap_headroom_kph": -6.077380060350663
+      },
+      "circuits": [
+        {
+          "circuit_id": "it-1922",
+          "circuit_archetype": "power",
+          "circuit_slug": "monza",
+          "fastest": {
+            "downforce_slider": 0.1,
+            "gear_ratio_slider": 0.4,
+            "total_time_ms": 82556
+          },
+          "downforce_decision_margin_ms": 6,
+          "maximum_observed_speed_kph": 384.54505984843115,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "mc-1929",
+          "circuit_archetype": "high-downforce",
+          "circuit_slug": "monaco",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 62347
+          },
+          "downforce_decision_margin_ms": 191,
+          "maximum_observed_speed_kph": 330.77742932458796,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "hu-1986",
+          "circuit_archetype": "mechanical-grip",
+          "circuit_slug": "budapest",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 74529
+          },
+          "downforce_decision_margin_ms": 314,
+          "maximum_observed_speed_kph": 330.9174811084455,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "jp-1962",
+          "circuit_archetype": "mixed",
+          "circuit_slug": "suzuka",
+          "fastest": {
+            "downforce_slider": 0.5,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 87840
+          },
+          "downforce_decision_margin_ms": 8,
+          "maximum_observed_speed_kph": 380.7091906631285,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "sg-2008",
+          "circuit_archetype": "street-thermal",
+          "circuit_slug": "singapore",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 86360
+          },
+          "downforce_decision_margin_ms": 156,
+          "maximum_observed_speed_kph": 351.73635926897214,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "gb-1948",
+          "circuit_archetype": "mixed-fast",
+          "circuit_slug": "silverstone",
+          "fastest": {
+            "downforce_slider": 0.7,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 86410
+          },
+          "downforce_decision_margin_ms": 32,
+          "maximum_observed_speed_kph": 380.99469108510385,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "be-1925",
+          "circuit_archetype": "mixed-elevation",
+          "circuit_slug": "spa",
+          "fastest": {
+            "downforce_slider": 0.0,
+            "gear_ratio_slider": 0.8,
+            "total_time_ms": 99833
+          },
+          "downforce_decision_margin_ms": 176,
+          "maximum_observed_speed_kph": 406.07738006035066,
+          "physical_invariant_failure_count": 10
+        }
+      ]
+    },
+    {
+      "candidate_id": "mixed-df-0.4500-corner-1.0750",
+      "kind": "bounded_diagnostic",
+      "tuning_response_digest": "sha256:f7cf2378d120d8e3f18c72c8ad04562f5a28444030c56cd09d40f0c67c846c55",
+      "downforce_slider_gain": 0.45,
+      "corner_aero_scale": 1.075,
+      "coefficient_distance_from_current": 0.1,
+      "assessment": {
+        "calibration_eligible": true,
+        "global_guardrails_pass": false,
+        "eligible": false,
+        "continuous_optimum_within_expected_bounds": {
+          "it-1922": true,
+          "mc-1929": true,
+          "hu-1986": true,
+          "jp-1962": true,
+          "sg-2008": true
+        },
+        "calibration_physical_invariant_failure_count": 0,
+        "global_physical_invariant_failure_count": 11,
+        "calibration_maximum_observed_speed_kph": 384.8243794642534,
+        "global_maximum_observed_speed_kph": 405.8435600640497,
+        "global_speed_cap_headroom_kph": -5.843560064049711
+      },
+      "circuits": [
+        {
+          "circuit_id": "it-1922",
+          "circuit_archetype": "power",
+          "circuit_slug": "monza",
+          "fastest": {
+            "downforce_slider": 0.1,
+            "gear_ratio_slider": 0.4,
+            "total_time_ms": 82388
+          },
+          "downforce_decision_margin_ms": 38,
+          "maximum_observed_speed_kph": 384.8243794642534,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "mc-1929",
+          "circuit_archetype": "high-downforce",
+          "circuit_slug": "monaco",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 62245
+          },
+          "downforce_decision_margin_ms": 170,
+          "maximum_observed_speed_kph": 330.4414716064132,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "hu-1986",
+          "circuit_archetype": "mechanical-grip",
+          "circuit_slug": "budapest",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 74339
+          },
+          "downforce_decision_margin_ms": 311,
+          "maximum_observed_speed_kph": 330.80778402550254,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "jp-1962",
+          "circuit_archetype": "mixed",
+          "circuit_slug": "suzuka",
+          "fastest": {
+            "downforce_slider": 0.5,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 87691
+          },
+          "downforce_decision_margin_ms": 39,
+          "maximum_observed_speed_kph": 380.61255315331425,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "sg-2008",
+          "circuit_archetype": "street-thermal",
+          "circuit_slug": "singapore",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 86233
+          },
+          "downforce_decision_margin_ms": 152,
+          "maximum_observed_speed_kph": 351.3432802473779,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "gb-1948",
+          "circuit_archetype": "mixed-fast",
+          "circuit_slug": "silverstone",
+          "fastest": {
+            "downforce_slider": 0.7,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 86261
+          },
+          "downforce_decision_margin_ms": 40,
+          "maximum_observed_speed_kph": 381.0121309594274,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "be-1925",
+          "circuit_archetype": "mixed-elevation",
+          "circuit_slug": "spa",
+          "fastest": {
+            "downforce_slider": 0.0,
+            "gear_ratio_slider": 1.0,
+            "total_time_ms": 99656
+          },
+          "downforce_decision_margin_ms": 226,
+          "maximum_observed_speed_kph": 405.8435600640497,
+          "physical_invariant_failure_count": 11
+        }
+      ]
+    },
+    {
+      "candidate_id": "mixed-df-0.4500-corner-1.0875",
+      "kind": "bounded_diagnostic",
+      "tuning_response_digest": "sha256:d32c92a30fb3baa35d5f18eec3f5b585c2a9a7f3b87d1e9976fec2a821bd39fe",
+      "downforce_slider_gain": 0.45,
+      "corner_aero_scale": 1.0875,
+      "coefficient_distance_from_current": 0.1125,
+      "assessment": {
+        "calibration_eligible": true,
+        "global_guardrails_pass": false,
+        "eligible": false,
+        "continuous_optimum_within_expected_bounds": {
+          "it-1922": true,
+          "mc-1929": true,
+          "hu-1986": true,
+          "jp-1962": true,
+          "sg-2008": true
+        },
+        "calibration_physical_invariant_failure_count": 0,
+        "global_physical_invariant_failure_count": 11,
+        "calibration_maximum_observed_speed_kph": 385.10706356307395,
+        "global_maximum_observed_speed_kph": 405.52580686873836,
+        "global_speed_cap_headroom_kph": -5.525806868738357
+      },
+      "circuits": [
+        {
+          "circuit_id": "it-1922",
+          "circuit_archetype": "power",
+          "circuit_slug": "monza",
+          "fastest": {
+            "downforce_slider": 0.1,
+            "gear_ratio_slider": 0.3,
+            "total_time_ms": 82235
+          },
+          "downforce_decision_margin_ms": 50,
+          "maximum_observed_speed_kph": 385.10706356307395,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "mc-1929",
+          "circuit_archetype": "high-downforce",
+          "circuit_slug": "monaco",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 62142
+          },
+          "downforce_decision_margin_ms": 156,
+          "maximum_observed_speed_kph": 330.1024810121931,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "hu-1986",
+          "circuit_archetype": "mechanical-grip",
+          "circuit_slug": "budapest",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 74145
+          },
+          "downforce_decision_margin_ms": 313,
+          "maximum_observed_speed_kph": 330.69271378744253,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "jp-1962",
+          "circuit_archetype": "mixed",
+          "circuit_slug": "suzuka",
+          "fastest": {
+            "downforce_slider": 0.5,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 87566
+          },
+          "downforce_decision_margin_ms": 0,
+          "maximum_observed_speed_kph": 380.44673092218386,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "sg-2008",
+          "circuit_archetype": "street-thermal",
+          "circuit_slug": "singapore",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 86103
+          },
+          "downforce_decision_margin_ms": 132,
+          "maximum_observed_speed_kph": 350.8777498668215,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "gb-1948",
+          "circuit_archetype": "mixed-fast",
+          "circuit_slug": "silverstone",
+          "fastest": {
+            "downforce_slider": 0.7,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 86118
+          },
+          "downforce_decision_margin_ms": 11,
+          "maximum_observed_speed_kph": 380.9958079983325,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "be-1925",
+          "circuit_archetype": "mixed-elevation",
+          "circuit_slug": "spa",
+          "fastest": {
+            "downforce_slider": 0.0,
+            "gear_ratio_slider": 1.0,
+            "total_time_ms": 99513
+          },
+          "downforce_decision_margin_ms": 211,
+          "maximum_observed_speed_kph": 405.52580686873836,
+          "physical_invariant_failure_count": 11
+        }
+      ]
+    },
+    {
+      "candidate_id": "mixed-df-0.4500-corner-1.1000",
+      "kind": "bounded_diagnostic",
+      "tuning_response_digest": "sha256:9e04859441a4824144bd7a4bddc1f2289f8ac8db2cc28009c2916e6d9bac7fad",
+      "downforce_slider_gain": 0.45,
+      "corner_aero_scale": 1.1,
+      "coefficient_distance_from_current": 0.125,
+      "assessment": {
+        "calibration_eligible": true,
+        "global_guardrails_pass": false,
+        "eligible": false,
+        "continuous_optimum_within_expected_bounds": {
+          "it-1922": true,
+          "mc-1929": true,
+          "hu-1986": true,
+          "jp-1962": true,
+          "sg-2008": true
+        },
+        "calibration_physical_invariant_failure_count": 0,
+        "global_physical_invariant_failure_count": 11,
+        "calibration_maximum_observed_speed_kph": 385.2270195781647,
+        "global_maximum_observed_speed_kph": 405.211033569566,
+        "global_speed_cap_headroom_kph": -5.211033569565984
+      },
+      "circuits": [
+        {
+          "circuit_id": "it-1922",
+          "circuit_archetype": "power",
+          "circuit_slug": "monza",
+          "fastest": {
+            "downforce_slider": 0.1,
+            "gear_ratio_slider": 0.4,
+            "total_time_ms": 82098
+          },
+          "downforce_decision_margin_ms": 38,
+          "maximum_observed_speed_kph": 385.2270195781647,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "mc-1929",
+          "circuit_archetype": "high-downforce",
+          "circuit_slug": "monaco",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 62040
+          },
+          "downforce_decision_margin_ms": 142,
+          "maximum_observed_speed_kph": 329.6933018844623,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "hu-1986",
+          "circuit_archetype": "mechanical-grip",
+          "circuit_slug": "budapest",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 73972
+          },
+          "downforce_decision_margin_ms": 308,
+          "maximum_observed_speed_kph": 330.44399465785233,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "jp-1962",
+          "circuit_archetype": "mixed",
+          "circuit_slug": "suzuka",
+          "fastest": {
+            "downforce_slider": 0.5,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 87442
+          },
+          "downforce_decision_margin_ms": 1,
+          "maximum_observed_speed_kph": 380.26435354127005,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "sg-2008",
+          "circuit_archetype": "street-thermal",
+          "circuit_slug": "singapore",
+          "fastest": {
+            "downforce_slider": 1.0,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 85979
+          },
+          "downforce_decision_margin_ms": 107,
+          "maximum_observed_speed_kph": 350.8491118479825,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "gb-1948",
+          "circuit_archetype": "mixed-fast",
+          "circuit_slug": "silverstone",
+          "fastest": {
+            "downforce_slider": 0.6,
+            "gear_ratio_slider": 0.0,
+            "total_time_ms": 85952
+          },
+          "downforce_decision_margin_ms": 21,
+          "maximum_observed_speed_kph": 380.9881918001773,
+          "physical_invariant_failure_count": 0
+        },
+        {
+          "circuit_id": "be-1925",
+          "circuit_archetype": "mixed-elevation",
+          "circuit_slug": "spa",
+          "fastest": {
+            "downforce_slider": 0.0,
+            "gear_ratio_slider": 1.0,
+            "total_time_ms": 99377
+          },
+          "downforce_decision_margin_ms": 219,
+          "maximum_observed_speed_kph": 405.211033569566,
+          "physical_invariant_failure_count": 11
+        }
+      ]
+    }
+  ],
+  "calibration_eligible_candidate_count": 28,
+  "globally_eligible_candidate_count": 0,
+  "selected_calibration_candidate": {
+    "candidate_id": "mixed-df-0.3750-corner-1.0500",
+    "kind": "current_reference",
+    "tuning_response_digest": "sha256:41b02277d070cee10b101194d25f396d6f24d59c9126cbf16925305e20925816",
+    "downforce_slider_gain": 0.375,
+    "corner_aero_scale": 1.05,
+    "coefficient_distance_from_current": 0.0,
+    "assessment": {
+      "calibration_eligible": true,
+      "global_guardrails_pass": false,
+      "eligible": false,
+      "continuous_optimum_within_expected_bounds": {
+        "it-1922": true,
+        "mc-1929": true,
+        "hu-1986": true,
+        "jp-1962": true,
+        "sg-2008": true
+      },
+      "calibration_physical_invariant_failure_count": 0,
+      "global_physical_invariant_failure_count": 11,
+      "calibration_maximum_observed_speed_kph": 384.44944173282335,
+      "global_maximum_observed_speed_kph": 406.392679991782,
+      "global_speed_cap_headroom_kph": -6.392679991782018
+    },
+    "circuits": [
+      {
+        "circuit_id": "it-1922",
+        "circuit_archetype": "power",
+        "circuit_slug": "monza",
+        "fastest": {
+          "downforce_slider": 0.0,
+          "gear_ratio_slider": 0.4,
+          "total_time_ms": 82717
+        },
+        "downforce_decision_margin_ms": 82,
+        "maximum_observed_speed_kph": 384.44944173282335,
+        "physical_invariant_failure_count": 0
+      },
+      {
+        "circuit_id": "mc-1929",
+        "circuit_archetype": "high-downforce",
+        "circuit_slug": "monaco",
+        "fastest": {
+          "downforce_slider": 1.0,
+          "gear_ratio_slider": 0.0,
+          "total_time_ms": 63149
+        },
+        "downforce_decision_margin_ms": 139,
+        "maximum_observed_speed_kph": 331.1369805518737,
+        "physical_invariant_failure_count": 0
+      },
+      {
+        "circuit_id": "hu-1986",
+        "circuit_archetype": "mechanical-grip",
+        "circuit_slug": "budapest",
+        "fastest": {
+          "downforce_slider": 1.0,
+          "gear_ratio_slider": 0.0,
+          "total_time_ms": 75708
+        },
+        "downforce_decision_margin_ms": 209,
+        "maximum_observed_speed_kph": 331.5411151739376,
+        "physical_invariant_failure_count": 0
+      },
+      {
+        "circuit_id": "jp-1962",
+        "circuit_archetype": "mixed",
+        "circuit_slug": "suzuka",
+        "fastest": {
+          "downforce_slider": 0.3,
+          "gear_ratio_slider": 0.0,
+          "total_time_ms": 88413
+        },
+        "downforce_decision_margin_ms": 6,
+        "maximum_observed_speed_kph": 380.9150944950582,
+        "physical_invariant_failure_count": 0
+      },
+      {
+        "circuit_id": "sg-2008",
+        "circuit_archetype": "street-thermal",
+        "circuit_slug": "singapore",
+        "fastest": {
+          "downforce_slider": 1.0,
+          "gear_ratio_slider": 0.0,
+          "total_time_ms": 87320
+        },
+        "downforce_decision_margin_ms": 39,
+        "maximum_observed_speed_kph": 351.51048287791224,
+        "physical_invariant_failure_count": 0
+      },
+      {
+        "circuit_id": "gb-1948",
+        "circuit_archetype": "mixed-fast",
+        "circuit_slug": "silverstone",
+        "fastest": {
+          "downforce_slider": 0.7,
+          "gear_ratio_slider": 0.0,
+          "total_time_ms": 87354
+        },
+        "downforce_decision_margin_ms": 41,
+        "maximum_observed_speed_kph": 381.12153417653775,
+        "physical_invariant_failure_count": 0
+      },
+      {
+        "circuit_id": "be-1925",
+        "circuit_archetype": "mixed-elevation",
+        "circuit_slug": "spa",
+        "fastest": {
+          "downforce_slider": 0.0,
+          "gear_ratio_slider": 0.9,
+          "total_time_ms": 99992
+        },
+        "downforce_decision_margin_ms": 270,
+        "maximum_observed_speed_kph": 406.392679991782,
+        "physical_invariant_failure_count": 11
+      }
+    ]
+  },
+  "holdout_findings": {
+    "meaning": "Observed only after calibration selection; these findings cannot improve a candidate rank.",
+    "selected_candidate_global_guardrails_pass": false,
+    "selected_candidate_global_speed_cap_headroom_kph": -6.392679991782018
+  }
+}
