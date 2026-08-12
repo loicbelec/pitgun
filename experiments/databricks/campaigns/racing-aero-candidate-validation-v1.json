@@ -1,0 +1,1402 @@
+{
+  "schema_version": "pitgun.calibration-campaign/v3",
+  "campaign_id": "racing-aero-candidate-validation-2026-v1",
+  "question": "Does the calibrated aerodynamic response improve setup sensitivity while preserving credible circuit behavior across seeds?",
+  "parameter_space_version": "3.0.0",
+  "execution_class": "experimental-tuning-response",
+  "promotion_policy": "human-review-required",
+  "scenario": {
+    "id": "racing.single-lap",
+    "version": "1.0.0"
+  },
+  "model": {
+    "id": "pitgun.racing",
+    "version": "1.0.0",
+    "digest": "sha256:03541bcc24f946d11071e6fb67915ec5d429dce63362d456aba2c3d339a3fe38"
+  },
+  "data_pack": {
+    "id": "pitgun.racing.2026",
+    "version": "1.0.0",
+    "digest": "sha256:fc6ade498d399cd439cfb33d74ab0e2e6ee1279ed19441ed99b8cea9963875c9"
+  },
+  "vehicle_id": "f1_2026",
+  "era": 2026,
+  "seeds": [
+    "42",
+    "2026",
+    "20260810"
+  ],
+  "circuits": [
+    {
+      "id": "it-1922",
+      "archetype": "power"
+    },
+    {
+      "id": "mc-1929",
+      "archetype": "high-downforce"
+    },
+    {
+      "id": "hu-1986",
+      "archetype": "mechanical-grip"
+    },
+    {
+      "id": "jp-1962",
+      "archetype": "mixed"
+    },
+    {
+      "id": "sg-2008",
+      "archetype": "street-thermal"
+    }
+  ],
+  "responses": [
+    {
+      "id": "historical-v1",
+      "resource": "racing-historical-v1",
+      "expected_tuning_response_digest": "sha256:e070e32fe803ce109e24b333eb2d68ca1c2dde5ccd6fc3bfcd5ff296fe68a6d6"
+    },
+    {
+      "id": "aero-candidate-v1",
+      "resource": "racing-aero-candidate-v1",
+      "expected_tuning_response_digest": "sha256:41b02277d070cee10b101194d25f396d6f24d59c9126cbf16925305e20925816"
+    }
+  ],
+  "configurations": [
+    {
+      "id": "historical-v1--monza--low-downforce",
+      "configuration_family": "low-downforce",
+      "circuit_id": "it-1922",
+      "circuit_archetype": "power",
+      "scenario_resource": "monza--low-downforce",
+      "expected_scenario_digest": "sha256:af20b803b9be868a06c8832b4a9798af3700f613dc4d9633fa85fcbfd88eb441",
+      "setup": {
+        "downforce_slider": 0.2,
+        "gear_ratio_slider": 0.3
+      },
+      "strategy": {
+        "id": "single-lap-no-stop"
+      },
+      "response_id": "historical-v1",
+      "response_resource": "racing-historical-v1",
+      "expected_tuning_response_digest": "sha256:e070e32fe803ce109e24b333eb2d68ca1c2dde5ccd6fc3bfcd5ff296fe68a6d6",
+      "expected_experimental_configuration_id": "sha256:5561302fdab0ac12e7e50ed004334cf5c5f0cd966dc33b5aae7fca72910754c9"
+    },
+    {
+      "id": "historical-v1--monza--balanced",
+      "configuration_family": "balanced",
+      "circuit_id": "it-1922",
+      "circuit_archetype": "power",
+      "scenario_resource": "monza--balanced",
+      "expected_scenario_digest": "sha256:bb946ddbf23eb8c7a96196c84c5e54399ec852cacd845c55dc468287876b9868",
+      "setup": {
+        "downforce_slider": 0.5,
+        "gear_ratio_slider": 0.5
+      },
+      "strategy": {
+        "id": "single-lap-no-stop"
+      },
+      "response_id": "historical-v1",
+      "response_resource": "racing-historical-v1",
+      "expected_tuning_response_digest": "sha256:e070e32fe803ce109e24b333eb2d68ca1c2dde5ccd6fc3bfcd5ff296fe68a6d6",
+      "expected_experimental_configuration_id": "sha256:1e08b460a2c54eb5870870385e7604ef49b34a9dc9aac1aac2938c387e0c7ad1"
+    },
+    {
+      "id": "historical-v1--monza--high-downforce",
+      "configuration_family": "high-downforce",
+      "circuit_id": "it-1922",
+      "circuit_archetype": "power",
+      "scenario_resource": "monza--high-downforce",
+      "expected_scenario_digest": "sha256:2b9c5c826088597ec55a645cdc8c2ea89b544332529057f542425ecd615a8efc",
+      "setup": {
+        "downforce_slider": 0.8,
+        "gear_ratio_slider": 0.7
+      },
+      "strategy": {
+        "id": "single-lap-no-stop"
+      },
+      "response_id": "historical-v1",
+      "response_resource": "racing-historical-v1",
+      "expected_tuning_response_digest": "sha256:e070e32fe803ce109e24b333eb2d68ca1c2dde5ccd6fc3bfcd5ff296fe68a6d6",
+      "expected_experimental_configuration_id": "sha256:b7032437764396c9314c7510f9e8ff51263d742934aec086abc0258dcd956c80"
+    },
+    {
+      "id": "historical-v1--monza--low-downforce-long-gearing",
+      "configuration_family": "low-downforce-long-gearing",
+      "circuit_id": "it-1922",
+      "circuit_archetype": "power",
+      "scenario_resource": "monza--low-downforce-long-gearing",
+      "expected_scenario_digest": "sha256:db4621c76c3b67a26961b79c22c45ba6eeff72db7d7d86fc28d879ecdf72cf01",
+      "setup": {
+        "downforce_slider": 0.2,
+        "gear_ratio_slider": 0.7
+      },
+      "strategy": {
+        "id": "single-lap-no-stop"
+      },
+      "response_id": "historical-v1",
+      "response_resource": "racing-historical-v1",
+      "expected_tuning_response_digest": "sha256:e070e32fe803ce109e24b333eb2d68ca1c2dde5ccd6fc3bfcd5ff296fe68a6d6",
+      "expected_experimental_configuration_id": "sha256:5dc564911a2275af84172258afeb9d3d12629eb351ca23ee3cf5976c05ba967b"
+    },
+    {
+      "id": "historical-v1--monza--high-downforce-short-gearing",
+      "configuration_family": "high-downforce-short-gearing",
+      "circuit_id": "it-1922",
+      "circuit_archetype": "power",
+      "scenario_resource": "monza--high-downforce-short-gearing",
+      "expected_scenario_digest": "sha256:0e829608b895a5e2ff17360f88ec94deb04707432e6e3f50fe8c582f72c9f116",
+      "setup": {
+        "downforce_slider": 0.8,
+        "gear_ratio_slider": 0.3
+      },
+      "strategy": {
+        "id": "single-lap-no-stop"
+      },
+      "response_id": "historical-v1",
+      "response_resource": "racing-historical-v1",
+      "expected_tuning_response_digest": "sha256:e070e32fe803ce109e24b333eb2d68ca1c2dde5ccd6fc3bfcd5ff296fe68a6d6",
+      "expected_experimental_configuration_id": "sha256:9e06fa5f3d3faf256aa33a06eb22fee51e5b7a1622ee5bb1e2393a092d2d3e43"
+    },
+    {
+      "id": "historical-v1--monza--balanced-short-gearing",
+      "configuration_family": "balanced-short-gearing",
+      "circuit_id": "it-1922",
+      "circuit_archetype": "power",
+      "scenario_resource": "monza--balanced-short-gearing",
+      "expected_scenario_digest": "sha256:4e443ea152f1c2b87702d2d1074c8a0a0337c4dd8c63eb4afcf6cc0722d91e1a",
+      "setup": {
+        "downforce_slider": 0.5,
+        "gear_ratio_slider": 0.3
+      },
+      "strategy": {
+        "id": "single-lap-no-stop"
+      },
+      "response_id": "historical-v1",
+      "response_resource": "racing-historical-v1",
+      "expected_tuning_response_digest": "sha256:e070e32fe803ce109e24b333eb2d68ca1c2dde5ccd6fc3bfcd5ff296fe68a6d6",
+      "expected_experimental_configuration_id": "sha256:ac451aa4fc6e4ede405e396d67ff31a3aa3a2c2db5b5349eaf5b67e51bc01a80"
+    },
+    {
+      "id": "historical-v1--monza--balanced-long-gearing",
+      "configuration_family": "balanced-long-gearing",
+      "circuit_id": "it-1922",
+      "circuit_archetype": "power",
+      "scenario_resource": "monza--balanced-long-gearing",
+      "expected_scenario_digest": "sha256:d1fda47b657983c32405e352c31d10d742ba9e6666429b72fa95fb4efaad514c",
+      "setup": {
+        "downforce_slider": 0.5,
+        "gear_ratio_slider": 0.7
+      },
+      "strategy": {
+        "id": "single-lap-no-stop"
+      },
+      "response_id": "historical-v1",
+      "response_resource": "racing-historical-v1",
+      "expected_tuning_response_digest": "sha256:e070e32fe803ce109e24b333eb2d68ca1c2dde5ccd6fc3bfcd5ff296fe68a6d6",
+      "expected_experimental_configuration_id": "sha256:5b13da633f246e4ea4c9f6be1bede8a2d6c7f18b546d1586e29d2787daab93cf"
+    },
+    {
+      "id": "historical-v1--monaco--low-downforce",
+      "configuration_family": "low-downforce",
+      "circuit_id": "mc-1929",
+      "circuit_archetype": "high-downforce",
+      "scenario_resource": "monaco--low-downforce",
+      "expected_scenario_digest": "sha256:119edd6e72e5d39c544ec2a0a13d31c899167a56d87a8329633223e959ddec83",
+      "setup": {
+        "downforce_slider": 0.2,
+        "gear_ratio_slider": 0.3
+      },
+      "strategy": {
+        "id": "single-lap-no-stop"
+      },
+      "response_id": "historical-v1",
+      "response_resource": "racing-historical-v1",
+      "expected_tuning_response_digest": "sha256:e070e32fe803ce109e24b333eb2d68ca1c2dde5ccd6fc3bfcd5ff296fe68a6d6",
+      "expected_experimental_configuration_id": "sha256:7a251325fed26e4697a30c7b46a7f26f93b153d65dfcdf405e66180bca5b5ebf"
+    },
+    {
+      "id": "historical-v1--monaco--balanced",
+      "configuration_family": "balanced",
+      "circuit_id": "mc-1929",
+      "circuit_archetype": "high-downforce",
+      "scenario_resource": "monaco--balanced",
+      "expected_scenario_digest": "sha256:e992fd8bd72bf14a6faf3cdd3280fe394dbd9480eaad7e12cadd915e70b11ee6",
+      "setup": {
+        "downforce_slider": 0.5,
+        "gear_ratio_slider": 0.5
+      },
+      "strategy": {
+        "id": "single-lap-no-stop"
+      },
+      "response_id": "historical-v1",
+      "response_resource": "racing-historical-v1",
+      "expected_tuning_response_digest": "sha256:e070e32fe803ce109e24b333eb2d68ca1c2dde5ccd6fc3bfcd5ff296fe68a6d6",
+      "expected_experimental_configuration_id": "sha256:8cfe3e648fafc2c12a9e5e81f59b3681a9e5690e774b049d1cbebb1d3296f761"
+    },
+    {
+      "id": "historical-v1--monaco--high-downforce",
+      "configuration_family": "high-downforce",
+      "circuit_id": "mc-1929",
+      "circuit_archetype": "high-downforce",
+      "scenario_resource": "monaco--high-downforce",
+      "expected_scenario_digest": "sha256:add455ded331d6268fee9ccbaec08e9aee3f7b16e93e446ae1b644c18d5aaef5",
+      "setup": {
+        "downforce_slider": 0.8,
+        "gear_ratio_slider": 0.7
+      },
+      "strategy": {
+        "id": "single-lap-no-stop"
+      },
+      "response_id": "historical-v1",
+      "response_resource": "racing-historical-v1",
+      "expected_tuning_response_digest": "sha256:e070e32fe803ce109e24b333eb2d68ca1c2dde5ccd6fc3bfcd5ff296fe68a6d6",
+      "expected_experimental_configuration_id": "sha256:82177311b794b6d7ffebf30dd2da5661af36b2799b6fff9295ec8879552bac65"
+    },
+    {
+      "id": "historical-v1--monaco--low-downforce-long-gearing",
+      "configuration_family": "low-downforce-long-gearing",
+      "circuit_id": "mc-1929",
+      "circuit_archetype": "high-downforce",
+      "scenario_resource": "monaco--low-downforce-long-gearing",
+      "expected_scenario_digest": "sha256:95dcf65dc949f649edbf2e83caba8fd432aa25dfdb780757e901cb714ecd5d1b",
+      "setup": {
+        "downforce_slider": 0.2,
+        "gear_ratio_slider": 0.7
+      },
+      "strategy": {
+        "id": "single-lap-no-stop"
+      },
+      "response_id": "historical-v1",
+      "response_resource": "racing-historical-v1",
+      "expected_tuning_response_digest": "sha256:e070e32fe803ce109e24b333eb2d68ca1c2dde5ccd6fc3bfcd5ff296fe68a6d6",
+      "expected_experimental_configuration_id": "sha256:432b33da8161782800d950935a1aa8b340263aae2bcf2d7bccba8b9ca105baab"
+    },
+    {
+      "id": "historical-v1--monaco--high-downforce-short-gearing",
+      "configuration_family": "high-downforce-short-gearing",
+      "circuit_id": "mc-1929",
+      "circuit_archetype": "high-downforce",
+      "scenario_resource": "monaco--high-downforce-short-gearing",
+      "expected_scenario_digest": "sha256:482215f36b326fa49f7a35a0861b975e6d46e44fde9b95ff5ed1fd303e2bc23d",
+      "setup": {
+        "downforce_slider": 0.8,
+        "gear_ratio_slider": 0.3
+      },
+      "strategy": {
+        "id": "single-lap-no-stop"
+      },
+      "response_id": "historical-v1",
+      "response_resource": "racing-historical-v1",
+      "expected_tuning_response_digest": "sha256:e070e32fe803ce109e24b333eb2d68ca1c2dde5ccd6fc3bfcd5ff296fe68a6d6",
+      "expected_experimental_configuration_id": "sha256:947c330dc348cf77264bac2b9191bb1452a78000f8f947038847ffdfb2d14586"
+    },
+    {
+      "id": "historical-v1--monaco--balanced-short-gearing",
+      "configuration_family": "balanced-short-gearing",
+      "circuit_id": "mc-1929",
+      "circuit_archetype": "high-downforce",
+      "scenario_resource": "monaco--balanced-short-gearing",
+      "expected_scenario_digest": "sha256:55191b114df82cc71cbfa64891616e8161deda3e618d3b0d60056a662a0c6f62",
+      "setup": {
+        "downforce_slider": 0.5,
+        "gear_ratio_slider": 0.3
+      },
+      "strategy": {
+        "id": "single-lap-no-stop"
+      },
+      "response_id": "historical-v1",
+      "response_resource": "racing-historical-v1",
+      "expected_tuning_response_digest": "sha256:e070e32fe803ce109e24b333eb2d68ca1c2dde5ccd6fc3bfcd5ff296fe68a6d6",
+      "expected_experimental_configuration_id": "sha256:35843399717dcc9071ade63744c25e13af43a318ec6b77dafb5b0391a1d80218"
+    },
+    {
+      "id": "historical-v1--monaco--balanced-long-gearing",
+      "configuration_family": "balanced-long-gearing",
+      "circuit_id": "mc-1929",
+      "circuit_archetype": "high-downforce",
+      "scenario_resource": "monaco--balanced-long-gearing",
+      "expected_scenario_digest": "sha256:a50e89d676b88782802cc696bf4f88629d44c875e88b9c4c2f20b0167f7d0431",
+      "setup": {
+        "downforce_slider": 0.5,
+        "gear_ratio_slider": 0.7
+      },
+      "strategy": {
+        "id": "single-lap-no-stop"
+      },
+      "response_id": "historical-v1",
+      "response_resource": "racing-historical-v1",
+      "expected_tuning_response_digest": "sha256:e070e32fe803ce109e24b333eb2d68ca1c2dde5ccd6fc3bfcd5ff296fe68a6d6",
+      "expected_experimental_configuration_id": "sha256:76e91f7377531e41bd76356e035ffbad0b79693b7a663dc39034fc9f859f45df"
+    },
+    {
+      "id": "historical-v1--budapest--low-downforce",
+      "configuration_family": "low-downforce",
+      "circuit_id": "hu-1986",
+      "circuit_archetype": "mechanical-grip",
+      "scenario_resource": "budapest--low-downforce",
+      "expected_scenario_digest": "sha256:ced6263df0c631cdbac83ba42db21d75d0231cdacd5932ac9b4b6d98a527e4eb",
+      "setup": {
+        "downforce_slider": 0.2,
+        "gear_ratio_slider": 0.3
+      },
+      "strategy": {
+        "id": "single-lap-no-stop"
+      },
+      "response_id": "historical-v1",
+      "response_resource": "racing-historical-v1",
+      "expected_tuning_response_digest": "sha256:e070e32fe803ce109e24b333eb2d68ca1c2dde5ccd6fc3bfcd5ff296fe68a6d6",
+      "expected_experimental_configuration_id": "sha256:93818c46b732dd5a4aad53a888c4fd7a91c2db6cd5228ab477ea857cffde9b8b"
+    },
+    {
+      "id": "historical-v1--budapest--balanced",
+      "configuration_family": "balanced",
+      "circuit_id": "hu-1986",
+      "circuit_archetype": "mechanical-grip",
+      "scenario_resource": "budapest--balanced",
+      "expected_scenario_digest": "sha256:3d25e7d4d4e457bd350ebcfe7e3df26eeb3f3dd86e8df77dfd698085e6631ee0",
+      "setup": {
+        "downforce_slider": 0.5,
+        "gear_ratio_slider": 0.5
+      },
+      "strategy": {
+        "id": "single-lap-no-stop"
+      },
+      "response_id": "historical-v1",
+      "response_resource": "racing-historical-v1",
+      "expected_tuning_response_digest": "sha256:e070e32fe803ce109e24b333eb2d68ca1c2dde5ccd6fc3bfcd5ff296fe68a6d6",
+      "expected_experimental_configuration_id": "sha256:17d77c25fcedd6f982efcfedfb6c60d54a7dd2f4c30d0df25b246ea9bb515126"
+    },
+    {
+      "id": "historical-v1--budapest--high-downforce",
+      "configuration_family": "high-downforce",
+      "circuit_id": "hu-1986",
+      "circuit_archetype": "mechanical-grip",
+      "scenario_resource": "budapest--high-downforce",
+      "expected_scenario_digest": "sha256:2bda726560250fce70a1dc44f22a33ed2c3081ff6fc334f3845de1a39aa08a6e",
+      "setup": {
+        "downforce_slider": 0.8,
+        "gear_ratio_slider": 0.7
+      },
+      "strategy": {
+        "id": "single-lap-no-stop"
+      },
+      "response_id": "historical-v1",
+      "response_resource": "racing-historical-v1",
+      "expected_tuning_response_digest": "sha256:e070e32fe803ce109e24b333eb2d68ca1c2dde5ccd6fc3bfcd5ff296fe68a6d6",
+      "expected_experimental_configuration_id": "sha256:64e591e02e917a9239ae8eb6ec12bb47374f3adfddc72f165b3df1d9afb73f13"
+    },
+    {
+      "id": "historical-v1--budapest--low-downforce-long-gearing",
+      "configuration_family": "low-downforce-long-gearing",
+      "circuit_id": "hu-1986",
+      "circuit_archetype": "mechanical-grip",
+      "scenario_resource": "budapest--low-downforce-long-gearing",
+      "expected_scenario_digest": "sha256:6fa018640a37895cd4e8af5ea60ce01487226dcc71fa26ca052c1ed00b1b17a3",
+      "setup": {
+        "downforce_slider": 0.2,
+        "gear_ratio_slider": 0.7
+      },
+      "strategy": {
+        "id": "single-lap-no-stop"
+      },
+      "response_id": "historical-v1",
+      "response_resource": "racing-historical-v1",
+      "expected_tuning_response_digest": "sha256:e070e32fe803ce109e24b333eb2d68ca1c2dde5ccd6fc3bfcd5ff296fe68a6d6",
+      "expected_experimental_configuration_id": "sha256:f6d8066900fbef3053826f2d118869d00b10ba4e681f4fa5de6afc665346ce23"
+    },
+    {
+      "id": "historical-v1--budapest--high-downforce-short-gearing",
+      "configuration_family": "high-downforce-short-gearing",
+      "circuit_id": "hu-1986",
+      "circuit_archetype": "mechanical-grip",
+      "scenario_resource": "budapest--high-downforce-short-gearing",
+      "expected_scenario_digest": "sha256:26fa9d61e94c7a366fc80810c61cbdfaa3784f380bbefbe787f5f98f6a281230",
+      "setup": {
+        "downforce_slider": 0.8,
+        "gear_ratio_slider": 0.3
+      },
+      "strategy": {
+        "id": "single-lap-no-stop"
+      },
+      "response_id": "historical-v1",
+      "response_resource": "racing-historical-v1",
+      "expected_tuning_response_digest": "sha256:e070e32fe803ce109e24b333eb2d68ca1c2dde5ccd6fc3bfcd5ff296fe68a6d6",
+      "expected_experimental_configuration_id": "sha256:9658f85a678a65506678663a341cac42524838670d6e7ac16a8d95fa35f0cd3d"
+    },
+    {
+      "id": "historical-v1--budapest--balanced-short-gearing",
+      "configuration_family": "balanced-short-gearing",
+      "circuit_id": "hu-1986",
+      "circuit_archetype": "mechanical-grip",
+      "scenario_resource": "budapest--balanced-short-gearing",
+      "expected_scenario_digest": "sha256:f97fe7de1492ae1377593d9ffe16a58e44a9b14da1d6e3d6911584277efc83fa",
+      "setup": {
+        "downforce_slider": 0.5,
+        "gear_ratio_slider": 0.3
+      },
+      "strategy": {
+        "id": "single-lap-no-stop"
+      },
+      "response_id": "historical-v1",
+      "response_resource": "racing-historical-v1",
+      "expected_tuning_response_digest": "sha256:e070e32fe803ce109e24b333eb2d68ca1c2dde5ccd6fc3bfcd5ff296fe68a6d6",
+      "expected_experimental_configuration_id": "sha256:45fd3b1864e209e30fee49d1a6507b1f643c2c85d0a086899487c0d61ceeca9a"
+    },
+    {
+      "id": "historical-v1--budapest--balanced-long-gearing",
+      "configuration_family": "balanced-long-gearing",
+      "circuit_id": "hu-1986",
+      "circuit_archetype": "mechanical-grip",
+      "scenario_resource": "budapest--balanced-long-gearing",
+      "expected_scenario_digest": "sha256:ef33bb6401de5bb1c2349be07ad526282773daf44a095042b33353704de3f690",
+      "setup": {
+        "downforce_slider": 0.5,
+        "gear_ratio_slider": 0.7
+      },
+      "strategy": {
+        "id": "single-lap-no-stop"
+      },
+      "response_id": "historical-v1",
+      "response_resource": "racing-historical-v1",
+      "expected_tuning_response_digest": "sha256:e070e32fe803ce109e24b333eb2d68ca1c2dde5ccd6fc3bfcd5ff296fe68a6d6",
+      "expected_experimental_configuration_id": "sha256:d2573afce32f8677ca489afc7ef13513efd1ccb4e1be5718a9a0b1453a12cfc0"
+    },
+    {
+      "id": "historical-v1--suzuka--low-downforce",
+      "configuration_family": "low-downforce",
+      "circuit_id": "jp-1962",
+      "circuit_archetype": "mixed",
+      "scenario_resource": "suzuka--low-downforce",
+      "expected_scenario_digest": "sha256:2f839140647ea4eab36eb1b9c1dae2a67b2370937b52d017b16d152ef8fbded4",
+      "setup": {
+        "downforce_slider": 0.2,
+        "gear_ratio_slider": 0.3
+      },
+      "strategy": {
+        "id": "single-lap-no-stop"
+      },
+      "response_id": "historical-v1",
+      "response_resource": "racing-historical-v1",
+      "expected_tuning_response_digest": "sha256:e070e32fe803ce109e24b333eb2d68ca1c2dde5ccd6fc3bfcd5ff296fe68a6d6",
+      "expected_experimental_configuration_id": "sha256:f423eb10d434f093e76cf21ca356291168378419454bf7069b6287d53524fed2"
+    },
+    {
+      "id": "historical-v1--suzuka--balanced",
+      "configuration_family": "balanced",
+      "circuit_id": "jp-1962",
+      "circuit_archetype": "mixed",
+      "scenario_resource": "suzuka--balanced",
+      "expected_scenario_digest": "sha256:db9030dc2f1a6bfbdd62040259b1edecb99a9e10fca1d75c25c04d1dae26e0c6",
+      "setup": {
+        "downforce_slider": 0.5,
+        "gear_ratio_slider": 0.5
+      },
+      "strategy": {
+        "id": "single-lap-no-stop"
+      },
+      "response_id": "historical-v1",
+      "response_resource": "racing-historical-v1",
+      "expected_tuning_response_digest": "sha256:e070e32fe803ce109e24b333eb2d68ca1c2dde5ccd6fc3bfcd5ff296fe68a6d6",
+      "expected_experimental_configuration_id": "sha256:5ecff13694ad7770c4caf6a3d3f5466f587c2feb1c7c591604501b84dbe17b5b"
+    },
+    {
+      "id": "historical-v1--suzuka--high-downforce",
+      "configuration_family": "high-downforce",
+      "circuit_id": "jp-1962",
+      "circuit_archetype": "mixed",
+      "scenario_resource": "suzuka--high-downforce",
+      "expected_scenario_digest": "sha256:de1111d1c88f3058f63a49bc5289992d68f89249687c6ef221f658deac786881",
+      "setup": {
+        "downforce_slider": 0.8,
+        "gear_ratio_slider": 0.7
+      },
+      "strategy": {
+        "id": "single-lap-no-stop"
+      },
+      "response_id": "historical-v1",
+      "response_resource": "racing-historical-v1",
+      "expected_tuning_response_digest": "sha256:e070e32fe803ce109e24b333eb2d68ca1c2dde5ccd6fc3bfcd5ff296fe68a6d6",
+      "expected_experimental_configuration_id": "sha256:9fb4cef22571f5528c4647c8cafb0dadc5fdda0c57d4bc95c4ce1ffff66cf8e5"
+    },
+    {
+      "id": "historical-v1--suzuka--low-downforce-long-gearing",
+      "configuration_family": "low-downforce-long-gearing",
+      "circuit_id": "jp-1962",
+      "circuit_archetype": "mixed",
+      "scenario_resource": "suzuka--low-downforce-long-gearing",
+      "expected_scenario_digest": "sha256:69e9ec8ac998fa3a3678292b710559155538f6a08b07f7013ed5fb93990c8f49",
+      "setup": {
+        "downforce_slider": 0.2,
+        "gear_ratio_slider": 0.7
+      },
+      "strategy": {
+        "id": "single-lap-no-stop"
+      },
+      "response_id": "historical-v1",
+      "response_resource": "racing-historical-v1",
+      "expected_tuning_response_digest": "sha256:e070e32fe803ce109e24b333eb2d68ca1c2dde5ccd6fc3bfcd5ff296fe68a6d6",
+      "expected_experimental_configuration_id": "sha256:d472b4a74b10e9894e5ae4246e434650ffa0f1a7a0483d808c32161adf24cec0"
+    },
+    {
+      "id": "historical-v1--suzuka--high-downforce-short-gearing",
+      "configuration_family": "high-downforce-short-gearing",
+      "circuit_id": "jp-1962",
+      "circuit_archetype": "mixed",
+      "scenario_resource": "suzuka--high-downforce-short-gearing",
+      "expected_scenario_digest": "sha256:6f3cedaeea4b993f7bf2dfcbc4b5f8e9391d9c723917553373b7e2d386723b2f",
+      "setup": {
+        "downforce_slider": 0.8,
+        "gear_ratio_slider": 0.3
+      },
+      "strategy": {
+        "id": "single-lap-no-stop"
+      },
+      "response_id": "historical-v1",
+      "response_resource": "racing-historical-v1",
+      "expected_tuning_response_digest": "sha256:e070e32fe803ce109e24b333eb2d68ca1c2dde5ccd6fc3bfcd5ff296fe68a6d6",
+      "expected_experimental_configuration_id": "sha256:31f55841c295a7e69c74f48799798242dfc4a98754f6d3e6a142a1a1c115226b"
+    },
+    {
+      "id": "historical-v1--suzuka--balanced-short-gearing",
+      "configuration_family": "balanced-short-gearing",
+      "circuit_id": "jp-1962",
+      "circuit_archetype": "mixed",
+      "scenario_resource": "suzuka--balanced-short-gearing",
+      "expected_scenario_digest": "sha256:99c431d599571d2499422667efca36b0c2d429a1d5e21bd47f8b8325047501f5",
+      "setup": {
+        "downforce_slider": 0.5,
+        "gear_ratio_slider": 0.3
+      },
+      "strategy": {
+        "id": "single-lap-no-stop"
+      },
+      "response_id": "historical-v1",
+      "response_resource": "racing-historical-v1",
+      "expected_tuning_response_digest": "sha256:e070e32fe803ce109e24b333eb2d68ca1c2dde5ccd6fc3bfcd5ff296fe68a6d6",
+      "expected_experimental_configuration_id": "sha256:212552e122e9d21bf728ccb58852d2257d8e7ba124b967dc73362ae40a2b62f5"
+    },
+    {
+      "id": "historical-v1--suzuka--balanced-long-gearing",
+      "configuration_family": "balanced-long-gearing",
+      "circuit_id": "jp-1962",
+      "circuit_archetype": "mixed",
+      "scenario_resource": "suzuka--balanced-long-gearing",
+      "expected_scenario_digest": "sha256:546a0e4e2b45b5ce44622efac360745a30fca3b13496a991d124e37acd32ae37",
+      "setup": {
+        "downforce_slider": 0.5,
+        "gear_ratio_slider": 0.7
+      },
+      "strategy": {
+        "id": "single-lap-no-stop"
+      },
+      "response_id": "historical-v1",
+      "response_resource": "racing-historical-v1",
+      "expected_tuning_response_digest": "sha256:e070e32fe803ce109e24b333eb2d68ca1c2dde5ccd6fc3bfcd5ff296fe68a6d6",
+      "expected_experimental_configuration_id": "sha256:2e2cfb80cfa36174d07f41c3705ce0340ac3105b5834f747cf8e39070acfb44a"
+    },
+    {
+      "id": "historical-v1--singapore--low-downforce",
+      "configuration_family": "low-downforce",
+      "circuit_id": "sg-2008",
+      "circuit_archetype": "street-thermal",
+      "scenario_resource": "singapore--low-downforce",
+      "expected_scenario_digest": "sha256:32ff56a9cbbb5738407a6a21aaefbc280aaa19b7fa8ff3c0aca7e85bfc6cd7a8",
+      "setup": {
+        "downforce_slider": 0.2,
+        "gear_ratio_slider": 0.3
+      },
+      "strategy": {
+        "id": "single-lap-no-stop"
+      },
+      "response_id": "historical-v1",
+      "response_resource": "racing-historical-v1",
+      "expected_tuning_response_digest": "sha256:e070e32fe803ce109e24b333eb2d68ca1c2dde5ccd6fc3bfcd5ff296fe68a6d6",
+      "expected_experimental_configuration_id": "sha256:9bcdf13fa22e3e3e0a3f43b8116cc301987984916dfe1ba29d8a000adceb52ec"
+    },
+    {
+      "id": "historical-v1--singapore--balanced",
+      "configuration_family": "balanced",
+      "circuit_id": "sg-2008",
+      "circuit_archetype": "street-thermal",
+      "scenario_resource": "singapore--balanced",
+      "expected_scenario_digest": "sha256:a347d60b0495b047d2076a491879aaa6e33725399e0186ee513e3e69d0183319",
+      "setup": {
+        "downforce_slider": 0.5,
+        "gear_ratio_slider": 0.5
+      },
+      "strategy": {
+        "id": "single-lap-no-stop"
+      },
+      "response_id": "historical-v1",
+      "response_resource": "racing-historical-v1",
+      "expected_tuning_response_digest": "sha256:e070e32fe803ce109e24b333eb2d68ca1c2dde5ccd6fc3bfcd5ff296fe68a6d6",
+      "expected_experimental_configuration_id": "sha256:72105049cd3f17dfc805b6594285225cf668ede445d080565118dd2ed1813e5e"
+    },
+    {
+      "id": "historical-v1--singapore--high-downforce",
+      "configuration_family": "high-downforce",
+      "circuit_id": "sg-2008",
+      "circuit_archetype": "street-thermal",
+      "scenario_resource": "singapore--high-downforce",
+      "expected_scenario_digest": "sha256:0bb183868b61291ace01b83169919f03159a12351072de0c8f697253deff9e94",
+      "setup": {
+        "downforce_slider": 0.8,
+        "gear_ratio_slider": 0.7
+      },
+      "strategy": {
+        "id": "single-lap-no-stop"
+      },
+      "response_id": "historical-v1",
+      "response_resource": "racing-historical-v1",
+      "expected_tuning_response_digest": "sha256:e070e32fe803ce109e24b333eb2d68ca1c2dde5ccd6fc3bfcd5ff296fe68a6d6",
+      "expected_experimental_configuration_id": "sha256:3f775c29eb19631f913c0b64bcef092e2761604ec01df4db6663087357ee7879"
+    },
+    {
+      "id": "historical-v1--singapore--low-downforce-long-gearing",
+      "configuration_family": "low-downforce-long-gearing",
+      "circuit_id": "sg-2008",
+      "circuit_archetype": "street-thermal",
+      "scenario_resource": "singapore--low-downforce-long-gearing",
+      "expected_scenario_digest": "sha256:5799bdb13422434989e236d58843bcc973177f7c92316be5056af039fa8f2592",
+      "setup": {
+        "downforce_slider": 0.2,
+        "gear_ratio_slider": 0.7
+      },
+      "strategy": {
+        "id": "single-lap-no-stop"
+      },
+      "response_id": "historical-v1",
+      "response_resource": "racing-historical-v1",
+      "expected_tuning_response_digest": "sha256:e070e32fe803ce109e24b333eb2d68ca1c2dde5ccd6fc3bfcd5ff296fe68a6d6",
+      "expected_experimental_configuration_id": "sha256:5501d5717e3c7aecd0b92945d8398516ca89c741fc6d3a252ffb0222af346355"
+    },
+    {
+      "id": "historical-v1--singapore--high-downforce-short-gearing",
+      "configuration_family": "high-downforce-short-gearing",
+      "circuit_id": "sg-2008",
+      "circuit_archetype": "street-thermal",
+      "scenario_resource": "singapore--high-downforce-short-gearing",
+      "expected_scenario_digest": "sha256:eb325abb1bd55ad75b1b7e8abc3450b625602136985fe831049eea0bec87c650",
+      "setup": {
+        "downforce_slider": 0.8,
+        "gear_ratio_slider": 0.3
+      },
+      "strategy": {
+        "id": "single-lap-no-stop"
+      },
+      "response_id": "historical-v1",
+      "response_resource": "racing-historical-v1",
+      "expected_tuning_response_digest": "sha256:e070e32fe803ce109e24b333eb2d68ca1c2dde5ccd6fc3bfcd5ff296fe68a6d6",
+      "expected_experimental_configuration_id": "sha256:25bde98c781f9ef09b4bb5b02f5c878de42d6477005c7e97ccb73150fcaba2c8"
+    },
+    {
+      "id": "historical-v1--singapore--balanced-short-gearing",
+      "configuration_family": "balanced-short-gearing",
+      "circuit_id": "sg-2008",
+      "circuit_archetype": "street-thermal",
+      "scenario_resource": "singapore--balanced-short-gearing",
+      "expected_scenario_digest": "sha256:78a01b05c4416166c2814cb1d3efdca99baa354e1894c9a82ef263e7b9966cfa",
+      "setup": {
+        "downforce_slider": 0.5,
+        "gear_ratio_slider": 0.3
+      },
+      "strategy": {
+        "id": "single-lap-no-stop"
+      },
+      "response_id": "historical-v1",
+      "response_resource": "racing-historical-v1",
+      "expected_tuning_response_digest": "sha256:e070e32fe803ce109e24b333eb2d68ca1c2dde5ccd6fc3bfcd5ff296fe68a6d6",
+      "expected_experimental_configuration_id": "sha256:783c6f4e43f5f93f796961e6d9f10e74fed7960b859a918ababbc251f442017a"
+    },
+    {
+      "id": "historical-v1--singapore--balanced-long-gearing",
+      "configuration_family": "balanced-long-gearing",
+      "circuit_id": "sg-2008",
+      "circuit_archetype": "street-thermal",
+      "scenario_resource": "singapore--balanced-long-gearing",
+      "expected_scenario_digest": "sha256:f615bf464b17e187b1fa0eab04deafce9361e3b0d4d377106caf5bf87526ddf5",
+      "setup": {
+        "downforce_slider": 0.5,
+        "gear_ratio_slider": 0.7
+      },
+      "strategy": {
+        "id": "single-lap-no-stop"
+      },
+      "response_id": "historical-v1",
+      "response_resource": "racing-historical-v1",
+      "expected_tuning_response_digest": "sha256:e070e32fe803ce109e24b333eb2d68ca1c2dde5ccd6fc3bfcd5ff296fe68a6d6",
+      "expected_experimental_configuration_id": "sha256:a875d6488d776837b4f85b2828a4484151fe35c290e26ba790604dfe266df9ae"
+    },
+    {
+      "id": "aero-candidate-v1--monza--low-downforce",
+      "configuration_family": "low-downforce",
+      "circuit_id": "it-1922",
+      "circuit_archetype": "power",
+      "scenario_resource": "monza--low-downforce",
+      "expected_scenario_digest": "sha256:af20b803b9be868a06c8832b4a9798af3700f613dc4d9633fa85fcbfd88eb441",
+      "setup": {
+        "downforce_slider": 0.2,
+        "gear_ratio_slider": 0.3
+      },
+      "strategy": {
+        "id": "single-lap-no-stop"
+      },
+      "response_id": "aero-candidate-v1",
+      "response_resource": "racing-aero-candidate-v1",
+      "expected_tuning_response_digest": "sha256:41b02277d070cee10b101194d25f396d6f24d59c9126cbf16925305e20925816",
+      "expected_experimental_configuration_id": "sha256:5e0a809bd6a354470427ef96875b49118844bf2d9cd12a8cafdf871a72ae26b1"
+    },
+    {
+      "id": "aero-candidate-v1--monza--balanced",
+      "configuration_family": "balanced",
+      "circuit_id": "it-1922",
+      "circuit_archetype": "power",
+      "scenario_resource": "monza--balanced",
+      "expected_scenario_digest": "sha256:bb946ddbf23eb8c7a96196c84c5e54399ec852cacd845c55dc468287876b9868",
+      "setup": {
+        "downforce_slider": 0.5,
+        "gear_ratio_slider": 0.5
+      },
+      "strategy": {
+        "id": "single-lap-no-stop"
+      },
+      "response_id": "aero-candidate-v1",
+      "response_resource": "racing-aero-candidate-v1",
+      "expected_tuning_response_digest": "sha256:41b02277d070cee10b101194d25f396d6f24d59c9126cbf16925305e20925816",
+      "expected_experimental_configuration_id": "sha256:1a143986c06d481f82238ecd88d08aafdaf9a7807dc1a9e11c7eaa58187fe554"
+    },
+    {
+      "id": "aero-candidate-v1--monza--high-downforce",
+      "configuration_family": "high-downforce",
+      "circuit_id": "it-1922",
+      "circuit_archetype": "power",
+      "scenario_resource": "monza--high-downforce",
+      "expected_scenario_digest": "sha256:2b9c5c826088597ec55a645cdc8c2ea89b544332529057f542425ecd615a8efc",
+      "setup": {
+        "downforce_slider": 0.8,
+        "gear_ratio_slider": 0.7
+      },
+      "strategy": {
+        "id": "single-lap-no-stop"
+      },
+      "response_id": "aero-candidate-v1",
+      "response_resource": "racing-aero-candidate-v1",
+      "expected_tuning_response_digest": "sha256:41b02277d070cee10b101194d25f396d6f24d59c9126cbf16925305e20925816",
+      "expected_experimental_configuration_id": "sha256:598ad312c26c81f391d0ec92d90eb0156efbffcf6485bd764f174992b90af834"
+    },
+    {
+      "id": "aero-candidate-v1--monza--low-downforce-long-gearing",
+      "configuration_family": "low-downforce-long-gearing",
+      "circuit_id": "it-1922",
+      "circuit_archetype": "power",
+      "scenario_resource": "monza--low-downforce-long-gearing",
+      "expected_scenario_digest": "sha256:db4621c76c3b67a26961b79c22c45ba6eeff72db7d7d86fc28d879ecdf72cf01",
+      "setup": {
+        "downforce_slider": 0.2,
+        "gear_ratio_slider": 0.7
+      },
+      "strategy": {
+        "id": "single-lap-no-stop"
+      },
+      "response_id": "aero-candidate-v1",
+      "response_resource": "racing-aero-candidate-v1",
+      "expected_tuning_response_digest": "sha256:41b02277d070cee10b101194d25f396d6f24d59c9126cbf16925305e20925816",
+      "expected_experimental_configuration_id": "sha256:b8bf2a80fdba0a720e31ef1dd1b546a9800a28073ea5017095e87d1f73358ab6"
+    },
+    {
+      "id": "aero-candidate-v1--monza--high-downforce-short-gearing",
+      "configuration_family": "high-downforce-short-gearing",
+      "circuit_id": "it-1922",
+      "circuit_archetype": "power",
+      "scenario_resource": "monza--high-downforce-short-gearing",
+      "expected_scenario_digest": "sha256:0e829608b895a5e2ff17360f88ec94deb04707432e6e3f50fe8c582f72c9f116",
+      "setup": {
+        "downforce_slider": 0.8,
+        "gear_ratio_slider": 0.3
+      },
+      "strategy": {
+        "id": "single-lap-no-stop"
+      },
+      "response_id": "aero-candidate-v1",
+      "response_resource": "racing-aero-candidate-v1",
+      "expected_tuning_response_digest": "sha256:41b02277d070cee10b101194d25f396d6f24d59c9126cbf16925305e20925816",
+      "expected_experimental_configuration_id": "sha256:6aed6b8298ab607ec3fc9bcbcdc31f4b242de0fa5f7f1eaeebc1a42613b77ffc"
+    },
+    {
+      "id": "aero-candidate-v1--monza--balanced-short-gearing",
+      "configuration_family": "balanced-short-gearing",
+      "circuit_id": "it-1922",
+      "circuit_archetype": "power",
+      "scenario_resource": "monza--balanced-short-gearing",
+      "expected_scenario_digest": "sha256:4e443ea152f1c2b87702d2d1074c8a0a0337c4dd8c63eb4afcf6cc0722d91e1a",
+      "setup": {
+        "downforce_slider": 0.5,
+        "gear_ratio_slider": 0.3
+      },
+      "strategy": {
+        "id": "single-lap-no-stop"
+      },
+      "response_id": "aero-candidate-v1",
+      "response_resource": "racing-aero-candidate-v1",
+      "expected_tuning_response_digest": "sha256:41b02277d070cee10b101194d25f396d6f24d59c9126cbf16925305e20925816",
+      "expected_experimental_configuration_id": "sha256:0cb9609d64c53d5e48f9eb0321a4b37aa669ee7ee80b90a722464385aff2eb7a"
+    },
+    {
+      "id": "aero-candidate-v1--monza--balanced-long-gearing",
+      "configuration_family": "balanced-long-gearing",
+      "circuit_id": "it-1922",
+      "circuit_archetype": "power",
+      "scenario_resource": "monza--balanced-long-gearing",
+      "expected_scenario_digest": "sha256:d1fda47b657983c32405e352c31d10d742ba9e6666429b72fa95fb4efaad514c",
+      "setup": {
+        "downforce_slider": 0.5,
+        "gear_ratio_slider": 0.7
+      },
+      "strategy": {
+        "id": "single-lap-no-stop"
+      },
+      "response_id": "aero-candidate-v1",
+      "response_resource": "racing-aero-candidate-v1",
+      "expected_tuning_response_digest": "sha256:41b02277d070cee10b101194d25f396d6f24d59c9126cbf16925305e20925816",
+      "expected_experimental_configuration_id": "sha256:99151e3570d7551044492a058eb439b2cbe493408e1c45ac7de5989086307083"
+    },
+    {
+      "id": "aero-candidate-v1--monaco--low-downforce",
+      "configuration_family": "low-downforce",
+      "circuit_id": "mc-1929",
+      "circuit_archetype": "high-downforce",
+      "scenario_resource": "monaco--low-downforce",
+      "expected_scenario_digest": "sha256:119edd6e72e5d39c544ec2a0a13d31c899167a56d87a8329633223e959ddec83",
+      "setup": {
+        "downforce_slider": 0.2,
+        "gear_ratio_slider": 0.3
+      },
+      "strategy": {
+        "id": "single-lap-no-stop"
+      },
+      "response_id": "aero-candidate-v1",
+      "response_resource": "racing-aero-candidate-v1",
+      "expected_tuning_response_digest": "sha256:41b02277d070cee10b101194d25f396d6f24d59c9126cbf16925305e20925816",
+      "expected_experimental_configuration_id": "sha256:ef30f27e921ced2e6893344059efa1b8a8516a2301302f348156b3edef29dd13"
+    },
+    {
+      "id": "aero-candidate-v1--monaco--balanced",
+      "configuration_family": "balanced",
+      "circuit_id": "mc-1929",
+      "circuit_archetype": "high-downforce",
+      "scenario_resource": "monaco--balanced",
+      "expected_scenario_digest": "sha256:e992fd8bd72bf14a6faf3cdd3280fe394dbd9480eaad7e12cadd915e70b11ee6",
+      "setup": {
+        "downforce_slider": 0.5,
+        "gear_ratio_slider": 0.5
+      },
+      "strategy": {
+        "id": "single-lap-no-stop"
+      },
+      "response_id": "aero-candidate-v1",
+      "response_resource": "racing-aero-candidate-v1",
+      "expected_tuning_response_digest": "sha256:41b02277d070cee10b101194d25f396d6f24d59c9126cbf16925305e20925816",
+      "expected_experimental_configuration_id": "sha256:20fee97c35980a907fc054fec65e406932be54db62bbf4742d89924f25a273aa"
+    },
+    {
+      "id": "aero-candidate-v1--monaco--high-downforce",
+      "configuration_family": "high-downforce",
+      "circuit_id": "mc-1929",
+      "circuit_archetype": "high-downforce",
+      "scenario_resource": "monaco--high-downforce",
+      "expected_scenario_digest": "sha256:add455ded331d6268fee9ccbaec08e9aee3f7b16e93e446ae1b644c18d5aaef5",
+      "setup": {
+        "downforce_slider": 0.8,
+        "gear_ratio_slider": 0.7
+      },
+      "strategy": {
+        "id": "single-lap-no-stop"
+      },
+      "response_id": "aero-candidate-v1",
+      "response_resource": "racing-aero-candidate-v1",
+      "expected_tuning_response_digest": "sha256:41b02277d070cee10b101194d25f396d6f24d59c9126cbf16925305e20925816",
+      "expected_experimental_configuration_id": "sha256:8164b5a1d47713793fb0222a7f7fcbef6c508322131a472352009c2170c5fd4c"
+    },
+    {
+      "id": "aero-candidate-v1--monaco--low-downforce-long-gearing",
+      "configuration_family": "low-downforce-long-gearing",
+      "circuit_id": "mc-1929",
+      "circuit_archetype": "high-downforce",
+      "scenario_resource": "monaco--low-downforce-long-gearing",
+      "expected_scenario_digest": "sha256:95dcf65dc949f649edbf2e83caba8fd432aa25dfdb780757e901cb714ecd5d1b",
+      "setup": {
+        "downforce_slider": 0.2,
+        "gear_ratio_slider": 0.7
+      },
+      "strategy": {
+        "id": "single-lap-no-stop"
+      },
+      "response_id": "aero-candidate-v1",
+      "response_resource": "racing-aero-candidate-v1",
+      "expected_tuning_response_digest": "sha256:41b02277d070cee10b101194d25f396d6f24d59c9126cbf16925305e20925816",
+      "expected_experimental_configuration_id": "sha256:45783a883949d6d9a021af4749d63fb736c962e7066f675365d3aa5a44779c4a"
+    },
+    {
+      "id": "aero-candidate-v1--monaco--high-downforce-short-gearing",
+      "configuration_family": "high-downforce-short-gearing",
+      "circuit_id": "mc-1929",
+      "circuit_archetype": "high-downforce",
+      "scenario_resource": "monaco--high-downforce-short-gearing",
+      "expected_scenario_digest": "sha256:482215f36b326fa49f7a35a0861b975e6d46e44fde9b95ff5ed1fd303e2bc23d",
+      "setup": {
+        "downforce_slider": 0.8,
+        "gear_ratio_slider": 0.3
+      },
+      "strategy": {
+        "id": "single-lap-no-stop"
+      },
+      "response_id": "aero-candidate-v1",
+      "response_resource": "racing-aero-candidate-v1",
+      "expected_tuning_response_digest": "sha256:41b02277d070cee10b101194d25f396d6f24d59c9126cbf16925305e20925816",
+      "expected_experimental_configuration_id": "sha256:eb4adb1a0e92be0a5f4616733c760104d9e159968071c07ac6f4d56af391ac31"
+    },
+    {
+      "id": "aero-candidate-v1--monaco--balanced-short-gearing",
+      "configuration_family": "balanced-short-gearing",
+      "circuit_id": "mc-1929",
+      "circuit_archetype": "high-downforce",
+      "scenario_resource": "monaco--balanced-short-gearing",
+      "expected_scenario_digest": "sha256:55191b114df82cc71cbfa64891616e8161deda3e618d3b0d60056a662a0c6f62",
+      "setup": {
+        "downforce_slider": 0.5,
+        "gear_ratio_slider": 0.3
+      },
+      "strategy": {
+        "id": "single-lap-no-stop"
+      },
+      "response_id": "aero-candidate-v1",
+      "response_resource": "racing-aero-candidate-v1",
+      "expected_tuning_response_digest": "sha256:41b02277d070cee10b101194d25f396d6f24d59c9126cbf16925305e20925816",
+      "expected_experimental_configuration_id": "sha256:e47a3f19ce022cbf636bfa307b54affd7aad0c61165df6a1adaa83442593ac4f"
+    },
+    {
+      "id": "aero-candidate-v1--monaco--balanced-long-gearing",
+      "configuration_family": "balanced-long-gearing",
+      "circuit_id": "mc-1929",
+      "circuit_archetype": "high-downforce",
+      "scenario_resource": "monaco--balanced-long-gearing",
+      "expected_scenario_digest": "sha256:a50e89d676b88782802cc696bf4f88629d44c875e88b9c4c2f20b0167f7d0431",
+      "setup": {
+        "downforce_slider": 0.5,
+        "gear_ratio_slider": 0.7
+      },
+      "strategy": {
+        "id": "single-lap-no-stop"
+      },
+      "response_id": "aero-candidate-v1",
+      "response_resource": "racing-aero-candidate-v1",
+      "expected_tuning_response_digest": "sha256:41b02277d070cee10b101194d25f396d6f24d59c9126cbf16925305e20925816",
+      "expected_experimental_configuration_id": "sha256:48659e55f4175e90a1d0c86339eed81ea8f18bbc7827757e3dea10b53ab07ec7"
+    },
+    {
+      "id": "aero-candidate-v1--budapest--low-downforce",
+      "configuration_family": "low-downforce",
+      "circuit_id": "hu-1986",
+      "circuit_archetype": "mechanical-grip",
+      "scenario_resource": "budapest--low-downforce",
+      "expected_scenario_digest": "sha256:ced6263df0c631cdbac83ba42db21d75d0231cdacd5932ac9b4b6d98a527e4eb",
+      "setup": {
+        "downforce_slider": 0.2,
+        "gear_ratio_slider": 0.3
+      },
+      "strategy": {
+        "id": "single-lap-no-stop"
+      },
+      "response_id": "aero-candidate-v1",
+      "response_resource": "racing-aero-candidate-v1",
+      "expected_tuning_response_digest": "sha256:41b02277d070cee10b101194d25f396d6f24d59c9126cbf16925305e20925816",
+      "expected_experimental_configuration_id": "sha256:e33b8a40ae7f8ac24c6a41705136ffc55546a6d6461f22803204656b249df60a"
+    },
+    {
+      "id": "aero-candidate-v1--budapest--balanced",
+      "configuration_family": "balanced",
+      "circuit_id": "hu-1986",
+      "circuit_archetype": "mechanical-grip",
+      "scenario_resource": "budapest--balanced",
+      "expected_scenario_digest": "sha256:3d25e7d4d4e457bd350ebcfe7e3df26eeb3f3dd86e8df77dfd698085e6631ee0",
+      "setup": {
+        "downforce_slider": 0.5,
+        "gear_ratio_slider": 0.5
+      },
+      "strategy": {
+        "id": "single-lap-no-stop"
+      },
+      "response_id": "aero-candidate-v1",
+      "response_resource": "racing-aero-candidate-v1",
+      "expected_tuning_response_digest": "sha256:41b02277d070cee10b101194d25f396d6f24d59c9126cbf16925305e20925816",
+      "expected_experimental_configuration_id": "sha256:b0ace856d8851321439500a7045aa566ffa45951ee52f2d671d52b7e87105262"
+    },
+    {
+      "id": "aero-candidate-v1--budapest--high-downforce",
+      "configuration_family": "high-downforce",
+      "circuit_id": "hu-1986",
+      "circuit_archetype": "mechanical-grip",
+      "scenario_resource": "budapest--high-downforce",
+      "expected_scenario_digest": "sha256:2bda726560250fce70a1dc44f22a33ed2c3081ff6fc334f3845de1a39aa08a6e",
+      "setup": {
+        "downforce_slider": 0.8,
+        "gear_ratio_slider": 0.7
+      },
+      "strategy": {
+        "id": "single-lap-no-stop"
+      },
+      "response_id": "aero-candidate-v1",
+      "response_resource": "racing-aero-candidate-v1",
+      "expected_tuning_response_digest": "sha256:41b02277d070cee10b101194d25f396d6f24d59c9126cbf16925305e20925816",
+      "expected_experimental_configuration_id": "sha256:c7f917ed1d1f1ea6bd544596f80e54f9215eee10294e86ec7f0dfc49317a7eb1"
+    },
+    {
+      "id": "aero-candidate-v1--budapest--low-downforce-long-gearing",
+      "configuration_family": "low-downforce-long-gearing",
+      "circuit_id": "hu-1986",
+      "circuit_archetype": "mechanical-grip",
+      "scenario_resource": "budapest--low-downforce-long-gearing",
+      "expected_scenario_digest": "sha256:6fa018640a37895cd4e8af5ea60ce01487226dcc71fa26ca052c1ed00b1b17a3",
+      "setup": {
+        "downforce_slider": 0.2,
+        "gear_ratio_slider": 0.7
+      },
+      "strategy": {
+        "id": "single-lap-no-stop"
+      },
+      "response_id": "aero-candidate-v1",
+      "response_resource": "racing-aero-candidate-v1",
+      "expected_tuning_response_digest": "sha256:41b02277d070cee10b101194d25f396d6f24d59c9126cbf16925305e20925816",
+      "expected_experimental_configuration_id": "sha256:d1d21e1f6d9030766e63c96212aaadd4e3e49fe75e99eec54129bd73eb1ff9bf"
+    },
+    {
+      "id": "aero-candidate-v1--budapest--high-downforce-short-gearing",
+      "configuration_family": "high-downforce-short-gearing",
+      "circuit_id": "hu-1986",
+      "circuit_archetype": "mechanical-grip",
+      "scenario_resource": "budapest--high-downforce-short-gearing",
+      "expected_scenario_digest": "sha256:26fa9d61e94c7a366fc80810c61cbdfaa3784f380bbefbe787f5f98f6a281230",
+      "setup": {
+        "downforce_slider": 0.8,
+        "gear_ratio_slider": 0.3
+      },
+      "strategy": {
+        "id": "single-lap-no-stop"
+      },
+      "response_id": "aero-candidate-v1",
+      "response_resource": "racing-aero-candidate-v1",
+      "expected_tuning_response_digest": "sha256:41b02277d070cee10b101194d25f396d6f24d59c9126cbf16925305e20925816",
+      "expected_experimental_configuration_id": "sha256:57a249ed32e34d9c225f06714c58f0d24df47cb341525855fc145e55c011210a"
+    },
+    {
+      "id": "aero-candidate-v1--budapest--balanced-short-gearing",
+      "configuration_family": "balanced-short-gearing",
+      "circuit_id": "hu-1986",
+      "circuit_archetype": "mechanical-grip",
+      "scenario_resource": "budapest--balanced-short-gearing",
+      "expected_scenario_digest": "sha256:f97fe7de1492ae1377593d9ffe16a58e44a9b14da1d6e3d6911584277efc83fa",
+      "setup": {
+        "downforce_slider": 0.5,
+        "gear_ratio_slider": 0.3
+      },
+      "strategy": {
+        "id": "single-lap-no-stop"
+      },
+      "response_id": "aero-candidate-v1",
+      "response_resource": "racing-aero-candidate-v1",
+      "expected_tuning_response_digest": "sha256:41b02277d070cee10b101194d25f396d6f24d59c9126cbf16925305e20925816",
+      "expected_experimental_configuration_id": "sha256:7fea50db451b4c8c7f33f2c02aefc4bfdddab82ffc6a7f88e4e5ec9ae2693385"
+    },
+    {
+      "id": "aero-candidate-v1--budapest--balanced-long-gearing",
+      "configuration_family": "balanced-long-gearing",
+      "circuit_id": "hu-1986",
+      "circuit_archetype": "mechanical-grip",
+      "scenario_resource": "budapest--balanced-long-gearing",
+      "expected_scenario_digest": "sha256:ef33bb6401de5bb1c2349be07ad526282773daf44a095042b33353704de3f690",
+      "setup": {
+        "downforce_slider": 0.5,
+        "gear_ratio_slider": 0.7
+      },
+      "strategy": {
+        "id": "single-lap-no-stop"
+      },
+      "response_id": "aero-candidate-v1",
+      "response_resource": "racing-aero-candidate-v1",
+      "expected_tuning_response_digest": "sha256:41b02277d070cee10b101194d25f396d6f24d59c9126cbf16925305e20925816",
+      "expected_experimental_configuration_id": "sha256:683ab93c982798a51e1a24f7581ee273a40953b824b33caa62fe845817c2f64b"
+    },
+    {
+      "id": "aero-candidate-v1--suzuka--low-downforce",
+      "configuration_family": "low-downforce",
+      "circuit_id": "jp-1962",
+      "circuit_archetype": "mixed",
+      "scenario_resource": "suzuka--low-downforce",
+      "expected_scenario_digest": "sha256:2f839140647ea4eab36eb1b9c1dae2a67b2370937b52d017b16d152ef8fbded4",
+      "setup": {
+        "downforce_slider": 0.2,
+        "gear_ratio_slider": 0.3
+      },
+      "strategy": {
+        "id": "single-lap-no-stop"
+      },
+      "response_id": "aero-candidate-v1",
+      "response_resource": "racing-aero-candidate-v1",
+      "expected_tuning_response_digest": "sha256:41b02277d070cee10b101194d25f396d6f24d59c9126cbf16925305e20925816",
+      "expected_experimental_configuration_id": "sha256:72dec0997f2911be1e74157b5105ac72393030d7a2126d099da728e235b4dc66"
+    },
+    {
+      "id": "aero-candidate-v1--suzuka--balanced",
+      "configuration_family": "balanced",
+      "circuit_id": "jp-1962",
+      "circuit_archetype": "mixed",
+      "scenario_resource": "suzuka--balanced",
+      "expected_scenario_digest": "sha256:db9030dc2f1a6bfbdd62040259b1edecb99a9e10fca1d75c25c04d1dae26e0c6",
+      "setup": {
+        "downforce_slider": 0.5,
+        "gear_ratio_slider": 0.5
+      },
+      "strategy": {
+        "id": "single-lap-no-stop"
+      },
+      "response_id": "aero-candidate-v1",
+      "response_resource": "racing-aero-candidate-v1",
+      "expected_tuning_response_digest": "sha256:41b02277d070cee10b101194d25f396d6f24d59c9126cbf16925305e20925816",
+      "expected_experimental_configuration_id": "sha256:55fcb5ea8911744216e334f9afd1ffeff3e680869846c9594981929d585565a3"
+    },
+    {
+      "id": "aero-candidate-v1--suzuka--high-downforce",
+      "configuration_family": "high-downforce",
+      "circuit_id": "jp-1962",
+      "circuit_archetype": "mixed",
+      "scenario_resource": "suzuka--high-downforce",
+      "expected_scenario_digest": "sha256:de1111d1c88f3058f63a49bc5289992d68f89249687c6ef221f658deac786881",
+      "setup": {
+        "downforce_slider": 0.8,
+        "gear_ratio_slider": 0.7
+      },
+      "strategy": {
+        "id": "single-lap-no-stop"
+      },
+      "response_id": "aero-candidate-v1",
+      "response_resource": "racing-aero-candidate-v1",
+      "expected_tuning_response_digest": "sha256:41b02277d070cee10b101194d25f396d6f24d59c9126cbf16925305e20925816",
+      "expected_experimental_configuration_id": "sha256:bea47a1a07e8f659cf023de07e4a0465f0b167c7f789100533cb5ec4a45d59d7"
+    },
+    {
+      "id": "aero-candidate-v1--suzuka--low-downforce-long-gearing",
+      "configuration_family": "low-downforce-long-gearing",
+      "circuit_id": "jp-1962",
+      "circuit_archetype": "mixed",
+      "scenario_resource": "suzuka--low-downforce-long-gearing",
+      "expected_scenario_digest": "sha256:69e9ec8ac998fa3a3678292b710559155538f6a08b07f7013ed5fb93990c8f49",
+      "setup": {
+        "downforce_slider": 0.2,
+        "gear_ratio_slider": 0.7
+      },
+      "strategy": {
+        "id": "single-lap-no-stop"
+      },
+      "response_id": "aero-candidate-v1",
+      "response_resource": "racing-aero-candidate-v1",
+      "expected_tuning_response_digest": "sha256:41b02277d070cee10b101194d25f396d6f24d59c9126cbf16925305e20925816",
+      "expected_experimental_configuration_id": "sha256:29e6b9a36afdce7abf5d12a0a3d28bcc741f2a03a58100c7d98f6317651da1bc"
+    },
+    {
+      "id": "aero-candidate-v1--suzuka--high-downforce-short-gearing",
+      "configuration_family": "high-downforce-short-gearing",
+      "circuit_id": "jp-1962",
+      "circuit_archetype": "mixed",
+      "scenario_resource": "suzuka--high-downforce-short-gearing",
+      "expected_scenario_digest": "sha256:6f3cedaeea4b993f7bf2dfcbc4b5f8e9391d9c723917553373b7e2d386723b2f",
+      "setup": {
+        "downforce_slider": 0.8,
+        "gear_ratio_slider": 0.3
+      },
+      "strategy": {
+        "id": "single-lap-no-stop"
+      },
+      "response_id": "aero-candidate-v1",
+      "response_resource": "racing-aero-candidate-v1",
+      "expected_tuning_response_digest": "sha256:41b02277d070cee10b101194d25f396d6f24d59c9126cbf16925305e20925816",
+      "expected_experimental_configuration_id": "sha256:f95fd5219de1b0952b7f05392d609ac6eba92253476c2b6ee6562586e92e5e1a"
+    },
+    {
+      "id": "aero-candidate-v1--suzuka--balanced-short-gearing",
+      "configuration_family": "balanced-short-gearing",
+      "circuit_id": "jp-1962",
+      "circuit_archetype": "mixed",
+      "scenario_resource": "suzuka--balanced-short-gearing",
+      "expected_scenario_digest": "sha256:99c431d599571d2499422667efca36b0c2d429a1d5e21bd47f8b8325047501f5",
+      "setup": {
+        "downforce_slider": 0.5,
+        "gear_ratio_slider": 0.3
+      },
+      "strategy": {
+        "id": "single-lap-no-stop"
+      },
+      "response_id": "aero-candidate-v1",
+      "response_resource": "racing-aero-candidate-v1",
+      "expected_tuning_response_digest": "sha256:41b02277d070cee10b101194d25f396d6f24d59c9126cbf16925305e20925816",
+      "expected_experimental_configuration_id": "sha256:3f179c655abe412815a06da1754da5597cfcab8bff9f5b3a3463f184f6bf76bd"
+    },
+    {
+      "id": "aero-candidate-v1--suzuka--balanced-long-gearing",
+      "configuration_family": "balanced-long-gearing",
+      "circuit_id": "jp-1962",
+      "circuit_archetype": "mixed",
+      "scenario_resource": "suzuka--balanced-long-gearing",
+      "expected_scenario_digest": "sha256:546a0e4e2b45b5ce44622efac360745a30fca3b13496a991d124e37acd32ae37",
+      "setup": {
+        "downforce_slider": 0.5,
+        "gear_ratio_slider": 0.7
+      },
+      "strategy": {
+        "id": "single-lap-no-stop"
+      },
+      "response_id": "aero-candidate-v1",
+      "response_resource": "racing-aero-candidate-v1",
+      "expected_tuning_response_digest": "sha256:41b02277d070cee10b101194d25f396d6f24d59c9126cbf16925305e20925816",
+      "expected_experimental_configuration_id": "sha256:aa4caada71fd6c656c2806f41a497cfef22c3efdd70ae8103c5fc9c55b0429ae"
+    },
+    {
+      "id": "aero-candidate-v1--singapore--low-downforce",
+      "configuration_family": "low-downforce",
+      "circuit_id": "sg-2008",
+      "circuit_archetype": "street-thermal",
+      "scenario_resource": "singapore--low-downforce",
+      "expected_scenario_digest": "sha256:32ff56a9cbbb5738407a6a21aaefbc280aaa19b7fa8ff3c0aca7e85bfc6cd7a8",
+      "setup": {
+        "downforce_slider": 0.2,
+        "gear_ratio_slider": 0.3
+      },
+      "strategy": {
+        "id": "single-lap-no-stop"
+      },
+      "response_id": "aero-candidate-v1",
+      "response_resource": "racing-aero-candidate-v1",
+      "expected_tuning_response_digest": "sha256:41b02277d070cee10b101194d25f396d6f24d59c9126cbf16925305e20925816",
+      "expected_experimental_configuration_id": "sha256:31f903e617e1d943b880e6fd929154ded3d3fc759a58a5a79315d3a0741652d5"
+    },
+    {
+      "id": "aero-candidate-v1--singapore--balanced",
+      "configuration_family": "balanced",
+      "circuit_id": "sg-2008",
+      "circuit_archetype": "street-thermal",
+      "scenario_resource": "singapore--balanced",
+      "expected_scenario_digest": "sha256:a347d60b0495b047d2076a491879aaa6e33725399e0186ee513e3e69d0183319",
+      "setup": {
+        "downforce_slider": 0.5,
+        "gear_ratio_slider": 0.5
+      },
+      "strategy": {
+        "id": "single-lap-no-stop"
+      },
+      "response_id": "aero-candidate-v1",
+      "response_resource": "racing-aero-candidate-v1",
+      "expected_tuning_response_digest": "sha256:41b02277d070cee10b101194d25f396d6f24d59c9126cbf16925305e20925816",
+      "expected_experimental_configuration_id": "sha256:656e0e04b6844c5508f77675e844d8bf5a0aaa087c3db1a7131adf667a9ef60f"
+    },
+    {
+      "id": "aero-candidate-v1--singapore--high-downforce",
+      "configuration_family": "high-downforce",
+      "circuit_id": "sg-2008",
+      "circuit_archetype": "street-thermal",
+      "scenario_resource": "singapore--high-downforce",
+      "expected_scenario_digest": "sha256:0bb183868b61291ace01b83169919f03159a12351072de0c8f697253deff9e94",
+      "setup": {
+        "downforce_slider": 0.8,
+        "gear_ratio_slider": 0.7
+      },
+      "strategy": {
+        "id": "single-lap-no-stop"
+      },
+      "response_id": "aero-candidate-v1",
+      "response_resource": "racing-aero-candidate-v1",
+      "expected_tuning_response_digest": "sha256:41b02277d070cee10b101194d25f396d6f24d59c9126cbf16925305e20925816",
+      "expected_experimental_configuration_id": "sha256:9056484cf38885d30b4973b3653f48cefcc1582a9473c99c8c67b8cc52f32542"
+    },
+    {
+      "id": "aero-candidate-v1--singapore--low-downforce-long-gearing",
+      "configuration_family": "low-downforce-long-gearing",
+      "circuit_id": "sg-2008",
+      "circuit_archetype": "street-thermal",
+      "scenario_resource": "singapore--low-downforce-long-gearing",
+      "expected_scenario_digest": "sha256:5799bdb13422434989e236d58843bcc973177f7c92316be5056af039fa8f2592",
+      "setup": {
+        "downforce_slider": 0.2,
+        "gear_ratio_slider": 0.7
+      },
+      "strategy": {
+        "id": "single-lap-no-stop"
+      },
+      "response_id": "aero-candidate-v1",
+      "response_resource": "racing-aero-candidate-v1",
+      "expected_tuning_response_digest": "sha256:41b02277d070cee10b101194d25f396d6f24d59c9126cbf16925305e20925816",
+      "expected_experimental_configuration_id": "sha256:a9b9323676645c3edacd7ad4bcddd7f67bfb80a0d8eead58d66a3bcde7196f0e"
+    },
+    {
+      "id": "aero-candidate-v1--singapore--high-downforce-short-gearing",
+      "configuration_family": "high-downforce-short-gearing",
+      "circuit_id": "sg-2008",
+      "circuit_archetype": "street-thermal",
+      "scenario_resource": "singapore--high-downforce-short-gearing",
+      "expected_scenario_digest": "sha256:eb325abb1bd55ad75b1b7e8abc3450b625602136985fe831049eea0bec87c650",
+      "setup": {
+        "downforce_slider": 0.8,
+        "gear_ratio_slider": 0.3
+      },
+      "strategy": {
+        "id": "single-lap-no-stop"
+      },
+      "response_id": "aero-candidate-v1",
+      "response_resource": "racing-aero-candidate-v1",
+      "expected_tuning_response_digest": "sha256:41b02277d070cee10b101194d25f396d6f24d59c9126cbf16925305e20925816",
+      "expected_experimental_configuration_id": "sha256:44756456e73d3808dbc17f0a6539ce356d462418c04fa12f8dbb32deb79249df"
+    },
+    {
+      "id": "aero-candidate-v1--singapore--balanced-short-gearing",
+      "configuration_family": "balanced-short-gearing",
+      "circuit_id": "sg-2008",
+      "circuit_archetype": "street-thermal",
+      "scenario_resource": "singapore--balanced-short-gearing",
+      "expected_scenario_digest": "sha256:78a01b05c4416166c2814cb1d3efdca99baa354e1894c9a82ef263e7b9966cfa",
+      "setup": {
+        "downforce_slider": 0.5,
+        "gear_ratio_slider": 0.3
+      },
+      "strategy": {
+        "id": "single-lap-no-stop"
+      },
+      "response_id": "aero-candidate-v1",
+      "response_resource": "racing-aero-candidate-v1",
+      "expected_tuning_response_digest": "sha256:41b02277d070cee10b101194d25f396d6f24d59c9126cbf16925305e20925816",
+      "expected_experimental_configuration_id": "sha256:22c34fa318e8f90b0c25ff5f9e4f674b3f3c18a424fd5dc7636fab76a5e7f790"
+    },
+    {
+      "id": "aero-candidate-v1--singapore--balanced-long-gearing",
+      "configuration_family": "balanced-long-gearing",
+      "circuit_id": "sg-2008",
+      "circuit_archetype": "street-thermal",
+      "scenario_resource": "singapore--balanced-long-gearing",
+      "expected_scenario_digest": "sha256:f615bf464b17e187b1fa0eab04deafce9361e3b0d4d377106caf5bf87526ddf5",
+      "setup": {
+        "downforce_slider": 0.5,
+        "gear_ratio_slider": 0.7
+      },
+      "strategy": {
+        "id": "single-lap-no-stop"
+      },
+      "response_id": "aero-candidate-v1",
+      "response_resource": "racing-aero-candidate-v1",
+      "expected_tuning_response_digest": "sha256:41b02277d070cee10b101194d25f396d6f24d59c9126cbf16925305e20925816",
+      "expected_experimental_configuration_id": "sha256:80e5c5192b89b153b12f0f3523ba96e978ca873bdfa3715fac25838ab17326ad"
+    }
+  ],
+  "acceptance_criteria": {
+    "execution_success_rate_min": 1.0,
+    "maximum_speed_kph_max": 400.0,
+    "candidate_must_improve_setup_discrimination": true,
+    "automatic_release": false
+  },
+  "planned_run_count": 210
+}

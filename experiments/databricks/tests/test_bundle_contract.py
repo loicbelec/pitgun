@@ -14,12 +14,14 @@ class BundleContractTest(unittest.TestCase):
             if path != pathlib.Path(__file__):
                 ast.parse(path.read_text(), filename=str(path))
 
-    def test_bootstrap_owns_only_the_five_governed_tables(self):
+    def test_bootstrap_owns_only_the_seven_governed_tables(self):
         source = (ROOT / "src" / "bootstrap_tables.py").read_text()
         expected = {
             "campaigns",
             "runs",
             "metrics",
+            "experimental_runs",
+            "experimental_metrics",
             "candidates",
             "policy_releases",
         }
@@ -47,17 +49,14 @@ class BundleContractTest(unittest.TestCase):
     def test_runner_job_exposes_no_arbitrary_code_boundary(self):
         job = (ROOT / "resources" / "jobs.yml").read_text()
         runner = (
-            ROOT
-            / "adapter"
-            / "pitgun_databricks_adapter"
-            / "runner.py"
+            ROOT / "adapter" / "pitgun_databricks_adapter" / "runner.py"
         ).read_text()
         self.assertIn("runner_spike_job:", job)
         self.assertIn("- name: seed", job)
         for forbidden_parameter in ("runner_url", "runner_path", "command", "scenario"):
             self.assertNotIn(f"- name: {forbidden_parameter}", job)
         self.assertIn("- name: configuration_family", job)
-        self.assertIn('SCENARIO_FAMILIES = frozenset(', runner)
+        self.assertIn("SCENARIO_FAMILIES = frozenset(", runner)
         self.assertNotIn("shell=True", runner)
         self.assertNotIn("http://", runner)
         self.assertNotIn("https://", runner)
@@ -100,9 +99,13 @@ class BundleContractTest(unittest.TestCase):
         self.assertEqual(manifest["schema_version"], "pitgun.calibration-campaign/v2")
         self.assertEqual(len(manifest["circuits"]), 5)
         self.assertEqual(len(configurations), 35)
-        self.assertEqual(len({row["configuration_family"] for row in configurations}), 7)
+        self.assertEqual(
+            len({row["configuration_family"] for row in configurations}), 7
+        )
         self.assertEqual(manifest["planned_run_count"], 105)
-        self.assertEqual(manifest["planned_run_count"], len(configurations) * len(seeds))
+        self.assertEqual(
+            manifest["planned_run_count"], len(configurations) * len(seeds)
+        )
         self.assertEqual(
             len({row["expected_configuration_id"] for row in configurations}),
             len(configurations),
@@ -119,6 +122,48 @@ class BundleContractTest(unittest.TestCase):
         self.assertIn("execute_packaged_racing_scenario", notebook)
         self.assertIn('entry["circuit_id"]', notebook)
         self.assertIn('"circuits":', notebook)
+
+    def test_candidate_validation_is_immutable_experimental_and_reviewed(self):
+        campaign_root = ROOT / "campaigns"
+        manifest_path = campaign_root / "racing-aero-candidate-validation-v1.json"
+        checksum_path = campaign_root / "racing-aero-candidate-validation-v1.sha256"
+        expected_digest, expected_name = checksum_path.read_text().split()
+        self.assertEqual(expected_name, manifest_path.name)
+        self.assertEqual(
+            hashlib.sha256(manifest_path.read_bytes()).hexdigest(), expected_digest
+        )
+
+        manifest = json.loads(manifest_path.read_text())
+        self.assertEqual(manifest["schema_version"], "pitgun.calibration-campaign/v3")
+        self.assertEqual(manifest["execution_class"], "experimental-tuning-response")
+        self.assertEqual(manifest["promotion_policy"], "human-review-required")
+        self.assertFalse(manifest["acceptance_criteria"]["automatic_release"])
+        self.assertEqual(len(manifest["responses"]), 2)
+        self.assertEqual(len(manifest["configurations"]), 70)
+        self.assertEqual(manifest["planned_run_count"], 210)
+        self.assertEqual(
+            len(
+                {
+                    row["expected_experimental_configuration_id"]
+                    for row in manifest["configurations"]
+                }
+            ),
+            70,
+        )
+
+        job = (ROOT / "resources" / "jobs.yml").read_text()
+        notebook = (ROOT / "src" / "execute_candidate_validation.py").read_text()
+        runner = (
+            ROOT / "adapter" / "pitgun_databricks_adapter" / "runner.py"
+        ).read_text()
+        self.assertIn("candidate_validation_job:", job)
+        self.assertIn("campaign_name: racing-aero-candidate-validation-v1", job)
+        self.assertIn("experimental_runs", notebook)
+        self.assertIn("experimental_execution_id", notebook)
+        self.assertNotIn('"run_id"', notebook)
+        self.assertIn('"REVIEW_REQUIRED"', notebook)
+        self.assertIn("execute_packaged_tuning_response", runner)
+        self.assertNotIn("shell=True", runner)
 
     def test_reference_campaign_job_is_idempotent_and_governed(self):
         job = (ROOT / "resources" / "jobs.yml").read_text()

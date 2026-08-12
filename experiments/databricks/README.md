@@ -27,6 +27,7 @@ experiments/databricks/
 │   └── schemas.yml
 ├── src/
 │   ├── bootstrap_tables.py
+│   ├── execute_candidate_validation.py
 │   ├── execute_reference_campaign.py
 │   └── select_reference_opponent_policy.py
 └── README.md
@@ -53,6 +54,7 @@ databricks bundle run runner_spike_job -t dev -p pitgun-free \
 databricks bundle run reference_campaign_job -t dev -p pitgun-free
 databricks bundle run reference_policy_job -t dev -p pitgun-free
 databricks bundle run circuit_sweep_job -t dev -p pitgun-free
+databricks bundle run candidate_validation_job -t dev -p pitgun-free
 ```
 
 Repeat `deploy` and `run`: schema and table creation are idempotent. The job may
@@ -110,6 +112,21 @@ The sweep reuses the same Delta tables, MLflow experiment, idempotent natural
 keys, and Rust runner as the reference campaign. It produces evidence for a
 future game-compatible opponent policy but does not publish or promote one.
 
+## Aerodynamic candidate validation
+
+The immutable `racing-aero-candidate-validation-v1` campaign compares the
+historical response with the calibrated aerodynamic candidate over the same
+35 reviewed circuit/setup scenarios and three seeds: 210 executions. A
+dedicated Rust probe and two allowlisted response resources are embedded in the
+wheel; the job accepts neither arbitrary physics JSON nor an artifact URL.
+
+Experimental executions deliberately use `experimental_execution_id` and the
+dedicated `experimental_runs` and `experimental_metrics` tables. They never
+claim a canonical `run_id`. MLflow records the immutable manifest, identities,
+metrics, and review report. Even a successful campaign ends at
+`REVIEW_REQUIRED`: changing the catalog or game remains a separate reviewed
+repository change.
+
 ## Governed table ownership
 
 The attended deployment identity owns both bundle-created schemas. The job run
@@ -122,6 +139,8 @@ comment and `pitgun.grain`, `pitgun.owner_domain`, and
 | `pitgun_calibration.campaigns` | one campaign |
 | `pitgun_calibration.runs` | one campaign, materialized configuration, and seed |
 | `pitgun_calibration.metrics` | one successful run and metric |
+| `pitgun_calibration.experimental_runs` | one experimental response/configuration/seed execution |
+| `pitgun_calibration.experimental_metrics` | one experimental execution and metric |
 | `pitgun_calibration.candidates` | one reviewed candidate and difficulty band |
 | `pitgun_policies.releases` | one immutable policy release version |
 
