@@ -60,3 +60,20 @@ and a five-by-five setup grid: 1,875 deterministic simulations. The full result
 is stored in `results/racing-coefficient-screening-v1.json`. Its interpretation
 and the reason no coefficient is published yet are documented in
 [`RACING_COEFFICIENT_SCREENING_V1.md`](../../docs/RACING_COEFFICIENT_SCREENING_V1.md).
+
+## Aerodynamic response refinement V1
+
+The third local experiment refines the shortlisted aerodynamic neighborhood on
+an eleven-by-eleven setup grid. It evaluates 42 candidate shapes plus the
+historical response across Monza, Monaco, and Suzuka: 15,609 deterministic
+simulations.
+
+```bash
+cargo build --release -p pitgun-racing-simulator --example tuning_response_probe
+python3 experiments/racing_response/refine_aero_response.py --jobs 4
+```
+
+The report retains compact time and maximum-speed matrices plus a digest of all
+execution points. The selected response-shape anchor, its remaining pace gap,
+and the next base-coefficient calibration decision are documented in
+[`RACING_AERO_RESPONSE_REFINEMENT_V1.md`](../../docs/RACING_AERO_RESPONSE_REFINEMENT_V1.md).
