@@ -20,7 +20,9 @@ use pitgun_racing_contract::{
     RacingPresentationIndexV1,
 };
 use pitgun_racing_policy::normalize_and_validate_race_input;
-use pitgun_racing_solver::{resample_telemetry, run_simulation};
+use pitgun_racing_solver::resample_telemetry;
+#[cfg(test)]
+use pitgun_racing_solver::run_simulation;
 use pitgun_runtime::execute_linked;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -325,6 +327,22 @@ pub fn run_race_with_catalog(
     request: RunRaceRequest,
     snapshot: &RacingCatalogSnapshot,
 ) -> Result<RaceOutput, String> {
+    run_race_with_catalog_and_tuning_response(request, snapshot, &TuningResponseV1::default())
+}
+
+/// Runs one offline calibration race with an explicit physical tuning response.
+///
+/// This Rust-only boundary exists for governed experiments. Production, WASM,
+/// catalog, and player contracts intentionally continue to use
+/// [`TuningResponseV1::default`].
+pub fn run_race_with_catalog_and_tuning_response(
+    request: RunRaceRequest,
+    snapshot: &RacingCatalogSnapshot,
+    tuning_response: &TuningResponseV1,
+) -> Result<RaceOutput, String> {
+    tuning_response
+        .validate()
+        .map_err(|error| format!("invalid tuning response: {error}"))?;
     if request.input.race.competitors.is_empty() {
         return Err("race requires at least one competitor".to_string());
     }
@@ -346,10 +364,13 @@ pub fn run_race_with_catalog(
         &catalog,
         &normalized_race,
         vehicle_id,
-        request.input.pit_strategy.as_ref(),
-        request.input.track_profile.as_ref(),
-        normalized_race.laps,
-        request.seed,
+        SessionExecution {
+            pit_strategy: request.input.pit_strategy.as_ref(),
+            track_profile: request.input.track_profile.as_ref(),
+            laps: normalized_race.laps,
+            seed: request.seed,
+            tuning_response,
+        },
     )
 }
 
@@ -380,16 +401,20 @@ pub fn run_sessions_with_catalog(
     let vehicle_id = resolve_vehicle_id(request.vehicle_id.as_deref())?;
     let catalog = EmbeddedCatalog::from_snapshot(snapshot)?;
     let mut sessions = Vec::with_capacity(request.sessions.len());
+    let tuning_response = TuningResponseV1::default();
 
     for session in &request.sessions {
         let output = run_single_session(
             &catalog,
             &normalized_race,
             vehicle_id,
-            request.pit_strategy.as_ref(),
-            request.track_profile.as_ref(),
-            session.laps,
-            request.seed,
+            SessionExecution {
+                pit_strategy: request.pit_strategy.as_ref(),
+                track_profile: request.track_profile.as_ref(),
+                laps: session.laps,
+                seed: request.seed,
+                tuning_response: &tuning_response,
+            },
         )?;
         sessions.push(SessionRunResult {
             session: session.session.clone(),
@@ -401,15 +426,27 @@ pub fn run_sessions_with_catalog(
     Ok(SessionRunOutput { sessions })
 }
 
+struct SessionExecution<'a> {
+    pit_strategy: Option<&'a PitStrategyConfig>,
+    track_profile: Option<&'a SolverTrackProfile>,
+    laps: u16,
+    seed: u64,
+    tuning_response: &'a TuningResponseV1,
+}
+
 fn run_single_session(
     catalog: &EmbeddedCatalog,
     race: &RaceInput,
     vehicle_id: &str,
-    pit_strategy: Option<&PitStrategyConfig>,
-    track_profile: Option<&SolverTrackProfile>,
-    laps: u16,
-    seed: u64,
+    execution: SessionExecution<'_>,
 ) -> Result<RaceOutput, String> {
+    let SessionExecution {
+        pit_strategy,
+        track_profile,
+        laps,
+        seed,
+        tuning_response,
+    } = execution;
     let track_id = normalize_track_id(&race.track_id);
     let mut track_record = catalog.get_track(&track_id)?.clone();
     if let Some(payload) = track_profile {
@@ -476,7 +513,7 @@ fn run_single_session(
                 gear_ratio_slider: competitor.tuning.gear_ratio_slider,
             }),
         };
-        let result = run_simulation(&request)
+        let result = solve_with_tuning_response(&request, tuning_response)
             .map_err(|err| format!("simulation failed for competitor {}: {err}", competitor.id))?;
 
         let lap_times_ms = lap_times_ms(&result.lap_times_s, &stint_plan, pit_loss_ms);
@@ -2226,6 +2263,21 @@ mod tests {
             serde_json::to_string(&request).expect("serialize request"),
         ))
         .expect("run_race_json must return valid JSON");
+
+        let snapshot = RacingCatalogSnapshot::embedded().expect("embedded catalog");
+        let implicit_default =
+            run_race_with_catalog(request.clone(), &snapshot).expect("implicit default response");
+        let explicit_default = run_race_with_catalog_and_tuning_response(
+            request,
+            &snapshot,
+            &TuningResponseV1::default(),
+        )
+        .expect("explicit default response");
+        assert_eq!(
+            serde_json::to_value(implicit_default).expect("implicit JSON"),
+            serde_json::to_value(explicit_default).expect("explicit JSON"),
+            "the experimental boundary must preserve the production default"
+        );
 
         assert!(
             !output.player_batches.is_empty(),

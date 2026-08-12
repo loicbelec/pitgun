@@ -42,3 +42,21 @@ tables.
 
 The reviewed interpretation and next decision are documented in
 [`RACING_RESPONSE_SURFACE_V1.md`](../../docs/RACING_RESPONSE_SURFACE_V1.md).
+
+## Coefficient screening V1
+
+After making the historical tuning response explicit, the second experiment
+uses a Rust-only probe to screen bounded aerodynamic coefficient families. The
+probe is deliberately absent from the game, WASM exports, catalog resources,
+and production contracts.
+
+```bash
+cargo build --release -p pitgun-racing-simulator --example tuning_response_probe
+python3 experiments/racing_response/coefficient_screening.py --jobs 4
+```
+
+The campaign crosses 25 downforce/drag response families with three circuits
+and a five-by-five setup grid: 1,875 deterministic simulations. The full result
+is stored in `results/racing-coefficient-screening-v1.json`. Its interpretation
+and the reason no coefficient is published yet are documented in
+[`RACING_COEFFICIENT_SCREENING_V1.md`](../../docs/RACING_COEFFICIENT_SCREENING_V1.md).
