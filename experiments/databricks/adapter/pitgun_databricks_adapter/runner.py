@@ -8,6 +8,7 @@ import importlib.resources
 import json
 import pathlib
 import platform
+import re
 import subprocess
 import tempfile
 import time
@@ -18,6 +19,7 @@ RESULT_VERSION = "pitgun.databricks-runner-result/v1"
 RUNNER_TARGET = "aarch64-unknown-linux-gnu"
 PROCESS_TIMEOUT_SECONDS = 120
 SCENARIO_FAMILIES = frozenset({"balanced", "high-downforce", "low-downforce"})
+SCENARIO_RESOURCE_PATTERN = re.compile(r"[a-z0-9]+(?:-[a-z0-9]+)*(?:--[a-z0-9]+(?:-[a-z0-9]+)*)?")
 
 
 class RunnerExecutionError(RuntimeError):
@@ -127,6 +129,20 @@ def execute_packaged_racing(
         "scenarios", f"{configuration_family}.json"
     ).read_bytes()
     return _execute(runner_bytes, scenario_bytes, seed)
+
+
+def execute_packaged_racing_scenario(seed: int, scenario_resource: str) -> dict[str, Any]:
+    """Execute one exact scenario resource embedded in the reviewed wheel."""
+
+    if not SCENARIO_RESOURCE_PATTERN.fullmatch(scenario_resource):
+        raise ValueError("scenario resource must be one canonical packaged identifier")
+
+    package = importlib.resources.files("pitgun_databricks_adapter")
+    scenario = package.joinpath("scenarios", f"{scenario_resource}.json")
+    if not scenario.is_file():
+        raise ValueError("scenario resource is not packaged or allowlisted")
+    runner_bytes = package.joinpath("bin", "pitgun").read_bytes()
+    return _execute(runner_bytes, scenario.read_bytes(), seed)
 
 
 def inspect_packaged_runner() -> dict[str, str | int]:

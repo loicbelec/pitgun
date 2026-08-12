@@ -3,7 +3,9 @@
 
 from pitgun_databricks_adapter import (
     execute_packaged_racing,
+    execute_packaged_racing_scenario,
     inspect_packaged_runner,
+    load_calibration_campaign,
     load_reference_campaign,
     materialize_plan,
 )
@@ -46,9 +48,29 @@ families = {
 }
 assert len(set(families.values())) == len(families)
 
+sweep_manifest, sweep_manifest_digest = load_calibration_campaign(
+    "racing-circuit-sweep-v1"
+)
+sweep_plan = materialize_plan(sweep_manifest)
+assert sweep_manifest_digest.startswith("sha256:")
+assert len(sweep_plan) == sweep_manifest["planned_run_count"] == 105
+first_sweep_entry = sweep_plan[0]
+first_sweep_result = execute_packaged_racing_scenario(
+    int(first_sweep_entry["seed"]), first_sweep_entry["scenario_resource"]
+)["result"]
+assert first_sweep_result["configuration_id"] == first_sweep_entry["expected_configuration_id"]
+assert first_sweep_result["scenario_digest"] == first_sweep_entry["expected_scenario_digest"]
+
 try:
     execute_packaged_racing(42, "../../arbitrary")
 except ValueError:
     pass
 else:
     raise AssertionError("an arbitrary scenario path was accepted")
+
+try:
+    execute_packaged_racing_scenario(42, "../../arbitrary")
+except ValueError:
+    pass
+else:
+    raise AssertionError("an arbitrary packaged scenario path was accepted")

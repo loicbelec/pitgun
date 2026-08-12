@@ -35,12 +35,9 @@ def git_revision() -> str:
 def wheel_entries(version: str) -> dict[str, bytes]:
     package_root = ROOT / PACKAGE
     runner = ROOT / "build" / "pitgun"
-    scenarios = (
-        FRAMEWORK
-        / "apps"
-        / "pitgun-cli"
-        / "scenarios"
-        / "racing-batch-v1"
+    scenario_roots = (
+        FRAMEWORK / "apps" / "pitgun-cli" / "scenarios" / "racing-batch-v1",
+        FRAMEWORK / "apps" / "pitgun-cli" / "scenarios" / "racing-circuit-sweep-v1",
     )
     campaigns = FRAMEWORK / "experiments" / "databricks" / "campaigns"
     if not runner.is_file():
@@ -67,9 +64,14 @@ def wheel_entries(version: str) -> dict[str, bytes]:
             f"Tag: {TAG}\n"
         ).encode(),
     }
-    for scenario in sorted(scenarios.glob("*.json")):
-        entries[f"{PACKAGE}/scenarios/{scenario.name}"] = scenario.read_bytes()
-    for campaign in sorted(campaigns.glob("racing-reference-v1.*")):
+    for scenario_root in scenario_roots:
+        for scenario in sorted(scenario_root.glob("*.json")):
+            if f"{PACKAGE}/scenarios/{scenario.name}" in entries:
+                raise SystemExit(f"duplicate packaged scenario name: {scenario.name}")
+            entries[f"{PACKAGE}/scenarios/{scenario.name}"] = scenario.read_bytes()
+    for campaign in sorted(campaigns.glob("racing-*")):
+        if campaign.suffix not in {".json", ".sha256"}:
+            continue
         entries[f"{PACKAGE}/campaigns/{campaign.name}"] = campaign.read_bytes()
     return entries
 

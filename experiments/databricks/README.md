@@ -52,6 +52,7 @@ databricks bundle run runner_spike_job -t dev -p pitgun-free \
   --params seed=42
 databricks bundle run reference_campaign_job -t dev -p pitgun-free
 databricks bundle run reference_policy_job -t dev -p pitgun-free
+databricks bundle run circuit_sweep_job -t dev -p pitgun-free
 ```
 
 Repeat `deploy` and `run`: schema and table creation are idempotent. The job may
@@ -94,6 +95,20 @@ runs, and metrics tables. It applies deterministic multi-objective constraints,
 writes only `PROPOSED` candidate and release rows, and logs the exact policy to
 the existing campaign MLflow run. It cannot approve or publish a catalog
 release; that remains a protected repository review.
+
+## Representative circuit sweep
+
+The immutable
+[`racing-circuit-sweep-v1.json`](campaigns/racing-circuit-sweep-v1.json)
+manifest plans 105 executions: seven reviewed setup configurations, five
+physical circuit archetypes, and three explicit seeds. Every one of its 35
+resolved scenarios is embedded in the platform wheel and selected by a
+canonical resource identifier; the job accepts no arbitrary scenario path,
+URL, or physics override.
+
+The sweep reuses the same Delta tables, MLflow experiment, idempotent natural
+keys, and Rust runner as the reference campaign. It produces evidence for a
+future game-compatible opponent policy but does not publish or promote one.
 
 ## Governed table ownership
 
