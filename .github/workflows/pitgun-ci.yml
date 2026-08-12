@@ -78,6 +78,9 @@ jobs:
       - name: Validate Databricks bundle contracts
         run: python -m unittest discover -s experiments/databricks/tests -v
 
+      - name: Validate Racing experiment tools
+        run: python -m unittest discover -s experiments/racing_response/tests -v
+
       - name: Build project
         run: cargo build --all --verbose
 
