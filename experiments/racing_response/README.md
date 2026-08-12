@@ -77,3 +77,21 @@ The report retains compact time and maximum-speed matrices plus a digest of all
 execution points. The selected response-shape anchor, its remaining pace gap,
 and the next base-coefficient calibration decision are documented in
 [`RACING_AERO_RESPONSE_REFINEMENT_V1.md`](../../docs/RACING_AERO_RESPONSE_REFINEMENT_V1.md).
+
+## Aerodynamic base calibration V1
+
+The fourth local experiment fixes the selected response gains, derives the
+neutral-preserving bases, and performs coarse then refined searches over
+`drag_base` and `downforce_base`. Each stage executes 9,801 deterministic
+points and stores a compact report; the refinement is linked to the coarse
+calibration by digest.
+
+```bash
+cargo build --release -p pitgun-racing-simulator --example tuning_response_probe
+python3 experiments/racing_response/calibrate_aero_bases.py --jobs 4
+python3 experiments/racing_response/refine_aero_bases.py --jobs 4
+```
+
+The selected offline candidate, its reduced gameplay-pace gap, and the planned
+governed Databricks replay are documented in
+[`RACING_AERO_BASE_CALIBRATION_V1.md`](../../docs/RACING_AERO_BASE_CALIBRATION_V1.md).
