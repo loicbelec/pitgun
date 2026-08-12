@@ -117,3 +117,37 @@ resources:
         pitgun.compute: serverless
         pitgun.runner: rust-native
         pitgun.campaign: racing-reference-v1
+
+    reference_policy_job:
+      name: pitgun-racing-reference-policy-v1
+      description: >-
+        Select a reviewed opponent-policy proposal reproducibly from exact
+        Delta snapshots. Publication remains a separate human-approved action.
+      max_concurrent_runs: 1
+      performance_target: STANDARD
+      environments:
+        - environment_key: serverless_policy
+          spec:
+            environment_version: "4"
+            dependencies:
+              - ../adapter/dist/*.whl
+      tasks:
+        - task_key: select_reference_policy
+          description: Apply validity, fairness, robustness, and diversity gates.
+          environment_key: serverless_policy
+          notebook_task:
+            notebook_path: ../src/select_reference_opponent_policy.py
+            source: WORKSPACE
+            base_parameters:
+              catalog_name: ${var.catalog_name}
+              calibration_schema: ${resources.schemas.calibration.name}
+              policies_schema: ${resources.schemas.policies.name}
+              campaigns_table_version: "3"
+              runs_table_version: "2"
+              metrics_table_version: "1"
+          timeout_seconds: 900
+      tags:
+        pitgun.domain: calibration
+        pitgun.compute: serverless
+        pitgun.policy: racing-opponents-reference-v1
+        pitgun.version: v1

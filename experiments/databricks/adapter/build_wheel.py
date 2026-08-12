@@ -51,6 +51,7 @@ def wheel_entries(version: str) -> dict[str, bytes]:
         f"{PACKAGE}/__init__.py": (package_root / "__init__.py").read_bytes(),
         f"{PACKAGE}/runner.py": (package_root / "runner.py").read_bytes(),
         f"{PACKAGE}/campaign.py": (package_root / "campaign.py").read_bytes(),
+        f"{PACKAGE}/opponent_policy.py": (package_root / "opponent_policy.py").read_bytes(),
         f"{PACKAGE}/bin/pitgun": runner.read_bytes(),
         f"{dist_info}/METADATA": (
             "Metadata-Version: 2.1\n"
