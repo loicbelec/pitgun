@@ -84,6 +84,42 @@ class BundleContractTest(unittest.TestCase):
             len(families),
         )
 
+    def test_circuit_sweep_manifest_is_frozen_and_reconciled(self):
+        campaign_root = ROOT / "campaigns"
+        manifest_path = campaign_root / "racing-circuit-sweep-v1.json"
+        checksum_path = campaign_root / "racing-circuit-sweep-v1.sha256"
+        expected_digest, expected_name = checksum_path.read_text().split()
+        self.assertEqual(expected_name, manifest_path.name)
+        self.assertEqual(
+            hashlib.sha256(manifest_path.read_bytes()).hexdigest(), expected_digest
+        )
+
+        manifest = json.loads(manifest_path.read_text())
+        configurations = manifest["configurations"]
+        seeds = manifest["seeds"]
+        self.assertEqual(manifest["schema_version"], "pitgun.calibration-campaign/v2")
+        self.assertEqual(len(manifest["circuits"]), 5)
+        self.assertEqual(len(configurations), 35)
+        self.assertEqual(len({row["configuration_family"] for row in configurations}), 7)
+        self.assertEqual(manifest["planned_run_count"], 105)
+        self.assertEqual(manifest["planned_run_count"], len(configurations) * len(seeds))
+        self.assertEqual(
+            len({row["expected_configuration_id"] for row in configurations}),
+            len(configurations),
+        )
+
+    def test_circuit_sweep_job_uses_the_generic_governed_executor(self):
+        job = (ROOT / "resources" / "jobs.yml").read_text()
+        notebook = (ROOT / "src" / "execute_reference_campaign.py").read_text()
+
+        self.assertIn("circuit_sweep_job:", job)
+        self.assertIn("campaign_name: racing-circuit-sweep-v1", job)
+        self.assertIn("campaign_name: racing-reference-v1", job)
+        self.assertIn("load_calibration_campaign", notebook)
+        self.assertIn("execute_packaged_racing_scenario", notebook)
+        self.assertIn('entry["circuit_id"]', notebook)
+        self.assertIn('"circuits":', notebook)
+
     def test_reference_campaign_job_is_idempotent_and_governed(self):
         job = (ROOT / "resources" / "jobs.yml").read_text()
         notebook = (ROOT / "src" / "execute_reference_campaign.py").read_text()
@@ -97,7 +133,7 @@ class BundleContractTest(unittest.TestCase):
         self.assertIn("target.execution_status <> 'SUCCESS'", notebook)
         self.assertIn("mlflow.start_run", notebook)
         self.assertIn("if is_new_tracking_run:", notebook)
-        self.assertIn('"plots/family-pace.svg"', notebook)
+        self.assertIn('"plots/configuration-pace.svg"', notebook)
         self.assertIn("successful_count + invalid_count + failed_count", notebook)
         self.assertNotIn(
             '"source_git_revision": "source.source_git_revision"', notebook

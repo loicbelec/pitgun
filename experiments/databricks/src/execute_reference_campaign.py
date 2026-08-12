@@ -18,9 +18,9 @@ import mlflow
 from pyspark.sql import functions as F
 
 from pitgun_databricks_adapter import (
-    execute_packaged_racing,
+    execute_packaged_racing_scenario,
     inspect_packaged_runner,
-    load_reference_campaign,
+    load_calibration_campaign,
     materialize_plan,
 )
 
@@ -28,10 +28,12 @@ from pitgun_databricks_adapter import (
 dbutils.widgets.text("catalog_name", "workspace")
 dbutils.widgets.text("calibration_schema", "pitgun_calibration")
 dbutils.widgets.text("experiment_id", "")
+dbutils.widgets.text("campaign_name", "racing-reference-v1")
 
 catalog_name = dbutils.widgets.get("catalog_name")
 calibration_schema = dbutils.widgets.get("calibration_schema")
 experiment_id = dbutils.widgets.get("experiment_id")
+campaign_name = dbutils.widgets.get("campaign_name")
 
 
 def validated_identifier(label: str, value: str) -> str:
@@ -84,8 +86,8 @@ def render_family_pace_svg(families: dict) -> str:
             f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}">',
             "<style>.title{font:700 22px sans-serif;fill:#182934}.subtitle,.value{font:14px monospace;fill:#55636b}.label{font:700 17px monospace;fill:#182934}.axis,.range{stroke:#87939a;stroke-width:3}.mean{fill:#d54b2a;stroke:#182934;stroke-width:2}</style>",
             '<rect width="100%" height="100%" fill="#f6ead7"/>',
-            '<text x="25" y="38" class="title">Pitgun Racing reference campaign</text>',
-            '<text x="25" y="64" class="subtitle">Mean deterministic lap time and observed three-seed range · lower is faster</text>',
+            '<text x="25" y="38" class="title">Pitgun Racing calibration campaign</text>',
+            '<text x="25" y="64" class="subtitle">Mean deterministic lap time by circuit/setup and observed three-seed range · lower is faster</text>',
             f'<line x1="{plot_left}" y1="78" x2="{plot_right}" y2="78" class="axis"/>',
             *rows,
             "</svg>",
@@ -133,7 +135,7 @@ metric_row_schema = """
   sample_count BIGINT, statistic STRING, recorded_at TIMESTAMP
 """
 
-manifest, manifest_digest = load_reference_campaign()
+manifest, manifest_digest = load_calibration_campaign(campaign_name)
 plan = materialize_plan(manifest)
 campaign_id = manifest["campaign_id"]
 adapter_version = importlib.metadata.version("pitgun-databricks-adapter")
@@ -261,10 +263,16 @@ with tracking_context as tracking_run:
                 "campaign_id": campaign_id,
                 "manifest_digest": manifest_digest,
                 "parameter_space_version": manifest["parameter_space_version"],
-                "circuit_id": manifest["circuit_id"],
+                "circuit_count": len({entry["circuit_id"] for entry in plan}),
+                "circuit_ids": ",".join(
+                    sorted({entry["circuit_id"] for entry in plan})
+                ),
                 "era": manifest["era"],
+                "configuration_count": len(
+                    {entry["expected_configuration_id"] for entry in plan}
+                ),
                 "configuration_family_count": len(
-                    manifest["configuration_families"]
+                    {entry["configuration_family"] for entry in plan}
                 ),
                 "seed_count": len(manifest["seeds"]),
                 "runner_version": runner_identity["version"],
@@ -322,8 +330,8 @@ with tracking_context as tracking_run:
         adapter_result = None
 
         try:
-            adapter_result = execute_packaged_racing(
-                int(entry["seed"]), entry["configuration_family"]
+            adapter_result = execute_packaged_racing_scenario(
+                int(entry["seed"]), entry["scenario_resource"]
             )
             result = adapter_result["result"]
             identity_mismatches = {}
@@ -429,7 +437,7 @@ with tracking_context as tracking_run:
                 if adapter_result
                 else None,
                 "source_git_revision": source_git_revision,
-                "circuit_id": manifest["circuit_id"],
+                "circuit_id": entry["circuit_id"],
                 "era": manifest["era"],
                 "setup_json": json.dumps(
                     entry["setup"], sort_keys=True, separators=(",", ":")
@@ -482,7 +490,12 @@ with tracking_context as tracking_run:
     persisted_runs = (
         spark.table(runs_table)
         .where(F.col("campaign_id") == campaign_id)
-        .select("configuration_family", "execution_status", "result_json")
+        .select(
+            "circuit_id",
+            "configuration_family",
+            "execution_status",
+            "result_json",
+        )
         .collect()
     )
     counts = Counter(row["execution_status"] for row in persisted_runs)
@@ -497,15 +510,15 @@ with tracking_context as tracking_run:
     if successful_count + invalid_count + failed_count != planned_count:
         raise RuntimeError("campaign terminal counts do not reconcile")
 
-    family_results = defaultdict(list)
+    configuration_results = defaultdict(list)
     for row in persisted_runs:
         if row["execution_status"] == "SUCCESS":
-            family_results[row["configuration_family"]].append(
-                json.loads(row["result_json"])
-            )
+            key = (row["circuit_id"], row["configuration_family"])
+            configuration_results[key].append(json.loads(row["result_json"]))
 
-    family_report = {}
-    for family, results in sorted(family_results.items()):
+    circuit_report = defaultdict(dict)
+    plot_report = {}
+    for (circuit_id, family), results in sorted(configuration_results.items()):
         lap_times = [result["summary"]["total_time_ms"] for result in results]
         maximum_speeds = [
             metric["value"]
@@ -520,18 +533,24 @@ with tracking_context as tracking_run:
             "lap_time_range_ms": max(lap_times) - min(lap_times),
             "mean_maximum_speed_kmh": statistics.fmean(maximum_speeds),
         }
-        family_report[family] = summary
-        metric_prefix = family.replace("-", "_")
+        circuit_report[circuit_id][family] = summary
+        plot_report[f"{circuit_id}/{family}"] = summary
+        metric_prefix = f"{circuit_id}.{family}".replace("-", "_")
         for metric_name, value in summary.items():
             if metric_name != "successful_seed_count" and math.isfinite(value):
                 mlflow.log_metric(f"{metric_prefix}.{metric_name}", value)
 
-    mean_paces = [value["mean_lap_time_ms"] for value in family_report.values()]
-    family_pace_spread_ms = max(mean_paces) - min(mean_paces) if mean_paces else 0
+    circuit_pace_spreads_ms = {}
+    for circuit_id, families in circuit_report.items():
+        mean_paces = [value["mean_lap_time_ms"] for value in families.values()]
+        circuit_pace_spreads_ms[circuit_id] = max(mean_paces) - min(mean_paces)
+    maximum_circuit_pace_spread_ms = (
+        max(circuit_pace_spreads_ms.values()) if circuit_pace_spreads_ms else 0
+    )
     campaign_duration_ms = (time.perf_counter_ns() - campaign_started) // 1_000_000
     final_status = "COMPLETED" if successful_count == planned_count else "PARTIAL"
     report = {
-        "schema_version": "pitgun.calibration-campaign-report/v1",
+        "schema_version": "pitgun.calibration-campaign-report/v2",
         "campaign_id": campaign_id,
         "manifest_digest": manifest_digest,
         "mlflow_run_id": mlflow_run_id,
@@ -543,8 +562,9 @@ with tracking_context as tracking_run:
         "skipped_accepted_run_count": skipped_run_count,
         "attempted_run_count": len(run_rows),
         "campaign_duration_ms": campaign_duration_ms,
-        "family_pace_spread_ms": family_pace_spread_ms,
-        "families": family_report,
+        "maximum_circuit_pace_spread_ms": maximum_circuit_pace_spread_ms,
+        "circuit_pace_spreads_ms": dict(sorted(circuit_pace_spreads_ms.items())),
+        "circuits": {key: circuit_report[key] for key in sorted(circuit_report)},
     }
     mlflow.log_metrics(
         {
@@ -552,12 +572,12 @@ with tracking_context as tracking_run:
             "successful_run_count": successful_count,
             "invalid_run_count": invalid_count,
             "failed_run_count": failed_count,
-            "family_pace_spread_ms": family_pace_spread_ms,
+            "maximum_circuit_pace_spread_ms": maximum_circuit_pace_spread_ms,
             "campaign_duration_ms": campaign_duration_ms,
         }
     )
     mlflow.log_dict(report, "reports/campaign-report.json")
-    mlflow.log_text(render_family_pace_svg(family_report), "plots/family-pace.svg")
+    mlflow.log_text(render_family_pace_svg(plot_report), "plots/configuration-pace.svg")
 
     completed_at = datetime.now(timezone.utc)
     completion_source = spark.createDataFrame(
@@ -590,5 +610,5 @@ with tracking_context as tracking_run:
 
 report_json = json.dumps(report, sort_keys=True, separators=(",", ":"))
 if report["status"] != "COMPLETED":
-    raise RuntimeError(f"reference campaign did not complete: {report_json}")
+    raise RuntimeError(f"calibration campaign did not complete: {report_json}")
 dbutils.notebook.exit(report_json)
