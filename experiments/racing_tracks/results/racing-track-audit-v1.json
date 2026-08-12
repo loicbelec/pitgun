@@ -1,0 +1,1076 @@
+{
+  "schema_version": "pitgun.racing-track-audit/v1",
+  "catalog_version": "1.1.0",
+  "circuit_count": 24,
+  "summary": {
+    "flat_vertical_channel_count": 24,
+    "verified_exact_source_count": 24,
+    "inferred_source_count": 0,
+    "invalid_geometry_count": 0,
+    "promotion_ready": false
+  },
+  "validation_policy": {
+    "id": "pitgun.racing-track-validation/v1",
+    "required_channels": [
+      "s_m",
+      "x_m",
+      "y_m",
+      "z_m",
+      "curvature_radpm",
+      "slope_pct"
+    ],
+    "minimum_sample_count": 2,
+    "sample_spacing_m": {
+      "minimum": 0.99,
+      "maximum": 1.01
+    },
+    "maximum_closure_gap_m": 2.0,
+    "maximum_absolute_curvature_rad_per_m": 0.2,
+    "maximum_absolute_slope_ratio": 0.3
+  },
+  "known_pipeline": {
+    "upstream_repository": "https://github.com/bacinger/f1-circuits",
+    "upstream_license": "MIT",
+    "trackeagle_revision_at_framework_import": "647971e",
+    "track_baker_digest": "sha256:3a93b6e8843724c613ed0feb22ff2dfbe4f53343230c5551acc9576c4e836d13",
+    "projection": {
+      "earth_radius_m": 6371000.0,
+      "reference": "arithmetic mean of source WGS84 longitude and latitude",
+      "x": "radians(lon - lon0) * R * cos(radians(lat0))",
+      "y": "radians(lat - lat0) * R"
+    },
+    "resampling": {
+      "spacing_m": 1.0,
+      "xy_smoothing_lambda": 100,
+      "z_smoothing_lambda": 500,
+      "heading_smoothing_lambda": 500,
+      "curvature_window_samples": 51
+    }
+  },
+  "findings": [
+    "Every V1.1.0 physical circuit has flat elevation and slope channels.",
+    "Local XY coordinates are reversible when the original WGS84 reference is retained.",
+    "All 24 source GeoJSON blobs match one pinned MIT-licensed upstream revision exactly.",
+    "Immutable V1.1.0 resources must not be edited; corrected tracks require a new catalog version."
+  ],
+  "circuits": [
+    {
+      "slug": "austin",
+      "circuit_id": "us-2012",
+      "resource_path": "catalogs/racing/v1.1.0/simulation/circuits/austin.json",
+      "resource_digest": "sha256:098be7b3d23479921b826c444e1b5373cbdca7a35e50949590d179b3c116ca00",
+      "sample_count": 5520,
+      "length_m": 5519.0,
+      "sample_spacing_m": {
+        "minimum": 1.0,
+        "maximum": 1.0
+      },
+      "local_xy_extent_m": {
+        "x_minimum": -835.0448529542927,
+        "x_maximum": 991.6463351971752,
+        "y_minimum": -573.0235973073211,
+        "y_maximum": 474.0424505554819
+      },
+      "closure_gap_m": 0.6550252392300748,
+      "maximum_absolute_curvature_rad_per_m": 0.04235094740498,
+      "elevation_range_m": 0.0,
+      "maximum_absolute_slope": 0.0,
+      "validation": {
+        "status": "warning",
+        "issues": [
+          {
+            "code": "flat_vertical_placeholder",
+            "severity": "warning",
+            "message": "elevation and slope are explicit flat placeholders"
+          }
+        ]
+      },
+      "vertical_channel_status": "flat_placeholder",
+      "source_provenance": {
+        "status": "verified_exact",
+        "source_id": "us-2012",
+        "repository": "https://github.com/bacinger/f1-circuits",
+        "revision": "394d8fbe70ef2c0b0c8d23ff7bee61fa09606055",
+        "path": "circuits/us-2012.geojson",
+        "digest": "sha256:199621d61cf0b50429fc9fcf1a8dabf016df453e33bf64299a651e1acad7e158",
+        "license": "MIT"
+      }
+    },
+    {
+      "slug": "baku",
+      "circuit_id": "az-2016",
+      "resource_path": "catalogs/racing/v1.1.0/simulation/circuits/baku.json",
+      "resource_digest": "sha256:727e89be0051e5a465cd182ce25a849e6d147997dc718403220252a7711fcc0a",
+      "sample_count": 5942,
+      "length_m": 5941.0,
+      "sample_spacing_m": {
+        "minimum": 1.0,
+        "maximum": 1.0
+      },
+      "local_xy_extent_m": {
+        "x_minimum": -855.2524434802965,
+        "x_maximum": 1204.8801536105577,
+        "y_minimum": -706.3646009038434,
+        "y_maximum": 797.0984795167851
+      },
+      "closure_gap_m": 0.9968299183943713,
+      "maximum_absolute_curvature_rad_per_m": 0.028371930214503755,
+      "elevation_range_m": 0.0,
+      "maximum_absolute_slope": 0.0,
+      "validation": {
+        "status": "warning",
+        "issues": [
+          {
+            "code": "flat_vertical_placeholder",
+            "severity": "warning",
+            "message": "elevation and slope are explicit flat placeholders"
+          }
+        ]
+      },
+      "vertical_channel_status": "flat_placeholder",
+      "source_provenance": {
+        "status": "verified_exact",
+        "source_id": "az-2016",
+        "repository": "https://github.com/bacinger/f1-circuits",
+        "revision": "394d8fbe70ef2c0b0c8d23ff7bee61fa09606055",
+        "path": "circuits/az-2016.geojson",
+        "digest": "sha256:778230a47bee57c5eebb9d5b48143eadceff92603fd6035551e57f165862fd4b",
+        "license": "MIT"
+      }
+    },
+    {
+      "slug": "barcelona",
+      "circuit_id": "es-1991",
+      "resource_path": "catalogs/racing/v1.1.0/simulation/circuits/barcelona.json",
+      "resource_digest": "sha256:da1f4c2d1c3c855daadfec178011495c8a1332cb7b7b350a2b3b0378d48b9dbd",
+      "sample_count": 4665,
+      "length_m": 4664.0,
+      "sample_spacing_m": {
+        "minimum": 1.0,
+        "maximum": 1.0
+      },
+      "local_xy_extent_m": {
+        "x_minimum": -435.93214898463145,
+        "x_maximum": 524.1583548142382,
+        "y_minimum": -536.2169263410686,
+        "y_maximum": 638.8728077069129
+      },
+      "closure_gap_m": 0.30710817157339415,
+      "maximum_absolute_curvature_rad_per_m": 0.027227996396270247,
+      "elevation_range_m": 0.0,
+      "maximum_absolute_slope": 0.0,
+      "validation": {
+        "status": "warning",
+        "issues": [
+          {
+            "code": "flat_vertical_placeholder",
+            "severity": "warning",
+            "message": "elevation and slope are explicit flat placeholders"
+          }
+        ]
+      },
+      "vertical_channel_status": "flat_placeholder",
+      "source_provenance": {
+        "status": "verified_exact",
+        "source_id": "es-1991",
+        "repository": "https://github.com/bacinger/f1-circuits",
+        "revision": "394d8fbe70ef2c0b0c8d23ff7bee61fa09606055",
+        "path": "circuits/es-1991.geojson",
+        "digest": "sha256:739784fa7fe51e38040b7a30a21fe5288564f8901a87fbb27c8cc22462a05c29",
+        "license": "MIT"
+      }
+    },
+    {
+      "slug": "budapest",
+      "circuit_id": "hu-1986",
+      "resource_path": "catalogs/racing/v1.1.0/simulation/circuits/budapest.json",
+      "resource_digest": "sha256:662f8490de68a7979c8498f7b040772faa308a0859675b10a6f11236b9adc701",
+      "sample_count": 4377,
+      "length_m": 4376.0,
+      "sample_spacing_m": {
+        "minimum": 1.0,
+        "maximum": 1.0
+      },
+      "local_xy_extent_m": {
+        "x_minimum": -636.9844614831685,
+        "x_maximum": 434.2506252840312,
+        "y_minimum": -573.5953862636037,
+        "y_maximum": 638.9617339760027
+      },
+      "closure_gap_m": 0.0477423274163473,
+      "maximum_absolute_curvature_rad_per_m": 0.03100621400538342,
+      "elevation_range_m": 0.0,
+      "maximum_absolute_slope": 0.0,
+      "validation": {
+        "status": "warning",
+        "issues": [
+          {
+            "code": "flat_vertical_placeholder",
+            "severity": "warning",
+            "message": "elevation and slope are explicit flat placeholders"
+          }
+        ]
+      },
+      "vertical_channel_status": "flat_placeholder",
+      "source_provenance": {
+        "status": "verified_exact",
+        "source_id": "hu-1986",
+        "repository": "https://github.com/bacinger/f1-circuits",
+        "revision": "394d8fbe70ef2c0b0c8d23ff7bee61fa09606055",
+        "path": "circuits/hu-1986.geojson",
+        "digest": "sha256:f822ff317874776d37d15970723f6007b463ab04c25ef5ce8ecb651c5478ee0d",
+        "license": "MIT"
+      }
+    },
+    {
+      "slug": "jeddah",
+      "circuit_id": "sa-2021",
+      "resource_path": "catalogs/racing/v1.1.0/simulation/circuits/jeddah.json",
+      "resource_digest": "sha256:afa676d288b9d552d237d807957488e6ab213034b194596668eb2542d4f059f8",
+      "sample_count": 6197,
+      "length_m": 6196.0,
+      "sample_spacing_m": {
+        "minimum": 1.0,
+        "maximum": 1.0
+      },
+      "local_xy_extent_m": {
+        "x_minimum": -194.95638928824837,
+        "x_maximum": 393.99930467434325,
+        "y_minimum": -1504.077372746589,
+        "y_maximum": 1248.5411711508002
+      },
+      "closure_gap_m": 0.305449645574116,
+      "maximum_absolute_curvature_rad_per_m": 0.028527548580086968,
+      "elevation_range_m": 0.0,
+      "maximum_absolute_slope": 0.0,
+      "validation": {
+        "status": "warning",
+        "issues": [
+          {
+            "code": "flat_vertical_placeholder",
+            "severity": "warning",
+            "message": "elevation and slope are explicit flat placeholders"
+          }
+        ]
+      },
+      "vertical_channel_status": "flat_placeholder",
+      "source_provenance": {
+        "status": "verified_exact",
+        "source_id": "sa-2021",
+        "repository": "https://github.com/bacinger/f1-circuits",
+        "revision": "394d8fbe70ef2c0b0c8d23ff7bee61fa09606055",
+        "path": "circuits/sa-2021.geojson",
+        "digest": "sha256:4500c0f47b9329cc9359d75a397b39c00e4646a318d5c54edbf30d28d59b5df5",
+        "license": "MIT"
+      }
+    },
+    {
+      "slug": "las_vegas",
+      "circuit_id": "us-2023",
+      "resource_path": "catalogs/racing/v1.1.0/simulation/circuits/las_vegas.json",
+      "resource_digest": "sha256:aa72ee1f064b345bb6b0752d09cf454b30e7a60e1c5e38db35db502a5c174b54",
+      "sample_count": 6221,
+      "length_m": 6220.0,
+      "sample_spacing_m": {
+        "minimum": 1.0,
+        "maximum": 1.0
+      },
+      "local_xy_extent_m": {
+        "x_minimum": -678.8762543470099,
+        "x_maximum": 504.1211413450844,
+        "y_minimum": -946.4093070664255,
+        "y_maximum": 1013.9217417590634
+      },
+      "closure_gap_m": 0.6120120754922792,
+      "maximum_absolute_curvature_rad_per_m": 0.02464731394456536,
+      "elevation_range_m": 0.0,
+      "maximum_absolute_slope": 0.0,
+      "validation": {
+        "status": "warning",
+        "issues": [
+          {
+            "code": "flat_vertical_placeholder",
+            "severity": "warning",
+            "message": "elevation and slope are explicit flat placeholders"
+          }
+        ]
+      },
+      "vertical_channel_status": "flat_placeholder",
+      "source_provenance": {
+        "status": "verified_exact",
+        "source_id": "us-2023",
+        "repository": "https://github.com/bacinger/f1-circuits",
+        "revision": "394d8fbe70ef2c0b0c8d23ff7bee61fa09606055",
+        "path": "circuits/us-2023.geojson",
+        "digest": "sha256:bebd86828c5016ede9d6b1133f3f8fbb8301e357018bb551d2514a621803d29d",
+        "license": "MIT"
+      }
+    },
+    {
+      "slug": "lusail",
+      "circuit_id": "qa-2004",
+      "resource_path": "catalogs/racing/v1.1.0/simulation/circuits/lusail.json",
+      "resource_digest": "sha256:41e5f1f1b65ff0f1a0326ac6c201b2fe82135e2588516b7a3351f44041c7cd8c",
+      "sample_count": 5421,
+      "length_m": 5420.0,
+      "sample_spacing_m": {
+        "minimum": 1.0,
+        "maximum": 1.0
+      },
+      "local_xy_extent_m": {
+        "x_minimum": -678.4734420824426,
+        "x_maximum": 572.7173394784074,
+        "y_minimum": -879.7464360523842,
+        "y_maximum": 597.0330636269063
+      },
+      "closure_gap_m": 0.7211234934620231,
+      "maximum_absolute_curvature_rad_per_m": 0.02962709159577212,
+      "elevation_range_m": 0.0,
+      "maximum_absolute_slope": 0.0,
+      "validation": {
+        "status": "warning",
+        "issues": [
+          {
+            "code": "flat_vertical_placeholder",
+            "severity": "warning",
+            "message": "elevation and slope are explicit flat placeholders"
+          }
+        ]
+      },
+      "vertical_channel_status": "flat_placeholder",
+      "source_provenance": {
+        "status": "verified_exact",
+        "source_id": "qa-2004",
+        "repository": "https://github.com/bacinger/f1-circuits",
+        "revision": "394d8fbe70ef2c0b0c8d23ff7bee61fa09606055",
+        "path": "circuits/qa-2004.geojson",
+        "digest": "sha256:961a8c50ce500ed83446ce32e5947ce594706a7d8d7ae4fcffc60b78a38f822b",
+        "license": "MIT"
+      }
+    },
+    {
+      "slug": "madrid",
+      "circuit_id": "es-2026",
+      "resource_path": "catalogs/racing/v1.1.0/simulation/circuits/madrid.json",
+      "resource_digest": "sha256:ee2ea9734feca9fee74800ff33110a0ebce13404463aa6e6af1c1d7b4f4d8409",
+      "sample_count": 5431,
+      "length_m": 5430.0,
+      "sample_spacing_m": {
+        "minimum": 1.0,
+        "maximum": 1.0
+      },
+      "local_xy_extent_m": {
+        "x_minimum": -331.2766365075833,
+        "x_maximum": 799.8877085866069,
+        "y_minimum": -943.5692437538033,
+        "y_maximum": 876.8114973224141
+      },
+      "closure_gap_m": 0.23359922023415378,
+      "maximum_absolute_curvature_rad_per_m": 0.027411773902562234,
+      "elevation_range_m": 0.0,
+      "maximum_absolute_slope": 0.0,
+      "validation": {
+        "status": "warning",
+        "issues": [
+          {
+            "code": "flat_vertical_placeholder",
+            "severity": "warning",
+            "message": "elevation and slope are explicit flat placeholders"
+          }
+        ]
+      },
+      "vertical_channel_status": "flat_placeholder",
+      "source_provenance": {
+        "status": "verified_exact",
+        "source_id": "es-2026",
+        "repository": "https://github.com/bacinger/f1-circuits",
+        "revision": "394d8fbe70ef2c0b0c8d23ff7bee61fa09606055",
+        "path": "circuits/es-2026.geojson",
+        "digest": "sha256:b362021622d76cd4600dd8d1e825224689ee7d9a98b0d07e39726b65c3b4def1",
+        "license": "MIT"
+      }
+    },
+    {
+      "slug": "melbourne",
+      "circuit_id": "au-1953",
+      "resource_path": "catalogs/racing/v1.1.0/simulation/circuits/melbourne.json",
+      "resource_digest": "sha256:9e3ccb2a02bc201f3f5332cea83be1add8bea39ad59ea859ccdf1e28f800a778",
+      "sample_count": 5274,
+      "length_m": 5273.0,
+      "sample_spacing_m": {
+        "minimum": 1.0,
+        "maximum": 1.0
+      },
+      "local_xy_extent_m": {
+        "x_minimum": -722.0149756538827,
+        "x_maximum": 722.5662523748741,
+        "y_minimum": -888.2327590045576,
+        "y_maximum": 882.4667431137249
+      },
+      "closure_gap_m": 0.31106816547419136,
+      "maximum_absolute_curvature_rad_per_m": 0.03593380410734584,
+      "elevation_range_m": 0.0,
+      "maximum_absolute_slope": 0.0,
+      "validation": {
+        "status": "warning",
+        "issues": [
+          {
+            "code": "flat_vertical_placeholder",
+            "severity": "warning",
+            "message": "elevation and slope are explicit flat placeholders"
+          }
+        ]
+      },
+      "vertical_channel_status": "flat_placeholder",
+      "source_provenance": {
+        "status": "verified_exact",
+        "source_id": "au-1953",
+        "repository": "https://github.com/bacinger/f1-circuits",
+        "revision": "394d8fbe70ef2c0b0c8d23ff7bee61fa09606055",
+        "path": "circuits/au-1953.geojson",
+        "digest": "sha256:a686ec41ebbc1ca6f9c8e24c2c4bd0a2e1743d0cff730aaa26479059abd99ee5",
+        "license": "MIT"
+      }
+    },
+    {
+      "slug": "mexico",
+      "circuit_id": "mx-1962",
+      "resource_path": "catalogs/racing/v1.1.0/simulation/circuits/mexico.json",
+      "resource_digest": "sha256:4667d2a965d4ce3d8a3a953a3dc23238903fc125a1f270366f7dac5f912a1dd3",
+      "sample_count": 4303,
+      "length_m": 4302.0,
+      "sample_spacing_m": {
+        "minimum": 1.0,
+        "maximum": 1.0
+      },
+      "local_xy_extent_m": {
+        "x_minimum": -743.195877966675,
+        "x_maximum": 700.0837375647219,
+        "y_minimum": -634.2304815257714,
+        "y_maximum": 406.97890764930423
+      },
+      "closure_gap_m": 0.44211755373068423,
+      "maximum_absolute_curvature_rad_per_m": 0.036772639967777944,
+      "elevation_range_m": 0.0,
+      "maximum_absolute_slope": 0.0,
+      "validation": {
+        "status": "warning",
+        "issues": [
+          {
+            "code": "flat_vertical_placeholder",
+            "severity": "warning",
+            "message": "elevation and slope are explicit flat placeholders"
+          }
+        ]
+      },
+      "vertical_channel_status": "flat_placeholder",
+      "source_provenance": {
+        "status": "verified_exact",
+        "source_id": "mx-1962",
+        "repository": "https://github.com/bacinger/f1-circuits",
+        "revision": "394d8fbe70ef2c0b0c8d23ff7bee61fa09606055",
+        "path": "circuits/mx-1962.geojson",
+        "digest": "sha256:c552fb24debdb6f8381b70da1eec02c6595d870a4abf9f87b582dbd3bac2eb06",
+        "license": "MIT"
+      }
+    },
+    {
+      "slug": "miami",
+      "circuit_id": "us-2022",
+      "resource_path": "catalogs/racing/v1.1.0/simulation/circuits/miami.json",
+      "resource_digest": "sha256:78a34ae48c7cf4b17a44647ef2f9490affc4764bfc7edd53779e3d9e930969a0",
+      "sample_count": 5416,
+      "length_m": 5415.0,
+      "sample_spacing_m": {
+        "minimum": 1.0,
+        "maximum": 1.0
+      },
+      "local_xy_extent_m": {
+        "x_minimum": -703.8722498170657,
+        "x_maximum": 798.471068301398,
+        "y_minimum": -269.42710652796404,
+        "y_maximum": 340.5104058684548
+      },
+      "closure_gap_m": 0.4250273888826148,
+      "maximum_absolute_curvature_rad_per_m": 0.03827123721522503,
+      "elevation_range_m": 0.0,
+      "maximum_absolute_slope": 0.0,
+      "validation": {
+        "status": "warning",
+        "issues": [
+          {
+            "code": "flat_vertical_placeholder",
+            "severity": "warning",
+            "message": "elevation and slope are explicit flat placeholders"
+          }
+        ]
+      },
+      "vertical_channel_status": "flat_placeholder",
+      "source_provenance": {
+        "status": "verified_exact",
+        "source_id": "us-2022",
+        "repository": "https://github.com/bacinger/f1-circuits",
+        "revision": "394d8fbe70ef2c0b0c8d23ff7bee61fa09606055",
+        "path": "circuits/us-2022.geojson",
+        "digest": "sha256:6081f7e67221df77a20e3c9e1ed226b008ec06c1ce7501fc10bcaf9e3a11d0c7",
+        "license": "MIT"
+      }
+    },
+    {
+      "slug": "monaco",
+      "circuit_id": "mc-1929",
+      "resource_path": "catalogs/racing/v1.1.0/simulation/circuits/monaco.json",
+      "resource_digest": "sha256:4fd47ae683c172561eeec1fee647d0f0266c67b537709af94bb857d7032e4d8d",
+      "sample_count": 3325,
+      "length_m": 3324.0,
+      "sample_spacing_m": {
+        "minimum": 1.0,
+        "maximum": 1.0
+      },
+      "local_xy_extent_m": {
+        "x_minimum": -328.51486540260925,
+        "x_maximum": 408.80797875190734,
+        "y_minimum": -533.4802060819213,
+        "y_maximum": 439.6946601658282
+      },
+      "closure_gap_m": 0.5030800277620376,
+      "maximum_absolute_curvature_rad_per_m": 0.05629227791604239,
+      "elevation_range_m": 0.0,
+      "maximum_absolute_slope": 0.0,
+      "validation": {
+        "status": "warning",
+        "issues": [
+          {
+            "code": "flat_vertical_placeholder",
+            "severity": "warning",
+            "message": "elevation and slope are explicit flat placeholders"
+          }
+        ]
+      },
+      "vertical_channel_status": "flat_placeholder",
+      "source_provenance": {
+        "status": "verified_exact",
+        "source_id": "mc-1929",
+        "repository": "https://github.com/bacinger/f1-circuits",
+        "revision": "394d8fbe70ef2c0b0c8d23ff7bee61fa09606055",
+        "path": "circuits/mc-1929.geojson",
+        "digest": "sha256:daf184fc7d0948cadd10ce9428ba87b5462d9df6e33daec7b6f9aad235dc879e",
+        "license": "MIT"
+      }
+    },
+    {
+      "slug": "montreal",
+      "circuit_id": "ca-1978",
+      "resource_path": "catalogs/racing/v1.1.0/simulation/circuits/montreal.json",
+      "resource_digest": "sha256:40d48ffaface9d900db998824b2a88318ddb62f4dd9d419ac0d73b6d2ddeaa50",
+      "sample_count": 4366,
+      "length_m": 4365.0,
+      "sample_spacing_m": {
+        "minimum": 1.0,
+        "maximum": 1.0
+      },
+      "local_xy_extent_m": {
+        "x_minimum": -274.3603462180213,
+        "x_maximum": 348.63625740334345,
+        "y_minimum": -815.1374584625781,
+        "y_maximum": 1102.4514240984884
+      },
+      "closure_gap_m": 0.03911268858670045,
+      "maximum_absolute_curvature_rad_per_m": 0.04634785456911239,
+      "elevation_range_m": 0.0,
+      "maximum_absolute_slope": 0.0,
+      "validation": {
+        "status": "warning",
+        "issues": [
+          {
+            "code": "flat_vertical_placeholder",
+            "severity": "warning",
+            "message": "elevation and slope are explicit flat placeholders"
+          }
+        ]
+      },
+      "vertical_channel_status": "flat_placeholder",
+      "source_provenance": {
+        "status": "verified_exact",
+        "source_id": "ca-1978",
+        "repository": "https://github.com/bacinger/f1-circuits",
+        "revision": "394d8fbe70ef2c0b0c8d23ff7bee61fa09606055",
+        "path": "circuits/ca-1978.geojson",
+        "digest": "sha256:8ae58f4f6c32dc1b5f0df475bc3f6ef6441c63838e3ead4fd38299e2dc6cb5e6",
+        "license": "MIT"
+      }
+    },
+    {
+      "slug": "monza",
+      "circuit_id": "it-1922",
+      "resource_path": "catalogs/racing/v1.1.0/simulation/circuits/monza.json",
+      "resource_digest": "sha256:936f5386e0c6180cfa095bf3def167f4395204523e23b79f1a20c78e144da337",
+      "sample_count": 5787,
+      "length_m": 5786.0,
+      "sample_spacing_m": {
+        "minimum": 1.0,
+        "maximum": 1.0
+      },
+      "local_xy_extent_m": {
+        "x_minimum": -454.81208955709934,
+        "x_maximum": 802.0068813921037,
+        "y_minimum": -1281.7229047534215,
+        "y_maximum": 887.5755844283901
+      },
+      "closure_gap_m": 0.5353921147476384,
+      "maximum_absolute_curvature_rad_per_m": 0.039670154050652294,
+      "elevation_range_m": 0.0,
+      "maximum_absolute_slope": 0.0,
+      "validation": {
+        "status": "warning",
+        "issues": [
+          {
+            "code": "flat_vertical_placeholder",
+            "severity": "warning",
+            "message": "elevation and slope are explicit flat placeholders"
+          }
+        ]
+      },
+      "vertical_channel_status": "flat_placeholder",
+      "source_provenance": {
+        "status": "verified_exact",
+        "source_id": "it-1922",
+        "repository": "https://github.com/bacinger/f1-circuits",
+        "revision": "394d8fbe70ef2c0b0c8d23ff7bee61fa09606055",
+        "path": "circuits/it-1922.geojson",
+        "digest": "sha256:8b0758ef5a52bb9360c7673d45e0fbea6f29f7349486c5acbb2fe9aa340cb495",
+        "license": "MIT"
+      }
+    },
+    {
+      "slug": "sakhir",
+      "circuit_id": "bh-2002",
+      "resource_path": "catalogs/racing/v1.1.0/simulation/circuits/sakhir.json",
+      "resource_digest": "sha256:2abfbb962c910022ae52332b2d2e5e741ee9c8572fcf6b15104ad343f491438e",
+      "sample_count": 5419,
+      "length_m": 5418.0,
+      "sample_spacing_m": {
+        "minimum": 1.0,
+        "maximum": 1.0
+      },
+      "local_xy_extent_m": {
+        "x_minimum": -384.062516507518,
+        "x_maximum": 426.44876167323133,
+        "y_minimum": -683.1824947789848,
+        "y_maximum": 518.5292495365823
+      },
+      "closure_gap_m": 0.43035094128066564,
+      "maximum_absolute_curvature_rad_per_m": 0.04547338919950777,
+      "elevation_range_m": 0.0,
+      "maximum_absolute_slope": 0.0,
+      "validation": {
+        "status": "warning",
+        "issues": [
+          {
+            "code": "flat_vertical_placeholder",
+            "severity": "warning",
+            "message": "elevation and slope are explicit flat placeholders"
+          }
+        ]
+      },
+      "vertical_channel_status": "flat_placeholder",
+      "source_provenance": {
+        "status": "verified_exact",
+        "source_id": "bh-2002",
+        "repository": "https://github.com/bacinger/f1-circuits",
+        "revision": "394d8fbe70ef2c0b0c8d23ff7bee61fa09606055",
+        "path": "circuits/bh-2002.geojson",
+        "digest": "sha256:6bac0f8f1f870faedb0cda06f04f6de3e98445d5b27f32c351bdddae105c3864",
+        "license": "MIT"
+      }
+    },
+    {
+      "slug": "sao_paulo",
+      "circuit_id": "br-1940",
+      "resource_path": "catalogs/racing/v1.1.0/simulation/circuits/sao_paulo.json",
+      "resource_digest": "sha256:0ba903e3a8427e069768cfc1034d51f67b1dd24a0233c478b3a4c28ef70f1938",
+      "sample_count": 4298,
+      "length_m": 4297.0,
+      "sample_spacing_m": {
+        "minimum": 1.0,
+        "maximum": 1.0
+      },
+      "local_xy_extent_m": {
+        "x_minimum": -254.01669261938886,
+        "x_maximum": 408.08700859503597,
+        "y_minimum": -606.4152626121988,
+        "y_maximum": 441.9448656394427
+      },
+      "closure_gap_m": 0.6899737819174099,
+      "maximum_absolute_curvature_rad_per_m": 0.0330851861879907,
+      "elevation_range_m": 0.0,
+      "maximum_absolute_slope": 0.0,
+      "validation": {
+        "status": "warning",
+        "issues": [
+          {
+            "code": "flat_vertical_placeholder",
+            "severity": "warning",
+            "message": "elevation and slope are explicit flat placeholders"
+          }
+        ]
+      },
+      "vertical_channel_status": "flat_placeholder",
+      "source_provenance": {
+        "status": "verified_exact",
+        "source_id": "br-1940",
+        "repository": "https://github.com/bacinger/f1-circuits",
+        "revision": "394d8fbe70ef2c0b0c8d23ff7bee61fa09606055",
+        "path": "circuits/br-1940.geojson",
+        "digest": "sha256:e650e59b876af7c455ec3222e0801b5aab008ed858c71bf6bc84e7af6d6f2bba",
+        "license": "MIT"
+      }
+    },
+    {
+      "slug": "shanghai",
+      "circuit_id": "cn-2004",
+      "resource_path": "catalogs/racing/v1.1.0/simulation/circuits/shanghai.json",
+      "resource_digest": "sha256:838bf4b6c7c18047d50b01cf88c83f50ab889082749dfeb7b425c534d90ea696",
+      "sample_count": 5448,
+      "length_m": 5447.0,
+      "sample_spacing_m": {
+        "minimum": 1.0,
+        "maximum": 1.0
+      },
+      "local_xy_extent_m": {
+        "x_minimum": -411.5056768721631,
+        "x_maximum": 813.5093092657628,
+        "y_minimum": -483.8428091644108,
+        "y_maximum": 590.1927708808782
+      },
+      "closure_gap_m": 0.8605950690183551,
+      "maximum_absolute_curvature_rad_per_m": 0.041483331678506805,
+      "elevation_range_m": 0.0,
+      "maximum_absolute_slope": 0.0,
+      "validation": {
+        "status": "warning",
+        "issues": [
+          {
+            "code": "flat_vertical_placeholder",
+            "severity": "warning",
+            "message": "elevation and slope are explicit flat placeholders"
+          }
+        ]
+      },
+      "vertical_channel_status": "flat_placeholder",
+      "source_provenance": {
+        "status": "verified_exact",
+        "source_id": "cn-2004",
+        "repository": "https://github.com/bacinger/f1-circuits",
+        "revision": "394d8fbe70ef2c0b0c8d23ff7bee61fa09606055",
+        "path": "circuits/cn-2004.geojson",
+        "digest": "sha256:5cbf74478ccf3422dcc8085adde5582d9a393b572b5a038ecb5c9d80d0f8baa7",
+        "license": "MIT"
+      }
+    },
+    {
+      "slug": "silverstone",
+      "circuit_id": "gb-1948",
+      "resource_path": "catalogs/racing/v1.1.0/simulation/circuits/silverstone.json",
+      "resource_digest": "sha256:96422533f19f93b9382b8344884102597ea2bf704e295731be5c64c8b4181f97",
+      "sample_count": 5878,
+      "length_m": 5877.0,
+      "sample_spacing_m": {
+        "minimum": 1.0,
+        "maximum": 1.0
+      },
+      "local_xy_extent_m": {
+        "x_minimum": -542.3668265810993,
+        "x_maximum": 484.85678908727937,
+        "y_minimum": -924.1508411452993,
+        "y_maximum": 790.8587929326493
+      },
+      "closure_gap_m": 0.8219862080355648,
+      "maximum_absolute_curvature_rad_per_m": 0.03129482496676369,
+      "elevation_range_m": 0.0,
+      "maximum_absolute_slope": 0.0,
+      "validation": {
+        "status": "warning",
+        "issues": [
+          {
+            "code": "flat_vertical_placeholder",
+            "severity": "warning",
+            "message": "elevation and slope are explicit flat placeholders"
+          }
+        ]
+      },
+      "vertical_channel_status": "flat_placeholder",
+      "source_provenance": {
+        "status": "verified_exact",
+        "source_id": "gb-1948",
+        "repository": "https://github.com/bacinger/f1-circuits",
+        "revision": "394d8fbe70ef2c0b0c8d23ff7bee61fa09606055",
+        "path": "circuits/gb-1948.geojson",
+        "digest": "sha256:1e526462a785f15acb6bf9af2fefa7a1b4521e665bfbe663d58539516ba9ea68",
+        "license": "MIT"
+      }
+    },
+    {
+      "slug": "singapore",
+      "circuit_id": "sg-2008",
+      "resource_path": "catalogs/racing/v1.1.0/simulation/circuits/singapore.json",
+      "resource_digest": "sha256:0d4a1f819ea97c638645f762379eff9463a7fbfae3e94bb5b6151daa60def17a",
+      "sample_count": 4943,
+      "length_m": 4942.0,
+      "sample_spacing_m": {
+        "minimum": 1.0,
+        "maximum": 1.0
+      },
+      "local_xy_extent_m": {
+        "x_minimum": -716.8593129725489,
+        "x_maximum": 713.2846713478074,
+        "y_minimum": -458.3390446468485,
+        "y_maximum": 468.90029275741267
+      },
+      "closure_gap_m": 0.627217899171632,
+      "maximum_absolute_curvature_rad_per_m": 0.03938338126153826,
+      "elevation_range_m": 0.0,
+      "maximum_absolute_slope": 0.0,
+      "validation": {
+        "status": "warning",
+        "issues": [
+          {
+            "code": "flat_vertical_placeholder",
+            "severity": "warning",
+            "message": "elevation and slope are explicit flat placeholders"
+          }
+        ]
+      },
+      "vertical_channel_status": "flat_placeholder",
+      "source_provenance": {
+        "status": "verified_exact",
+        "source_id": "sg-2008",
+        "repository": "https://github.com/bacinger/f1-circuits",
+        "revision": "394d8fbe70ef2c0b0c8d23ff7bee61fa09606055",
+        "path": "circuits/sg-2008.geojson",
+        "digest": "sha256:aa9584b50acffaabed7a06b5c0baa37fab38f0c70ad3c5ebba27706f3371bf9c",
+        "license": "MIT"
+      }
+    },
+    {
+      "slug": "spa",
+      "circuit_id": "be-1925",
+      "resource_path": "catalogs/racing/v1.1.0/simulation/circuits/spa.json",
+      "resource_digest": "sha256:b3ad4c106f0969460aa7dade356b4e0db9a2e9207ce0eb99a63956ade1796dac",
+      "sample_count": 6979,
+      "length_m": 6978.0,
+      "sample_spacing_m": {
+        "minimum": 1.0,
+        "maximum": 1.0
+      },
+      "local_xy_extent_m": {
+        "x_minimum": -640.7363350054934,
+        "x_maximum": 631.238984610424,
+        "y_minimum": -783.2004912637015,
+        "y_maximum": 1278.2358156705923
+      },
+      "closure_gap_m": 0.35787874873123793,
+      "maximum_absolute_curvature_rad_per_m": 0.04571053650146856,
+      "elevation_range_m": 0.0,
+      "maximum_absolute_slope": 0.0,
+      "validation": {
+        "status": "warning",
+        "issues": [
+          {
+            "code": "flat_vertical_placeholder",
+            "severity": "warning",
+            "message": "elevation and slope are explicit flat placeholders"
+          }
+        ]
+      },
+      "vertical_channel_status": "flat_placeholder",
+      "source_provenance": {
+        "status": "verified_exact",
+        "source_id": "be-1925",
+        "repository": "https://github.com/bacinger/f1-circuits",
+        "revision": "394d8fbe70ef2c0b0c8d23ff7bee61fa09606055",
+        "path": "circuits/be-1925.geojson",
+        "digest": "sha256:b867de9cc8364cc9b545a044377a56a697b8db77823c849c1a1c03760a943381",
+        "license": "MIT",
+        "wgs84_reference": {
+          "repository": "https://github.com/bacinger/f1-circuits",
+          "revision": "b37cc90ccdc41553fda91fc2a1f2c186b28fdc1a",
+          "path": "circuits/be-1925.geojson",
+          "digest": "sha256:b867de9cc8364cc9b545a044377a56a697b8db77823c849c1a1c03760a943381",
+          "license": "MIT",
+          "reference_longitude_deg": 5.968647300653595,
+          "reference_latitude_deg": 50.43471801960784,
+          "source_point_count": 153
+        }
+      }
+    },
+    {
+      "slug": "spielberg",
+      "circuit_id": "at-1969",
+      "resource_path": "catalogs/racing/v1.1.0/simulation/circuits/spielberg.json",
+      "resource_digest": "sha256:0c0b690413f2051187e014a329f8f80f1164ca6266458f075ed86dcd10762968",
+      "sample_count": 4303,
+      "length_m": 4302.0,
+      "sample_spacing_m": {
+        "minimum": 1.0,
+        "maximum": 1.0
+      },
+      "local_xy_extent_m": {
+        "x_minimum": -602.261781323688,
+        "x_maximum": 649.4428128269545,
+        "y_minimum": -454.7512564922396,
+        "y_maximum": 335.48863228120854
+      },
+      "closure_gap_m": 0.2304367332886531,
+      "maximum_absolute_curvature_rad_per_m": 0.03748478441472599,
+      "elevation_range_m": 0.0,
+      "maximum_absolute_slope": 0.0,
+      "validation": {
+        "status": "warning",
+        "issues": [
+          {
+            "code": "flat_vertical_placeholder",
+            "severity": "warning",
+            "message": "elevation and slope are explicit flat placeholders"
+          }
+        ]
+      },
+      "vertical_channel_status": "flat_placeholder",
+      "source_provenance": {
+        "status": "verified_exact",
+        "source_id": "at-1969",
+        "repository": "https://github.com/bacinger/f1-circuits",
+        "revision": "394d8fbe70ef2c0b0c8d23ff7bee61fa09606055",
+        "path": "circuits/at-1969.geojson",
+        "digest": "sha256:6d84ffac3a212aed8bedd6513535b1cffb1ff2586e055f4921b7f8cd4c334ec3",
+        "license": "MIT"
+      }
+    },
+    {
+      "slug": "suzuka",
+      "circuit_id": "jp-1962",
+      "resource_path": "catalogs/racing/v1.1.0/simulation/circuits/suzuka.json",
+      "resource_digest": "sha256:27a2359f7609f457dbde6743c908b34fdc947f75b3d321379e2754fc07e063ab",
+      "sample_count": 5812,
+      "length_m": 5811.0,
+      "sample_spacing_m": {
+        "minimum": 1.0,
+        "maximum": 1.0
+      },
+      "local_xy_extent_m": {
+        "x_minimum": -994.2837082855449,
+        "x_maximum": 967.7410896378394,
+        "y_minimum": -625.8164805595491,
+        "y_maximum": 421.9734897455011
+      },
+      "closure_gap_m": 0.5063202478729802,
+      "maximum_absolute_curvature_rad_per_m": 0.03996060161697156,
+      "elevation_range_m": 0.0,
+      "maximum_absolute_slope": 0.0,
+      "validation": {
+        "status": "warning",
+        "issues": [
+          {
+            "code": "flat_vertical_placeholder",
+            "severity": "warning",
+            "message": "elevation and slope are explicit flat placeholders"
+          }
+        ]
+      },
+      "vertical_channel_status": "flat_placeholder",
+      "source_provenance": {
+        "status": "verified_exact",
+        "source_id": "jp-1962",
+        "repository": "https://github.com/bacinger/f1-circuits",
+        "revision": "394d8fbe70ef2c0b0c8d23ff7bee61fa09606055",
+        "path": "circuits/jp-1962.geojson",
+        "digest": "sha256:14419e615c3805ac74547de107ddb46872be0697bf279e2254130d495f086eee",
+        "license": "MIT"
+      }
+    },
+    {
+      "slug": "yas_marina",
+      "circuit_id": "ae-2009",
+      "resource_path": "catalogs/racing/v1.1.0/simulation/circuits/yas_marina.json",
+      "resource_digest": "sha256:a843c8486dc8694ac8dbacf73cda60753cc1628d64c2429ad0cc4c677be92660",
+      "sample_count": 5293,
+      "length_m": 5292.0,
+      "sample_spacing_m": {
+        "minimum": 1.0,
+        "maximum": 1.0
+      },
+      "local_xy_extent_m": {
+        "x_minimum": -406.9886252749597,
+        "x_maximum": 401.37763184189936,
+        "y_minimum": -689.7815319542135,
+        "y_maximum": 1033.0970235496504
+      },
+      "closure_gap_m": 0.739250204378747,
+      "maximum_absolute_curvature_rad_per_m": 0.03602518881557464,
+      "elevation_range_m": 0.0,
+      "maximum_absolute_slope": 0.0,
+      "validation": {
+        "status": "warning",
+        "issues": [
+          {
+            "code": "flat_vertical_placeholder",
+            "severity": "warning",
+            "message": "elevation and slope are explicit flat placeholders"
+          }
+        ]
+      },
+      "vertical_channel_status": "flat_placeholder",
+      "source_provenance": {
+        "status": "verified_exact",
+        "source_id": "ae-2009",
+        "repository": "https://github.com/bacinger/f1-circuits",
+        "revision": "394d8fbe70ef2c0b0c8d23ff7bee61fa09606055",
+        "path": "circuits/ae-2009.geojson",
+        "digest": "sha256:91ea23fc8bdcdbc1e23b007f99910c84fc0ff595663b3bf5c9954f54f882caa3",
+        "license": "MIT"
+      }
+    },
+    {
+      "slug": "zandvoort",
+      "circuit_id": "nl-1948",
+      "resource_path": "catalogs/racing/v1.1.0/simulation/circuits/zandvoort.json",
+      "resource_digest": "sha256:62ae57706f2f0ce2d0527a92226cf7d4b1e0d3895085d46ded2ee31ee864ca1e",
+      "sample_count": 4256,
+      "length_m": 4255.0,
+      "sample_spacing_m": {
+        "minimum": 1.0,
+        "maximum": 1.0
+      },
+      "local_xy_extent_m": {
+        "x_minimum": -459.0120818448079,
+        "x_maximum": 512.9280980341427,
+        "y_minimum": -370.73533609230986,
+        "y_maximum": 458.61316090579487
+      },
+      "closure_gap_m": 0.4404309531942579,
+      "maximum_absolute_curvature_rad_per_m": 0.027557456877036358,
+      "elevation_range_m": 0.0,
+      "maximum_absolute_slope": 0.0,
+      "validation": {
+        "status": "warning",
+        "issues": [
+          {
+            "code": "flat_vertical_placeholder",
+            "severity": "warning",
+            "message": "elevation and slope are explicit flat placeholders"
+          }
+        ]
+      },
+      "vertical_channel_status": "flat_placeholder",
+      "source_provenance": {
+        "status": "verified_exact",
+        "source_id": "nl-1948",
+        "repository": "https://github.com/bacinger/f1-circuits",
+        "revision": "394d8fbe70ef2c0b0c8d23ff7bee61fa09606055",
+        "path": "circuits/nl-1948.geojson",
+        "digest": "sha256:4f639dad939d1fd87514695a91f3d0926feb0a72ec90af557a3b1209023c0215",
+        "license": "MIT"
+      }
+    }
+  ]
+}
