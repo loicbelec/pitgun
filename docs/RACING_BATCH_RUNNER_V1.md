@@ -117,7 +117,7 @@ The document contains:
 | `output_digest` | Digest of the canonical simulator output. |
 | `telemetry_summary_digest` | Digest of the telemetry evidence summary. |
 | `metrics_digest` | Digest of the derived metrics document. |
-| `summary` | Query-friendly race outcome, lap data, telemetry counts, and derived metrics. |
+| `summary` | Query-friendly race outcome, lap data, telemetry counts, derived metrics, and optional setup-response diagnostics. |
 
 The compact result includes lap times and aggregate telemetry evidence, but not
 the full telemetry batches. This keeps large sweeps economical. Use `--bundle`
@@ -126,6 +126,26 @@ for runs whose complete telemetry and replay artifacts must be preserved.
 Operational values such as elapsed wall-clock time, host name, Databricks task
 identifier, and output path are deliberately absent from the deterministic
 result. An orchestrator may store them in a separate execution ledger.
+
+### Setup-response diagnostics
+
+When a player solution is present, `summary.setup_response` contains
+`pitgun.racing-setup-response/v1`. It is derived by the canonical Racing Solver
+from the physical samples and the applied vehicle, rather than reconstructed by
+the data platform.
+
+| Group | Fields and units |
+|---|---|
+| Definitions | Curvature and longitudinal-acceleration thresholds plus the near-maximum-RPM ratio used by this diagnostic version. |
+| Circuit | length, straight/corner distance and elevation in metres; curvature in rad/m or integrated radians. |
+| Time | observed, straight, corner, acceleration, braking, steady-speed, and near-maximum-RPM duration in seconds. |
+| Speed | mean straight and corner speed in km/h. |
+| Powertrain | shift count, maximum gear, maximum observed RPM, and maximum-RPM utilization ratio. |
+| Aerodynamics | drag work in kJ; mean and maximum downforce in newtons. |
+
+The straight/corner classifier uses the Solver's documented curvature boundary.
+Diagnostics are explanatory and additive: they do not alter the run contract,
+physics, telemetry, or lap time.
 
 ## Structured Failures
 
