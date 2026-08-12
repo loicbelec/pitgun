@@ -1,5 +1,5 @@
 # Databricks notebook source
-"""Create the governed Delta tables for Pitgun Calibration V1.
+"""Create the governed Delta tables for Pitgun Calibration.
 
 The notebook performs idempotent DDL only. It never reads, writes, migrates, or
 deletes objects in ``workspace.default``.
@@ -48,8 +48,7 @@ calibration = f"`{catalog_name}`.`{calibration_schema}`"
 policies = f"`{catalog_name}`.`{policies_schema}`"
 
 required_schemas = {
-    row[0]
-    for row in spark.sql(f"SHOW SCHEMAS IN `{catalog_name}`").collect()
+    row[0] for row in spark.sql(f"SHOW SCHEMAS IN `{catalog_name}`").collect()
 }
 missing_schemas = {
     calibration_schema,
@@ -159,6 +158,62 @@ table_definitions = {
           'pitgun.contract_version' = 'v1'
         )
     """,
+    "experimental_runs": f"""
+        CREATE TABLE IF NOT EXISTS {calibration}.experimental_runs (
+          campaign_id STRING NOT NULL,
+          experimental_configuration_id STRING NOT NULL COMMENT 'Content-derived identity scoped to an experimental response and scenario.',
+          response_id STRING NOT NULL,
+          response_digest STRING NOT NULL,
+          seed STRING NOT NULL,
+          experimental_execution_id STRING COMMENT 'Experimental identity; never a canonical Pitgun run_id.',
+          scenario_digest STRING NOT NULL,
+          adapter_version STRING,
+          probe_artifact_digest STRING NOT NULL,
+          canonical_result_digest STRING,
+          source_git_revision STRING NOT NULL,
+          circuit_id STRING NOT NULL,
+          era INT NOT NULL,
+          setup_json STRING NOT NULL,
+          strategy_json STRING NOT NULL,
+          execution_status STRING NOT NULL,
+          failure_phase STRING,
+          failure_code STRING,
+          failure_message STRING,
+          duration_ms BIGINT,
+          result_json STRING,
+          started_at TIMESTAMP,
+          completed_at TIMESTAMP,
+          ingested_at TIMESTAMP NOT NULL
+        )
+        USING DELTA
+        COMMENT 'Grain: one experimental tuning-response execution per campaign, configuration, and seed.'
+        TBLPROPERTIES (
+          'pitgun.grain' = 'campaign_id,experimental_configuration_id,seed',
+          'pitgun.owner_domain' = 'calibration',
+          'pitgun.contract_version' = 'v1'
+        )
+    """,
+    "experimental_metrics": f"""
+        CREATE TABLE IF NOT EXISTS {calibration}.experimental_metrics (
+          campaign_id STRING NOT NULL,
+          experimental_execution_id STRING NOT NULL,
+          experimental_configuration_id STRING NOT NULL,
+          response_id STRING NOT NULL,
+          seed STRING NOT NULL,
+          metric_id STRING NOT NULL,
+          metric_value DOUBLE NOT NULL,
+          metric_unit STRING NOT NULL,
+          statistic STRING,
+          recorded_at TIMESTAMP NOT NULL
+        )
+        USING DELTA
+        COMMENT 'Grain: one metric per experimental tuning-response execution.'
+        TBLPROPERTIES (
+          'pitgun.grain' = 'experimental_execution_id,metric_id',
+          'pitgun.owner_domain' = 'calibration',
+          'pitgun.contract_version' = 'v1'
+        )
+    """,
     "candidates": f"""
         CREATE TABLE IF NOT EXISTS {calibration}.candidates (
           campaign_id STRING NOT NULL,
@@ -225,7 +280,9 @@ if operation == "bootstrap":
         },
     }
     for table_name, columns in additive_columns.items():
-        existing_columns = {field.name for field in spark.table(table_name).schema.fields}
+        existing_columns = {
+            field.name for field in spark.table(table_name).schema.fields
+        }
         missing_definitions = [
             f"`{name}` {definition}"
             for name, definition in columns.items()
@@ -240,7 +297,14 @@ if operation == "bootstrap":
 # COMMAND ----------
 
 expected_tables = {
-    calibration: {"campaigns", "runs", "metrics", "candidates"},
+    calibration: {
+        "campaigns",
+        "runs",
+        "metrics",
+        "experimental_runs",
+        "experimental_metrics",
+        "candidates",
+    },
     policies: {"releases"},
 }
 observed = {}

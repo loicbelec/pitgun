@@ -16,10 +16,14 @@ from typing import Any
 
 
 RESULT_VERSION = "pitgun.databricks-runner-result/v1"
+TUNING_RESPONSE_RESULT_VERSION = "pitgun.databricks-tuning-response-result/v1"
 RUNNER_TARGET = "aarch64-unknown-linux-gnu"
 PROCESS_TIMEOUT_SECONDS = 120
 SCENARIO_FAMILIES = frozenset({"balanced", "high-downforce", "low-downforce"})
-SCENARIO_RESOURCE_PATTERN = re.compile(r"[a-z0-9]+(?:-[a-z0-9]+)*(?:--[a-z0-9]+(?:-[a-z0-9]+)*)?")
+SCENARIO_RESOURCE_PATTERN = re.compile(
+    r"[a-z0-9]+(?:-[a-z0-9]+)*(?:--[a-z0-9]+(?:-[a-z0-9]+)*)?"
+)
+RESPONSE_RESOURCE_PATTERN = re.compile(r"racing-[a-z0-9]+(?:-[a-z0-9]+)*")
 
 
 class RunnerExecutionError(RuntimeError):
@@ -40,7 +44,9 @@ def _run(command: list[str]) -> tuple[subprocess.CompletedProcess[bytes], int]:
             timeout=PROCESS_TIMEOUT_SECONDS,
         )
     except (OSError, subprocess.TimeoutExpired) as error:
-        raise RunnerExecutionError(f"packaged runner could not execute: {error}") from error
+        raise RunnerExecutionError(
+            f"packaged runner could not execute: {error}"
+        ) from error
     duration_ms = (time.perf_counter_ns() - started) // 1_000_000
     return completed, duration_ms
 
@@ -82,14 +88,20 @@ def _execute(runner_bytes: bytes, scenario_bytes: bytes, seed: int) -> dict[str,
                 f"packaged runner failed with exit {process.returncode}: {diagnostic}"
             )
         if process.stderr:
-            raise RunnerExecutionError("successful packaged runner wrote unexpected stderr")
+            raise RunnerExecutionError(
+                "successful packaged runner wrote unexpected stderr"
+            )
 
         try:
             compact_result = json.loads(process.stdout)
         except (UnicodeDecodeError, json.JSONDecodeError) as error:
-            raise RunnerExecutionError("packaged runner returned invalid JSON") from error
+            raise RunnerExecutionError(
+                "packaged runner returned invalid JSON"
+            ) from error
         if compact_result.get("schema_version") != "pitgun.batch-run-result/v1":
-            raise RunnerExecutionError("packaged runner returned an unsupported result contract")
+            raise RunnerExecutionError(
+                "packaged runner returned an unsupported result contract"
+            )
 
         return {
             "schema_version": RESULT_VERSION,
@@ -114,6 +126,62 @@ def _execute(runner_bytes: bytes, scenario_bytes: bytes, seed: int) -> dict[str,
         }
 
 
+def _execute_tuning_response_probe(
+    probe_bytes: bytes, scenario_bytes: bytes, response_bytes: bytes, seed: int
+) -> dict[str, Any]:
+    if not 0 <= seed <= 2**64 - 1:
+        raise ValueError("seed must be an unsigned 64-bit integer")
+
+    with tempfile.TemporaryDirectory(prefix="pitgun-tuning-response-") as temporary:
+        root = pathlib.Path(temporary)
+        probe = root / "tuning_response_probe"
+        scenario = root / "scenario.json"
+        response = root / "response.json"
+        probe.write_bytes(probe_bytes)
+        probe.chmod(0o500)
+        scenario.write_bytes(scenario_bytes)
+        response.write_bytes(response_bytes)
+
+        process, execution_duration_ms = _run(
+            [str(probe), str(scenario), str(response), str(seed)]
+        )
+        if process.returncode != 0:
+            diagnostic = process.stderr.decode("utf-8", errors="replace").strip()
+            raise RunnerExecutionError(
+                f"packaged tuning-response probe failed with exit {process.returncode}: {diagnostic}"
+            )
+        if process.stderr:
+            raise RunnerExecutionError(
+                "successful tuning-response probe wrote unexpected stderr"
+            )
+        try:
+            result = json.loads(process.stdout)
+        except (UnicodeDecodeError, json.JSONDecodeError) as error:
+            raise RunnerExecutionError(
+                "tuning-response probe returned invalid JSON"
+            ) from error
+        if result.get("schema_version") != "pitgun.racing-tuning-response-probe/v1":
+            raise RunnerExecutionError(
+                "tuning-response probe returned an unsupported contract"
+            )
+
+        return {
+            "schema_version": TUNING_RESPONSE_RESULT_VERSION,
+            "adapter": {
+                "version": importlib.metadata.version("pitgun-databricks-adapter")
+            },
+            "runner_artifact": {
+                "kind": "tuning_response_probe",
+                "target": RUNNER_TARGET,
+                "digest": _sha256(probe_bytes),
+            },
+            "host": {"machine": platform.machine(), "system": platform.system()},
+            "measurements": {"execution_duration_ms": execution_duration_ms},
+            "canonical_result_digest": _sha256(process.stdout),
+            "result": result,
+        }
+
+
 def execute_packaged_racing(
     seed: int = 42, configuration_family: str = "balanced"
 ) -> dict[str, Any]:
@@ -121,7 +189,9 @@ def execute_packaged_racing(
 
     if configuration_family not in SCENARIO_FAMILIES:
         allowed = ", ".join(sorted(SCENARIO_FAMILIES))
-        raise ValueError(f"unsupported configuration family; expected one of: {allowed}")
+        raise ValueError(
+            f"unsupported configuration family; expected one of: {allowed}"
+        )
 
     package = importlib.resources.files("pitgun_databricks_adapter")
     runner_bytes = package.joinpath("bin", "pitgun").read_bytes()
@@ -131,7 +201,9 @@ def execute_packaged_racing(
     return _execute(runner_bytes, scenario_bytes, seed)
 
 
-def execute_packaged_racing_scenario(seed: int, scenario_resource: str) -> dict[str, Any]:
+def execute_packaged_racing_scenario(
+    seed: int, scenario_resource: str
+) -> dict[str, Any]:
     """Execute one exact scenario resource embedded in the reviewed wheel."""
 
     if not SCENARIO_RESOURCE_PATTERN.fullmatch(scenario_resource):
@@ -163,3 +235,31 @@ def inspect_packaged_runner() -> dict[str, str | int]:
             "digest": _sha256(runner_bytes),
             "startup_probe_duration_ms": duration_ms,
         }
+
+
+def execute_packaged_tuning_response(
+    seed: int, scenario_resource: str, response_resource: str
+) -> dict[str, Any]:
+    """Run one reviewed scenario with one reviewed experimental response."""
+
+    if not SCENARIO_RESOURCE_PATTERN.fullmatch(scenario_resource):
+        raise ValueError("scenario resource must be one canonical packaged identifier")
+    if not RESPONSE_RESOURCE_PATTERN.fullmatch(response_resource):
+        raise ValueError("response resource must be one canonical packaged identifier")
+    package = importlib.resources.files("pitgun_databricks_adapter")
+    scenario = package.joinpath("scenarios", f"{scenario_resource}.json")
+    response = package.joinpath("responses", f"{response_resource}.json")
+    if not scenario.is_file() or not response.is_file():
+        raise ValueError("scenario or tuning response is not packaged or allowlisted")
+    probe_bytes = package.joinpath("bin", "tuning_response_probe").read_bytes()
+    return _execute_tuning_response_probe(
+        probe_bytes, scenario.read_bytes(), response.read_bytes(), seed
+    )
+
+
+def inspect_packaged_tuning_response_probe() -> dict[str, str]:
+    """Return the exact experimental probe identity without executing it."""
+
+    package = importlib.resources.files("pitgun_databricks_adapter")
+    probe_bytes = package.joinpath("bin", "tuning_response_probe").read_bytes()
+    return {"target": RUNNER_TARGET, "digest": _sha256(probe_bytes)}

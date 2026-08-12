@@ -4,6 +4,7 @@
 from pitgun_databricks_adapter import (
     execute_packaged_racing,
     execute_packaged_racing_scenario,
+    execute_packaged_tuning_response,
     inspect_packaged_runner,
     load_calibration_campaign,
     load_reference_campaign,
@@ -30,7 +31,7 @@ assert result["result"]["configuration_id"] == EXPECTED_CONFIGURATION_ID
 assert result["result"]["run_id"] == EXPECTED_RUN_ID
 assert result["canonical_result_digest"] == EXPECTED_RESULT_DIGEST
 assert result["host"] == {"machine": "aarch64", "system": "Linux"}
-assert result["adapter"]["version"].startswith("0.2.0a1+g")
+assert result["adapter"]["version"].startswith("0.3.0a1+g")
 assert result["runner_artifact"]["digest"] == runner_identity["digest"]
 assert manifest_digest.startswith("sha256:")
 assert len(plan) == manifest["planned_run_count"] == 9
@@ -58,8 +59,36 @@ first_sweep_entry = sweep_plan[0]
 first_sweep_result = execute_packaged_racing_scenario(
     int(first_sweep_entry["seed"]), first_sweep_entry["scenario_resource"]
 )["result"]
-assert first_sweep_result["configuration_id"] == first_sweep_entry["expected_configuration_id"]
-assert first_sweep_result["scenario_digest"] == first_sweep_entry["expected_scenario_digest"]
+assert (
+    first_sweep_result["configuration_id"]
+    == first_sweep_entry["expected_configuration_id"]
+)
+assert (
+    first_sweep_result["scenario_digest"]
+    == first_sweep_entry["expected_scenario_digest"]
+)
+
+candidate_manifest, _ = load_calibration_campaign("racing-aero-candidate-validation-v1")
+candidate_plan = materialize_plan(candidate_manifest)
+assert len(candidate_plan) == candidate_manifest["planned_run_count"] == 210
+for response_id in {entry["response_id"] for entry in candidate_plan}:
+    candidate_entry = next(
+        entry for entry in candidate_plan if entry["response_id"] == response_id
+    )
+    candidate_result = execute_packaged_tuning_response(
+        int(candidate_entry["seed"]),
+        candidate_entry["scenario_resource"],
+        candidate_entry["response_resource"],
+    )["result"]
+    assert (
+        candidate_result["scenario_digest"]
+        == candidate_entry["expected_scenario_digest"]
+    )
+    assert (
+        candidate_result["tuning_response_digest"]
+        == candidate_entry["expected_tuning_response_digest"]
+    )
+    assert candidate_result["experimental_execution_id"].startswith("sha256:")
 
 try:
     execute_packaged_racing(42, "../../arbitrary")
@@ -74,3 +103,10 @@ except ValueError:
     pass
 else:
     raise AssertionError("an arbitrary packaged scenario path was accepted")
+
+try:
+    execute_packaged_tuning_response(42, "monza--balanced", "../../arbitrary")
+except ValueError:
+    pass
+else:
+    raise AssertionError("an arbitrary tuning response path was accepted")

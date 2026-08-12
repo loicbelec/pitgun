@@ -16,7 +16,7 @@ ROOT = pathlib.Path(__file__).resolve().parent
 FRAMEWORK = ROOT.parents[2]
 PACKAGE = "pitgun_databricks_adapter"
 DISTRIBUTION = "pitgun_databricks_adapter"
-BASE_VERSION = "0.2.0a1"
+BASE_VERSION = "0.3.0a1"
 TAG = "py3-none-linux_aarch64"
 TIMESTAMP = (2020, 1, 1, 0, 0, 0)
 
@@ -35,21 +35,30 @@ def git_revision() -> str:
 def wheel_entries(version: str) -> dict[str, bytes]:
     package_root = ROOT / PACKAGE
     runner = ROOT / "build" / "pitgun"
+    tuning_response_probe = ROOT / "build" / "tuning_response_probe"
     scenario_roots = (
         FRAMEWORK / "apps" / "pitgun-cli" / "scenarios" / "racing-batch-v1",
         FRAMEWORK / "apps" / "pitgun-cli" / "scenarios" / "racing-circuit-sweep-v1",
     )
     campaigns = FRAMEWORK / "experiments" / "databricks" / "campaigns"
+    responses = FRAMEWORK / "experiments" / "databricks" / "responses"
     if not runner.is_file():
         raise SystemExit(f"missing Linux runner: {runner}")
+    if not tuning_response_probe.is_file():
+        raise SystemExit(
+            f"missing Linux tuning-response probe: {tuning_response_probe}"
+        )
 
     dist_info = f"{DISTRIBUTION}-{version}.dist-info"
     entries = {
         f"{PACKAGE}/__init__.py": (package_root / "__init__.py").read_bytes(),
         f"{PACKAGE}/runner.py": (package_root / "runner.py").read_bytes(),
         f"{PACKAGE}/campaign.py": (package_root / "campaign.py").read_bytes(),
-        f"{PACKAGE}/opponent_policy.py": (package_root / "opponent_policy.py").read_bytes(),
+        f"{PACKAGE}/opponent_policy.py": (
+            package_root / "opponent_policy.py"
+        ).read_bytes(),
         f"{PACKAGE}/bin/pitgun": runner.read_bytes(),
+        f"{PACKAGE}/bin/tuning_response_probe": tuning_response_probe.read_bytes(),
         f"{dist_info}/METADATA": (
             "Metadata-Version: 2.1\n"
             "Name: pitgun-databricks-adapter\n"
@@ -73,6 +82,8 @@ def wheel_entries(version: str) -> dict[str, bytes]:
         if campaign.suffix not in {".json", ".sha256"}:
             continue
         entries[f"{PACKAGE}/campaigns/{campaign.name}"] = campaign.read_bytes()
+    for response in sorted(responses.glob("racing-*.json")):
+        entries[f"{PACKAGE}/responses/{response.name}"] = response.read_bytes()
     return entries
 
 
@@ -99,7 +110,10 @@ def main() -> None:
         for name, data in sorted(entries.items()):
             info = zipfile.ZipInfo(name, TIMESTAMP)
             info.compress_type = zipfile.ZIP_DEFLATED
-            info.external_attr = (0o755 if name.endswith("/pitgun") else 0o644) << 16
+            executable = name.endswith("/pitgun") or name.endswith(
+                "/tuning_response_probe"
+            )
+            info.external_attr = (0o755 if executable else 0o644) << 16
             archive.writestr(info, data)
 
     print(destination)

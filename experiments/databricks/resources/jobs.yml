@@ -18,7 +18,7 @@ resources:
             environment_version: "4"
       tasks:
         - task_key: bootstrap_governed_tables
-          description: Create the five documented Delta tables idempotently.
+          description: Create the seven documented Delta tables idempotently.
           environment_key: serverless
           notebook_task:
             notebook_path: ../src/bootstrap_tables.py
@@ -166,6 +166,55 @@ resources:
         pitgun.compute: serverless
         pitgun.runner: rust-native
         pitgun.campaign: racing-circuit-sweep-v1
+
+    candidate_validation_job:
+      name: pitgun-racing-aero-candidate-validation-v1
+      description: >-
+        Compare the historical and calibrated aerodynamic responses through
+        210 immutable experimental executions, Delta evidence, and MLflow.
+      max_concurrent_runs: 1
+      performance_target: STANDARD
+      environments:
+        - environment_key: serverless_candidate_validation
+          spec:
+            environment_version: "4"
+            dependencies:
+              - ../adapter/dist/*.whl
+      tasks:
+        - task_key: bootstrap_governed_tables
+          description: Create or additively evolve the governed Delta tables.
+          environment_key: serverless_candidate_validation
+          notebook_task:
+            notebook_path: ../src/bootstrap_tables.py
+            source: WORKSPACE
+            base_parameters:
+              operation: bootstrap
+              campaign_id: racing-aero-candidate-validation-2026-v1
+              catalog_name: ${var.catalog_name}
+              calibration_schema: ${resources.schemas.calibration.name}
+              policies_schema: ${resources.schemas.policies.name}
+              experiment_id: ${resources.experiments.calibration_experiment.id}
+          timeout_seconds: 900
+        - task_key: execute_candidate_validation
+          description: Execute and reconcile all 210 immutable experimental keys.
+          depends_on:
+            - task_key: bootstrap_governed_tables
+          environment_key: serverless_candidate_validation
+          notebook_task:
+            notebook_path: ../src/execute_candidate_validation.py
+            source: WORKSPACE
+            base_parameters:
+              catalog_name: ${var.catalog_name}
+              calibration_schema: ${resources.schemas.calibration.name}
+              experiment_id: ${resources.experiments.calibration_experiment.id}
+              campaign_name: racing-aero-candidate-validation-v1
+          timeout_seconds: 3600
+      tags:
+        pitgun.domain: calibration
+        pitgun.compute: serverless
+        pitgun.runner: rust-native-experimental
+        pitgun.campaign: racing-aero-candidate-validation-v1
+        pitgun.promotion: human-review-required
 
     reference_policy_job:
       name: pitgun-racing-reference-policy-v1

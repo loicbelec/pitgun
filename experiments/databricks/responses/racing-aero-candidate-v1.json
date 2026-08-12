@@ -1,0 +1,17 @@
+{
+  "schema_version": "pitgun.racing-tuning-response/v1",
+  "development_points_cap": 20.0,
+  "aero_development_gain": 0.1,
+  "drag_base": 0.65,
+  "drag_slider_gain": 0.95,
+  "downforce_base": 1.05625,
+  "downforce_slider_gain": 0.375,
+  "straight_aero_scale": 0.95,
+  "corner_aero_scale": 1.05,
+  "chassis_grip_development_gain": 0.08,
+  "cooling_base": 0.75,
+  "cooling_development_gain": 0.5,
+  "engine_torque_development_gain": 0.01,
+  "gear_ratio_base": 1.1,
+  "gear_ratio_slider_reduction": 0.2
+}

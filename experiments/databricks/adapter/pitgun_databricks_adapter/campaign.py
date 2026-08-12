@@ -8,7 +8,13 @@ import json
 from typing import Any
 
 
-CAMPAIGNS = frozenset({"racing-reference-v1", "racing-circuit-sweep-v1"})
+CAMPAIGNS = frozenset(
+    {
+        "racing-reference-v1",
+        "racing-circuit-sweep-v1",
+        "racing-aero-candidate-validation-v1",
+    }
+)
 
 
 class CampaignManifestError(ValueError):
@@ -38,6 +44,7 @@ def load_calibration_campaign(name: str) -> tuple[dict[str, Any], str]:
     if schema_version not in {
         "pitgun.calibration-campaign/v1",
         "pitgun.calibration-campaign/v2",
+        "pitgun.calibration-campaign/v3",
     }:
         raise CampaignManifestError("unsupported campaign manifest version")
 
@@ -54,17 +61,22 @@ def load_calibration_campaign(name: str) -> tuple[dict[str, Any], str]:
         configurations
     ):
         raise CampaignManifestError("configuration identifiers are not unique")
+    identity_key = (
+        "expected_experimental_configuration_id"
+        if schema_version == "pitgun.calibration-campaign/v3"
+        else "expected_configuration_id"
+    )
     if len(
-        {
-            configuration.get("expected_configuration_id")
-            for configuration in configurations
-        }
+        {configuration.get(identity_key) for configuration in configurations}
     ) != len(configurations):
         raise CampaignManifestError("expected configuration identities are not unique")
     if len(set(seeds)) != len(seeds):
         raise CampaignManifestError("campaign seeds are not unique")
 
-    if schema_version == "pitgun.calibration-campaign/v2":
+    if schema_version in {
+        "pitgun.calibration-campaign/v2",
+        "pitgun.calibration-campaign/v3",
+    }:
         circuits = manifest.get("circuits", [])
         circuit_ids = {circuit.get("id") for circuit in circuits}
         if not circuit_ids or len(circuit_ids) != len(circuits):
@@ -73,7 +85,24 @@ def load_calibration_campaign(name: str) -> tuple[dict[str, Any], str]:
             configuration.get("circuit_id") not in circuit_ids
             for configuration in configurations
         ):
-            raise CampaignManifestError("configuration references an undeclared circuit")
+            raise CampaignManifestError(
+                "configuration references an undeclared circuit"
+            )
+
+    if schema_version == "pitgun.calibration-campaign/v3":
+        responses = manifest.get("responses", [])
+        response_ids = {response.get("id") for response in responses}
+        if not response_ids or len(response_ids) != len(responses):
+            raise CampaignManifestError("campaign response identifiers are invalid")
+        if any(
+            configuration.get("response_id") not in response_ids
+            for configuration in configurations
+        ):
+            raise CampaignManifestError(
+                "configuration references an undeclared response"
+            )
+        if manifest.get("promotion_policy") != "human-review-required":
+            raise CampaignManifestError("experimental campaign cannot auto-promote")
 
     return manifest, "sha256:" + digest
 
@@ -87,7 +116,10 @@ def load_reference_campaign() -> tuple[dict[str, Any], str]:
 def materialize_plan(manifest: dict[str, Any]) -> list[dict[str, Any]]:
     """Materialize the stable Cartesian product in deterministic order."""
 
-    if manifest["schema_version"] == "pitgun.calibration-campaign/v2":
+    if manifest["schema_version"] in {
+        "pitgun.calibration-campaign/v2",
+        "pitgun.calibration-campaign/v3",
+    }:
         configurations = manifest["configurations"]
     else:
         configurations = [
@@ -101,15 +133,23 @@ def materialize_plan(manifest: dict[str, Any]) -> list[dict[str, Any]]:
             for family in manifest["configuration_families"]
         ]
 
-    return [
+    plan = [
         {
             "configuration_id": configuration["id"],
             "configuration_family": configuration["configuration_family"],
             "circuit_id": configuration["circuit_id"],
             "circuit_archetype": configuration["circuit_archetype"],
             "scenario_resource": configuration["scenario_resource"],
-            "expected_configuration_id": configuration["expected_configuration_id"],
+            "expected_configuration_id": configuration.get("expected_configuration_id"),
+            "expected_experimental_configuration_id": configuration.get(
+                "expected_experimental_configuration_id"
+            ),
             "expected_scenario_digest": configuration["expected_scenario_digest"],
+            "response_id": configuration.get("response_id"),
+            "response_resource": configuration.get("response_resource"),
+            "expected_tuning_response_digest": configuration.get(
+                "expected_tuning_response_digest"
+            ),
             "setup": configuration["setup"],
             "strategy": configuration["strategy"],
             "seed": seed,
@@ -117,3 +157,4 @@ def materialize_plan(manifest: dict[str, Any]) -> list[dict[str, Any]]:
         for configuration in configurations
         for seed in manifest["seeds"]
     ]
+    return plan
