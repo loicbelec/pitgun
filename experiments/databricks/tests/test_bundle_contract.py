@@ -112,6 +112,19 @@ class BundleContractTest(unittest.TestCase):
         ):
             self.assertIn(f'"{governed_column}"', bootstrap)
 
+    def test_reference_policy_selection_pins_delta_and_requires_review(self):
+        job = (ROOT / "resources" / "jobs.yml").read_text()
+        notebook = (ROOT / "src" / "select_reference_opponent_policy.py").read_text()
+
+        self.assertIn("reference_policy_job:", job)
+        for table, version in (("campaigns", "3"), ("runs", "2"), ("metrics", "1")):
+            self.assertIn(f'{table}_table_version: "{version}"', job)
+            self.assertIn(f'.option("versionAsOf", {table}_table_version)', notebook)
+        self.assertIn('"release_state": "PROPOSED"', notebook)
+        self.assertIn("target.release_state = 'PROPOSED'", notebook)
+        self.assertNotIn('"release_state": "PUBLISHED"', notebook)
+        self.assertIn("select_reference_policy", notebook)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -1,0 +1,161 @@
+{
+  "schema_version": "pitgun.racing-opponent-policy/v1",
+  "policy": {
+    "id": "pitgun.racing.opponents.reference",
+    "version": "1.0.0"
+  },
+  "scope": {
+    "circuit_model_id": "it-1922",
+    "era": 2026,
+    "difficulty_band": "competitive"
+  },
+  "composition": {
+    "algorithm": "pitgun.seeded-role-composition/v1",
+    "roles": [
+      {
+        "id": "front-runner",
+        "count": 1,
+        "eligible_profile_ids": [
+          "high-downforce"
+        ]
+      },
+      {
+        "id": "midfield",
+        "count": 1,
+        "eligible_profile_ids": [
+          "balanced"
+        ]
+      },
+      {
+        "id": "challenger",
+        "count": 1,
+        "eligible_profile_ids": [
+          "low-downforce"
+        ]
+      }
+    ]
+  },
+  "profiles": [
+    {
+      "id": "high-downforce",
+      "role": "front-runner",
+      "source_configuration_id": "sha256:f61df371a9cb5470410842e52a02e97b6763d71cbbe28b1f27b6cb7a83534611",
+      "selection_score": 0.917554,
+      "setup": {
+        "downforce_slider": {
+          "center": 0.8,
+          "min": 0.8,
+          "max": 0.8
+        },
+        "gear_ratio_slider": {
+          "center": 0.7,
+          "min": 0.7,
+          "max": 0.7
+        }
+      },
+      "strategy": {
+        "id": "single-lap-no-stop"
+      },
+      "evidence": {
+        "successful_seed_count": 3,
+        "mean_lap_time_ms": 83869.666667,
+        "lap_time_stddev_ms": 30.706496,
+        "mean_maximum_speed_kmh": 351.919353
+      }
+    },
+    {
+      "id": "balanced",
+      "role": "midfield",
+      "source_configuration_id": "sha256:12a4207b2c26c814763a2a488054f7421e7cc3836a35e26fc16d96477c8744d7",
+      "selection_score": 0.759703,
+      "setup": {
+        "downforce_slider": {
+          "center": 0.5,
+          "min": 0.5,
+          "max": 0.5
+        },
+        "gear_ratio_slider": {
+          "center": 0.5,
+          "min": 0.5,
+          "max": 0.5
+        }
+      },
+      "strategy": {
+        "id": "single-lap-no-stop"
+      },
+      "evidence": {
+        "successful_seed_count": 3,
+        "mean_lap_time_ms": 85281.333333,
+        "lap_time_stddev_ms": 30.554141,
+        "mean_maximum_speed_kmh": 355.57121
+      }
+    },
+    {
+      "id": "low-downforce",
+      "role": "challenger",
+      "source_configuration_id": "sha256:0dae0f776d53d34a4806b0b7a013c52b5bdf0e7e751560ffd0e4ea7b563651bf",
+      "selection_score": 0.25,
+      "setup": {
+        "downforce_slider": {
+          "center": 0.2,
+          "min": 0.2,
+          "max": 0.2
+        },
+        "gear_ratio_slider": {
+          "center": 0.3,
+          "min": 0.3,
+          "max": 0.3
+        }
+      },
+      "strategy": {
+        "id": "single-lap-no-stop"
+      },
+      "evidence": {
+        "successful_seed_count": 3,
+        "mean_lap_time_ms": 86807.0,
+        "lap_time_stddev_ms": 31.016125,
+        "mean_maximum_speed_kmh": 359.043022
+      }
+    }
+  ],
+  "calibration": {
+    "source": {
+      "campaign_id": "racing-reference-it-1922-2026-v1",
+      "campaign_manifest_digest": "sha256:98ce8b1e369c96c5555f3effe78e767eb6f8889538e8d5327a3e99b5c429e240",
+      "delta_tables": {
+        "runs": {
+          "name": "workspace.pitgun_calibration.runs",
+          "version": 2
+        },
+        "metrics": {
+          "name": "workspace.pitgun_calibration.metrics",
+          "version": 1
+        }
+      },
+      "mlflow_run_id": "992017d6795a420e8e02d03f2be51ed8",
+      "source_git_revision": "1ab62fc09a83",
+      "model_digest": "sha256:03541bcc24f946d11071e6fb67915ec5d429dce63362d456aba2c3d339a3fe38",
+      "data_pack_digest": "sha256:fc6ade498d399cd439cfb33d74ab0e2e6ee1279ed19441ed99b8cea9963875c9"
+    },
+    "candidate_set_digest": "sha256:61ab7e8107a7f78d231641f4f948c7ac86eeb85f327a3a9d83e0e8d13c81c244",
+    "selection": {
+      "method": "pitgun.constrained-role-composition/v1",
+      "weights": {
+        "pace": 0.5,
+        "robustness": 0.25,
+        "setup_diversity": 0.25
+      },
+      "constraints": {
+        "minimum_successful_seeds": 3,
+        "maximum_lap_time_stddev_ms": 50.0,
+        "required_distinct_setup_count": 3,
+        "hidden_player_data_allowed": false
+      }
+    },
+    "limitations": [
+      "single-circuit physical model",
+      "single-lap strategies only",
+      "exact setup centers; bounded mutation is disabled until measured"
+    ]
+  }
+}

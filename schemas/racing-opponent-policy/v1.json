@@ -1,0 +1,191 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.pitgun.io/racing-opponent-policy/v1.json",
+  "title": "Pitgun Racing Opponent Policy V1",
+  "description": "Immutable, governed calibration policy used to compose deterministic Racing opponents.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "policy", "scope", "composition", "profiles", "calibration"],
+  "properties": {
+    "schema_version": { "const": "pitgun.racing-opponent-policy/v1" },
+    "policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "version"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9._-]*$" },
+        "version": { "type": "string", "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$" }
+      }
+    },
+    "scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["circuit_model_id", "era", "difficulty_band"],
+      "properties": {
+        "circuit_model_id": { "type": "string", "minLength": 1 },
+        "era": { "type": "integer", "minimum": 0 },
+        "difficulty_band": { "const": "competitive" }
+      }
+    },
+    "composition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["algorithm", "roles"],
+      "properties": {
+        "algorithm": { "const": "pitgun.seeded-role-composition/v1" },
+        "roles": {
+          "type": "array",
+          "minItems": 3,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/role" }
+        }
+      }
+    },
+    "profiles": {
+      "type": "array",
+      "minItems": 3,
+      "items": { "$ref": "#/$defs/profile" }
+    },
+    "calibration": { "$ref": "#/$defs/calibration" }
+  },
+  "$defs": {
+    "digest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "role_id": { "enum": ["front-runner", "midfield", "challenger"] },
+    "role": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "count", "eligible_profile_ids"],
+      "properties": {
+        "id": { "$ref": "#/$defs/role_id" },
+        "count": { "type": "integer", "minimum": 1 },
+        "eligible_profile_ids": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "bounded_slider": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["center", "min", "max"],
+      "properties": {
+        "center": { "type": "number", "minimum": 0, "maximum": 1 },
+        "min": { "type": "number", "minimum": 0, "maximum": 1 },
+        "max": { "type": "number", "minimum": 0, "maximum": 1 }
+      }
+    },
+    "profile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "role", "source_configuration_id", "selection_score", "setup", "strategy", "evidence"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "role": { "$ref": "#/$defs/role_id" },
+        "source_configuration_id": { "$ref": "#/$defs/digest" },
+        "selection_score": { "type": "number", "minimum": 0, "maximum": 1 },
+        "setup": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["downforce_slider", "gear_ratio_slider"],
+          "properties": {
+            "downforce_slider": { "$ref": "#/$defs/bounded_slider" },
+            "gear_ratio_slider": { "$ref": "#/$defs/bounded_slider" }
+          }
+        },
+        "strategy": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["id"],
+          "properties": { "id": { "const": "single-lap-no-stop" } }
+        },
+        "evidence": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["successful_seed_count", "mean_lap_time_ms", "lap_time_stddev_ms", "mean_maximum_speed_kmh"],
+          "properties": {
+            "successful_seed_count": { "type": "integer", "minimum": 3 },
+            "mean_lap_time_ms": { "type": "number", "exclusiveMinimum": 0 },
+            "lap_time_stddev_ms": { "type": "number", "minimum": 0 },
+            "mean_maximum_speed_kmh": { "type": "number", "exclusiveMinimum": 0 }
+          }
+        }
+      }
+    },
+    "delta_table": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "version"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "version": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "calibration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source", "candidate_set_digest", "selection", "limitations"],
+      "properties": {
+        "source": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["campaign_id", "campaign_manifest_digest", "delta_tables", "mlflow_run_id", "source_git_revision", "model_digest", "data_pack_digest"],
+          "properties": {
+            "campaign_id": { "type": "string", "minLength": 1 },
+            "campaign_manifest_digest": { "$ref": "#/$defs/digest" },
+            "delta_tables": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["runs", "metrics"],
+              "properties": {
+                "runs": { "$ref": "#/$defs/delta_table" },
+                "metrics": { "$ref": "#/$defs/delta_table" }
+              }
+            },
+            "mlflow_run_id": { "type": "string", "minLength": 1 },
+            "source_git_revision": { "type": "string", "minLength": 1 },
+            "model_digest": { "$ref": "#/$defs/digest" },
+            "data_pack_digest": { "$ref": "#/$defs/digest" }
+          }
+        },
+        "candidate_set_digest": { "$ref": "#/$defs/digest" },
+        "selection": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["method", "weights", "constraints"],
+          "properties": {
+            "method": { "const": "pitgun.constrained-role-composition/v1" },
+            "weights": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["pace", "robustness", "setup_diversity"],
+              "properties": {
+                "pace": { "type": "number", "minimum": 0, "maximum": 1 },
+                "robustness": { "type": "number", "minimum": 0, "maximum": 1 },
+                "setup_diversity": { "type": "number", "minimum": 0, "maximum": 1 }
+              }
+            },
+            "constraints": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["minimum_successful_seeds", "maximum_lap_time_stddev_ms", "required_distinct_setup_count", "hidden_player_data_allowed"],
+              "properties": {
+                "minimum_successful_seeds": { "type": "integer", "minimum": 3 },
+                "maximum_lap_time_stddev_ms": { "type": "number", "minimum": 0 },
+                "required_distinct_setup_count": { "type": "integer", "minimum": 3 },
+                "hidden_player_data_allowed": { "const": false }
+              }
+            }
+          }
+        },
+        "limitations": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    }
+  }
+}

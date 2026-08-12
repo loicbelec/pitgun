@@ -3,7 +3,9 @@
 This directory owns the public, versioned resources used by the Racing
 reference workload.
 
-`v1.0.0` is one immutable release:
+`v1.0.0` is the current game release. `v1.1.0` adds the first governed Racing
+opponent policy as a Simulation Pack resource while leaving `LATEST` on
+`v1.0.0` until the game consumer is ready. Each version directory is immutable:
 
 ```text
 LATEST
@@ -15,6 +17,8 @@ v1.0.0/
 │   └── {aero,chassis,circuits,drivers,engines,tires,vehicles}/
 └── presentation/
     └── index.json
+v1.1.0/
+└── simulation/policies/reference.json
 ```
 
 The Simulation Pack contains every byte that may influence physical execution.

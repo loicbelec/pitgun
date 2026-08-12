@@ -7,17 +7,13 @@ import argparse
 import hashlib
 import json
 from pathlib import Path
+import re
 import sys
 from typing import Any
 
-
 ROOT = Path(__file__).resolve().parents[1]
-RELEASE_ROOT = ROOT / "catalogs" / "racing" / "v1.0.0"
-SIMULATION_ROOT = RELEASE_ROOT / "simulation"
-PRESENTATION_INDEX = RELEASE_ROOT / "presentation" / "index.json"
-SIMULATION_INDEX = SIMULATION_ROOT / "index.json"
-CATALOG_MANIFEST = RELEASE_ROOT / "catalog.json"
-RELEASE_IDENTITY = RELEASE_ROOT / "release.json"
+CATALOG_ROOT = ROOT / "catalogs" / "racing"
+VERSION_PATTERN = re.compile(r"^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$")
 EMBEDDED_RUST = ROOT / "generated" / "racing_catalog_v1.rs"
 
 DIGEST_PREFIX = "sha256:"
@@ -48,10 +44,30 @@ def digest_bytes(value: bytes) -> str:
     return DIGEST_PREFIX + hashlib.sha256(value).hexdigest()
 
 
-def simulation_resources() -> list[dict[str, str]]:
+def release_roots() -> list[Path]:
+    roots = sorted(
+        path
+        for path in CATALOG_ROOT.iterdir()
+        if path.is_dir() and VERSION_PATTERN.fullmatch(path.name)
+    )
+    if not roots:
+        raise SystemExit("FAIL Racing catalog: no immutable release")
+    return roots
+
+
+def selected_release_root() -> Path:
+    version = (CATALOG_ROOT / "LATEST").read_text(encoding="utf-8").strip()
+    root = CATALOG_ROOT / f"v{version}"
+    if root not in release_roots():
+        raise SystemExit(f"FAIL Racing catalog: selected release v{version} does not exist")
+    return root
+
+
+def simulation_resources(release_root: Path) -> list[dict[str, str]]:
+    simulation_root = release_root / "simulation"
     resources: list[dict[str, str]] = []
-    for path in sorted(SIMULATION_ROOT.glob("*/*.json")):
-        relative = path.relative_to(SIMULATION_ROOT).as_posix()
+    for path in sorted(simulation_root.glob("*/*.json")):
+        relative = path.relative_to(simulation_root).as_posix()
         category, filename = relative.split("/", maxsplit=1)
         stem = Path(filename).stem
         resources.append(
@@ -72,9 +88,12 @@ def simulation_resources() -> list[dict[str, str]]:
     return resources
 
 
-def validate_pack_boundary(presentation_index: dict[str, Any]) -> None:
+def validate_pack_boundary(
+    release_root: Path, presentation_index: dict[str, Any]
+) -> None:
+    simulation_root = release_root / "simulation"
     circuit_ids: list[str] = []
-    for path in sorted((SIMULATION_ROOT / "circuits").glob("*.json")):
+    for path in sorted((simulation_root / "circuits").glob("*.json")):
         value = load_json(path)
         meta = value.get("meta", {})
         if not isinstance(meta, dict) or set(meta) - {"id"}:
@@ -84,7 +103,7 @@ def validate_pack_boundary(presentation_index: dict[str, Any]) -> None:
         circuit_ids.append(path.stem)
 
     driver_ids: list[str] = []
-    for path in sorted((SIMULATION_ROOT / "drivers").glob("*.json")):
+    for path in sorted((simulation_root / "drivers").glob("*.json")):
         value = load_json(path)
         if "aggressiveness" not in value:
             continue
@@ -112,19 +131,51 @@ def validate_pack_boundary(presentation_index: dict[str, Any]) -> None:
         )
 
 
-def generated_artifacts() -> dict[Path, bytes]:
-    resources = simulation_resources()
+def validate_opponent_policies(release_root: Path) -> None:
+    for path in sorted((release_root / "simulation" / "policies").glob("*.json")):
+        policy = load_json(path)
+        if policy.get("schema_version") != "pitgun.racing-opponent-policy/v1":
+            raise SystemExit(f"FAIL Racing opponent policy {path}: unsupported schema")
+
+        profiles = policy["profiles"]
+        profile_ids = {profile["id"] for profile in profiles}
+        if len(profile_ids) != len(profiles):
+            raise SystemExit(f"FAIL Racing opponent policy {path}: duplicate profile IDs")
+        role_ids = [role["id"] for role in policy["composition"]["roles"]]
+        if role_ids != ["front-runner", "midfield", "challenger"]:
+            raise SystemExit(f"FAIL Racing opponent policy {path}: roles are not canonical")
+        for role in policy["composition"]["roles"]:
+            if not set(role["eligible_profile_ids"]).issubset(profile_ids):
+                raise SystemExit(
+                    f"FAIL Racing opponent policy {path}: role references unknown profile"
+                )
+        for profile in profiles:
+            for slider in profile["setup"].values():
+                if not slider["min"] <= slider["center"] <= slider["max"]:
+                    raise SystemExit(
+                        f"FAIL Racing opponent policy {path}: invalid setup bounds"
+                    )
+
+
+def generated_release_artifacts(release_root: Path) -> dict[Path, bytes]:
+    version = release_root.name.removeprefix("v")
+    simulation_index_path = release_root / "simulation" / "index.json"
+    presentation_index_path = release_root / "presentation" / "index.json"
+    catalog_manifest_path = release_root / "catalog.json"
+    release_identity_path = release_root / "release.json"
+    resources = simulation_resources(release_root)
     simulation_index = {
         "schema_version": "pitgun.racing-simulation-index/v1",
         "resources": resources,
     }
-    presentation_index = load_json(PRESENTATION_INDEX)
+    presentation_index = load_json(presentation_index_path)
     if (
         presentation_index.get("schema_version")
         != "pitgun.racing-presentation-index/v1"
     ):
         raise SystemExit("FAIL Racing catalog: unsupported presentation index")
-    validate_pack_boundary(presentation_index)
+    validate_pack_boundary(release_root, presentation_index)
+    validate_opponent_policies(release_root)
 
     simulation_digest = digest_bytes(canonical_json(simulation_index))
     presentation_digest = digest_bytes(canonical_json(presentation_index))
@@ -132,12 +183,12 @@ def generated_artifacts() -> dict[Path, bytes]:
         "schema_version": "pitgun.resource-catalog/v1",
         "catalog": {
             "id": "pitgun.racing",
-            "version": "1.0.0",
+            "version": version,
         },
         "simulation_pack": {
             "identity": {
                 "id": "pitgun.racing.simulation",
-                "version": "1.0.0",
+                "version": version,
                 "digest": simulation_digest,
             },
             "index": {
@@ -149,7 +200,7 @@ def generated_artifacts() -> dict[Path, bytes]:
         "presentation_pack": {
             "identity": {
                 "id": "pitgun.racing.presentation",
-                "version": "1.0.0",
+                "version": version,
                 "digest": presentation_digest,
             },
             "index": {
@@ -172,10 +223,19 @@ def generated_artifacts() -> dict[Path, bytes]:
     identity = {
         "schema_version": "pitgun.catalog-release-identity/v1",
         "id": "pitgun.racing",
-        "version": "1.0.0",
+        "version": version,
         "manifest_digest": digest_bytes(canonical_json(manifest)),
     }
 
+    return {
+        simulation_index_path: pretty_json(simulation_index),
+        catalog_manifest_path: pretty_json(manifest),
+        release_identity_path: pretty_json(identity),
+    }
+
+
+def generated_embedded_artifact(release_root: Path) -> bytes:
+    resources = simulation_resources(release_root)
     embedded_lines = [
         "// Generated by scripts/generate-racing-catalog.py; do not edit.",
         "const EMBEDDED_FILES: &[(&str, &[u8])] = &[",
@@ -188,19 +248,23 @@ def generated_artifacts() -> dict[Path, bytes]:
                 f'        "{path}",',
                 "        include_bytes!(concat!(",
                 '            env!("CARGO_MANIFEST_DIR"),',
-                f'            "/../../catalogs/racing/v1.0.0/simulation/{path}"',
+                f'            "/../../catalogs/racing/{release_root.name}/simulation/{path}"',
                 "        )),",
                 "    ),",
             ]
         )
     embedded_lines.extend(["];", ""])
 
-    return {
-        SIMULATION_INDEX: pretty_json(simulation_index),
-        CATALOG_MANIFEST: pretty_json(manifest),
-        RELEASE_IDENTITY: pretty_json(identity),
-        EMBEDDED_RUST: "\n".join(embedded_lines).encode("utf-8"),
-    }
+    return "\n".join(embedded_lines).encode("utf-8")
+
+
+def generated_artifacts() -> dict[Path, bytes]:
+    artifacts: dict[Path, bytes] = {}
+    for release_root in release_roots():
+        artifacts.update(generated_release_artifacts(release_root))
+    selected = selected_release_root()
+    artifacts[EMBEDDED_RUST] = generated_embedded_artifact(selected)
+    return artifacts
 
 
 def main() -> int:
@@ -229,7 +293,11 @@ def main() -> int:
         print("Run: python3 scripts/generate-racing-catalog.py")
         return 1
     if args.check:
-        print(f"OK Racing Catalog V1 ({len(simulation_resources())} resources)")
+        resource_count = sum(len(simulation_resources(root)) for root in release_roots())
+        print(
+            f"OK Racing Catalog ({len(release_roots())} releases, "
+            f"{resource_count} indexed resources)"
+        )
     return 0
 
 
