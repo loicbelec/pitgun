@@ -42,6 +42,7 @@ def wheel_entries(version: str) -> dict[str, bytes]:
     )
     campaigns = FRAMEWORK / "experiments" / "databricks" / "campaigns"
     responses = FRAMEWORK / "experiments" / "databricks" / "responses"
+    reviews = FRAMEWORK / "experiments" / "databricks" / "reviews"
     if not runner.is_file():
         raise SystemExit(f"missing Linux runner: {runner}")
     if not tuning_response_probe.is_file():
@@ -54,6 +55,9 @@ def wheel_entries(version: str) -> dict[str, bytes]:
         f"{PACKAGE}/__init__.py": (package_root / "__init__.py").read_bytes(),
         f"{PACKAGE}/runner.py": (package_root / "runner.py").read_bytes(),
         f"{PACKAGE}/campaign.py": (package_root / "campaign.py").read_bytes(),
+        f"{PACKAGE}/candidate_review.py": (
+            package_root / "candidate_review.py"
+        ).read_bytes(),
         f"{PACKAGE}/opponent_policy.py": (
             package_root / "opponent_policy.py"
         ).read_bytes(),
@@ -84,6 +88,8 @@ def wheel_entries(version: str) -> dict[str, bytes]:
         entries[f"{PACKAGE}/campaigns/{campaign.name}"] = campaign.read_bytes()
     for response in sorted(responses.glob("racing-*.json")):
         entries[f"{PACKAGE}/responses/{response.name}"] = response.read_bytes()
+    for review in sorted(reviews.glob("racing-*.json")):
+        entries[f"{PACKAGE}/reviews/{review.name}"] = review.read_bytes()
     return entries
 
 

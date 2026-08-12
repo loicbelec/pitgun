@@ -1,0 +1,45 @@
+{
+  "schema_version": "pitgun.racing-candidate-review-policy/v1",
+  "id": "racing-aero-candidate-review-v1",
+  "campaign_id": "racing-aero-candidate-validation-2026-v1",
+  "historical_response_id": "historical-v1",
+  "candidate_response_id": "aero-candidate-v1",
+  "expected_top_families": {
+    "it-1922": [
+      "low-downforce",
+      "low-downforce-long-gearing"
+    ],
+    "mc-1929": [
+      "high-downforce",
+      "high-downforce-short-gearing"
+    ],
+    "hu-1986": [
+      "high-downforce",
+      "high-downforce-short-gearing"
+    ],
+    "jp-1962": [
+      "balanced",
+      "balanced-short-gearing",
+      "balanced-long-gearing"
+    ],
+    "sg-2008": [
+      "high-downforce",
+      "high-downforce-short-gearing"
+    ]
+  },
+  "gates": {
+    "required_success_rate": 1.0,
+    "maximum_speed_kph": 400.0,
+    "minimum_setup_discrimination_pct": 0.25,
+    "maximum_setup_discrimination_pct": 8.0,
+    "maximum_seed_noise_to_setup_signal": 0.25,
+    "maximum_absolute_mean_pace_shift_pct": 5.0,
+    "required_physically_coherent_circuit_count": 5
+  },
+  "decision_states": [
+    "PROMOTE",
+    "REFINE",
+    "REJECT"
+  ],
+  "automatic_promotion": false
+}
