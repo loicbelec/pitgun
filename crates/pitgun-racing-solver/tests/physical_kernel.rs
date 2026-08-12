@@ -1,7 +1,8 @@
 use pitgun_racing_solver::{
     AeroParams, ChassisParams, Driver, EngineParams, PitPlan, SimConfig, SimulationRequest,
-    TireParams, Track, Tuning, VehicleParams, VehicleState, apply_tuning, describe_circuit,
-    run_simulation,
+    TireParams, Track, Tuning, TuningResponseV1, VehicleParams, VehicleState, apply_tuning,
+    apply_tuning_with_response, describe_circuit, run_simulation,
+    run_simulation_with_tuning_response,
 };
 
 fn synthetic_request() -> SimulationRequest {
@@ -192,4 +193,109 @@ fn applied_downforce_setting_increases_drag_and_downforce_coefficients() {
     assert!(high.aero.cd_a_z > low.aero.cd_a_z);
     assert!(high.aero.cl_a_x > low.aero.cl_a_x);
     assert!(high.aero.cl_a_z > low.aero.cl_a_z);
+}
+
+#[test]
+fn default_tuning_response_encodes_the_historical_coefficients() {
+    let response = TuningResponseV1::default();
+
+    assert_eq!(response.development_points_cap, 20.0);
+    assert_eq!(response.aero_development_gain, 0.10);
+    assert_eq!(response.drag_base, 0.85);
+    assert_eq!(response.drag_slider_gain, 0.30);
+    assert_eq!(response.downforce_base, 0.75);
+    assert_eq!(response.downforce_slider_gain, 0.55);
+    assert_eq!(response.straight_aero_scale, 0.95);
+    assert_eq!(response.corner_aero_scale, 1.05);
+    assert_eq!(response.chassis_grip_development_gain, 0.08);
+    assert_eq!(response.cooling_base, 0.75);
+    assert_eq!(response.cooling_development_gain, 0.50);
+    assert_eq!(response.engine_torque_development_gain, 0.01);
+    assert_eq!(response.gear_ratio_base, 1.10);
+    assert_eq!(response.gear_ratio_slider_reduction, 0.20);
+    response.validate().expect("historical response is valid");
+}
+
+#[test]
+fn explicit_default_response_is_exactly_compatible() {
+    let mut request = synthetic_request();
+    request.tuning = Some(Tuning {
+        aero_points: 20,
+        chassis_points: 20,
+        cooling_points: 20,
+        engine_points: 20,
+        downforce_slider: 0.65,
+        gear_ratio_slider: 0.35,
+    });
+
+    let compatibility = run_simulation(&request).expect("compatibility solve");
+    let explicit = run_simulation_with_tuning_response(&request, &TuningResponseV1::default())
+        .expect("explicit default solve");
+
+    assert_eq!(explicit, compatibility);
+    assert_eq!(
+        apply_tuning(&request.vehicle, request.tuning.as_ref().unwrap()),
+        apply_tuning_with_response(
+            &request.vehicle,
+            request.tuning.as_ref().unwrap(),
+            &TuningResponseV1::default(),
+        )
+        .expect("explicit default tuning"),
+    );
+}
+
+#[test]
+fn candidate_response_changes_only_the_selected_transform() {
+    let request = synthetic_request();
+    let tuning = Tuning {
+        downforce_slider: 1.0,
+        gear_ratio_slider: 1.0,
+        ..Tuning::default()
+    };
+    let baseline = apply_tuning(&request.vehicle, &tuning);
+
+    let mut reduced_downforce = TuningResponseV1::default();
+    reduced_downforce.downforce_slider_gain = 0.20;
+    let reduced = apply_tuning_with_response(&request.vehicle, &tuning, &reduced_downforce)
+        .expect("reduced downforce candidate");
+    assert!(reduced.aero.cl_a_x < baseline.aero.cl_a_x);
+    assert_eq!(reduced.aero.cd_a_x, baseline.aero.cd_a_x);
+
+    let mut increased_drag = TuningResponseV1::default();
+    increased_drag.drag_slider_gain = 0.60;
+    let drag = apply_tuning_with_response(&request.vehicle, &tuning, &increased_drag)
+        .expect("increased drag candidate");
+    assert!(drag.aero.cd_a_x > baseline.aero.cd_a_x);
+    assert_eq!(drag.aero.cl_a_x, baseline.aero.cl_a_x);
+
+    let mut wider_gearing = TuningResponseV1::default();
+    wider_gearing.gear_ratio_slider_reduction = 0.40;
+    let gearing = apply_tuning_with_response(&request.vehicle, &tuning, &wider_gearing)
+        .expect("wider gearing candidate");
+    assert!(
+        gearing
+            .engine
+            .gear_ratios
+            .iter()
+            .zip(&baseline.engine.gear_ratios)
+            .all(|(candidate, current)| candidate < current)
+    );
+}
+
+#[test]
+fn invalid_tuning_responses_fail_before_simulation() {
+    let request = synthetic_request();
+    let mut non_finite = TuningResponseV1::default();
+    non_finite.drag_slider_gain = f64::NAN;
+    assert_eq!(
+        run_simulation_with_tuning_response(&request, &non_finite).unwrap_err(),
+        "tuning response coefficients must be finite"
+    );
+
+    let mut inverted_gearing = TuningResponseV1::default();
+    inverted_gearing.gear_ratio_slider_reduction = inverted_gearing.gear_ratio_base;
+    assert_eq!(
+        inverted_gearing.validate().unwrap_err(),
+        "gear_ratio_slider_reduction must remain below gear_ratio_base"
+    );
 }
