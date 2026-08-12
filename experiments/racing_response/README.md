@@ -1,0 +1,44 @@
+# Racing response-surface experiment
+
+This local experiment measures how the canonical Racing Solver responds to its
+two existing setup sliders before any physical coefficient is recalibrated. It
+uses the same resolved scenario and `pitgun run racing` boundary as Databricks;
+Python only materializes the bounded grid and analyzes the versioned diagnostic
+results.
+
+The reviewed V1 protocol uses:
+
+- five physical circuits: Monza, Monaco, Budapest, Suzuka, and Singapore;
+- eleven equally spaced downforce levels from `0.0` to `1.0`;
+- eleven equally spaced gearing levels from `0.0` to `1.0`;
+- seed `42` and one lap per point;
+- 605 canonical simulations in total.
+
+Build the release runner and execute the experiment from the repository root:
+
+```bash
+cargo build --release -p pitgun-cli
+python3 experiments/racing_response/response_surface.py --jobs 4
+```
+
+The deterministic report is written to
+`experiments/racing_response/results/racing-response-surface-v1.json`. Parallel
+job count affects wall-clock time only: points are sorted before canonical JSON
+serialization. Its adjacent `.sha256` file identifies the exact report. Re-run
+with `--check` to prove that both stored artifacts match the same runner and
+inputs byte for byte.
+
+The per-circuit summary reports the fastest point, whether it sits on a search
+boundary, total lap-time range, and two isolated comparisons:
+
+- maximum minus minimum downforce at midpoint gearing;
+- longest minus shortest gearing at midpoint downforce.
+
+Negative time deltas mean the first named condition is faster. The full grid is
+retained with observed maximum speed and the complete setup-response diagnostic
+for later visualization and governed campaign design. This experiment does not
+modify catalog resources, model coefficients, game policy, or Databricks
+tables.
+
+The reviewed interpretation and next decision are documented in
+[`RACING_RESPONSE_SURFACE_V1.md`](../../docs/RACING_RESPONSE_SURFACE_V1.md).
