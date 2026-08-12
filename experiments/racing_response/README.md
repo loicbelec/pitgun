@@ -95,3 +95,22 @@ python3 experiments/racing_response/refine_aero_bases.py --jobs 4
 The selected offline candidate, its reduced gameplay-pace gap, and the planned
 governed Databricks replay are documented in
 [`RACING_AERO_BASE_CALIBRATION_V1.md`](../../docs/RACING_AERO_BASE_CALIBRATION_V1.md).
+
+## Mixed-circuit diagnosis V1
+
+After the governed Databricks review exposed a Suzuka setup-label mismatch,
+the fifth local experiment tests whether the calibrated response or the coarse
+review grid is responsible. It evaluates 35 narrowly bounded response variants
+on an eleven-by-eleven setup grid across five calibration circuits, with
+Silverstone and Spa retained as post-selection holdouts: 29,645 deterministic
+probe executions.
+
+```bash
+cargo build --release -p pitgun-racing-simulator --example tuning_response_probe
+python3 experiments/racing_response/diagnose_mixed_circuit.py --jobs 4
+```
+
+The diagnosis keeps the current mixed-circuit response, identifies review-grid
+aliasing at Suzuka, and records a separate high-speed guardrail failure found
+at Spa. The evidence and decision boundary are documented in
+[`RACING_MIXED_CIRCUIT_DIAGNOSIS_V1.md`](../../docs/RACING_MIXED_CIRCUIT_DIAGNOSIS_V1.md).
