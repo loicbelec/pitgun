@@ -26,7 +26,9 @@ experiments/databricks/
 │   ├── jobs.yml
 │   └── schemas.yml
 ├── src/
-│   └── bootstrap_tables.py
+│   ├── bootstrap_tables.py
+│   ├── execute_reference_campaign.py
+│   └── select_reference_opponent_policy.py
 └── README.md
 ```
 
@@ -49,6 +51,7 @@ databricks bundle run bootstrap_job -t dev -p pitgun-free \
 databricks bundle run runner_spike_job -t dev -p pitgun-free \
   --params seed=42
 databricks bundle run reference_campaign_job -t dev -p pitgun-free
+databricks bundle run reference_policy_job -t dev -p pitgun-free
 ```
 
 Repeat `deploy` and `run`: schema and table creation are idempotent. The job may
@@ -85,6 +88,12 @@ and three seeds. Its scope and current limitations are documented in
 The campaign job bootstraps additive schema changes, skips accepted natural
 keys on retry, merges compact run and metric evidence into Delta, and resumes
 one campaign-level MLflow run.
+
+The policy job reads explicitly pinned historical versions of the campaign,
+runs, and metrics tables. It applies deterministic multi-objective constraints,
+writes only `PROPOSED` candidate and release rows, and logs the exact policy to
+the existing campaign MLflow run. It cannot approve or publish a catalog
+release; that remains a protected repository review.
 
 ## Governed table ownership
 

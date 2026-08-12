@@ -1114,6 +1114,16 @@ impl EmbeddedCatalog {
                 let track = parse_track(stem, &value)?;
                 self.tracks.insert(track.id.clone(), track);
             }
+            "policies" => {
+                if value.get("schema_version").and_then(Value::as_str)
+                    != Some("pitgun.racing-opponent-policy/v1")
+                {
+                    return Err(format!("unsupported Racing opponent policy in '{path}'"));
+                }
+                // Opponent policies influence canonical race-input composition,
+                // not the physical solver. Browser/application adapters consume
+                // them before submitting the complete competitor field.
+            }
             _ => {
                 return Err(format!(
                     "unsupported Racing simulation resource category '{category}'"

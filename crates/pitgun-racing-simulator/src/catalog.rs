@@ -579,6 +579,32 @@ mod tests {
         );
     }
 
+    #[cfg(not(target_arch = "wasm32"))]
+    #[test]
+    fn policy_catalog_release_resolves_without_changing_the_embedded_fallback() {
+        let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../catalogs/racing/v1.1.0");
+        let snapshot =
+            RacingCatalogSnapshot::from_release_dir(root).expect("policy catalog release");
+
+        assert_eq!(snapshot.manifest().catalog.version.to_string(), "1.1.0");
+        assert!(
+            snapshot
+                .simulation_index()
+                .resources
+                .iter()
+                .any(|resource| { resource.path.as_str() == "simulation/policies/reference.json" })
+        );
+        assert_eq!(
+            RacingCatalogSnapshot::embedded()
+                .expect("embedded fallback")
+                .manifest()
+                .catalog
+                .version
+                .to_string(),
+            "1.0.0"
+        );
+    }
+
     #[test]
     fn browser_bundle_and_embedded_adapters_resolve_identically() {
         let embedded = RacingCatalogSnapshot::embedded().expect("embedded catalog");

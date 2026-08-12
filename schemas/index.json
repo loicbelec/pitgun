@@ -67,6 +67,17 @@
       ]
     },
     {
+      "id": "https://schemas.pitgun.io/racing-opponent-policy/v1.json",
+      "path": "racing-opponent-policy/v1.json",
+      "kind": "json-schema",
+      "lifecycle": "experimental",
+      "owner": "pitgun-racing-contract",
+      "evidence": [
+        "catalogs/racing/v1.1.0/simulation/policies/reference.json",
+        "experiments/databricks/adapter/pitgun_databricks_adapter/opponent_policy.py"
+      ]
+    },
+    {
       "id": "https://schemas.pitgun.io/pipeline-manifest/v1.json",
       "path": "pipeline-manifest/v1.json",
       "kind": "json-schema",

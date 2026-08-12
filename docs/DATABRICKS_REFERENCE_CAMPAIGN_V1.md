@@ -98,3 +98,8 @@ complete serverless job still took 266,024 ms, including 205,000 ms of cold
 setup. This is the main observed Free Edition limitation: orchestration latency
 dominates tiny deterministic workloads even when compute cost is monetarily
 zero.
+
+The governed results subsequently produced the first immutable
+[Racing Opponent Policy V1](RACING_OPPONENT_POLICY_V1.md). Selection reads
+historical Delta versions rather than mutable latest state and preserves the
+three materially distinct families as separate field roles.
