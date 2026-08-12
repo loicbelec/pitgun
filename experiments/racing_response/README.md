@@ -114,3 +114,23 @@ The diagnosis keeps the current mixed-circuit response, identifies review-grid
 aliasing at Suzuka, and records a separate high-speed guardrail failure found
 at Spa. The evidence and decision boundary are documented in
 [`RACING_MIXED_CIRCUIT_DIAGNOSIS_V1.md`](../../docs/RACING_MIXED_CIRCUIT_DIAGNOSIS_V1.md).
+
+## Spa high-speed diagnosis V1
+
+The sixth local experiment investigates the Spa holdout without changing the
+calibrated response. A dedicated track-aware probe relates speed telemetry to
+distance and curvature, then compares minimum and maximum downforce at eleven
+gearing levels across Suzuka, Silverstone, and Spa: 66 deterministic runs.
+
+```bash
+cargo build --release -p pitgun-racing-simulator --example high_speed_response_probe
+python3 experiments/racing_response/diagnose_spa_high_speed.py --jobs 4
+```
+
+The result reproduces Spa's `406.393 km/h` peak and eleven aggregate
+corner-response failures, while showing that downforce still increases speed
+in every high-curvature comparison. It identifies a general binary Solver
+segmentation weakness exposed by Spa, records a failing high-speed holdout
+guardrail, and preserves all five calibration optima. The evidence and the
+reason no coefficient or circuit is changed automatically are documented in
+[`RACING_SPA_HIGH_SPEED_DIAGNOSIS_V1.md`](../../docs/RACING_SPA_HIGH_SPEED_DIAGNOSIS_V1.md).
