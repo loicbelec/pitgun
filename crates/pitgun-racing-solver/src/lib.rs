@@ -222,6 +222,54 @@ pub struct SimulationSolution {
     pub tire_wear: Vec<f64>,
 }
 
+pub const CORNER_CURVATURE_THRESHOLD_RAD_PER_M: f64 = 0.001;
+pub const LONGITUDINAL_ACCELERATION_THRESHOLD_MPS2: f64 = 0.05;
+pub const NEAR_MAX_RPM_RATIO: f64 = 0.98;
+
+#[derive(Debug, Clone, Copy, Default, Serialize, Deserialize, PartialEq)]
+pub struct CircuitDescriptorsV1 {
+    pub length_m: f64,
+    pub straight_distance_m: f64,
+    pub corner_distance_m: f64,
+    pub corner_distance_share: f64,
+    pub absolute_curvature_integral_rad: f64,
+    pub maximum_absolute_curvature_rad_per_m: f64,
+    pub elevation_gain_m: f64,
+    pub elevation_loss_m: f64,
+}
+
+#[derive(Debug, Clone, Copy, Default, Serialize, Deserialize, PartialEq)]
+pub enum SetupResponseDiagnosticsVersion {
+    #[default]
+    #[serde(rename = "pitgun.racing-setup-response/v1")]
+    V1,
+}
+
+#[derive(Debug, Clone, Copy, Default, Serialize, Deserialize, PartialEq)]
+pub struct SetupResponseDiagnosticsV1 {
+    pub schema_version: SetupResponseDiagnosticsVersion,
+    pub corner_curvature_threshold_rad_per_m: f64,
+    pub longitudinal_acceleration_threshold_mps2: f64,
+    pub near_max_rpm_ratio: f64,
+    pub circuit: CircuitDescriptorsV1,
+    pub observed_time_s: f64,
+    pub straight_time_s: f64,
+    pub corner_time_s: f64,
+    pub mean_straight_speed_kph: f64,
+    pub mean_corner_speed_kph: f64,
+    pub acceleration_time_s: f64,
+    pub braking_time_s: f64,
+    pub steady_speed_time_s: f64,
+    pub gear_shift_count: u64,
+    pub near_max_rpm_time_s: f64,
+    pub maximum_observed_rpm: f64,
+    pub maximum_rpm_utilization: f64,
+    pub maximum_gear_used: u8,
+    pub aerodynamic_drag_work_kj: f64,
+    pub mean_downforce_n: f64,
+    pub maximum_downforce_n: f64,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct SimulationResult {
     pub solution: SimulationSolution,
@@ -230,6 +278,8 @@ pub struct SimulationResult {
     pub total_time_s: f64,
     pub applied_vehicle: VehicleParams,
     pub applied_driver: Driver,
+    #[serde(default)]
+    pub diagnostics: SetupResponseDiagnosticsV1,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq)]
@@ -526,6 +576,7 @@ pub fn run_simulation(input: &SimulationRequest) -> Result<SimulationResult, Str
         tire_wear: out_tire_wear,
     };
     let total_time_s = solution.t.last().copied().unwrap_or(0.0);
+    let diagnostics = diagnose_setup_response(&input.track, &solution, &vehicle)?;
 
     Ok(SimulationResult {
         solution,
@@ -534,6 +585,7 @@ pub fn run_simulation(input: &SimulationRequest) -> Result<SimulationResult, Str
         total_time_s,
         applied_vehicle: vehicle,
         applied_driver: driver,
+        diagnostics,
     })
 }
 
@@ -936,6 +988,187 @@ fn aero_forces(
     };
     let q = 0.5 * chassis.rho * speed * speed;
     (q * cd_a, q * cl_a)
+}
+
+pub fn describe_circuit(track: &Track) -> Result<CircuitDescriptorsV1, String> {
+    validate_track(track)?;
+
+    let mut straight_distance_m = 0.0;
+    let mut corner_distance_m = 0.0;
+    let mut absolute_curvature_integral_rad = 0.0;
+    let mut maximum_absolute_curvature_rad_per_m = 0.0_f64;
+    let mut elevation_gain_m = 0.0;
+    let mut elevation_loss_m = 0.0;
+
+    for index in 1..track.s.len() {
+        let distance_m = track.s[index] - track.s[index - 1];
+        let curvature_rad_per_m = 0.5 * (track.kappa[index].abs() + track.kappa[index - 1].abs());
+        maximum_absolute_curvature_rad_per_m =
+            maximum_absolute_curvature_rad_per_m.max(curvature_rad_per_m);
+        absolute_curvature_integral_rad += curvature_rad_per_m * distance_m;
+        if curvature_rad_per_m >= CORNER_CURVATURE_THRESHOLD_RAD_PER_M {
+            corner_distance_m += distance_m;
+        } else {
+            straight_distance_m += distance_m;
+        }
+
+        let elevation_delta_m = track.z[index] - track.z[index - 1];
+        if elevation_delta_m >= 0.0 {
+            elevation_gain_m += elevation_delta_m;
+        } else {
+            elevation_loss_m += -elevation_delta_m;
+        }
+    }
+
+    let length_m = straight_distance_m + corner_distance_m;
+    Ok(CircuitDescriptorsV1 {
+        length_m,
+        straight_distance_m,
+        corner_distance_m,
+        corner_distance_share: if length_m > 0.0 {
+            corner_distance_m / length_m
+        } else {
+            0.0
+        },
+        absolute_curvature_integral_rad,
+        maximum_absolute_curvature_rad_per_m,
+        elevation_gain_m,
+        elevation_loss_m,
+    })
+}
+
+pub fn diagnose_setup_response(
+    track: &Track,
+    solution: &SimulationSolution,
+    vehicle: &VehicleParams,
+) -> Result<SetupResponseDiagnosticsV1, String> {
+    let circuit = describe_circuit(track)?;
+    let sample_count = solution
+        .s
+        .len()
+        .min(solution.t.len())
+        .min(solution.v.len())
+        .min(solution.gear.len())
+        .min(solution.lap_index.len());
+    if sample_count < 2 {
+        return Err("solution must contain at least 2 aligned samples".to_string());
+    }
+
+    let mut observed_time_s = 0.0;
+    let mut straight_time_s = 0.0;
+    let mut corner_time_s = 0.0;
+    let mut straight_speed_time_m = 0.0;
+    let mut corner_speed_time_m = 0.0;
+    let mut acceleration_time_s = 0.0;
+    let mut braking_time_s = 0.0;
+    let mut steady_speed_time_s = 0.0;
+    let mut gear_shift_count = 0_u64;
+    let mut near_max_rpm_time_s = 0.0;
+    let mut maximum_observed_rpm = 0.0_f64;
+    let mut maximum_gear_used = 0_u8;
+    let mut aerodynamic_drag_work_j = 0.0;
+    let mut downforce_time_ns = 0.0;
+    let mut maximum_downforce_n = 0.0_f64;
+
+    for index in 1..sample_count {
+        if solution.lap_index[index] != solution.lap_index[index - 1] {
+            continue;
+        }
+        let elapsed_s = solution.t[index] - solution.t[index - 1];
+        let distance_m = solution.s[index] - solution.s[index - 1];
+        if !elapsed_s.is_finite()
+            || !distance_m.is_finite()
+            || elapsed_s <= 0.0
+            || distance_m <= 0.0
+        {
+            continue;
+        }
+
+        let speed_mps = 0.5 * (solution.v[index] + solution.v[index - 1]);
+        if !speed_mps.is_finite() || speed_mps < 0.0 {
+            return Err("solution contains an invalid speed".to_string());
+        }
+        let track_position_m =
+            (0.5 * (solution.s[index] + solution.s[index - 1])).rem_euclid(circuit.length_m);
+        let curvature_rad_per_m = interp_linear(track_position_m, &track.s, &track.kappa).abs();
+        let corner_mode = curvature_rad_per_m >= CORNER_CURVATURE_THRESHOLD_RAD_PER_M;
+        if corner_mode {
+            corner_time_s += elapsed_s;
+            corner_speed_time_m += speed_mps * elapsed_s;
+        } else {
+            straight_time_s += elapsed_s;
+            straight_speed_time_m += speed_mps * elapsed_s;
+        }
+
+        let acceleration_mps2 = (solution.v[index] - solution.v[index - 1]) / elapsed_s;
+        if acceleration_mps2 > LONGITUDINAL_ACCELERATION_THRESHOLD_MPS2 {
+            acceleration_time_s += elapsed_s;
+        } else if acceleration_mps2 < -LONGITUDINAL_ACCELERATION_THRESHOLD_MPS2 {
+            braking_time_s += elapsed_s;
+        } else {
+            steady_speed_time_s += elapsed_s;
+        }
+
+        if solution.gear[index] != solution.gear[index - 1] {
+            gear_shift_count += 1;
+        }
+        let gear_index = solution.gear[index].max(1) as usize - 1;
+        maximum_gear_used = maximum_gear_used.max(solution.gear[index]);
+        if let Some(ratio) = vehicle.engine.gear_ratios.get(gear_index) {
+            let rpm = rpm_from_speed_gear(speed_mps, *ratio, &vehicle.chassis);
+            maximum_observed_rpm = maximum_observed_rpm.max(rpm);
+            if rpm >= NEAR_MAX_RPM_RATIO * vehicle.engine.n_max {
+                near_max_rpm_time_s += elapsed_s;
+            }
+        }
+
+        let (drag_n, downforce_n) =
+            aero_forces(speed_mps, &vehicle.aero, &vehicle.chassis, corner_mode);
+        aerodynamic_drag_work_j += drag_n * distance_m;
+        downforce_time_ns += downforce_n * elapsed_s;
+        maximum_downforce_n = maximum_downforce_n.max(downforce_n);
+        observed_time_s += elapsed_s;
+    }
+
+    if observed_time_s <= 0.0 {
+        return Err("solution contains no measurable segments".to_string());
+    }
+
+    Ok(SetupResponseDiagnosticsV1 {
+        schema_version: SetupResponseDiagnosticsVersion::V1,
+        corner_curvature_threshold_rad_per_m: CORNER_CURVATURE_THRESHOLD_RAD_PER_M,
+        longitudinal_acceleration_threshold_mps2: LONGITUDINAL_ACCELERATION_THRESHOLD_MPS2,
+        near_max_rpm_ratio: NEAR_MAX_RPM_RATIO,
+        circuit,
+        observed_time_s,
+        straight_time_s,
+        corner_time_s,
+        mean_straight_speed_kph: if straight_time_s > 0.0 {
+            3.6 * straight_speed_time_m / straight_time_s
+        } else {
+            0.0
+        },
+        mean_corner_speed_kph: if corner_time_s > 0.0 {
+            3.6 * corner_speed_time_m / corner_time_s
+        } else {
+            0.0
+        },
+        acceleration_time_s,
+        braking_time_s,
+        steady_speed_time_s,
+        gear_shift_count,
+        near_max_rpm_time_s,
+        maximum_observed_rpm,
+        maximum_rpm_utilization: if vehicle.engine.n_max > 0.0 {
+            maximum_observed_rpm / vehicle.engine.n_max
+        } else {
+            0.0
+        },
+        maximum_gear_used,
+        aerodynamic_drag_work_kj: aerodynamic_drag_work_j / 1000.0,
+        mean_downforce_n: downforce_time_ns / observed_time_s,
+        maximum_downforce_n,
+    })
 }
 
 fn lap_noise_ms(sim_seed: u64, driver_id: &str, lap_idx: u16, effects: &DriverEffects) -> f64 {

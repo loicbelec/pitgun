@@ -8,7 +8,7 @@ use pitgun_contract::{
     canonical_json_bytes, canonical_json_digest, ArtifactIdentity, DerivedMetricsV1, Digest,
     ScenarioIdentity, Seed,
 };
-use pitgun_racing_simulator::StandingEntry;
+use pitgun_racing_simulator::{SetupResponseDiagnosticsV1, StandingEntry};
 use serde::Serialize;
 
 use crate::demo::{bundle, racing};
@@ -61,6 +61,7 @@ struct RacingBatchSummary<'a> {
     telemetry_frame_count: u64,
     telemetry_batch_count: u64,
     metrics: &'a DerivedMetricsV1,
+    setup_response: Option<&'a SetupResponseDiagnosticsV1>,
 }
 
 #[derive(Debug, Serialize)]
@@ -222,6 +223,7 @@ pub(crate) fn run_racing(args: &RacingBatchArgs) -> Result<(), BatchRunError> {
             telemetry_frame_count: run.evidence.telemetry_summary.frame_count(),
             telemetry_batch_count: run.evidence.telemetry_summary.batch_count(),
             metrics: &run.metrics,
+            setup_response: run.output.player_diagnostics.as_ref(),
         },
     };
     let mut bytes = canonical_json_bytes(&result).map_err(|error| {

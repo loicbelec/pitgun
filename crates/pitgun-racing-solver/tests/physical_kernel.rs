@@ -1,6 +1,7 @@
 use pitgun_racing_solver::{
     AeroParams, ChassisParams, Driver, EngineParams, PitPlan, SimConfig, SimulationRequest,
-    TireParams, Track, VehicleParams, VehicleState, run_simulation,
+    TireParams, Track, Tuning, VehicleParams, VehicleState, apply_tuning, describe_circuit,
+    run_simulation,
 };
 
 fn synthetic_request() -> SimulationRequest {
@@ -108,4 +109,87 @@ fn malformed_track_is_rejected_at_the_solver_boundary() {
     let error = run_simulation(&request).expect_err("misaligned track vectors must be rejected");
 
     assert_eq!(error, "track vectors must share the same length");
+}
+
+#[test]
+fn circuit_descriptors_are_derived_from_physical_samples() {
+    let mut request = synthetic_request();
+    request.track.kappa[5..=12].fill(0.002);
+    request.track.z = (0..21)
+        .map(|index| {
+            if index <= 10 {
+                index as f64
+            } else {
+                (20 - index) as f64
+            }
+        })
+        .collect();
+
+    let descriptors = describe_circuit(&request.track).expect("valid physical track");
+
+    assert_eq!(descriptors.length_m, 500.0);
+    assert!(descriptors.straight_distance_m > 0.0);
+    assert!(descriptors.corner_distance_m > 0.0);
+    assert!(descriptors.corner_distance_share > 0.25);
+    assert!(descriptors.corner_distance_share < 0.75);
+    assert!(descriptors.absolute_curvature_integral_rad > 0.0);
+    assert!(descriptors.maximum_absolute_curvature_rad_per_m >= 0.002);
+    assert_eq!(descriptors.elevation_gain_m, 10.0);
+    assert_eq!(descriptors.elevation_loss_m, 10.0);
+}
+
+#[test]
+fn setup_response_diagnostics_are_deterministic_and_finite() {
+    let mut request = synthetic_request();
+    request.track.kappa[5..=12].fill(0.002);
+
+    let first = run_simulation(&request).expect("first diagnostic solve");
+    let second = run_simulation(&request).expect("second diagnostic solve");
+    let diagnostics = first.diagnostics;
+
+    assert_eq!(diagnostics, second.diagnostics);
+    assert_eq!(diagnostics.corner_curvature_threshold_rad_per_m, 0.001);
+    assert_eq!(diagnostics.longitudinal_acceleration_threshold_mps2, 0.05);
+    assert_eq!(diagnostics.near_max_rpm_ratio, 0.98);
+    assert!(diagnostics.observed_time_s > 0.0);
+    assert!(diagnostics.straight_time_s > 0.0);
+    assert!(diagnostics.corner_time_s > 0.0);
+    assert!(diagnostics.mean_straight_speed_kph.is_finite());
+    assert!(diagnostics.mean_corner_speed_kph.is_finite());
+    assert!(diagnostics.maximum_observed_rpm > 0.0);
+    assert!(diagnostics.maximum_rpm_utilization > 0.0);
+    assert!(diagnostics.maximum_gear_used > 0);
+    assert!(diagnostics.aerodynamic_drag_work_kj > 0.0);
+    assert!(diagnostics.mean_downforce_n > 0.0);
+    assert!(diagnostics.maximum_downforce_n >= diagnostics.mean_downforce_n);
+    assert_eq!(
+        diagnostics.acceleration_time_s
+            + diagnostics.braking_time_s
+            + diagnostics.steady_speed_time_s,
+        diagnostics.observed_time_s
+    );
+}
+
+#[test]
+fn applied_downforce_setting_increases_drag_and_downforce_coefficients() {
+    let request = synthetic_request();
+    let low = apply_tuning(
+        &request.vehicle,
+        &Tuning {
+            downforce_slider: 0.0,
+            ..Tuning::default()
+        },
+    );
+    let high = apply_tuning(
+        &request.vehicle,
+        &Tuning {
+            downforce_slider: 1.0,
+            ..Tuning::default()
+        },
+    );
+
+    assert!(high.aero.cd_a_x > low.aero.cd_a_x);
+    assert!(high.aero.cd_a_z > low.aero.cd_a_z);
+    assert!(high.aero.cl_a_x > low.aero.cl_a_x);
+    assert!(high.aero.cl_a_z > low.aero.cl_a_z);
 }

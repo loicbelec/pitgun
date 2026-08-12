@@ -215,6 +215,18 @@ fn racing_batch_emits_byte_identical_compact_results() {
         result["summary"]["metrics"]["metrics"][0]["id"],
         "racing.observed-maximum-speed"
     );
+    assert_eq!(
+        result["summary"]["setup_response"]["schema_version"],
+        "pitgun.racing-setup-response/v1"
+    );
+    assert!(result["summary"]["setup_response"]["circuit"]["length_m"]
+        .as_f64()
+        .is_some_and(|value| value > 0.0));
+    assert!(
+        result["summary"]["setup_response"]["maximum_rpm_utilization"]
+            .as_f64()
+            .is_some_and(|value| value > 0.0)
+    );
     assert!(result["summary"].get("player_batches").is_none());
 }
 

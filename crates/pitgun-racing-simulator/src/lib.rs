@@ -28,11 +28,13 @@ use serde_json::Value;
 use wasm_bindgen::prelude::*;
 
 pub use pitgun_racing_solver::{
-    AeroParams, ChassisParams, Driver, DriverEffects, EngineParams, PitPlan, PitStop,
-    ResampledTelemetry, SimConfig, SimulationRequest, SimulationResult, SimulationSolution,
-    TireParams, Track, Tuning, VehicleParams, VehicleState, apply_driver_to_tire, apply_tuning,
-    best_power_at_speed, derating_factor, driver_effects, effective_mu, power_kw_from_rpm,
-    resample_telemetry as resample_solution, rpm_from_speed_gear, run_simulation as solve,
+    AeroParams, ChassisParams, CircuitDescriptorsV1, Driver, DriverEffects, EngineParams, PitPlan,
+    PitStop, ResampledTelemetry, SetupResponseDiagnosticsV1, SetupResponseDiagnosticsVersion,
+    SimConfig, SimulationRequest, SimulationResult, SimulationSolution, TireParams, Track, Tuning,
+    VehicleParams, VehicleState, apply_driver_to_tire, apply_tuning, best_power_at_speed,
+    derating_factor, describe_circuit, diagnose_setup_response, driver_effects, effective_mu,
+    power_kw_from_rpm, resample_telemetry as resample_solution, rpm_from_speed_gear,
+    run_simulation as solve,
 };
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -112,6 +114,8 @@ pub struct RaceOutput {
     pub player_lap_times_ms: Vec<u64>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub player_batches: Vec<TelemetryEnvelope>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub player_diagnostics: Option<SetupResponseDiagnosticsV1>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -427,6 +431,7 @@ fn run_single_session(
     let mut player_frames = Vec::new();
     let mut player_lap_times_ms = Vec::new();
     let mut player_resolved_pit_laps = Vec::new();
+    let mut player_diagnostics = None;
 
     for competitor in &race.competitors {
         let stint_plan =
@@ -501,6 +506,7 @@ fn run_single_session(
             );
             player_lap_times_ms = lap_times_ms.clone();
             player_resolved_pit_laps = stint_plan.pit_laps.clone();
+            player_diagnostics = Some(result.diagnostics);
         }
 
         rows.push(SimulatedCompetitor {
@@ -533,6 +539,7 @@ fn run_single_session(
         player_pit_laps: player_resolved_pit_laps,
         player_lap_times_ms,
         player_batches: telemetry_batches(player_frames),
+        player_diagnostics,
     })
 }
 
