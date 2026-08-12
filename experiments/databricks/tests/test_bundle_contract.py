@@ -165,6 +165,24 @@ class BundleContractTest(unittest.TestCase):
         self.assertIn("execute_packaged_tuning_response", runner)
         self.assertNotIn("shell=True", runner)
 
+    def test_candidate_review_pins_delta_and_cannot_promote_automatically(self):
+        job = (ROOT / "resources" / "jobs.yml").read_text()
+        notebook = (ROOT / "src" / "review_candidate_evidence.py").read_text()
+        policy = json.loads(
+            (ROOT / "reviews" / "racing-aero-candidate-review-v1.json").read_text()
+        )
+
+        self.assertIn("candidate_review_job:", job)
+        self.assertIn('experimental_runs_table_version: "1"', job)
+        self.assertIn('experimental_metrics_table_version: "1"', job)
+        self.assertIn('.option("versionAsOf", runs_version)', notebook)
+        self.assertIn('.option("versionAsOf", metrics_version)', notebook)
+        self.assertIn("review_candidate_evidence", notebook)
+        self.assertFalse(policy["automatic_promotion"])
+        self.assertEqual(policy["decision_states"], ["PROMOTE", "REFINE", "REJECT"])
+        for forbidden in ("UPDATE ", "MERGE INTO", "PUBLISHED", "catalog release"):
+            self.assertNotIn(forbidden, notebook)
+
     def test_reference_campaign_job_is_idempotent_and_governed(self):
         job = (ROOT / "resources" / "jobs.yml").read_text()
         notebook = (ROOT / "src" / "execute_reference_campaign.py").read_text()

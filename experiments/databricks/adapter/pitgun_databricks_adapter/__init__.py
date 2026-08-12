@@ -5,6 +5,7 @@ from .campaign import (
     load_reference_campaign,
     materialize_plan,
 )
+from .candidate_review import load_candidate_review_policy, review_candidate_evidence
 from .opponent_policy import canonical_json, digest_json, select_reference_policy
 from .runner import (
     execute_packaged_racing,
@@ -23,6 +24,8 @@ __all__ = [
     "load_reference_campaign",
     "load_calibration_campaign",
     "materialize_plan",
+    "load_candidate_review_policy",
+    "review_candidate_evidence",
     "canonical_json",
     "digest_json",
     "select_reference_policy",

@@ -7,6 +7,7 @@ from pitgun_databricks_adapter import (
     execute_packaged_tuning_response,
     inspect_packaged_runner,
     load_calibration_campaign,
+    load_candidate_review_policy,
     load_reference_campaign,
     materialize_plan,
 )
@@ -71,6 +72,11 @@ assert (
 candidate_manifest, _ = load_calibration_campaign("racing-aero-candidate-validation-v1")
 candidate_plan = materialize_plan(candidate_manifest)
 assert len(candidate_plan) == candidate_manifest["planned_run_count"] == 210
+review_policy, review_policy_digest = load_candidate_review_policy(
+    "racing-aero-candidate-review-v1"
+)
+assert review_policy["automatic_promotion"] is False
+assert review_policy_digest.startswith("sha256:")
 for response_id in {entry["response_id"] for entry in candidate_plan}:
     candidate_entry = next(
         entry for entry in candidate_plan if entry["response_id"] == response_id

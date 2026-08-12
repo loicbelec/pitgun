@@ -55,6 +55,7 @@ databricks bundle run reference_campaign_job -t dev -p pitgun-free
 databricks bundle run reference_policy_job -t dev -p pitgun-free
 databricks bundle run circuit_sweep_job -t dev -p pitgun-free
 databricks bundle run candidate_validation_job -t dev -p pitgun-free
+databricks bundle run candidate_review_job -t dev -p pitgun-free
 ```
 
 Repeat `deploy` and `run`: schema and table creation are idempotent. The job may
@@ -126,6 +127,13 @@ claim a canonical `run_id`. MLflow records the immutable manifest, identities,
 metrics, and review report. Even a successful campaign ends at
 `REVIEW_REQUIRED`: changing the catalog or game remains a separate reviewed
 repository change.
+
+The separately deployed candidate-review job reads explicit Delta versions 1
+of both experimental tables. Its versioned policy distinguishes setup
+discrimination from seed noise, checks circuit-specific expected setup
+families, and appends a `PROMOTE`, `REFINE`, or `REJECT` review artifact to the
+same MLflow run. Even `PROMOTE` is advisory: the job contains no catalog write
+or release path.
 
 ## Governed table ownership
 
