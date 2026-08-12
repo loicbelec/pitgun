@@ -152,6 +152,121 @@ impl Default for Tuning {
     }
 }
 
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq)]
+pub enum TuningResponseVersion {
+    #[serde(rename = "pitgun.racing-tuning-response/v1")]
+    V1,
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct TuningResponseV1 {
+    pub schema_version: TuningResponseVersion,
+    pub development_points_cap: f64,
+    pub aero_development_gain: f64,
+    pub drag_base: f64,
+    pub drag_slider_gain: f64,
+    pub downforce_base: f64,
+    pub downforce_slider_gain: f64,
+    pub straight_aero_scale: f64,
+    pub corner_aero_scale: f64,
+    pub chassis_grip_development_gain: f64,
+    pub cooling_base: f64,
+    pub cooling_development_gain: f64,
+    pub engine_torque_development_gain: f64,
+    pub gear_ratio_base: f64,
+    pub gear_ratio_slider_reduction: f64,
+}
+
+impl Default for TuningResponseV1 {
+    fn default() -> Self {
+        Self {
+            schema_version: TuningResponseVersion::V1,
+            development_points_cap: 20.0,
+            aero_development_gain: 0.10,
+            drag_base: 0.85,
+            drag_slider_gain: 0.30,
+            downforce_base: 0.75,
+            downforce_slider_gain: 0.55,
+            straight_aero_scale: 0.95,
+            corner_aero_scale: 1.05,
+            chassis_grip_development_gain: 0.08,
+            cooling_base: 0.75,
+            cooling_development_gain: 0.50,
+            engine_torque_development_gain: 0.01,
+            gear_ratio_base: 1.10,
+            gear_ratio_slider_reduction: 0.20,
+        }
+    }
+}
+
+impl TuningResponseV1 {
+    pub fn validate(&self) -> Result<(), String> {
+        let finite = [
+            self.development_points_cap,
+            self.aero_development_gain,
+            self.drag_base,
+            self.drag_slider_gain,
+            self.downforce_base,
+            self.downforce_slider_gain,
+            self.straight_aero_scale,
+            self.corner_aero_scale,
+            self.chassis_grip_development_gain,
+            self.cooling_base,
+            self.cooling_development_gain,
+            self.engine_torque_development_gain,
+            self.gear_ratio_base,
+            self.gear_ratio_slider_reduction,
+        ];
+        if finite.iter().any(|value| !value.is_finite()) {
+            return Err("tuning response coefficients must be finite".to_string());
+        }
+        if self.development_points_cap <= 0.0 {
+            return Err("development_points_cap must be positive".to_string());
+        }
+        for (name, value) in [
+            ("drag_base", self.drag_base),
+            ("downforce_base", self.downforce_base),
+            ("straight_aero_scale", self.straight_aero_scale),
+            ("corner_aero_scale", self.corner_aero_scale),
+            ("cooling_base", self.cooling_base),
+            ("gear_ratio_base", self.gear_ratio_base),
+        ] {
+            if value <= 0.0 {
+                return Err(format!("{name} must be positive"));
+            }
+        }
+        for (name, value) in [
+            ("aero_development_gain", self.aero_development_gain),
+            ("drag_slider_gain", self.drag_slider_gain),
+            ("downforce_slider_gain", self.downforce_slider_gain),
+            (
+                "chassis_grip_development_gain",
+                self.chassis_grip_development_gain,
+            ),
+            ("cooling_development_gain", self.cooling_development_gain),
+            (
+                "engine_torque_development_gain",
+                self.engine_torque_development_gain,
+            ),
+            (
+                "gear_ratio_slider_reduction",
+                self.gear_ratio_slider_reduction,
+            ),
+        ] {
+            if value < 0.0 {
+                return Err(format!("{name} must not be negative"));
+            }
+        }
+        if self.gear_ratio_base - self.gear_ratio_slider_reduction <= 0.0 {
+            return Err(
+                "gear_ratio_slider_reduction must remain below gear_ratio_base".to_string(),
+            );
+        }
+        Ok(())
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct Driver {
     pub id: String,
@@ -306,13 +421,21 @@ pub struct ResampledTelemetry {
 }
 
 pub fn run_simulation(input: &SimulationRequest) -> Result<SimulationResult, String> {
+    run_simulation_with_tuning_response(input, &TuningResponseV1::default())
+}
+
+pub fn run_simulation_with_tuning_response(
+    input: &SimulationRequest,
+    tuning_response: &TuningResponseV1,
+) -> Result<SimulationResult, String> {
+    tuning_response.validate()?;
     validate_track(&input.track)?;
 
     let lap_count = input.lap_count.max(1);
     let driver = input.driver.clone();
     let effects = driver_effects(&driver);
     let tuned_vehicle = match &input.tuning {
-        Some(tuning) => apply_tuning(&input.vehicle, tuning),
+        Some(tuning) => apply_tuning_with_response(&input.vehicle, tuning, tuning_response)?,
         None => input.vehicle.clone(),
     };
     let mut vehicle = tuned_vehicle.clone();
@@ -789,25 +912,36 @@ pub fn apply_driver_to_tire(tire: &TireParams, effects: &DriverEffects) -> TireP
 }
 
 pub fn apply_tuning(vehicle: &VehicleParams, tuning: &Tuning) -> VehicleParams {
-    let aero_pts = clamp(tuning.aero_points as f64, 0.0, 20.0);
-    let chassis_pts = clamp(tuning.chassis_points as f64, 0.0, 20.0);
-    let cooling_pts = clamp(tuning.cooling_points as f64, 0.0, 20.0);
-    let engine_pts = clamp(tuning.engine_points as f64, 0.0, 20.0);
+    apply_tuning_with_response(vehicle, tuning, &TuningResponseV1::default())
+        .expect("the built-in Racing tuning response is valid")
+}
+
+pub fn apply_tuning_with_response(
+    vehicle: &VehicleParams,
+    tuning: &Tuning,
+    response: &TuningResponseV1,
+) -> Result<VehicleParams, String> {
+    response.validate()?;
+    let points_cap = response.development_points_cap;
+    let aero_pts = clamp(tuning.aero_points as f64, 0.0, points_cap);
+    let chassis_pts = clamp(tuning.chassis_points as f64, 0.0, points_cap);
+    let cooling_pts = clamp(tuning.cooling_points as f64, 0.0, points_cap);
+    let engine_pts = clamp(tuning.engine_points as f64, 0.0, points_cap);
     let df = clamp(tuning.downforce_slider, 0.0, 1.0);
     let gr = clamp(tuning.gear_ratio_slider, 0.0, 1.0);
 
-    let aero_k = 1.0 + 0.10 * (aero_pts / 20.0);
-    let drag_blend = 0.85 + 0.30 * df;
-    let df_blend = 0.75 + 0.55 * df;
+    let aero_k = 1.0 + response.aero_development_gain * (aero_pts / points_cap);
+    let drag_blend = response.drag_base + response.drag_slider_gain * df;
+    let df_blend = response.downforce_base + response.downforce_slider_gain * df;
 
     let aero = AeroParams {
-        cd_a_x: vehicle.aero.cd_a_x * aero_k * drag_blend * 0.95,
-        cd_a_z: vehicle.aero.cd_a_z * aero_k * drag_blend * 1.05,
-        cl_a_x: vehicle.aero.cl_a_x * aero_k * df_blend * 0.95,
-        cl_a_z: vehicle.aero.cl_a_z * aero_k * df_blend * 1.05,
+        cd_a_x: vehicle.aero.cd_a_x * aero_k * drag_blend * response.straight_aero_scale,
+        cd_a_z: vehicle.aero.cd_a_z * aero_k * drag_blend * response.corner_aero_scale,
+        cl_a_x: vehicle.aero.cl_a_x * aero_k * df_blend * response.straight_aero_scale,
+        cl_a_z: vehicle.aero.cl_a_z * aero_k * df_blend * response.corner_aero_scale,
     };
 
-    let grip_blend = 1.0 + 0.08 * (chassis_pts / 20.0);
+    let grip_blend = 1.0 + response.chassis_grip_development_gain * (chassis_pts / points_cap);
     let chassis = ChassisParams {
         mass_empty: vehicle.chassis.mass_empty,
         r_wheel: vehicle.chassis.r_wheel,
@@ -817,14 +951,17 @@ pub fn apply_tuning(vehicle: &VehicleParams, tuning: &Tuning) -> VehicleParams {
         g: vehicle.chassis.g,
     };
 
-    let cool_k = 0.75 + 0.50 * (cooling_pts / 20.0);
+    let cool_k =
+        response.cooling_base + response.cooling_development_gain * (cooling_pts / points_cap);
     let trq: Vec<f64> = vehicle
         .engine
         .trq
         .iter()
-        .map(|value| value * (1.0 + 0.01 * (engine_pts / 20.0)))
+        .map(|value| {
+            value * (1.0 + response.engine_torque_development_gain * (engine_pts / points_cap))
+        })
         .collect();
-    let scale = 1.10 - 0.20 * gr;
+    let scale = response.gear_ratio_base - response.gear_ratio_slider_reduction * gr;
     let gear_ratios: Vec<f64> = vehicle
         .engine
         .gear_ratios
@@ -851,12 +988,12 @@ pub fn apply_tuning(vehicle: &VehicleParams, tuning: &Tuning) -> VehicleParams {
         fuel_burn_kg_per_s: vehicle.engine.fuel_burn_kg_per_s,
     };
 
-    VehicleParams {
+    Ok(VehicleParams {
         chassis,
         aero,
         engine,
         tire: vehicle.tire.clone(),
-    }
+    })
 }
 
 pub fn effective_mu(mu0: f64, tire_wear: f64, tire_temp: f64, tire: &TireParams) -> f64 {
