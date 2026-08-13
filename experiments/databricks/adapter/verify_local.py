@@ -3,6 +3,7 @@
 
 from pitgun_databricks_adapter import (
     execute_packaged_racing,
+    execute_packaged_racing_catalog_scenario,
     execute_packaged_racing_scenario,
     execute_packaged_tuning_response,
     inspect_packaged_runner,
@@ -20,7 +21,7 @@ EXPECTED_RUN_ID = (
     "sha256:89dc458a7460056dd519f5cda74c55c2b2b47f7091f1309ae10d11a2eb46a64a"
 )
 EXPECTED_RESULT_DIGEST = (
-    "sha256:19c045b5ccfb1ad789e8a3d74110efec919694883e05c5da996575e6986dfdef"
+    "sha256:685d3870898f0ccfaa88a1d46e3f0dc3a24131a341c61e08ac98f3560d853923"
 )
 
 
@@ -43,6 +44,22 @@ print(
     f"startup={result['measurements']['startup_probe_duration_ms']}ms "
     f"execution={result['measurements']['execution_duration_ms']}ms"
 )
+
+opponent_smoke = execute_packaged_racing_catalog_scenario(
+    42, "monza-early-42-balanced-one-stop"
+)["result"]
+assert opponent_smoke["model"] == {
+    "id": "pitgun.racing",
+    "version": "2.0.0",
+    "digest": "sha256:a372f990c320d10207220f98ca4bf677607fc5c13918c73b47dfbb8949b106d2",
+}
+assert opponent_smoke["data_pack"] == {
+    "id": "pitgun.racing.simulation",
+    "version": "1.2.0",
+    "digest": "sha256:8961087a8a04a3cafb157a63b7bd2c8daa1e29500e180c5d723324d79374549f",
+}
+assert opponent_smoke["seed"] == "42"
+assert len(opponent_smoke["summary"]["standings"]) == 10
 
 families = {
     family: execute_packaged_racing(42, family)["result"]["configuration_id"]
@@ -109,6 +126,24 @@ except ValueError:
     pass
 else:
     raise AssertionError("an arbitrary packaged scenario path was accepted")
+
+try:
+    execute_packaged_racing_catalog_scenario(
+        42, "monza-early-42-balanced-one-stop", "../../arbitrary"
+    )
+except ValueError:
+    pass
+else:
+    raise AssertionError("an arbitrary packaged catalog path was accepted")
+
+try:
+    execute_packaged_racing_catalog_scenario(
+        42, "monza-early-42-balanced-one-stop", "racing-v9-9-9"
+    )
+except ValueError:
+    pass
+else:
+    raise AssertionError("a missing packaged catalog was accepted")
 
 try:
     execute_packaged_tuning_response(42, "monza--balanced", "../../arbitrary")

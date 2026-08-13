@@ -9,6 +9,7 @@ from .candidate_review import load_candidate_review_policy, review_candidate_evi
 from .opponent_policy import canonical_json, digest_json, select_reference_policy
 from .runner import (
     execute_packaged_racing,
+    execute_packaged_racing_catalog_scenario,
     execute_packaged_racing_scenario,
     execute_packaged_tuning_response,
     inspect_packaged_runner,
@@ -17,6 +18,7 @@ from .runner import (
 
 __all__ = [
     "execute_packaged_racing",
+    "execute_packaged_racing_catalog_scenario",
     "execute_packaged_racing_scenario",
     "inspect_packaged_runner",
     "execute_packaged_tuning_response",

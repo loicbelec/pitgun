@@ -61,6 +61,31 @@ class BundleContractTest(unittest.TestCase):
         self.assertNotIn("http://", runner)
         self.assertNotIn("https://", runner)
 
+    def test_racing_v2_catalog_boundary_is_packaged_and_bounded(self):
+        builder = (ROOT / "adapter" / "build_wheel.py").read_text()
+        runner = (
+            ROOT / "adapter" / "pitgun_databricks_adapter" / "runner.py"
+        ).read_text()
+        framework = ROOT.parents[1]
+        scenarios = sorted(
+            (framework / "experiments" / "opponent_audit" / "scenarios").glob("*.json")
+        )
+        catalog_files = sorted(
+            path
+            for path in (framework / "catalogs" / "racing" / "v1.2.0").rglob("*")
+            if path.is_file()
+        )
+
+        self.assertEqual(len(scenarios), 15)
+        self.assertGreater(len(catalog_files), 1)
+        self.assertIn('"racing-v1-2-0"', builder)
+        self.assertIn('"opponent_audit" / "scenarios"', builder)
+        self.assertIn("execute_packaged_racing_catalog_scenario", runner)
+        self.assertIn("CATALOG_RESOURCE_PATTERN.fullmatch", runner)
+        self.assertIn(
+            'command.extend(["--catalog-release", str(catalog_root)])', runner
+        )
+
     def test_reference_campaign_manifest_is_frozen_and_reconciled(self):
         campaign_root = ROOT / "campaigns"
         manifest_path = campaign_root / "racing-reference-v1.json"

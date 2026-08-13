@@ -72,12 +72,17 @@ state remain isolated below the attended user's `dev` deployment root.
 
 ## Packaged Rust runner
 
-`adapter/build.sh` builds the existing Rust CLI for Linux/arm64 and places
-it inside a platform wheel. The bundle uploads that wheel as the only custom
+`adapter/build.sh` rebuilds the Rust CLI and tuning-response probe separately
+for Linux/arm64, then places both inside a platform wheel. Its persistent Cargo
+cache is invalidated for those packages first so a Git checkout cannot leave a
+stale runner in the wheel. The bundle uploads that wheel as the only custom
 library of `runner_spike_job`. Generated binaries and wheels are ignored by Git.
 
-The bounded adapter accepts only a seed, executes the embedded scenario, and
-records the exact runner and result digests. See
+The bounded adapter accepts only reviewed identifiers and a seed, executes an
+embedded scenario, and records the exact runner and result digests. The Racing
+V2 boundary also packages Catalog 1.2.0 and the controlled opponent-audit smoke
+matrix in the wheel; it does not fetch models or scenarios over the network.
+See
 [Databricks Rust Runner Spike](../../docs/DATABRICKS_RUST_RUNNER_SPIKE.md) for
 the decision, local parity fixture, measurements, rejected alternatives, and
 security boundary.

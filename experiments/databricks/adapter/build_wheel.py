@@ -39,7 +39,9 @@ def wheel_entries(version: str) -> dict[str, bytes]:
     scenario_roots = (
         FRAMEWORK / "apps" / "pitgun-cli" / "scenarios" / "racing-batch-v1",
         FRAMEWORK / "apps" / "pitgun-cli" / "scenarios" / "racing-circuit-sweep-v1",
+        FRAMEWORK / "experiments" / "opponent_audit" / "scenarios",
     )
+    catalog_roots = (("racing-v1-2-0", FRAMEWORK / "catalogs" / "racing" / "v1.2.0"),)
     campaigns = FRAMEWORK / "experiments" / "databricks" / "campaigns"
     responses = FRAMEWORK / "experiments" / "databricks" / "responses"
     reviews = FRAMEWORK / "experiments" / "databricks" / "reviews"
@@ -82,6 +84,14 @@ def wheel_entries(version: str) -> dict[str, bytes]:
             if f"{PACKAGE}/scenarios/{scenario.name}" in entries:
                 raise SystemExit(f"duplicate packaged scenario name: {scenario.name}")
             entries[f"{PACKAGE}/scenarios/{scenario.name}"] = scenario.read_bytes()
+    for catalog_resource, catalog_root in catalog_roots:
+        for resource in sorted(
+            path for path in catalog_root.rglob("*") if path.is_file()
+        ):
+            relative = resource.relative_to(catalog_root).as_posix()
+            entries[f"{PACKAGE}/catalogs/{catalog_resource}/{relative}"] = (
+                resource.read_bytes()
+            )
     for campaign in sorted(campaigns.glob("racing-*")):
         if campaign.suffix not in {".json", ".sha256"}:
             continue
