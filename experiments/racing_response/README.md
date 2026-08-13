@@ -151,3 +151,22 @@ The 50 deterministic runs measure lap time, maximum speed, setup response, and
 optimum movement without editing the catalog. Results and the non-promotion
 decision are documented in
 [`RACING_SPA_RELIEF_IMPACT_V1.md`](../../docs/RACING_SPA_RELIEF_IMPACT_V1.md).
+
+## Spa relief-response localization V1
+
+The eighth local experiment records the canonical Simulator's telemetry for a
+flat Spa control and three SPW relief smoothing windows. It aligns speed,
+brake, and acceleration on a 25-metre grid so the aggregate lap-time response
+can be located and checked for smoothing sensitivity or vertical
+discontinuities.
+
+```bash
+cargo build --release -p pitgun-racing-simulator --example relief_response_probe
+python3 experiments/racing_response/localize_spa_relief_response.py
+```
+
+The committed evidence shows a 200–203 ms relief penalty across all three
+windows, a 3 ms sensitivity spread, and less than 0.08 g of vertical response.
+It remains experimental and does not promote a circuit resource. The method,
+interpretation, and next boundary are documented in
+[`RACING_SPA_RELIEF_LOCALIZATION_V1.md`](../../docs/RACING_SPA_RELIEF_LOCALIZATION_V1.md).
