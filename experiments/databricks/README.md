@@ -56,6 +56,8 @@ databricks bundle run reference_policy_job -t dev -p pitgun-free
 databricks bundle run circuit_sweep_job -t dev -p pitgun-free
 databricks bundle run candidate_validation_job -t dev -p pitgun-free
 databricks bundle run candidate_review_job -t dev -p pitgun-free
+databricks bundle run opponent_diagnosis_job -t dev -p pitgun-free \
+  --params campaigns_table_version=<pinned>,runs_table_version=<pinned>,metrics_table_version=<pinned>
 ```
 
 Repeat `deploy` and `run`: schema and table creation are idempotent. The job may
@@ -97,6 +99,14 @@ successful immutable run keys, executes the 180 packaged scenarios, and writes
 normalized competitiveness evidence to the existing Delta `runs` and
 `metrics` tables. One MLflow run stores the manifest and compact comparison
 report. Deployment and execution remain separate attended commands.
+
+`opponent_diagnosis_job` then reads only explicit historical versions of the
+`campaigns`, `runs`, and `metrics` Delta tables. Its reviewed defaults pin
+versions 19, 5, and 3 respectively: the completed 180-run campaign and its
+idempotent replay. It does not rerun simulations or write a
+policy. Its MLflow JSON and Markdown artifacts distinguish exact paired setup
+effects from descriptive strategy, progression, budget, and diversity signals;
+confounded comparisons are labelled and retained as unresolved questions.
 
 ## Reference campaign
 

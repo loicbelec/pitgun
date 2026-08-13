@@ -173,6 +173,24 @@ class BundleContractTest(unittest.TestCase):
         ):
             self.assertIn(f'"{column}":', bootstrap)
 
+    def test_opponent_diagnosis_is_pinned_read_only_and_non_promoting(self):
+        job = (ROOT / "resources" / "jobs.yml").read_text()
+        notebook = (ROOT / "src" / "diagnose_opponent_audit.py").read_text()
+
+        self.assertIn("opponent_diagnosis_job:", job)
+        self.assertIn('campaigns_table_version\n          default: "19"', job)
+        self.assertIn('runs_table_version\n          default: "5"', job)
+        self.assertIn('metrics_table_version\n          default: "3"', job)
+        self.assertIn('.option("versionAsOf", campaigns_version)', notebook)
+        self.assertIn("runs_table_version", job)
+        self.assertIn("metrics_table_version", job)
+        self.assertIn('.option("versionAsOf", runs_version)', notebook)
+        self.assertIn('.option("versionAsOf", metrics_version)', notebook)
+        self.assertIn("diagnose_opponent_audit", notebook)
+        self.assertIn('"pitgun.opponent_policy_selected": "false"', notebook)
+        for forbidden in ("DeltaTable", "MERGE INTO", "UPDATE ", "DELETE "):
+            self.assertNotIn(forbidden, notebook)
+
     def test_candidate_validation_is_immutable_experimental_and_reviewed(self):
         campaign_root = ROOT / "campaigns"
         manifest_path = campaign_root / "racing-aero-candidate-validation-v1.json"
