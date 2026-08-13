@@ -24,6 +24,7 @@ SCENARIO_RESOURCE_PATTERN = re.compile(
     r"[a-z0-9]+(?:-[a-z0-9]+)*(?:--[a-z0-9]+(?:-[a-z0-9]+)*)?"
 )
 RESPONSE_RESOURCE_PATTERN = re.compile(r"racing-[a-z0-9]+(?:-[a-z0-9]+)*")
+CATALOG_RESOURCE_PATTERN = re.compile(r"racing-v[0-9]+(?:-[0-9]+)*")
 
 
 class RunnerExecutionError(RuntimeError):
@@ -51,7 +52,12 @@ def _run(command: list[str]) -> tuple[subprocess.CompletedProcess[bytes], int]:
     return completed, duration_ms
 
 
-def _execute(runner_bytes: bytes, scenario_bytes: bytes, seed: int) -> dict[str, Any]:
+def _execute(
+    runner_bytes: bytes,
+    scenario_bytes: bytes,
+    seed: int,
+    catalog_files: dict[str, bytes] | None = None,
+) -> dict[str, Any]:
     if not 0 <= seed <= 2**64 - 1:
         raise ValueError("seed must be an unsigned 64-bit integer")
 
@@ -63,6 +69,13 @@ def _execute(runner_bytes: bytes, scenario_bytes: bytes, seed: int) -> dict[str,
         runner.chmod(0o500)
         scenario.write_bytes(scenario_bytes)
 
+        catalog_root = root / "catalog"
+        if catalog_files is not None:
+            for relative_path, contents in sorted(catalog_files.items()):
+                destination = catalog_root / relative_path
+                destination.parent.mkdir(parents=True, exist_ok=True)
+                destination.write_bytes(contents)
+
         version_process, startup_probe_duration_ms = _run([str(runner), "--version"])
         if version_process.returncode != 0:
             raise RunnerExecutionError(
@@ -71,17 +84,18 @@ def _execute(runner_bytes: bytes, scenario_bytes: bytes, seed: int) -> dict[str,
             )
         runner_version = version_process.stdout.decode("utf-8").strip()
 
-        process, execution_duration_ms = _run(
-            [
-                str(runner),
-                "run",
-                "racing",
-                "--scenario",
-                str(scenario),
-                "--seed",
-                str(seed),
-            ]
-        )
+        command = [
+            str(runner),
+            "run",
+            "racing",
+            "--scenario",
+            str(scenario),
+            "--seed",
+            str(seed),
+        ]
+        if catalog_files is not None:
+            command.extend(["--catalog-release", str(catalog_root)])
+        process, execution_duration_ms = _run(command)
         if process.returncode != 0:
             diagnostic = process.stderr.decode("utf-8", errors="replace").strip()
             raise RunnerExecutionError(
@@ -215,6 +229,45 @@ def execute_packaged_racing_scenario(
         raise ValueError("scenario resource is not packaged or allowlisted")
     runner_bytes = package.joinpath("bin", "pitgun").read_bytes()
     return _execute(runner_bytes, scenario.read_bytes(), seed)
+
+
+def _read_packaged_tree(root: Any) -> dict[str, bytes]:
+    if not root.is_dir():
+        raise ValueError("catalog resource is not packaged or allowlisted")
+    files: dict[str, bytes] = {}
+
+    def visit(directory: Any, prefix: str = "") -> None:
+        for entry in sorted(directory.iterdir(), key=lambda item: item.name):
+            relative = f"{prefix}/{entry.name}" if prefix else entry.name
+            if entry.is_dir():
+                visit(entry, relative)
+            elif entry.is_file():
+                files[relative] = entry.read_bytes()
+
+    visit(root)
+    if not files:
+        raise ValueError("catalog resource is empty")
+    return files
+
+
+def execute_packaged_racing_catalog_scenario(
+    seed: int,
+    scenario_resource: str,
+    catalog_resource: str = "racing-v1-2-0",
+) -> dict[str, Any]:
+    """Execute one reviewed scenario against one packaged immutable catalog."""
+
+    if not SCENARIO_RESOURCE_PATTERN.fullmatch(scenario_resource):
+        raise ValueError("scenario resource must be one canonical packaged identifier")
+    if not CATALOG_RESOURCE_PATTERN.fullmatch(catalog_resource):
+        raise ValueError("catalog resource must be one canonical packaged identifier")
+    package = importlib.resources.files("pitgun_databricks_adapter")
+    scenario = package.joinpath("scenarios", f"{scenario_resource}.json")
+    if not scenario.is_file():
+        raise ValueError("scenario resource is not packaged or allowlisted")
+    catalog_files = _read_packaged_tree(package.joinpath("catalogs", catalog_resource))
+    runner_bytes = package.joinpath("bin", "pitgun").read_bytes()
+    return _execute(runner_bytes, scenario.read_bytes(), seed, catalog_files)
 
 
 def inspect_packaged_runner() -> dict[str, str | int]:
