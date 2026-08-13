@@ -1,8 +1,9 @@
 use pitgun_racing_solver::{
-    AeroParams, ChassisParams, Driver, EngineParams, PitPlan, SimConfig, SimulationRequest,
-    TireParams, Track, Tuning, TuningResponseV1, VehicleParams, VehicleState, apply_tuning,
-    apply_tuning_with_response, describe_circuit, run_simulation,
-    run_simulation_with_tuning_response,
+    AERO_FULL_CORNER_CURVATURE_RAD_PER_M, AERO_FULL_STRAIGHT_CURVATURE_RAD_PER_M, AeroParams,
+    ChassisParams, CurvatureAeroResponse, Driver, EngineParams, PitPlan, SimConfig,
+    SimulationRequest, TireParams, Track, Tuning, TuningResponseV1, VehicleParams, VehicleState,
+    apply_tuning, apply_tuning_with_response, curvature_aero_blend, describe_circuit,
+    run_simulation, run_simulation_with_model_response, run_simulation_with_tuning_response,
 };
 
 fn synthetic_request() -> SimulationRequest {
@@ -85,6 +86,30 @@ fn synthetic_request() -> SimulationRequest {
         },
         tuning: None,
     }
+}
+
+#[test]
+fn curvature_aero_response_is_continuous_bounded_and_monotonic() {
+    assert_eq!(curvature_aero_blend(0.0), 0.0);
+    assert_eq!(
+        curvature_aero_blend(AERO_FULL_STRAIGHT_CURVATURE_RAD_PER_M),
+        0.0
+    );
+    assert_eq!(
+        curvature_aero_blend(AERO_FULL_CORNER_CURVATURE_RAD_PER_M),
+        1.0
+    );
+    assert_eq!(curvature_aero_blend(1.0), 1.0);
+    assert_eq!(
+        curvature_aero_blend(-AERO_FULL_CORNER_CURVATURE_RAD_PER_M),
+        1.0
+    );
+
+    let samples = (0..=100)
+        .map(|index| curvature_aero_blend(index as f64 * 0.000_1))
+        .collect::<Vec<_>>();
+    assert!(samples.iter().all(|value| (0.0..=1.0).contains(value)));
+    assert!(samples.windows(2).all(|window| window[1] >= window[0]));
 }
 
 #[test]
@@ -242,6 +267,28 @@ fn explicit_default_response_is_exactly_compatible() {
         )
         .expect("explicit default tuning"),
     );
+}
+
+#[test]
+fn explicit_legacy_model_response_is_exactly_compatible() {
+    let mut request = synthetic_request();
+    request.track.kappa[5..=12].fill(0.002);
+    request.tuning = Some(Tuning {
+        downforce_slider: 0.65,
+        gear_ratio_slider: 0.35,
+        ..Tuning::default()
+    });
+
+    let compatibility = run_simulation_with_tuning_response(&request, &TuningResponseV1::default())
+        .expect("compatibility solve");
+    let explicit = run_simulation_with_model_response(
+        &request,
+        &TuningResponseV1::default(),
+        CurvatureAeroResponse::LegacyBinary,
+    )
+    .expect("explicit legacy solve");
+
+    assert_eq!(explicit, compatibility);
 }
 
 #[test]
