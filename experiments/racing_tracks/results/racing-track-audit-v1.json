@@ -71,7 +71,7 @@
         "y_minimum": -573.0235973073211,
         "y_maximum": 474.0424505554819
       },
-      "closure_gap_m": 0.6550252392300748,
+      "closure_gap_m": 0.65502523923,
       "maximum_absolute_curvature_rad_per_m": 0.04235094740498,
       "elevation_range_m": 0.0,
       "maximum_absolute_slope": 0.0,
@@ -113,7 +113,7 @@
         "y_minimum": -706.3646009038434,
         "y_maximum": 797.0984795167851
       },
-      "closure_gap_m": 0.9968299183943713,
+      "closure_gap_m": 0.996829918394,
       "maximum_absolute_curvature_rad_per_m": 0.028371930214503755,
       "elevation_range_m": 0.0,
       "maximum_absolute_slope": 0.0,
@@ -155,7 +155,7 @@
         "y_minimum": -536.2169263410686,
         "y_maximum": 638.8728077069129
       },
-      "closure_gap_m": 0.30710817157339415,
+      "closure_gap_m": 0.307108171573,
       "maximum_absolute_curvature_rad_per_m": 0.027227996396270247,
       "elevation_range_m": 0.0,
       "maximum_absolute_slope": 0.0,
@@ -197,7 +197,7 @@
         "y_minimum": -573.5953862636037,
         "y_maximum": 638.9617339760027
       },
-      "closure_gap_m": 0.0477423274163473,
+      "closure_gap_m": 0.047742327416,
       "maximum_absolute_curvature_rad_per_m": 0.03100621400538342,
       "elevation_range_m": 0.0,
       "maximum_absolute_slope": 0.0,
@@ -239,7 +239,7 @@
         "y_minimum": -1504.077372746589,
         "y_maximum": 1248.5411711508002
       },
-      "closure_gap_m": 0.305449645574116,
+      "closure_gap_m": 0.305449645574,
       "maximum_absolute_curvature_rad_per_m": 0.028527548580086968,
       "elevation_range_m": 0.0,
       "maximum_absolute_slope": 0.0,
@@ -281,7 +281,7 @@
         "y_minimum": -946.4093070664255,
         "y_maximum": 1013.9217417590634
       },
-      "closure_gap_m": 0.6120120754922792,
+      "closure_gap_m": 0.612012075492,
       "maximum_absolute_curvature_rad_per_m": 0.02464731394456536,
       "elevation_range_m": 0.0,
       "maximum_absolute_slope": 0.0,
@@ -323,7 +323,7 @@
         "y_minimum": -879.7464360523842,
         "y_maximum": 597.0330636269063
       },
-      "closure_gap_m": 0.7211234934620231,
+      "closure_gap_m": 0.721123493462,
       "maximum_absolute_curvature_rad_per_m": 0.02962709159577212,
       "elevation_range_m": 0.0,
       "maximum_absolute_slope": 0.0,
@@ -365,7 +365,7 @@
         "y_minimum": -943.5692437538033,
         "y_maximum": 876.8114973224141
       },
-      "closure_gap_m": 0.23359922023415378,
+      "closure_gap_m": 0.233599220234,
       "maximum_absolute_curvature_rad_per_m": 0.027411773902562234,
       "elevation_range_m": 0.0,
       "maximum_absolute_slope": 0.0,
@@ -407,7 +407,7 @@
         "y_minimum": -888.2327590045576,
         "y_maximum": 882.4667431137249
       },
-      "closure_gap_m": 0.31106816547419136,
+      "closure_gap_m": 0.311068165474,
       "maximum_absolute_curvature_rad_per_m": 0.03593380410734584,
       "elevation_range_m": 0.0,
       "maximum_absolute_slope": 0.0,
@@ -449,7 +449,7 @@
         "y_minimum": -634.2304815257714,
         "y_maximum": 406.97890764930423
       },
-      "closure_gap_m": 0.44211755373068423,
+      "closure_gap_m": 0.442117553731,
       "maximum_absolute_curvature_rad_per_m": 0.036772639967777944,
       "elevation_range_m": 0.0,
       "maximum_absolute_slope": 0.0,
@@ -491,7 +491,7 @@
         "y_minimum": -269.42710652796404,
         "y_maximum": 340.5104058684548
       },
-      "closure_gap_m": 0.4250273888826148,
+      "closure_gap_m": 0.425027388883,
       "maximum_absolute_curvature_rad_per_m": 0.03827123721522503,
       "elevation_range_m": 0.0,
       "maximum_absolute_slope": 0.0,
@@ -533,7 +533,7 @@
         "y_minimum": -533.4802060819213,
         "y_maximum": 439.6946601658282
       },
-      "closure_gap_m": 0.5030800277620376,
+      "closure_gap_m": 0.503080027762,
       "maximum_absolute_curvature_rad_per_m": 0.05629227791604239,
       "elevation_range_m": 0.0,
       "maximum_absolute_slope": 0.0,
@@ -575,7 +575,7 @@
         "y_minimum": -815.1374584625781,
         "y_maximum": 1102.4514240984884
       },
-      "closure_gap_m": 0.03911268858670045,
+      "closure_gap_m": 0.039112688587,
       "maximum_absolute_curvature_rad_per_m": 0.04634785456911239,
       "elevation_range_m": 0.0,
       "maximum_absolute_slope": 0.0,
@@ -617,7 +617,7 @@
         "y_minimum": -1281.7229047534215,
         "y_maximum": 887.5755844283901
       },
-      "closure_gap_m": 0.5353921147476384,
+      "closure_gap_m": 0.535392114748,
       "maximum_absolute_curvature_rad_per_m": 0.039670154050652294,
       "elevation_range_m": 0.0,
       "maximum_absolute_slope": 0.0,
@@ -659,7 +659,7 @@
         "y_minimum": -683.1824947789848,
         "y_maximum": 518.5292495365823
       },
-      "closure_gap_m": 0.43035094128066564,
+      "closure_gap_m": 0.430350941281,
       "maximum_absolute_curvature_rad_per_m": 0.04547338919950777,
       "elevation_range_m": 0.0,
       "maximum_absolute_slope": 0.0,
@@ -701,7 +701,7 @@
         "y_minimum": -606.4152626121988,
         "y_maximum": 441.9448656394427
       },
-      "closure_gap_m": 0.6899737819174099,
+      "closure_gap_m": 0.689973781917,
       "maximum_absolute_curvature_rad_per_m": 0.0330851861879907,
       "elevation_range_m": 0.0,
       "maximum_absolute_slope": 0.0,
@@ -743,7 +743,7 @@
         "y_minimum": -483.8428091644108,
         "y_maximum": 590.1927708808782
       },
-      "closure_gap_m": 0.8605950690183551,
+      "closure_gap_m": 0.860595069018,
       "maximum_absolute_curvature_rad_per_m": 0.041483331678506805,
       "elevation_range_m": 0.0,
       "maximum_absolute_slope": 0.0,
@@ -785,7 +785,7 @@
         "y_minimum": -924.1508411452993,
         "y_maximum": 790.8587929326493
       },
-      "closure_gap_m": 0.8219862080355648,
+      "closure_gap_m": 0.821986208036,
       "maximum_absolute_curvature_rad_per_m": 0.03129482496676369,
       "elevation_range_m": 0.0,
       "maximum_absolute_slope": 0.0,
@@ -827,7 +827,7 @@
         "y_minimum": -458.3390446468485,
         "y_maximum": 468.90029275741267
       },
-      "closure_gap_m": 0.627217899171632,
+      "closure_gap_m": 0.627217899172,
       "maximum_absolute_curvature_rad_per_m": 0.03938338126153826,
       "elevation_range_m": 0.0,
       "maximum_absolute_slope": 0.0,
@@ -869,7 +869,7 @@
         "y_minimum": -783.2004912637015,
         "y_maximum": 1278.2358156705923
       },
-      "closure_gap_m": 0.35787874873123793,
+      "closure_gap_m": 0.357878748731,
       "maximum_absolute_curvature_rad_per_m": 0.04571053650146856,
       "elevation_range_m": 0.0,
       "maximum_absolute_slope": 0.0,
@@ -921,7 +921,7 @@
         "y_minimum": -454.7512564922396,
         "y_maximum": 335.48863228120854
       },
-      "closure_gap_m": 0.2304367332886531,
+      "closure_gap_m": 0.230436733289,
       "maximum_absolute_curvature_rad_per_m": 0.03748478441472599,
       "elevation_range_m": 0.0,
       "maximum_absolute_slope": 0.0,
@@ -963,7 +963,7 @@
         "y_minimum": -625.8164805595491,
         "y_maximum": 421.9734897455011
       },
-      "closure_gap_m": 0.5063202478729802,
+      "closure_gap_m": 0.506320247873,
       "maximum_absolute_curvature_rad_per_m": 0.03996060161697156,
       "elevation_range_m": 0.0,
       "maximum_absolute_slope": 0.0,
@@ -1005,7 +1005,7 @@
         "y_minimum": -689.7815319542135,
         "y_maximum": 1033.0970235496504
       },
-      "closure_gap_m": 0.739250204378747,
+      "closure_gap_m": 0.739250204379,
       "maximum_absolute_curvature_rad_per_m": 0.03602518881557464,
       "elevation_range_m": 0.0,
       "maximum_absolute_slope": 0.0,
@@ -1047,7 +1047,7 @@
         "y_minimum": -370.73533609230986,
         "y_maximum": 458.61316090579487
       },
-      "closure_gap_m": 0.4404309531942579,
+      "closure_gap_m": 0.440430953194,
       "maximum_absolute_curvature_rad_per_m": 0.027557456877036358,
       "elevation_range_m": 0.0,
       "maximum_absolute_slope": 0.0,

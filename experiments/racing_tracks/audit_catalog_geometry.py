@@ -231,7 +231,10 @@ def summarize(path: pathlib.Path) -> dict[str, object] | None:
     slope = data["slope_pct"]
     spacing = [right - left for left, right in zip(distance, distance[1:])]
     length_m = distance[-1]
-    closure_gap_m = math.hypot(x[-1] - x[0], y[-1] - y[0])
+    # libm implementations may differ at the last binary digit. A picometre
+    # resolution is far beyond the source geometry accuracy and keeps the
+    # versioned JSON byte-identical across supported Python versions.
+    closure_gap_m = round(math.hypot(x[-1] - x[0], y[-1] - y[0]), 12)
     elevation_range_m = max(elevation) - min(elevation)
     maximum_absolute_slope = max(abs(value) for value in slope)
     source_id = payload["meta"]["id"]
