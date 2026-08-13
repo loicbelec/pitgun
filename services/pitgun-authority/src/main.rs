@@ -25,7 +25,9 @@ use pitgun_policy::{
 };
 use pitgun_racing_contract::{SignedSimulationContractV1, SimulationContractV1};
 use pitgun_racing_policy::{default_policy_path, normalize_and_validate_race_input_with_policy};
-use pitgun_racing_simulator::{RacingCatalogSnapshot, RunRaceInput, racing_model_v1_identity};
+use pitgun_racing_simulator::{
+    RacingCatalogSnapshot, RunRaceInput, racing_model_identity_for_version,
+};
 use pitgun_signing::SigningKey;
 use rand::{RngCore, rngs::OsRng};
 use serde_json::Value as JsonValue;
@@ -38,6 +40,7 @@ const DEFAULT_SIM_TTL_SECS: u64 = 300;
 const DEFAULT_LATE_SUBMISSION_GRACE_SECS: u64 = 900;
 const DEFAULT_SIGNING_KEY_ID: &str = "pitgun-authority-v1";
 const DEFAULT_AUDIENCE: &str = "pitgun.verifier";
+const DEFAULT_RACING_MODEL_VERSION: &str = "1.0.0";
 
 #[derive(Clone)]
 struct AppState {
@@ -45,6 +48,7 @@ struct AppState {
     tuning_policy: TuningPolicyV1,
     policy_hash: String,
     policy_identity: ArtifactIdentity,
+    racing_model: ArtifactIdentity,
     racing_catalog: Option<RacingCatalogSnapshot>,
     config: ServiceConfig,
 }
@@ -222,7 +226,7 @@ fn build_signed_racing_run_authorization(
                 .expect("static Racing scenario identifier"),
             version: "1.0.0".parse().expect("static Racing scenario version"),
         },
-        model: racing_model_v1_identity(),
+        model: state.racing_model.clone(),
         data_pack,
         runtime_profile: RuntimeProfile::PortableExactV1,
         random: RandomContractV1 {
@@ -498,6 +502,12 @@ fn load_racing_catalog() -> Result<Option<RacingCatalogSnapshot>, String> {
         .map_err(|error| format!("failed to load Racing catalog release: {error}"))
 }
 
+fn load_racing_model() -> Result<ArtifactIdentity, String> {
+    let version = std::env::var("PITGUN_RACING_MODEL_VERSION")
+        .unwrap_or_else(|_| DEFAULT_RACING_MODEL_VERSION.to_owned());
+    racing_model_identity_for_version(&version)
+}
+
 fn sha256_hex(bytes: &[u8]) -> String {
     let digest = Sha256::digest(bytes);
     hex::encode(digest)
@@ -532,13 +542,22 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         version: "1.0.0".parse().expect("static Racing policy version"),
         digest: Digest::from_bytes(&policy_bytes),
     };
+    let racing_model = load_racing_model()?;
     let racing_catalog = load_racing_catalog()?;
+    if let Some(catalog) = &racing_catalog {
+        catalog
+            .manifest()
+            .compatibility
+            .validate_for(&racing_model, ContractVersion::V1)
+            .map_err(|error| format!("configured Racing model/catalog pair is invalid: {error}"))?;
+    }
 
     let app_state = AppState {
         signing_key,
         tuning_policy,
         policy_hash,
         policy_identity,
+        racing_model,
         racing_catalog,
         config,
     };
@@ -577,13 +596,18 @@ mod tests {
     use std::collections::HashMap;
 
     fn test_state() -> AppState {
+        test_state_for("1.0.0", "v1.0.0")
+    }
+
+    fn test_state_for(model_version: &str, catalog_version: &str) -> AppState {
         let policy_path =
             PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../policies/gametuning.v1.yaml");
         let policy_bytes = fs::read(&policy_path).expect("policy bytes");
         let (tuning_policy, policy_hash) =
             load_tuning_policy(policy_path).expect("policy should load");
-        let catalog_path =
-            PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../catalogs/racing/v1.0.0");
+        let catalog_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .join("../../catalogs/racing")
+            .join(catalog_version);
 
         AppState {
             signing_key: Some(
@@ -596,6 +620,8 @@ mod tests {
                 version: "1.0.0".parse().expect("policy version"),
                 digest: Digest::from_bytes(&policy_bytes),
             },
+            racing_model: racing_model_identity_for_version(model_version)
+                .expect("supported test model"),
             racing_catalog: Some(
                 RacingCatalogSnapshot::from_release_dir(catalog_path)
                     .expect("Racing catalog should load"),
@@ -774,6 +800,32 @@ mod tests {
         let bytes = authorization.signing_bytes().expect("signing bytes");
         let key = SigningKey::from_secret(b"unit-test-secret").expect("key");
         assert!(key.verify(&bytes, &response.signed.signature));
+    }
+
+    #[test]
+    fn racing_v2_authorization_binds_the_exact_model_and_catalog() {
+        let state = test_state_for("2.0.0", "v1.2.0");
+        let response = build_signed_racing_run_authorization(
+            1_710_000_000_000,
+            &state,
+            racing_request(&state),
+        )
+        .expect("Racing V2 authorization");
+
+        assert_eq!(
+            response.signed.authorization.contract.model,
+            state.racing_model
+        );
+        assert_eq!(
+            response.signed.authorization.contract.data_pack,
+            state
+                .racing_catalog
+                .as_ref()
+                .expect("catalog")
+                .manifest()
+                .simulation_pack
+                .identity
+        );
     }
 
     #[test]

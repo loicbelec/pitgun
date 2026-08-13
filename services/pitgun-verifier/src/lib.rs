@@ -13,9 +13,7 @@ use pitgun_contract::{
     VerificationVerdictError, VerificationVerdictV1, VerificationVerdictVersion,
     VerifiedResolutionV1, canonical_json_digest,
 };
-use pitgun_racing_simulator::{
-    RacingCatalogSnapshot, RacingWorkload, RunRaceInput, racing_model_v1_identity,
-};
+use pitgun_racing_simulator::{RacingCatalogSnapshot, RacingWorkload, RunRaceInput};
 use pitgun_runtime::{LinkedWorkloadError, execute_linked};
 use pitgun_signing::{AuthorizationVerificationError, VerificationKeyring};
 
@@ -29,6 +27,7 @@ const RACING_SCENARIO_VERSION: &str = "1.0.0";
 pub struct RacingVerifier {
     authorization_keys: VerificationKeyring,
     expected_audience: pitgun_contract::Identifier,
+    expected_model: ArtifactIdentity,
     policy: ArtifactIdentity,
     catalog: Option<RacingCatalogSnapshot>,
     verifier: ArtifactIdentity,
@@ -40,6 +39,7 @@ impl RacingVerifier {
     pub const fn new(
         authorization_keys: VerificationKeyring,
         expected_audience: pitgun_contract::Identifier,
+        expected_model: ArtifactIdentity,
         policy: ArtifactIdentity,
         catalog: Option<RacingCatalogSnapshot>,
         verifier: ArtifactIdentity,
@@ -47,6 +47,7 @@ impl RacingVerifier {
         Self {
             authorization_keys,
             expected_audience,
+            expected_model,
             policy,
             catalog,
             verifier,
@@ -87,7 +88,7 @@ impl RacingVerifier {
                 now_ms,
             );
         }
-        if contract.model != racing_model_v1_identity() {
+        if contract.model != self.expected_model {
             return self.rejected(
                 submission,
                 submitted_evidence,
@@ -171,11 +172,18 @@ impl RacingVerifier {
             );
         }
 
-        let replay = match execute_linked(
-            &RacingWorkload::with_catalog(catalog.clone()),
-            contract,
-            submission.input.clone(),
-        ) {
+        let workload = match RacingWorkload::for_model(&self.expected_model, catalog.clone()) {
+            Ok(workload) => workload,
+            Err(_) => {
+                return self.rejected(
+                    submission,
+                    submitted_evidence,
+                    VerificationReasonCode::UnknownModel,
+                    now_ms,
+                );
+            }
+        };
+        let replay = match execute_linked(&workload, contract, submission.input.clone()) {
             Ok(replay) => replay,
             Err(error) => {
                 return self.rejected(
@@ -400,7 +408,8 @@ mod tests {
         RacingHostedExecutionRequestV1, RacingHostedExecutionRequestVersion,
     };
     use pitgun_racing_simulator::{
-        RacingCatalogSnapshot, RunRaceInput, execute_authorized_race, racing_model_v1_identity,
+        RacingCatalogSnapshot, RunRaceInput, execute_authorized_race,
+        racing_model_identity_for_version, racing_model_v1_identity,
     };
     use pitgun_signing::{SigningKey, VerificationKeyring};
 
@@ -437,13 +446,22 @@ mod tests {
     }
 
     fn fixture() -> Fixture {
+        fixture_for("1.0.0")
+    }
+
+    fn fixture_for(model_version: &str) -> Fixture {
         let document: serde_json::Value = serde_json::from_str(include_str!(
             "../../../apps/pitgun-cli/scenarios/racing-demo-v1.json"
         ))
         .expect("Racing input fixture");
         let input: RunRaceInput =
             serde_json::from_value(document["request"].clone()).expect("RunRaceInput");
-        let catalog = RacingCatalogSnapshot::embedded().expect("embedded catalog");
+        let catalog = if model_version == "2.0.0" {
+            RacingCatalogSnapshot::embedded_model_v2().expect("embedded V2 catalog")
+        } else {
+            RacingCatalogSnapshot::embedded().expect("embedded V1 catalog")
+        };
+        let model = racing_model_identity_for_version(model_version).expect("supported model");
         let policy = ArtifactIdentity {
             id: "pitgun.racing.tuning".parse().expect("policy id"),
             version: "1.0.0".parse().expect("policy version"),
@@ -456,7 +474,7 @@ mod tests {
                 id: "racing.race".parse().expect("scenario id"),
                 version: "1.0.0".parse().expect("scenario version"),
             },
-            model: racing_model_v1_identity(),
+            model: model.clone(),
             data_pack: catalog.manifest().simulation_pack.identity.clone(),
             runtime_profile: RuntimeProfile::PortableExactV1,
             random: RandomContractV1 {
@@ -514,6 +532,7 @@ mod tests {
         let verifier = RacingVerifier::new(
             retained_keyring(&signing_key),
             "pitgun.verifier".parse().expect("audience"),
+            model,
             policy.clone(),
             Some(catalog.clone()),
             verifier_identity.clone(),
@@ -590,11 +609,33 @@ mod tests {
     }
 
     #[test]
+    fn valid_v2_catalog_backed_submission_is_verified() {
+        let fixture = fixture_for("2.0.0");
+
+        let verdict = fixture
+            .verifier
+            .verify(&fixture.submission, NOW_MS)
+            .expect("verified V2 verdict");
+
+        assert_eq!(verdict.status, VerificationStatus::Verified);
+        assert_eq!(
+            verdict
+                .verified_resolution
+                .expect("verified resolution")
+                .model
+                .version
+                .to_string(),
+            "2.0.0"
+        );
+    }
+
+    #[test]
     fn missing_retained_catalog_is_pending() {
         let fixture = fixture();
         let verifier = RacingVerifier::new(
             retained_keyring(&fixture.signing_key),
             "pitgun.verifier".parse().expect("audience"),
+            racing_model_v1_identity(),
             fixture.policy,
             None,
             fixture.verifier_identity,

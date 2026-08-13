@@ -54,6 +54,7 @@ The worker loads:
   `PITGUN_SIGNING_SECRET_FILE` (or inline material only for local development);
 - its retained key identifier from `PITGUN_SIGNING_KEY_ID`;
 - its expected audience from `PITGUN_VERIFIER_AUDIENCE`;
+- its exact Racing generation from `PITGUN_RACING_MODEL_VERSION` (V1 by default);
 - the immutable Racing release from `PITGUN_RACING_CATALOG_RELEASE_DIR`;
 - the accepted tuning policy from `PITGUN_TUNING_POLICY_PATH`.
 

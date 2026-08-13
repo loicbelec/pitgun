@@ -1,6 +1,6 @@
 //! Statically linked Racing workload for the deterministic Pitgun runtime.
 
-use pitgun_contract::ArtifactIdentity;
+use pitgun_contract::{ArtifactIdentity, ContractVersion};
 use pitgun_runtime::{ExecutionContext, LinkedWorkload, WorkloadExecution};
 
 use crate::evidence::{RacingEvidenceError, RacingRunEvidenceV1};
@@ -29,6 +29,17 @@ pub fn racing_model_v2_identity() -> ArtifactIdentity {
         id: "pitgun.racing".parse().expect("static Racing model id"),
         version: "2.0.0".parse().expect("static Racing model version"),
         digest: pitgun_contract::Digest::from_bytes(RACING_MODEL_V2_MANIFEST),
+    }
+}
+
+/// Resolves one supported Racing model version to its exact immutable identity.
+pub fn racing_model_identity_for_version(version: &str) -> Result<ArtifactIdentity, String> {
+    match version {
+        "1.0.0" => Ok(racing_model_v1_identity()),
+        "2.0.0" => Ok(racing_model_v2_identity()),
+        _ => Err(format!(
+            "unsupported Racing model version {version:?}; expected 1.0.0 or 2.0.0"
+        )),
     }
 }
 
@@ -68,6 +79,29 @@ impl RacingWorkload {
             model: racing_model_v2_identity(),
             catalog: Some(catalog),
             curvature_response: CurvatureAeroResponse::ContinuousV1,
+        }
+    }
+
+    /// Selects the statically linked workload for one exact model/catalog pair.
+    pub fn for_model(
+        model: &ArtifactIdentity,
+        catalog: RacingCatalogSnapshot,
+    ) -> Result<Self, String> {
+        catalog
+            .manifest()
+            .compatibility
+            .validate_for(model, ContractVersion::V1)
+            .map_err(|error| format!("Racing model/catalog incompatibility: {error}"))?;
+
+        if *model == racing_model_v1_identity() {
+            Ok(Self::with_catalog(catalog))
+        } else if *model == racing_model_v2_identity() {
+            Ok(Self::v2_with_catalog(catalog))
+        } else {
+            Err(format!(
+                "unsupported Racing model identity {}@{} {}",
+                model.id, model.version, model.digest
+            ))
         }
     }
 }
@@ -131,7 +165,7 @@ impl LinkedWorkload for RacingWorkload {
 
 #[cfg(test)]
 mod tests {
-    use super::{RacingWorkload, racing_model_v2_identity};
+    use super::{RacingWorkload, racing_model_identity_for_version, racing_model_v2_identity};
     use pitgun_runtime::LinkedWorkload;
 
     #[test]
@@ -157,5 +191,15 @@ mod tests {
             "sha256:a372f990c320d10207220f98ca4bf677607fc5c13918c73b47dfbb8949b106d2"
         );
         assert_ne!(model, RacingWorkload::v1().model_identity().clone());
+    }
+
+    #[test]
+    fn model_version_selection_is_exact_and_fail_closed() {
+        assert_eq!(
+            racing_model_identity_for_version("2.0.0").expect("supported V2"),
+            racing_model_v2_identity()
+        );
+        assert!(racing_model_identity_for_version("2").is_err());
+        assert!(racing_model_identity_for_version("3.0.0").is_err());
     }
 }

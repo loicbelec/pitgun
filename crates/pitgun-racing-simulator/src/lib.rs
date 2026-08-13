@@ -6,7 +6,8 @@ pub use catalog::{
     RacingCatalogBundleV1, RacingCatalogFileV1, RacingCatalogResolutionError, RacingCatalogSnapshot,
 };
 pub use workload::{
-    RacingWorkload, RacingWorkloadError, racing_model_v1_identity, racing_model_v2_identity,
+    RacingWorkload, RacingWorkloadError, racing_model_identity_for_version,
+    racing_model_v1_identity, racing_model_v2_identity,
 };
 
 use std::collections::HashMap;
@@ -14,8 +15,8 @@ use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 
 use pitgun_contract::{
-    ArtifactIdentity, ContractVersion, RunBundleReceiptV1, RunBundleReceiptVersion,
-    RuntimeIdentity, Sample, SampleValue, SignalQuality, TelemetryFrame,
+    ArtifactIdentity, RunBundleReceiptV1, RunBundleReceiptVersion, RuntimeIdentity, Sample,
+    SampleValue, SignalQuality, TelemetryFrame,
 };
 use pitgun_racing_contract::{
     CircuitCatalogEntry, CompetitorSpec, CompetitorStintStrategy, EngineCatalogEntry, RaceInput,
@@ -743,22 +744,7 @@ fn racing_workload_for(
     model: &ArtifactIdentity,
     catalog: &RacingCatalogSnapshot,
 ) -> Result<RacingWorkload, String> {
-    catalog
-        .manifest()
-        .compatibility
-        .validate_for(model, ContractVersion::V1)
-        .map_err(|error| format!("Racing model/catalog incompatibility: {error}"))?;
-
-    if *model == racing_model_v1_identity() {
-        Ok(RacingWorkload::with_catalog(catalog.clone()))
-    } else if *model == racing_model_v2_identity() {
-        Ok(RacingWorkload::v2_with_catalog(catalog.clone()))
-    } else {
-        Err(format!(
-            "unsupported Racing model identity {}@{} {}",
-            model.id, model.version, model.digest
-        ))
-    }
+    RacingWorkload::for_model(model, catalog.clone())
 }
 
 fn parse_run_race_request(input_json: &str) -> Result<RunRaceRequest, String> {
