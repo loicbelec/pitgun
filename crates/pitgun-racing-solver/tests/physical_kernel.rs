@@ -292,6 +292,39 @@ fn explicit_legacy_model_response_is_exactly_compatible() {
 }
 
 #[test]
+fn continuous_model_response_is_deterministic_and_distinct_from_legacy() {
+    let mut request = synthetic_request();
+    request.track.kappa.fill(0.000_5);
+    request.tuning = Some(Tuning {
+        downforce_slider: 0.75,
+        gear_ratio_slider: 0.25,
+        ..Tuning::default()
+    });
+
+    let legacy = run_simulation_with_model_response(
+        &request,
+        &TuningResponseV1::default(),
+        CurvatureAeroResponse::LegacyBinary,
+    )
+    .expect("legacy solve");
+    let first = run_simulation_with_model_response(
+        &request,
+        &TuningResponseV1::default(),
+        CurvatureAeroResponse::ContinuousV1,
+    )
+    .expect("first continuous solve");
+    let second = run_simulation_with_model_response(
+        &request,
+        &TuningResponseV1::default(),
+        CurvatureAeroResponse::ContinuousV1,
+    )
+    .expect("second continuous solve");
+
+    assert_eq!(first, second);
+    assert_ne!(first, legacy);
+}
+
+#[test]
 fn candidate_response_changes_only_the_selected_transform() {
     let request = synthetic_request();
     let tuning = Tuning {

@@ -1,0 +1,1217 @@
+{
+  "schema_version": "pitgun.racing-curvature-band-guardrails/v1",
+  "question": "Does the continuous candidate satisfy physical trade-offs when response is measured by curvature band rather than one binary label?",
+  "status": "experimental_promotion_review",
+  "runner": {
+    "path": "target/release/examples/high_speed_response_probe",
+    "digest": "sha256:09035185325e9cd89c4e4d30ccf93ad9a821eab071a935597abe6718199d0e51"
+  },
+  "seed": "42",
+  "gearing_level_count": 11,
+  "planned_run_count": 154,
+  "execution_point_set_digest": "sha256:6543a4d672720d1b0784fc1bfa356344fd7902b62838a3bebfef62581073f88f",
+  "guardrail_policy": {
+    "per_gearing_required": [
+      "high downforce reduces peak speed",
+      "high downforce increases aerodynamic drag work",
+      "high downforce increases mean downforce",
+      "high downforce increases mean speed in the high-curvature band"
+    ],
+    "informational_only": [
+      "near-straight mean speed",
+      "low-curvature mean speed",
+      "medium-curvature mean speed",
+      "legacy binary mean-corner speed"
+    ],
+    "reason": "Downforce is expected to cost speed outside genuinely tight corners; requiring every non-straight aggregate to improve would preserve the obsolete binary abstraction."
+  },
+  "source_candidate": {
+    "path": "experiments/racing_response/results/racing-continuous-curvature-response-v1.json",
+    "digest": "sha256:6cc0016d318bf557d321148cb3fe3194cd8bc5974559f5c3b13df71501ebd8dd"
+  },
+  "all_circuit_band_guardrails_pass": true,
+  "all_circuit_speed_guardrails_pass": true,
+  "suzuka_optimum_review": {
+    "baseline": {
+      "downforce_slider": 0.3,
+      "gear_ratio_slider": 0.0,
+      "total_time_ms": 88413
+    },
+    "candidate": {
+      "downforce_slider": 0.2,
+      "gear_ratio_slider": 0.1,
+      "total_time_ms": 88610
+    },
+    "downforce_grid_step": 0.1,
+    "gearing_grid_step": 0.1,
+    "classification": "one_step_bounded_movement"
+  },
+  "decision": {
+    "candidate_physically_eligible_for_versioned_promotion": true,
+    "automatic_game_or_catalog_promotion": false
+  },
+  "circuits": [
+    {
+      "circuit_id": "it-1922",
+      "circuit_archetype": "power",
+      "circuit_slug": "monza",
+      "maximum_observed_speed_kph": 377.632068077,
+      "maximum_speed_passes": true,
+      "curvature_band_invariant_failures": [],
+      "curvature_band_invariants_pass": true,
+      "legacy_corner_failure_count": 0,
+      "high_minus_low_downforce": [
+        {
+          "gear_ratio_slider": 0.0,
+          "total_time_ms": 2635,
+          "peak_speed_kph": -57.453769138,
+          "legacy_mean_corner_speed_kph": 1.570523467,
+          "aerodynamic_drag_work_kj": 17139.865035672,
+          "mean_downforce_n": 3436.278699164,
+          "mean_speed_by_curvature_band_kph": {
+            "near_straight": -45.319144716,
+            "low_curvature": -33.72081744,
+            "medium_curvature": -17.517242599,
+            "high_curvature": 15.896754308
+          }
+        },
+        {
+          "gear_ratio_slider": 0.1,
+          "total_time_ms": 2717,
+          "peak_speed_kph": -58.388044851,
+          "legacy_mean_corner_speed_kph": 1.48349485,
+          "aerodynamic_drag_work_kj": 17066.893068666,
+          "mean_downforce_n": 3396.984708177,
+          "mean_speed_by_curvature_band_kph": {
+            "near_straight": -43.565223069,
+            "low_curvature": -33.700054405,
+            "medium_curvature": -17.501367422,
+            "high_curvature": 13.494897259
+          }
+        },
+        {
+          "gear_ratio_slider": 0.2,
+          "total_time_ms": 2776,
+          "peak_speed_kph": -59.458476157,
+          "legacy_mean_corner_speed_kph": 1.450437122,
+          "aerodynamic_drag_work_kj": 17015.190087267,
+          "mean_downforce_n": 3368.687339653,
+          "mean_speed_by_curvature_band_kph": {
+            "near_straight": -41.692419987,
+            "low_curvature": -32.831243653,
+            "medium_curvature": -19.712432763,
+            "high_curvature": 13.208016868
+          }
+        },
+        {
+          "gear_ratio_slider": 0.3,
+          "total_time_ms": 2814,
+          "peak_speed_kph": -60.889009238,
+          "legacy_mean_corner_speed_kph": 1.454898488,
+          "aerodynamic_drag_work_kj": 16980.951995449,
+          "mean_downforce_n": 3350.313503917,
+          "mean_speed_by_curvature_band_kph": {
+            "near_straight": -41.028719104,
+            "low_curvature": -33.052772451,
+            "medium_curvature": -19.389575741,
+            "high_curvature": 13.51483272
+          }
+        },
+        {
+          "gear_ratio_slider": 0.4,
+          "total_time_ms": 2843,
+          "peak_speed_kph": -62.130909683,
+          "legacy_mean_corner_speed_kph": 1.418772477,
+          "aerodynamic_drag_work_kj": 16951.790763539,
+          "mean_downforce_n": 3335.27298472,
+          "mean_speed_by_curvature_band_kph": {
+            "near_straight": -37.873288488,
+            "low_curvature": -36.241510153,
+            "medium_curvature": -19.896535478,
+            "high_curvature": 13.626903203
+          }
+        },
+        {
+          "gear_ratio_slider": 0.5,
+          "total_time_ms": 2835,
+          "peak_speed_kph": -63.876762515,
+          "legacy_mean_corner_speed_kph": 1.418713292,
+          "aerodynamic_drag_work_kj": 16960.550878197,
+          "mean_downforce_n": 3337.07806305,
+          "mean_speed_by_curvature_band_kph": {
+            "near_straight": -39.810442035,
+            "low_curvature": -36.281087275,
+            "medium_curvature": -16.995983222,
+            "high_curvature": 13.404683868
+          }
+        },
+        {
+          "gear_ratio_slider": 0.6,
+          "total_time_ms": 2816,
+          "peak_speed_kph": -64.933844481,
+          "legacy_mean_corner_speed_kph": 1.414790352,
+          "aerodynamic_drag_work_kj": 16986.197743653,
+          "mean_downforce_n": 3344.706116551,
+          "mean_speed_by_curvature_band_kph": {
+            "near_straight": -38.338221095,
+            "low_curvature": -41.181042417,
+            "medium_curvature": -17.499949707,
+            "high_curvature": 15.136219538
+          }
+        },
+        {
+          "gear_ratio_slider": 0.7,
+          "total_time_ms": 2806,
+          "peak_speed_kph": -64.842786238,
+          "legacy_mean_corner_speed_kph": 1.383377372,
+          "aerodynamic_drag_work_kj": 17004.955413981,
+          "mean_downforce_n": 3349.102356143,
+          "mean_speed_by_curvature_band_kph": {
+            "near_straight": -32.635615622,
+            "low_curvature": -38.541518506,
+            "medium_curvature": -19.364643411,
+            "high_curvature": 14.576689189
+          }
+        },
+        {
+          "gear_ratio_slider": 0.8,
+          "total_time_ms": 2823,
+          "peak_speed_kph": -64.534384041,
+          "legacy_mean_corner_speed_kph": 1.327614278,
+          "aerodynamic_drag_work_kj": 16989.974579598,
+          "mean_downforce_n": 3339.963571267,
+          "mean_speed_by_curvature_band_kph": {
+            "near_straight": -54.925231013,
+            "low_curvature": -30.986859236,
+            "medium_curvature": -19.41786758,
+            "high_curvature": 16.47417973
+          }
+        },
+        {
+          "gear_ratio_slider": 0.9,
+          "total_time_ms": 2870,
+          "peak_speed_kph": -64.332385103,
+          "legacy_mean_corner_speed_kph": 1.265457383,
+          "aerodynamic_drag_work_kj": 16943.92192916,
+          "mean_downforce_n": 3317.22129074,
+          "mean_speed_by_curvature_band_kph": {
+            "near_straight": -53.815538198,
+            "low_curvature": -32.380888007,
+            "medium_curvature": -18.96657964,
+            "high_curvature": 14.139005769
+          }
+        },
+        {
+          "gear_ratio_slider": 1.0,
+          "total_time_ms": 2897,
+          "peak_speed_kph": -64.169451836,
+          "legacy_mean_corner_speed_kph": 1.256434665,
+          "aerodynamic_drag_work_kj": 16918.865148738,
+          "mean_downforce_n": 3304.731605265,
+          "mean_speed_by_curvature_band_kph": {
+            "near_straight": -41.983829428,
+            "low_curvature": -33.606612374,
+            "medium_curvature": -20.06580205,
+            "high_curvature": 13.969771133
+          }
+        }
+      ]
+    },
+    {
+      "circuit_id": "mc-1929",
+      "circuit_archetype": "high-downforce",
+      "circuit_slug": "monaco",
+      "maximum_observed_speed_kph": 331.002373542,
+      "maximum_speed_passes": true,
+      "curvature_band_invariant_failures": [],
+      "curvature_band_invariants_pass": true,
+      "legacy_corner_failure_count": 0,
+      "high_minus_low_downforce": [
+        {
+          "gear_ratio_slider": 0.0,
+          "total_time_ms": -1440,
+          "peak_speed_kph": -47.28801577,
+          "legacy_mean_corner_speed_kph": 4.612460757,
+          "aerodynamic_drag_work_kj": 8009.45203004,
+          "mean_downforce_n": 3498.055983547,
+          "mean_speed_by_curvature_band_kph": {
+            "near_straight": -0.474433144,
+            "low_curvature": -8.711340275,
+            "medium_curvature": -11.23847478,
+            "high_curvature": 8.883103039
+          }
+        },
+        {
+          "gear_ratio_slider": 0.1,
+          "total_time_ms": -1447,
+          "peak_speed_kph": -47.510002044,
+          "legacy_mean_corner_speed_kph": 4.628011983,
+          "aerodynamic_drag_work_kj": 8016.672728929,
+          "mean_downforce_n": 3500.875387398,
+          "mean_speed_by_curvature_band_kph": {
+            "near_straight": 15.414491293,
+            "low_curvature": -7.865193282,
+            "medium_curvature": -10.739562163,
+            "high_curvature": 8.749798047
+          }
+        },
+        {
+          "gear_ratio_slider": 0.2,
+          "total_time_ms": -1453,
+          "peak_speed_kph": -49.009858137,
+          "legacy_mean_corner_speed_kph": 4.638957661,
+          "aerodynamic_drag_work_kj": 8022.350267315,
+          "mean_downforce_n": 3502.904819463,
+          "mean_speed_by_curvature_band_kph": {
+            "near_straight": 27.946381838,
+            "low_curvature": -10.82698721,
+            "medium_curvature": -9.874877403,
+            "high_curvature": 9.928383784
+          }
+        },
+        {
+          "gear_ratio_slider": 0.3,
+          "total_time_ms": -1445,
+          "peak_speed_kph": -48.668601704,
+          "legacy_mean_corner_speed_kph": 4.612119381,
+          "aerodynamic_drag_work_kj": 8020.85710465,
+          "mean_downforce_n": 3498.898950046,
+          "mean_speed_by_curvature_band_kph": {
+            "near_straight": -58.412775242,
+            "low_curvature": -3.417144144,
+            "medium_curvature": -10.449451171,
+            "high_curvature": 9.394107731
+          }
+        },
+        {
+          "gear_ratio_slider": 0.4,
+          "total_time_ms": -1461,
+          "peak_speed_kph": -48.233998246,
+          "legacy_mean_corner_speed_kph": 4.649229765,
+          "aerodynamic_drag_work_kj": 8027.079069961,
+          "mean_downforce_n": 3503.706441059,
+          "mean_speed_by_curvature_band_kph": {
+            "near_straight": -26.324662286,
+            "low_curvature": 3.944120882,
+            "medium_curvature": -8.703853618,
+            "high_curvature": 10.941014036
+          }
+        },
+        {
+          "gear_ratio_slider": 0.5,
+          "total_time_ms": -1473,
+          "peak_speed_kph": -47.117612266,
+          "legacy_mean_corner_speed_kph": 4.680244754,
+          "aerodynamic_drag_work_kj": 8029.95537715,
+          "mean_downforce_n": 3506.615503076,
+          "mean_speed_by_curvature_band_kph": {
+            "near_straight": 5.599717511,
+            "low_curvature": -1.959089107,
+            "medium_curvature": -8.459508836,
+            "high_curvature": 11.713750936
+          }
+        },
+        {
+          "gear_ratio_slider": 0.6,
+          "total_time_ms": -1466,
+          "peak_speed_kph": -46.475928751,
+          "legacy_mean_corner_speed_kph": 4.656943718,
+          "aerodynamic_drag_work_kj": 8022.905936096,
+          "mean_downforce_n": 3501.059246955,
+          "mean_speed_by_curvature_band_kph": {
+            "near_straight": -13.008368231,
+            "low_curvature": 9.969399826,
+            "medium_curvature": -12.438510946,
+            "high_curvature": 10.357680355
+          }
+        },
+        {
+          "gear_ratio_slider": 0.7,
+          "total_time_ms": -1454,
+          "peak_speed_kph": -46.256048683,
+          "legacy_mean_corner_speed_kph": 4.622119253,
+          "aerodynamic_drag_work_kj": 8012.909927478,
+          "mean_downforce_n": 3493.2972878,
+          "mean_speed_by_curvature_band_kph": {
+            "near_straight": 8.756531353,
+            "low_curvature": -4.0356682,
+            "medium_curvature": -12.967850678,
+            "high_curvature": 10.539420142
+          }
+        },
+        {
+          "gear_ratio_slider": 0.8,
+          "total_time_ms": -1448,
+          "peak_speed_kph": -47.241112658,
+          "legacy_mean_corner_speed_kph": 4.604235552,
+          "aerodynamic_drag_work_kj": 8010.661876624,
+          "mean_downforce_n": 3489.524111952,
+          "mean_speed_by_curvature_band_kph": {
+            "near_straight": -14.792542886,
+            "low_curvature": -7.216784629,
+            "medium_curvature": -11.304187637,
+            "high_curvature": 9.114478731
+          }
+        },
+        {
+          "gear_ratio_slider": 0.9,
+          "total_time_ms": -1437,
+          "peak_speed_kph": -47.590520563,
+          "legacy_mean_corner_speed_kph": 4.56600109,
+          "aerodynamic_drag_work_kj": 8012.687840466,
+          "mean_downforce_n": 3485.35183359,
+          "mean_speed_by_curvature_band_kph": {
+            "near_straight": 16.968302848,
+            "low_curvature": -8.524903902,
+            "medium_curvature": -12.119745386,
+            "high_curvature": 8.995298445
+          }
+        },
+        {
+          "gear_ratio_slider": 1.0,
+          "total_time_ms": -1444,
+          "peak_speed_kph": -49.048615113,
+          "legacy_mean_corner_speed_kph": 4.577687118,
+          "aerodynamic_drag_work_kj": 8018.934637264,
+          "mean_downforce_n": 3487.107800256,
+          "mean_speed_by_curvature_band_kph": {
+            "near_straight": -43.111161141,
+            "low_curvature": -5.867736158,
+            "medium_curvature": -10.066745257,
+            "high_curvature": 9.237845482
+          }
+        }
+      ]
+    },
+    {
+      "circuit_id": "hu-1986",
+      "circuit_archetype": "mechanical-grip",
+      "circuit_slug": "budapest",
+      "maximum_observed_speed_kph": 330.665635252,
+      "maximum_speed_passes": true,
+      "curvature_band_invariant_failures": [],
+      "curvature_band_invariants_pass": true,
+      "legacy_corner_failure_count": 0,
+      "high_minus_low_downforce": [
+        {
+          "gear_ratio_slider": 0.0,
+          "total_time_ms": -2787,
+          "peak_speed_kph": -38.8603863,
+          "legacy_mean_corner_speed_kph": 9.966898066,
+          "aerodynamic_drag_work_kj": 11287.80971381,
+          "mean_downforce_n": 4208.004564671,
+          "mean_speed_by_curvature_band_kph": {
+            "near_straight": -3.733506851,
+            "low_curvature": 0.945910967,
+            "medium_curvature": -6.017631106,
+            "high_curvature": 16.961265439
+          }
+        },
+        {
+          "gear_ratio_slider": 0.1,
+          "total_time_ms": -2790,
+          "peak_speed_kph": -39.713829216,
+          "legacy_mean_corner_speed_kph": 9.966752362,
+          "aerodynamic_drag_work_kj": 11287.340517024,
+          "mean_downforce_n": 4206.992939735,
+          "mean_speed_by_curvature_band_kph": {
+            "near_straight": -8.566761229,
+            "low_curvature": 0.231141095,
+            "medium_curvature": -6.099723233,
+            "high_curvature": 16.941832437
+          }
+        },
+        {
+          "gear_ratio_slider": 0.2,
+          "total_time_ms": -2780,
+          "peak_speed_kph": -40.914556309,
+          "legacy_mean_corner_speed_kph": 9.93032516,
+          "aerodynamic_drag_work_kj": 11285.739731862,
+          "mean_downforce_n": 4203.132702068,
+          "mean_speed_by_curvature_band_kph": {
+            "near_straight": -16.467222039,
+            "low_curvature": -0.737020589,
+            "medium_curvature": -6.97510503,
+            "high_curvature": 17.348171952
+          }
+        },
+        {
+          "gear_ratio_slider": 0.3,
+          "total_time_ms": -2787,
+          "peak_speed_kph": -40.589454026,
+          "legacy_mean_corner_speed_kph": 9.947211011,
+          "aerodynamic_drag_work_kj": 11291.0558936,
+          "mean_downforce_n": 4204.746416239,
+          "mean_speed_by_curvature_band_kph": {
+            "near_straight": -4.903374735,
+            "low_curvature": -6.678871651,
+            "medium_curvature": -8.220542209,
+            "high_curvature": 16.860653529
+          }
+        },
+        {
+          "gear_ratio_slider": 0.4,
+          "total_time_ms": -2802,
+          "peak_speed_kph": -39.828185858,
+          "legacy_mean_corner_speed_kph": 9.999316811,
+          "aerodynamic_drag_work_kj": 11296.09288094,
+          "mean_downforce_n": 4208.071591773,
+          "mean_speed_by_curvature_band_kph": {
+            "near_straight": -1.836450551,
+            "low_curvature": -8.720021381,
+            "medium_curvature": -8.730413348,
+            "high_curvature": 16.538483395
+          }
+        },
+        {
+          "gear_ratio_slider": 0.5,
+          "total_time_ms": -2793,
+          "peak_speed_kph": -39.216329526,
+          "legacy_mean_corner_speed_kph": 9.985874597,
+          "aerodynamic_drag_work_kj": 11295.325223483,
+          "mean_downforce_n": 4204.72904911,
+          "mean_speed_by_curvature_band_kph": {
+            "near_straight": 0.105371666,
+            "low_curvature": -9.369213826,
+            "medium_curvature": -7.849183096,
+            "high_curvature": 16.049541037
+          }
+        },
+        {
+          "gear_ratio_slider": 0.6,
+          "total_time_ms": -2796,
+          "peak_speed_kph": -38.434086307,
+          "legacy_mean_corner_speed_kph": 10.000276781,
+          "aerodynamic_drag_work_kj": 11297.128842503,
+          "mean_downforce_n": 4204.524786838,
+          "mean_speed_by_curvature_band_kph": {
+            "near_straight": -3.101203865,
+            "low_curvature": -4.992056785,
+            "medium_curvature": -7.512250619,
+            "high_curvature": 16.645867223
+          }
+        },
+        {
+          "gear_ratio_slider": 0.7,
+          "total_time_ms": -2781,
+          "peak_speed_kph": -40.126845337,
+          "legacy_mean_corner_speed_kph": 9.96264902,
+          "aerodynamic_drag_work_kj": 11290.452918127,
+          "mean_downforce_n": 4198.159814001,
+          "mean_speed_by_curvature_band_kph": {
+            "near_straight": -6.750927165,
+            "low_curvature": -0.719662174,
+            "medium_curvature": -6.766987193,
+            "high_curvature": 16.937173602
+          }
+        },
+        {
+          "gear_ratio_slider": 0.8,
+          "total_time_ms": -2787,
+          "peak_speed_kph": -39.143248486,
+          "legacy_mean_corner_speed_kph": 9.970520795,
+          "aerodynamic_drag_work_kj": 11286.322016628,
+          "mean_downforce_n": 4196.424028837,
+          "mean_speed_by_curvature_band_kph": {
+            "near_straight": -8.905460555,
+            "low_curvature": 0.387029406,
+            "medium_curvature": -5.627667003,
+            "high_curvature": 17.638513585
+          }
+        },
+        {
+          "gear_ratio_slider": 0.9,
+          "total_time_ms": -2789,
+          "peak_speed_kph": -39.595103896,
+          "legacy_mean_corner_speed_kph": 9.967402517,
+          "aerodynamic_drag_work_kj": 11285.008771048,
+          "mean_downforce_n": 4194.345885266,
+          "mean_speed_by_curvature_band_kph": {
+            "near_straight": -8.507369191,
+            "low_curvature": 2.832857904,
+            "medium_curvature": -6.262426043,
+            "high_curvature": 17.100881868
+          }
+        },
+        {
+          "gear_ratio_slider": 1.0,
+          "total_time_ms": -2775,
+          "peak_speed_kph": -40.901787826,
+          "legacy_mean_corner_speed_kph": 9.929640812,
+          "aerodynamic_drag_work_kj": 11282.72505564,
+          "mean_downforce_n": 4189.103794005,
+          "mean_speed_by_curvature_band_kph": {
+            "near_straight": -16.651669185,
+            "low_curvature": -0.476567385,
+            "medium_curvature": -7.613542316,
+            "high_curvature": 17.033561203
+          }
+        }
+      ]
+    },
+    {
+      "circuit_id": "jp-1962",
+      "circuit_archetype": "mixed",
+      "circuit_slug": "suzuka",
+      "maximum_observed_speed_kph": 375.71786332,
+      "maximum_speed_passes": true,
+      "curvature_band_invariant_failures": [],
+      "curvature_band_invariants_pass": true,
+      "legacy_corner_failure_count": 0,
+      "high_minus_low_downforce": [
+        {
+          "gear_ratio_slider": 0.0,
+          "total_time_ms": 672,
+          "peak_speed_kph": -59.210104515,
+          "legacy_mean_corner_speed_kph": 3.646071876,
+          "aerodynamic_drag_work_kj": 16971.059271891,
+          "mean_downforce_n": 3981.092016209,
+          "mean_speed_by_curvature_band_kph": {
+            "near_straight": -21.071299061,
+            "low_curvature": -22.379484677,
+            "medium_curvature": -15.088419407,
+            "high_curvature": 14.220848752
+          }
+        },
+        {
+          "gear_ratio_slider": 0.1,
+          "total_time_ms": 676,
+          "peak_speed_kph": -60.135748081,
+          "legacy_mean_corner_speed_kph": 3.67823087,
+          "aerodynamic_drag_work_kj": 16972.111631667,
+          "mean_downforce_n": 3979.5547989,
+          "mean_speed_by_curvature_band_kph": {
+            "near_straight": -22.547326338,
+            "low_curvature": -20.345118876,
+            "medium_curvature": -16.192241381,
+            "high_curvature": 14.955257
+          }
+        },
+        {
+          "gear_ratio_slider": 0.2,
+          "total_time_ms": 675,
+          "peak_speed_kph": -61.047524511,
+          "legacy_mean_corner_speed_kph": 3.707809689,
+          "aerodynamic_drag_work_kj": 16984.143651496,
+          "mean_downforce_n": 3981.316102972,
+          "mean_speed_by_curvature_band_kph": {
+            "near_straight": -22.608934482,
+            "low_curvature": -21.198210495,
+            "medium_curvature": -15.700449624,
+            "high_curvature": 14.331078663
+          }
+        },
+        {
+          "gear_ratio_slider": 0.3,
+          "total_time_ms": 695,
+          "peak_speed_kph": -62.271801109,
+          "legacy_mean_corner_speed_kph": 3.685819909,
+          "aerodynamic_drag_work_kj": 16974.884347137,
+          "mean_downforce_n": 3973.507434863,
+          "mean_speed_by_curvature_band_kph": {
+            "near_straight": -22.444390136,
+            "low_curvature": -23.068442272,
+            "medium_curvature": -15.572764322,
+            "high_curvature": 15.513367014
+          }
+        },
+        {
+          "gear_ratio_slider": 0.4,
+          "total_time_ms": 731,
+          "peak_speed_kph": -64.143800924,
+          "legacy_mean_corner_speed_kph": 3.622958076,
+          "aerodynamic_drag_work_kj": 16935.213467196,
+          "mean_downforce_n": 3955.620275896,
+          "mean_speed_by_curvature_band_kph": {
+            "near_straight": -14.957304859,
+            "low_curvature": -24.829643969,
+            "medium_curvature": -17.505409371,
+            "high_curvature": 16.352181003
+          }
+        },
+        {
+          "gear_ratio_slider": 0.5,
+          "total_time_ms": 775,
+          "peak_speed_kph": -65.542368415,
+          "legacy_mean_corner_speed_kph": 3.502145945,
+          "aerodynamic_drag_work_kj": 16904.855993342,
+          "mean_downforce_n": 3937.360103349,
+          "mean_speed_by_curvature_band_kph": {
+            "near_straight": -17.29253052,
+            "low_curvature": -21.587681639,
+            "medium_curvature": -17.974965033,
+            "high_curvature": 15.103617775
+          }
+        },
+        {
+          "gear_ratio_slider": 0.6,
+          "total_time_ms": 764,
+          "peak_speed_kph": -65.876871479,
+          "legacy_mean_corner_speed_kph": 3.529816524,
+          "aerodynamic_drag_work_kj": 16906.987429331,
+          "mean_downforce_n": 3938.624204369,
+          "mean_speed_by_curvature_band_kph": {
+            "near_straight": -25.887266172,
+            "low_curvature": -17.338798544,
+            "medium_curvature": -18.294247402,
+            "high_curvature": 14.691158427
+          }
+        },
+        {
+          "gear_ratio_slider": 0.7,
+          "total_time_ms": 764,
+          "peak_speed_kph": -65.948268209,
+          "legacy_mean_corner_speed_kph": 3.525076691,
+          "aerodynamic_drag_work_kj": 16903.280914812,
+          "mean_downforce_n": 3936.036589908,
+          "mean_speed_by_curvature_band_kph": {
+            "near_straight": -19.834524516,
+            "low_curvature": -25.193909104,
+            "medium_curvature": -14.559881714,
+            "high_curvature": 15.171492392
+          }
+        },
+        {
+          "gear_ratio_slider": 0.8,
+          "total_time_ms": 761,
+          "peak_speed_kph": -66.434052528,
+          "legacy_mean_corner_speed_kph": 3.542365097,
+          "aerodynamic_drag_work_kj": 16898.116733355,
+          "mean_downforce_n": 3934.298712183,
+          "mean_speed_by_curvature_band_kph": {
+            "near_straight": -25.291618876,
+            "low_curvature": -24.708219688,
+            "medium_curvature": -12.571081176,
+            "high_curvature": 14.535646351
+          }
+        },
+        {
+          "gear_ratio_slider": 0.9,
+          "total_time_ms": 747,
+          "peak_speed_kph": -66.56894431,
+          "legacy_mean_corner_speed_kph": 3.596173924,
+          "aerodynamic_drag_work_kj": 16910.868719201,
+          "mean_downforce_n": 3939.640118722,
+          "mean_speed_by_curvature_band_kph": {
+            "near_straight": -30.005170824,
+            "low_curvature": -17.766719998,
+            "medium_curvature": -15.890148519,
+            "high_curvature": 15.14548542
+          }
+        },
+        {
+          "gear_ratio_slider": 1.0,
+          "total_time_ms": 727,
+          "peak_speed_kph": -66.632566652,
+          "legacy_mean_corner_speed_kph": 3.648397843,
+          "aerodynamic_drag_work_kj": 16937.950539595,
+          "mean_downforce_n": 3948.761046511,
+          "mean_speed_by_curvature_band_kph": {
+            "near_straight": -26.465317673,
+            "low_curvature": -19.126622057,
+            "medium_curvature": -15.458120679,
+            "high_curvature": 14.674095529
+          }
+        }
+      ]
+    },
+    {
+      "circuit_id": "sg-2008",
+      "circuit_archetype": "street-thermal",
+      "circuit_slug": "singapore",
+      "maximum_observed_speed_kph": 348.42467178,
+      "maximum_speed_passes": true,
+      "curvature_band_invariant_failures": [],
+      "curvature_band_invariants_pass": true,
+      "legacy_corner_failure_count": 0,
+      "high_minus_low_downforce": [
+        {
+          "gear_ratio_slider": 0.0,
+          "total_time_ms": -771,
+          "peak_speed_kph": -54.290416467,
+          "legacy_mean_corner_speed_kph": 4.503223479,
+          "aerodynamic_drag_work_kj": 12030.597765962,
+          "mean_downforce_n": 3464.118912073,
+          "mean_speed_by_curvature_band_kph": {
+            "near_straight": -10.737714567,
+            "low_curvature": -17.89578344,
+            "medium_curvature": -5.925128293,
+            "high_curvature": 10.646856856
+          }
+        },
+        {
+          "gear_ratio_slider": 0.1,
+          "total_time_ms": -752,
+          "peak_speed_kph": -55.870740578,
+          "legacy_mean_corner_speed_kph": 4.466008695,
+          "aerodynamic_drag_work_kj": 12010.834214711,
+          "mean_downforce_n": 3454.818740312,
+          "mean_speed_by_curvature_band_kph": {
+            "near_straight": -9.843223541,
+            "low_curvature": -14.27976308,
+            "medium_curvature": -5.862679699,
+            "high_curvature": 10.928597881
+          }
+        },
+        {
+          "gear_ratio_slider": 0.2,
+          "total_time_ms": -761,
+          "peak_speed_kph": -57.293568198,
+          "legacy_mean_corner_speed_kph": 4.485865018,
+          "aerodynamic_drag_work_kj": 12012.569101986,
+          "mean_downforce_n": 3456.033759536,
+          "mean_speed_by_curvature_band_kph": {
+            "near_straight": -19.233466126,
+            "low_curvature": -7.788094459,
+            "medium_curvature": -9.328598663,
+            "high_curvature": 10.07870329
+          }
+        },
+        {
+          "gear_ratio_slider": 0.3,
+          "total_time_ms": -753,
+          "peak_speed_kph": -57.272615744,
+          "legacy_mean_corner_speed_kph": 4.455341435,
+          "aerodynamic_drag_work_kj": 12017.737459129,
+          "mean_downforce_n": 3454.506282904,
+          "mean_speed_by_curvature_band_kph": {
+            "near_straight": -10.387100261,
+            "low_curvature": -15.109655578,
+            "medium_curvature": -8.481991894,
+            "high_curvature": 8.868187498
+          }
+        },
+        {
+          "gear_ratio_slider": 0.4,
+          "total_time_ms": -760,
+          "peak_speed_kph": -57.010573046,
+          "legacy_mean_corner_speed_kph": 4.465687428,
+          "aerodynamic_drag_work_kj": 12024.328145281,
+          "mean_downforce_n": 3456.336545143,
+          "mean_speed_by_curvature_band_kph": {
+            "near_straight": -12.246610285,
+            "low_curvature": -14.461679021,
+            "medium_curvature": -8.562808497,
+            "high_curvature": 9.891837527
+          }
+        },
+        {
+          "gear_ratio_slider": 0.5,
+          "total_time_ms": -769,
+          "peak_speed_kph": -56.702658878,
+          "legacy_mean_corner_speed_kph": 4.483038847,
+          "aerodynamic_drag_work_kj": 12029.02675248,
+          "mean_downforce_n": 3458.133512081,
+          "mean_speed_by_curvature_band_kph": {
+            "near_straight": -14.096527113,
+            "low_curvature": -7.290917887,
+            "medium_curvature": -9.629949226,
+            "high_curvature": 10.685107177
+          }
+        },
+        {
+          "gear_ratio_slider": 0.6,
+          "total_time_ms": -783,
+          "peak_speed_kph": -56.336935482,
+          "legacy_mean_corner_speed_kph": 4.524062981,
+          "aerodynamic_drag_work_kj": 12031.053069237,
+          "mean_downforce_n": 3460.52792144,
+          "mean_speed_by_curvature_band_kph": {
+            "near_straight": -26.396731969,
+            "low_curvature": -8.117058715,
+            "medium_curvature": -8.405916987,
+            "high_curvature": 10.505100065
+          }
+        },
+        {
+          "gear_ratio_slider": 0.7,
+          "total_time_ms": -777,
+          "peak_speed_kph": -57.462702191,
+          "legacy_mean_corner_speed_kph": 4.517233317,
+          "aerodynamic_drag_work_kj": 12030.26543428,
+          "mean_downforce_n": 3458.111834077,
+          "mean_speed_by_curvature_band_kph": {
+            "near_straight": -17.124054175,
+            "low_curvature": -12.234546536,
+            "medium_curvature": -9.033377577,
+            "high_curvature": 10.612567784
+          }
+        },
+        {
+          "gear_ratio_slider": 0.8,
+          "total_time_ms": -762,
+          "peak_speed_kph": -57.11974858,
+          "legacy_mean_corner_speed_kph": 4.484936742,
+          "aerodynamic_drag_work_kj": 12023.711676053,
+          "mean_downforce_n": 3452.605311191,
+          "mean_speed_by_curvature_band_kph": {
+            "near_straight": -14.13771254,
+            "low_curvature": -16.580762924,
+            "medium_curvature": -8.035281583,
+            "high_curvature": 10.679252932
+          }
+        },
+        {
+          "gear_ratio_slider": 0.9,
+          "total_time_ms": -742,
+          "peak_speed_kph": -57.502167165,
+          "legacy_mean_corner_speed_kph": 4.441299556,
+          "aerodynamic_drag_work_kj": 12005.317159393,
+          "mean_downforce_n": 3443.546407,
+          "mean_speed_by_curvature_band_kph": {
+            "near_straight": -9.966893198,
+            "low_curvature": -14.166695878,
+            "medium_curvature": -5.990587526,
+            "high_curvature": 10.976133219
+          }
+        },
+        {
+          "gear_ratio_slider": 1.0,
+          "total_time_ms": -748,
+          "peak_speed_kph": -57.899940826,
+          "legacy_mean_corner_speed_kph": 4.44806983,
+          "aerodynamic_drag_work_kj": 12007.012331015,
+          "mean_downforce_n": 3443.768330257,
+          "mean_speed_by_curvature_band_kph": {
+            "near_straight": -15.519468164,
+            "low_curvature": -10.250872239,
+            "medium_curvature": -9.375249707,
+            "high_curvature": 9.473890475
+          }
+        }
+      ]
+    },
+    {
+      "circuit_id": "gb-1948",
+      "circuit_archetype": "mixed-fast",
+      "circuit_slug": "silverstone",
+      "maximum_observed_speed_kph": 376.715091619,
+      "maximum_speed_passes": true,
+      "curvature_band_invariant_failures": [],
+      "curvature_band_invariants_pass": true,
+      "legacy_corner_failure_count": 0,
+      "high_minus_low_downforce": [
+        {
+          "gear_ratio_slider": 0.0,
+          "total_time_ms": -267,
+          "peak_speed_kph": -56.642971495,
+          "legacy_mean_corner_speed_kph": 7.36385445,
+          "aerodynamic_drag_work_kj": 18678.297051602,
+          "mean_downforce_n": 4529.605332397,
+          "mean_speed_by_curvature_band_kph": {
+            "near_straight": -23.239467024,
+            "low_curvature": -19.599581678,
+            "medium_curvature": -11.79136471,
+            "high_curvature": 17.715384305
+          }
+        },
+        {
+          "gear_ratio_slider": 0.1,
+          "total_time_ms": -204,
+          "peak_speed_kph": -57.488718616,
+          "legacy_mean_corner_speed_kph": 7.21909146,
+          "aerodynamic_drag_work_kj": 18614.399167033,
+          "mean_downforce_n": 4498.752690919,
+          "mean_speed_by_curvature_band_kph": {
+            "near_straight": -34.069928006,
+            "low_curvature": -18.661469271,
+            "medium_curvature": -12.271106901,
+            "high_curvature": 17.688192533
+          }
+        },
+        {
+          "gear_ratio_slider": 0.2,
+          "total_time_ms": -137,
+          "peak_speed_kph": -58.215865369,
+          "legacy_mean_corner_speed_kph": 7.026421831,
+          "aerodynamic_drag_work_kj": 18551.313743184,
+          "mean_downforce_n": 4467.403817303,
+          "mean_speed_by_curvature_band_kph": {
+            "near_straight": -31.758964781,
+            "low_curvature": -15.878717895,
+            "medium_curvature": -12.494784894,
+            "high_curvature": 16.153105352
+          }
+        },
+        {
+          "gear_ratio_slider": 0.3,
+          "total_time_ms": -131,
+          "peak_speed_kph": -59.069586902,
+          "legacy_mean_corner_speed_kph": 7.009593464,
+          "aerodynamic_drag_work_kj": 18559.784516935,
+          "mean_downforce_n": 4466.917882334,
+          "mean_speed_by_curvature_band_kph": {
+            "near_straight": -33.043333814,
+            "low_curvature": -12.832491541,
+            "medium_curvature": -13.602358382,
+            "high_curvature": 18.364531478
+          }
+        },
+        {
+          "gear_ratio_slider": 0.4,
+          "total_time_ms": -163,
+          "peak_speed_kph": -60.246040661,
+          "legacy_mean_corner_speed_kph": 7.113833036,
+          "aerodynamic_drag_work_kj": 18599.332300255,
+          "mean_downforce_n": 4482.312932179,
+          "mean_speed_by_curvature_band_kph": {
+            "near_straight": -34.040295793,
+            "low_curvature": -13.496469542,
+            "medium_curvature": -11.488798221,
+            "high_curvature": 17.569819479
+          }
+        },
+        {
+          "gear_ratio_slider": 0.5,
+          "total_time_ms": -182,
+          "peak_speed_kph": -62.459829499,
+          "legacy_mean_corner_speed_kph": 7.191007591,
+          "aerodynamic_drag_work_kj": 18618.147058449,
+          "mean_downforce_n": 4490.379488535,
+          "mean_speed_by_curvature_band_kph": {
+            "near_straight": -31.395847023,
+            "low_curvature": -16.142531194,
+            "medium_curvature": -11.651117219,
+            "high_curvature": 17.999945332
+          }
+        },
+        {
+          "gear_ratio_slider": 0.6,
+          "total_time_ms": -215,
+          "peak_speed_kph": -63.873870832,
+          "legacy_mean_corner_speed_kph": 7.306752856,
+          "aerodynamic_drag_work_kj": 18641.248169431,
+          "mean_downforce_n": 4502.164287699,
+          "mean_speed_by_curvature_band_kph": {
+            "near_straight": -27.726566222,
+            "low_curvature": -17.744174356,
+            "medium_curvature": -11.275754152,
+            "high_curvature": 17.034539303
+          }
+        },
+        {
+          "gear_ratio_slider": 0.7,
+          "total_time_ms": -233,
+          "peak_speed_kph": -63.787233086,
+          "legacy_mean_corner_speed_kph": 7.378402808,
+          "aerodynamic_drag_work_kj": 18657.373868954,
+          "mean_downforce_n": 4508.542055806,
+          "mean_speed_by_curvature_band_kph": {
+            "near_straight": -22.586301365,
+            "low_curvature": -18.08811539,
+            "medium_curvature": -12.39807017,
+            "high_curvature": 17.851126735
+          }
+        },
+        {
+          "gear_ratio_slider": 0.8,
+          "total_time_ms": -211,
+          "peak_speed_kph": -63.697621004,
+          "legacy_mean_corner_speed_kph": 7.330142873,
+          "aerodynamic_drag_work_kj": 18636.752162444,
+          "mean_downforce_n": 4496.955415276,
+          "mean_speed_by_curvature_band_kph": {
+            "near_straight": -27.035553757,
+            "low_curvature": -14.754605163,
+            "medium_curvature": -14.161036607,
+            "high_curvature": 18.698656604
+          }
+        },
+        {
+          "gear_ratio_slider": 0.9,
+          "total_time_ms": -161,
+          "peak_speed_kph": -63.693197878,
+          "legacy_mean_corner_speed_kph": 7.191259065,
+          "aerodynamic_drag_work_kj": 18580.783616014,
+          "mean_downforce_n": 4470.986240691,
+          "mean_speed_by_curvature_band_kph": {
+            "near_straight": -31.236407799,
+            "low_curvature": -17.781882174,
+            "medium_curvature": -11.495005789,
+            "high_curvature": 17.339979706
+          }
+        },
+        {
+          "gear_ratio_slider": 1.0,
+          "total_time_ms": -102,
+          "peak_speed_kph": -63.537045973,
+          "legacy_mean_corner_speed_kph": 6.990895596,
+          "aerodynamic_drag_work_kj": 18520.859342596,
+          "mean_downforce_n": 4441.579361583,
+          "mean_speed_by_curvature_band_kph": {
+            "near_straight": -28.425742318,
+            "low_curvature": -14.719814362,
+            "medium_curvature": -13.555148588,
+            "high_curvature": 16.932720013
+          }
+        }
+      ]
+    },
+    {
+      "circuit_id": "be-1925",
+      "circuit_archetype": "mixed-elevation",
+      "circuit_slug": "spa",
+      "maximum_observed_speed_kph": 395.856321338,
+      "maximum_speed_passes": true,
+      "curvature_band_invariant_failures": [],
+      "curvature_band_invariants_pass": true,
+      "legacy_corner_failure_count": 11,
+      "high_minus_low_downforce": [
+        {
+          "gear_ratio_slider": 0.0,
+          "total_time_ms": 4078,
+          "peak_speed_kph": -72.916362115,
+          "legacy_mean_corner_speed_kph": -2.670859878,
+          "aerodynamic_drag_work_kj": 19968.678163597,
+          "mean_downforce_n": 3016.664880717,
+          "mean_speed_by_curvature_band_kph": {
+            "near_straight": -32.571379235,
+            "low_curvature": -44.245958065,
+            "medium_curvature": -28.353884138,
+            "high_curvature": 11.190494814
+          }
+        },
+        {
+          "gear_ratio_slider": 0.1,
+          "total_time_ms": 4211,
+          "peak_speed_kph": -74.088023761,
+          "legacy_mean_corner_speed_kph": -2.91446054,
+          "aerodynamic_drag_work_kj": 19841.259819397,
+          "mean_downforce_n": 2959.095814897,
+          "mean_speed_by_curvature_band_kph": {
+            "near_straight": -39.431647574,
+            "low_curvature": -45.212659013,
+            "medium_curvature": -25.710733817,
+            "high_curvature": 9.722322635
+          }
+        },
+        {
+          "gear_ratio_slider": 0.2,
+          "total_time_ms": 4459,
+          "peak_speed_kph": -75.793589877,
+          "legacy_mean_corner_speed_kph": -3.270050885,
+          "aerodynamic_drag_work_kj": 19580.708180174,
+          "mean_downforce_n": 2855.161374113,
+          "mean_speed_by_curvature_band_kph": {
+            "near_straight": -46.780523935,
+            "low_curvature": -46.958255485,
+            "medium_curvature": -27.728052421,
+            "high_curvature": 9.193541416
+          }
+        },
+        {
+          "gear_ratio_slider": 0.3,
+          "total_time_ms": 4585,
+          "peak_speed_kph": -77.267348308,
+          "legacy_mean_corner_speed_kph": -3.432289224,
+          "aerodynamic_drag_work_kj": 19453.582530968,
+          "mean_downforce_n": 2801.287954159,
+          "mean_speed_by_curvature_band_kph": {
+            "near_straight": -51.977223867,
+            "low_curvature": -49.58731686,
+            "medium_curvature": -28.918329964,
+            "high_curvature": 10.181288834
+          }
+        },
+        {
+          "gear_ratio_slider": 0.4,
+          "total_time_ms": 4605,
+          "peak_speed_kph": -80.116919565,
+          "legacy_mean_corner_speed_kph": -3.415461552,
+          "aerodynamic_drag_work_kj": 19442.295936357,
+          "mean_downforce_n": 2790.878765677,
+          "mean_speed_by_curvature_band_kph": {
+            "near_straight": -49.596215344,
+            "low_curvature": -53.528658162,
+            "medium_curvature": -28.756581619,
+            "high_curvature": 11.770924732
+          }
+        },
+        {
+          "gear_ratio_slider": 0.5,
+          "total_time_ms": 4601,
+          "peak_speed_kph": -83.23834081,
+          "legacy_mean_corner_speed_kph": -3.35569456,
+          "aerodynamic_drag_work_kj": 19449.43481544,
+          "mean_downforce_n": 2789.350595536,
+          "mean_speed_by_curvature_band_kph": {
+            "near_straight": -56.558136604,
+            "low_curvature": -44.348491131,
+            "medium_curvature": -30.06581235,
+            "high_curvature": 12.030136984
+          }
+        },
+        {
+          "gear_ratio_slider": 0.6,
+          "total_time_ms": 4575,
+          "peak_speed_kph": -83.951129119,
+          "legacy_mean_corner_speed_kph": -3.299439124,
+          "aerodynamic_drag_work_kj": 19487.393090138,
+          "mean_downforce_n": 2798.0172904,
+          "mean_speed_by_curvature_band_kph": {
+            "near_straight": -59.453631572,
+            "low_curvature": -45.050941182,
+            "medium_curvature": -28.178286123,
+            "high_curvature": 12.733574196
+          }
+        },
+        {
+          "gear_ratio_slider": 0.7,
+          "total_time_ms": 4558,
+          "peak_speed_kph": -84.582336078,
+          "legacy_mean_corner_speed_kph": -3.266824986,
+          "aerodynamic_drag_work_kj": 19516.844079604,
+          "mean_downforce_n": 2803.654049296,
+          "mean_speed_by_curvature_band_kph": {
+            "near_straight": -55.130373818,
+            "low_curvature": -43.816982912,
+            "medium_curvature": -28.139919103,
+            "high_curvature": 12.552358308
+          }
+        },
+        {
+          "gear_ratio_slider": 0.8,
+          "total_time_ms": 4556,
+          "peak_speed_kph": -85.204700175,
+          "legacy_mean_corner_speed_kph": -3.272448065,
+          "aerodynamic_drag_work_kj": 19528.761675701,
+          "mean_downforce_n": 2803.094202789,
+          "mean_speed_by_curvature_band_kph": {
+            "near_straight": -41.017113653,
+            "low_curvature": -50.048464098,
+            "medium_curvature": -27.545607853,
+            "high_curvature": 11.449682766
+          }
+        },
+        {
+          "gear_ratio_slider": 0.9,
+          "total_time_ms": 4621,
+          "peak_speed_kph": -85.701207158,
+          "legacy_mean_corner_speed_kph": -3.418960007,
+          "aerodynamic_drag_work_kj": 19466.00821565,
+          "mean_downforce_n": 2775.111376546,
+          "mean_speed_by_curvature_band_kph": {
+            "near_straight": -53.3326763,
+            "low_curvature": -47.149523438,
+            "medium_curvature": -27.479866232,
+            "high_curvature": 10.466661404
+          }
+        },
+        {
+          "gear_ratio_slider": 1.0,
+          "total_time_ms": 4839,
+          "peak_speed_kph": -86.747502108,
+          "legacy_mean_corner_speed_kph": -3.741434981,
+          "aerodynamic_drag_work_kj": 19228.436669907,
+          "mean_downforce_n": 2685.44946166,
+          "mean_speed_by_curvature_band_kph": {
+            "near_straight": -52.591985464,
+            "low_curvature": -55.318895973,
+            "medium_curvature": -26.178329526,
+            "high_curvature": 11.460842131
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -76,10 +76,14 @@ def execute_point(
     downforce: float,
     gearing_index: int,
     gearing: float,
+    model_response: str | None = None,
 ) -> dict[str, Any]:
     try:
+        command = [str(runner), str(scenario_path), str(response_path), str(seed)]
+        if model_response is not None:
+            command.append(model_response)
         completed = subprocess.run(
-            [str(runner), str(scenario_path), str(response_path), str(seed)],
+            command,
             cwd=ROOT,
             check=False,
             capture_output=True,

@@ -6,14 +6,15 @@ use std::path::Path;
 
 use pitgun_contract::canonical_json_digest;
 use pitgun_racing_simulator::{
-    RacingCatalogSnapshot, RunRaceInput, RunRaceRequest, SetupResponseDiagnosticsV1,
-    TuningResponseV1, get_circuit_with_catalog, run_race_with_catalog_and_tuning_response,
+    CORNER_CURVATURE_THRESHOLD_RAD_PER_M, CurvatureAeroResponse, RacingCatalogSnapshot,
+    RunRaceInput, RunRaceRequest, SetupResponseDiagnosticsV1, TuningResponseV1,
+    get_circuit_with_catalog, run_race_with_catalog_and_model_response,
+    run_race_with_catalog_and_tuning_response,
 };
 use serde::Serialize;
 use serde_json::Value;
 
 const PARAM_SPEED_KPH: u16 = 5005;
-const CORNER_THRESHOLD_RAD_PER_M: f64 = 0.001;
 const CURVATURE_BANDS: [(&str, f64, f64); 4] = [
     ("near_straight", 0.0, 0.00025),
     ("low_curvature", 0.00025, 0.001),
@@ -24,6 +25,15 @@ const CURVATURE_BANDS: [(&str, f64, f64); 4] = [
 #[derive(Serialize)]
 struct ExperimentalIdentity<'a> {
     schema_version: &'static str,
+    scenario: &'a Value,
+    tuning_response: &'a TuningResponseV1,
+    seed: u64,
+}
+
+#[derive(Serialize)]
+struct ContinuousExperimentalIdentity<'a> {
+    schema_version: &'static str,
+    model_response: &'static str,
     scenario: &'a Value,
     tuning_response: &'a TuningResponseV1,
     seed: u64,
@@ -85,11 +95,17 @@ fn main() {
 
 fn run() -> Result<(), String> {
     let arguments = env::args().skip(1).collect::<Vec<_>>();
-    if arguments.len() != 3 {
+    if !(3..=4).contains(&arguments.len()) {
         return Err(
-            "usage: high_speed_response_probe SCENARIO_JSON TUNING_RESPONSE_JSON SEED".to_string(),
+            "usage: high_speed_response_probe SCENARIO_JSON TUNING_RESPONSE_JSON SEED [continuous-v1]"
+                .to_string(),
         );
     }
+    let continuous = match arguments.get(3).map(String::as_str) {
+        None => false,
+        Some("continuous-v1") => true,
+        Some(value) => return Err(format!("unsupported model response: {value}")),
+    };
     let seed = arguments[2]
         .parse::<u64>()
         .map_err(|error| format!("invalid seed: {error}"))?;
@@ -117,27 +133,43 @@ fn run() -> Result<(), String> {
         .map_err(|error| format!("cannot digest scenario: {error}"))?;
     let tuning_response_digest = canonical_json_digest(&tuning_response)
         .map_err(|error| format!("cannot digest tuning response: {error}"))?;
-    let experimental_execution_id = canonical_json_digest(&ExperimentalIdentity {
-        schema_version: "pitgun.racing-high-speed-response-probe/v1",
-        scenario: &scenario,
-        tuning_response: &tuning_response,
-        seed,
-    })
+    let experimental_execution_id = if continuous {
+        canonical_json_digest(&ContinuousExperimentalIdentity {
+            schema_version: "pitgun.racing-high-speed-response-probe/v1",
+            model_response: "continuous-v1",
+            scenario: &scenario,
+            tuning_response: &tuning_response,
+            seed,
+        })
+    } else {
+        canonical_json_digest(&ExperimentalIdentity {
+            schema_version: "pitgun.racing-high-speed-response-probe/v1",
+            scenario: &scenario,
+            tuning_response: &tuning_response,
+            seed,
+        })
+    }
     .map_err(|error| format!("cannot identify experimental execution: {error}"))?;
 
     let snapshot = RacingCatalogSnapshot::embedded()
         .map_err(|error| format!("invalid embedded Racing catalog: {error}"))?;
     let circuit = get_circuit_with_catalog(&snapshot, &input.race.track_id)?;
-    let output = run_race_with_catalog_and_tuning_response(
-        RunRaceRequest {
-            era: Some(input.era),
-            hz: Some(input.hz),
-            input,
-            seed,
-        },
-        &snapshot,
-        &tuning_response,
-    )?;
+    let race_request = RunRaceRequest {
+        era: Some(input.era),
+        hz: Some(input.hz),
+        input,
+        seed,
+    };
+    let output = if continuous {
+        run_race_with_catalog_and_model_response(
+            race_request,
+            &snapshot,
+            &tuning_response,
+            CurvatureAeroResponse::ContinuousV1,
+        )
+    } else {
+        run_race_with_catalog_and_tuning_response(race_request, &snapshot, &tuning_response)
+    }?;
 
     let mut peak_speed = None::<PeakSpeed>;
     let mut bands = std::array::from_fn::<_, 4, _>(|_| CurvatureBandAccumulator::default());
@@ -171,7 +203,7 @@ fn run() -> Result<(), String> {
                 speed_kph,
                 distance_m: track_distance_m,
                 absolute_curvature_rad_per_m: curvature,
-                aerodynamic_mode: if curvature > CORNER_THRESHOLD_RAD_PER_M {
+                aerodynamic_mode: if curvature > CORNER_CURVATURE_THRESHOLD_RAD_PER_M {
                     "corner"
                 } else {
                     "straight"
@@ -187,7 +219,8 @@ fn run() -> Result<(), String> {
         .zip(circuit.curvature_radpm.windows(2))
         .filter_map(|(distance, curvature)| {
             let average_curvature = 0.5 * (curvature[0].abs() + curvature[1].abs());
-            (average_curvature >= CORNER_THRESHOLD_RAD_PER_M).then_some(distance[1] - distance[0])
+            (average_curvature >= CORNER_CURVATURE_THRESHOLD_RAD_PER_M)
+                .then_some(distance[1] - distance[0])
         })
         .sum::<f64>();
     let elevation_range_m = circuit.z_m.iter().copied().reduce(f64::max).unwrap_or(0.0)
