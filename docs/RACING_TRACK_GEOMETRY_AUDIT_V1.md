@@ -88,6 +88,12 @@ This validates the source direction, not a catalog-ready circuit. Local
 outliers, centerline placement, smoothing, Solver impact, and deterministic
 replay still require review.
 
+The first isolated Solver experiment is documented in
+[`RACING_SPA_RELIEF_IMPACT_V1.md`](RACING_SPA_RELIEF_IMPACT_V1.md). It finds a
+bounded 177–378 ms lap-time increase across a five-by-five setup grid, a mean
+maximum-speed change of -6.25 km/h, no coarse optimum movement, and exact
+repeatability. This supports further review but still does not promote data.
+
 ## Slope semantics
 
 The historical JSON field is named `slope_pct`, but TrackEagle calculates
