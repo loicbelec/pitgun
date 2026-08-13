@@ -84,6 +84,8 @@ class BundleContractTest(unittest.TestCase):
         self.assertIn('f"{PACKAGE}/opponent_audit.py"', builder)
         self.assertIn('"strategy_effect" / "scenarios"', builder)
         self.assertIn('f"{PACKAGE}/strategy_effect.py"', builder)
+        self.assertIn('"budget_effect" / "scenarios"', builder)
+        self.assertIn('f"{PACKAGE}/budget_effect.py"', builder)
         self.assertIn("execute_packaged_racing_catalog_scenario", runner)
         self.assertIn("CATALOG_RESOURCE_PATTERN.fullmatch", runner)
         self.assertIn(

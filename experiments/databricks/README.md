@@ -124,6 +124,18 @@ pairs by circuit and progression in MLflow. Three-seed direction stability and
 the precise Delta, runner, manifest, adapter, and source Git lineage accompany
 the result. Neither candidate nor policy tables are written.
 
+The controlled development-budget input campaign is frozen in
+[`campaigns/racing-budget-effect-v1.json`](campaigns/racing-budget-effect-v1.json).
+It retains the same balanced opponent field and player strategy. For each of
+five circuits, three progression stages, and three seeds, it sets the player's
+development budget to 90%, 100%, or 110% of the frozen field median, allocated
+deterministically across aero, chassis, cooling, and engine points.
+
+The result is 45 exact triplets and 135 planned runs. Inside a triplet, only
+the player's budget cap and balanced four-axis allocation may differ. The
+adapter rejects any other change, any observed player data, or any attempt to
+turn this input-only campaign into an automatic game-balance decision.
+
 ## Reference campaign
 
 The frozen V1 campaign manifest is
