@@ -90,6 +90,15 @@ class OpponentAuditCampaignTest(unittest.TestCase):
             for forbidden in ("careerId", "playerName", "leaderboard", "telemetry"):
                 self.assertNotIn(forbidden, serialized)
 
+    def test_manifest_records_opponent_contract_dimensions(self):
+        manifest, _, _ = self.load()
+        for run in manifest["runs"]:
+            self.assertLessEqual(run["opponent_budget_min"], run["opponent_budget_max"])
+            self.assertGreaterEqual(run["distinct_opponent_tunings"], 1)
+            self.assertLessEqual(run["distinct_opponent_tunings"], 9)
+            self.assertGreaterEqual(run["distinct_opponent_strategies"], 1)
+            self.assertLessEqual(run["distinct_opponent_strategies"], 9)
+
 
 if __name__ == "__main__":
     unittest.main()

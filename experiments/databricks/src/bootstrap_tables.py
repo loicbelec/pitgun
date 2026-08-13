@@ -97,6 +97,7 @@ table_definitions = {
     "runs": f"""
         CREATE TABLE IF NOT EXISTS {calibration}.runs (
           campaign_id STRING NOT NULL COMMENT 'Parent campaign identifier.',
+          execution_key STRING COMMENT 'Immutable explicit-plan key used for idempotent retries.',
           configuration_id STRING NOT NULL COMMENT 'Content-derived resolved model-input identity.',
           configuration_family STRING COMMENT 'Bounded family identifier selected by the campaign manifest.',
           seed STRING NOT NULL COMMENT 'Unsigned deterministic seed encoded losslessly as decimal text.',
@@ -117,6 +118,10 @@ table_definitions = {
           source_git_revision STRING NOT NULL,
           circuit_id STRING,
           era INT,
+          progression STRING COMMENT 'Authored progression band when applicable.',
+          strategy_profile STRING COMMENT 'Authored strategy profile when applicable.',
+          player_reference STRING COMMENT 'Controlled audit reference; never a player identity.',
+          source_contract_digest STRING COMMENT 'Digest of the source-authored opponent contracts.',
           setup_json STRING COMMENT 'Canonical materialized setup parameters.',
           strategy_json STRING COMMENT 'Canonical materialized strategy parameters.',
           execution_status STRING NOT NULL,
@@ -273,10 +278,15 @@ if operation == "bootstrap":
             "completed_at": "TIMESTAMP",
         },
         f"{calibration}.runs": {
+            "execution_key": "STRING COMMENT 'Immutable explicit-plan key used for idempotent retries.'",
             "configuration_family": "STRING COMMENT 'Bounded family identifier selected by the campaign manifest.'",
             "adapter_version": "STRING COMMENT 'Versioned Databricks wheel adapter.'",
             "runner_artifact_digest": "STRING COMMENT 'SHA-256 digest of the exact native runner bytes.'",
             "canonical_result_digest": "STRING COMMENT 'SHA-256 digest of the exact compact result bytes.'",
+            "progression": "STRING COMMENT 'Authored progression band when applicable.'",
+            "strategy_profile": "STRING COMMENT 'Authored strategy profile when applicable.'",
+            "player_reference": "STRING COMMENT 'Controlled audit reference; never a player identity.'",
+            "source_contract_digest": "STRING COMMENT 'Digest of the source-authored opponent contracts.'",
         },
     }
     for table_name, columns in additive_columns.items():
