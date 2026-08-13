@@ -1,0 +1,408 @@
+{
+  "schema_version": "pitgun.racing-opponent-smoke/v1",
+  "source": {
+    "repository": "loicbelec/pitgun-game",
+    "schema_version": "pitgun.opponent-contract-audit/v1",
+    "artifact_digest": "sha256:3a17c8353cba45966b7cf807bd7ef16b125bd98761667b1c76c6fac0938c4e3c"
+  },
+  "execution": {
+    "catalog_id": "pitgun.racing",
+    "catalog_version": "1.2.0",
+    "model_id": "pitgun.racing",
+    "model_version": "2.0.0",
+    "seed": 42,
+    "strategy_profile": "balanced-one-stop",
+    "controlled_player_reference": "equal-budget-balanced-neutral",
+    "retry_count_per_scenario": 2
+  },
+  "summary": {
+    "completed_runs": 15,
+    "player_wins": 2,
+    "player_podiums": 2,
+    "player_win_rate": 0.13333333333333333,
+    "player_podium_rate": 0.13333333333333333,
+    "median_player_gap_to_leader_ms": 82627,
+    "maximum_player_gap_to_leader_ms": 158082,
+    "minimum_player_position": 1,
+    "maximum_player_position": 10,
+    "all_retries_byte_identical": true
+  },
+  "runs": [
+    {
+      "source_scenario_id": "budapest-early-42-balanced-one-stop",
+      "circuit_id": "BUDAPEST",
+      "progression": "early",
+      "era": 1,
+      "player_budget": 40,
+      "source_contract_digest": "sha256:0e7feb2916f7fd61bf32cbf05ed3722a960442ea7336c0eb8dd529821069a412",
+      "scenario_digest": "sha256:a14b9f41500cf9f9cd8740500fed0436e19e9db85a994f6a7e78582b678538d3",
+      "configuration_id": "sha256:ee762646fe39fdb151b2a18b5d5e0f7fffaa1768aaed09fbca33583e0e9d502f",
+      "run_id": "sha256:1c0f78d520093121aba30068e35d2b5d929f8bb91e51cd56f25e3d93f0cd3ba4",
+      "output_digest": "sha256:be88a79e4d2316f27b040c18a64ed9d4ce016caef5d70747b203aa977a314220",
+      "retry_byte_identical": true,
+      "player": {
+        "position": 8,
+        "gap_to_leader_ms": 75170,
+        "best_lap_ms": 117221
+      },
+      "field": {
+        "spread_ms": 84843,
+        "opponent_budget_min": 39,
+        "opponent_budget_max": 44,
+        "distinct_opponent_tunings": 9,
+        "distinct_opponent_strategies": 8
+      }
+    },
+    {
+      "source_scenario_id": "budapest-mid-42-balanced-one-stop",
+      "circuit_id": "BUDAPEST",
+      "progression": "mid",
+      "era": 3,
+      "player_budget": 100,
+      "source_contract_digest": "sha256:acefdae3c78cea2db24c665d59698f0493152e3446b649f0959745e0126711c1",
+      "scenario_digest": "sha256:5f3ce98c7148312c368dfc83f4dea8aa0dc506432efd23f36ec1473b8c808361",
+      "configuration_id": "sha256:2e2cc255fa5bc692d2e04cdcf7026b179376a7c4ed9ffcfc16ebf7efa4caf440",
+      "run_id": "sha256:d3c25f4a51c452411e564ff3e4ee069f0998b23dd8bd68aa2757f59c1bbbd860",
+      "output_digest": "sha256:1fa389f4b52dd78d5b2ce80dfd6989a17020ddbab7e9493628573304b958ddcf",
+      "retry_byte_identical": true,
+      "player": {
+        "position": 10,
+        "gap_to_leader_ms": 148243,
+        "best_lap_ms": 97075
+      },
+      "field": {
+        "spread_ms": 148243,
+        "opponent_budget_min": 116,
+        "opponent_budget_max": 132,
+        "distinct_opponent_tunings": 9,
+        "distinct_opponent_strategies": 8
+      }
+    },
+    {
+      "source_scenario_id": "budapest-late-42-balanced-one-stop",
+      "circuit_id": "BUDAPEST",
+      "progression": "late",
+      "era": 5,
+      "player_budget": 180,
+      "source_contract_digest": "sha256:a47cecf9e0a8e9cea1714622cdff2ab9239f08b46934ef39d06da4bb785e8cf7",
+      "scenario_digest": "sha256:7491c422ba15e061f01a1de8baff56df4d9f6f1d178daea8943b1c1287353bf1",
+      "configuration_id": "sha256:f67856d9279c026de232b1bbe474d0a2449ad5edf54af4a49abbf7e8891e8d1e",
+      "run_id": "sha256:5e33108c89f578e0de7155304fe4af3e0382cf13688d29f6f0d4f65d1f3e89c0",
+      "output_digest": "sha256:42757fc1e0ee45c692600f26cb3350f1ed555377f0d86529849dbf4382012068",
+      "retry_byte_identical": true,
+      "player": {
+        "position": 10,
+        "gap_to_leader_ms": 138458,
+        "best_lap_ms": 73351
+      },
+      "field": {
+        "spread_ms": 138458,
+        "opponent_budget_min": 223,
+        "opponent_budget_max": 242,
+        "distinct_opponent_tunings": 9,
+        "distinct_opponent_strategies": 7
+      }
+    },
+    {
+      "source_scenario_id": "monaco-early-42-balanced-one-stop",
+      "circuit_id": "MONACO",
+      "progression": "early",
+      "era": 1,
+      "player_budget": 40,
+      "source_contract_digest": "sha256:b7c9dfa2f22c969e3c2a24805e045c9c316bcf31ef0b62cdaee5ae497b4d95dc",
+      "scenario_digest": "sha256:1cc421d0b2aa3dd454c342107e9cc9a9f122c0718e41444f13dd6e504adaa29c",
+      "configuration_id": "sha256:407b3794f54d698d2d57bdb379eef39cab5ae8c4db6e6ede8774bba13a707914",
+      "run_id": "sha256:f9ffb50619bf407bf3f76a51f9f76bbbfbf135ed7d21d4a3d74e28b9e576d89f",
+      "output_digest": "sha256:033df4e8833c9e872f803e9007e80e1ad1fc11483dd0ae6817dfc1b8c1162d79",
+      "retry_byte_identical": true,
+      "player": {
+        "position": 6,
+        "gap_to_leader_ms": 55502,
+        "best_lap_ms": 94927
+      },
+      "field": {
+        "spread_ms": 82617,
+        "opponent_budget_min": 41,
+        "opponent_budget_max": 45,
+        "distinct_opponent_tunings": 9,
+        "distinct_opponent_strategies": 9
+      }
+    },
+    {
+      "source_scenario_id": "monaco-mid-42-balanced-one-stop",
+      "circuit_id": "MONACO",
+      "progression": "mid",
+      "era": 3,
+      "player_budget": 100,
+      "source_contract_digest": "sha256:51c8098fed481c6646405079d7b7057a2364f4711a2ecaced1a6297fb02c8512",
+      "scenario_digest": "sha256:7dd55caef802493d49a16e9fd9a4e88e4b006e296c38d180d707f074ad24de8f",
+      "configuration_id": "sha256:bfde6d485e67e53c0b0b45d68aaf63a0680cabde51720d05bf5b3720a71e4afa",
+      "run_id": "sha256:448d6abd14ce6643093663b2c11a7322d8ccb406790cb240d40205f7d685875d",
+      "output_digest": "sha256:9c04e6c4f20b39eca0b7deb77cdc65f03b8e4459faeac6de79d8aee134c2c85e",
+      "retry_byte_identical": true,
+      "player": {
+        "position": 10,
+        "gap_to_leader_ms": 134640,
+        "best_lap_ms": 79540
+      },
+      "field": {
+        "spread_ms": 134640,
+        "opponent_budget_min": 112,
+        "opponent_budget_max": 134,
+        "distinct_opponent_tunings": 9,
+        "distinct_opponent_strategies": 7
+      }
+    },
+    {
+      "source_scenario_id": "monaco-late-42-balanced-one-stop",
+      "circuit_id": "MONACO",
+      "progression": "late",
+      "era": 5,
+      "player_budget": 180,
+      "source_contract_digest": "sha256:dc7fd3018f527ca6ee58566ea110e3a182430a8ede7bfe4b052417ed713d0707",
+      "scenario_digest": "sha256:b254e9e8cb038715e47c3be5a86cc631b7015eb5952cdbb774bff85734211409",
+      "configuration_id": "sha256:a7d2e4ec38451755ab4737c6693c028d042e72667587ac083c558517fbced4aa",
+      "run_id": "sha256:52019cfd48c5084ba73dab2136d4539f7e4c00524b0685c4a559adf28c81ab05",
+      "output_digest": "sha256:c4c5e2cba63ac244d1919c37784727eb1a1176078e2638ee2077237d03dab381",
+      "retry_byte_identical": true,
+      "player": {
+        "position": 10,
+        "gap_to_leader_ms": 101723,
+        "best_lap_ms": 60002
+      },
+      "field": {
+        "spread_ms": 101723,
+        "opponent_budget_min": 225,
+        "opponent_budget_max": 238,
+        "distinct_opponent_tunings": 9,
+        "distinct_opponent_strategies": 9
+      }
+    },
+    {
+      "source_scenario_id": "monza-early-42-balanced-one-stop",
+      "circuit_id": "MONZA",
+      "progression": "early",
+      "era": 1,
+      "player_budget": 40,
+      "source_contract_digest": "sha256:a497b4f52dbf99c49957f5b243e6ab65d36951bf28b42d2500cc85b782d59a9c",
+      "scenario_digest": "sha256:35bc6d60586a0625a0e43fc692293c34b886930fb423fc798403a871701a92c2",
+      "configuration_id": "sha256:0c7f8d6b5915c622f6b02e3b5548b6947c265d5229966adac8633812415f7139",
+      "run_id": "sha256:8edefc6d25747df3fec529a95e81361d2fcf70865f5ffc6eec198de236b8bd25",
+      "output_digest": "sha256:0ea5d97a690d869789a0cc30c53595be0b8b8fa22e60c4e2342569685d0d790f",
+      "retry_byte_identical": true,
+      "player": {
+        "position": 7,
+        "gap_to_leader_ms": 44390,
+        "best_lap_ms": 128370
+      },
+      "field": {
+        "spread_ms": 71263,
+        "opponent_budget_min": 40,
+        "opponent_budget_max": 45,
+        "distinct_opponent_tunings": 9,
+        "distinct_opponent_strategies": 7
+      }
+    },
+    {
+      "source_scenario_id": "monza-mid-42-balanced-one-stop",
+      "circuit_id": "MONZA",
+      "progression": "mid",
+      "era": 3,
+      "player_budget": 100,
+      "source_contract_digest": "sha256:b25892e5d83cdf844b9ae289ab21e2266b0054d9172f55af353b7bcee7b60581",
+      "scenario_digest": "sha256:7b44326932b0d4909c747b82e17afb9a0b3e0e3f3758137a428d4ea45e339f8c",
+      "configuration_id": "sha256:a56f6f64470b84667fb504dff0022ae3f344817adee9439946d518579de6b900",
+      "run_id": "sha256:d9890b1883465df7c0d35deb15b3b9c7dc7bc6f37921e49b302b50fc4e07d0af",
+      "output_digest": "sha256:d45c72a915ef69ca7f9e39230b81828391c8e9ed1324ea72eddf8aab58925900",
+      "retry_byte_identical": true,
+      "player": {
+        "position": 1,
+        "gap_to_leader_ms": 0,
+        "best_lap_ms": 107040
+      },
+      "field": {
+        "spread_ms": 97081,
+        "opponent_budget_min": 120,
+        "opponent_budget_max": 134,
+        "distinct_opponent_tunings": 9,
+        "distinct_opponent_strategies": 8
+      }
+    },
+    {
+      "source_scenario_id": "monza-late-42-balanced-one-stop",
+      "circuit_id": "MONZA",
+      "progression": "late",
+      "era": 5,
+      "player_budget": 180,
+      "source_contract_digest": "sha256:31d643d15d8b8eaaedea11593c935183b6ee3a9bcf86491a12b14ef9632a0f3f",
+      "scenario_digest": "sha256:1b4753bc7202e01ff122430df5ffc4bfde9c7302aacaf7b245fbff00d7b7dae8",
+      "configuration_id": "sha256:532dbb520c1048c4e602b5b75a35d1f578161a5927c369f8def0c7a54ee0fc75",
+      "run_id": "sha256:1a0467e0a2acd5282692ad75e7d65e6f59e078e9fae9bf9deb83fccd04faecae",
+      "output_digest": "sha256:47625488776607b955e93bf349e33b158c4707d7cc2f13cc5281c92982625c27",
+      "retry_byte_identical": true,
+      "player": {
+        "position": 1,
+        "gap_to_leader_ms": 0,
+        "best_lap_ms": 83948
+      },
+      "field": {
+        "spread_ms": 94222,
+        "opponent_budget_min": 227,
+        "opponent_budget_max": 241,
+        "distinct_opponent_tunings": 9,
+        "distinct_opponent_strategies": 6
+      }
+    },
+    {
+      "source_scenario_id": "singapore-early-42-balanced-one-stop",
+      "circuit_id": "SINGAPORE",
+      "progression": "early",
+      "era": 1,
+      "player_budget": 40,
+      "source_contract_digest": "sha256:c8f9df84d6f1ae34f74a370ffe5b0c1a60bffaa541565dc2e60f107e4abb86ba",
+      "scenario_digest": "sha256:ddbc0c51c43152d20f517fef5eb0fbd446f4c9cff04fe6110e2830d606459174",
+      "configuration_id": "sha256:42880eaeb367a36f535ef7c998c30333af6e1fbe3a7508cca7a3f45047104978",
+      "run_id": "sha256:53e2f7fc13d2acf48a2a15989b87c6dc386499a0d285c30b71f65c8d62ee4bed",
+      "output_digest": "sha256:4025d300c15a908eb43833eca5f9085bc1821d9e8bc517549a32ac5a131f5a77",
+      "retry_byte_identical": true,
+      "player": {
+        "position": 7,
+        "gap_to_leader_ms": 39399,
+        "best_lap_ms": 132078
+      },
+      "field": {
+        "spread_ms": 41215,
+        "opponent_budget_min": 39,
+        "opponent_budget_max": 42,
+        "distinct_opponent_tunings": 9,
+        "distinct_opponent_strategies": 6
+      }
+    },
+    {
+      "source_scenario_id": "singapore-mid-42-balanced-one-stop",
+      "circuit_id": "SINGAPORE",
+      "progression": "mid",
+      "era": 3,
+      "player_budget": 100,
+      "source_contract_digest": "sha256:2de86169ffffbcbce1940a07ac929c22b263d2111fc4d2f3507ac4e6dd86e286",
+      "scenario_digest": "sha256:574821a31ef8e2f5185021ee548f93fe6b993c19386ea07639cfc10ec507f313",
+      "configuration_id": "sha256:ce8bc8ae41093b81c85d51d565fdf5c4fcf0598408b947a39453a1428f20afd9",
+      "run_id": "sha256:14d105b642d23580c8b2e79143ca53169364bb7c64ce137ce7dba19a3450c5c5",
+      "output_digest": "sha256:227643659ef5c1d04d05b560b76ec8bd48460bb39f2a8a837f1ec6b5086848ce",
+      "retry_byte_identical": true,
+      "player": {
+        "position": 10,
+        "gap_to_leader_ms": 114067,
+        "best_lap_ms": 109751
+      },
+      "field": {
+        "spread_ms": 114067,
+        "opponent_budget_min": 113,
+        "opponent_budget_max": 134,
+        "distinct_opponent_tunings": 9,
+        "distinct_opponent_strategies": 9
+      }
+    },
+    {
+      "source_scenario_id": "singapore-late-42-balanced-one-stop",
+      "circuit_id": "SINGAPORE",
+      "progression": "late",
+      "era": 5,
+      "player_budget": 180,
+      "source_contract_digest": "sha256:3e2e4f7408af76e23acf7c731e4a19ecb23a83d9f5e21a5c7a8e5d73f82eccb4",
+      "scenario_digest": "sha256:e2482ffcb27de386b112b501e8a26dc37621dd032d874e9ba60418f0d973164a",
+      "configuration_id": "sha256:56a414f010a383469e9a9c5e104484e31cdc03bbda682c4d2f4a3b804a34ee87",
+      "run_id": "sha256:9f84796025ade7cce475e009340379520001c9be1bc7489d82630865a79dd4ac",
+      "output_digest": "sha256:676761e833b4ee5a662657bbf7dd91f4d83e2faa8f9c309c0cec7417787386b4",
+      "retry_byte_identical": true,
+      "player": {
+        "position": 10,
+        "gap_to_leader_ms": 158082,
+        "best_lap_ms": 82651
+      },
+      "field": {
+        "spread_ms": 158082,
+        "opponent_budget_min": 222,
+        "opponent_budget_max": 239,
+        "distinct_opponent_tunings": 9,
+        "distinct_opponent_strategies": 8
+      }
+    },
+    {
+      "source_scenario_id": "suzuka-early-42-balanced-one-stop",
+      "circuit_id": "SUZUKA",
+      "progression": "early",
+      "era": 1,
+      "player_budget": 40,
+      "source_contract_digest": "sha256:4c3306371acc5ed105a9d35cb9736dc0fe1cafe1cf7fb3a99c754c31242484bd",
+      "scenario_digest": "sha256:bc8159c7a076c8a7c29caaa1d0a0ae9b7fde416718386d57c956e130ba67c1c8",
+      "configuration_id": "sha256:102f890cee92499e34b6466127d213a33e5ad7dcb5854d88a21f021e1da7a9b1",
+      "run_id": "sha256:9089695824415e7f05e7899a766f6e923ebf962e38b2cb3d8d1dd18a6707aa9b",
+      "output_digest": "sha256:ce8192d1c0b35183899eded55934b2e648e5ba275a1a4da2abafd010809c6d7c",
+      "retry_byte_identical": true,
+      "player": {
+        "position": 4,
+        "gap_to_leader_ms": 63239,
+        "best_lap_ms": 138030
+      },
+      "field": {
+        "spread_ms": 81824,
+        "opponent_budget_min": 39,
+        "opponent_budget_max": 45,
+        "distinct_opponent_tunings": 9,
+        "distinct_opponent_strategies": 8
+      }
+    },
+    {
+      "source_scenario_id": "suzuka-mid-42-balanced-one-stop",
+      "circuit_id": "SUZUKA",
+      "progression": "mid",
+      "era": 3,
+      "player_budget": 100,
+      "source_contract_digest": "sha256:74447efe32c22e2f5ac9fc120bc54aa524b6f334a38e2342cdd801b653ea9965",
+      "scenario_digest": "sha256:064d70bae374853ce16b346ba2e6ecd938ba853c55273cb04d6125937fa53cea",
+      "configuration_id": "sha256:89ac1b2d398f3844f833289c59d2d8381e9b718c5aaf2c041be910e37328923d",
+      "run_id": "sha256:f2719f4a9e35fbf2f6d3eb8b74e714f802d03d617b466fccbb8587982328843a",
+      "output_digest": "sha256:ba2eaff3d902d79cbbfa3ac7ec2275a6cbbdbea0604bc97927cc888feb420a67",
+      "retry_byte_identical": true,
+      "player": {
+        "position": 10,
+        "gap_to_leader_ms": 82627,
+        "best_lap_ms": 112676
+      },
+      "field": {
+        "spread_ms": 82627,
+        "opponent_budget_min": 112,
+        "opponent_budget_max": 125,
+        "distinct_opponent_tunings": 9,
+        "distinct_opponent_strategies": 8
+      }
+    },
+    {
+      "source_scenario_id": "suzuka-late-42-balanced-one-stop",
+      "circuit_id": "SUZUKA",
+      "progression": "late",
+      "era": 5,
+      "player_budget": 180,
+      "source_contract_digest": "sha256:ae5feab8f4cb4754dc8b47a9649800263b53b6b6a3d82b443626643cd6f60781",
+      "scenario_digest": "sha256:404e396550ea708ff92ee68aff9607e96b8560a4bad22b377202d333fd897e06",
+      "configuration_id": "sha256:aadfe46932f0e61228b6a61973b9ae7e7056757a81226184ee4ac41dcc2b6122",
+      "run_id": "sha256:d694732d9e254e82bf0d158164597de4e6e9cffddb895a8b590b3586be2ffcc7",
+      "output_digest": "sha256:74a4d96a5164fe09ac87b206353c366090c48a8b0c2266e38ea20b8c9962cf46",
+      "retry_byte_identical": true,
+      "player": {
+        "position": 10,
+        "gap_to_leader_ms": 127076,
+        "best_lap_ms": 88885
+      },
+      "field": {
+        "spread_ms": 127076,
+        "opponent_budget_min": 221,
+        "opponent_budget_max": 237,
+        "distinct_opponent_tunings": 9,
+        "distinct_opponent_strategies": 8
+      }
+    }
+  ],
+  "artifact_digest": "sha256:7e255e39fa91fe1ad1d1c24fa7ce3268dcba8bdae32ce7275ca869470e049c14"
+}
