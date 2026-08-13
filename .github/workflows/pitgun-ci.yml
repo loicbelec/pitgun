@@ -81,6 +81,12 @@ jobs:
       - name: Validate Racing experiment tools
         run: python -m unittest discover -s experiments/racing_response/tests -v
 
+      - name: Validate Racing track provenance and elevation prototype
+        run: |
+          python -m unittest discover -s experiments/racing_tracks/tests -v
+          python experiments/racing_tracks/audit_catalog_geometry.py --check
+          python experiments/racing_tracks/build_spa_elevation_prototype.py --check
+
       - name: Build project
         run: cargo build --all --verbose
 
