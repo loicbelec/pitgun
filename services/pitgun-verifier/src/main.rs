@@ -18,7 +18,7 @@ use pitgun_contract::{
     VerificationVerdictV1,
 };
 use pitgun_racing_policy::default_policy_path;
-use pitgun_racing_simulator::RacingCatalogSnapshot;
+use pitgun_racing_simulator::{RacingCatalogSnapshot, racing_model_identity_for_version};
 use pitgun_signing::{SigningKey, VerificationKeyring};
 use pitgun_verifier::{RacingVerificationSubmissionV1, RacingVerifier};
 use tokio::{net::TcpListener, sync::Semaphore, task};
@@ -28,6 +28,7 @@ const DEFAULT_BIND_ADDR: &str = "0.0.0.0:8080";
 const DEFAULT_AUDIENCE: &str = "pitgun.verifier";
 const DEFAULT_SIGNING_KEY_ID: &str = "pitgun-authority-v1";
 const DEFAULT_MAX_CONCURRENT_REPLAYS: usize = 2;
+const DEFAULT_RACING_MODEL_VERSION: &str = "1.0.0";
 
 #[derive(Clone)]
 struct AppState {
@@ -150,9 +151,10 @@ fn load_policy_identity() -> Result<ArtifactIdentity, String> {
     })
 }
 
-fn load_catalog() -> Option<RacingCatalogSnapshot> {
+fn load_catalog(model_version: &str) -> Option<RacingCatalogSnapshot> {
     let loaded = match std::env::var_os("PITGUN_RACING_CATALOG_RELEASE_DIR") {
         Some(path) => RacingCatalogSnapshot::from_release_dir(PathBuf::from(path)),
+        None if model_version == "2.0.0" => RacingCatalogSnapshot::embedded_model_v2(),
         None => RacingCatalogSnapshot::embedded(),
     };
     match loaded {
@@ -186,6 +188,9 @@ fn load_verifier_identity() -> Result<ArtifactIdentity, String> {
 fn load_state() -> Result<AppState, String> {
     let key_id = parse_identifier("PITGUN_SIGNING_KEY_ID", DEFAULT_SIGNING_KEY_ID);
     let expected_audience = parse_identifier("PITGUN_VERIFIER_AUDIENCE", DEFAULT_AUDIENCE);
+    let model_version = std::env::var("PITGUN_RACING_MODEL_VERSION")
+        .unwrap_or_else(|_| DEFAULT_RACING_MODEL_VERSION.to_owned());
+    let expected_model = racing_model_identity_for_version(&model_version)?;
     let signing_key = match SigningKey::from_env_or_file() {
         Ok(key) => Some(key),
         Err(error) => {
@@ -198,11 +203,24 @@ fn load_state() -> Result<AppState, String> {
         keyring.insert(key_id, key);
     }
     let policy = load_policy_identity()?;
-    let catalog = load_catalog();
+    let catalog = load_catalog(&model_version).and_then(|catalog| {
+        match catalog
+            .manifest()
+            .compatibility
+            .validate_for(&expected_model, pitgun_contract::ContractVersion::V1)
+        {
+            Ok(()) => Some(catalog),
+            Err(error) => {
+                error!(?error, "configured Racing model/catalog pair is invalid");
+                None
+            }
+        }
+    });
     let ready = signing_key.is_some() && catalog.is_some();
     let verifier = RacingVerifier::new(
         keyring,
         expected_audience,
+        expected_model,
         policy,
         catalog,
         load_verifier_identity()?,

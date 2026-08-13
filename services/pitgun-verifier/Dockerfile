@@ -18,15 +18,17 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     && rm -rf /var/lib/apt/lists/* \
     && useradd --create-home --uid 10001 appuser \
-    && mkdir -p /opt/pitgun/policies /opt/pitgun/catalogs/racing/v1.0.0 \
+    && mkdir -p /opt/pitgun/policies /opt/pitgun/catalogs/racing/v1.0.0 /opt/pitgun/catalogs/racing/v1.2.0 \
     && chown -R appuser:appuser /opt/pitgun
 
 COPY --from=builder /app/target/release/pitgun-verifier /usr/local/bin/pitgun-verifier
 COPY --from=builder /app/policies/gametuning.v1.yaml /opt/pitgun/policies/gametuning.v1.yaml
 COPY --from=builder /app/catalogs/racing/v1.0.0 /opt/pitgun/catalogs/racing/v1.0.0
+COPY --from=builder /app/catalogs/racing/v1.2.0 /opt/pitgun/catalogs/racing/v1.2.0
 
 ENV PITGUN_VERIFIER_BIND=0.0.0.0:8080 \
     PITGUN_TUNING_POLICY_PATH=/opt/pitgun/policies/gametuning.v1.yaml \
+    PITGUN_RACING_MODEL_VERSION=1.0.0 \
     PITGUN_RACING_CATALOG_RELEASE_DIR=/opt/pitgun/catalogs/racing/v1.0.0 \
     PITGUN_VERIFIER_MAX_CONCURRENT_REPLAYS=2
 
