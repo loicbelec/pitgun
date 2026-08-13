@@ -67,6 +67,9 @@ def wheel_entries(version: str) -> dict[str, bytes]:
         f"{PACKAGE}/opponent_audit.py": (
             package_root / "opponent_audit.py"
         ).read_bytes(),
+        f"{PACKAGE}/opponent_audit_analysis.py": (
+            package_root / "opponent_audit_analysis.py"
+        ).read_bytes(),
         f"{PACKAGE}/bin/pitgun": runner.read_bytes(),
         f"{PACKAGE}/bin/tuning_response_probe": tuning_response_probe.read_bytes(),
         f"{dist_info}/METADATA": (

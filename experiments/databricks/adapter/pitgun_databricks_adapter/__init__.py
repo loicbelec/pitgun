@@ -11,6 +11,10 @@ from .opponent_audit import (
     load_opponent_audit_campaign,
     materialize_opponent_audit_plan,
 )
+from .opponent_audit_analysis import (
+    extract_opponent_audit_evidence,
+    summarize_opponent_audit,
+)
 from .runner import (
     execute_packaged_racing,
     execute_packaged_racing_catalog_scenario,
@@ -37,4 +41,6 @@ __all__ = [
     "select_reference_policy",
     "load_opponent_audit_campaign",
     "materialize_opponent_audit_plan",
+    "extract_opponent_audit_evidence",
+    "summarize_opponent_audit",
 ]

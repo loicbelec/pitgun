@@ -71,6 +71,54 @@ resources:
         pitgun.runner: rust-native
         pitgun.version: v1
 
+    opponent_audit_job:
+      name: pitgun-racing-opponent-audit-v1
+      description: >-
+        Execute the immutable 180-run Racing V2 opponent audit, resume accepted
+        run keys, persist governed Delta evidence, and report to MLflow.
+      max_concurrent_runs: 1
+      performance_target: STANDARD
+      environments:
+        - environment_key: serverless_opponent_audit
+          spec:
+            environment_version: "4"
+            dependencies:
+              - ../adapter/dist/*.whl
+      tasks:
+        - task_key: bootstrap_governed_tables
+          description: Additively evolve and validate the existing governed tables.
+          environment_key: serverless_opponent_audit
+          notebook_task:
+            notebook_path: ../src/bootstrap_tables.py
+            source: WORKSPACE
+            base_parameters:
+              operation: bootstrap
+              campaign_id: racing-opponent-audit-2026-v1
+              catalog_name: ${var.catalog_name}
+              calibration_schema: ${resources.schemas.calibration.name}
+              policies_schema: ${resources.schemas.policies.name}
+              experiment_id: ${resources.experiments.calibration_experiment.id}
+          timeout_seconds: 900
+        - task_key: execute_opponent_audit
+          description: Execute and reconcile all 180 immutable explicit run keys.
+          depends_on:
+            - task_key: bootstrap_governed_tables
+          environment_key: serverless_opponent_audit
+          notebook_task:
+            notebook_path: ../src/execute_opponent_audit.py
+            source: WORKSPACE
+            base_parameters:
+              catalog_name: ${var.catalog_name}
+              calibration_schema: ${resources.schemas.calibration.name}
+              experiment_id: ${resources.experiments.calibration_experiment.id}
+          timeout_seconds: 7200
+      tags:
+        pitgun.domain: calibration
+        pitgun.compute: serverless
+        pitgun.runner: rust-native
+        pitgun.campaign: racing-opponent-audit-v1
+        pitgun.promotion: human-review-required
+
     reference_campaign_job:
       name: pitgun-racing-reference-campaign-v1
       description: >-

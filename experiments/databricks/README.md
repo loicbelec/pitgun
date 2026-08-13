@@ -92,6 +92,11 @@ The explicit opponent audit campaign is frozen in
 It contains 180 planned Racing V2 runs and verifies the digest of every packaged
 scenario before execution. Its circuit-informed player is a public-baseline
 diagnostic, not a validated optimum or an automatically publishable policy.
+`opponent_audit_job` bootstraps the additive run-lineage columns, resumes from
+successful immutable run keys, executes the 180 packaged scenarios, and writes
+normalized competitiveness evidence to the existing Delta `runs` and
+`metrics` tables. One MLflow run stores the manifest and compact comparison
+report. Deployment and execution remain separate attended commands.
 
 ## Reference campaign
 

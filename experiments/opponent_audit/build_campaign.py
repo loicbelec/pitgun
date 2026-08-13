@@ -125,6 +125,23 @@ def build_manifest(source: dict[str, Any]) -> dict[str, Any]:
     expected_paths: set[pathlib.Path] = set()
     for selected in sorted(source["scenarios"], key=lambda item: item["id"]):
         identity = selected["identity"]
+        opponent_budgets = [
+            int(contract["budget_cap"]) for contract in selected["contracts"]
+        ]
+        distinct_tunings = len(
+            {
+                json.dumps(contract["tuning"], sort_keys=True, separators=(",", ":"))
+                for contract in selected["contracts"]
+            }
+        )
+        distinct_strategies = len(
+            {
+                json.dumps(
+                    contract["stint_strategy"], sort_keys=True, separators=(",", ":")
+                )
+                for contract in selected["contracts"]
+            }
+        )
         for player_reference in PLAYER_REFERENCES:
             resource = f"{selected['id']}--{player_reference}"
             path = SCENARIO_ROOT / f"{resource}.json"
@@ -146,6 +163,10 @@ def build_manifest(source: dict[str, Any]) -> dict[str, Any]:
                     "seed": identity["seed"],
                     "strategy_profile": identity["strategyProfile"],
                     "player_reference": player_reference,
+                    "opponent_budget_min": min(opponent_budgets),
+                    "opponent_budget_max": max(opponent_budgets),
+                    "distinct_opponent_tunings": distinct_tunings,
+                    "distinct_opponent_strategies": distinct_strategies,
                 }
             )
 

@@ -150,6 +150,29 @@ class BundleContractTest(unittest.TestCase):
         self.assertIn('entry["circuit_id"]', notebook)
         self.assertIn('"circuits":', notebook)
 
+    def test_opponent_audit_job_is_resumable_governed_and_non_promoting(self):
+        job = (ROOT / "resources" / "jobs.yml").read_text()
+        notebook = (ROOT / "src" / "execute_opponent_audit.py").read_text()
+        bootstrap = (ROOT / "src" / "bootstrap_tables.py").read_text()
+
+        self.assertIn("opponent_audit_job:", job)
+        self.assertIn("campaign_id: racing-opponent-audit-2026-v1", job)
+        self.assertIn("timeout_seconds: 7200", job)
+        self.assertNotIn('scenario_resource: "{{job.parameters', job)
+        self.assertIn("load_opponent_audit_campaign", notebook)
+        self.assertIn("execute_packaged_racing_catalog_scenario", notebook)
+        self.assertIn('row["execution_status"] == "SUCCESS"', notebook)
+        self.assertIn("unexpected_keys", notebook)
+        self.assertIn('"automatic_game_or_catalog_promotion": False', notebook)
+        for column in (
+            "execution_key",
+            "progression",
+            "strategy_profile",
+            "player_reference",
+            "source_contract_digest",
+        ):
+            self.assertIn(f'"{column}":', bootstrap)
+
     def test_candidate_validation_is_immutable_experimental_and_reviewed(self):
         campaign_root = ROOT / "campaigns"
         manifest_path = campaign_root / "racing-aero-candidate-validation-v1.json"
