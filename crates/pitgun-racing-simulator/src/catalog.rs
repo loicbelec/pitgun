@@ -20,6 +20,8 @@ use serde::{Deserialize, Serialize};
 
 use crate::{EMBEDDED_FILES, PRESENTATION_INDEX};
 
+const KNOWN_RACING_MODEL_VERSIONS: [&str; 2] = ["1.0.0", "2.0.0"];
+
 const CATALOG_MANIFEST: &[u8] = include_bytes!(concat!(
     env!("CARGO_MANIFEST_DIR"),
     "/../../catalogs/racing/v1.0.0/catalog.json"
@@ -181,19 +183,7 @@ impl RacingCatalogSnapshot {
         manifest
             .validate()
             .map_err(|error| RacingCatalogResolutionError::InvalidManifest(error.to_string()))?;
-        let racing_model = ArtifactIdentity {
-            id: "pitgun.racing"
-                .parse()
-                .expect("static Racing model identifier"),
-            version: "1.0.0".parse().expect("static Racing model version"),
-            // Compatibility is intentionally based on ID and version. The
-            // executable model digest remains bound by the run contract.
-            digest: Digest::from_bytes(b"pitgun.racing:model-compatibility:1.0.0"),
-        };
-        manifest
-            .compatibility
-            .validate_for(&racing_model, ContractVersion::V1)
-            .map_err(|error| RacingCatalogResolutionError::InvalidManifest(error.to_string()))?;
+        validate_known_racing_model_compatibility(&manifest)?;
 
         let release_identity: CatalogReleaseIdentityV1 =
             parse_strict_document("release identity", release_identity_bytes)?;
@@ -426,6 +416,37 @@ impl RacingCatalogSnapshot {
     }
 }
 
+fn validate_known_racing_model_compatibility(
+    manifest: &ResourceCatalogManifestV1,
+) -> Result<(), RacingCatalogResolutionError> {
+    let supports_known_model = KNOWN_RACING_MODEL_VERSIONS.iter().any(|version| {
+        let racing_model = ArtifactIdentity {
+            id: "pitgun.racing"
+                .parse()
+                .expect("static Racing model identifier"),
+            version: version.parse().expect("static Racing model version"),
+            // Catalog compatibility is intentionally based on ID and version.
+            // The executable model digest remains bound by the run contract.
+            digest: Digest::from_bytes(
+                format!("pitgun.racing:model-compatibility:{version}").as_bytes(),
+            ),
+        };
+        manifest
+            .compatibility
+            .validate_for(&racing_model, ContractVersion::V1)
+            .is_ok()
+    });
+
+    if supports_known_model {
+        Ok(())
+    } else {
+        Err(RacingCatalogResolutionError::InvalidManifest(format!(
+            "catalog does not support a known Racing model version ({})",
+            KNOWN_RACING_MODEL_VERSIONS.join(", ")
+        )))
+    }
+}
+
 fn parse_strict_document<T>(
     document: &'static str,
     bytes: &[u8],
@@ -603,6 +624,52 @@ mod tests {
                 .to_string(),
             "1.0.0"
         );
+    }
+
+    #[cfg(not(target_arch = "wasm32"))]
+    #[test]
+    fn model_v2_catalog_release_resolves_without_changing_the_embedded_fallback() {
+        let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../catalogs/racing/v1.2.0");
+        let snapshot = RacingCatalogSnapshot::from_release_dir(root).expect("model V2 catalog");
+
+        assert_eq!(snapshot.manifest().catalog.version.to_string(), "1.2.0");
+        let compatible_model = &snapshot.manifest().compatibility.models[0];
+        assert_eq!(compatible_model.id.to_string(), "pitgun.racing");
+        assert_eq!(
+            compatible_model
+                .versions
+                .iter()
+                .map(ToString::to_string)
+                .collect::<Vec<_>>(),
+            ["2.0.0"]
+        );
+        assert_eq!(
+            RacingCatalogSnapshot::embedded()
+                .expect("embedded fallback")
+                .manifest()
+                .catalog
+                .version
+                .to_string(),
+            "1.0.0"
+        );
+    }
+
+    #[test]
+    fn catalog_compatible_only_with_an_unknown_model_version_fails_closed() {
+        let mut bundle = embedded_bundle();
+        let mut manifest: ResourceCatalogManifestV1 =
+            serde_json::from_str(&bundle.manifest).expect("manifest JSON");
+        manifest.compatibility.models[0].versions =
+            ["9.0.0".parse().expect("model version")].into();
+        bundle.manifest = serde_json::to_string(&manifest).expect("manifest JSON");
+
+        let error = RacingCatalogSnapshot::from_bundle(bundle)
+            .expect_err("unknown model compatibility must fail");
+        assert!(matches!(
+            error,
+            RacingCatalogResolutionError::InvalidManifest(reason)
+                if reason.contains("known Racing model version")
+        ));
     }
 
     #[test]

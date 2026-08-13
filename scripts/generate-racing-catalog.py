@@ -17,6 +17,11 @@ VERSION_PATTERN = re.compile(r"^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]
 EMBEDDED_RUST = ROOT / "generated" / "racing_catalog_v1.rs"
 
 DIGEST_PREFIX = "sha256:"
+MODEL_COMPATIBILITY_BY_RELEASE = {
+    "1.0.0": ["1.0.0"],
+    "1.1.0": ["1.0.0"],
+    "1.2.0": ["2.0.0"],
+}
 
 
 def load_json(path: Path) -> Any:
@@ -159,6 +164,12 @@ def validate_opponent_policies(release_root: Path) -> None:
 
 def generated_release_artifacts(release_root: Path) -> dict[Path, bytes]:
     version = release_root.name.removeprefix("v")
+    try:
+        compatible_model_versions = MODEL_COMPATIBILITY_BY_RELEASE[version]
+    except KeyError as error:
+        raise SystemExit(
+            f"FAIL Racing catalog: model compatibility is not governed for {version}"
+        ) from error
     simulation_index_path = release_root / "simulation" / "index.json"
     presentation_index_path = release_root / "presentation" / "index.json"
     catalog_manifest_path = release_root / "catalog.json"
@@ -215,7 +226,7 @@ def generated_release_artifacts(release_root: Path) -> dict[Path, bytes]:
             "models": [
                 {
                     "id": "pitgun.racing",
-                    "versions": ["1.0.0"],
+                    "versions": compatible_model_versions,
                 }
             ],
         },

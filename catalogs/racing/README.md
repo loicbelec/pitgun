@@ -4,8 +4,10 @@ This directory owns the public, versioned resources used by the Racing
 reference workload.
 
 `v1.0.0` is the current game release. `v1.1.0` adds the first governed Racing
-opponent policy as a Simulation Pack resource while leaving `LATEST` on
-`v1.0.0` until the game consumer is ready. Each version directory is immutable:
+opponent policy for model V1. `v1.2.0` carries the same governed resources but
+declares compatibility exclusively with the candidate Racing model V2. `LATEST`
+remains on `v1.0.0` until the coordinated game, Authority, and Verifier rollout
+is ready. Each version directory is immutable:
 
 ```text
 LATEST
@@ -19,6 +21,8 @@ v1.0.0/
     └── index.json
 v1.1.0/
 └── simulation/policies/reference.json
+v1.2.0/
+└── model compatibility: pitgun.racing@2.0.0
 ```
 
 The Simulation Pack contains every byte that may influence physical execution.
