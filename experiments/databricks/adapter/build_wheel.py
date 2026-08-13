@@ -40,6 +40,7 @@ def wheel_entries(version: str) -> dict[str, bytes]:
         FRAMEWORK / "apps" / "pitgun-cli" / "scenarios" / "racing-batch-v1",
         FRAMEWORK / "apps" / "pitgun-cli" / "scenarios" / "racing-circuit-sweep-v1",
         FRAMEWORK / "experiments" / "opponent_audit" / "scenarios",
+        FRAMEWORK / "experiments" / "opponent_audit" / "campaign_scenarios",
     )
     catalog_roots = (("racing-v1-2-0", FRAMEWORK / "catalogs" / "racing" / "v1.2.0"),)
     campaigns = FRAMEWORK / "experiments" / "databricks" / "campaigns"
@@ -62,6 +63,9 @@ def wheel_entries(version: str) -> dict[str, bytes]:
         ).read_bytes(),
         f"{PACKAGE}/opponent_policy.py": (
             package_root / "opponent_policy.py"
+        ).read_bytes(),
+        f"{PACKAGE}/opponent_audit.py": (
+            package_root / "opponent_audit.py"
         ).read_bytes(),
         f"{PACKAGE}/bin/pitgun": runner.read_bytes(),
         f"{PACKAGE}/bin/tuning_response_probe": tuning_response_probe.read_bytes(),

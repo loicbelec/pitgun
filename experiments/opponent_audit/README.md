@@ -20,3 +20,14 @@ a non-deterministic retry.
 
 The committed scenarios and compact result contain authored reference data
 only. Databricks remains a later offline orchestration and governance step.
+
+## Governed campaign input
+
+`build_campaign.py` expands the complete pinned game artifact into 180 explicit
+resolved scenarios: all 90 opponent compositions, each paired with a neutral
+and a circuit-informed controlled player. The latter uses the public baseline
+authored in the game and is a diagnostic reference, not a validated optimum.
+
+The immutable plan and checksum live in
+`experiments/databricks/campaigns/racing-opponent-audit-v1.*`. The Databricks
+wheel validates every packaged scenario byte against that plan before compute.

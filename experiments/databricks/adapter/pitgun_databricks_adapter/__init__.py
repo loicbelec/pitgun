@@ -7,6 +7,10 @@ from .campaign import (
 )
 from .candidate_review import load_candidate_review_policy, review_candidate_evidence
 from .opponent_policy import canonical_json, digest_json, select_reference_policy
+from .opponent_audit import (
+    load_opponent_audit_campaign,
+    materialize_opponent_audit_plan,
+)
 from .runner import (
     execute_packaged_racing,
     execute_packaged_racing_catalog_scenario,
@@ -31,4 +35,6 @@ __all__ = [
     "canonical_json",
     "digest_json",
     "select_reference_policy",
+    "load_opponent_audit_campaign",
+    "materialize_opponent_audit_plan",
 ]

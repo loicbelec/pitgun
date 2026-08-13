@@ -87,6 +87,12 @@ See
 the decision, local parity fixture, measurements, rejected alternatives, and
 security boundary.
 
+The explicit opponent audit campaign is frozen in
+[`campaigns/racing-opponent-audit-v1.json`](campaigns/racing-opponent-audit-v1.json).
+It contains 180 planned Racing V2 runs and verifies the digest of every packaged
+scenario before execution. Its circuit-informed player is a public-baseline
+diagnostic, not a validated optimum or an automatically publishable policy.
+
 ## Reference campaign
 
 The frozen V1 campaign manifest is
