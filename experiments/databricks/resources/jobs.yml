@@ -119,6 +119,46 @@ resources:
         pitgun.campaign: racing-opponent-audit-v1
         pitgun.promotion: human-review-required
 
+    opponent_diagnosis_job:
+      name: pitgun-racing-opponent-diagnosis-v1
+      description: >-
+        Decompose exact completed opponent-audit snapshots into setup,
+        strategy, progression, and diversity evidence without selecting policy.
+      max_concurrent_runs: 1
+      performance_target: STANDARD
+      parameters:
+        - name: campaigns_table_version
+          default: "19"
+        - name: runs_table_version
+          default: "5"
+        - name: metrics_table_version
+          default: "3"
+      environments:
+        - environment_key: serverless_opponent_diagnosis
+          spec:
+            environment_version: "4"
+            dependencies:
+              - ../adapter/dist/*.whl
+      tasks:
+        - task_key: diagnose_opponent_audit
+          description: Read only explicitly pinned Delta evidence and log a diagnosis.
+          environment_key: serverless_opponent_diagnosis
+          notebook_task:
+            notebook_path: ../src/diagnose_opponent_audit.py
+            source: WORKSPACE
+            base_parameters:
+              catalog_name: ${var.catalog_name}
+              calibration_schema: ${resources.schemas.calibration.name}
+              campaigns_table_version: "{{job.parameters.campaigns_table_version}}"
+              runs_table_version: "{{job.parameters.runs_table_version}}"
+              metrics_table_version: "{{job.parameters.metrics_table_version}}"
+          timeout_seconds: 900
+      tags:
+        pitgun.domain: calibration
+        pitgun.compute: serverless
+        pitgun.analysis: racing-opponent-diagnosis-v1
+        pitgun.promotion: forbidden
+
     reference_campaign_job:
       name: pitgun-racing-reference-campaign-v1
       description: >-

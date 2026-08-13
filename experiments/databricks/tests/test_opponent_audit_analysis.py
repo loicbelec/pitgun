@@ -2,6 +2,7 @@ import unittest
 
 from pitgun_databricks_adapter.opponent_audit_analysis import (
     OpponentAuditResultError,
+    diagnose_opponent_audit,
     extract_opponent_audit_evidence,
     summarize_opponent_audit,
 )
@@ -107,6 +108,87 @@ class OpponentAuditAnalysisTest(unittest.TestCase):
         self.assertEqual(report["overall"]["neutral"]["win_rate"], 0.0)
         self.assertEqual(report["overall"]["circuit-informed"]["win_rate"], 1.0)
         self.assertFalse(report["automatic_game_or_catalog_promotion"])
+
+    def test_diagnosis_separates_exact_pairs_from_confounded_axes(self):
+        runs = []
+        evidence = []
+        for seed in (1, 2, 3):
+            for strategy in ("balanced-one-stop", "late-one-stop"):
+                source_id = f"monza-early-{seed}-{strategy}"
+                for reference, position, gap in (
+                    ("neutral", 2, 1200),
+                    ("circuit-informed", 1, 0),
+                ):
+                    run_key = f"{source_id}--{reference}"
+                    runs.append(
+                        {
+                            "run_key": run_key,
+                            "source_scenario_id": source_id,
+                            "source_contract_digest": "sha256:" + strategy[0] * 64,
+                            "seed": seed,
+                            "circuit_id": "MONZA",
+                            "progression": "early",
+                            "strategy_profile": strategy,
+                            "player_reference": reference,
+                            "distinct_opponent_tunings": 9,
+                            "distinct_opponent_strategies": 7 + seed % 2,
+                            "opponent_budget_min": 40,
+                            "opponent_budget_max": 45,
+                        }
+                    )
+                    evidence.append(
+                        {
+                            "run_key": run_key,
+                            "circuit_id": "MONZA",
+                            "progression": "early",
+                            "strategy_profile": strategy,
+                            "player_reference": reference,
+                            "player_position": position,
+                            "player_gap_to_leader_ms": gap,
+                            "field_spread_ms": 5000 + seed,
+                        }
+                    )
+        manifest = {
+            "campaign_id": "audit",
+            "matrix": {
+                "seeds": [1, 2, 3],
+                "progression": [{"id": "early", "playerBudget": 40}],
+            },
+            "runs": runs,
+        }
+
+        report = diagnose_opponent_audit(
+            manifest,
+            evidence,
+            {"runs": {"version": 4}, "metrics": {"version": 3}},
+        )
+
+        self.assertEqual(report["sample"]["setup_pair_count"], 6)
+        self.assertEqual(
+            report["setup_alignment"]["by_circuit"]["MONZA"][
+                "mean_position_delta_informed_minus_neutral"
+            ],
+            -1.0,
+        )
+        self.assertEqual(
+            report["setup_alignment"]["seed_direction_stability"][
+                "stable_group_rate"
+            ],
+            1.0,
+        )
+        self.assertEqual(
+            report["strategy_response"]["same_source_contract_pair_count"], 0
+        )
+        self.assertFalse(report["strategy_response"]["causal_interpretation_allowed"])
+        self.assertFalse(report["policy_selected"])
+
+    def test_diagnosis_rejects_an_incomplete_snapshot(self):
+        with self.assertRaises(OpponentAuditResultError):
+            diagnose_opponent_audit(
+                {"campaign_id": "audit", "runs": [{"run_key": "expected"}]},
+                [],
+                {},
+            )
 
 
 if __name__ == "__main__":

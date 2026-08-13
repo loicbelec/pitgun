@@ -12,6 +12,7 @@ from .opponent_audit import (
     materialize_opponent_audit_plan,
 )
 from .opponent_audit_analysis import (
+    diagnose_opponent_audit,
     extract_opponent_audit_evidence,
     summarize_opponent_audit,
 )
@@ -43,4 +44,5 @@ __all__ = [
     "materialize_opponent_audit_plan",
     "extract_opponent_audit_evidence",
     "summarize_opponent_audit",
+    "diagnose_opponent_audit",
 ]
