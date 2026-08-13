@@ -81,6 +81,9 @@ jobs:
       - name: Validate Racing experiment tools
         run: python -m unittest discover -s experiments/racing_response/tests -v
 
+      - name: Validate Racing opponent smoke artifacts
+        run: python -m unittest discover -s experiments/opponent_audit -p 'test_*.py' -v
+
       - name: Validate Racing track provenance and elevation prototype
         run: |
           python -m unittest discover -s experiments/racing_tracks/tests -v
