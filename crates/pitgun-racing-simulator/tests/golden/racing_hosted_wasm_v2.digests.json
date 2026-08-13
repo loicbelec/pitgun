@@ -1,0 +1,6 @@
+{
+  "run_id": "sha256:b80b7267778bc503873e41d24fa7da7653bdc6e129f69cdd054906e8ac2a13b9",
+  "output_digest": "sha256:520ce64d094d18d65ae08a25e3dc73f890658e9bfb67d6608e165ab8fc9fcc26",
+  "telemetry_summary_digest": "sha256:635c4f0daa2bd283b6c348acc4b4a7023003c756baa459e2ea8144c4022540ad",
+  "wasm_artifact_digest": "sha256:b83bf8498b75197258b230f237f0e51a45f0f307a9ef62fe6e13c26d9741e074"
+}

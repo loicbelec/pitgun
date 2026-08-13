@@ -23,9 +23,9 @@ pub use pitgun_racing_simulator::{
     catalog_snapshot, catalog_snapshot_with_catalog, derating_factor, driver_effects, effective_mu,
     execute_authorized_race, get_circuit, get_circuit_with_catalog, get_engine,
     get_engine_with_catalog, list_browser_circuits, list_circuits, list_drivers, list_engines,
-    list_tires, list_vehicles, power_kw_from_rpm, racing_model_v1_identity, resample_solution,
-    rpm_from_speed_gear, run_race, run_race_with_catalog, run_sessions, run_sessions_with_catalog,
-    solve,
+    list_tires, list_vehicles, power_kw_from_rpm, racing_model_v1_identity,
+    racing_model_v2_identity, resample_solution, rpm_from_speed_gear, run_race,
+    run_race_with_catalog, run_sessions, run_sessions_with_catalog, solve,
 };
 use wasm_bindgen::prelude::*;
 

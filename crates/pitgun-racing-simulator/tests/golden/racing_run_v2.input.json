@@ -1,0 +1,30 @@
+{
+  "input": {
+    "track_id": "it-1922",
+    "laps": 1,
+    "competitors": [
+      {
+        "id": "player",
+        "driver_id": "default",
+        "name": "Player",
+        "team_id": "team",
+        "is_player": true,
+        "tuning": {
+          "engine_points": 25.0,
+          "cooling_points": 25.0,
+          "aero_points": 25.0,
+          "chassis_points": 25.0,
+          "downforce_slider": 0.5,
+          "gear_ratio_slider": 0.5
+        },
+        "budget_cap": 100.0
+      }
+    ],
+    "vehicle_id": "f1_2026",
+    "era": 2026,
+    "hz": 20.0
+  },
+  "seed": 7,
+  "era": 2026,
+  "hz": 20.0
+}
