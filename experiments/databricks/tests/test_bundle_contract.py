@@ -61,6 +61,18 @@ class BundleContractTest(unittest.TestCase):
         self.assertNotIn("http://", runner)
         self.assertNotIn("https://", runner)
 
+    def test_budget_job_is_bounded_and_non_promoting(self):
+        job = (ROOT / "resources" / "jobs.yml").read_text()
+        notebook = (ROOT / "src" / "execute_budget_effect.py").read_text()
+
+        self.assertIn("budget_effect_job:", job)
+        self.assertIn("execute_budget_effect.py", job)
+        self.assertIn("pitgun.promotion: forbidden", job)
+        self.assertIn('"budget_target_selected": False', notebook)
+        self.assertIn('"automatic_game_or_catalog_promotion": False', notebook)
+        self.assertNotIn("candidate", notebook.lower())
+        self.assertNotIn("policy_release", notebook.lower())
+
     def test_racing_v2_catalog_boundary_is_packaged_and_bounded(self):
         builder = (ROOT / "adapter" / "build_wheel.py").read_text()
         runner = (

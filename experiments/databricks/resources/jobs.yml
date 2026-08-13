@@ -207,6 +207,54 @@ resources:
         pitgun.causal-experiment: "true"
         pitgun.promotion: forbidden
 
+    budget_effect_job:
+      name: pitgun-racing-budget-effect-v1
+      description: >-
+        Execute 45 exact controlled budget triplets, persist governed evidence,
+        and report causal dose response without selecting a game-balance target.
+      max_concurrent_runs: 1
+      performance_target: STANDARD
+      environments:
+        - environment_key: serverless_budget_effect
+          spec:
+            environment_version: "4"
+            dependencies:
+              - ../adapter/dist/*.whl
+      tasks:
+        - task_key: bootstrap_governed_tables
+          description: Validate and additively evolve the governed tables.
+          environment_key: serverless_budget_effect
+          notebook_task:
+            notebook_path: ../src/bootstrap_tables.py
+            source: WORKSPACE
+            base_parameters:
+              operation: bootstrap
+              campaign_id: racing-budget-effect-2026-v1
+              catalog_name: ${var.catalog_name}
+              calibration_schema: ${resources.schemas.calibration.name}
+              policies_schema: ${resources.schemas.policies.name}
+              experiment_id: ${resources.experiments.calibration_experiment.id}
+          timeout_seconds: 900
+        - task_key: execute_budget_effect
+          description: Execute or resume all 135 immutable budget run keys.
+          depends_on:
+            - task_key: bootstrap_governed_tables
+          environment_key: serverless_budget_effect
+          notebook_task:
+            notebook_path: ../src/execute_budget_effect.py
+            source: WORKSPACE
+            base_parameters:
+              catalog_name: ${var.catalog_name}
+              calibration_schema: ${resources.schemas.calibration.name}
+              experiment_id: ${resources.experiments.calibration_experiment.id}
+          timeout_seconds: 3600
+      tags:
+        pitgun.domain: calibration
+        pitgun.compute: serverless
+        pitgun.campaign: racing-budget-effect-v1
+        pitgun.causal-experiment: "true"
+        pitgun.promotion: forbidden
+
     reference_campaign_job:
       name: pitgun-racing-reference-campaign-v1
       description: >-
