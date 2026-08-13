@@ -442,8 +442,9 @@ pub fn run_simulation_with_tuning_response(
 
 /// Runs an offline model experiment with an explicit curvature response.
 ///
-/// Production and WASM callers remain on [`CurvatureAeroResponse::LegacyBinary`]
-/// until a separately reviewed model-version promotion takes place.
+/// The published model V1 remains on [`CurvatureAeroResponse::LegacyBinary`].
+/// Model V2 selects [`CurvatureAeroResponse::ContinuousV1`] explicitly through
+/// its versioned workload; callers cannot change that selection through input.
 pub fn run_simulation_with_model_response(
     input: &SimulationRequest,
     tuning_response: &TuningResponseV1,

@@ -34,6 +34,19 @@ The fixture covers:
 - run identity derived from the typed deterministic contract;
 - clear failures for contract, output, and summary mutations.
 
+## Racing model V2
+
+The parallel `racing_run_v2.*` fixtures publish the first
+continuous-curvature model evidence. They bind `pitgun.racing@2.0.0` to the
+immutable Racing catalog `v1.2.0` and protect its canonical output, telemetry
+summary, portable receipt, and digests in both native Rust and Node/WASM.
+
+The V1 fixtures remain unchanged and continue to execute the legacy binary
+aerodynamic response. V2 always executes the shared continuous curvature
+function. Rolling back a consumer therefore means selecting the complete V1
+model identity and a V1-compatible catalog; changing only a version string or
+catalog pointer fails compatibility validation.
+
 The fixture's `input.digest` is calculated from the canonical input bytes. Its
 model and data-pack digest values are fixed conformance identities for this
 portable-exact test. They are not runtime binary attestation; canonical artifact

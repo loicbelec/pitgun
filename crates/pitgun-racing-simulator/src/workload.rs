@@ -5,11 +5,12 @@ use pitgun_runtime::{ExecutionContext, LinkedWorkload, WorkloadExecution};
 
 use crate::evidence::{RacingEvidenceError, RacingRunEvidenceV1};
 use crate::{
-    RaceOutput, RacingCatalogSnapshot, RunRaceInput, RunRaceRequest, run_race,
-    run_race_with_catalog,
+    CurvatureAeroResponse, RaceOutput, RacingCatalogSnapshot, RunRaceInput, RunRaceRequest,
+    TuningResponseV1, run_race, run_race_with_catalog_and_model_response,
 };
 
 const RACING_MODEL_V1_MANIFEST: &[u8] = b"pitgun.racing:model:1.0.0:conformance-vector";
+const RACING_MODEL_V2_MANIFEST: &[u8] = b"pitgun.racing:model:2.0.0:continuous-curvature-v1";
 
 /// Returns the exact logical Racing model identity authorized by V1 services.
 #[must_use]
@@ -21,11 +22,22 @@ pub fn racing_model_v1_identity() -> ArtifactIdentity {
     }
 }
 
+/// Returns the exact logical identity of the continuous-curvature Racing model.
+#[must_use]
+pub fn racing_model_v2_identity() -> ArtifactIdentity {
+    ArtifactIdentity {
+        id: "pitgun.racing".parse().expect("static Racing model id"),
+        version: "2.0.0".parse().expect("static Racing model version"),
+        digest: pitgun_contract::Digest::from_bytes(RACING_MODEL_V2_MANIFEST),
+    }
+}
+
 /// Statically linked adapter for one exact Racing model identity.
 #[derive(Clone, Debug)]
 pub struct RacingWorkload {
     model: ArtifactIdentity,
     catalog: Option<RacingCatalogSnapshot>,
+    curvature_response: CurvatureAeroResponse,
 }
 
 impl RacingWorkload {
@@ -35,6 +47,7 @@ impl RacingWorkload {
         Self {
             model: racing_model_v1_identity(),
             catalog: None,
+            curvature_response: CurvatureAeroResponse::LegacyBinary,
         }
     }
 
@@ -44,6 +57,17 @@ impl RacingWorkload {
         Self {
             model: racing_model_v1_identity(),
             catalog: Some(catalog),
+            curvature_response: CurvatureAeroResponse::LegacyBinary,
+        }
+    }
+
+    /// Creates the V2 adapter pinned to its immutable catalog snapshot.
+    #[must_use]
+    pub fn v2_with_catalog(catalog: RacingCatalogSnapshot) -> Self {
+        Self {
+            model: racing_model_v2_identity(),
+            catalog: Some(catalog),
+            curvature_response: CurvatureAeroResponse::ContinuousV1,
         }
     }
 }
@@ -83,7 +107,19 @@ impl LinkedWorkload for RacingWorkload {
             hz: Some(hz),
         };
         let output = match &self.catalog {
-            Some(catalog) => run_race_with_catalog(request, catalog),
+            Some(catalog) => {
+                catalog
+                    .manifest()
+                    .compatibility
+                    .validate_for(&self.model, pitgun_contract::ContractVersion::V1)
+                    .map_err(|error| RacingWorkloadError::Simulation(error.to_string()))?;
+                run_race_with_catalog_and_model_response(
+                    request,
+                    catalog,
+                    &TuningResponseV1::default(),
+                    self.curvature_response,
+                )
+            }
             None => run_race(request),
         }
         .map_err(RacingWorkloadError::Simulation)?;
@@ -95,7 +131,7 @@ impl LinkedWorkload for RacingWorkload {
 
 #[cfg(test)]
 mod tests {
-    use super::RacingWorkload;
+    use super::{RacingWorkload, racing_model_v2_identity};
     use pitgun_runtime::LinkedWorkload;
 
     #[test]
@@ -108,5 +144,18 @@ mod tests {
             model.digest.to_string(),
             "sha256:03541bcc24f946d11071e6fb67915ec5d429dce63362d456aba2c3d339a3fe38"
         );
+    }
+
+    #[test]
+    fn racing_workload_v2_has_a_distinct_published_model_identity() {
+        let model = racing_model_v2_identity();
+
+        assert_eq!(model.id.to_string(), "pitgun.racing");
+        assert_eq!(model.version.to_string(), "2.0.0");
+        assert_eq!(
+            model.digest.to_string(),
+            "sha256:a372f990c320d10207220f98ca4bf677607fc5c13918c73b47dfbb8949b106d2"
+        );
+        assert_ne!(model, RacingWorkload::v1().model_identity().clone());
     }
 }

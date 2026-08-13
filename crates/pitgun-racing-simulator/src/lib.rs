@@ -5,15 +5,17 @@ pub mod workload;
 pub use catalog::{
     RacingCatalogBundleV1, RacingCatalogFileV1, RacingCatalogResolutionError, RacingCatalogSnapshot,
 };
-pub use workload::{RacingWorkload, RacingWorkloadError, racing_model_v1_identity};
+pub use workload::{
+    RacingWorkload, RacingWorkloadError, racing_model_v1_identity, racing_model_v2_identity,
+};
 
 use std::collections::HashMap;
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 
 use pitgun_contract::{
-    RunBundleReceiptV1, RunBundleReceiptVersion, RuntimeIdentity, Sample, SampleValue,
-    SignalQuality, TelemetryFrame,
+    ArtifactIdentity, ContractVersion, RunBundleReceiptV1, RunBundleReceiptVersion,
+    RuntimeIdentity, Sample, SampleValue, SignalQuality, TelemetryFrame,
 };
 use pitgun_racing_contract::{
     CircuitCatalogEntry, CompetitorSpec, CompetitorStintStrategy, EngineCatalogEntry, RaceInput,
@@ -313,6 +315,10 @@ const PARAM_TIRE_WEAR_PCT: u16 = 5016;
 include!(concat!(
     env!("CARGO_MANIFEST_DIR"),
     "/../../generated/racing_catalog_v1.rs"
+));
+include!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../generated/racing_catalog_model_v2.rs"
 ));
 const PRESENTATION_INDEX: &[u8] = include_bytes!(concat!(
     env!("CARGO_MANIFEST_DIR"),
@@ -701,12 +707,9 @@ pub fn execute_authorized_race(
         .validate_for_run(contract)
         .map_err(|error| format!("authorized catalog is unavailable: {error}"))?;
 
-    let execution = execute_linked(
-        &RacingWorkload::with_catalog(catalog.clone()),
-        contract,
-        request.input.clone(),
-    )
-    .map_err(|error| format!("authorized Racing execution failed: {error}"))?;
+    let workload = racing_workload_for(&contract.model, catalog)?;
+    let execution = execute_linked(&workload, contract, request.input.clone())
+        .map_err(|error| format!("authorized Racing execution failed: {error}"))?;
     let runtime = RuntimeIdentity {
         engine: "pitgun-wasm"
             .parse()
@@ -734,6 +737,28 @@ pub fn execute_authorized_race(
         output: execution.evidence.output,
         telemetry_summary: execution.evidence.telemetry_summary,
     })
+}
+
+fn racing_workload_for(
+    model: &ArtifactIdentity,
+    catalog: &RacingCatalogSnapshot,
+) -> Result<RacingWorkload, String> {
+    catalog
+        .manifest()
+        .compatibility
+        .validate_for(model, ContractVersion::V1)
+        .map_err(|error| format!("Racing model/catalog incompatibility: {error}"))?;
+
+    if *model == racing_model_v1_identity() {
+        Ok(RacingWorkload::with_catalog(catalog.clone()))
+    } else if *model == racing_model_v2_identity() {
+        Ok(RacingWorkload::v2_with_catalog(catalog.clone()))
+    } else {
+        Err(format!(
+            "unsupported Racing model identity {}@{} {}",
+            model.id, model.version, model.digest
+        ))
+    }
 }
 
 fn parse_run_race_request(input_json: &str) -> Result<RunRaceRequest, String> {
@@ -2074,7 +2099,34 @@ fn json_error(message: &str) -> String {
 mod tests {
     use super::*;
     use pitgun_racing_contract::{CompetitorSpec, RaceInput, TuningSpec};
+    use pitgun_runtime::LinkedWorkload;
     use serde::Deserialize;
+
+    #[test]
+    fn hosted_workload_selection_requires_exact_model_and_catalog_identities() {
+        let model_v1_catalog = RacingCatalogSnapshot::embedded().expect("model V1 catalog");
+        let model_v2_catalog =
+            RacingCatalogSnapshot::embedded_model_v2().expect("model V2 catalog");
+
+        let selected = racing_workload_for(&racing_model_v2_identity(), &model_v2_catalog)
+            .expect("exact model V2 selection");
+        assert_eq!(selected.model_identity(), &racing_model_v2_identity());
+        assert!(
+            racing_workload_for(&racing_model_v1_identity(), &model_v2_catalog).is_err(),
+            "model V1 must not run against the model V2 catalog"
+        );
+        assert!(
+            racing_workload_for(&racing_model_v2_identity(), &model_v1_catalog).is_err(),
+            "model V2 must not run against the model V1 catalog"
+        );
+
+        let mut forged = racing_model_v2_identity();
+        forged.digest = pitgun_contract::Digest::from_bytes(b"forged model V2");
+        assert!(
+            racing_workload_for(&forged, &model_v2_catalog).is_err(),
+            "a known version with an unknown digest must fail closed"
+        );
+    }
 
     #[derive(Debug, Deserialize)]
     struct GoldenFixture {

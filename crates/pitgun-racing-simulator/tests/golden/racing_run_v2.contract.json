@@ -1,0 +1,43 @@
+{
+  "contract_version": "pitgun.deterministic-run/v1",
+  "scenario": {
+    "id": "racing.single-lap",
+    "version": "2.0.0"
+  },
+  "model": {
+    "id": "pitgun.racing",
+    "version": "2.0.0",
+    "digest": "sha256:a372f990c320d10207220f98ca4bf677607fc5c13918c73b47dfbb8949b106d2"
+  },
+  "data_pack": {
+    "id": "pitgun.racing.simulation",
+    "version": "1.2.0",
+    "digest": "sha256:8961087a8a04a3cafb157a63b7bd2c8daa1e29500e180c5d723324d79374549f"
+  },
+  "runtime_profile": "portable-exact-v1",
+  "random": {
+    "seed": "7",
+    "algorithm": "pitgun-splitmix64-v1",
+    "stream_derivation": "sha256-label-v1"
+  },
+  "clock": {
+    "kind": "logical-fixed-step",
+    "epoch": 0,
+    "tick_numerator_us": 50000,
+    "tick_denominator": 1
+  },
+  "event_ordering": {
+    "keys": [
+      "logical_tick",
+      "source_id",
+      "source_sequence",
+      "insertion_ordinal"
+    ],
+    "string_order": "unicode-code-point"
+  },
+  "input": {
+    "media_type": "application/json",
+    "canonicalization": "jcs-rfc8785",
+    "digest": "sha256:a8187fd71b8db5016b230a8f31d0c43ad07917206d3b062ecfceb99ffafa30aa"
+  }
+}

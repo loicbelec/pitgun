@@ -18,7 +18,7 @@ use pitgun_racing_contract::{RacingPresentationIndexV1, RacingSimulationIndexV1}
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 
-use crate::{EMBEDDED_FILES, PRESENTATION_INDEX};
+use crate::{EMBEDDED_FILES, MODEL_V2_EMBEDDED_FILES, PRESENTATION_INDEX};
 
 const KNOWN_RACING_MODEL_VERSIONS: [&str; 2] = ["1.0.0", "2.0.0"];
 
@@ -33,6 +33,22 @@ const RELEASE_IDENTITY: &[u8] = include_bytes!(concat!(
 const SIMULATION_INDEX: &[u8] = include_bytes!(concat!(
     env!("CARGO_MANIFEST_DIR"),
     "/../../catalogs/racing/v1.0.0/simulation/index.json"
+));
+const MODEL_V2_CATALOG_MANIFEST: &[u8] = include_bytes!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../catalogs/racing/v1.2.0/catalog.json"
+));
+const MODEL_V2_RELEASE_IDENTITY: &[u8] = include_bytes!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../catalogs/racing/v1.2.0/release.json"
+));
+const MODEL_V2_SIMULATION_INDEX: &[u8] = include_bytes!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../catalogs/racing/v1.2.0/simulation/index.json"
+));
+const MODEL_V2_PRESENTATION_INDEX: &[u8] = include_bytes!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../catalogs/racing/v1.2.0/presentation/index.json"
 ));
 
 /// One exact release-relative file supplied by a browser or another adapter.
@@ -298,6 +314,23 @@ impl RacingCatalogSnapshot {
             RELEASE_IDENTITY,
             SIMULATION_INDEX,
             PRESENTATION_INDEX,
+            resources,
+        )
+    }
+
+    /// Resolves the immutable catalog release governed for Racing model V2.
+    ///
+    /// This does not change the mutable public `LATEST` selection or the V1
+    /// offline fallback.
+    pub fn embedded_model_v2() -> Result<Self, RacingCatalogResolutionError> {
+        let resources = MODEL_V2_EMBEDDED_FILES
+            .iter()
+            .map(|(path, bytes)| (format!("simulation/{path}"), bytes.to_vec()));
+        Self::from_bytes(
+            MODEL_V2_CATALOG_MANIFEST,
+            MODEL_V2_RELEASE_IDENTITY,
+            MODEL_V2_SIMULATION_INDEX,
+            MODEL_V2_PRESENTATION_INDEX,
             resources,
         )
     }
@@ -651,6 +684,28 @@ mod tests {
                 .version
                 .to_string(),
             "1.0.0"
+        );
+    }
+
+    #[test]
+    fn embedded_model_generations_are_mutually_incompatible() {
+        let model_v1_catalog = RacingCatalogSnapshot::embedded().expect("model V1 catalog");
+        let model_v2_catalog =
+            RacingCatalogSnapshot::embedded_model_v2().expect("model V2 catalog");
+
+        assert!(
+            model_v1_catalog
+                .manifest()
+                .compatibility
+                .validate_for(&crate::racing_model_v2_identity(), ContractVersion::V1)
+                .is_err()
+        );
+        assert!(
+            model_v2_catalog
+                .manifest()
+                .compatibility
+                .validate_for(&crate::racing_model_v1_identity(), ContractVersion::V1)
+                .is_err()
         );
     }
 

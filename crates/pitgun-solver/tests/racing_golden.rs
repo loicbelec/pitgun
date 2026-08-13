@@ -8,13 +8,17 @@ use pitgun_contract::{
     Seed, SemanticVersion, SignedRunAuthorizationV1, StreamDerivation, canonical_json_bytes,
     canonical_json_digest, canonicalize_json_str,
 };
+use pitgun_racing_simulator::{
+    CurvatureAeroResponse, TuningResponseV1, run_race_with_catalog_and_model_response,
+};
 use pitgun_solver::evidence::{
     RacingHostedExecutionRequestV1, RacingHostedExecutionRequestVersion, RacingRunEvidenceV1,
     RacingVerificationSubmissionV1,
 };
 use pitgun_solver::{
-    RaceOutput, RacingCatalogSnapshot, RunRaceInput, execute_authorized_race_json,
-    racing_model_v1_identity, run_race_json,
+    RaceOutput, RacingCatalogSnapshot, RunRaceInput, RunRaceRequest, execute_authorized_race,
+    execute_authorized_race_json, racing_model_v1_identity, racing_model_v2_identity,
+    run_race_json,
 };
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
@@ -36,6 +40,22 @@ const EXPECTED_DIGESTS: &str =
     include_str!("../../pitgun-racing-simulator/tests/golden/racing_run_v1.digests.json");
 const EXPECTED_HOSTED_WASM_DIGESTS: &str =
     include_str!("../../pitgun-racing-simulator/tests/golden/racing_hosted_wasm_v1.digests.json");
+const INPUT_V2: &str =
+    include_str!("../../pitgun-racing-simulator/tests/golden/racing_run_v2.input.json");
+const EXPECTED_V2: &str =
+    include_str!("../../pitgun-racing-simulator/tests/golden/racing_run_v2.expected.json");
+const CONTRACT_V2: &str =
+    include_str!("../../pitgun-racing-simulator/tests/golden/racing_run_v2.contract.json");
+const EXPECTED_OUTPUT_V2: &str =
+    include_str!("../../pitgun-racing-simulator/tests/golden/racing_run_v2.output.json");
+const EXPECTED_TELEMETRY_SUMMARY_V2: &str =
+    include_str!("../../pitgun-racing-simulator/tests/golden/racing_run_v2.telemetry-summary.json");
+const EXPECTED_DIGESTS_V2: &str =
+    include_str!("../../pitgun-racing-simulator/tests/golden/racing_run_v2.digests.json");
+const EXPECTED_RECEIPT_V2: &str =
+    include_str!("../../pitgun-racing-simulator/tests/golden/racing_run_v2.receipt.json");
+const EXPECTED_HOSTED_WASM_DIGESTS_V2: &str =
+    include_str!("../../pitgun-racing-simulator/tests/golden/racing_hosted_wasm_v2.digests.json");
 const MODEL_IDENTITY: &str = "pitgun.racing:model:1.0.0:conformance-vector";
 const DATA_PACK_IDENTITY: &str = "pitgun.racing.2026:data-pack:1.0.0:conformance-vector";
 
@@ -230,6 +250,77 @@ fn racing_run_v1_matches_published_canonical_artifacts_and_digests() {
 
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
 #[cfg_attr(not(target_arch = "wasm32"), test)]
+fn racing_run_v2_matches_the_versioned_golden_summary() {
+    let output = run_golden_race_v2();
+    let actual = summarize(output);
+    let expected: GoldenSummary =
+        serde_json::from_str(EXPECTED_V2).expect("V2 golden summary fixture must be valid");
+
+    assert_eq!(
+        actual,
+        expected,
+        "Racing V2 golden run changed. Publish a new model identity before accepting a new fixture.\nActual summary:\n{}",
+        serde_json::to_string_pretty(&actual).expect("golden summary must serialize")
+    );
+}
+
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
+fn racing_run_v2_matches_published_canonical_artifacts_and_digests() {
+    let output = run_golden_race_v2();
+    let evidence = RacingRunEvidenceV1::from_race_output(&output).expect("Racing V2 evidence");
+    let contract: DeterministicRunContractV1 =
+        serde_json::from_str(CONTRACT_V2).expect("Racing V2 deterministic contract");
+
+    assert_artifact_eq("Racing V2 output", &evidence.output, EXPECTED_OUTPUT_V2);
+    assert_artifact_eq(
+        "V2 telemetry summary",
+        &evidence.telemetry_summary,
+        EXPECTED_TELEMETRY_SUMMARY_V2,
+    );
+    assert_eq!(contract.model, racing_model_v2_identity());
+    let catalog = RacingCatalogSnapshot::embedded_model_v2().expect("model V2 catalog");
+    assert_eq!(
+        contract.data_pack,
+        catalog.manifest().simulation_pack.identity
+    );
+
+    let canonical_input = canonicalize_json_str(INPUT_V2).expect("canonical Racing V2 input");
+    assert_eq!(contract.input.digest, Digest::from_bytes(&canonical_input));
+    let execution_id = "018f3b78-7e9a-7d20-a5e1-4ed92f02a592"
+        .parse()
+        .expect("V2 execution id");
+    let receipt = evidence
+        .execution_receipt(
+            &contract,
+            execution_id,
+            RuntimeIdentity {
+                engine: Identifier::new("pitgun-rust").expect("engine id"),
+                engine_version: SemanticVersion::new("0.1.0").expect("engine version"),
+                target: Identifier::new("portable-golden-target").expect("target id"),
+                artifact_digest: Digest::from_bytes(b"portable-golden-artifact-v2"),
+            },
+        )
+        .expect("V2 execution receipt");
+    let actual_receipt = serde_json::to_value(&receipt).expect("V2 receipt value");
+    assert_artifact_eq("Racing V2 receipt", &actual_receipt, EXPECTED_RECEIPT_V2);
+    let actual = GoldenDigests {
+        run_id: receipt.run_id,
+        output_digest: receipt.output_digest,
+        telemetry_summary_digest: receipt.telemetry_summary_digest,
+    };
+    let expected: GoldenDigests =
+        serde_json::from_str(EXPECTED_DIGESTS_V2).expect("published V2 digest vectors");
+    assert_eq!(
+        actual,
+        expected,
+        "Racing V2 deterministic digests changed.\nActual:\n{}",
+        serde_json::to_string_pretty(&actual).expect("actual digests must serialize")
+    );
+}
+
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn racing_run_v1_digests_reject_semantic_mutations() {
     let output = run_golden_race();
     let evidence = RacingRunEvidenceV1::from_race_output(&output).expect("Racing evidence");
@@ -374,10 +465,117 @@ fn hosted_racing_execution_emits_complete_portable_evidence() {
         .expect("strict Verifier submission");
 }
 
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
+fn hosted_racing_v2_execution_emits_complete_portable_evidence() {
+    let request_fixture: RunRaceRequest =
+        serde_json::from_str(INPUT_V2).expect("Racing V2 request");
+    let input = request_fixture.input;
+    let catalog = RacingCatalogSnapshot::embedded_model_v2().expect("model V2 catalog");
+    let contract = DeterministicRunContractV1 {
+        contract_version: ContractVersion::V1,
+        scenario: ScenarioIdentity {
+            id: "racing.race".parse().expect("scenario id"),
+            version: "2.0.0".parse().expect("scenario version"),
+        },
+        model: racing_model_v2_identity(),
+        data_pack: catalog.manifest().simulation_pack.identity.clone(),
+        runtime_profile: RuntimeProfile::PortableExactV1,
+        random: RandomContractV1 {
+            seed: Seed::new(7),
+            algorithm: RandomAlgorithm::PitgunSplitMix64V1,
+            stream_derivation: StreamDerivation::Sha256LabelV1,
+        },
+        clock: LogicalClockV1::new(0, 50_000, 1).expect("clock"),
+        event_ordering: EventOrderingV1::v1(),
+        input: InputIdentity {
+            media_type: InputMediaType::ApplicationJson,
+            canonicalization: InputCanonicalization::JcsRfc8785,
+            digest: canonical_json_digest(&input).expect("input digest"),
+        },
+    };
+    let run_id = contract.run_id().expect("V2 run id");
+    let request = RacingHostedExecutionRequestV1 {
+        schema_version: RacingHostedExecutionRequestVersion::V1,
+        signed_authorization: SignedRunAuthorizationV1 {
+            authorization: RunAuthorizationV1 {
+                authorization_version: RunAuthorizationVersion::V1,
+                nonce: Digest::from_bytes(b"wasm-golden-v2-nonce"),
+                subject: "career.wasm-golden-v2".parse().expect("subject"),
+                audience: "pitgun.verifier".parse().expect("audience"),
+                contract,
+                run_id,
+                policy: ArtifactIdentity {
+                    id: "pitgun.racing.tuning".parse().expect("policy id"),
+                    version: "1.0.0".parse().expect("policy version"),
+                    digest: Digest::from_bytes(include_bytes!(
+                        "../../../policies/gametuning.v1.yaml"
+                    )),
+                },
+                signing_key_id: "wasm-golden-v2".parse().expect("key id"),
+                validity: AuthorizationValidityV1 {
+                    issued_at_ms: 1_722_345_600_000,
+                    expires_at_ms: 1_722_345_900_000,
+                    late_submission_grace_ms: 900_000,
+                },
+            },
+            algorithm: AuthorizationSignatureAlgorithm::HmacSha256,
+            signature: "fixture-only-signature".to_string(),
+        },
+        input,
+        execution_id: "018f3b78-7e9a-7d20-a5e1-4ed92f02a592"
+            .parse()
+            .expect("execution id"),
+        wasm_artifact_digest: Digest::from_bytes(b"exact-golden-wasm-module-v2"),
+    };
+    let submission = execute_authorized_race(request.clone(), &catalog)
+        .unwrap_or_else(|error| panic!("invalid hosted V2 evidence: {error}"));
+    let actual = HostedWasmGoldenDigests {
+        run_id: submission.receipt.receipt.run_id,
+        output_digest: submission.receipt.receipt.output_digest,
+        telemetry_summary_digest: submission.receipt.receipt.telemetry_summary_digest,
+        wasm_artifact_digest: submission.receipt.receipt.runtime.artifact_digest,
+    };
+    let expected: HostedWasmGoldenDigests = serde_json::from_str(EXPECTED_HOSTED_WASM_DIGESTS_V2)
+        .expect("hosted WASM V2 digest fixture");
+    assert_eq!(
+        actual,
+        expected,
+        "hosted WASM V2 evidence changed. Actual:\n{}",
+        serde_json::to_string_pretty(&actual).expect("hosted V2 digests")
+    );
+    assert_eq!(submission.receipt.receipt.run_id, run_id);
+    assert_eq!(
+        submission.receipt.receipt.runtime.engine.to_string(),
+        "pitgun-wasm"
+    );
+    assert_eq!(
+        submission.receipt.receipt.runtime.target.to_string(),
+        "wasm32-unknown-unknown"
+    );
+    assert_eq!(
+        submission.receipt.receipt.runtime.artifact_digest,
+        request.wasm_artifact_digest
+    );
+}
+
 fn run_golden_race() -> RaceOutput {
     let response = run_race_json(INPUT.to_string());
     serde_json::from_str(&response)
         .unwrap_or_else(|error| panic!("golden run returned invalid output: {error}: {response}"))
+}
+
+fn run_golden_race_v2() -> RaceOutput {
+    let request: RunRaceRequest =
+        serde_json::from_str(INPUT_V2).expect("Racing V2 request fixture");
+    let catalog = RacingCatalogSnapshot::embedded_model_v2().expect("model V2 catalog");
+    run_race_with_catalog_and_model_response(
+        request,
+        &catalog,
+        &TuningResponseV1::default(),
+        CurvatureAeroResponse::ContinuousV1,
+    )
+    .expect("Racing V2 golden run")
 }
 
 fn assert_artifact_eq<T>(label: &str, actual: &T, expected_json: &str)
