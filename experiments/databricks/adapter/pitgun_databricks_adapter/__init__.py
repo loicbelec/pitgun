@@ -1,5 +1,10 @@
 """Bounded adapter for executing the packaged Pitgun Racing runner."""
 
+from .budget_effect import (
+    load_budget_effect_campaign,
+    materialize_budget_effect_plan,
+)
+
 from .campaign import (
     load_calibration_campaign,
     load_reference_campaign,
@@ -55,4 +60,6 @@ __all__ = [
     "materialize_strategy_effect_plan",
     "extract_strategy_effect_evidence",
     "summarize_strategy_effect",
+    "load_budget_effect_campaign",
+    "materialize_budget_effect_plan",
 ]
