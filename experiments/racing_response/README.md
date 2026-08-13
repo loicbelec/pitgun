@@ -134,3 +134,20 @@ segmentation weakness exposed by Spa, records a failing high-speed holdout
 guardrail, and preserves all five calibration optima. The evidence and the
 reason no coefficient or circuit is changed automatically are documented in
 [`RACING_SPA_HIGH_SPEED_DIAGNOSIS_V1.md`](../../docs/RACING_SPA_HIGH_SPEED_DIAGNOSIS_V1.md).
+
+## Spa relief impact V1
+
+The seventh local experiment isolates the validated SPW elevation profile from
+every other model input. Both flat and relief variants use identical `s/x/y`,
+vehicle, tuning response, seed, and five-by-five setup grid. Only `z` changes;
+the Simulator derives slope through its existing `track_profile` boundary.
+
+```bash
+cargo build --release -p pitgun-racing-simulator --example tuning_response_probe
+python3 experiments/racing_response/measure_spa_relief_impact.py --jobs 4
+```
+
+The 50 deterministic runs measure lap time, maximum speed, setup response, and
+optimum movement without editing the catalog. Results and the non-promotion
+decision are documented in
+[`RACING_SPA_RELIEF_IMPACT_V1.md`](../../docs/RACING_SPA_RELIEF_IMPACT_V1.md).
