@@ -25,8 +25,10 @@ from .runner import (
     inspect_packaged_tuning_response_probe,
 )
 from .strategy_effect import (
+    extract_strategy_effect_evidence,
     load_strategy_effect_campaign,
     materialize_strategy_effect_plan,
+    summarize_strategy_effect,
 )
 
 __all__ = [
@@ -51,4 +53,6 @@ __all__ = [
     "diagnose_opponent_audit",
     "load_strategy_effect_campaign",
     "materialize_strategy_effect_plan",
+    "extract_strategy_effect_evidence",
+    "summarize_strategy_effect",
 ]

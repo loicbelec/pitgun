@@ -193,6 +193,22 @@ class BundleContractTest(unittest.TestCase):
         for forbidden in ("DeltaTable", "MERGE INTO", "UPDATE ", "DELETE "):
             self.assertNotIn(forbidden, notebook)
 
+    def test_strategy_effect_job_is_resumable_causal_and_non_promoting(self):
+        job = (ROOT / "resources" / "jobs.yml").read_text()
+        notebook = (ROOT / "src" / "execute_strategy_effect.py").read_text()
+
+        self.assertIn("strategy_effect_job:", job)
+        self.assertIn("racing-strategy-effect-2026-v1", job)
+        self.assertIn("load_strategy_effect_campaign", notebook)
+        self.assertIn("extract_strategy_effect_evidence", notebook)
+        self.assertIn("summarize_strategy_effect", notebook)
+        self.assertIn('row["execution_status"] == "SUCCESS"', notebook)
+        self.assertIn("whenNotMatchedInsertAll", notebook)
+        self.assertIn("pair_invariant_digest", notebook)
+        self.assertIn('"automatic_game_or_catalog_promotion": False', notebook)
+        for forbidden in ("policy_releases", '"release_state": "PUBLISHED"'):
+            self.assertNotIn(forbidden, notebook)
+
     def test_candidate_validation_is_immutable_experimental_and_reviewed(self):
         campaign_root = ROOT / "campaigns"
         manifest_path = campaign_root / "racing-aero-candidate-validation-v1.json"

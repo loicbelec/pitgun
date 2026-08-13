@@ -58,6 +58,7 @@ databricks bundle run candidate_validation_job -t dev -p pitgun-free
 databricks bundle run candidate_review_job -t dev -p pitgun-free
 databricks bundle run opponent_diagnosis_job -t dev -p pitgun-free \
   --params campaigns_table_version=<pinned>,runs_table_version=<pinned>,metrics_table_version=<pinned>
+databricks bundle run strategy_effect_job -t dev -p pitgun-free
 ```
 
 Repeat `deploy` and `run`: schema and table creation are idempotent. The job may
@@ -115,6 +116,13 @@ opponent field. Only the controlled player's `stint_strategy` differs inside a
 pair. The manifest records both strategy digests and a common invariant digest;
 the adapter validates all 90 packaged resources before exposing an execution
 plan. This input-only delivery performs no compute and selects no policy.
+
+`strategy_effect_job` executes or resumes those 90 immutable run keys on the
+packaged Linux/ARM64 Racing runner. It appends only campaign, run, and metric
+evidence to the governed Delta tables, then reports 45 exact late-minus-balanced
+pairs by circuit and progression in MLflow. Three-seed direction stability and
+the precise Delta, runner, manifest, adapter, and source Git lineage accompany
+the result. Neither candidate nor policy tables are written.
 
 ## Reference campaign
 

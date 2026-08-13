@@ -3,9 +3,11 @@
 from __future__ import annotations
 
 import copy
+from collections import defaultdict
 import hashlib
 import importlib.resources
 import json
+import statistics
 from typing import Any
 
 
@@ -169,3 +171,221 @@ def materialize_strategy_effect_plan(
     """Return the already explicit reviewed execution plan."""
 
     return [dict(run) for run in manifest["runs"]]
+
+
+def extract_strategy_effect_evidence(
+    entry: dict[str, Any], result: dict[str, Any], manifest: dict[str, Any]
+) -> dict[str, Any]:
+    """Validate one result and return normalized causal strategy evidence."""
+
+    catalog = manifest["catalog"]
+    expected_identities = {
+        "scenario": {"id": "racing.strategy-effect-campaign", "version": "1.0.0"},
+        "model": {
+            "id": catalog["model_id"],
+            "version": catalog["model_version"],
+            "digest": catalog["model_digest"],
+        },
+        "data_pack": {
+            "id": "pitgun.racing.simulation",
+            "version": catalog["version"],
+            "digest": catalog["simulation_pack_digest"],
+        },
+        "seed": str(entry["seed"]),
+    }
+    mismatches = {
+        key: result.get(key)
+        for key, expected in expected_identities.items()
+        if result.get(key) != expected
+    }
+    if mismatches:
+        raise StrategyEffectManifestError(
+            "runner identity differs from the strategy plan: " + repr(mismatches)
+        )
+    standings = result.get("summary", {}).get("standings", [])
+    players = [row for row in standings if row.get("competitor_id") == "player"]
+    if len(standings) != 10 or len(players) != 1:
+        raise StrategyEffectManifestError("result must contain one player in ten standings")
+    player = players[0]
+    total_times = [int(row["total_time_ms"]) for row in standings]
+    metrics = {
+        "racing.strategy-effect.player-position": (
+            float(player["position"]),
+            "rank",
+        ),
+        "racing.strategy-effect.player-win": (
+            1.0 if player["position"] == 1 else 0.0,
+            "boolean",
+        ),
+        "racing.strategy-effect.player-podium": (
+            1.0 if player["position"] <= 3 else 0.0,
+            "boolean",
+        ),
+        "racing.strategy-effect.player-gap-to-leader": (
+            float(player["gap_to_leader_ms"]),
+            "ms",
+        ),
+        "racing.strategy-effect.player-best-lap": (
+            float(player["best_lap_ms"]),
+            "ms",
+        ),
+        "racing.strategy-effect.player-total-time": (
+            float(player["total_time_ms"]),
+            "ms",
+        ),
+        "racing.strategy-effect.field-spread": (
+            float(max(total_times) - min(total_times)),
+            "ms",
+        ),
+    }
+    return {
+        "run_key": entry["run_key"],
+        "pair_key": entry["pair_key"],
+        "configuration_id": result["configuration_id"],
+        "run_id": result["run_id"],
+        "circuit_id": entry["circuit_id"],
+        "progression": entry["progression"],
+        "seed": int(entry["seed"]),
+        "strategy_profile": entry["strategy_profile"],
+        "player_position": int(player["position"]),
+        "player_gap_to_leader_ms": int(player["gap_to_leader_ms"]),
+        "player_best_lap_ms": int(player["best_lap_ms"]),
+        "player_total_time_ms": int(player["total_time_ms"]),
+        "field_spread_ms": max(total_times) - min(total_times),
+        "metrics": metrics,
+    }
+
+
+def _paired_summary(rows: list[dict[str, Any]]) -> dict[str, Any]:
+    return {
+        "pair_count": len(rows),
+        "mean_position_delta_late_minus_balanced": statistics.fmean(
+            row["position_delta"] for row in rows
+        ),
+        "median_gap_delta_late_minus_balanced_ms": statistics.median(
+            row["gap_delta_ms"] for row in rows
+        ),
+        "median_total_time_delta_late_minus_balanced_ms": statistics.median(
+            row["total_time_delta_ms"] for row in rows
+        ),
+        "median_best_lap_delta_late_minus_balanced_ms": statistics.median(
+            row["best_lap_delta_ms"] for row in rows
+        ),
+        "late_strategy_faster_rate": sum(
+            row["total_time_delta_ms"] < 0 for row in rows
+        )
+        / len(rows),
+    }
+
+
+def summarize_strategy_effect(
+    manifest: dict[str, Any], evidence: list[dict[str, Any]], lineage: dict[str, Any]
+) -> dict[str, Any]:
+    """Produce exact late-minus-balanced paired effects and stability evidence."""
+
+    expected = {run["run_key"] for run in manifest["runs"]}
+    actual = {row["run_key"] for row in evidence}
+    if len(actual) != len(evidence) or actual != expected:
+        raise StrategyEffectManifestError(
+            "strategy summary requires one successful result per planned run"
+        )
+    groups: dict[str, dict[str, dict[str, Any]]] = defaultdict(dict)
+    for row in evidence:
+        groups[row["pair_key"]][row["strategy_profile"]] = row
+    pairs = []
+    for pair_key, pair in sorted(groups.items()):
+        if set(pair) != STRATEGIES:
+            raise StrategyEffectManifestError(f"incomplete result pair: {pair_key}")
+        balanced = pair["balanced-one-stop"]
+        late = pair["late-one-stop"]
+        pairs.append(
+            {
+                "pair_key": pair_key,
+                "circuit_id": balanced["circuit_id"],
+                "progression": balanced["progression"],
+                "seed": balanced["seed"],
+                "position_delta": late["player_position"]
+                - balanced["player_position"],
+                "gap_delta_ms": late["player_gap_to_leader_ms"]
+                - balanced["player_gap_to_leader_ms"],
+                "total_time_delta_ms": late["player_total_time_ms"]
+                - balanced["player_total_time_ms"],
+                "best_lap_delta_ms": late["player_best_lap_ms"]
+                - balanced["player_best_lap_ms"],
+            }
+        )
+    if len(pairs) != manifest["planned_pair_count"]:
+        raise StrategyEffectManifestError("paired result count does not reconcile")
+
+    by_circuit = {}
+    by_progression = {}
+    by_circuit_progression = {}
+    for circuit in sorted({row["circuit_id"] for row in pairs}):
+        by_circuit[circuit] = _paired_summary(
+            [row for row in pairs if row["circuit_id"] == circuit]
+        )
+    progression_ids = sorted({row["progression"] for row in pairs})
+    for progression in progression_ids:
+        by_progression[progression] = _paired_summary(
+            [row for row in pairs if row["progression"] == progression]
+        )
+    stable_count = 0
+    for circuit in sorted(by_circuit):
+        for progression in progression_ids:
+            selected = [
+                row
+                for row in pairs
+                if row["circuit_id"] == circuit
+                and row["progression"] == progression
+            ]
+            if len(selected) != len(manifest["matrix"]["seeds"]):
+                raise StrategyEffectManifestError("seed group is incomplete")
+            deltas = [row["total_time_delta_ms"] for row in selected]
+            stable = all(value <= 0 for value in deltas) or all(
+                value >= 0 for value in deltas
+            )
+            stable_count += int(stable)
+            by_circuit_progression[f"{circuit}:{progression}"] = {
+                **_paired_summary(selected),
+                "seed_direction_stable": stable,
+                "seed_deltas_ms": deltas,
+            }
+
+    return {
+        "schema_version": "pitgun.strategy-effect-report/v1",
+        "campaign_id": manifest["campaign_id"],
+        "lineage": lineage,
+        "sample": {"successful_run_count": len(evidence), "pair_count": len(pairs)},
+        "comparison": "late-one-stop minus balanced-one-stop",
+        "negative_total_time_delta_is_faster": True,
+        "overall": _paired_summary(pairs),
+        "by_circuit": by_circuit,
+        "by_progression": by_progression,
+        "by_circuit_progression": by_circuit_progression,
+        "seed_direction_stability": {
+            "group_count": len(by_circuit_progression),
+            "stable_group_count": stable_count,
+            "stable_group_rate": stable_count / len(by_circuit_progression),
+        },
+        "claims": {
+            "evidence": [
+                f"{len(pairs)} exact pairs change only the controlled player strategy.",
+                f"{stable_count}/{len(by_circuit_progression)} "
+                "circuit/progression groups preserve the total-time direction "
+                "across all seeds.",
+            ],
+            "inference": [
+                "Stable circuit/progression effects may inform a future "
+                "strategy rule after human review."
+            ],
+            "unresolved": [
+                "The experiment compares two authored one-stop timings only; "
+                "it does not optimize compounds or stop count.",
+                "The neutral setup bounds the causal claim and does not prove "
+                "the same effect for every setup.",
+            ],
+        },
+        "causal_interpretation_allowed": True,
+        "policy_selected": False,
+        "automatic_game_or_catalog_promotion": False,
+    }
