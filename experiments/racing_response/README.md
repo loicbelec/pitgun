@@ -170,3 +170,23 @@ windows, a 3 ms sensitivity spread, and less than 0.08 g of vertical response.
 It remains experimental and does not promote a circuit resource. The method,
 interpretation, and next boundary are documented in
 [`RACING_SPA_RELIEF_LOCALIZATION_V1.md`](../../docs/RACING_SPA_RELIEF_LOCALIZATION_V1.md).
+
+## Continuous curvature-response candidate V1
+
+The ninth local experiment introduces a continuous aerodynamic response behind
+an explicit Rust-only model boundary. Production, WASM, catalog, and hosted
+verification remain on the legacy model while the candidate is replayed over
+the governed eleven-by-eleven setup grid for seven circuits.
+
+```bash
+cargo build --release -p pitgun-racing-simulator \
+  --example continuous_curvature_response_probe
+python3 experiments/racing_response/evaluate_continuous_curvature_response.py \
+  --jobs 4
+```
+
+The 847-run comparison brings the global maximum speed below 400 km/h but
+retains one obsolete aggregate Spa invariant failure family and moves three
+optima by one grid step. The candidate is therefore not promoted. Its isolation,
+evidence, and next review boundary are documented in
+[`RACING_CONTINUOUS_CURVATURE_RESPONSE_V1.md`](../../docs/RACING_CONTINUOUS_CURVATURE_RESPONSE_V1.md).

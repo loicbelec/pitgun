@@ -30,13 +30,15 @@ use serde_json::Value;
 use wasm_bindgen::prelude::*;
 
 pub use pitgun_racing_solver::{
-    AeroParams, ChassisParams, CircuitDescriptorsV1, Driver, DriverEffects, EngineParams, PitPlan,
-    PitStop, ResampledTelemetry, SetupResponseDiagnosticsV1, SetupResponseDiagnosticsVersion,
-    SimConfig, SimulationRequest, SimulationResult, SimulationSolution, TireParams, Track, Tuning,
-    TuningResponseV1, TuningResponseVersion, VehicleParams, VehicleState, apply_driver_to_tire,
-    apply_tuning, apply_tuning_with_response, best_power_at_speed, derating_factor,
-    describe_circuit, diagnose_setup_response, driver_effects, effective_mu, power_kw_from_rpm,
-    resample_telemetry as resample_solution, rpm_from_speed_gear, run_simulation as solve,
+    AeroParams, ChassisParams, CircuitDescriptorsV1, CurvatureAeroResponse, Driver, DriverEffects,
+    EngineParams, PitPlan, PitStop, ResampledTelemetry, SetupResponseDiagnosticsV1,
+    SetupResponseDiagnosticsVersion, SimConfig, SimulationRequest, SimulationResult,
+    SimulationSolution, TireParams, Track, Tuning, TuningResponseV1, TuningResponseVersion,
+    VehicleParams, VehicleState, apply_driver_to_tire, apply_tuning, apply_tuning_with_response,
+    best_power_at_speed, derating_factor, describe_circuit, diagnose_setup_response,
+    driver_effects, effective_mu, power_kw_from_rpm, resample_telemetry as resample_solution,
+    rpm_from_speed_gear, run_simulation as solve,
+    run_simulation_with_model_response as solve_with_model_response,
     run_simulation_with_tuning_response as solve_with_tuning_response,
 };
 
@@ -340,6 +342,24 @@ pub fn run_race_with_catalog_and_tuning_response(
     snapshot: &RacingCatalogSnapshot,
     tuning_response: &TuningResponseV1,
 ) -> Result<RaceOutput, String> {
+    run_race_with_catalog_and_model_response(
+        request,
+        snapshot,
+        tuning_response,
+        CurvatureAeroResponse::LegacyBinary,
+    )
+}
+
+/// Runs an offline model experiment with explicit tuning and curvature responses.
+///
+/// This boundary is intentionally Rust-only. Player, production, and WASM
+/// calls continue to execute the published legacy model.
+pub fn run_race_with_catalog_and_model_response(
+    request: RunRaceRequest,
+    snapshot: &RacingCatalogSnapshot,
+    tuning_response: &TuningResponseV1,
+    curvature_response: CurvatureAeroResponse,
+) -> Result<RaceOutput, String> {
     tuning_response
         .validate()
         .map_err(|error| format!("invalid tuning response: {error}"))?;
@@ -370,6 +390,7 @@ pub fn run_race_with_catalog_and_tuning_response(
             laps: normalized_race.laps,
             seed: request.seed,
             tuning_response,
+            curvature_response,
         },
     )
 }
@@ -414,6 +435,7 @@ pub fn run_sessions_with_catalog(
                 laps: session.laps,
                 seed: request.seed,
                 tuning_response: &tuning_response,
+                curvature_response: CurvatureAeroResponse::LegacyBinary,
             },
         )?;
         sessions.push(SessionRunResult {
@@ -432,6 +454,7 @@ struct SessionExecution<'a> {
     laps: u16,
     seed: u64,
     tuning_response: &'a TuningResponseV1,
+    curvature_response: CurvatureAeroResponse,
 }
 
 fn run_single_session(
@@ -446,6 +469,7 @@ fn run_single_session(
         laps,
         seed,
         tuning_response,
+        curvature_response,
     } = execution;
     let track_id = normalize_track_id(&race.track_id);
     let mut track_record = catalog.get_track(&track_id)?.clone();
@@ -513,7 +537,7 @@ fn run_single_session(
                 gear_ratio_slider: competitor.tuning.gear_ratio_slider,
             }),
         };
-        let result = solve_with_tuning_response(&request, tuning_response)
+        let result = solve_with_model_response(&request, tuning_response, curvature_response)
             .map_err(|err| format!("simulation failed for competitor {}: {err}", competitor.id))?;
 
         let lap_times_ms = lap_times_ms(&result.lap_times_s, &stint_plan, pit_loss_ms);

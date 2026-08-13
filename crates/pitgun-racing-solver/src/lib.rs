@@ -338,8 +338,17 @@ pub struct SimulationSolution {
 }
 
 pub const CORNER_CURVATURE_THRESHOLD_RAD_PER_M: f64 = 0.001;
+pub const AERO_FULL_STRAIGHT_CURVATURE_RAD_PER_M: f64 = 0.0;
+pub const AERO_FULL_CORNER_CURVATURE_RAD_PER_M: f64 = 0.001;
 pub const LONGITUDINAL_ACCELERATION_THRESHOLD_MPS2: f64 = 0.05;
 pub const NEAR_MAX_RPM_RATIO: f64 = 0.98;
+
+#[derive(Debug, Clone, Copy, Default, Serialize, Deserialize, PartialEq)]
+pub enum CurvatureAeroResponse {
+    #[default]
+    LegacyBinary,
+    ContinuousV1,
+}
 
 #[derive(Debug, Clone, Copy, Default, Serialize, Deserialize, PartialEq)]
 pub struct CircuitDescriptorsV1 {
@@ -428,6 +437,18 @@ pub fn run_simulation_with_tuning_response(
     input: &SimulationRequest,
     tuning_response: &TuningResponseV1,
 ) -> Result<SimulationResult, String> {
+    run_simulation_with_model_response(input, tuning_response, CurvatureAeroResponse::LegacyBinary)
+}
+
+/// Runs an offline model experiment with an explicit curvature response.
+///
+/// Production and WASM callers remain on [`CurvatureAeroResponse::LegacyBinary`]
+/// until a separately reviewed model-version promotion takes place.
+pub fn run_simulation_with_model_response(
+    input: &SimulationRequest,
+    tuning_response: &TuningResponseV1,
+    curvature_response: CurvatureAeroResponse,
+) -> Result<SimulationResult, String> {
     tuning_response.validate()?;
     validate_track(&input.track)?;
 
@@ -480,12 +501,20 @@ pub fn run_simulation_with_tuning_response(
             &state_curr,
             &input.config,
             &tire_curr,
+            curvature_response,
         );
 
         let mut v_bwd = v_corner.clone();
         for i in (0..(n - 1)).rev() {
             let v_target = v_bwd[i + 1];
-            let (drag, downforce) = aero_forces(v_target, &vehicle.aero, &vehicle.chassis, true);
+            let (drag, downforce) = aero_forces(
+                v_target,
+                input.track.kappa[i],
+                &vehicle.aero,
+                &vehicle.chassis,
+                curvature_response,
+                true,
+            );
 
             let f_drag = drag;
             let f_roll = vehicle.chassis.c_rr * (mass * vehicle.chassis.g + downforce);
@@ -552,9 +581,14 @@ pub fn run_simulation_with_tuning_response(
                 power[i] = 0.0;
                 v_fwd[i + 1] = v_bwd[i];
             } else {
-                let mode_corner = input.track.kappa[i].abs() > 0.001;
-                let (drag, downforce) =
-                    aero_forces(v_safe, &vehicle.aero, &vehicle.chassis, mode_corner);
+                let (drag, downforce) = aero_forces(
+                    v_safe,
+                    input.track.kappa[i],
+                    &vehicle.aero,
+                    &vehicle.chassis,
+                    curvature_response,
+                    input.track.kappa[i].abs() > CORNER_CURVATURE_THRESHOLD_RAD_PER_M,
+                );
 
                 let a_vert = v_safe * v_safe * slope_change[i] / ds / ds;
                 let f_drag = drag;
@@ -699,7 +733,12 @@ pub fn run_simulation_with_tuning_response(
         tire_wear: out_tire_wear,
     };
     let total_time_s = solution.t.last().copied().unwrap_or(0.0);
-    let diagnostics = diagnose_setup_response(&input.track, &solution, &vehicle)?;
+    let diagnostics = diagnose_setup_response_with_model_response(
+        &input.track,
+        &solution,
+        &vehicle,
+        curvature_response,
+    )?;
 
     Ok(SimulationResult {
         solution,
@@ -1085,6 +1124,7 @@ fn corner_speed_limit(
     state: &VehicleState,
     cfg: &SimConfig,
     tire: &TireParams,
+    curvature_response: CurvatureAeroResponse,
 ) -> Vec<f64> {
     let n = track.s.len();
     let mut out = vec![cfg.max_speed; n];
@@ -1098,7 +1138,14 @@ fn corner_speed_limit(
 
         let mut v = 70.0;
         for _ in 0..5 {
-            let (_, downforce) = aero_forces(v, &vehicle.aero, &vehicle.chassis, true);
+            let (_, downforce) = aero_forces(
+                v,
+                k_val,
+                &vehicle.aero,
+                &vehicle.chassis,
+                curvature_response,
+                true,
+            );
             let mu_eff = effective_mu(vehicle.chassis.mu0, state.tire_wear, state.tire_temp, tire);
             let a_lat_max = mu_eff
                 * (vehicle.chassis.g
@@ -1114,17 +1161,33 @@ fn corner_speed_limit(
 
 fn aero_forces(
     speed: f64,
+    curvature_rad_per_m: f64,
     aero: &AeroParams,
     chassis: &ChassisParams,
-    corner_mode: bool,
+    response: CurvatureAeroResponse,
+    legacy_corner_mode: bool,
 ) -> (f64, f64) {
-    let (cd_a, cl_a) = if corner_mode {
-        (aero.cd_a_z, aero.cl_a_z)
-    } else {
-        (aero.cd_a_x, aero.cl_a_x)
+    let blend = match response {
+        CurvatureAeroResponse::LegacyBinary => f64::from(legacy_corner_mode),
+        CurvatureAeroResponse::ContinuousV1 => curvature_aero_blend(curvature_rad_per_m),
     };
+    let cd_a = lerp(aero.cd_a_x, aero.cd_a_z, blend);
+    let cl_a = lerp(aero.cl_a_x, aero.cl_a_z, blend);
     let q = 0.5 * chassis.rho * speed * speed;
     (q * cd_a, q * cl_a)
+}
+
+/// Maps absolute track curvature to one continuous aerodynamic state.
+///
+/// True straights retain the straight coefficients, sustained high-curvature
+/// samples retain the corner coefficients, and the transition uses a cubic
+/// smoothstep with zero derivative at both boundaries. Every Solver pass and
+/// diagnostic force calculation shares this function.
+pub fn curvature_aero_blend(curvature_rad_per_m: f64) -> f64 {
+    let normalized = ((curvature_rad_per_m.abs() - AERO_FULL_STRAIGHT_CURVATURE_RAD_PER_M)
+        / (AERO_FULL_CORNER_CURVATURE_RAD_PER_M - AERO_FULL_STRAIGHT_CURVATURE_RAD_PER_M))
+        .clamp(0.0, 1.0);
+    normalized * normalized * (3.0 - 2.0 * normalized)
 }
 
 pub fn describe_circuit(track: &Track) -> Result<CircuitDescriptorsV1, String> {
@@ -1178,6 +1241,20 @@ pub fn diagnose_setup_response(
     track: &Track,
     solution: &SimulationSolution,
     vehicle: &VehicleParams,
+) -> Result<SetupResponseDiagnosticsV1, String> {
+    diagnose_setup_response_with_model_response(
+        track,
+        solution,
+        vehicle,
+        CurvatureAeroResponse::LegacyBinary,
+    )
+}
+
+pub fn diagnose_setup_response_with_model_response(
+    track: &Track,
+    solution: &SimulationSolution,
+    vehicle: &VehicleParams,
+    curvature_response: CurvatureAeroResponse,
 ) -> Result<SetupResponseDiagnosticsV1, String> {
     let circuit = describe_circuit(track)?;
     let sample_count = solution
@@ -1259,8 +1336,14 @@ pub fn diagnose_setup_response(
             }
         }
 
-        let (drag_n, downforce_n) =
-            aero_forces(speed_mps, &vehicle.aero, &vehicle.chassis, corner_mode);
+        let (drag_n, downforce_n) = aero_forces(
+            speed_mps,
+            curvature_rad_per_m,
+            &vehicle.aero,
+            &vehicle.chassis,
+            curvature_response,
+            corner_mode,
+        );
         aerodynamic_drag_work_j += drag_n * distance_m;
         downforce_time_ns += downforce_n * elapsed_s;
         maximum_downforce_n = maximum_downforce_n.max(downforce_n);
