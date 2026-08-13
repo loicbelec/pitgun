@@ -80,6 +80,8 @@ class BundleContractTest(unittest.TestCase):
         self.assertGreater(len(catalog_files), 1)
         self.assertIn('"racing-v1-2-0"', builder)
         self.assertIn('"opponent_audit" / "scenarios"', builder)
+        self.assertIn('"opponent_audit" / "campaign_scenarios"', builder)
+        self.assertIn('f"{PACKAGE}/opponent_audit.py"', builder)
         self.assertIn("execute_packaged_racing_catalog_scenario", runner)
         self.assertIn("CATALOG_RESOURCE_PATTERN.fullmatch", runner)
         self.assertIn(

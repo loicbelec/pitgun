@@ -9,7 +9,9 @@ from pitgun_databricks_adapter import (
     inspect_packaged_runner,
     load_calibration_campaign,
     load_candidate_review_policy,
+    load_opponent_audit_campaign,
     load_reference_campaign,
+    materialize_opponent_audit_plan,
     materialize_plan,
 )
 
@@ -60,6 +62,18 @@ assert opponent_smoke["data_pack"] == {
 }
 assert opponent_smoke["seed"] == "42"
 assert len(opponent_smoke["summary"]["standings"]) == 10
+
+opponent_manifest, opponent_manifest_digest = load_opponent_audit_campaign()
+opponent_plan = materialize_opponent_audit_plan(opponent_manifest)
+assert opponent_manifest_digest.startswith("sha256:")
+assert len(opponent_plan) == opponent_manifest["planned_run_count"] == 180
+first_opponent_run = opponent_plan[0]
+campaign_smoke = execute_packaged_racing_catalog_scenario(
+    int(first_opponent_run["seed"]), first_opponent_run["scenario_resource"]
+)["result"]
+assert campaign_smoke["model"]["version"] == "2.0.0"
+assert campaign_smoke["data_pack"]["version"] == "1.2.0"
+assert len(campaign_smoke["summary"]["standings"]) == 10
 
 families = {
     family: execute_packaged_racing(42, family)["result"]["configuration_id"]
