@@ -571,6 +571,8 @@ mod tests {
             "scenario.json",
             "--seed",
             "42",
+            "--catalog-release",
+            "catalogs/racing/v1.2.0",
             "--result",
             "result.json",
             "--bundle",
@@ -583,6 +585,10 @@ mod tests {
                 RunWorkload::Racing(args) => {
                     assert_eq!(args.scenario, std::path::Path::new("scenario.json"));
                     assert_eq!(args.seed, 42);
+                    assert_eq!(
+                        args.catalog_release.as_deref(),
+                        Some(std::path::Path::new("catalogs/racing/v1.2.0"))
+                    );
                     assert_eq!(
                         args.result.as_deref(),
                         Some(std::path::Path::new("result.json"))
