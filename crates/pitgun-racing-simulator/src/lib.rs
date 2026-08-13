@@ -30,15 +30,16 @@ use serde_json::Value;
 use wasm_bindgen::prelude::*;
 
 pub use pitgun_racing_solver::{
-    AeroParams, ChassisParams, CircuitDescriptorsV1, CurvatureAeroResponse, Driver, DriverEffects,
-    EngineParams, PitPlan, PitStop, ResampledTelemetry, SetupResponseDiagnosticsV1,
-    SetupResponseDiagnosticsVersion, SimConfig, SimulationRequest, SimulationResult,
-    SimulationSolution, TireParams, Track, Tuning, TuningResponseV1, TuningResponseVersion,
-    VehicleParams, VehicleState, apply_driver_to_tire, apply_tuning, apply_tuning_with_response,
-    best_power_at_speed, derating_factor, describe_circuit, diagnose_setup_response,
-    driver_effects, effective_mu, power_kw_from_rpm, resample_telemetry as resample_solution,
-    rpm_from_speed_gear, run_simulation as solve,
-    run_simulation_with_model_response as solve_with_model_response,
+    AERO_FULL_CORNER_CURVATURE_RAD_PER_M, AERO_FULL_STRAIGHT_CURVATURE_RAD_PER_M, AeroParams,
+    CORNER_CURVATURE_THRESHOLD_RAD_PER_M, ChassisParams, CircuitDescriptorsV1,
+    CurvatureAeroResponse, Driver, DriverEffects, EngineParams, PitPlan, PitStop,
+    ResampledTelemetry, SetupResponseDiagnosticsV1, SetupResponseDiagnosticsVersion, SimConfig,
+    SimulationRequest, SimulationResult, SimulationSolution, TireParams, Track, Tuning,
+    TuningResponseV1, TuningResponseVersion, VehicleParams, VehicleState, apply_driver_to_tire,
+    apply_tuning, apply_tuning_with_response, best_power_at_speed, curvature_aero_blend,
+    derating_factor, describe_circuit, diagnose_setup_response, driver_effects, effective_mu,
+    power_kw_from_rpm, resample_telemetry as resample_solution, rpm_from_speed_gear,
+    run_simulation as solve, run_simulation_with_model_response as solve_with_model_response,
     run_simulation_with_tuning_response as solve_with_tuning_response,
 };
 

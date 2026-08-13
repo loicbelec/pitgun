@@ -190,3 +190,22 @@ retains one obsolete aggregate Spa invariant failure family and moves three
 optima by one grid step. The candidate is therefore not promoted. Its isolation,
 evidence, and next review boundary are documented in
 [`RACING_CONTINUOUS_CURVATURE_RESPONSE_V1.md`](../../docs/RACING_CONTINUOUS_CURVATURE_RESPONSE_V1.md).
+
+## Curvature-band guardrails V1
+
+The tenth local experiment replaces the obsolete binary corner verdict with a
+band-aware physical policy. It compares minimum and maximum downforce at eleven
+gearing levels for all seven calibration and holdout circuits, using the
+continuous candidate through the Rust-only probe boundary.
+
+```bash
+cargo build --release -p pitgun-racing-simulator \
+  --example high_speed_response_probe
+python3 experiments/racing_response/validate_curvature_band_guardrails.py \
+  --jobs 4
+```
+
+All 154 deterministic runs pass the band-aware and maximum-speed guardrails.
+The candidate becomes eligible for a separate versioned promotion, but this
+experiment does not activate it. The policy and review are documented in
+[`RACING_CURVATURE_BAND_GUARDRAILS_V1.md`](../../docs/RACING_CURVATURE_BAND_GUARDRAILS_V1.md).
