@@ -29,6 +29,21 @@ pitgun run racing \
   --seed 42
 ```
 
+Catalog-backed models such as Racing V2 must also receive the exact immutable
+release directory. The CLI reads reviewed local bytes only; it never resolves
+HTTP or a mutable `latest` alias:
+
+```bash
+pitgun run racing \
+  --scenario /path/to/racing-v2-scenario.json \
+  --catalog-release catalogs/racing/v1.2.0 \
+  --seed 42
+```
+
+The release manifest must select the scenario's exact model identity and
+Simulation Pack. Missing, malformed or incompatible releases fail before
+simulation.
+
 The canonical compact result is written to stdout. It can instead be written
 to a file:
 
@@ -53,6 +68,7 @@ pitgun run racing \
 |---|---|
 | `--scenario <PATH>` | Required resolved Racing scenario JSON document. |
 | `--seed <U64>` | Required deterministic root seed. |
+| `--catalog-release <DIR>` | Immutable catalog directory required by catalog-backed model versions. |
 | `--result <PATH>` | Optional compact-result destination. If omitted, stdout is used. |
 | `--bundle <PATH>` | Optional exact destination for a complete Run Bundle V1. |
 
@@ -91,9 +107,10 @@ integration test executes each configuration twice, proving distinct
 configuration/run identities and byte-identical repetition without any Python
 physics implementation.
 
-Catalog resolution is a separate concern. A caller may resolve a catalog-backed
-configuration first, then pass the resulting domain-owned scenario to this
-command. The generic framework does not require a catalog.
+Catalog discovery and transport remain separate concerns. A caller resolves a
+specific immutable release first, then passes both its directory and the
+domain-owned scenario to this command. The generic framework does not perform
+catalog discovery or require HTTP.
 
 ## Success Result
 

@@ -8,7 +8,7 @@ use pitgun_contract::{
     canonical_json_bytes, canonical_json_digest, ArtifactIdentity, DerivedMetricsV1, Digest,
     ScenarioIdentity, Seed,
 };
-use pitgun_racing_simulator::{SetupResponseDiagnosticsV1, StandingEntry};
+use pitgun_racing_simulator::{RacingCatalogSnapshot, SetupResponseDiagnosticsV1, StandingEntry};
 use serde::Serialize;
 
 use crate::demo::{bundle, racing};
@@ -22,6 +22,10 @@ pub(crate) struct RacingBatchArgs {
     /// Deterministic root seed recorded in the run contract
     #[arg(long)]
     pub(crate) seed: u64,
+
+    /// Immutable Racing Catalog release directory used by the declared model
+    #[arg(long, value_name = "DIR")]
+    pub(crate) catalog_release: Option<PathBuf>,
 
     /// Optional file for the canonical compact JSON result; stdout by default
     #[arg(long, value_name = "PATH")]
@@ -168,8 +172,21 @@ pub(crate) fn run_racing(args: &RacingBatchArgs) -> Result<(), BatchRunError> {
             format!("cannot read {}: {error}", args.scenario.display()),
         )
     })?;
-    let run =
-        racing::run_scenario(&scenario_bytes, args.seed).map_err(BatchRunError::from_racing)?;
+    let catalog = args
+        .catalog_release
+        .as_ref()
+        .map(RacingCatalogSnapshot::from_release_dir)
+        .transpose()
+        .map_err(|error| {
+            BatchRunError::new(
+                10,
+                BatchErrorPhase::Contract,
+                "invalid_catalog_release",
+                format!("cannot load immutable Racing catalog: {error}"),
+            )
+        })?;
+    let run = racing::run_scenario_with_catalog(&scenario_bytes, args.seed, catalog)
+        .map_err(BatchRunError::from_racing)?;
 
     if let Some(bundle_path) = args.bundle.as_deref() {
         bundle::persist(&run, Some(bundle_path)).map_err(|error| {

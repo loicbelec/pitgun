@@ -13,7 +13,9 @@ use pitgun_core::{
     aggregate_telemetry_parameter, TelemetryAggregateConfig, TelemetryAggregateKind,
 };
 use pitgun_racing_simulator::evidence::RacingRunEvidenceV1;
-use pitgun_racing_simulator::{RaceOutput, RacingWorkload, RunRaceInput};
+use pitgun_racing_simulator::{
+    racing_model_v1_identity, RaceOutput, RacingCatalogSnapshot, RacingWorkload, RunRaceInput,
+};
 use pitgun_runtime::execute_linked;
 use serde::{Deserialize, Serialize};
 
@@ -128,6 +130,14 @@ pub(crate) fn run_scenario(
     scenario_bytes: &[u8],
     seed_value: u64,
 ) -> Result<RacingRun, RacingDemoError> {
+    run_scenario_with_catalog(scenario_bytes, seed_value, None)
+}
+
+pub(crate) fn run_scenario_with_catalog(
+    scenario_bytes: &[u8],
+    seed_value: u64,
+    catalog: Option<RacingCatalogSnapshot>,
+) -> Result<RacingRun, RacingDemoError> {
     let scenario: RacingScenarioV1 =
         serde_json::from_slice(scenario_bytes).map_err(RacingDemoError::contract)?;
     if scenario.schema_version != RacingScenarioVersion::V1 {
@@ -164,7 +174,23 @@ pub(crate) fn run_scenario(
             digest: input_digest,
         },
     };
-    let workload = RacingWorkload::v1();
+    let workload = match catalog {
+        Some(catalog) => {
+            catalog
+                .manifest()
+                .validate_for_run(&contract)
+                .map_err(RacingDemoError::contract)?;
+            RacingWorkload::for_model(&contract.model, catalog)
+                .map_err(RacingDemoError::contract)?
+        }
+        None if contract.model == racing_model_v1_identity() => RacingWorkload::v1(),
+        None => {
+            return Err(RacingDemoError::contract(format!(
+                "model {}@{} requires --catalog-release",
+                contract.model.id, contract.model.version
+            )));
+        }
+    };
     let executed = execute_linked(&workload, &contract, scenario.request)
         .map_err(RacingDemoError::simulation)?;
     let metrics = calculate_metrics(&executed.output).map_err(RacingDemoError::simulation)?;
@@ -210,8 +236,52 @@ fn calculate_metrics(output: &RaceOutput) -> Result<DerivedMetricsV1, Box<dyn st
 #[cfg(test)]
 mod tests {
     use pitgun_contract::{canonical_json_digest, SampleValue};
+    use pitgun_racing_simulator::{racing_model_v2_identity, RacingCatalogSnapshot};
+    use serde_json::Value;
 
-    use super::{calculate_metrics, run, RacingArgs, OBSERVED_MAXIMUM_SPEED_ID, PARAM_SPEED_KPH};
+    use super::{
+        calculate_metrics, run, run_scenario_with_catalog, RacingArgs, DEFAULT_SCENARIO,
+        OBSERVED_MAXIMUM_SPEED_ID, PARAM_SPEED_KPH,
+    };
+
+    fn model_v2_scenario(catalog: &RacingCatalogSnapshot) -> Vec<u8> {
+        let mut scenario: Value = serde_json::from_str(DEFAULT_SCENARIO).expect("V1 scenario");
+        scenario["model"] = serde_json::to_value(racing_model_v2_identity()).expect("V2 identity");
+        scenario["data_pack"] =
+            serde_json::to_value(catalog.manifest().simulation_pack.identity.clone())
+                .expect("Simulation Pack identity");
+        serde_json::to_vec(&scenario).expect("V2 scenario JSON")
+    }
+
+    #[test]
+    fn catalog_backed_v2_scenario_executes_with_exact_release() {
+        let catalog = RacingCatalogSnapshot::embedded_model_v2().expect("V2 catalog");
+        let scenario = model_v2_scenario(&catalog);
+
+        let result =
+            run_scenario_with_catalog(&scenario, 42, Some(catalog)).expect("catalog-backed V2 run");
+
+        assert_eq!(result.contract.model, racing_model_v2_identity());
+        assert!(!result.output.standings.is_empty());
+    }
+
+    #[test]
+    fn v2_scenario_requires_an_explicit_compatible_catalog() {
+        let catalog = RacingCatalogSnapshot::embedded_model_v2().expect("V2 catalog");
+        let scenario = model_v2_scenario(&catalog);
+
+        let missing = run_scenario_with_catalog(&scenario, 42, None)
+            .expect_err("V2 without catalog must fail");
+        assert!(missing.to_string().contains("requires --catalog-release"));
+
+        let v1_catalog = RacingCatalogSnapshot::embedded().expect("V1 catalog");
+        let incompatible = run_scenario_with_catalog(&scenario, 42, Some(v1_catalog))
+            .expect_err("V2 with V1 catalog must fail");
+        assert!(
+            incompatible.to_string().contains("does not support model"),
+            "{incompatible}"
+        );
+    }
 
     #[test]
     fn identical_seed_repeats_logical_results() {
