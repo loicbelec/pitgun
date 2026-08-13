@@ -3,11 +3,13 @@ import copy
 import json
 import math
 import pathlib
+import sys
 import unittest
 
 
 ROOT = pathlib.Path(__file__).resolve().parents[3]
 EXPERIMENT_ROOT = ROOT / "experiments" / "racing_tracks"
+sys.path.insert(0, str(EXPERIMENT_ROOT))
 
 
 def load_module(name, path):
@@ -22,6 +24,10 @@ audit = load_module("audit_catalog_geometry", EXPERIMENT_ROOT / "audit_catalog_g
 prototype = load_module(
     "build_spa_elevation_prototype",
     EXPERIMENT_ROOT / "build_spa_elevation_prototype.py",
+)
+comparison = load_module(
+    "compare_spa_elevation_sources",
+    EXPERIMENT_ROOT / "compare_spa_elevation_sources.py",
 )
 
 
@@ -77,6 +83,25 @@ class RacingTrackAuditTest(unittest.TestCase):
         self.assertGreater(profile["summary"]["smoothed_elevation_range_m"], 100.0)
         self.assertGreater(profile["summary"]["maximum_absolute_slope"], 0.15)
         self.assertTrue(profile["promotion_blockers"])
+
+    def test_spw_lidar_corroborates_eudem_but_does_not_promote(self):
+        payload = json.loads(comparison.COMPARISON_OUTPUT.read_text())
+        agreement = payload["agreement"]
+        self.assertTrue(payload["conclusion"]["relief_shape_corroborated"])
+        self.assertFalse(payload["conclusion"]["catalog_promotion_ready"])
+        self.assertGreater(agreement["profile_pearson_correlation"], 0.98)
+        self.assertLess(agreement["bias_removed_profile_rmse_m"], 5.0)
+        self.assertLess(
+            agreement["spw_maximum_absolute_slope_ratio"],
+            agreement["eudem_maximum_absolute_slope_ratio"],
+        )
+
+    def test_spw_raw_artifact_records_official_provenance(self):
+        payload = json.loads(comparison.SPW_RAW_OUTPUT.read_text())
+        self.assertEqual(payload["dem"]["provider"], "Service public de Wallonie (SPW)")
+        self.assertEqual(payload["dem"]["dataset_resolution_m"], 0.5)
+        self.assertEqual(payload["dem"]["license"], "CC BY 4.0")
+        self.assertEqual(len(payload["points"]), 281)
 
 
 if __name__ == "__main__":
