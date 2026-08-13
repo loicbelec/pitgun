@@ -58,6 +58,36 @@ The range is plausible for Spa, but plausibility is not validation. The maximum
 slope and accumulated gain remain sensitive to DEM accuracy and smoothing.
 The prototype is therefore marked `experimental_not_catalog_eligible`.
 
+## Independent SPW LiDAR validation
+
+The EU-DEM profile was compared point for point with the official Walloon
+terrain model published by the Service public de Wallonie. That dataset is
+derived from 2021–2022 airborne LiDAR, has a 0.5 metre raster resolution, uses
+Belgian Lambert 2008 (EPSG:3812) and the Deuxième Nivellement Général vertical
+reference (EPSG:5710), and publishes an absolute vertical accuracy around
+0.12 metre. The REST service transforms Pitgun's WGS84 sample coordinates.
+
+Both sources were sampled on the same 281-point, 25-metre centerline grid and
+received the same circular three-sample smoothing for comparison:
+
+| Agreement metric | Result |
+|---|---:|
+| Profile correlation | 0.9894 |
+| Mean SPW minus EU-DEM elevation | -3.68 m |
+| Bias-removed profile RMSE | 4.29 m |
+| Elevation-range difference | -4.37 m |
+| SPW maximum absolute slope | 0.1471 (14.71%) |
+| EU-DEM maximum absolute slope | 0.2067 (20.67%) |
+
+The official high-resolution source corroborates EU-DEM's overall relief
+shape while reducing its most extreme slope. The remaining absolute offset can
+include vertical-datum and raster-resolution differences, so profile-shape
+metrics are more meaningful than expecting identical absolute heights.
+
+This validates the source direction, not a catalog-ready circuit. Local
+outliers, centerline placement, smoothing, Solver impact, and deterministic
+replay still require review.
+
 ## Slope semantics
 
 The historical JSON field is named `slope_pct`, but TrackEagle calculates
@@ -70,9 +100,9 @@ the Solver.
 
 Before a new catalog version can be proposed:
 
-1. compare Spa against an independent or official elevation reference;
+1. inspect SPW/EU-DEM local outliers and centerline placement;
 2. review smoothing and physically acceptable slope bounds;
-3. resample the reviewed profile to the Solver grid;
+3. resample the reviewed SPW profile to the Solver grid;
 4. quantify changes to speed, braking, lap time, and setup optima;
 5. replay native/WASM determinism and all calibration/holdout campaigns;
 6. publish new resource identities, digests, attribution, and methodology.

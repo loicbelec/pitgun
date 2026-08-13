@@ -86,6 +86,7 @@ jobs:
           python -m unittest discover -s experiments/racing_tracks/tests -v
           python experiments/racing_tracks/audit_catalog_geometry.py --check
           python experiments/racing_tracks/build_spa_elevation_prototype.py --check
+          python experiments/racing_tracks/compare_spa_elevation_sources.py --check
 
       - name: Build project
         run: cargo build --all --verbose
