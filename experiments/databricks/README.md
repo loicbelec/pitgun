@@ -108,6 +108,14 @@ policy. Its MLflow JSON and Markdown artifacts distinguish exact paired setup
 effects from descriptive strategy, progression, budget, and diversity signals;
 confounded comparisons are labelled and retained as unresolved questions.
 
+The follow-up strategy-effect input campaign is frozen in
+[`campaigns/racing-strategy-effect-v1.json`](campaigns/racing-strategy-effect-v1.json).
+Its 45 pairs retain the neutral player tuning and the exact balanced-source
+opponent field. Only the controlled player's `stint_strategy` differs inside a
+pair. The manifest records both strategy digests and a common invariant digest;
+the adapter validates all 90 packaged resources before exposing an execution
+plan. This input-only delivery performs no compute and selects no policy.
+
 ## Reference campaign
 
 The frozen V1 campaign manifest is
