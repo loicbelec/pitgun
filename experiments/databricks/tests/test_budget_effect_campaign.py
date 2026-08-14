@@ -13,6 +13,8 @@ from pitgun_databricks_adapter.budget_effect import (  # noqa: E402
     BudgetEffectManifestError,
     POINT_KEYS,
     _validate_manifest,
+    extract_budget_effect_evidence,
+    summarize_budget_effect,
 )
 
 
@@ -88,6 +90,113 @@ class BudgetEffectCampaignTest(unittest.TestCase):
         serialized = b"".join(resources.values()).decode()
         for forbidden in ("careerId", "playerName", "leaderboard", "telemetry"):
             self.assertNotIn(forbidden, serialized)
+
+    def result(self, manifest, run, player_position, player_total_time):
+        standings = [
+            {
+                "competitor_id": f"ai_{position}",
+                "position": position,
+                "gap_to_leader_ms": (position - 1) * 1000,
+                "best_lap_ms": 100_000 + position,
+                "total_time_ms": 1_000_000 + (position - 1) * 1000,
+            }
+            for position in range(1, 10)
+        ]
+        standings.insert(
+            player_position - 1,
+            {
+                "competitor_id": "player",
+                "position": player_position,
+                "gap_to_leader_ms": (player_position - 1) * 500,
+                "best_lap_ms": 99_000 + player_total_time // 10_000,
+                "total_time_ms": player_total_time,
+            },
+        )
+        return {
+            "configuration_id": "sha256:" + str(player_position) * 64,
+            "run_id": "sha256:" + str(run["treatment_percentage"] // 10) * 64,
+            "seed": str(run["seed"]),
+            "scenario": {"id": "racing.budget-effect-campaign", "version": "1.0.0"},
+            "model": {
+                "id": manifest["catalog"]["model_id"],
+                "version": manifest["catalog"]["model_version"],
+                "digest": manifest["catalog"]["model_digest"],
+            },
+            "data_pack": {
+                "id": "pitgun.racing.simulation",
+                "version": manifest["catalog"]["version"],
+                "digest": manifest["catalog"]["simulation_pack_digest"],
+            },
+            "summary": {"standings": standings},
+        }
+
+    def test_extract_and_summarize_exact_dose_response(self):
+        manifest, _, _, _ = self.load()
+        selected = manifest["runs"][:3]
+        self.assertEqual(len({row["triplet_key"] for row in selected}), 1)
+        evidence = []
+        outcomes = {
+            "field-090": (4, 1_010_000),
+            "field-100": (3, 1_000_000),
+            "field-110": (2, 990_000),
+        }
+        for run in selected:
+            position, total_time = outcomes[run["treatment"]]
+            evidence.append(
+                extract_budget_effect_evidence(
+                    run, self.result(manifest, run, position, total_time), manifest
+                )
+            )
+        small_manifest = {
+            **manifest,
+            "runs": selected,
+            "planned_triplet_count": 1,
+            "planned_run_count": 3,
+            "matrix": {**manifest["matrix"], "seeds": [selected[0]["seed"]]},
+        }
+        report = summarize_budget_effect(small_manifest, evidence, {"test": True})
+
+        self.assertEqual(report["sample"], {"successful_run_count": 3, "triplet_count": 1})
+        self.assertEqual(
+            report["overall"]["median_total_time_delta_090_minus_100_ms"], 10_000
+        )
+        self.assertEqual(
+            report["overall"]["median_total_time_delta_110_minus_100_ms"], -10_000
+        )
+        self.assertEqual(report["overall"]["monotonic_total_time_rate"], 1.0)
+        self.assertFalse(report["budget_target_selected"])
+
+    def test_full_manifest_reconciles_seed_stability(self):
+        manifest, _, _, _ = self.load()
+        evidence = []
+        for run in manifest["runs"]:
+            offset = {"field-090": 10_000, "field-100": 0, "field-110": -10_000}[
+                run["treatment"]
+            ]
+            evidence.append(
+                {
+                    "run_key": run["run_key"],
+                    "triplet_key": run["triplet_key"],
+                    "circuit_id": run["circuit_id"],
+                    "progression": run["progression"],
+                    "seed": run["seed"],
+                    "treatment": run["treatment"],
+                    "player_budget": run["player_budget"],
+                    "player_position": {"field-090": 4, "field-100": 3, "field-110": 2}[
+                        run["treatment"]
+                    ],
+                    "player_gap_to_leader_ms": 1000 + offset,
+                    "player_best_lap_ms": 100_000 + offset,
+                    "player_total_time_ms": 1_000_000 + offset,
+                    "field_spread_ms": 5000,
+                }
+            )
+
+        report = summarize_budget_effect(manifest, evidence, {"test": True})
+
+        self.assertEqual(report["sample"], {"successful_run_count": 135, "triplet_count": 45})
+        self.assertEqual(report["seed_direction_stability"]["group_count"], 15)
+        self.assertEqual(report["seed_direction_stability"]["stable_group_count"], 15)
 
 
 if __name__ == "__main__":

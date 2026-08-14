@@ -59,6 +59,7 @@ databricks bundle run candidate_review_job -t dev -p pitgun-free
 databricks bundle run opponent_diagnosis_job -t dev -p pitgun-free \
   --params campaigns_table_version=<pinned>,runs_table_version=<pinned>,metrics_table_version=<pinned>
 databricks bundle run strategy_effect_job -t dev -p pitgun-free
+databricks bundle run budget_effect_job -t dev -p pitgun-free
 ```
 
 Repeat `deploy` and `run`: schema and table creation are idempotent. The job may
@@ -135,6 +136,13 @@ The result is 45 exact triplets and 135 planned runs. Inside a triplet, only
 the player's budget cap and balanced four-axis allocation may differ. The
 adapter rejects any other change, any observed player data, or any attempt to
 turn this input-only campaign into an automatic game-balance decision.
+
+`budget_effect_job` executes or resumes those 135 immutable keys, stores the
+normalized evidence in the governed Delta tables, and publishes exact
+90%-minus-100% and 110%-minus-100% dose-response summaries to MLflow. A second
+execution skips successful keys and proves idempotence. Incomplete triplets
+remain visible but receive no causal interpretation, and no target budget is
+selected or promoted.
 
 ## Reference campaign
 
