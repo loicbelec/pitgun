@@ -21,7 +21,7 @@ RUNNER_TARGET = "aarch64-unknown-linux-gnu"
 PROCESS_TIMEOUT_SECONDS = 120
 SCENARIO_FAMILIES = frozenset({"balanced", "high-downforce", "low-downforce"})
 SCENARIO_RESOURCE_PATTERN = re.compile(
-    r"[a-z0-9]+(?:-[a-z0-9]+)*(?:--[a-z0-9]+(?:-[a-z0-9]+)*)?"
+    r"[a-z0-9]+(?:-[a-z0-9]+)*(?:--[a-z0-9]+(?:[-_][a-z0-9]+)*)?"
 )
 RESPONSE_RESOURCE_PATTERN = re.compile(r"racing-[a-z0-9]+(?:-[a-z0-9]+)*")
 CATALOG_RESOURCE_PATTERN = re.compile(r"racing-v[0-9]+(?:-[0-9]+)*")
