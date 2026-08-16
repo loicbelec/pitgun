@@ -133,13 +133,15 @@ ghcr.io/loicbelec/pitgun-authority:<git-commit-sha>
 ```
 
 It contains the authority binary plus the exact checked-in policy and immutable
-Racing `v1.0.0` and `v1.2.0` catalog releases. The image defaults to the V1
-model/catalog pair; environments must override both Racing variables together
-to select V2.
+Racing `v1.0.0`, `v1.2.0` and `v1.3.0` catalog releases. The image defaults to
+the V1 model/catalog pair; environments must override both Racing variables
+together to select a V2 release.
 
 ```text
 /opt/pitgun/policies/gametuning.v1.yaml
 /opt/pitgun/catalogs/racing/v1.0.0
+/opt/pitgun/catalogs/racing/v1.2.0
+/opt/pitgun/catalogs/racing/v1.3.0
 ```
 
 The corresponding path variables are configured as non-secret image defaults.
