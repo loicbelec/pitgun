@@ -1,0 +1,281 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.pitgun.io/racing-opponent-policy/v2.json",
+  "title": "Pitgun Racing Opponent Policy V2",
+  "description": "Game-compatible deterministic Racing opponent composition and balance policy.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "policy",
+    "scope",
+    "composition",
+    "budget",
+    "development_profiles",
+    "setup",
+    "strategy",
+    "calibration"
+  ],
+  "properties": {
+    "schema_version": { "const": "pitgun.racing-opponent-policy/v2" },
+    "policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "version"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9._-]*$" },
+        "version": { "$ref": "#/$defs/semver" }
+      }
+    },
+    "scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "difficulty_band",
+        "supported_game_eras",
+        "unsupported_game_eras",
+        "unsupported_era_behavior",
+        "fallback_circuit_id"
+      ],
+      "properties": {
+        "difficulty_band": { "const": "competitive" },
+        "supported_game_eras": {
+          "const": [1, 2, 3, 4, 5]
+        },
+        "unsupported_game_eras": {
+          "const": [6, 7]
+        },
+        "unsupported_era_behavior": { "const": "reject" },
+        "fallback_circuit_id": { "const": "DEFAULT" }
+      }
+    },
+    "composition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["algorithm", "field_size", "roles", "selection_without_replacement"],
+      "properties": {
+        "algorithm": { "const": "pitgun.seeded-role-composition/v2" },
+        "field_size": { "const": 9 },
+        "roles": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "items": { "$ref": "#/$defs/role" }
+        },
+        "selection_without_replacement": { "const": true }
+      }
+    },
+    "budget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["runtime_source", "minimum_ratio", "maximum_ratio", "calibration_anchors"],
+      "properties": {
+        "runtime_source": { "const": "event-common-budget" },
+        "minimum_ratio": { "type": "number", "minimum": 0.9, "maximum": 1 },
+        "maximum_ratio": { "type": "number", "minimum": 1, "maximum": 1.1 },
+        "calibration_anchors": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["early", "mid", "late"],
+          "properties": {
+            "early": { "$ref": "#/$defs/budget_anchor" },
+            "mid": { "$ref": "#/$defs/budget_anchor" },
+            "late": { "$ref": "#/$defs/budget_anchor" }
+          }
+        }
+      }
+    },
+    "development_profiles": {
+      "type": "array",
+      "minItems": 5,
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/development_profile" }
+    },
+    "setup": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "slider_minimum",
+        "slider_maximum",
+        "mutation_radius",
+        "style_biases",
+        "circuit_baselines"
+      ],
+      "properties": {
+        "slider_minimum": { "type": "number", "minimum": 0, "maximum": 1 },
+        "slider_maximum": { "type": "number", "minimum": 0, "maximum": 1 },
+        "mutation_radius": { "type": "number", "minimum": 0, "maximum": 0.1 },
+        "style_biases": {
+          "type": "object",
+          "minProperties": 5,
+          "additionalProperties": { "$ref": "#/$defs/setup_pair" }
+        },
+        "circuit_baselines": {
+          "type": "object",
+          "required": ["DEFAULT"],
+          "minProperties": 6,
+          "additionalProperties": { "$ref": "#/$defs/circuit_baseline" }
+        }
+      }
+    },
+    "strategy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "algorithm",
+        "player_strategy_influence_allowed",
+        "profiles",
+        "preferred_by_progression",
+        "alternate_profile_probability"
+      ],
+      "properties": {
+        "algorithm": { "const": "pitgun.seeded-stint-strategy/v2" },
+        "player_strategy_influence_allowed": { "const": false },
+        "profiles": {
+          "const": ["balanced-one-stop", "late-one-stop"]
+        },
+        "preferred_by_progression": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["early", "mid", "late"],
+          "properties": {
+            "early": { "$ref": "#/$defs/strategy_rule" },
+            "mid": { "$ref": "#/$defs/strategy_rule" },
+            "late": { "$ref": "#/$defs/strategy_rule" }
+          }
+        },
+        "alternate_profile_probability": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 0.5
+        }
+      }
+    },
+    "calibration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sources", "review", "limitations"],
+      "properties": {
+        "sources": {
+          "type": "array",
+          "minItems": 4,
+          "items": { "$ref": "#/$defs/calibration_source" }
+        },
+        "review": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["decision", "automatic_promotion", "private_player_data_allowed"],
+          "properties": {
+            "decision": { "const": "human-reviewed" },
+            "automatic_promotion": { "const": false },
+            "private_player_data_allowed": { "const": false }
+          }
+        },
+        "limitations": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "digest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "semver": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"
+    },
+    "role_id": { "enum": ["front-runner", "midfield", "challenger"] },
+    "profile_id": { "enum": ["balanced", "power", "aero", "mechanical", "cooling"] },
+    "role": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "count", "eligible_profile_ids"],
+      "properties": {
+        "id": { "$ref": "#/$defs/role_id" },
+        "count": { "type": "integer", "minimum": 1 },
+        "eligible_profile_ids": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/profile_id" }
+        }
+      }
+    },
+    "budget_anchor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["era", "development_points"],
+      "properties": {
+        "era": { "type": "integer", "minimum": 1, "maximum": 5 },
+        "development_points": { "type": "integer", "minimum": 0, "maximum": 80 }
+      }
+    },
+    "weights": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["aero", "chassis", "cooling", "engine"],
+      "properties": {
+        "aero": { "type": "number", "exclusiveMinimum": 0 },
+        "chassis": { "type": "number", "exclusiveMinimum": 0 },
+        "cooling": { "type": "number", "exclusiveMinimum": 0 },
+        "engine": { "type": "number", "exclusiveMinimum": 0 }
+      }
+    },
+    "development_profile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "weights"],
+      "properties": {
+        "id": { "$ref": "#/$defs/profile_id" },
+        "weights": { "$ref": "#/$defs/weights" }
+      }
+    },
+    "setup_pair": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["downforce", "gear_ratio"],
+      "properties": {
+        "downforce": { "type": "number", "minimum": -0.2, "maximum": 1 },
+        "gear_ratio": { "type": "number", "minimum": -0.2, "maximum": 1 }
+      }
+    },
+    "circuit_baseline": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["downforce", "gear_ratio", "evidence"],
+      "properties": {
+        "downforce": { "type": "number", "minimum": 0, "maximum": 1 },
+        "gear_ratio": { "type": "number", "minimum": 0, "maximum": 1 },
+        "evidence": { "enum": ["governed", "authored", "fallback"] }
+      }
+    },
+    "strategy_id": { "enum": ["balanced-one-stop", "late-one-stop"] },
+    "strategy_rule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["default", "overrides"],
+      "properties": {
+        "default": { "$ref": "#/$defs/strategy_id" },
+        "overrides": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/strategy_id" }
+        }
+      }
+    },
+    "calibration_source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "manifest_digest"],
+      "properties": {
+        "kind": {
+          "enum": ["opponent-audit", "strategy-effect", "budget-effect", "game-economy"]
+        },
+        "manifest_digest": { "$ref": "#/$defs/digest" },
+        "mlflow_run_id": { "type": "string", "minLength": 1 },
+        "source_revision": { "type": "string", "minLength": 7 }
+      }
+    }
+  }
+}

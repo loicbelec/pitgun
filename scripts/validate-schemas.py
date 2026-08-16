@@ -140,8 +140,6 @@ def validate_gateway_examples() -> None:
 
 
 def validate_racing_opponent_policies() -> None:
-    schema_path = SCHEMAS_DIR / "racing-opponent-policy" / "v1.json"
-    validator = jsonschema.Draft202012Validator(load_json(schema_path))
     policies = sorted(
         (ROOT / "catalogs" / "racing").glob("v*/simulation/policies/*.json")
     )
@@ -149,8 +147,21 @@ def validate_racing_opponent_policies() -> None:
         raise SystemExit("FAIL Racing catalog: no opponent-policy fixture")
 
     for policy_path in policies:
+        policy = load_json(policy_path)
+        schema_version = policy.get("schema_version")
+        schema_name = {
+            "pitgun.racing-opponent-policy/v1": "v1.json",
+            "pitgun.racing-opponent-policy/v2": "v2.json",
+        }.get(schema_version)
+        if schema_name is None:
+            raise SystemExit(
+                f"FAIL opponent policy {policy_path.relative_to(ROOT)}: "
+                f"unsupported schema {schema_version!r}"
+            )
+        schema_path = SCHEMAS_DIR / "racing-opponent-policy" / schema_name
+        validator = jsonschema.Draft202012Validator(load_json(schema_path))
         errors = sorted(
-            validator.iter_errors(load_json(policy_path)), key=lambda error: error.path
+            validator.iter_errors(policy), key=lambda error: error.path
         )
         if errors:
             print(f"FAIL opponent policy {policy_path.relative_to(ROOT)}")

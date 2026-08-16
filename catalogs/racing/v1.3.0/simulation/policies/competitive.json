@@ -1,0 +1,159 @@
+{
+  "schema_version": "pitgun.racing-opponent-policy/v2",
+  "policy": {
+    "id": "pitgun.racing.opponents.competitive",
+    "version": "2.0.0"
+  },
+  "scope": {
+    "difficulty_band": "competitive",
+    "supported_game_eras": [1, 2, 3, 4, 5],
+    "unsupported_game_eras": [6, 7],
+    "unsupported_era_behavior": "reject",
+    "fallback_circuit_id": "DEFAULT"
+  },
+  "composition": {
+    "algorithm": "pitgun.seeded-role-composition/v2",
+    "field_size": 9,
+    "roles": [
+      {
+        "id": "front-runner",
+        "count": 2,
+        "eligible_profile_ids": ["power", "aero", "mechanical"]
+      },
+      {
+        "id": "midfield",
+        "count": 4,
+        "eligible_profile_ids": ["balanced", "power", "aero", "mechanical", "cooling"]
+      },
+      {
+        "id": "challenger",
+        "count": 3,
+        "eligible_profile_ids": ["balanced", "mechanical", "cooling"]
+      }
+    ],
+    "selection_without_replacement": true
+  },
+  "budget": {
+    "runtime_source": "event-common-budget",
+    "minimum_ratio": 0.95,
+    "maximum_ratio": 1.05,
+    "calibration_anchors": {
+      "early": { "era": 1, "development_points": 4 },
+      "mid": { "era": 3, "development_points": 27 },
+      "late": { "era": 5, "development_points": 37 }
+    }
+  },
+  "development_profiles": [
+    {
+      "id": "balanced",
+      "weights": { "aero": 1.0, "chassis": 1.0, "cooling": 1.0, "engine": 1.0 }
+    },
+    {
+      "id": "power",
+      "weights": { "aero": 0.8, "chassis": 0.9, "cooling": 0.9, "engine": 1.4 }
+    },
+    {
+      "id": "aero",
+      "weights": { "aero": 1.4, "chassis": 0.9, "cooling": 0.9, "engine": 0.8 }
+    },
+    {
+      "id": "mechanical",
+      "weights": { "aero": 0.9, "chassis": 1.4, "cooling": 0.9, "engine": 0.8 }
+    },
+    {
+      "id": "cooling",
+      "weights": { "aero": 0.9, "chassis": 0.9, "cooling": 1.4, "engine": 0.8 }
+    }
+  ],
+  "setup": {
+    "slider_minimum": 0.15,
+    "slider_maximum": 0.85,
+    "mutation_radius": 0.04,
+    "style_biases": {
+      "balanced": { "downforce": 0.0, "gear_ratio": 0.0 },
+      "power": { "downforce": -0.05, "gear_ratio": 0.06 },
+      "aero": { "downforce": 0.07, "gear_ratio": -0.03 },
+      "mechanical": { "downforce": 0.04, "gear_ratio": -0.05 },
+      "cooling": { "downforce": 0.01, "gear_ratio": 0.01 }
+    },
+    "circuit_baselines": {
+      "AUSTIN": { "downforce": 0.56, "gear_ratio": 0.54, "evidence": "authored" },
+      "BAKU": { "downforce": 0.34, "gear_ratio": 0.72, "evidence": "authored" },
+      "BARCELONA": { "downforce": 0.64, "gear_ratio": 0.48, "evidence": "authored" },
+      "BUDAPEST": { "downforce": 0.72, "gear_ratio": 0.40, "evidence": "governed" },
+      "DEFAULT": { "downforce": 0.50, "gear_ratio": 0.50, "evidence": "fallback" },
+      "JEDDAH": { "downforce": 0.32, "gear_ratio": 0.76, "evidence": "authored" },
+      "LASVEGAS": { "downforce": 0.24, "gear_ratio": 0.80, "evidence": "authored" },
+      "LUSAIL": { "downforce": 0.52, "gear_ratio": 0.58, "evidence": "authored" },
+      "MADRID": { "downforce": 0.54, "gear_ratio": 0.52, "evidence": "authored" },
+      "MELBOURNE": { "downforce": 0.56, "gear_ratio": 0.54, "evidence": "authored" },
+      "MEXICO": { "downforce": 0.44, "gear_ratio": 0.64, "evidence": "authored" },
+      "MIAMI": { "downforce": 0.40, "gear_ratio": 0.68, "evidence": "authored" },
+      "MONACO": { "downforce": 0.85, "gear_ratio": 0.28, "evidence": "governed" },
+      "MONTREAL": { "downforce": 0.38, "gear_ratio": 0.70, "evidence": "authored" },
+      "MONZA": { "downforce": 0.22, "gear_ratio": 0.78, "evidence": "governed" },
+      "SAKHIR": { "downforce": 0.36, "gear_ratio": 0.72, "evidence": "authored" },
+      "SAOPAULO": { "downforce": 0.58, "gear_ratio": 0.50, "evidence": "authored" },
+      "SHANGHAI": { "downforce": 0.50, "gear_ratio": 0.58, "evidence": "authored" },
+      "SILVERSTONE": { "downforce": 0.58, "gear_ratio": 0.56, "evidence": "authored" },
+      "SINGAPORE": { "downforce": 0.82, "gear_ratio": 0.34, "evidence": "governed" },
+      "SPA": { "downforce": 0.46, "gear_ratio": 0.66, "evidence": "authored" },
+      "SPIELBERG": { "downforce": 0.42, "gear_ratio": 0.68, "evidence": "authored" },
+      "SUZUKA": { "downforce": 0.62, "gear_ratio": 0.50, "evidence": "governed" },
+      "YASMARINA": { "downforce": 0.48, "gear_ratio": 0.58, "evidence": "authored" },
+      "ZANDVOORT": { "downforce": 0.68, "gear_ratio": 0.44, "evidence": "authored" }
+    }
+  },
+  "strategy": {
+    "algorithm": "pitgun.seeded-stint-strategy/v2",
+    "player_strategy_influence_allowed": false,
+    "profiles": ["balanced-one-stop", "late-one-stop"],
+    "preferred_by_progression": {
+      "early": { "default": "late-one-stop", "overrides": {} },
+      "mid": { "default": "late-one-stop", "overrides": {} },
+      "late": {
+        "default": "balanced-one-stop",
+        "overrides": {
+          "MONZA": "late-one-stop",
+          "SUZUKA": "late-one-stop"
+        }
+      }
+    },
+    "alternate_profile_probability": 0.25
+  },
+  "calibration": {
+    "sources": [
+      {
+        "kind": "opponent-audit",
+        "manifest_digest": "sha256:20b4557a690f4c2a54533946ea192231fb7b2ee6d1d2734e3e602729e6539e0e",
+        "mlflow_run_id": "2f5b0a37a53d4ac7b2bbf59f180bf186"
+      },
+      {
+        "kind": "strategy-effect",
+        "manifest_digest": "sha256:47489e344ba6650c527c0ed4bfaf7b2195a44647f7ee33d5fd8c3a730835702a",
+        "mlflow_run_id": "afa53d82213a43708d068956c59c6f28"
+      },
+      {
+        "kind": "budget-effect",
+        "manifest_digest": "sha256:dc419513206268fd9a12f98a585dbadebf11585397f78637db84627db136e59b",
+        "mlflow_run_id": "ea3e8ae16fba45e4878656219b421359"
+      },
+      {
+        "kind": "game-economy",
+        "manifest_digest": "sha256:1e5a082ff05b8c66d43ad0d69306af608c2b9fd4253a4d479d3c0f9c03daf23c",
+        "source_revision": "1eebd08e4a375a5570a73c7a6adcd16cc8736e8a"
+      }
+    ],
+    "review": {
+      "decision": "human-reviewed",
+      "automatic_promotion": false,
+      "private_player_data_allowed": false
+    },
+    "limitations": [
+      "governed circuit-specific evidence covers Budapest, Monaco, Monza, Singapore and Suzuka",
+      "other circuit baselines remain authored and use deterministic fallback semantics",
+      "development profile weights preserve explainable diversity and are not globally optimal claims",
+      "eras 6 and 7 require a separate powertrain redesign"
+    ]
+  }
+}
