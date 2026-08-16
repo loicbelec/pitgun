@@ -16,6 +16,7 @@ from pitgun_databricks_adapter.early_allocation_effect import (  # noqa: E402
     extract_early_allocation_effect_evidence,
     summarize_early_allocation_effect,
 )
+from pitgun_databricks_adapter.runner import SCENARIO_RESOURCE_PATTERN  # noqa: E402
 
 
 MANIFEST = ROOT / "campaigns" / "racing-early-allocation-effect-v1.json"
@@ -87,6 +88,25 @@ class EarlyAllocationEffectExecutionTest(unittest.TestCase):
         changed_manifest["governance"]["automatic_game_or_catalog_promotion"] = True
         with self.assertRaises(EarlyAllocationEffectManifestError):
             _validate_manifest(changed_manifest, resources, source_digest)
+
+    def test_canonical_treatment_identifiers_allow_bounded_axis_separator(self):
+        self.assertIsNotNone(
+            SCENARIO_RESOURCE_PATTERN.fullmatch(
+                "early-allocation-monza-early-42--add_aero"
+            )
+        )
+        self.assertIsNotNone(
+            SCENARIO_RESOURCE_PATTERN.fullmatch(
+                "early-allocation-monza-early-42--reference"
+            )
+        )
+        for invalid in (
+            "../add_aero",
+            "early-allocation--add__aero",
+            "early-allocation--add_aero_",
+            "early-allocation--Add_aero",
+        ):
+            self.assertIsNone(SCENARIO_RESOURCE_PATTERN.fullmatch(invalid))
 
     def test_all_axes_are_summarized_without_selecting_a_profile(self):
         manifest, _, _ = self.load()

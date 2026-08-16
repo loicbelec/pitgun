@@ -97,7 +97,7 @@ early_manifest, early_digest = load_early_allocation_effect_campaign()
 early_plan = materialize_early_allocation_effect_plan(early_manifest)
 assert early_digest.startswith("sha256:")
 assert len(early_plan) == early_manifest["planned_run_count"] == 135
-first_early = early_plan[0]
+first_early = next(row for row in early_plan if row["treatment"] == "add_aero")
 early_smoke = execute_packaged_racing_catalog_scenario(
     int(first_early["seed"]), first_early["scenario_resource"]
 )["result"]
