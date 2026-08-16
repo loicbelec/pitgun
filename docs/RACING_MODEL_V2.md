@@ -8,7 +8,7 @@ explicit deterministic workload. It does not replace model V1 in place.
 | Model | Aerodynamic response | Compatible catalog |
 |---|---|---|
 | `pitgun.racing@1.0.0` | legacy binary straight/corner selection | `v1.0.0`, `v1.1.0` |
-| `pitgun.racing@2.0.0` | continuous cubic curvature response | `v1.2.0` |
+| `pitgun.racing@2.0.0` | continuous cubic curvature response | `v1.2.0`, `v1.3.0` |
 
 The complete model identity also includes its SHA-256 digest. Hosted execution
 selects a workload only when the ID, version, digest, contract version, and

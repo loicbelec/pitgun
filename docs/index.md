@@ -16,6 +16,8 @@
 - [Databricks Calibration V1](DATABRICKS_CALIBRATION_V1.md)
 - [Databricks Rust runner spike](DATABRICKS_RUST_RUNNER_SPIKE.md)
 - [Databricks Reference Campaign V1](DATABRICKS_REFERENCE_CAMPAIGN_V1.md)
+- [Racing Model Constitution V1](RACING_MODEL_CONSTITUTION_V1.md)
+- [Racing Era Capability Matrix V1](RACING_ERA_CAPABILITY_MATRIX_V1.md)
 
 ## Architecture Decisions
 
