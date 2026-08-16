@@ -270,7 +270,13 @@
       "required": ["kind", "manifest_digest"],
       "properties": {
         "kind": {
-          "enum": ["opponent-audit", "strategy-effect", "budget-effect", "game-economy"]
+          "enum": [
+            "opponent-audit",
+            "strategy-effect",
+            "budget-effect",
+            "early-allocation-effect",
+            "game-economy"
+          ]
         },
         "manifest_digest": { "$ref": "#/$defs/digest" },
         "mlflow_run_id": { "type": "string", "minLength": 1 },
