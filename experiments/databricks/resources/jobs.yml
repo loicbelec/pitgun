@@ -305,6 +305,55 @@ resources:
         pitgun.causal-experiment: "true"
         pitgun.promotion: forbidden
 
+    early_allocation_effect_job:
+      name: pitgun-racing-early-allocation-effect-v1
+      description: >-
+        Execute 15 exact nine-run early allocation blocks, persist governed
+        marginal evidence, and report axis response without selecting policy.
+      max_concurrent_runs: 1
+      performance_target: STANDARD
+      environments:
+        - environment_key: serverless_early_allocation_effect
+          spec:
+            environment_version: "4"
+            dependencies:
+              - ../adapter/dist/*.whl
+      tasks:
+        - task_key: bootstrap_governed_tables
+          description: Validate and additively evolve the governed tables.
+          environment_key: serverless_early_allocation_effect
+          notebook_task:
+            notebook_path: ../src/bootstrap_tables.py
+            source: WORKSPACE
+            base_parameters:
+              operation: bootstrap
+              campaign_id: racing-early-allocation-effect-2026-v1
+              catalog_name: ${var.catalog_name}
+              calibration_schema: ${resources.schemas.calibration.name}
+              policies_schema: ${resources.schemas.policies.name}
+              experiment_id: ${resources.experiments.calibration_experiment.id}
+          timeout_seconds: 900
+        - task_key: execute_early_allocation_effect
+          description: Execute or resume all 135 immutable marginal run keys.
+          depends_on:
+            - task_key: bootstrap_governed_tables
+          environment_key: serverless_early_allocation_effect
+          notebook_task:
+            notebook_path: ../src/execute_budget_effect.py
+            source: WORKSPACE
+            base_parameters:
+              campaign_name: racing-early-allocation-effect-v1
+              catalog_name: ${var.catalog_name}
+              calibration_schema: ${resources.schemas.calibration.name}
+              experiment_id: ${resources.experiments.calibration_experiment.id}
+          timeout_seconds: 3600
+      tags:
+        pitgun.domain: calibration
+        pitgun.compute: serverless
+        pitgun.campaign: racing-early-allocation-effect-v1
+        pitgun.causal-experiment: "true"
+        pitgun.promotion: forbidden
+
     reference_campaign_job:
       name: pitgun-racing-reference-campaign-v1
       description: >-

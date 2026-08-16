@@ -82,6 +82,21 @@ class BundleContractTest(unittest.TestCase):
         self.assertNotIn("candidate", notebook.lower())
         self.assertNotIn("policy_release", notebook.lower())
 
+    def test_early_allocation_job_is_bounded_and_non_promoting(self):
+        job = (ROOT / "resources" / "jobs.yml").read_text()
+        notebook = (ROOT / "src" / "execute_budget_effect.py").read_text()
+        builder = (ROOT / "adapter" / "build_wheel.py").read_text()
+
+        self.assertIn("early_allocation_effect_job:", job)
+        self.assertIn("campaign_id: racing-early-allocation-effect-2026-v1", job)
+        self.assertIn("campaign_name: racing-early-allocation-effect-v1", job)
+        self.assertIn("pitgun.promotion: forbidden", job)
+        self.assertIn('campaign_name == "racing-early-allocation-effect-v1"', notebook)
+        self.assertIn("load_early_allocation_effect_campaign", notebook)
+        self.assertIn('"allocation_profile_selected": False', notebook)
+        self.assertIn('"early_allocation_effect" / "scenarios"', builder)
+        self.assertIn('f"{PACKAGE}/early_allocation_effect.py"', builder)
+
     def test_racing_v2_catalog_boundary_is_packaged_and_bounded(self):
         builder = (ROOT / "adapter" / "build_wheel.py").read_text()
         runner = (
