@@ -61,6 +61,11 @@ The worker loads:
 `/readyz` fails closed when signing-key verification material or retained
 catalog bytes are unavailable.
 
+The published container retains the immutable Racing `v1.0.0`, `v1.2.0` and
+`v1.3.0` releases. Environments select one exact release directory together
+with its compatible model generation; the image never follows mutable catalog
+discovery.
+
 The HTTP endpoint is an internal boundary. It must not be routed directly to a
 browser. Durable nonce consumption and idempotent verdict persistence belong to
 the game/backend submission transaction. Keeping the engine separate also

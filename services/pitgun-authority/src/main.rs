@@ -829,6 +829,48 @@ mod tests {
     }
 
     #[test]
+    fn racing_v2_authorization_accepts_catalog_1_3_opponent_policy() {
+        let state = test_state_for("2.0.0", "v1.3.0");
+        let response = build_signed_racing_run_authorization(
+            1_710_000_000_000,
+            &state,
+            racing_request(&state),
+        )
+        .expect("Racing Catalog 1.3 authorization");
+
+        assert_eq!(
+            response.catalog_release.as_ref(),
+            Some(
+                state
+                    .racing_catalog
+                    .as_ref()
+                    .expect("catalog")
+                    .release_identity()
+            )
+        );
+        assert_eq!(
+            response
+                .signed
+                .authorization
+                .contract
+                .model
+                .version
+                .to_string(),
+            "2.0.0"
+        );
+        assert_eq!(
+            response
+                .signed
+                .authorization
+                .contract
+                .data_pack
+                .version
+                .to_string(),
+            "1.3.0"
+        );
+    }
+
+    #[test]
     fn identical_semantic_requests_share_run_id_but_not_nonce() {
         let state = test_state();
         let first = build_signed_racing_run_authorization(

@@ -100,6 +100,8 @@ jobs:
             --volume /tmp/pitgun-authority-signing-secret:/run/secrets/pitgun_authority_signing_secret:ro \
             --env PITGUN_SIGNING_SECRET_FILE=/run/secrets/pitgun_authority_signing_secret \
             --env PITGUN_SIGNING_KEY_ID=ci-smoke \
+            --env PITGUN_RACING_MODEL_VERSION=2.0.0 \
+            --env PITGUN_RACING_CATALOG_RELEASE_DIR=/opt/pitgun/catalogs/racing/v1.3.0 \
             "${LOCAL_IMAGE}"
 
           for attempt in $(seq 1 30); do
@@ -124,22 +126,22 @@ jobs:
               "catalog_release": {
                 "schema_version": "pitgun.catalog-release-identity/v1",
                 "id": "pitgun.racing",
-                "version": "1.0.0",
-                "manifest_digest": "sha256:5f36612a3ce265750051ca913747c0c05bc08a534dc307bbc7b02b8cb2f6e156"
+                "version": "1.3.0",
+                "manifest_digest": "sha256:9b71e09a7414fbd6560efd7d2fac16d50658438aba7e5b7ec30721aac5017aa4"
               },
               "input": {
                 "track_id": "LASVEGAS",
                 "laps": 1,
                 "competitors": [],
                 "vehicle_id": "f1_2026",
-                "era": 6,
+                "era": 2,
                 "hz": 20
               }
             }' \
             --output /tmp/authority-response.json
 
           grep --fixed-strings \
-            '"id":"pitgun.racing.simulation","version":"1.0.0","digest":"sha256:5404395fc56d3f16cc74e4acbbdbcc21ea3be35c7fc80f11c4babfcc6becdaef"' \
+            '"id":"pitgun.racing.simulation","version":"1.3.0","digest":"sha256:bb23c022a5dd9a6cf36dc244a4722f383d8dcafad9efa012490632b56569605f"' \
             /tmp/authority-response.json
 
       - name: Build and push authority image
