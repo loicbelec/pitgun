@@ -22,6 +22,7 @@ MODEL_COMPATIBILITY_BY_RELEASE = {
     "1.0.0": ["1.0.0"],
     "1.1.0": ["1.0.0"],
     "1.2.0": ["2.0.0"],
+    "1.3.0": ["2.0.0"],
 }
 
 
@@ -140,10 +141,13 @@ def validate_pack_boundary(
 def validate_opponent_policies(release_root: Path) -> None:
     for path in sorted((release_root / "simulation" / "policies").glob("*.json")):
         policy = load_json(path)
-        if policy.get("schema_version") != "pitgun.racing-opponent-policy/v1":
+        if policy.get("schema_version") not in {
+            "pitgun.racing-opponent-policy/v1",
+            "pitgun.racing-opponent-policy/v2",
+        }:
             raise SystemExit(f"FAIL Racing opponent policy {path}: unsupported schema")
 
-        profiles = policy["profiles"]
+        profiles = policy.get("profiles", policy.get("development_profiles", []))
         profile_ids = {profile["id"] for profile in profiles}
         if len(profile_ids) != len(profiles):
             raise SystemExit(f"FAIL Racing opponent policy {path}: duplicate profile IDs")
@@ -155,12 +159,26 @@ def validate_opponent_policies(release_root: Path) -> None:
                 raise SystemExit(
                     f"FAIL Racing opponent policy {path}: role references unknown profile"
                 )
-        for profile in profiles:
-            for slider in profile["setup"].values():
-                if not slider["min"] <= slider["center"] <= slider["max"]:
-                    raise SystemExit(
-                        f"FAIL Racing opponent policy {path}: invalid setup bounds"
-                    )
+        if policy["schema_version"] == "pitgun.racing-opponent-policy/v1":
+            for profile in profiles:
+                for slider in profile["setup"].values():
+                    if not slider["min"] <= slider["center"] <= slider["max"]:
+                        raise SystemExit(
+                            f"FAIL Racing opponent policy {path}: invalid setup bounds"
+                        )
+        else:
+            if sum(role["count"] for role in policy["composition"]["roles"]) != 9:
+                raise SystemExit(
+                    f"FAIL Racing opponent policy {path}: field size does not reconcile"
+                )
+            if policy["scope"]["supported_game_eras"] != [1, 2, 3, 4, 5]:
+                raise SystemExit(
+                    f"FAIL Racing opponent policy {path}: supported eras changed"
+                )
+            if policy["scope"]["unsupported_game_eras"] != [6, 7]:
+                raise SystemExit(
+                    f"FAIL Racing opponent policy {path}: late eras must remain disabled"
+                )
 
 
 def generated_release_artifacts(release_root: Path) -> dict[Path, bytes]:

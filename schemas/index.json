@@ -78,6 +78,17 @@
       ]
     },
     {
+      "id": "https://schemas.pitgun.io/racing-opponent-policy/v2.json",
+      "path": "racing-opponent-policy/v2.json",
+      "kind": "json-schema",
+      "lifecycle": "experimental",
+      "owner": "pitgun-racing-contract",
+      "evidence": [
+        "catalogs/racing/v1.3.0/simulation/policies/competitive.json",
+        "docs/RACING_OPPONENT_POLICY_V2.md"
+      ]
+    },
+    {
       "id": "https://schemas.pitgun.io/pipeline-manifest/v1.json",
       "path": "pipeline-manifest/v1.json",
       "kind": "json-schema",

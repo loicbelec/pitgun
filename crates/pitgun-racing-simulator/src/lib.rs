@@ -1196,9 +1196,11 @@ impl EmbeddedCatalog {
                 self.tracks.insert(track.id.clone(), track);
             }
             "policies" => {
-                if value.get("schema_version").and_then(Value::as_str)
-                    != Some("pitgun.racing-opponent-policy/v1")
-                {
+                if !matches!(
+                    value.get("schema_version").and_then(Value::as_str),
+                    Some("pitgun.racing-opponent-policy/v1")
+                        | Some("pitgun.racing-opponent-policy/v2")
+                ) {
                     return Err(format!("unsupported Racing opponent policy in '{path}'"));
                 }
                 // Opponent policies influence canonical race-input composition,

@@ -687,6 +687,40 @@ mod tests {
         );
     }
 
+    #[cfg(not(target_arch = "wasm32"))]
+    #[test]
+    fn competitive_policy_v2_release_resolves_and_keeps_late_eras_disabled() {
+        let root =
+            Path::new(env!("CARGO_MANIFEST_DIR")).join("../../catalogs/racing/v1.3.0");
+        let snapshot =
+            RacingCatalogSnapshot::from_release_dir(root).expect("competitive policy catalog");
+
+        assert_eq!(snapshot.manifest().catalog.version.to_string(), "1.3.0");
+        assert!(snapshot.simulation_index().resources.iter().any(|resource| {
+            resource.path.as_str() == "simulation/policies/competitive.json"
+        }));
+        let policy_bytes = snapshot
+            .resources()
+            .find_map(|(path, bytes)| {
+                (path.as_str() == "simulation/policies/competitive.json").then_some(bytes)
+            })
+            .expect("competitive policy resource");
+        let policy: serde_json::Value =
+            serde_json::from_slice(policy_bytes).expect("competitive policy JSON");
+        assert_eq!(
+            policy["scope"]["supported_game_eras"],
+            serde_json::json!([1, 2, 3, 4, 5])
+        );
+        assert_eq!(
+            policy["scope"]["unsupported_game_eras"],
+            serde_json::json!([6, 7])
+        );
+        assert_eq!(
+            policy["strategy"]["player_strategy_influence_allowed"],
+            serde_json::json!(false)
+        );
+    }
+
     #[test]
     fn embedded_model_generations_are_mutually_incompatible() {
         let model_v1_catalog = RacingCatalogSnapshot::embedded().expect("model V1 catalog");

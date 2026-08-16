@@ -159,6 +159,20 @@ shared bounded notebook, writes a distinct campaign ledger and MLflow report,
 and remains resumable and non-promoting. V1 data and reporting semantics remain
 unchanged.
 
+## Early marginal-allocation effect
+
+The immutable
+[`racing-early-allocation-effect-v1.json`](campaigns/racing-early-allocation-effect-v1.json)
+manifest isolates one development point on aero, chassis, cooling, or engine
+at the four-point early-game boundary. Its 135 runs cover five circuits, three
+seeds, a neutral reference, and both add-one and remove-one treatments.
+
+`early_allocation_effect_job` rejects any comparison that changes another
+controlled field. It resumes accepted natural keys, writes the governed result
+to Delta and MLflow, and cannot select or publish a policy automatically. The
+completed evidence and human decision are documented in
+[Racing early-allocation effect V1](../../docs/RACING_EARLY_ALLOCATION_EFFECT_V1.md).
+
 ## Reference campaign
 
 The frozen V1 campaign manifest is
