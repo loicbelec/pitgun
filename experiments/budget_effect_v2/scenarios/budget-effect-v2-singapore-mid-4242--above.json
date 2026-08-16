@@ -1,0 +1,370 @@
+{
+  "schema_version": "pitgun.racing-resolved-scenario/v1",
+  "scenario": {
+    "id": "racing.budget-effect-campaign",
+    "version": "2.0.0"
+  },
+  "model": {
+    "id": "pitgun.racing",
+    "version": "2.0.0",
+    "digest": "sha256:a372f990c320d10207220f98ca4bf677607fc5c13918c73b47dfbb8949b106d2"
+  },
+  "data_pack": {
+    "id": "pitgun.racing.simulation",
+    "version": "1.2.0",
+    "digest": "sha256:8961087a8a04a3cafb157a63b7bd2c8daa1e29500e180c5d723324d79374549f"
+  },
+  "clock": {
+    "tick_numerator_us": 200000,
+    "tick_denominator": 1
+  },
+  "request": {
+    "track_id": "SINGAPORE",
+    "laps": 62,
+    "competitors": [
+      {
+        "id": "player",
+        "driver_id": "default",
+        "name": "Economy-backed Development Reference",
+        "team_id": "pitgun",
+        "is_player": true,
+        "tuning": {
+          "engine_points": 7,
+          "cooling_points": 7,
+          "aero_points": 8,
+          "chassis_points": 8,
+          "downforce_slider": 0.5,
+          "gear_ratio_slider": 0.5
+        },
+        "budget_cap": 30,
+        "stint_strategy": {
+          "stints": [
+            {
+              "tire_id": "medium",
+              "laps": 34
+            },
+            {
+              "tire_id": "soft",
+              "laps": 28
+            }
+          ],
+          "pit_laps": [
+            34
+          ]
+        }
+      },
+      {
+        "id": "ai_1",
+        "driver_id": "daniel_enchantier",
+        "name": "Daniel Enchantier",
+        "team_id": "TEAM_DANIEL_ENCHANTIER",
+        "is_player": false,
+        "budget_cap": 27,
+        "tuning": {
+          "aero_points": 5,
+          "chassis_points": 7,
+          "cooling_points": 5,
+          "engine_points": 10,
+          "downforce_slider": 0.7825837634690105,
+          "gear_ratio_slider": 0.37893056610599163
+        },
+        "stint_strategy": {
+          "stints": [
+            {
+              "tire_id": "soft",
+              "laps": 24
+            },
+            {
+              "tire_id": "medium",
+              "laps": 19
+            },
+            {
+              "tire_id": "soft",
+              "laps": 19
+            }
+          ],
+          "pit_laps": [
+            24,
+            43
+          ]
+        }
+      },
+      {
+        "id": "ai_2",
+        "driver_id": "franz_hermann",
+        "name": "Franz Hermann",
+        "team_id": "TEAM_FRANZ_HERMANN",
+        "is_player": false,
+        "budget_cap": 27,
+        "tuning": {
+          "aero_points": 10,
+          "chassis_points": 6,
+          "cooling_points": 5,
+          "engine_points": 6,
+          "downforce_slider": 0.85,
+          "gear_ratio_slider": 0.28757267672568565
+        },
+        "stint_strategy": {
+          "stints": [
+            {
+              "tire_id": "soft",
+              "laps": 25
+            },
+            {
+              "tire_id": "medium",
+              "laps": 17
+            },
+            {
+              "tire_id": "hard",
+              "laps": 20
+            }
+          ],
+          "pit_laps": [
+            25,
+            42
+          ]
+        }
+      },
+      {
+        "id": "ai_3",
+        "driver_id": "default",
+        "name": "Default Driver",
+        "team_id": "TEAM_DEFAULT",
+        "is_player": false,
+        "budget_cap": 27,
+        "tuning": {
+          "aero_points": 7,
+          "chassis_points": 6,
+          "cooling_points": 8,
+          "engine_points": 6,
+          "downforce_slider": 0.8117210285365581,
+          "gear_ratio_slider": 0.33413956824690105
+        },
+        "stint_strategy": {
+          "stints": [
+            {
+              "tire_id": "hard",
+              "laps": 36
+            },
+            {
+              "tire_id": "medium",
+              "laps": 26
+            }
+          ],
+          "pit_laps": [
+            36
+          ]
+        }
+      },
+      {
+        "id": "ai_4",
+        "driver_id": "charles_leclair",
+        "name": "Charles L'Eclair",
+        "team_id": "TEAM_CHARLES_LECLAIR",
+        "is_player": false,
+        "budget_cap": 27,
+        "tuning": {
+          "aero_points": 7,
+          "chassis_points": 7,
+          "cooling_points": 6,
+          "engine_points": 7,
+          "downforce_slider": 0.8447387704066932,
+          "gear_ratio_slider": 0.3605611439421773
+        },
+        "stint_strategy": {
+          "stints": [
+            {
+              "tire_id": "medium",
+              "laps": 25
+            },
+            {
+              "tire_id": "hard",
+              "laps": 18
+            },
+            {
+              "tire_id": "medium",
+              "laps": 19
+            }
+          ],
+          "pit_laps": [
+            25,
+            43
+          ]
+        }
+      },
+      {
+        "id": "ai_5",
+        "driver_id": "battery_voltas",
+        "name": "Battery Voltas",
+        "team_id": "TEAM_BATTERY_VOLTAS",
+        "is_player": false,
+        "budget_cap": 27,
+        "tuning": {
+          "aero_points": 6,
+          "chassis_points": 6,
+          "cooling_points": 8,
+          "engine_points": 7,
+          "downforce_slider": 0.8227639879658818,
+          "gear_ratio_slider": 0.321142514590174
+        },
+        "stint_strategy": {
+          "stints": [
+            {
+              "tire_id": "hard",
+              "laps": 36
+            },
+            {
+              "tire_id": "medium",
+              "laps": 26
+            }
+          ],
+          "pit_laps": [
+            36
+          ]
+        }
+      },
+      {
+        "id": "ai_6",
+        "driver_id": "isa_kadjar",
+        "name": "Isa Kadjar",
+        "team_id": "TEAM_ISA_KADJAR",
+        "is_player": false,
+        "budget_cap": 27,
+        "tuning": {
+          "aero_points": 6,
+          "chassis_points": 6,
+          "cooling_points": 5,
+          "engine_points": 10,
+          "downforce_slider": 0.7795447298325597,
+          "gear_ratio_slider": 0.36795716928318145
+        },
+        "stint_strategy": {
+          "stints": [
+            {
+              "tire_id": "soft",
+              "laps": 24
+            },
+            {
+              "tire_id": "medium",
+              "laps": 20
+            },
+            {
+              "tire_id": "soft",
+              "laps": 18
+            }
+          ],
+          "pit_laps": [
+            24,
+            44
+          ]
+        }
+      },
+      {
+        "id": "ai_7",
+        "driver_id": "goat_tifi",
+        "name": "Goat Tifi",
+        "team_id": "TEAM_GOAT_TIFI",
+        "is_player": false,
+        "budget_cap": 27,
+        "tuning": {
+          "aero_points": 9,
+          "chassis_points": 6,
+          "cooling_points": 5,
+          "engine_points": 7,
+          "downforce_slider": 0.85,
+          "gear_ratio_slider": 0.3194884229265154
+        },
+        "stint_strategy": {
+          "stints": [
+            {
+              "tire_id": "medium",
+              "laps": 34
+            },
+            {
+              "tire_id": "hard",
+              "laps": 28
+            }
+          ],
+          "pit_laps": [
+            34
+          ]
+        }
+      },
+      {
+        "id": "ai_8",
+        "driver_id": "pedro_gaseoso",
+        "name": "Pedro Gaseoso",
+        "team_id": "TEAM_PEDRO_GASEOSO",
+        "is_player": false,
+        "budget_cap": 27,
+        "tuning": {
+          "aero_points": 5,
+          "chassis_points": 10,
+          "cooling_points": 6,
+          "engine_points": 6,
+          "downforce_slider": 0.85,
+          "gear_ratio_slider": 0.27766385564580565
+        },
+        "stint_strategy": {
+          "stints": [
+            {
+              "tire_id": "medium",
+              "laps": 26
+            },
+            {
+              "tire_id": "hard",
+              "laps": 17
+            },
+            {
+              "tire_id": "medium",
+              "laps": 19
+            }
+          ],
+          "pit_laps": [
+            26,
+            43
+          ]
+        }
+      },
+      {
+        "id": "ai_9",
+        "driver_id": "luis_amilton",
+        "name": "Luis Amilton",
+        "team_id": "TEAM_LUIS_AMILTON",
+        "is_player": false,
+        "budget_cap": 27,
+        "tuning": {
+          "aero_points": 7,
+          "chassis_points": 5,
+          "cooling_points": 8,
+          "engine_points": 7,
+          "downforce_slider": 0.85,
+          "gear_ratio_slider": 0.3536079304665327
+        },
+        "stint_strategy": {
+          "stints": [
+            {
+              "tire_id": "medium",
+              "laps": 26
+            },
+            {
+              "tire_id": "hard",
+              "laps": 18
+            },
+            {
+              "tire_id": "medium",
+              "laps": 18
+            }
+          ],
+          "pit_laps": [
+            26,
+            44
+          ]
+        }
+      }
+    ],
+    "vehicle_id": "classic_v8_1970",
+    "era": 3,
+    "hz": 5.0
+  }
+}
