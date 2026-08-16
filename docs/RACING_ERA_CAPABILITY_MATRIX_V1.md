@@ -33,8 +33,10 @@ model of seven eras.
 | 7 | Theoretical Limit | late vehicle placeholder | gameplay and Opponent Policy V2 disabled; no Pod/Drone model |
 
 The missing Era 3 and Era 4 resources are a contract gap, not permission to
-silently reuse an unrelated vehicle. A later ticket must either publish the
-named physical resources or simplify and document the game unlock mapping.
+silently reuse an unrelated vehicle. Issue #248 must either publish reviewed
+physical resources or simplify and document the game unlock mapping. The old
+candidate files and their limitations are recorded in the
+[Racing Parameter Inventory V1](RACING_PARAMETER_INVENTORY_V1.md).
 
 ## Era 1 — Garage Days
 

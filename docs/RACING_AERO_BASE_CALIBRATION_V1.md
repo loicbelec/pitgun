@@ -49,7 +49,7 @@ Candidates must:
 
 - preserve every aerodynamic invariant;
 - retain materially separated `Monza < Suzuka < Monaco` downforce optima;
-- keep at least 5 km/h below the Solver's 400 km/h cap;
+- keep at least 5 km/h below the campaign's 400 km/h speed guardrail;
 - improve the shape anchor's historical-pace gap;
 - sit inside both axes of the refined parameter space.
 
