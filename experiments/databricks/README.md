@@ -60,6 +60,7 @@ databricks bundle run opponent_diagnosis_job -t dev -p pitgun-free \
   --params campaigns_table_version=<pinned>,runs_table_version=<pinned>,metrics_table_version=<pinned>
 databricks bundle run strategy_effect_job -t dev -p pitgun-free
 databricks bundle run budget_effect_job -t dev -p pitgun-free
+databricks bundle run budget_effect_v2_job -t dev -p pitgun-free
 ```
 
 Repeat `deploy` and `run`: schema and table creation are idempotent. The job may
@@ -143,6 +144,19 @@ normalized evidence in the governed Delta tables, and publishes exact
 execution skips successful keys and proves idempotence. Incomplete triplets
 remain visible but receive no causal interpretation, and no target budget is
 selected or promoted.
+
+The economy-backed follow-up is frozen separately in
+[`campaigns/racing-budget-effect-v2.json`](campaigns/racing-budget-effect-v2.json).
+It retains the five circuits and three seeds but replaces the synthetic
+progression assumptions with public game-economy references at 4, 27, and 37
+development points. Player treatments are 3/4/5, 24/27/30, and 33/37/41;
+opponents are normalized to the matching reference total. The four-point early
+field's integer-allocation quantization is recorded as a limitation.
+
+`budget_effect_v2_job` selects only that checksummed V2 manifest through the
+shared bounded notebook, writes a distinct campaign ledger and MLflow report,
+and remains resumable and non-promoting. V1 data and reporting semantics remain
+unchanged.
 
 ## Reference campaign
 

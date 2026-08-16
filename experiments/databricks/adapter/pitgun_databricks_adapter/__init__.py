@@ -6,6 +6,12 @@ from .budget_effect import (
     materialize_budget_effect_plan,
     summarize_budget_effect,
 )
+from .budget_effect_v2 import (
+    extract_budget_effect_v2_evidence,
+    load_budget_effect_v2_campaign,
+    materialize_budget_effect_v2_plan,
+    summarize_budget_effect_v2,
+)
 
 from .campaign import (
     load_calibration_campaign,
@@ -66,4 +72,8 @@ __all__ = [
     "materialize_budget_effect_plan",
     "extract_budget_effect_evidence",
     "summarize_budget_effect",
+    "load_budget_effect_v2_campaign",
+    "materialize_budget_effect_v2_plan",
+    "extract_budget_effect_v2_evidence",
+    "summarize_budget_effect_v2",
 ]

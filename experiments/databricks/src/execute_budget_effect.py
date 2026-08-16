@@ -17,16 +17,21 @@ from pyspark.sql import functions as F
 from pitgun_databricks_adapter import (
     execute_packaged_racing_catalog_scenario,
     extract_budget_effect_evidence,
+    extract_budget_effect_v2_evidence,
     inspect_packaged_runner,
     load_budget_effect_campaign,
+    load_budget_effect_v2_campaign,
     materialize_budget_effect_plan,
+    materialize_budget_effect_v2_plan,
     summarize_budget_effect,
+    summarize_budget_effect_v2,
 )
 
 
 dbutils.widgets.text("catalog_name", "workspace")
 dbutils.widgets.text("calibration_schema", "pitgun_calibration")
 dbutils.widgets.text("experiment_id", "")
+dbutils.widgets.text("campaign_name", "racing-budget-effect-v1")
 
 
 def validated_identifier(label: str, value: str) -> str:
@@ -42,6 +47,21 @@ calibration_schema = validated_identifier(
 experiment_id = dbutils.widgets.get("experiment_id")
 if not experiment_id:
     raise ValueError("experiment_id is required")
+campaign_name = dbutils.widgets.get("campaign_name")
+if campaign_name == "racing-budget-effect-v1":
+    load_campaign = load_budget_effect_campaign
+    materialize_campaign_plan = materialize_budget_effect_plan
+    extract_campaign_evidence = extract_budget_effect_evidence
+    summarize_campaign = summarize_budget_effect
+    scenario_version = "1.0.0"
+elif campaign_name == "racing-budget-effect-v2":
+    load_campaign = load_budget_effect_v2_campaign
+    materialize_campaign_plan = materialize_budget_effect_v2_plan
+    extract_campaign_evidence = extract_budget_effect_v2_evidence
+    summarize_campaign = summarize_budget_effect_v2
+    scenario_version = "2.0.0"
+else:
+    raise ValueError(f"unsupported budget campaign: {campaign_name!r}")
 calibration = f"`{catalog_name}`.`{calibration_schema}`"
 campaigns_table = f"{calibration}.campaigns"
 runs_table = f"{calibration}.runs"
@@ -77,8 +97,8 @@ metric_row_schema = """
   sample_count BIGINT, statistic STRING, recorded_at TIMESTAMP
 """
 
-manifest, manifest_digest = load_budget_effect_campaign()
-plan = materialize_budget_effect_plan(manifest)
+manifest, manifest_digest = load_campaign()
+plan = materialize_campaign_plan(manifest)
 campaign_id = manifest["campaign_id"]
 catalog = manifest["catalog"]
 adapter_version = importlib.metadata.version("pitgun-databricks-adapter")
@@ -162,7 +182,7 @@ with tracking_context as tracking_run:
         "question": manifest["question"],
         "parameter_space_version": manifest["schema_version"],
         "scenario_id": "racing.budget-effect-campaign",
-        "scenario_version": "1.0.0",
+        "scenario_version": scenario_version,
         "scenario_digest": None,
         "model_id": catalog["model_id"],
         "model_version": catalog["model_version"],
@@ -211,7 +231,7 @@ with tracking_context as tracking_run:
                 "automatic_game_or_catalog_promotion": False,
             }
         )
-        mlflow.log_dict(manifest, "inputs/budget-effect-manifest.json")
+        mlflow.log_dict(manifest, f"inputs/{campaign_name}-manifest.json")
 
     existing_runs = (
         spark.table(runs_table)
@@ -247,7 +267,7 @@ with tracking_context as tracking_run:
                 int(entry["seed"]), entry["scenario_resource"]
             )
             result = adapter_result["result"]
-            evidence = extract_budget_effect_evidence(entry, result, manifest)
+            evidence = extract_campaign_evidence(entry, result, manifest)
             execution_status = "SUCCESS"
             recorded_at = datetime.now(timezone.utc)
             for metric_id, (metric_value, metric_unit) in evidence["metrics"].items():
@@ -286,7 +306,7 @@ with tracking_context as tracking_run:
                 "seed": str(entry["seed"]),
                 "run_id": result["run_id"] if result else None,
                 "scenario_id": "racing.budget-effect-campaign",
-                "scenario_version": "1.0.0",
+                "scenario_version": scenario_version,
                 "scenario_digest": (
                     result["scenario_digest"] if result else entry["scenario_resource_digest"]
                 ),
@@ -323,9 +343,18 @@ with tracking_context as tracking_run:
                     {
                         "profile": "balanced-one-stop",
                         "treatment": entry["treatment"],
-                        "treatment_percentage": entry["treatment_percentage"],
                         "triplet_key": entry["triplet_key"],
                         "triplet_invariant_digest": entry["triplet_invariant_digest"],
+                        **{
+                            key: entry[key]
+                            for key in (
+                                "treatment_percentage",
+                                "field_median_budget",
+                                "reference_budget",
+                                "opponent_budget",
+                            )
+                            if key in entry
+                        },
                     },
                     sort_keys=True,
                     separators=(",", ":"),
@@ -384,7 +413,7 @@ with tracking_context as tracking_run:
         raise RuntimeError("budget campaign ledger does not reconcile")
     entry_by_key = {entry["run_key"]: entry for entry in plan}
     successful_evidence = [
-        extract_budget_effect_evidence(
+        extract_campaign_evidence(
             entry_by_key[row["execution_key"]],
             json.loads(row["result_json"]),
             manifest,
@@ -432,7 +461,7 @@ with tracking_context as tracking_run:
         "delta_versions": history,
     }
     analysis = (
-        summarize_budget_effect(manifest, successful_evidence, lineage)
+        summarize_campaign(manifest, successful_evidence, lineage)
         if status == "COMPLETED"
         else None
     )
@@ -463,11 +492,17 @@ with tracking_context as tracking_run:
     )
     mlflow.log_dict(report, "reports/budget-effect-report.json")
     if analysis:
+        if analysis["schema_version"] == "pitgun.budget-effect-report/v2":
+            upper_delta_key = "median_total_time_delta_above_minus_reference_ms"
+            upper_delta_metric = "budget.median_total_time_delta_above_minus_reference_ms"
+            upper_delta_label = "Median above-minus-reference total time"
+        else:
+            upper_delta_key = "median_total_time_delta_110_minus_100_ms"
+            upper_delta_metric = "budget.median_total_time_delta_110_minus_100_ms"
+            upper_delta_label = "Median 110%-minus-100% total time"
         mlflow.log_metrics(
             {
-                "budget.median_total_time_delta_110_minus_100_ms": analysis["overall"][
-                    "median_total_time_delta_110_minus_100_ms"
-                ],
+                upper_delta_metric: analysis["overall"][upper_delta_key],
                 "budget.monotonic_total_time_rate": analysis["overall"][
                     "monotonic_total_time_rate"
                 ],
@@ -480,8 +515,8 @@ with tracking_context as tracking_run:
             "# Controlled Racing development-budget effect",
             "",
             f"- Exact triplets: {analysis['sample']['triplet_count']}",
-            "- Median 110%-minus-100% total time: "
-            f"{analysis['overall']['median_total_time_delta_110_minus_100_ms']} ms",
+            f"- {upper_delta_label}: "
+            f"{analysis['overall'][upper_delta_key]} ms",
             "- Monotonic dose-response rate: "
             f"{analysis['overall']['monotonic_total_time_rate']:.1%}",
             "- Seed-direction stability: "
