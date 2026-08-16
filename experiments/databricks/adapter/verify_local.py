@@ -9,9 +9,11 @@ from pitgun_databricks_adapter import (
     inspect_packaged_runner,
     load_calibration_campaign,
     load_candidate_review_policy,
+    load_budget_effect_v2_campaign,
     load_opponent_audit_campaign,
     load_reference_campaign,
     materialize_opponent_audit_plan,
+    materialize_budget_effect_v2_plan,
     materialize_plan,
 )
 
@@ -74,6 +76,20 @@ campaign_smoke = execute_packaged_racing_catalog_scenario(
 assert campaign_smoke["model"]["version"] == "2.0.0"
 assert campaign_smoke["data_pack"]["version"] == "1.2.0"
 assert len(campaign_smoke["summary"]["standings"]) == 10
+
+budget_v2_manifest, budget_v2_digest = load_budget_effect_v2_campaign()
+budget_v2_plan = materialize_budget_effect_v2_plan(budget_v2_manifest)
+assert budget_v2_digest.startswith("sha256:")
+assert len(budget_v2_plan) == budget_v2_manifest["planned_run_count"] == 135
+first_budget_v2 = budget_v2_plan[0]
+budget_v2_smoke = execute_packaged_racing_catalog_scenario(
+    int(first_budget_v2["seed"]), first_budget_v2["scenario_resource"]
+)["result"]
+assert budget_v2_smoke["scenario"] == {
+    "id": "racing.budget-effect-campaign",
+    "version": "2.0.0",
+}
+assert len(budget_v2_smoke["summary"]["standings"]) == 10
 
 families = {
     family: execute_packaged_racing(42, family)["result"]["configuration_id"]
