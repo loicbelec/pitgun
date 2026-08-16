@@ -318,6 +318,8 @@ The current sequence is intentionally proof-driven:
 - [Public schemas](https://schemas.pitgun.io) — versioned telemetry, manifest, and integration contracts
 - [Architecture](ARCHITECTURE.md) — components, data flow, and ownership
 - [Framework boundaries](docs/FRAMEWORK_BOUNDARIES.md) — generic and Racing separation
+- [Racing Model Constitution V1](docs/RACING_MODEL_CONSTITUTION_V1.md) — physical-model ownership, claims, invariants, and versioning
+- [Racing Era Capability Matrix V1](docs/RACING_ERA_CAPABILITY_MATRIX_V1.md) — implemented and target capabilities across the seven game eras
 - [Racing demo CLI contract](docs/RACING_DEMO_CLI_V1.md) — command, bundle layout, report, and failures
 - [Racing batch runner V1](docs/RACING_BATCH_RUNNER_V1.md) — resolved scenario input and canonical compact result
 - [Under-five-minute quickstart](docs/QUICKSTART.md) — workspace and prebuilt installation paths
