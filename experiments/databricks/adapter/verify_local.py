@@ -10,10 +10,12 @@ from pitgun_databricks_adapter import (
     load_calibration_campaign,
     load_candidate_review_policy,
     load_budget_effect_v2_campaign,
+    load_early_allocation_effect_campaign,
     load_opponent_audit_campaign,
     load_reference_campaign,
     materialize_opponent_audit_plan,
     materialize_budget_effect_v2_plan,
+    materialize_early_allocation_effect_plan,
     materialize_plan,
 )
 
@@ -90,6 +92,20 @@ assert budget_v2_smoke["scenario"] == {
     "version": "2.0.0",
 }
 assert len(budget_v2_smoke["summary"]["standings"]) == 10
+
+early_manifest, early_digest = load_early_allocation_effect_campaign()
+early_plan = materialize_early_allocation_effect_plan(early_manifest)
+assert early_digest.startswith("sha256:")
+assert len(early_plan) == early_manifest["planned_run_count"] == 135
+first_early = next(row for row in early_plan if row["treatment"] == "add_aero")
+early_smoke = execute_packaged_racing_catalog_scenario(
+    int(first_early["seed"]), first_early["scenario_resource"]
+)["result"]
+assert early_smoke["scenario"] == {
+    "id": "racing.early-allocation-effect-campaign",
+    "version": "1.0.0",
+}
+assert len(early_smoke["summary"]["standings"]) == 10
 
 families = {
     family: execute_packaged_racing(42, family)["result"]["configuration_id"]

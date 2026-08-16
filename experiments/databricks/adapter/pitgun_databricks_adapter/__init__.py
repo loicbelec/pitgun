@@ -12,6 +12,12 @@ from .budget_effect_v2 import (
     materialize_budget_effect_v2_plan,
     summarize_budget_effect_v2,
 )
+from .early_allocation_effect import (
+    extract_early_allocation_effect_evidence,
+    load_early_allocation_effect_campaign,
+    materialize_early_allocation_effect_plan,
+    summarize_early_allocation_effect,
+)
 
 from .campaign import (
     load_calibration_campaign,
@@ -76,4 +82,8 @@ __all__ = [
     "materialize_budget_effect_v2_plan",
     "extract_budget_effect_v2_evidence",
     "summarize_budget_effect_v2",
+    "load_early_allocation_effect_campaign",
+    "materialize_early_allocation_effect_plan",
+    "extract_early_allocation_effect_evidence",
+    "summarize_early_allocation_effect",
 ]

@@ -1,5 +1,5 @@
 # Databricks notebook source
-"""Execute the immutable causal Racing development-budget campaign."""
+"""Execute immutable causal Racing development and allocation campaigns."""
 
 # COMMAND ----------
 
@@ -18,13 +18,17 @@ from pitgun_databricks_adapter import (
     execute_packaged_racing_catalog_scenario,
     extract_budget_effect_evidence,
     extract_budget_effect_v2_evidence,
+    extract_early_allocation_effect_evidence,
     inspect_packaged_runner,
     load_budget_effect_campaign,
     load_budget_effect_v2_campaign,
+    load_early_allocation_effect_campaign,
     materialize_budget_effect_plan,
     materialize_budget_effect_v2_plan,
+    materialize_early_allocation_effect_plan,
     summarize_budget_effect,
     summarize_budget_effect_v2,
+    summarize_early_allocation_effect,
 )
 
 
@@ -54,14 +58,34 @@ if campaign_name == "racing-budget-effect-v1":
     extract_campaign_evidence = extract_budget_effect_evidence
     summarize_campaign = summarize_budget_effect
     scenario_version = "1.0.0"
+    scenario_id = "racing.budget-effect-campaign"
+    planned_group_key = "planned_triplet_count"
+    controlled_difference_key = "only_allowed_triplet_difference"
+    mlflow_domain = "racing-budget-effect"
 elif campaign_name == "racing-budget-effect-v2":
     load_campaign = load_budget_effect_v2_campaign
     materialize_campaign_plan = materialize_budget_effect_v2_plan
     extract_campaign_evidence = extract_budget_effect_v2_evidence
     summarize_campaign = summarize_budget_effect_v2
     scenario_version = "2.0.0"
+    scenario_id = "racing.budget-effect-campaign"
+    planned_group_key = "planned_triplet_count"
+    controlled_difference_key = "only_allowed_triplet_difference"
+    mlflow_domain = "racing-budget-effect"
+elif campaign_name == "racing-early-allocation-effect-v1":
+    load_campaign = load_early_allocation_effect_campaign
+    materialize_campaign_plan = materialize_early_allocation_effect_plan
+    extract_campaign_evidence = extract_early_allocation_effect_evidence
+    summarize_campaign = summarize_early_allocation_effect
+    scenario_version = "1.0.0"
+    scenario_id = "racing.early-allocation-effect-campaign"
+    planned_group_key = "planned_block_count"
+    controlled_difference_key = "only_allowed_comparison_difference"
+    mlflow_domain = "racing-early-allocation-effect"
 else:
-    raise ValueError(f"unsupported budget campaign: {campaign_name!r}")
+    raise ValueError(
+        f"unsupported budget campaign or early allocation campaign: {campaign_name!r}"
+    )
 calibration = f"`{catalog_name}`.`{calibration_schema}`"
 campaigns_table = f"{calibration}.campaigns"
 runs_table = f"{calibration}.runs"
@@ -114,7 +138,7 @@ runner_identity = inspect_packaged_runner()
 required_tables = {"campaigns", "runs", "metrics"}
 actual_tables = {row[1] for row in spark.sql(f"SHOW TABLES IN {calibration}").collect()}
 if required_tables - actual_tables:
-    raise RuntimeError("run bootstrap before the budget campaign")
+    raise RuntimeError("run bootstrap before the development campaign")
 required_run_columns = {
     "execution_key",
     "progression",
@@ -163,7 +187,7 @@ tracking_context = (
         tags={
             "pitgun.campaign_id": campaign_id,
             "pitgun.manifest_digest": manifest_digest,
-            "pitgun.domain": "racing-budget-effect",
+            "pitgun.domain": mlflow_domain,
             "pitgun.causal_experiment": "true",
             "pitgun.automatic_promotion": "false",
         },
@@ -181,7 +205,7 @@ with tracking_context as tracking_run:
         "manifest_digest": manifest_digest,
         "question": manifest["question"],
         "parameter_space_version": manifest["schema_version"],
-        "scenario_id": "racing.budget-effect-campaign",
+        "scenario_id": scenario_id,
         "scenario_version": scenario_version,
         "scenario_digest": None,
         "model_id": catalog["model_id"],
@@ -220,13 +244,13 @@ with tracking_context as tracking_run:
                 "campaign_id": campaign_id,
                 "manifest_digest": manifest_digest,
                 "planned_run_count": manifest["planned_run_count"],
-                "planned_triplet_count": manifest["planned_triplet_count"],
+                "planned_group_count": manifest[planned_group_key],
                 "runner_version": runner_identity["version"],
                 "runner_artifact_digest": runner_identity["digest"],
                 "adapter_version": adapter_version,
                 "source_git_revision": source_git_revision,
-                "only_allowed_triplet_difference": manifest["controlled_input"][
-                    "only_allowed_triplet_difference"
+                "only_allowed_comparison_difference": manifest["controlled_input"][
+                    controlled_difference_key
                 ],
                 "automatic_game_or_catalog_promotion": False,
             }
@@ -241,10 +265,10 @@ with tracking_context as tracking_run:
     )
     existing_keys = [row["execution_key"] for row in existing_runs]
     if None in existing_keys or len(existing_keys) != len(set(existing_keys)):
-        raise RuntimeError("budget ledger contains invalid execution keys")
+        raise RuntimeError("development ledger contains invalid execution keys")
     planned_keys = {entry["run_key"] for entry in plan}
     if set(existing_keys) - planned_keys:
-        raise RuntimeError("budget ledger contains unplanned execution keys")
+        raise RuntimeError("development ledger contains unplanned execution keys")
     accepted_keys = {
         row["execution_key"]
         for row in existing_runs
@@ -305,7 +329,7 @@ with tracking_context as tracking_run:
                 "configuration_family": entry["treatment"],
                 "seed": str(entry["seed"]),
                 "run_id": result["run_id"] if result else None,
-                "scenario_id": "racing.budget-effect-campaign",
+                "scenario_id": scenario_id,
                 "scenario_version": scenario_version,
                 "scenario_digest": (
                     result["scenario_digest"] if result else entry["scenario_resource_digest"]
@@ -343,8 +367,18 @@ with tracking_context as tracking_run:
                     {
                         "profile": "balanced-one-stop",
                         "treatment": entry["treatment"],
-                        "triplet_key": entry["triplet_key"],
-                        "triplet_invariant_digest": entry["triplet_invariant_digest"],
+                        **{
+                            key: entry[key]
+                            for key in (
+                                "triplet_key",
+                                "triplet_invariant_digest",
+                                "block_key",
+                                "block_invariant_digest",
+                                "axis",
+                                "direction",
+                            )
+                            if key in entry
+                        },
                         **{
                             key: entry[key]
                             for key in (
@@ -410,7 +444,7 @@ with tracking_context as tracking_run:
     )
     counts = Counter(row["execution_status"] for row in persisted)
     if len(persisted) != manifest["planned_run_count"]:
-        raise RuntimeError("budget campaign ledger does not reconcile")
+        raise RuntimeError("development campaign ledger does not reconcile")
     entry_by_key = {entry["run_key"]: entry for entry in plan}
     successful_evidence = [
         extract_campaign_evidence(
@@ -479,20 +513,58 @@ with tracking_context as tracking_run:
         "campaign_duration_ms": duration_ms,
         "analysis": analysis,
         "budget_target_selected": False,
+        "allocation_profile_selected": False,
         "automatic_game_or_catalog_promotion": False,
     }
+    metric_prefix = (
+        "early_allocation"
+        if campaign_name == "racing-early-allocation-effect-v1"
+        else "budget"
+    )
     mlflow.log_metrics(
         {
-            "budget.planned_run_count": manifest["planned_run_count"],
-            "budget.successful_run_count": counts["SUCCESS"],
-            "budget.invalid_run_count": counts["INVALID"],
-            "budget.failed_run_count": counts["FAILED"],
-            "budget.campaign_duration_ms": duration_ms,
+            f"{metric_prefix}.planned_run_count": manifest["planned_run_count"],
+            f"{metric_prefix}.successful_run_count": counts["SUCCESS"],
+            f"{metric_prefix}.invalid_run_count": counts["INVALID"],
+            f"{metric_prefix}.failed_run_count": counts["FAILED"],
+            f"{metric_prefix}.campaign_duration_ms": duration_ms,
         }
     )
-    mlflow.log_dict(report, "reports/budget-effect-report.json")
+    report_name = (
+        "early-allocation-effect-report"
+        if campaign_name == "racing-early-allocation-effect-v1"
+        else "budget-effect-report"
+    )
+    mlflow.log_dict(report, f"reports/{report_name}.json")
     if analysis:
-        if analysis["schema_version"] == "pitgun.budget-effect-report/v2":
+        if analysis["schema_version"] == "pitgun.early-allocation-effect-report/v1":
+            mlflow.log_metrics(
+                {
+                    "early_allocation.seed_direction_stability_rate": analysis[
+                        "seed_direction_stability"
+                    ]["stable_group_rate"],
+                    **{
+                        f"early_allocation.{axis}.median_marginal_benefit_ms_per_point": row[
+                            "median_marginal_benefit_ms_per_point"
+                        ]
+                        for axis, row in analysis["by_axis"].items()
+                    },
+                }
+            )
+            summary_lines = [
+                "# Controlled Racing early marginal allocation effect",
+                "",
+                f"- Exact blocks: {analysis['sample']['block_count']}",
+                f"- Axis comparisons: {analysis['sample']['axis_comparison_count']}",
+                "- Evidence ranking: "
+                + ", ".join(analysis["evidence_ranking_by_median_marginal_benefit"]),
+                "- Seed-direction stability: "
+                f"{analysis['seed_direction_stability']['stable_group_count']}/"
+                f"{analysis['seed_direction_stability']['group_count']}",
+                "- Allocation profile selected: no",
+            ]
+            mlflow.log_text("\n".join(summary_lines), f"reports/{report_name}.md")
+        elif analysis["schema_version"] == "pitgun.budget-effect-report/v2":
             upper_delta_key = "median_total_time_delta_above_minus_reference_ms"
             upper_delta_metric = "budget.median_total_time_delta_above_minus_reference_ms"
             upper_delta_label = "Median above-minus-reference total time"
@@ -500,33 +572,34 @@ with tracking_context as tracking_run:
             upper_delta_key = "median_total_time_delta_110_minus_100_ms"
             upper_delta_metric = "budget.median_total_time_delta_110_minus_100_ms"
             upper_delta_label = "Median 110%-minus-100% total time"
-        mlflow.log_metrics(
-            {
-                upper_delta_metric: analysis["overall"][upper_delta_key],
-                "budget.monotonic_total_time_rate": analysis["overall"][
-                    "monotonic_total_time_rate"
-                ],
-                "budget.seed_direction_stability_rate": analysis[
-                    "seed_direction_stability"
-                ]["stable_group_rate"],
-            }
-        )
-        summary_lines = [
-            "# Controlled Racing development-budget effect",
-            "",
-            f"- Exact triplets: {analysis['sample']['triplet_count']}",
-            f"- {upper_delta_label}: "
-            f"{analysis['overall'][upper_delta_key]} ms",
-            "- Monotonic dose-response rate: "
-            f"{analysis['overall']['monotonic_total_time_rate']:.1%}",
-            "- Seed-direction stability: "
-            f"{analysis['seed_direction_stability']['stable_group_count']}/"
-            f"{analysis['seed_direction_stability']['group_count']}",
-            "- Budget target selected: no",
-        ]
-        mlflow.log_text("\n".join(summary_lines), "reports/budget-effect-report.md")
+        if analysis["schema_version"].startswith("pitgun.budget-effect-report/"):
+            mlflow.log_metrics(
+                {
+                    upper_delta_metric: analysis["overall"][upper_delta_key],
+                    "budget.monotonic_total_time_rate": analysis["overall"][
+                        "monotonic_total_time_rate"
+                    ],
+                    "budget.seed_direction_stability_rate": analysis[
+                        "seed_direction_stability"
+                    ]["stable_group_rate"],
+                }
+            )
+            summary_lines = [
+                "# Controlled Racing development-budget effect",
+                "",
+                f"- Exact triplets: {analysis['sample']['triplet_count']}",
+                f"- {upper_delta_label}: "
+                f"{analysis['overall'][upper_delta_key]} ms",
+                "- Monotonic dose-response rate: "
+                f"{analysis['overall']['monotonic_total_time_rate']:.1%}",
+                "- Seed-direction stability: "
+                f"{analysis['seed_direction_stability']['stable_group_count']}/"
+                f"{analysis['seed_direction_stability']['group_count']}",
+                "- Budget target selected: no",
+            ]
+            mlflow.log_text("\n".join(summary_lines), f"reports/{report_name}.md")
 
 report_json = json.dumps(report, sort_keys=True, separators=(",", ":"))
 if report["status"] != "COMPLETED":
-    raise RuntimeError(f"budget campaign did not complete: {report_json}")
+    raise RuntimeError(f"development campaign did not complete: {report_json}")
 dbutils.notebook.exit(report_json)

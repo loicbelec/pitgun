@@ -44,6 +44,7 @@ def wheel_entries(version: str) -> dict[str, bytes]:
         FRAMEWORK / "experiments" / "strategy_effect" / "scenarios",
         FRAMEWORK / "experiments" / "budget_effect" / "scenarios",
         FRAMEWORK / "experiments" / "budget_effect_v2" / "scenarios",
+        FRAMEWORK / "experiments" / "early_allocation_effect" / "scenarios",
     )
     catalog_roots = (("racing-v1-2-0", FRAMEWORK / "catalogs" / "racing" / "v1.2.0"),)
     campaigns = FRAMEWORK / "experiments" / "databricks" / "campaigns"
@@ -81,6 +82,9 @@ def wheel_entries(version: str) -> dict[str, bytes]:
         ).read_bytes(),
         f"{PACKAGE}/budget_effect_v2.py": (
             package_root / "budget_effect_v2.py"
+        ).read_bytes(),
+        f"{PACKAGE}/early_allocation_effect.py": (
+            package_root / "early_allocation_effect.py"
         ).read_bytes(),
         f"{PACKAGE}/bin/pitgun": runner.read_bytes(),
         f"{PACKAGE}/bin/tuning_response_probe": tuning_response_probe.read_bytes(),
