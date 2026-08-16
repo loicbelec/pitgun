@@ -61,6 +61,7 @@ databricks bundle run opponent_diagnosis_job -t dev -p pitgun-free \
 databricks bundle run strategy_effect_job -t dev -p pitgun-free
 databricks bundle run budget_effect_job -t dev -p pitgun-free
 databricks bundle run budget_effect_v2_job -t dev -p pitgun-free
+databricks bundle run early_allocation_effect_job -t dev -p pitgun-free
 ```
 
 Repeat `deploy` and `run`: schema and table creation are idempotent. The job may
