@@ -287,7 +287,7 @@
       "id": "pitgun.racing.policies.competitive",
       "path": "simulation/policies/competitive.json",
       "media_type": "application/json",
-      "digest": "sha256:bc7426ab66506ef9a1cb8f2c928ea9012647ae942b32a445e876a28bd1f98027"
+      "digest": "sha256:3ae8204156754fcf6758bcb452e0b648582e0e8afa196365ea9167e2203a3370"
     },
     {
       "id": "pitgun.racing.policies.reference",

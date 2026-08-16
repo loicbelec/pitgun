@@ -44,6 +44,7 @@ class OpponentPolicyV2Test(unittest.TestCase):
             "opponent-audit": "racing-opponent-audit-v1.json",
             "strategy-effect": "racing-strategy-effect-v1.json",
             "budget-effect": "racing-budget-effect-v2.json",
+            "early-allocation-effect": "racing-early-allocation-effect-v1.json",
         }
         sources = {source["kind"]: source for source in policy["calibration"]["sources"]}
         for kind, filename in expected.items():

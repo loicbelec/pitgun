@@ -139,6 +139,11 @@
         "mlflow_run_id": "ea3e8ae16fba45e4878656219b421359"
       },
       {
+        "kind": "early-allocation-effect",
+        "manifest_digest": "sha256:b590f0894251616665f8a4ca7ee2cddc3d142c4babfb580e60a8792b5fc9f989",
+        "mlflow_run_id": "5668a48da19a4263828d3ef712addd0f"
+      },
+      {
         "kind": "game-economy",
         "manifest_digest": "sha256:1e5a082ff05b8c66d43ad0d69306af608c2b9fd4253a4d479d3c0f9c03daf23c",
         "source_revision": "1eebd08e4a375a5570a73c7a6adcd16cc8736e8a"
@@ -153,6 +158,7 @@
       "governed circuit-specific evidence covers Budapest, Monaco, Monza, Singapore and Suzuka",
       "other circuit baselines remain authored and use deterministic fallback semantics",
       "development profile weights preserve explainable diversity and are not globally optimal claims",
+      "the early marginal campaign selected no allocation profile and is not translated into policy weights",
       "eras 6 and 7 require a separate powertrain redesign"
     ]
   }
