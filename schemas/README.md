@@ -28,3 +28,8 @@ in-memory boundary whose concrete input and resources remain domain-owned.
 
 The OVH shared host is only the publication layer. Changes originate here,
 pass schema and example validation in CI, and are deployed from `main`.
+
+`racing-model-parameters/v1` is an experimental, model-scoped parameter
+resource. It preserves the boundary between gameplay resolution, physical
+setup response, model coefficients, and compiled numerical details. Its
+admissibility ranges are not physical-calibration claims.
