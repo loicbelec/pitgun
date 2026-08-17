@@ -29,16 +29,17 @@ model of seven eras.
 | ---: | --- | --- | --- |
 | 1 | Garage Days | `classic_v8_1960` | resolved |
 | 2 | Industrialization | `classic_v8_1970` after its upgrade | resolved |
-| 3 | Aero Era | `classic_v6t_1980` after its upgrade | vehicle resource absent |
-| 4 | Composite Age | `classic_v10_1990`, then `classic_v8_2000` | vehicle resources absent |
+| 3 | Aero Era | continue the governed `classic_v8_1970` base | resolved; Era 3 upgrades alter tuning, not vehicle identity |
+| 4 | Composite Age | continue the governed `classic_v8_1970` base | resolved; distinct historical resources remain deferred |
 | 5 | Digital Twin | `modern_v6t`, then `f1_2026` | both resolved; hybrid and active-aero names exceed current physical state |
 | 6 | Hybrid Synthesis | late vehicle intent | gameplay and Opponent Policy V2 disabled |
 | 7 | Theoretical Limit | late vehicle placeholder | gameplay and Opponent Policy V2 disabled; no Pod/Drone model |
 
-The missing Era 3 and Era 4 resources are a contract gap, not permission to
-silently reuse an unrelated vehicle. Issue #248 must either publish reviewed
-physical resources or simplify and document the game unlock mapping. The old
-candidate files and their limitations are recorded in the
+Issue #248 resolves the former Era 3 and Era 4 lookup gap by removing
+unreviewed vehicle selections and explicitly retaining the governed 1970 base.
+The executable mapping and its evolution gate are recorded in the
+[Racing Game Vehicle Contract V1](RACING_GAME_VEHICLE_CONTRACT_V1.md). The old
+candidate files and their limitations remain recorded in the
 [Racing Parameter Inventory V1](RACING_PARAMETER_INVENTORY_V1.md).
 
 ## Era 1 — Garage Days
@@ -81,7 +82,7 @@ behavior become material decisions.
 | --- | --- | --- |
 | `racing.track.curvature` | implemented by model V2 | preserve continuous response |
 | `racing.aero.fixed` | simplified | distinguish drag and downforce development, setup, and operating regimes |
-| historical vehicle resource | absent | publish and validate the selected Era 3 vehicle identity |
+| historical vehicle resource | shared governed V2 base | publish a distinct generation only after provenance and decision-surface review |
 | `racing.track.elevation` | simplified | use when circuit elevation provenance passes data checks |
 | energy and active-aero capabilities | absent | remain absent |
 
@@ -96,7 +97,7 @@ interact without creating a fictional material-science submodel.
 | Capability | Current | Target before calling the era complete |
 | --- | --- | --- |
 | Era 3 capabilities | implemented or simplified | preserve and recalibrate |
-| Era-specific vehicle resources | absent | publish validated vehicle identities |
+| Era-specific vehicle resources | shared governed V2 base | publish validated distinct identities when their physical differences are earned |
 | mass and load response | simplified | make weight, normal load, braking, and tire effects inspectable |
 | advanced materials | absent as physics | express through resolved mass/thermal parameters, not a hidden bonus |
 | energy and active-aero capabilities | absent | remain absent |

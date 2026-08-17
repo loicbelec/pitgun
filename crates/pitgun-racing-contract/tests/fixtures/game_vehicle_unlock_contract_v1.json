@@ -1,0 +1,72 @@
+{
+  "schema_version": "pitgun.racing-game-vehicle-contract/v1",
+  "contract_id": "pitgun.racing.game-vehicle-unlocks",
+  "contract_version": "1.0.0",
+  "public_release_max_era": 5,
+  "catalog": {
+    "id": "pitgun.racing",
+    "version": "1.3.0",
+    "simulation_pack_digest": "sha256:bb23c022a5dd9a6cf36dc244a4722f383d8dcafad9efa012490632b56569605f",
+    "model_id": "pitgun.racing",
+    "model_version": "2.0.0"
+  },
+  "unlock_rules": [
+    {
+      "vehicle_id": "classic_v8_1960",
+      "min_era": 1,
+      "required_upgrades": [],
+      "components": {
+        "engine": "v8_1960",
+        "aero": "none",
+        "chassis": "default",
+        "tire": "medium"
+      }
+    },
+    {
+      "vehicle_id": "classic_v8_1970",
+      "min_era": 2,
+      "required_upgrades": ["e2_v8_engine"],
+      "components": {
+        "engine": "v8_1970",
+        "aero": "basic",
+        "chassis": "default",
+        "tire": "medium"
+      }
+    },
+    {
+      "vehicle_id": "modern_v6t",
+      "min_era": 5,
+      "required_upgrades": ["e4_kers"],
+      "components": {
+        "engine": "v6t",
+        "aero": "basic",
+        "chassis": "default",
+        "tire": "medium"
+      }
+    },
+    {
+      "vehicle_id": "f1_2026",
+      "min_era": 5,
+      "required_upgrades": ["e5_solid_state"],
+      "components": {
+        "engine": "v6t_hybrid",
+        "aero": "active",
+        "chassis": "f1_2026",
+        "tire": "medium"
+      }
+    }
+  ],
+  "allowed_vehicle_ids_by_enabled_era": {
+    "1": ["classic_v8_1960"],
+    "2": ["classic_v8_1960", "classic_v8_1970"],
+    "3": ["classic_v8_1960", "classic_v8_1970"],
+    "4": ["classic_v8_1960", "classic_v8_1970"],
+    "5": ["classic_v8_1960", "classic_v8_1970", "modern_v6t", "f1_2026"]
+  },
+  "disabled_eras": [6, 7],
+  "rejected_unreviewed_vehicle_ids": [
+    "classic_v6t_1980",
+    "classic_v10_1990",
+    "classic_v8_2000"
+  ]
+}
