@@ -55,6 +55,14 @@ They are SHA-256 vectors over the exact UTF-8 labels
 `pitgun.racing:model:1.0.0:conformance-vector` and
 `pitgun.racing.2026:data-pack:1.0.0:conformance-vector`, respectively.
 
+The additional parameter-resource vector reconstructs an immutable
+catalog-backed V2 release through the same validated browser bundle boundary.
+It proves in native Rust and Node/WASM that the compatibility resource produces
+the existing canonical V2 output and telemetry while adding explicit catalog,
+Simulation Pack, model, and parameter-resource lineage. Historical V1 and V2
+submissions continue to omit that additive lineage block and retain their
+published digests.
+
 Run it natively:
 
 ```sh

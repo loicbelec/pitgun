@@ -804,6 +804,15 @@ pub fn execute_authorized_race(
         .evidence
         .execution_receipt(contract, request.execution_id, runtime)
         .map_err(|error| format!("cannot create Racing execution receipt: {error}"))?;
+    let execution_resolution = catalog.model_parameters_identity().map(|parameters| {
+        evidence::RacingExecutionResolutionV1 {
+            schema_version: evidence::RacingExecutionResolutionVersion::V1,
+            catalog_release: catalog.release_identity().clone(),
+            simulation_pack: catalog.manifest().simulation_pack.identity.clone(),
+            model: contract.model.clone(),
+            model_parameters: parameters.clone(),
+        }
+    });
 
     Ok(evidence::RacingVerificationSubmissionV1 {
         signed_authorization: request.signed_authorization,
@@ -814,6 +823,7 @@ pub fn execute_authorized_race(
         },
         output: execution.evidence.output,
         telemetry_summary: execution.evidence.telemetry_summary,
+        execution_resolution,
     })
 }
 
@@ -2175,7 +2185,9 @@ fn json_error(message: &str) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pitgun_racing_contract::{CompetitorSpec, RaceInput, TuningSpec};
+    use pitgun_racing_contract::{
+        CompetitorSpec, RaceInput, RacingModelParametersPurpose, TuningSpec,
+    };
     use pitgun_runtime::LinkedWorkload;
     use serde::Deserialize;
 
@@ -2502,16 +2514,27 @@ mod tests {
             CurvatureAeroResponse::ContinuousV1,
         )
         .expect("compiled compatibility output");
+        let mut offline_candidate = snapshot
+            .model_parameters()
+            .expect("catalog model parameters")
+            .clone();
+        offline_candidate.purpose = RacingModelParametersPurpose::ModelV2OfflineCandidate;
         let explicit_resource = run_race_with_catalog_and_model_parameters(
             one_lap_request(),
             &snapshot,
             &racing_model_v2_identity(),
-            snapshot
-                .model_parameters()
-                .expect("catalog model parameters"),
+            &offline_candidate,
             CurvatureAeroResponse::ContinuousV1,
         )
         .expect("explicit resource output");
+        assert_eq!(
+            snapshot
+                .model_parameters()
+                .expect("catalog resource")
+                .purpose,
+            RacingModelParametersPurpose::ModelV2Compatibility,
+            "offline screening must not mutate the catalog-backed default"
+        );
 
         assert_eq!(
             pitgun_contract::canonical_json_bytes(&catalog_backed)

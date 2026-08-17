@@ -871,6 +871,38 @@ mod tests {
     }
 
     #[test]
+    fn racing_v2_authorization_transitively_binds_catalog_1_4_parameters() {
+        let state = test_state_for("2.0.0", "v1.4.0");
+        let response = build_signed_racing_run_authorization(
+            1_710_000_000_000,
+            &state,
+            racing_request(&state),
+        )
+        .expect("Racing Catalog 1.4 authorization");
+        let catalog = state.racing_catalog.as_ref().expect("catalog");
+        let parameters = catalog
+            .model_parameters_identity()
+            .expect("parameter identity");
+
+        assert_eq!(
+            response.signed.authorization.contract.data_pack,
+            catalog.manifest().simulation_pack.identity
+        );
+        assert_eq!(
+            response.catalog_release.as_ref(),
+            Some(catalog.release_identity())
+        );
+        assert_eq!(
+            parameters.id.as_str(),
+            "pitgun.racing.model-parameters.v2-compatibility"
+        );
+        assert_eq!(
+            parameters.digest.to_string(),
+            "sha256:89c0da5b058cf51b43953d0d31fe2e0f61f3c7038f9149e2fa59ad92c930ef71"
+        );
+    }
+
+    #[test]
     fn identical_semantic_requests_share_run_id_but_not_nonce() {
         let state = test_state();
         let first = build_signed_racing_run_authorization(
