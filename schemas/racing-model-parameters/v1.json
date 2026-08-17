@@ -1,0 +1,176 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.pitgun.io/racing-model-parameters/v1.json",
+  "title": "Pitgun Racing Model Parameters V1",
+  "description": "Strict immutable parameter resource for historical Racing Model V2 compatibility and governed offline candidates. The ranges are transport admissibility limits, not claims of physical calibration.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "identity",
+    "compatible_model",
+    "purpose",
+    "development_resolution",
+    "setup_response",
+    "aerodynamic_state_response"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "pitgun.racing-model-parameters/v1"
+    },
+    "identity": {
+      "$ref": "#/$defs/resource_identity"
+    },
+    "compatible_model": {
+      "$ref": "#/$defs/model_compatibility"
+    },
+    "purpose": {
+      "enum": [
+        "model-v2-compatibility",
+        "model-v2-offline-candidate"
+      ]
+    },
+    "development_resolution": {
+      "$ref": "#/$defs/development_resolution"
+    },
+    "setup_response": {
+      "$ref": "#/$defs/setup_response"
+    },
+    "aerodynamic_state_response": {
+      "$ref": "#/$defs/aerodynamic_state_response"
+    }
+  },
+  "$defs": {
+    "resource_identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "version"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^pitgun\\.racing\\.model-parameters\\.[a-z0-9][a-z0-9._-]*$"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(?:-[0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*)?(?:\\+[0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*)?$"
+        }
+      }
+    },
+    "model_compatibility": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "version"],
+      "properties": {
+        "id": {
+          "const": "pitgun.racing"
+        },
+        "version": {
+          "const": "2.0.0"
+        }
+      }
+    },
+    "non_negative_ratio": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 4
+    },
+    "positive_multiplier": {
+      "type": "number",
+      "minimum": 0.1,
+      "maximum": 4
+    },
+    "development_resolution": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "points_cap_per_axis",
+        "aerodynamic_area_gain_at_cap",
+        "chassis_grip_gain_at_cap",
+        "cooling_base_multiplier",
+        "cooling_gain_at_cap",
+        "engine_torque_gain_at_cap"
+      ],
+      "properties": {
+        "points_cap_per_axis": {
+          "description": "Development points per axis before normalization.",
+          "type": "number",
+          "minimum": 1,
+          "maximum": 100
+        },
+        "aerodynamic_area_gain_at_cap": {
+          "description": "Dimensionless aerodynamic-area gain at the point cap.",
+          "$ref": "#/$defs/non_negative_ratio"
+        },
+        "chassis_grip_gain_at_cap": {
+          "description": "Dimensionless chassis-grip gain at the point cap.",
+          "$ref": "#/$defs/non_negative_ratio"
+        },
+        "cooling_base_multiplier": {
+          "description": "Dimensionless cooling multiplier at zero points.",
+          "$ref": "#/$defs/positive_multiplier"
+        },
+        "cooling_gain_at_cap": {
+          "description": "Dimensionless cooling gain at the point cap.",
+          "$ref": "#/$defs/non_negative_ratio"
+        },
+        "engine_torque_gain_at_cap": {
+          "description": "Dimensionless torque-curve gain at the point cap.",
+          "$ref": "#/$defs/non_negative_ratio"
+        }
+      }
+    },
+    "setup_response": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "drag_area_base_multiplier",
+        "drag_area_slider_gain",
+        "downforce_area_base_multiplier",
+        "downforce_area_slider_gain",
+        "gear_ratio_base_multiplier",
+        "gear_ratio_slider_reduction"
+      ],
+      "properties": {
+        "drag_area_base_multiplier": {
+          "description": "Dimensionless drag-area multiplier at minimum aero setup.",
+          "$ref": "#/$defs/positive_multiplier"
+        },
+        "drag_area_slider_gain": {
+          "description": "Dimensionless drag-area gain over the normalized aero slider.",
+          "$ref": "#/$defs/non_negative_ratio"
+        },
+        "downforce_area_base_multiplier": {
+          "description": "Dimensionless downforce-area multiplier at minimum aero setup.",
+          "$ref": "#/$defs/positive_multiplier"
+        },
+        "downforce_area_slider_gain": {
+          "description": "Dimensionless downforce-area gain over the normalized aero slider.",
+          "$ref": "#/$defs/non_negative_ratio"
+        },
+        "gear_ratio_base_multiplier": {
+          "description": "Dimensionless common gear-ratio multiplier at minimum gearing setup.",
+          "$ref": "#/$defs/positive_multiplier"
+        },
+        "gear_ratio_slider_reduction": {
+          "description": "Dimensionless common gear-ratio reduction over the normalized gearing slider. Rust validation additionally requires it to be lower than the base multiplier.",
+          "$ref": "#/$defs/non_negative_ratio"
+        }
+      }
+    },
+    "aerodynamic_state_response": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["straight_multiplier", "corner_multiplier"],
+      "properties": {
+        "straight_multiplier": {
+          "description": "Dimensionless drag/downforce scale at the full-straight state.",
+          "$ref": "#/$defs/positive_multiplier"
+        },
+        "corner_multiplier": {
+          "description": "Dimensionless drag/downforce scale at the full-corner state.",
+          "$ref": "#/$defs/positive_multiplier"
+        }
+      }
+    }
+  }
+}

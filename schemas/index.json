@@ -67,6 +67,17 @@
       ]
     },
     {
+      "id": "https://schemas.pitgun.io/racing-model-parameters/v1.json",
+      "path": "racing-model-parameters/v1.json",
+      "kind": "json-schema",
+      "lifecycle": "experimental",
+      "owner": "pitgun-racing-contract",
+      "evidence": [
+        "crates/pitgun-racing-contract/src/model_parameters.rs",
+        "crates/pitgun-racing-contract/tests/fixtures/racing_model_parameters_v1.json"
+      ]
+    },
+    {
       "id": "https://schemas.pitgun.io/racing-opponent-policy/v1.json",
       "path": "racing-opponent-policy/v1.json",
       "kind": "json-schema",

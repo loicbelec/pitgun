@@ -172,11 +172,35 @@ def validate_racing_opponent_policies() -> None:
         print(f"OK opponent policy {policy_path.relative_to(ROOT)}")
 
 
+def validate_racing_model_parameters() -> None:
+    schema_path = SCHEMAS_DIR / "racing-model-parameters" / "v1.json"
+    fixture_path = (
+        ROOT
+        / "crates"
+        / "pitgun-racing-contract"
+        / "tests"
+        / "fixtures"
+        / "racing_model_parameters_v1.json"
+    )
+    validator = jsonschema.Draft202012Validator(load_json(schema_path))
+    errors = sorted(
+        validator.iter_errors(load_json(fixture_path)), key=lambda error: error.path
+    )
+    if errors:
+        print(f"FAIL Racing model parameters {fixture_path.relative_to(ROOT)}")
+        for error in errors:
+            location = ".".join(str(part) for part in error.path) or "<root>"
+            print(f"  {location}: {error.message}")
+        raise SystemExit(1)
+    print(f"OK Racing model parameters {fixture_path.relative_to(ROOT)}")
+
+
 def main() -> int:
     entries = validate_catalog()
     validate_artifacts(entries)
     validate_gateway_examples()
     validate_racing_opponent_policies()
+    validate_racing_model_parameters()
     return 0
 
 
