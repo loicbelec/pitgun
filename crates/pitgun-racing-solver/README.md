@@ -28,3 +28,14 @@ experiment before a future immutable Racing Catalog release adopts them.
 It deliberately does not load catalogs, orchestrate races or sessions, produce
 gateway envelopes, implement the linked workload, or expose browser bindings.
 Those responsibilities belong to the Racing Simulator.
+
+## Racing Game Model V3 candidate
+
+`ResolvedSimulationRequestV3` is the first physical-only V3 boundary. It cannot
+carry game development points or setup sliders, validates resolved physical
+inputs, and integrates the real distance of every track segment. The candidate
+is offline-only and documented in
+[`RACING_MODEL_V3_FOUNDATION.md`](../../docs/RACING_MODEL_V3_FOUNDATION.md).
+
+Historical V1/V2 entry points keep their original uniform-grid and tuning
+behavior for deterministic replay.

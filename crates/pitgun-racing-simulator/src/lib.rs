@@ -7,7 +7,7 @@ pub use catalog::{
 };
 pub use workload::{
     RacingWorkload, RacingWorkloadError, racing_model_identity_for_version,
-    racing_model_v1_identity, racing_model_v2_identity,
+    racing_model_v1_identity, racing_model_v2_identity, racing_model_v3_candidate_identity,
 };
 
 use std::collections::HashMap;
@@ -36,13 +36,15 @@ pub use pitgun_racing_solver::{
     AERO_FULL_CORNER_CURVATURE_RAD_PER_M, AERO_FULL_STRAIGHT_CURVATURE_RAD_PER_M, AeroParams,
     CORNER_CURVATURE_THRESHOLD_RAD_PER_M, ChassisParams, CircuitDescriptorsV1,
     CurvatureAeroResponse, Driver, DriverEffects, EngineParams, PitPlan, PitStop,
-    ResampledTelemetry, SetupResponseDiagnosticsV1, SetupResponseDiagnosticsVersion, SimConfig,
-    SimulationRequest, SimulationResult, SimulationSolution, TireParams, Track, Tuning,
-    TuningResponseV1, TuningResponseVersion, VehicleParams, VehicleState, apply_driver_to_tire,
-    apply_tuning, apply_tuning_with_response, best_power_at_speed, curvature_aero_blend,
-    derating_factor, describe_circuit, diagnose_setup_response, driver_effects, effective_mu,
-    power_kw_from_rpm, resample_telemetry as resample_solution, rpm_from_speed_gear,
-    run_simulation as solve, run_simulation_with_model_response as solve_with_model_response,
+    ResampledTelemetry, ResolvedSimulationRequestV3, SetupResponseDiagnosticsV1,
+    SetupResponseDiagnosticsVersion, SimConfig, SimulationRequest, SimulationResult,
+    SimulationSolution, TireParams, Track, Tuning, TuningResponseV1, TuningResponseVersion,
+    VehicleParams, VehicleState, apply_driver_to_tire, apply_tuning, apply_tuning_with_response,
+    best_power_at_speed, curvature_aero_blend, derating_factor, describe_circuit,
+    diagnose_setup_response, driver_effects, effective_mu, power_kw_from_rpm,
+    resample_telemetry as resample_solution, rpm_from_speed_gear,
+    run_resolved_simulation_v3 as solve_resolved_v3, run_simulation as solve,
+    run_simulation_with_model_response as solve_with_model_response,
     run_simulation_with_tuning_response as solve_with_tuning_response,
 };
 
@@ -388,6 +390,95 @@ fn tuning_response_from_model_parameters(
     Ok(response)
 }
 
+/// Resolves transitional gameplay controls to the physical vehicle accepted by
+/// the first V3 candidate.
+///
+/// The formulas intentionally reproduce the reviewed Model V2 compatibility
+/// response while moving their execution to the Simulator side of the V3
+/// boundary. They are not the final Model V3 parameter semantics.
+pub fn resolve_v3_physical_vehicle(
+    vehicle: &VehicleParams,
+    tuning: &Tuning,
+    response: &TuningResponseV1,
+) -> Result<VehicleParams, String> {
+    response
+        .validate()
+        .map_err(|error| format!("invalid V3 physical resolution response: {error}"))?;
+
+    let points_cap = response.development_points_cap;
+    let aero_points = (tuning.aero_points as f64).clamp(0.0, points_cap);
+    let chassis_points = (tuning.chassis_points as f64).clamp(0.0, points_cap);
+    let cooling_points = (tuning.cooling_points as f64).clamp(0.0, points_cap);
+    let engine_points = (tuning.engine_points as f64).clamp(0.0, points_cap);
+    let downforce = tuning.downforce_slider.clamp(0.0, 1.0);
+    let gearing = tuning.gear_ratio_slider.clamp(0.0, 1.0);
+
+    let aero_gain = 1.0 + response.aero_development_gain * (aero_points / points_cap);
+    let drag_multiplier = response.drag_base + response.drag_slider_gain * downforce;
+    let downforce_multiplier = response.downforce_base + response.downforce_slider_gain * downforce;
+    let aero = AeroParams {
+        cd_a_x: vehicle.aero.cd_a_x * aero_gain * drag_multiplier * response.straight_aero_scale,
+        cd_a_z: vehicle.aero.cd_a_z * aero_gain * drag_multiplier * response.corner_aero_scale,
+        cl_a_x: vehicle.aero.cl_a_x
+            * aero_gain
+            * downforce_multiplier
+            * response.straight_aero_scale,
+        cl_a_z: vehicle.aero.cl_a_z * aero_gain * downforce_multiplier * response.corner_aero_scale,
+    };
+
+    let grip_multiplier =
+        1.0 + response.chassis_grip_development_gain * (chassis_points / points_cap);
+    let chassis = ChassisParams {
+        mass_empty: vehicle.chassis.mass_empty,
+        r_wheel: vehicle.chassis.r_wheel,
+        mu0: vehicle.chassis.mu0 * grip_multiplier,
+        c_rr: vehicle.chassis.c_rr,
+        rho: vehicle.chassis.rho,
+        g: vehicle.chassis.g,
+    };
+
+    let cooling_multiplier =
+        response.cooling_base + response.cooling_development_gain * (cooling_points / points_cap);
+    let torque_multiplier =
+        1.0 + response.engine_torque_development_gain * (engine_points / points_cap);
+    let gear_multiplier = response.gear_ratio_base - response.gear_ratio_slider_reduction * gearing;
+    let engine = EngineParams {
+        n_rpm: vehicle.engine.n_rpm.clone(),
+        trq: vehicle
+            .engine
+            .trq
+            .iter()
+            .map(|torque| torque * torque_multiplier)
+            .collect(),
+        gear_ratios: vehicle
+            .engine
+            .gear_ratios
+            .iter()
+            .map(|ratio| ratio * gear_multiplier)
+            .collect(),
+        n_upshift: vehicle.engine.n_upshift,
+        n_downshift: vehicle.engine.n_downshift,
+        n_idle: vehicle.engine.n_idle,
+        n_max: vehicle.engine.n_max,
+        t_amb: vehicle.engine.t_amb,
+        t_init: vehicle.engine.t_init,
+        c_th: vehicle.engine.c_th,
+        alpha_heat: vehicle.engine.alpha_heat,
+        p_cool0: vehicle.engine.p_cool0 * cooling_multiplier,
+        k_cool: vehicle.engine.k_cool * cooling_multiplier,
+        t_soft: vehicle.engine.t_soft,
+        beta_derate: vehicle.engine.beta_derate,
+        fuel_burn_kg_per_s: vehicle.engine.fuel_burn_kg_per_s,
+    };
+
+    Ok(VehicleParams {
+        chassis,
+        aero,
+        engine,
+        tire: vehicle.tire.clone(),
+    })
+}
+
 /// Runs one offline calibration race with an explicit physical tuning response.
 ///
 /// This Rust-only boundary exists for governed experiments. Production, WASM,
@@ -474,8 +565,55 @@ pub fn run_race_with_catalog_and_model_response(
             track_profile: request.input.track_profile.as_ref(),
             laps: normalized_race.laps,
             seed: request.seed,
-            tuning_response,
-            curvature_response,
+            model: SessionPhysicalModel::Historical {
+                tuning_response,
+                curvature_response,
+            },
+        },
+    )
+}
+
+/// Runs the first offline Racing Game Model V3 vertical slice.
+///
+/// The Simulator resolves gameplay tuning to physical vehicle parameters, then
+/// invokes the V3 Solver boundary that cannot accept development points or
+/// setup sliders. This candidate deliberately bypasses production model/catalog
+/// selection and therefore cannot be authorized or used by the browser.
+pub fn run_race_with_catalog_and_v3_candidate(
+    request: RunRaceRequest,
+    snapshot: &RacingCatalogSnapshot,
+    tuning_response: &TuningResponseV1,
+) -> Result<RaceOutput, String> {
+    tuning_response
+        .validate()
+        .map_err(|error| format!("invalid V3 candidate resolution response: {error}"))?;
+    if request.input.race.competitors.is_empty() {
+        return Err("race requires at least one competitor".to_string());
+    }
+
+    let validation_era = request.era.unwrap_or(request.input.era);
+    let normalized_race = normalize_and_validate_race_input(
+        &request.input.race,
+        if validation_era > 0 {
+            validation_era as u32
+        } else {
+            0
+        },
+    )
+    .map_err(|err| format!("invalid race input: {err}"))?;
+    let vehicle_id = resolve_vehicle_id(request.input.vehicle_id.as_deref())?;
+    let catalog = EmbeddedCatalog::from_snapshot(snapshot)?;
+
+    run_single_session(
+        &catalog,
+        &normalized_race,
+        vehicle_id,
+        SessionExecution {
+            pit_strategy: request.input.pit_strategy.as_ref(),
+            track_profile: request.input.track_profile.as_ref(),
+            laps: normalized_race.laps,
+            seed: request.seed,
+            model: SessionPhysicalModel::V3Candidate { tuning_response },
         },
     )
 }
@@ -519,8 +657,10 @@ pub fn run_sessions_with_catalog(
                 track_profile: request.track_profile.as_ref(),
                 laps: session.laps,
                 seed: request.seed,
-                tuning_response: &tuning_response,
-                curvature_response: CurvatureAeroResponse::LegacyBinary,
+                model: SessionPhysicalModel::Historical {
+                    tuning_response: &tuning_response,
+                    curvature_response: CurvatureAeroResponse::LegacyBinary,
+                },
             },
         )?;
         sessions.push(SessionRunResult {
@@ -538,8 +678,18 @@ struct SessionExecution<'a> {
     track_profile: Option<&'a SolverTrackProfile>,
     laps: u16,
     seed: u64,
-    tuning_response: &'a TuningResponseV1,
-    curvature_response: CurvatureAeroResponse,
+    model: SessionPhysicalModel<'a>,
+}
+
+#[derive(Clone, Copy)]
+enum SessionPhysicalModel<'a> {
+    Historical {
+        tuning_response: &'a TuningResponseV1,
+        curvature_response: CurvatureAeroResponse,
+    },
+    V3Candidate {
+        tuning_response: &'a TuningResponseV1,
+    },
 }
 
 fn run_single_session(
@@ -553,8 +703,7 @@ fn run_single_session(
         track_profile,
         laps,
         seed,
-        tuning_response,
-        curvature_response,
+        model,
     } = execution;
     let track_id = normalize_track_id(&race.track_id);
     let mut track_record = catalog.get_track(&track_id)?.clone();
@@ -600,6 +749,14 @@ fn run_single_session(
         };
 
         let pit_plan = build_pit_plan(catalog, &stint_plan)?;
+        let tuning = Tuning {
+            engine_points: competitor.tuning.engine_points.round() as i32,
+            cooling_points: competitor.tuning.cooling_points.round() as i32,
+            aero_points: competitor.tuning.aero_points.round() as i32,
+            chassis_points: competitor.tuning.chassis_points.round() as i32,
+            downforce_slider: competitor.tuning.downforce_slider,
+            gear_ratio_slider: competitor.tuning.gear_ratio_slider,
+        };
         let request = SimulationRequest {
             track: track_record.track.clone(),
             vehicle: resolved_vehicle.0.clone(),
@@ -613,17 +770,34 @@ fn run_single_session(
             lap_count: laps.max(1),
             pit_plan,
             driver,
-            tuning: Some(Tuning {
-                engine_points: competitor.tuning.engine_points.round() as i32,
-                cooling_points: competitor.tuning.cooling_points.round() as i32,
-                aero_points: competitor.tuning.aero_points.round() as i32,
-                chassis_points: competitor.tuning.chassis_points.round() as i32,
-                downforce_slider: competitor.tuning.downforce_slider,
-                gear_ratio_slider: competitor.tuning.gear_ratio_slider,
-            }),
+            tuning: Some(tuning.clone()),
         };
-        let result = solve_with_model_response(&request, tuning_response, curvature_response)
-            .map_err(|err| format!("simulation failed for competitor {}: {err}", competitor.id))?;
+        let result = match model {
+            SessionPhysicalModel::Historical {
+                tuning_response,
+                curvature_response,
+            } => solve_with_model_response(&request, tuning_response, curvature_response),
+            SessionPhysicalModel::V3Candidate { tuning_response } => {
+                let physical_vehicle =
+                    resolve_v3_physical_vehicle(&request.vehicle, &tuning, tuning_response)
+                        .map_err(|error| {
+                            format!(
+                                "cannot resolve V3 physical vehicle for competitor {}: {error}",
+                                competitor.id
+                            )
+                        })?;
+                solve_resolved_v3(&ResolvedSimulationRequestV3 {
+                    track: request.track.clone(),
+                    vehicle: physical_vehicle,
+                    state: request.state.clone(),
+                    config: request.config.clone(),
+                    lap_count: request.lap_count,
+                    pit_plan: request.pit_plan.clone(),
+                    driver: request.driver.clone(),
+                })
+            }
+        }
+        .map_err(|err| format!("simulation failed for competitor {}: {err}", competitor.id))?;
 
         let lap_times_ms = lap_times_ms(&result.lap_times_s, &stint_plan, pit_loss_ms);
         let total_time_ms = lap_times_ms.iter().copied().sum::<u64>();
@@ -2208,6 +2382,10 @@ mod tests {
             racing_workload_for(&racing_model_v2_identity(), &model_v1_catalog).is_err(),
             "model V2 must not run against the model V1 catalog"
         );
+        assert!(
+            racing_workload_for(&racing_model_v3_candidate_identity(), &model_v2_catalog).is_err(),
+            "the offline V3 candidate must not run through a production V2 catalog"
+        );
 
         let mut forged = racing_model_v2_identity();
         forged.digest = pitgun_contract::Digest::from_bytes(b"forged model V2");
@@ -2550,6 +2728,69 @@ mod tests {
                 .expect("canonical explicit-resource JSON"),
             "offline resource injection must use the same validated semantics"
         );
+    }
+
+    #[test]
+    fn v3_candidate_resolves_gameplay_before_the_solver_and_is_deterministic() {
+        let root =
+            std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../catalogs/racing/v1.4.0");
+        let snapshot = RacingCatalogSnapshot::from_release_dir(root).expect("catalog snapshot");
+        let request = one_lap_request();
+
+        let first = run_race_with_catalog_and_v3_candidate(
+            request.clone(),
+            &snapshot,
+            &TuningResponseV1::default(),
+        )
+        .expect("first V3 candidate race");
+        let second = run_race_with_catalog_and_v3_candidate(
+            request.clone(),
+            &snapshot,
+            &TuningResponseV1::default(),
+        )
+        .expect("second V3 candidate race");
+        let model_v2 = run_race_with_catalog_and_model_response(
+            request,
+            &snapshot,
+            &TuningResponseV1::default(),
+            CurvatureAeroResponse::ContinuousV1,
+        )
+        .expect("Model V2 race");
+
+        assert_eq!(
+            pitgun_contract::canonical_json_bytes(&first).expect("first canonical V3 output"),
+            pitgun_contract::canonical_json_bytes(&second).expect("second canonical V3 output"),
+        );
+        assert_eq!(first.total_time_ms, model_v2.total_time_ms);
+        assert_ne!(
+            racing_model_v3_candidate_identity(),
+            racing_model_v2_identity(),
+            "even an equivalent uniform-grid fixture must retain distinct model lineage",
+        );
+    }
+
+    #[test]
+    fn v3_transitional_resolution_happens_in_the_simulator() {
+        let snapshot = RacingCatalogSnapshot::embedded_model_v2().expect("catalog snapshot");
+        let catalog = EmbeddedCatalog::from_snapshot(&snapshot).expect("resolved catalog");
+        let (base_vehicle, _) = catalog.resolve_vehicle("f1_2026").expect("base vehicle");
+        let tuning = Tuning {
+            engine_points: 8,
+            cooling_points: 5,
+            aero_points: 4,
+            chassis_points: 3,
+            downforce_slider: 0.65,
+            gear_ratio_slider: 0.35,
+        };
+
+        let simulator_resolved =
+            resolve_v3_physical_vehicle(&base_vehicle, &tuning, &TuningResponseV1::default())
+                .expect("Simulator V3 resolution");
+        let historical_transform =
+            apply_tuning_with_response(&base_vehicle, &tuning, &TuningResponseV1::default())
+                .expect("historical compatibility transform");
+
+        assert_eq!(simulator_resolved, historical_transform);
     }
 
     #[test]
