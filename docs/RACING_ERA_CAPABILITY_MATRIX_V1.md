@@ -6,6 +6,9 @@ not enable a game era or claim physics that the Solver does not implement.
 
 Capability identifiers are defined in the
 [Racing Model Constitution V1](RACING_MODEL_CONSTITUTION_V1.md).
+Their reduced-order Game Model meaning and future Reference Model upgrade path
+are audited in the
+[Racing Model Approximation Audit V1](RACING_MODEL_APPROXIMATION_AUDIT_V1.md).
 
 ## Status vocabulary
 

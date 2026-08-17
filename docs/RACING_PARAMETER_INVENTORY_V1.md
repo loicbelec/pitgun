@@ -4,6 +4,10 @@ Status: governed analysis for issue #243. This inventory changes no production
 behavior. It records the values that currently shape Racing execution, their
 ownership, and the evidence required before any replacement is published.
 
+The equation structures that consume these values, including the Game Model
+and future Reference Model boundary, are reviewed in the
+[Racing Model Approximation Audit V1](RACING_MODEL_APPROXIMATION_AUDIT_V1.md).
+
 ## Scope and lineage
 
 The reviewed production boundary is Racing model `pitgun.racing@2.0.0` with
