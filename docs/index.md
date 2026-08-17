@@ -19,6 +19,7 @@
 - [Racing Model Constitution V1](RACING_MODEL_CONSTITUTION_V1.md)
 - [Racing Era Capability Matrix V1](RACING_ERA_CAPABILITY_MATRIX_V1.md)
 - [Racing Parameter Inventory V1](RACING_PARAMETER_INVENTORY_V1.md)
+- [Racing Model Approximation Audit V1](RACING_MODEL_APPROXIMATION_AUDIT_V1.md)
 
 ## Architecture Decisions
 

@@ -135,6 +135,9 @@ given era.
 
 The authoritative per-era status is recorded in
 [Racing Era Capability Matrix V1](RACING_ERA_CAPABILITY_MATRIX_V1.md).
+The equation-level limitations, fidelity boundary, and proposed V3 sequence are
+recorded in the
+[Racing Model Approximation Audit V1](RACING_MODEL_APPROXIMATION_AUDIT_V1.md).
 
 ## Physical and numerical invariants
 
