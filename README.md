@@ -320,6 +320,7 @@ The current sequence is intentionally proof-driven:
 - [Framework boundaries](docs/FRAMEWORK_BOUNDARIES.md) — generic and Racing separation
 - [Racing Model Constitution V1](docs/RACING_MODEL_CONSTITUTION_V1.md) — physical-model ownership, claims, invariants, and versioning
 - [Racing Era Capability Matrix V1](docs/RACING_ERA_CAPABILITY_MATRIX_V1.md) — implemented and target capabilities across the seven game eras
+- [Racing Parameter Inventory V1](docs/RACING_PARAMETER_INVENTORY_V1.md) — coefficients, defaults, dead inputs, ownership, and evidence status
 - [Racing demo CLI contract](docs/RACING_DEMO_CLI_V1.md) — command, bundle layout, report, and failures
 - [Racing batch runner V1](docs/RACING_BATCH_RUNNER_V1.md) — resolved scenario input and canonical compact result
 - [Under-five-minute quickstart](docs/QUICKSTART.md) — workspace and prebuilt installation paths
