@@ -93,6 +93,7 @@ pub struct RacingCatalogSnapshot {
     presentation_index: RacingPresentationIndexV1,
     resources: BTreeMap<CatalogPath, Vec<u8>>,
     model_parameters: Option<RacingModelParametersV1>,
+    model_parameters_identity: Option<ArtifactIdentity>,
 }
 
 /// Failure produced before a Racing Catalog may enter simulation.
@@ -297,7 +298,12 @@ impl RacingCatalogSnapshot {
             return Err(RacingCatalogResolutionError::UnexpectedResource(path));
         }
 
-        let model_parameters = resolve_model_parameters(&manifest, &simulation_index, &supplied)?;
+        let resolved_model_parameters =
+            resolve_model_parameters(&manifest, &simulation_index, &supplied)?;
+        let (model_parameters, model_parameters_identity) = resolved_model_parameters
+            .map_or((None, None), |(parameters, identity)| {
+                (Some(parameters), Some(identity))
+            });
 
         let snapshot = Self {
             manifest,
@@ -306,6 +312,7 @@ impl RacingCatalogSnapshot {
             presentation_index,
             resources: supplied,
             model_parameters,
+            model_parameters_identity,
         };
         crate::EmbeddedCatalog::from_snapshot(&snapshot)
             .map_err(RacingCatalogResolutionError::InvalidResolvedResources)?;
@@ -439,6 +446,37 @@ impl RacingCatalogSnapshot {
         self.model_parameters.as_ref()
     }
 
+    /// Returns the exact semantic and content identity of the selected parameters.
+    ///
+    /// The digest covers the exact resource bytes validated against the immutable
+    /// Simulation Pack index. Historical releases intentionally return `None`.
+    #[must_use]
+    pub const fn model_parameters_identity(&self) -> Option<&ArtifactIdentity> {
+        self.model_parameters_identity.as_ref()
+    }
+
+    /// Recreates the transport-neutral bundle for this validated snapshot.
+    ///
+    /// This is primarily useful to exercise the same byte-validation boundary in
+    /// native and WASM tests without adding filesystem or network concerns.
+    pub fn to_bundle(&self) -> Result<RacingCatalogBundleV1, serde_json::Error> {
+        Ok(RacingCatalogBundleV1 {
+            manifest: serde_json::to_string(&self.manifest)?,
+            release_identity: serde_json::to_string(&self.release_identity)?,
+            simulation_index: serde_json::to_string(&self.simulation_index)?,
+            presentation_index: serde_json::to_string(&self.presentation_index)?,
+            resources: self
+                .resources
+                .iter()
+                .map(|(path, bytes)| RacingCatalogFileV1 {
+                    path: path.to_string(),
+                    contents: String::from_utf8(bytes.clone())
+                        .expect("validated Racing resources are UTF-8 JSON"),
+                })
+                .collect(),
+        })
+    }
+
     /// Binds validated resources to one exact deterministic run contract.
     ///
     /// The contract must select this release's Simulation Pack through its
@@ -470,7 +508,7 @@ fn resolve_model_parameters(
     manifest: &ResourceCatalogManifestV1,
     simulation_index: &RacingSimulationIndexV1,
     supplied: &BTreeMap<CatalogPath, Vec<u8>>,
-) -> Result<Option<RacingModelParametersV1>, RacingCatalogResolutionError> {
+) -> Result<Option<(RacingModelParametersV1, ArtifactIdentity)>, RacingCatalogResolutionError> {
     let mut indexed = simulation_index.resources.iter().filter(|resource| {
         resource.id.as_str().starts_with(MODEL_PARAMETERS_ID_PREFIX)
             || resource
@@ -558,7 +596,13 @@ fn resolve_model_parameters(
             ))
         })?;
 
-    Ok(Some(parameters))
+    let identity = ArtifactIdentity {
+        id: parameters.identity.id.clone(),
+        version: parameters.identity.version.clone(),
+        digest: resource.digest,
+    };
+
+    Ok(Some((parameters, identity)))
 }
 
 fn validate_known_racing_model_compatibility(
@@ -904,6 +948,7 @@ mod tests {
         let historical = RacingCatalogSnapshot::from_release_dir(historical_root)
             .expect("historical catalog release");
         assert!(historical.model_parameters().is_none());
+        assert!(historical.model_parameters_identity().is_none());
 
         let resource_root =
             Path::new(env!("CARGO_MANIFEST_DIR")).join("../../catalogs/racing/v1.4.0");
@@ -924,6 +969,15 @@ mod tests {
                 .expect("parameter digest")
                 .to_string(),
             "sha256:1c60391e5c536248153b5cae8608bc126f85b5ca31fe04b5cc84a424673e3f50"
+        );
+        let identity = snapshot
+            .model_parameters_identity()
+            .expect("catalog-backed parameter identity");
+        assert_eq!(identity.id, parameters.identity.id);
+        assert_eq!(identity.version, parameters.identity.version);
+        assert_eq!(
+            identity.digest.to_string(),
+            "sha256:89c0da5b058cf51b43953d0d31fe2e0f61f3c7038f9149e2fa59ad92c930ef71"
         );
     }
 

@@ -90,3 +90,25 @@ compatibility have passed validation. A missing, altered, malformed, or
 incompatible resource fails before simulation. Rust experiments may inject an
 explicit validated offline-candidate resource without changing a catalog or
 the public `LATEST` selection.
+
+## Verified-execution lineage
+
+Catalog-backed hosted execution projects four exact identities into
+`RacingVerificationSubmissionV1.execution_resolution`:
+
+- the immutable catalog release;
+- the Simulation Pack already signed into the deterministic run contract;
+- the statically linked Racing model;
+- the semantic version and exact byte digest of the model-parameter resource.
+
+The field is absent for historical catalogs, preserving their canonical
+submission bytes. It is mandatory when the retained catalog contains model
+parameters. The Verifier independently derives the same block from its
+validated catalog snapshot and rejects missing or substituted lineage before
+replay. The Authority binds the resource transitively by signing the exact
+Simulation Pack identity whose canonical index contains the parameter-resource
+digest.
+
+The cross-runtime golden test reconstructs a parameter-backed immutable bundle
+through the browser boundary and pins the same `run_id`, output bytes,
+telemetry-summary bytes, and resource identity in native Rust and Node/WASM.

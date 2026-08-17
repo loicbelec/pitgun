@@ -3,9 +3,10 @@
 use std::fmt;
 
 use pitgun_contract::{
-    CanonicalJsonError, DeterministicRunContractV1, Digest, ExecutionId, ExecutionReceiptV1,
-    RunBundleReceiptV1, RuntimeIdentity, SignedRunAuthorizationV1, TelemetrySummaryError,
-    TelemetrySummaryV1, canonical_json_bytes, canonical_json_digest,
+    ArtifactIdentity, CanonicalJsonError, CatalogReleaseIdentityV1, DeterministicRunContractV1,
+    Digest, ExecutionId, ExecutionReceiptV1, RunBundleReceiptV1, RuntimeIdentity,
+    SignedRunAuthorizationV1, TelemetrySummaryError, TelemetrySummaryV1, canonical_json_bytes,
+    canonical_json_digest,
 };
 use serde::{Deserialize, Serialize};
 
@@ -35,6 +36,34 @@ pub struct RacingHostedExecutionRequestV1 {
     pub wasm_artifact_digest: Digest,
 }
 
+/// Wire version of explicit catalog-backed execution lineage.
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Deserialize, Serialize)]
+pub enum RacingExecutionResolutionVersion {
+    /// First lineage block for a catalog-owned model-parameter resource.
+    #[serde(rename = "pitgun.racing-execution-resolution/v1")]
+    V1,
+}
+
+/// Exact immutable resources selected for one catalog-backed Racing execution.
+///
+/// The signed run contract already binds `model` and `simulation_pack`. This
+/// explicit projection makes the complete lineage inspectable and lets the
+/// Verifier fail closed on a missing or substituted parameter resource.
+#[derive(Clone, Debug, Eq, PartialEq, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct RacingExecutionResolutionV1 {
+    /// Exact lineage wire semantics.
+    pub schema_version: RacingExecutionResolutionVersion,
+    /// Immutable catalog release from which execution resources were resolved.
+    pub catalog_release: CatalogReleaseIdentityV1,
+    /// Exact Simulation Pack identity signed into the run contract.
+    pub simulation_pack: ArtifactIdentity,
+    /// Exact statically linked executable model identity.
+    pub model: ArtifactIdentity,
+    /// Semantic version and digest of the exact model-parameter resource bytes.
+    pub model_parameters: ArtifactIdentity,
+}
+
 /// Complete evidence payload accepted by the hosted Racing Verifier.
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
@@ -49,6 +78,12 @@ pub struct RacingVerificationSubmissionV1 {
     pub output: RacingOutputV1,
     /// Canonical domain-neutral summary of the execution telemetry.
     pub telemetry_summary: TelemetrySummaryV1,
+    /// Explicit lineage for parameter-backed releases.
+    ///
+    /// Historical submissions omit this field and retain their exact wire
+    /// representation. A catalog containing model parameters requires it.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub execution_resolution: Option<RacingExecutionResolutionV1>,
 }
 
 impl pitgun_runtime::WorkloadEvidence for RacingRunEvidenceV1 {
