@@ -75,3 +75,18 @@ tampered, or incompatible parameter resource before simulation.
 A coefficient change therefore produces new resource bytes, a new resource
 digest, a new Simulation Pack identity, and a new immutable catalog release.
 It never mutates an existing replay lineage.
+
+## Catalog-backed compatibility release
+
+Racing Catalog `1.4.0` is the first release to index
+`simulation/model-parameters/v2-compatibility.json`. Its exact bytes reproduce
+the reviewed Model V2 fixture. Catalogs `1.3.0` and earlier retain their
+compiled compatibility behavior and are never reinterpreted through this new
+resource.
+
+The simulator resolves the resource only after its index digest, path,
+identity, schema, numeric bounds, model compatibility, and catalog
+compatibility have passed validation. A missing, altered, malformed, or
+incompatible resource fails before simulation. Rust experiments may inject an
+explicit validated offline-candidate resource without changing a catalog or
+the public `LATEST` selection.

@@ -14,13 +14,17 @@ use pitgun_contract::{
     DeterministicRunContractV1, Digest, ResolvedScenario, ResourceCatalogManifestV1,
     canonical_json_digest, canonicalize_json_str,
 };
-use pitgun_racing_contract::{RacingPresentationIndexV1, RacingSimulationIndexV1};
+use pitgun_racing_contract::{
+    RacingModelParametersV1, RacingPresentationIndexV1, RacingSimulationIndexV1,
+};
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 
 use crate::{EMBEDDED_FILES, MODEL_V2_EMBEDDED_FILES, PRESENTATION_INDEX};
 
 const KNOWN_RACING_MODEL_VERSIONS: [&str; 2] = ["1.0.0", "2.0.0"];
+const MODEL_PARAMETERS_ID_PREFIX: &str = "pitgun.racing.model-parameters.";
+const MODEL_PARAMETERS_PATH_PREFIX: &str = "simulation/model-parameters/";
 
 const CATALOG_MANIFEST: &[u8] = include_bytes!(concat!(
     env!("CARGO_MANIFEST_DIR"),
@@ -88,6 +92,7 @@ pub struct RacingCatalogSnapshot {
     simulation_index: RacingSimulationIndexV1,
     presentation_index: RacingPresentationIndexV1,
     resources: BTreeMap<CatalogPath, Vec<u8>>,
+    model_parameters: Option<RacingModelParametersV1>,
 }
 
 /// Failure produced before a Racing Catalog may enter simulation.
@@ -292,12 +297,15 @@ impl RacingCatalogSnapshot {
             return Err(RacingCatalogResolutionError::UnexpectedResource(path));
         }
 
+        let model_parameters = resolve_model_parameters(&manifest, &simulation_index, &supplied)?;
+
         let snapshot = Self {
             manifest,
             release_identity,
             simulation_index,
             presentation_index,
             resources: supplied,
+            model_parameters,
         };
         crate::EmbeddedCatalog::from_snapshot(&snapshot)
             .map_err(RacingCatalogResolutionError::InvalidResolvedResources)?;
@@ -422,6 +430,15 @@ impl RacingCatalogSnapshot {
         &self.presentation_index
     }
 
+    /// Returns the optional immutable model-parameter resource selected by this release.
+    ///
+    /// Historical releases do not carry one and intentionally retain their
+    /// compiled compatibility behavior.
+    #[must_use]
+    pub const fn model_parameters(&self) -> Option<&RacingModelParametersV1> {
+        self.model_parameters.as_ref()
+    }
+
     /// Binds validated resources to one exact deterministic run contract.
     ///
     /// The contract must select this release's Simulation Pack through its
@@ -447,6 +464,101 @@ impl RacingCatalogSnapshot {
             .iter()
             .map(|(path, bytes)| (path, bytes.as_slice()))
     }
+}
+
+fn resolve_model_parameters(
+    manifest: &ResourceCatalogManifestV1,
+    simulation_index: &RacingSimulationIndexV1,
+    supplied: &BTreeMap<CatalogPath, Vec<u8>>,
+) -> Result<Option<RacingModelParametersV1>, RacingCatalogResolutionError> {
+    let mut indexed = simulation_index.resources.iter().filter(|resource| {
+        resource.id.as_str().starts_with(MODEL_PARAMETERS_ID_PREFIX)
+            || resource
+                .path
+                .as_str()
+                .starts_with(MODEL_PARAMETERS_PATH_PREFIX)
+    });
+    let Some(resource) = indexed.next() else {
+        return Ok(None);
+    };
+    if indexed.next().is_some() {
+        return Err(RacingCatalogResolutionError::InvalidResolvedResources(
+            "Racing catalog must select at most one model-parameter resource".to_string(),
+        ));
+    }
+
+    let Some(stem) = resource
+        .id
+        .as_str()
+        .strip_prefix(MODEL_PARAMETERS_ID_PREFIX)
+    else {
+        return Err(RacingCatalogResolutionError::InvalidResolvedResources(
+            format!(
+                "model-parameter path {} uses an incompatible resource ID {}",
+                resource.path, resource.id
+            ),
+        ));
+    };
+    let expected_path = format!("{MODEL_PARAMETERS_PATH_PREFIX}{stem}.json");
+    if resource.path.as_str() != expected_path {
+        return Err(RacingCatalogResolutionError::InvalidResolvedResources(
+            format!(
+                "model-parameter resource {} must use path {expected_path}",
+                resource.id
+            ),
+        ));
+    }
+
+    let bytes = supplied
+        .get(&resource.path)
+        .expect("indexed resources are checked before model-parameter resolution");
+    let parameters: RacingModelParametersV1 = serde_json::from_slice(bytes).map_err(|error| {
+        RacingCatalogResolutionError::InvalidResource {
+            path: resource.path.clone(),
+            reason: error.to_string(),
+        }
+    })?;
+    parameters
+        .validate()
+        .map_err(|error| RacingCatalogResolutionError::InvalidResource {
+            path: resource.path.clone(),
+            reason: error.to_string(),
+        })?;
+    if parameters.identity.id != resource.id {
+        return Err(RacingCatalogResolutionError::InvalidResolvedResources(
+            format!(
+                "model-parameter resource identity {} does not match index ID {}",
+                parameters.identity.id, resource.id
+            ),
+        ));
+    }
+
+    let compatible_model = ArtifactIdentity {
+        id: parameters.compatible_model.id.clone(),
+        version: parameters.compatible_model.version.clone(),
+        digest: Digest::from_bytes(
+            format!(
+                "{}:{}:catalog-compatibility",
+                parameters.compatible_model.id, parameters.compatible_model.version
+            )
+            .as_bytes(),
+        ),
+    };
+    parameters
+        .validate_for_model(&compatible_model)
+        .map_err(|error| {
+            RacingCatalogResolutionError::InvalidResolvedResources(error.to_string())
+        })?;
+    manifest
+        .compatibility
+        .validate_for(&compatible_model, ContractVersion::V1)
+        .map_err(|error| {
+            RacingCatalogResolutionError::InvalidResolvedResources(format!(
+                "model-parameter resource is incompatible with the catalog manifest: {error}"
+            ))
+        })?;
+
+    Ok(Some(parameters))
 }
 
 fn validate_known_racing_model_compatibility(
@@ -546,8 +658,8 @@ mod tests {
     use super::*;
     use pitgun_contract::{
         EventOrderingV1, InputCanonicalization, InputIdentity, InputMediaType, LogicalClockV1,
-        RandomAlgorithm, RandomContractV1, RuntimeProfile, ScenarioIdentity, Seed,
-        StreamDerivation,
+        RandomAlgorithm, RandomContractV1, ResourceCatalogManifestV1, RuntimeProfile,
+        ScenarioIdentity, Seed, StreamDerivation, canonical_json_digest,
     };
 
     fn embedded_bundle() -> RacingCatalogBundleV1 {
@@ -574,6 +686,64 @@ mod tests {
                 })
                 .collect(),
         }
+    }
+
+    #[cfg(not(target_arch = "wasm32"))]
+    fn filesystem_bundle(version: &str) -> RacingCatalogBundleV1 {
+        let root = Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../../catalogs/racing")
+            .join(format!("v{version}"));
+        let manifest = std::fs::read_to_string(root.join("catalog.json")).expect("manifest");
+        let release_identity =
+            std::fs::read_to_string(root.join("release.json")).expect("release identity");
+        let simulation_index =
+            std::fs::read_to_string(root.join("simulation/index.json")).expect("simulation index");
+        let presentation_index = std::fs::read_to_string(root.join("presentation/index.json"))
+            .expect("presentation index");
+        let index: RacingSimulationIndexV1 =
+            serde_json::from_str(&simulation_index).expect("simulation index JSON");
+        let resources = index
+            .resources
+            .iter()
+            .map(|resource| RacingCatalogFileV1 {
+                path: resource.path.to_string(),
+                contents: std::fs::read_to_string(root.join(resource.path.as_str()))
+                    .expect("simulation resource"),
+            })
+            .collect();
+        RacingCatalogBundleV1 {
+            manifest,
+            release_identity,
+            simulation_index,
+            presentation_index,
+            resources,
+        }
+    }
+
+    fn resign_bundle(bundle: &mut RacingCatalogBundleV1) {
+        let mut index: RacingSimulationIndexV1 =
+            serde_json::from_str(&bundle.simulation_index).expect("simulation index JSON");
+        for resource in &mut index.resources {
+            let file = bundle
+                .resources
+                .iter()
+                .find(|file| file.path == resource.path.as_str())
+                .expect("indexed resource");
+            resource.digest = Digest::from_bytes(file.contents.as_bytes());
+        }
+        bundle.simulation_index = serde_json::to_string(&index).expect("simulation index JSON");
+        let simulation_digest = canonical_json_digest(&index).expect("simulation index digest");
+
+        let mut manifest: ResourceCatalogManifestV1 =
+            serde_json::from_str(&bundle.manifest).expect("manifest JSON");
+        manifest.simulation_pack.identity.digest = simulation_digest;
+        manifest.simulation_pack.index.digest = simulation_digest;
+        bundle.manifest = serde_json::to_string(&manifest).expect("manifest JSON");
+
+        let mut release: CatalogReleaseIdentityV1 =
+            serde_json::from_str(&bundle.release_identity).expect("release identity JSON");
+        release.manifest_digest = canonical_json_digest(&manifest).expect("manifest digest");
+        bundle.release_identity = serde_json::to_string(&release).expect("release identity JSON");
     }
 
     fn compatible_contract(snapshot: &RacingCatalogSnapshot) -> DeterministicRunContractV1 {
@@ -690,15 +860,20 @@ mod tests {
     #[cfg(not(target_arch = "wasm32"))]
     #[test]
     fn competitive_policy_v2_release_resolves_and_keeps_late_eras_disabled() {
-        let root =
-            Path::new(env!("CARGO_MANIFEST_DIR")).join("../../catalogs/racing/v1.3.0");
+        let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../catalogs/racing/v1.3.0");
         let snapshot =
             RacingCatalogSnapshot::from_release_dir(root).expect("competitive policy catalog");
 
         assert_eq!(snapshot.manifest().catalog.version.to_string(), "1.3.0");
-        assert!(snapshot.simulation_index().resources.iter().any(|resource| {
-            resource.path.as_str() == "simulation/policies/competitive.json"
-        }));
+        assert!(
+            snapshot
+                .simulation_index()
+                .resources
+                .iter()
+                .any(|resource| {
+                    resource.path.as_str() == "simulation/policies/competitive.json"
+                })
+        );
         let policy_bytes = snapshot
             .resources()
             .find_map(|(path, bytes)| {
@@ -719,6 +894,100 @@ mod tests {
             policy["strategy"]["player_strategy_influence_allowed"],
             serde_json::json!(false)
         );
+    }
+
+    #[cfg(not(target_arch = "wasm32"))]
+    #[test]
+    fn model_parameter_release_resolves_without_mutating_historical_catalogs() {
+        let historical_root =
+            Path::new(env!("CARGO_MANIFEST_DIR")).join("../../catalogs/racing/v1.3.0");
+        let historical = RacingCatalogSnapshot::from_release_dir(historical_root)
+            .expect("historical catalog release");
+        assert!(historical.model_parameters().is_none());
+
+        let resource_root =
+            Path::new(env!("CARGO_MANIFEST_DIR")).join("../../catalogs/racing/v1.4.0");
+        let snapshot = RacingCatalogSnapshot::from_release_dir(resource_root)
+            .expect("model-parameter catalog release");
+        let parameters = snapshot
+            .model_parameters()
+            .expect("catalog-backed model parameters");
+
+        assert_eq!(snapshot.manifest().catalog.version.to_string(), "1.4.0");
+        assert_eq!(
+            parameters.identity.id.as_str(),
+            "pitgun.racing.model-parameters.v2-compatibility"
+        );
+        assert_eq!(
+            parameters
+                .canonical_digest()
+                .expect("parameter digest")
+                .to_string(),
+            "sha256:1c60391e5c536248153b5cae8608bc126f85b5ca31fe04b5cc84a424673e3f50"
+        );
+    }
+
+    #[cfg(not(target_arch = "wasm32"))]
+    #[test]
+    fn model_parameter_release_rejects_missing_or_tampered_bytes() {
+        let mut missing = filesystem_bundle("1.4.0");
+        missing
+            .resources
+            .retain(|file| file.path != "simulation/model-parameters/v2-compatibility.json");
+        assert!(matches!(
+            RacingCatalogSnapshot::from_bundle(missing),
+            Err(RacingCatalogResolutionError::MissingResource(path))
+                if path.as_str() == "simulation/model-parameters/v2-compatibility.json"
+        ));
+
+        let mut tampered = filesystem_bundle("1.4.0");
+        tampered
+            .resources
+            .iter_mut()
+            .find(|file| file.path == "simulation/model-parameters/v2-compatibility.json")
+            .expect("model parameters")
+            .contents
+            .push(' ');
+        assert!(matches!(
+            RacingCatalogSnapshot::from_bundle(tampered),
+            Err(RacingCatalogResolutionError::ResourceDigestMismatch { path, .. })
+                if path.as_str() == "simulation/model-parameters/v2-compatibility.json"
+        ));
+    }
+
+    #[cfg(not(target_arch = "wasm32"))]
+    #[test]
+    fn model_parameter_release_rejects_malformed_or_incompatible_resources() {
+        let mut malformed = filesystem_bundle("1.4.0");
+        malformed
+            .resources
+            .iter_mut()
+            .find(|file| file.path == "simulation/model-parameters/v2-compatibility.json")
+            .expect("model parameters")
+            .contents = "{}".to_string();
+        resign_bundle(&mut malformed);
+        assert!(matches!(
+            RacingCatalogSnapshot::from_bundle(malformed),
+            Err(RacingCatalogResolutionError::InvalidResource { path, .. })
+                if path.as_str() == "simulation/model-parameters/v2-compatibility.json"
+        ));
+
+        let mut incompatible = filesystem_bundle("1.4.0");
+        let file = incompatible
+            .resources
+            .iter_mut()
+            .find(|file| file.path == "simulation/model-parameters/v2-compatibility.json")
+            .expect("model parameters");
+        let mut value: serde_json::Value =
+            serde_json::from_str(&file.contents).expect("model parameters JSON");
+        value["compatible_model"]["version"] = serde_json::json!("1.0.0");
+        file.contents = serde_json::to_string(&value).expect("model parameters JSON");
+        resign_bundle(&mut incompatible);
+        assert!(matches!(
+            RacingCatalogSnapshot::from_bundle(incompatible),
+            Err(RacingCatalogResolutionError::InvalidResource { path, .. })
+                if path.as_str() == "simulation/model-parameters/v2-compatibility.json"
+        ));
     }
 
     #[test]
