@@ -38,10 +38,10 @@ pub use pitgun_racing_solver::{
     CurvatureAeroResponse, Driver, DriverEffects, EngineParams, PitPlan, PitStop,
     ResampledTelemetry, ResolvedSimulationRequestV3, SetupResponseDiagnosticsV1,
     SetupResponseDiagnosticsVersion, SimConfig, SimulationRequest, SimulationResult,
-    SimulationSolution, TireParams, Track, Tuning, TuningResponseV1, TuningResponseVersion,
-    VehicleParams, VehicleState, apply_driver_to_tire, apply_tuning, apply_tuning_with_response,
-    best_power_at_speed, curvature_aero_blend, derating_factor, describe_circuit,
-    diagnose_setup_response, driver_effects, effective_mu, power_kw_from_rpm,
+    SimulationSolution, TireContactParamsV3, TireParams, Track, Tuning, TuningResponseV1,
+    TuningResponseVersion, VehicleParams, VehicleState, apply_driver_to_tire, apply_tuning,
+    apply_tuning_with_response, best_power_at_speed, curvature_aero_blend, derating_factor,
+    describe_circuit, diagnose_setup_response, driver_effects, effective_mu, power_kw_from_rpm,
     resample_telemetry as resample_solution, rpm_from_speed_gear,
     run_resolved_simulation_v3 as solve_resolved_v3, run_simulation as solve,
     run_simulation_with_model_response as solve_with_model_response,
@@ -794,6 +794,7 @@ fn run_single_session(
                     lap_count: request.lap_count,
                     pit_plan: request.pit_plan.clone(),
                     driver: request.driver.clone(),
+                    tire_contact: TireContactParamsV3::default(),
                 })
             }
         }
@@ -2761,7 +2762,10 @@ mod tests {
             pitgun_contract::canonical_json_bytes(&first).expect("first canonical V3 output"),
             pitgun_contract::canonical_json_bytes(&second).expect("second canonical V3 output"),
         );
-        assert_eq!(first.total_time_ms, model_v2.total_time_ms);
+        assert_ne!(
+            first.total_time_ms, model_v2.total_time_ms,
+            "the aggregate contact patch is the first intentionally distinct V3 physics slice",
+        );
         assert_ne!(
             racing_model_v3_candidate_identity(),
             racing_model_v2_identity(),

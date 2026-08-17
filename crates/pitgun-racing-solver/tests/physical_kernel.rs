@@ -1,9 +1,10 @@
 use pitgun_racing_solver::{
     AERO_FULL_CORNER_CURVATURE_RAD_PER_M, AERO_FULL_STRAIGHT_CURVATURE_RAD_PER_M, AeroParams,
     ChassisParams, CurvatureAeroResponse, Driver, EngineParams, PitPlan,
-    ResolvedSimulationRequestV3, SimConfig, SimulationRequest, TireParams, Track, Tuning,
-    TuningResponseV1, VehicleParams, VehicleState, apply_tuning, apply_tuning_with_response,
-    curvature_aero_blend, describe_circuit, run_resolved_simulation_v3, run_simulation,
+    ResolvedSimulationRequestV3, SimConfig, SimulationRequest, TireContactParamsV3, TireParams,
+    Track, Tuning, TuningResponseV1, VehicleParams, VehicleState, aggregate_tire_force_capacity_v3,
+    apply_tuning, apply_tuning_with_response, combined_force_utilization, curvature_aero_blend,
+    describe_circuit, remaining_longitudinal_force, run_resolved_simulation_v3, run_simulation,
     run_simulation_with_model_response, run_simulation_with_tuning_response,
 };
 
@@ -98,7 +99,96 @@ fn resolved_v3_request(request: &SimulationRequest) -> ResolvedSimulationRequest
         lap_count: request.lap_count,
         pit_plan: request.pit_plan.clone(),
         driver: request.driver.clone(),
+        tire_contact: TireContactParamsV3::default(),
     }
+}
+
+#[test]
+fn v3_combined_contact_budget_is_bounded_and_reserves_longitudinal_force() {
+    let contact = TireContactParamsV3::default();
+    let nominal_load = contact.reference_normal_load_n;
+    let available = aggregate_tire_force_capacity_v3(1.7, nominal_load, &contact);
+
+    assert_eq!(available, 1.7 * nominal_load);
+    assert_eq!(remaining_longitudinal_force(available, 0.0), available);
+    assert_eq!(remaining_longitudinal_force(available, available), 0.0);
+    assert!(remaining_longitudinal_force(available, available * 0.8) < available * 0.61);
+    assert_eq!(
+        combined_force_utilization(available, available, available),
+        1.0
+    );
+    assert_eq!(
+        combined_force_utilization(available * 0.3, available * 0.4, available),
+        0.5
+    );
+}
+
+#[test]
+fn v3_load_sensitivity_makes_added_load_sublinear() {
+    let contact = TireContactParamsV3::default();
+    let reference =
+        aggregate_tire_force_capacity_v3(1.7, contact.reference_normal_load_n, &contact);
+    let doubled =
+        aggregate_tire_force_capacity_v3(1.7, contact.reference_normal_load_n * 2.0, &contact);
+
+    assert!(doubled > reference);
+    assert!(doubled < reference * 2.0);
+}
+
+#[test]
+fn v3_tire_state_affects_the_whole_force_envelope_and_stays_bounded() {
+    let mut request = synthetic_request();
+    request.track.kappa[3..18].fill(0.003);
+    request.lap_count = 12;
+
+    let healthy = run_resolved_simulation_v3(&resolved_v3_request(&request))
+        .expect("healthy V3 contact solve");
+    let mut compromised_request = resolved_v3_request(&request);
+    compromised_request.state.tire_temp = 45.0;
+    compromised_request.state.tire_wear = 0.75;
+    let compromised =
+        run_resolved_simulation_v3(&compromised_request).expect("compromised V3 contact solve");
+
+    assert!(compromised.total_time_s > healthy.total_time_s);
+    assert!(
+        healthy
+            .solution
+            .tire_force_utilization
+            .iter()
+            .all(|value| value.is_finite() && (0.0..=1.0).contains(value))
+    );
+    assert!(
+        healthy
+            .solution
+            .tire_temp
+            .iter()
+            .all(|value| value.is_finite() && (0.0..=250.0).contains(value))
+    );
+    assert!(
+        healthy
+            .solution
+            .tire_wear
+            .iter()
+            .all(|value| value.is_finite() && (0.0..=1.0).contains(value))
+    );
+
+    let diagnostics = healthy.tire_diagnostics_v3.expect("V3 tire diagnostics");
+    assert!(diagnostics.maximum_combined_utilization <= 1.0);
+    assert!(diagnostics.maximum_combined_utilization > 0.0);
+    assert!(diagnostics.maximum_normal_load_n >= diagnostics.minimum_normal_load_n);
+    assert!(diagnostics.maximum_available_force_n >= diagnostics.minimum_available_force_n);
+    assert!(diagnostics.generated_heat_kj > 0.0);
+    assert!(diagnostics.contact_workload_mj > 0.0);
+}
+
+#[test]
+fn historical_models_do_not_emit_v3_contact_diagnostics() {
+    let result = run_simulation(&synthetic_request()).expect("historical solve");
+
+    assert!(result.tire_diagnostics_v3.is_none());
+    assert!(result.solution.tire_force_utilization.is_empty());
+    assert!(result.solution.tire_normal_load_n.is_empty());
+    assert!(result.solution.tire_available_force_n.is_empty());
 }
 
 #[test]
@@ -193,6 +283,13 @@ fn v3_rejects_invalid_resolved_physics_before_solving() {
     assert_eq!(
         run_resolved_simulation_v3(&bad_vehicle).unwrap_err(),
         "vehicle.chassis.mass_empty_kg must be finite and positive"
+    );
+
+    let mut bad_contact = resolved_v3_request(&synthetic_request());
+    bad_contact.tire_contact.load_sensitivity_exponent = 0.31;
+    assert_eq!(
+        run_resolved_simulation_v3(&bad_contact).unwrap_err(),
+        "tire_contact.load_sensitivity_exponent must be <= 0.3"
     );
 }
 
