@@ -49,13 +49,14 @@ therefore physically identical on an axis even though the game may continue to
 sell and display progression. This reconciles with issue #229 and must be fixed
 before a multi-era economy or opponent policy is trusted.
 
-### P0 — enabled-era vehicle contracts diverge
+### P0 — enabled-era vehicle contracts diverged at inventory time
 
-The game names `classic_v6t_1980`, `classic_v10_1990`, and
-`classic_v8_2000`, while Catalog 1.3.0 does not publish them. The generic Racing
-contract separately maps Eras 3 and 4 to one `GroundEffect1970` class. There is
-no single authoritative enabled-era mapping today. Issue #248 owns the
-cross-repository repair.
+The reviewed game named `classic_v6t_1980`, `classic_v10_1990`, and
+`classic_v8_2000`, while Catalog 1.3.0 did not publish them. The generic Racing
+contract separately mapped Eras 3 and 4 to one `GroundEffect1970` class. Issue
+#248 resolves this inventory finding through the executable
+[Racing Game Vehicle Contract V1](RACING_GAME_VEHICLE_CONTRACT_V1.md): the
+unreviewed identifiers are rejected and Eras 3–4 retain the governed 1970 base.
 
 ### P0 — historical vehicle candidates are aliases or partial variants
 
