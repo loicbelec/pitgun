@@ -1,0 +1,32 @@
+{
+  "schema_version": "pitgun.racing-model-parameters/v1",
+  "identity": {
+    "id": "pitgun.racing.model-parameters.v2-compatibility",
+    "version": "1.0.0"
+  },
+  "compatible_model": {
+    "id": "pitgun.racing",
+    "version": "2.0.0"
+  },
+  "purpose": "model-v2-compatibility",
+  "development_resolution": {
+    "points_cap_per_axis": 20.0,
+    "aerodynamic_area_gain_at_cap": 0.1,
+    "chassis_grip_gain_at_cap": 0.08,
+    "cooling_base_multiplier": 0.75,
+    "cooling_gain_at_cap": 0.5,
+    "engine_torque_gain_at_cap": 0.01
+  },
+  "setup_response": {
+    "drag_area_base_multiplier": 0.85,
+    "drag_area_slider_gain": 0.3,
+    "downforce_area_base_multiplier": 0.75,
+    "downforce_area_slider_gain": 0.55,
+    "gear_ratio_base_multiplier": 1.1,
+    "gear_ratio_slider_reduction": 0.2
+  },
+  "aerodynamic_state_response": {
+    "straight_multiplier": 0.95,
+    "corner_multiplier": 1.05
+  }
+}

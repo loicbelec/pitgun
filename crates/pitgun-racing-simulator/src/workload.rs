@@ -6,7 +6,7 @@ use pitgun_runtime::{ExecutionContext, LinkedWorkload, WorkloadExecution};
 use crate::evidence::{RacingEvidenceError, RacingRunEvidenceV1};
 use crate::{
     CurvatureAeroResponse, RaceOutput, RacingCatalogSnapshot, RunRaceInput, RunRaceRequest,
-    TuningResponseV1, run_race, run_race_with_catalog_and_model_response,
+    resolve_catalog_tuning_response, run_race, run_race_with_catalog_and_model_response,
 };
 
 const RACING_MODEL_V1_MANIFEST: &[u8] = b"pitgun.racing:model:1.0.0:conformance-vector";
@@ -147,10 +147,12 @@ impl LinkedWorkload for RacingWorkload {
                     .compatibility
                     .validate_for(&self.model, pitgun_contract::ContractVersion::V1)
                     .map_err(|error| RacingWorkloadError::Simulation(error.to_string()))?;
+                let tuning_response = resolve_catalog_tuning_response(catalog, Some(&self.model))
+                    .map_err(RacingWorkloadError::Simulation)?;
                 run_race_with_catalog_and_model_response(
                     request,
                     catalog,
-                    &TuningResponseV1::default(),
+                    &tuning_response,
                     self.curvature_response,
                 )
             }

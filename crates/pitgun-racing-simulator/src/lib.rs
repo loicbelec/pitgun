@@ -20,7 +20,7 @@ use pitgun_contract::{
 };
 use pitgun_racing_contract::{
     CircuitCatalogEntry, CompetitorSpec, CompetitorStintStrategy, EngineCatalogEntry, RaceInput,
-    RacingPresentationIndexV1,
+    RacingModelParametersV1, RacingPresentationIndexV1,
 };
 use pitgun_racing_policy::normalize_and_validate_race_input;
 use pitgun_racing_solver::resample_telemetry;
@@ -337,14 +337,62 @@ pub fn run_race_with_catalog(
     request: RunRaceRequest,
     snapshot: &RacingCatalogSnapshot,
 ) -> Result<RaceOutput, String> {
-    run_race_with_catalog_and_tuning_response(request, snapshot, &TuningResponseV1::default())
+    let tuning_response = resolve_catalog_tuning_response(snapshot, None)?;
+    run_race_with_catalog_and_tuning_response(request, snapshot, &tuning_response)
+}
+
+pub(crate) fn resolve_catalog_tuning_response(
+    snapshot: &RacingCatalogSnapshot,
+    model: Option<&ArtifactIdentity>,
+) -> Result<TuningResponseV1, String> {
+    let Some(parameters) = snapshot.model_parameters() else {
+        return Ok(TuningResponseV1::default());
+    };
+    if let Some(model) = model {
+        parameters
+            .validate_for_model(model)
+            .map_err(|error| format!("invalid catalog model parameters: {error}"))?;
+    }
+    tuning_response_from_model_parameters(parameters)
+}
+
+fn tuning_response_from_model_parameters(
+    parameters: &RacingModelParametersV1,
+) -> Result<TuningResponseV1, String> {
+    parameters
+        .validate()
+        .map_err(|error| format!("invalid catalog model parameters: {error}"))?;
+    let development = parameters.development_resolution;
+    let setup = parameters.setup_response;
+    let aerodynamic = parameters.aerodynamic_state_response;
+    let response = TuningResponseV1 {
+        schema_version: TuningResponseVersion::V1,
+        development_points_cap: development.points_cap_per_axis,
+        aero_development_gain: development.aerodynamic_area_gain_at_cap,
+        drag_base: setup.drag_area_base_multiplier,
+        drag_slider_gain: setup.drag_area_slider_gain,
+        downforce_base: setup.downforce_area_base_multiplier,
+        downforce_slider_gain: setup.downforce_area_slider_gain,
+        straight_aero_scale: aerodynamic.straight_multiplier,
+        corner_aero_scale: aerodynamic.corner_multiplier,
+        chassis_grip_development_gain: development.chassis_grip_gain_at_cap,
+        cooling_base: development.cooling_base_multiplier,
+        cooling_development_gain: development.cooling_gain_at_cap,
+        engine_torque_development_gain: development.engine_torque_gain_at_cap,
+        gear_ratio_base: setup.gear_ratio_base_multiplier,
+        gear_ratio_slider_reduction: setup.gear_ratio_slider_reduction,
+    };
+    response
+        .validate()
+        .map_err(|error| format!("invalid resolved tuning response: {error}"))?;
+    Ok(response)
 }
 
 /// Runs one offline calibration race with an explicit physical tuning response.
 ///
 /// This Rust-only boundary exists for governed experiments. Production, WASM,
-/// catalog, and player contracts intentionally continue to use
-/// [`TuningResponseV1::default`].
+/// catalog, and player contracts resolve either their immutable catalog
+/// resource or the compiled historical compatibility default.
 pub fn run_race_with_catalog_and_tuning_response(
     request: RunRaceRequest,
     snapshot: &RacingCatalogSnapshot,
@@ -355,6 +403,35 @@ pub fn run_race_with_catalog_and_tuning_response(
         snapshot,
         tuning_response,
         CurvatureAeroResponse::LegacyBinary,
+    )
+}
+
+/// Runs one governed offline experiment with an explicit parameter resource.
+///
+/// The candidate must target the exact model selected by the caller and the
+/// catalog must authorize that same model. This boundary never mutates a
+/// catalog release or the public `LATEST` pointer.
+pub fn run_race_with_catalog_and_model_parameters(
+    request: RunRaceRequest,
+    snapshot: &RacingCatalogSnapshot,
+    model: &ArtifactIdentity,
+    parameters: &RacingModelParametersV1,
+    curvature_response: CurvatureAeroResponse,
+) -> Result<RaceOutput, String> {
+    snapshot
+        .manifest()
+        .compatibility
+        .validate_for(model, pitgun_contract::ContractVersion::V1)
+        .map_err(|error| format!("Racing model/catalog incompatibility: {error}"))?;
+    parameters
+        .validate_for_model(model)
+        .map_err(|error| format!("invalid explicit model parameters: {error}"))?;
+    let tuning_response = tuning_response_from_model_parameters(parameters)?;
+    run_race_with_catalog_and_model_response(
+        request,
+        snapshot,
+        &tuning_response,
+        curvature_response,
     )
 }
 
@@ -430,7 +507,7 @@ pub fn run_sessions_with_catalog(
     let vehicle_id = resolve_vehicle_id(request.vehicle_id.as_deref())?;
     let catalog = EmbeddedCatalog::from_snapshot(snapshot)?;
     let mut sessions = Vec::with_capacity(request.sessions.len());
-    let tuning_response = TuningResponseV1::default();
+    let tuning_response = resolve_catalog_tuning_response(snapshot, None)?;
 
     for session in &request.sessions {
         let output = run_single_session(
@@ -1206,6 +1283,18 @@ impl EmbeddedCatalog {
                 // Opponent policies influence canonical race-input composition,
                 // not the physical solver. Browser/application adapters consume
                 // them before submitting the complete competitor field.
+            }
+            "model-parameters" => {
+                let parameters: RacingModelParametersV1 =
+                    serde_json::from_value(value).map_err(|error| {
+                        format!("invalid Racing model parameters in '{path}': {error}")
+                    })?;
+                parameters.validate().map_err(|error| {
+                    format!("invalid Racing model parameters in '{path}': {error}")
+                })?;
+                // The validated snapshot owns this resource. The physical
+                // catalog only acknowledges its category here so it cannot be
+                // mistaken for a vehicle component.
             }
             _ => {
                 return Err(format!(
@@ -2167,6 +2256,43 @@ mod tests {
         }
     }
 
+    fn one_lap_request() -> RunRaceRequest {
+        RunRaceRequest {
+            input: RunRaceInput {
+                race: RaceInput {
+                    track_id: "it-1922".to_string(),
+                    laps: 1,
+                    competitors: vec![CompetitorSpec {
+                        id: "player".to_string(),
+                        driver_id: Some("default".to_string()),
+                        name: "Player".to_string(),
+                        team_id: "team".to_string(),
+                        is_player: true,
+                        tuning: TuningSpec {
+                            engine_points: 25.0,
+                            cooling_points: 25.0,
+                            aero_points: 25.0,
+                            chassis_points: 25.0,
+                            downforce_slider: 0.5,
+                            gear_ratio_slider: 0.5,
+                        },
+                        budget_cap: 100.0,
+                        stint_strategy: None,
+                    }],
+                },
+                vehicle_id: Some("f1_2026".to_string()),
+                pit_strategy: None,
+                track_profile: None,
+                competitor_profiles: HashMap::new(),
+                era: 2026,
+                hz: 20.0,
+            },
+            seed: 7,
+            era: Some(2026),
+            hz: Some(20.0),
+        }
+    }
+
     #[test]
     fn python_monza_reference_stays_close_except_launch_override() {
         let fixture: GoldenFixture = serde_json::from_str(include_str!(
@@ -2289,40 +2415,7 @@ mod tests {
             assert!(value.is_array(), "browser catalog export must be an array");
         }
 
-        let request = RunRaceRequest {
-            input: RunRaceInput {
-                race: RaceInput {
-                    track_id: "it-1922".to_string(),
-                    laps: 1,
-                    competitors: vec![CompetitorSpec {
-                        id: "player".to_string(),
-                        driver_id: Some("default".to_string()),
-                        name: "Player".to_string(),
-                        team_id: "team".to_string(),
-                        is_player: true,
-                        tuning: TuningSpec {
-                            engine_points: 25.0,
-                            cooling_points: 25.0,
-                            aero_points: 25.0,
-                            chassis_points: 25.0,
-                            downforce_slider: 0.5,
-                            gear_ratio_slider: 0.5,
-                        },
-                        budget_cap: 100.0,
-                        stint_strategy: None,
-                    }],
-                },
-                vehicle_id: Some("f1_2026".to_string()),
-                pit_strategy: None,
-                track_profile: None,
-                competitor_profiles: HashMap::new(),
-                era: 2026,
-                hz: 20.0,
-            },
-            seed: 7,
-            era: Some(2026),
-            hz: Some(20.0),
-        };
+        let request = one_lap_request();
 
         let output: RaceOutput = serde_json::from_str(&run_race_json(
             serde_json::to_string(&request).expect("serialize request"),
@@ -2365,6 +2458,74 @@ mod tests {
             frames[1].timestamp_us - frames[0].timestamp_us,
             200_000,
             "5 Hz telemetry must be sampled every 200 ms"
+        );
+    }
+
+    #[test]
+    fn catalog_backed_model_parameters_preserve_model_v2_output() {
+        let root =
+            std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../catalogs/racing/v1.4.0");
+        let snapshot =
+            RacingCatalogSnapshot::from_release_dir(root).expect("catalog-backed model parameters");
+        let resolved =
+            resolve_catalog_tuning_response(&snapshot, Some(&racing_model_v2_identity()))
+                .expect("resolved model parameters");
+        assert_eq!(resolved, TuningResponseV1::default());
+
+        let request = one_lap_request();
+        let automatic =
+            run_race_with_catalog(request.clone(), &snapshot).expect("automatic catalog output");
+        let historical_default = run_race_with_catalog_and_tuning_response(
+            request.clone(),
+            &snapshot,
+            &TuningResponseV1::default(),
+        )
+        .expect("historical default output");
+        assert_eq!(
+            pitgun_contract::canonical_json_bytes(&automatic).expect("canonical automatic JSON"),
+            pitgun_contract::canonical_json_bytes(&historical_default)
+                .expect("canonical historical JSON"),
+            "automatic catalog resolution must preserve the historical response"
+        );
+
+        let catalog_backed = run_race_with_catalog_and_model_response(
+            request.clone(),
+            &snapshot,
+            &resolved,
+            CurvatureAeroResponse::ContinuousV1,
+        )
+        .expect("catalog-backed output");
+        let compatibility = run_race_with_catalog_and_model_response(
+            request,
+            &snapshot,
+            &TuningResponseV1::default(),
+            CurvatureAeroResponse::ContinuousV1,
+        )
+        .expect("compiled compatibility output");
+        let explicit_resource = run_race_with_catalog_and_model_parameters(
+            one_lap_request(),
+            &snapshot,
+            &racing_model_v2_identity(),
+            snapshot
+                .model_parameters()
+                .expect("catalog model parameters"),
+            CurvatureAeroResponse::ContinuousV1,
+        )
+        .expect("explicit resource output");
+
+        assert_eq!(
+            pitgun_contract::canonical_json_bytes(&catalog_backed)
+                .expect("canonical catalog-backed JSON"),
+            pitgun_contract::canonical_json_bytes(&compatibility)
+                .expect("canonical compatibility JSON"),
+            "catalog storage must not change Model V2 output"
+        );
+        assert_eq!(
+            pitgun_contract::canonical_json_bytes(&catalog_backed)
+                .expect("canonical catalog-backed JSON"),
+            pitgun_contract::canonical_json_bytes(&explicit_resource)
+                .expect("canonical explicit-resource JSON"),
+            "offline resource injection must use the same validated semantics"
         );
     }
 
