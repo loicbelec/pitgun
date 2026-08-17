@@ -527,6 +527,11 @@ but it cannot claim an active capability that its resolved model does not run.
 3. define model/module identities and reject incompatible resources;
 4. preserve V1/V2 golden replay paths unchanged.
 
+The first offline implementation of this boundary is documented in
+[Racing Game Model V3 — Foundation Candidate](RACING_MODEL_V3_FOUNDATION.md).
+It uses a candidate namespace until the complete production V3 capability set
+and catalog compatibility have been reviewed.
+
 ### Foundation B — coherent mechanical core
 
 1. use explicit segment distances and re-derive vertical-load terms;

@@ -1,9 +1,10 @@
 use pitgun_racing_solver::{
     AERO_FULL_CORNER_CURVATURE_RAD_PER_M, AERO_FULL_STRAIGHT_CURVATURE_RAD_PER_M, AeroParams,
-    ChassisParams, CurvatureAeroResponse, Driver, EngineParams, PitPlan, SimConfig,
-    SimulationRequest, TireParams, Track, Tuning, TuningResponseV1, VehicleParams, VehicleState,
-    apply_tuning, apply_tuning_with_response, curvature_aero_blend, describe_circuit,
-    run_simulation, run_simulation_with_model_response, run_simulation_with_tuning_response,
+    ChassisParams, CurvatureAeroResponse, Driver, EngineParams, PitPlan,
+    ResolvedSimulationRequestV3, SimConfig, SimulationRequest, TireParams, Track, Tuning,
+    TuningResponseV1, VehicleParams, VehicleState, apply_tuning, apply_tuning_with_response,
+    curvature_aero_blend, describe_circuit, run_resolved_simulation_v3, run_simulation,
+    run_simulation_with_model_response, run_simulation_with_tuning_response,
 };
 
 fn synthetic_request() -> SimulationRequest {
@@ -88,6 +89,18 @@ fn synthetic_request() -> SimulationRequest {
     }
 }
 
+fn resolved_v3_request(request: &SimulationRequest) -> ResolvedSimulationRequestV3 {
+    ResolvedSimulationRequestV3 {
+        track: request.track.clone(),
+        vehicle: request.vehicle.clone(),
+        state: request.state.clone(),
+        config: request.config.clone(),
+        lap_count: request.lap_count,
+        pit_plan: request.pit_plan.clone(),
+        driver: request.driver.clone(),
+    }
+}
+
 #[test]
 fn curvature_aero_response_is_continuous_bounded_and_monotonic() {
     assert_eq!(curvature_aero_blend(0.0), 0.0);
@@ -125,6 +138,62 @@ fn identical_resolved_inputs_produce_identical_physical_results() {
     assert!(first.total_time_s > 0.0);
     assert!(!first.solution.t.is_empty());
     assert!(first.solution.v.iter().all(|value| value.is_finite()));
+}
+
+#[test]
+fn v3_resolved_boundary_is_deterministic_without_gameplay_tuning() {
+    let request = resolved_v3_request(&synthetic_request());
+
+    let first = run_resolved_simulation_v3(&request).expect("first V3 candidate solve");
+    let second = run_resolved_simulation_v3(&request).expect("second V3 candidate solve");
+
+    assert_eq!(first, second);
+    assert_eq!(first.applied_vehicle.chassis, request.vehicle.chassis);
+    assert_eq!(first.applied_vehicle.aero, request.vehicle.aero);
+    assert_eq!(first.applied_vehicle.engine, request.vehicle.engine);
+    assert!(first.total_time_s.is_finite());
+    assert!(first.total_time_s > 0.0);
+}
+
+#[test]
+fn v3_uses_explicit_non_uniform_segments_and_ignores_compatibility_ds() {
+    let mut request = resolved_v3_request(&synthetic_request());
+    request.track.s = vec![
+        0.0, 8.0, 21.0, 39.0, 62.0, 90.0, 123.0, 161.0, 204.0, 252.0, 305.0, 363.0, 426.0, 494.0,
+        567.0, 645.0, 728.0, 816.0, 909.0, 1_007.0, 1_110.0,
+    ];
+    request.track.x = request.track.s.clone();
+    request.track.slope = request
+        .track
+        .s
+        .iter()
+        .map(|distance| 0.01 * (distance / 1_110.0))
+        .collect();
+
+    request.config.ds = 1.0;
+    let first = run_resolved_simulation_v3(&request).expect("first non-uniform V3 solve");
+    request.config.ds = 999.0;
+    let second = run_resolved_simulation_v3(&request).expect("second non-uniform V3 solve");
+
+    assert_eq!(first, second);
+    assert_eq!(first.solution.s.last().copied(), Some(2_220.0));
+}
+
+#[test]
+fn v3_rejects_invalid_resolved_physics_before_solving() {
+    let mut bad_track = resolved_v3_request(&synthetic_request());
+    bad_track.track.s[5] = bad_track.track.s[4];
+    assert_eq!(
+        run_resolved_simulation_v3(&bad_track).unwrap_err(),
+        "track.s must be strictly increasing"
+    );
+
+    let mut bad_vehicle = resolved_v3_request(&synthetic_request());
+    bad_vehicle.vehicle.chassis.mass_empty = -1.0;
+    assert_eq!(
+        run_resolved_simulation_v3(&bad_vehicle).unwrap_err(),
+        "vehicle.chassis.mass_empty_kg must be finite and positive"
+    );
 }
 
 #[test]

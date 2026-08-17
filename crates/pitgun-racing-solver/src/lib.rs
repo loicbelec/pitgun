@@ -320,6 +320,26 @@ pub struct SimulationRequest {
     pub tuning: Option<Tuning>,
 }
 
+/// Fully physical input accepted by Racing Game Model V3.
+///
+/// Unlike [`SimulationRequest`], this boundary cannot carry game development
+/// points or setup sliders. The Racing Simulator must resolve those choices to
+/// physical vehicle parameters before invoking the Solver.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct ResolvedSimulationRequestV3 {
+    pub track: Track,
+    pub vehicle: VehicleParams,
+    pub state: VehicleState,
+    #[serde(default)]
+    pub config: SimConfig,
+    #[serde(default = "default_lap_count")]
+    pub lap_count: u16,
+    #[serde(default)]
+    pub pit_plan: PitPlan,
+    #[serde(default)]
+    pub driver: Driver,
+}
+
 fn default_lap_count() -> u16 {
     1
 }
@@ -348,6 +368,12 @@ pub enum CurvatureAeroResponse {
     #[default]
     LegacyBinary,
     ContinuousV1,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+enum SpatialIntegration {
+    UniformGridCompatibility,
+    PerSegmentV1,
 }
 
 #[derive(Debug, Clone, Copy, Default, Serialize, Deserialize, PartialEq)]
@@ -452,14 +478,65 @@ pub fn run_simulation_with_model_response(
 ) -> Result<SimulationResult, String> {
     tuning_response.validate()?;
     validate_track(&input.track)?;
-
-    let lap_count = input.lap_count.max(1);
-    let driver = input.driver.clone();
-    let effects = driver_effects(&driver);
     let tuned_vehicle = match &input.tuning {
         Some(tuning) => apply_tuning_with_response(&input.vehicle, tuning, tuning_response)?,
         None => input.vehicle.clone(),
     };
+
+    run_resolved_simulation_kernel(
+        input,
+        tuned_vehicle,
+        curvature_response,
+        SpatialIntegration::UniformGridCompatibility,
+    )
+}
+
+/// Executes the first Racing Game Model V3 mechanical slice.
+///
+/// The request already contains a physically resolved vehicle. Track
+/// integration uses each explicit segment length and derives vertical-path
+/// curvature from the distance coordinate. This Rust-only candidate boundary
+/// is not selected by any production catalog yet.
+pub fn run_resolved_simulation_v3(
+    input: &ResolvedSimulationRequestV3,
+) -> Result<SimulationResult, String> {
+    validate_track(&input.track)?;
+    validate_resolved_track_v3(&input.track)?;
+    validate_resolved_vehicle(&input.vehicle)?;
+    validate_resolved_state_v3(&input.state)?;
+    validate_resolved_config_v3(&input.config)?;
+    for stop in &input.pit_plan.stops {
+        validate_tire_params(&stop.tire)?;
+    }
+
+    let compatibility_request = SimulationRequest {
+        track: input.track.clone(),
+        vehicle: input.vehicle.clone(),
+        state: input.state.clone(),
+        config: input.config.clone(),
+        lap_count: input.lap_count,
+        pit_plan: input.pit_plan.clone(),
+        driver: input.driver.clone(),
+        tuning: None,
+    };
+
+    run_resolved_simulation_kernel(
+        &compatibility_request,
+        input.vehicle.clone(),
+        CurvatureAeroResponse::ContinuousV1,
+        SpatialIntegration::PerSegmentV1,
+    )
+}
+
+fn run_resolved_simulation_kernel(
+    input: &SimulationRequest,
+    tuned_vehicle: VehicleParams,
+    curvature_response: CurvatureAeroResponse,
+    spatial_integration: SpatialIntegration,
+) -> Result<SimulationResult, String> {
+    let lap_count = input.lap_count.max(1);
+    let driver = input.driver.clone();
+    let effects = driver_effects(&driver);
     let mut vehicle = tuned_vehicle.clone();
     vehicle.tire = apply_driver_to_tire(&vehicle.tire, &effects);
 
@@ -471,6 +548,7 @@ pub fn run_simulation_with_model_response(
         (s[1] - s[0]).abs().max(1e-9)
     };
     let slope_change = gradient_equal_spacing(&input.track.slope);
+    let slope_gradient = gradient_with_coords(&input.track.slope, &input.track.s);
 
     let mut out_s = Vec::new();
     let mut out_t = Vec::new();
@@ -507,6 +585,7 @@ pub fn run_simulation_with_model_response(
 
         let mut v_bwd = v_corner.clone();
         for i in (0..(n - 1)).rev() {
+            let segment_ds = segment_distance(spatial_integration, s, ds, i);
             let v_target = v_bwd[i + 1];
             let (drag, downforce) = aero_forces(
                 v_target,
@@ -521,7 +600,13 @@ pub fn run_simulation_with_model_response(
             let f_roll = vehicle.chassis.c_rr * (mass * vehicle.chassis.g + downforce);
             let f_slope = mass * vehicle.chassis.g * input.track.slope[i];
 
-            let a_vert = v_target * v_target * slope_change[i] / ds / ds;
+            let a_vert = vertical_acceleration(
+                spatial_integration,
+                v_target,
+                slope_change[i],
+                slope_gradient[i],
+                ds,
+            );
             let normal_load = mass * (vehicle.chassis.g + a_vert) + downforce;
             let mu_eff = effective_mu(
                 vehicle.chassis.mu0,
@@ -541,7 +626,9 @@ pub fn run_simulation_with_model_response(
             let mut a_decel = (f_brake_max + f_drag + f_roll + f_slope) / mass.max(1e-9);
             a_decel = a_decel.min(6.0 * vehicle.chassis.g);
 
-            let v_max_braking = (v_target * v_target + 2.0 * a_decel * ds).max(0.0).sqrt();
+            let v_max_braking = (v_target * v_target + 2.0 * a_decel * segment_ds)
+                .max(0.0)
+                .sqrt();
             if v_bwd[i] > v_max_braking {
                 v_bwd[i] = v_max_braking;
             }
@@ -570,9 +657,10 @@ pub fn run_simulation_with_model_response(
         gear[0] = gear[n - 1];
 
         for i in 0..(n - 1) {
+            let segment_ds = segment_distance(spatial_integration, s, ds, i);
             let v = v_fwd[i].min(v_bwd[i]);
             let v_safe = v.max(1.0);
-            let dt = ds / v_safe;
+            let dt = segment_ds / v_safe;
 
             let (mut pwr, _, best_gear) =
                 best_power_at_speed(v_safe, &vehicle.engine, &vehicle.chassis);
@@ -591,7 +679,13 @@ pub fn run_simulation_with_model_response(
                     input.track.kappa[i].abs() > CORNER_CURVATURE_THRESHOLD_RAD_PER_M,
                 );
 
-                let a_vert = v_safe * v_safe * slope_change[i] / ds / ds;
+                let a_vert = vertical_acceleration(
+                    spatial_integration,
+                    v_safe,
+                    slope_change[i],
+                    slope_gradient[i],
+                    ds,
+                );
                 let f_drag = drag;
                 let f_roll =
                     vehicle.chassis.c_rr * (mass * (vehicle.chassis.g + a_vert) + downforce);
@@ -611,7 +705,7 @@ pub fn run_simulation_with_model_response(
 
                 let f_net = f_drive - f_drag - f_roll - f_slope;
                 let a = f_net / mass.max(1e-9);
-                v_fwd[i + 1] = (v_safe * v_safe + 2.0 * a * ds).max(0.0).sqrt();
+                v_fwd[i + 1] = (v_safe * v_safe + 2.0 * a * segment_ds).max(0.0).sqrt();
             }
 
             let heat = 1000.0 * vehicle.engine.alpha_heat * power[i];
@@ -619,7 +713,8 @@ pub fn run_simulation_with_model_response(
                 * (temp[i] - vehicle.engine.t_amb);
             temp[i + 1] = temp[i] + (heat - cool) / vehicle.engine.c_th.max(1e-9) * dt;
 
-            let a_long = (v_fwd[i + 1] * v_fwd[i + 1] - v_safe * v_safe) / (2.0 * ds).max(1e-3);
+            let a_long =
+                (v_fwd[i + 1] * v_fwd[i + 1] - v_safe * v_safe) / (2.0 * segment_ds).max(1e-3);
             let a_lat = v_safe * v_safe * input.track.kappa[i];
             let load_metric = a_lat * a_lat + a_long * a_long;
 
@@ -663,7 +758,8 @@ pub fn run_simulation_with_model_response(
         let mut dt = vec![0.0; n];
         let v_safe: Vec<f64> = v_final.iter().map(|value| value.max(1.0)).collect();
         for i in 1..n {
-            dt[i] = ds / (0.5 * (v_safe[i] + v_safe[i - 1]));
+            let segment_ds = segment_distance(spatial_integration, s, ds, i - 1);
+            dt[i] = segment_ds / (0.5 * (v_safe[i] + v_safe[i - 1]));
         }
         let t = cumulative_sum(&dt);
 
@@ -1109,6 +1205,222 @@ fn validate_track(track: &Track) -> Result<(), String> {
         return Err("track.s must be strictly increasing".to_string());
     }
     Ok(())
+}
+
+fn validate_resolved_track_v3(track: &Track) -> Result<(), String> {
+    for (name, values) in [
+        ("track.s", track.s.as_slice()),
+        ("track.x", track.x.as_slice()),
+        ("track.y", track.y.as_slice()),
+        ("track.z", track.z.as_slice()),
+        ("track.kappa", track.kappa.as_slice()),
+        ("track.slope", track.slope.as_slice()),
+        ("track.heading", track.heading.as_slice()),
+    ] {
+        if values.iter().any(|value| !value.is_finite()) {
+            return Err(format!("{name} must contain only finite values"));
+        }
+    }
+    Ok(())
+}
+
+/// Validates the physical vehicle supplied to Racing Game Model V3.
+///
+/// The current public field names are retained for historical serialization,
+/// while this boundary makes their physical domains explicit: SI units are
+/// used throughout (kg, m, s, N, W, rpm and degrees Celsius) except for named
+/// dimensionless coefficients and normalized wear.
+pub fn validate_resolved_vehicle(vehicle: &VehicleParams) -> Result<(), String> {
+    let chassis = &vehicle.chassis;
+    for (name, value) in [
+        ("vehicle.chassis.mass_empty_kg", chassis.mass_empty),
+        ("vehicle.chassis.wheel_radius_m", chassis.r_wheel),
+        ("vehicle.chassis.base_grip_coefficient", chassis.mu0),
+        ("vehicle.chassis.air_density_kg_per_m3", chassis.rho),
+        ("vehicle.chassis.gravity_m_per_s2", chassis.g),
+    ] {
+        require_positive(name, value)?;
+    }
+    require_non_negative(
+        "vehicle.chassis.rolling_resistance_coefficient",
+        chassis.c_rr,
+    )?;
+
+    for (name, value) in [
+        ("vehicle.aero.straight_drag_area_m2", vehicle.aero.cd_a_x),
+        ("vehicle.aero.corner_drag_area_m2", vehicle.aero.cd_a_z),
+        (
+            "vehicle.aero.straight_downforce_area_m2",
+            vehicle.aero.cl_a_x,
+        ),
+        ("vehicle.aero.corner_downforce_area_m2", vehicle.aero.cl_a_z),
+    ] {
+        require_non_negative(name, value)?;
+    }
+
+    let engine = &vehicle.engine;
+    if engine.n_rpm.len() < 2 || engine.n_rpm.len() != engine.trq.len() {
+        return Err(
+            "vehicle.engine torque curve must contain at least two matching rpm/torque samples"
+                .to_string(),
+        );
+    }
+    if !engine
+        .n_rpm
+        .iter()
+        .all(|value| value.is_finite() && *value >= 0.0)
+        || !engine.n_rpm.iter().any(|value| *value > 0.0)
+        || !engine.n_rpm.windows(2).all(|window| window[1] > window[0])
+    {
+        return Err(
+            "vehicle.engine rpm samples must be finite, non-negative, increasing and contain a positive value"
+                .to_string(),
+        );
+    }
+    if engine
+        .trq
+        .iter()
+        .any(|value| !value.is_finite() || *value < 0.0)
+    {
+        return Err("vehicle.engine torque samples must be finite and non-negative".to_string());
+    }
+    if engine.gear_ratios.is_empty()
+        || engine
+            .gear_ratios
+            .iter()
+            .any(|value| !value.is_finite() || *value <= 0.0)
+    {
+        return Err("vehicle.engine gear ratios must be finite and positive".to_string());
+    }
+    for (name, value) in [
+        ("vehicle.engine.idle_rpm", engine.n_idle),
+        ("vehicle.engine.maximum_rpm", engine.n_max),
+        ("vehicle.engine.thermal_capacity_j_per_c", engine.c_th),
+    ] {
+        require_positive(name, value)?;
+    }
+    require_non_negative("vehicle.engine.upshift_rpm", engine.n_upshift)?;
+    require_non_negative("vehicle.engine.downshift_rpm", engine.n_downshift)?;
+    if engine.n_idle >= engine.n_max
+        || (engine.n_upshift > 0.0
+            && (engine.n_downshift > engine.n_upshift || engine.n_upshift > engine.n_max))
+    {
+        return Err(
+            "vehicle.engine rpm limits must satisfy idle < maximum and, when configured, downshift <= upshift <= maximum"
+                .to_string(),
+        );
+    }
+    for (name, value) in [
+        ("vehicle.engine.ambient_temperature_c", engine.t_amb),
+        ("vehicle.engine.initial_temperature_c", engine.t_init),
+        ("vehicle.engine.soft_limit_temperature_c", engine.t_soft),
+    ] {
+        require_finite(name, value)?;
+    }
+    for (name, value) in [
+        ("vehicle.engine.heat_fraction", engine.alpha_heat),
+        ("vehicle.engine.base_cooling_w_per_c", engine.p_cool0),
+        ("vehicle.engine.speed_cooling_w_s_per_m_c", engine.k_cool),
+        ("vehicle.engine.derate_per_c", engine.beta_derate),
+        (
+            "vehicle.engine.fuel_burn_kg_per_s",
+            engine.fuel_burn_kg_per_s,
+        ),
+    ] {
+        require_non_negative(name, value)?;
+    }
+
+    validate_tire_params(&vehicle.tire)
+}
+
+fn validate_tire_params(tire: &TireParams) -> Result<(), String> {
+    require_positive("vehicle.tire.grip_multiplier", tire.mu_scale)?;
+    require_positive("vehicle.tire.optimal_temperature_c", tire.temp_opt)?;
+    require_positive("vehicle.tire.temperature_sigma_c", tire.temp_sigma)?;
+    for (name, value) in [
+        ("vehicle.tire.base_wear_per_s", tire.wear_per_s),
+        ("vehicle.tire.load_wear_gain", tire.wear_load_k),
+        ("vehicle.tire.wear_grip_loss", tire.wear_grip_k),
+        ("vehicle.tire.minimum_temperature_factor", tire.temp_min_k),
+        ("vehicle.tire.heat_gain", tire.heat_k),
+        ("vehicle.tire.cooling_gain", tire.cool_k),
+    ] {
+        require_non_negative(name, value)?;
+    }
+    if !tire.wear_min.is_finite() || !(0.0..=1.0).contains(&tire.wear_min) {
+        return Err("vehicle.tire.minimum_wear_factor must be finite and in [0, 1]".to_string());
+    }
+    Ok(())
+}
+
+fn validate_resolved_state_v3(state: &VehicleState) -> Result<(), String> {
+    require_non_negative("state.fuel_mass_kg", state.fuel_mass)?;
+    if !state.tire_wear.is_finite() || !(0.0..=1.0).contains(&state.tire_wear) {
+        return Err("state.tire_wear must be finite and in [0, 1]".to_string());
+    }
+    require_non_negative("state.tire_temperature_c", state.tire_temp)?;
+    require_non_negative("state.engine_temperature_c", state.engine_temp)
+}
+
+fn validate_resolved_config_v3(config: &SimConfig) -> Result<(), String> {
+    require_positive("config.maximum_speed_m_per_s", config.max_speed)?;
+    require_non_negative("config.pit_time_penalty_s", config.pit_time_penalty_s)?;
+    require_non_negative("config.tire_ambient_temperature_c", config.tire_temp_amb)?;
+    if let Some(temperature) = config.pit_tire_temp {
+        require_non_negative("config.pit_tire_temperature_c", temperature)?;
+    }
+    Ok(())
+}
+
+fn require_finite(name: &str, value: f64) -> Result<(), String> {
+    if value.is_finite() {
+        Ok(())
+    } else {
+        Err(format!("{name} must be finite"))
+    }
+}
+
+fn require_positive(name: &str, value: f64) -> Result<(), String> {
+    if value.is_finite() && value > 0.0 {
+        Ok(())
+    } else {
+        Err(format!("{name} must be finite and positive"))
+    }
+}
+
+fn require_non_negative(name: &str, value: f64) -> Result<(), String> {
+    if value.is_finite() && value >= 0.0 {
+        Ok(())
+    } else {
+        Err(format!("{name} must be finite and non-negative"))
+    }
+}
+
+fn segment_distance(
+    integration: SpatialIntegration,
+    s: &[f64],
+    compatibility_ds: f64,
+    segment_index: usize,
+) -> f64 {
+    match integration {
+        SpatialIntegration::UniformGridCompatibility => compatibility_ds,
+        SpatialIntegration::PerSegmentV1 => s[segment_index + 1] - s[segment_index],
+    }
+}
+
+fn vertical_acceleration(
+    integration: SpatialIntegration,
+    speed: f64,
+    compatibility_slope_change: f64,
+    slope_gradient_per_m: f64,
+    compatibility_ds: f64,
+) -> f64 {
+    match integration {
+        SpatialIntegration::UniformGridCompatibility => {
+            speed * speed * compatibility_slope_change / compatibility_ds / compatibility_ds
+        }
+        SpatialIntegration::PerSegmentV1 => speed * speed * slope_gradient_per_m,
+    }
 }
 
 fn tire_for_lap(default_tire: &TireParams, pit_stops: &[PitStop], lap: u16) -> TireParams {
