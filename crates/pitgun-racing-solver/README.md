@@ -33,8 +33,15 @@ Those responsibilities belong to the Racing Simulator.
 
 `ResolvedSimulationRequestV3` is the first physical-only V3 boundary. It cannot
 carry game development points or setup sliders, validates resolved physical
-inputs, and integrates the real distance of every track segment. The candidate
-is offline-only and documented in
+inputs, and integrates the real distance of every track segment.
+
+Candidate `0.2.0` adds one aggregate contact patch shared by cornering,
+braking, and traction. Its load-sensitive combined force budget is bounded;
+temperature and wear evolve from a named contact-workload energy proxy through
+a fixed deterministic coupling loop. The Solver publishes force utilization,
+normal load, available force, heat, and workload diagnostics for calibration.
+
+The candidate is offline-only and documented in
 [`RACING_MODEL_V3_FOUNDATION.md`](../../docs/RACING_MODEL_V3_FOUNDATION.md).
 
 Historical V1/V2 entry points keep their original uniform-grid and tuning

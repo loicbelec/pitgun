@@ -277,6 +277,13 @@ More importantly, coupling is inconsistent:
 - the resulting transient tire arrays do not feed the lateral envelope until
   the next lap.
 
+Model V3 candidate `0.2.0` replaces this behavior on its isolated execution
+path. V1/V2 retain it solely for replay compatibility. The candidate uses one
+load-sensitive combined force budget, one shared state trajectory refined by
+four fixed iterations, and a named contact-workload energy proxy for heat and
+wear. Its coefficients remain pre-calibration candidate inputs rather than
+published catalog truth.
+
 The audit assigns `REPLACE` to the equations, not to the idea of one aggregate
 tire state. The first V3 tire model should remain approachable:
 

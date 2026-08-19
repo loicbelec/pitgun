@@ -9,7 +9,8 @@ use pitgun_contract::{
     canonical_json_digest, canonicalize_json_str,
 };
 use pitgun_racing_simulator::{
-    CurvatureAeroResponse, TuningResponseV1, run_race_with_catalog_and_model_response,
+    CurvatureAeroResponse, TuningResponseV1, racing_model_v3_candidate_identity,
+    run_race_with_catalog_and_model_response, run_race_with_catalog_and_v3_candidate,
 };
 use pitgun_solver::evidence::{
     RacingHostedExecutionRequestV1, RacingHostedExecutionRequestVersion, RacingRunEvidenceV1,
@@ -73,6 +74,35 @@ struct GoldenSummary {
     player_lap_times_ms: Vec<u64>,
     standings: Vec<GoldenStanding>,
     telemetry: GoldenTelemetry,
+}
+
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
+fn v3_candidate_contact_patch_is_deterministic_across_supported_runtimes() {
+    let request: RunRaceRequest = serde_json::from_str(INPUT_V2).expect("V2 input fixture");
+    let catalog = RacingCatalogSnapshot::embedded_model_v2().expect("embedded model V2 catalog");
+    let first = run_race_with_catalog_and_v3_candidate(
+        request.clone(),
+        &catalog,
+        &TuningResponseV1::default(),
+    )
+    .expect("first V3 candidate run");
+    let second =
+        run_race_with_catalog_and_v3_candidate(request, &catalog, &TuningResponseV1::default())
+            .expect("second V3 candidate run");
+
+    assert_eq!(
+        canonical_json_bytes(&first).expect("first canonical candidate output"),
+        canonical_json_bytes(&second).expect("second canonical candidate output"),
+    );
+    assert_eq!(
+        racing_model_v3_candidate_identity().version.to_string(),
+        "0.2.0"
+    );
+    assert_eq!(
+        first.total_time_ms, 88_402,
+        "V3 candidate output changed without a new candidate identity"
+    );
 }
 
 #[derive(Debug, Deserialize, Serialize, PartialEq)]
