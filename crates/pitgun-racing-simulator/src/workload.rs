@@ -12,7 +12,7 @@ use crate::{
 const RACING_MODEL_V1_MANIFEST: &[u8] = b"pitgun.racing:model:1.0.0:conformance-vector";
 const RACING_MODEL_V2_MANIFEST: &[u8] = b"pitgun.racing:model:2.0.0:continuous-curvature-v1";
 const RACING_MODEL_V3_CANDIDATE_MANIFEST: &[u8] =
-    b"pitgun.racing-v3-candidate:model:0.2.0:resolved-vehicle:per-segment-v1:aggregate-contact-v1";
+    b"pitgun.racing-v3-candidate:model:0.3.0:resolved-vehicle:per-segment-v1:aggregate-contact-v1:mechanical-controls-v1";
 
 /// Returns the exact logical Racing model identity authorized by V1 services.
 #[must_use]
@@ -34,7 +34,7 @@ pub fn racing_model_v2_identity() -> ArtifactIdentity {
     }
 }
 
-/// Returns the non-production identity of the first Model V3 mechanical slice.
+/// Returns the non-production identity of the current Model V3 mechanical slice.
 ///
 /// This candidate namespace prevents an incomplete V3 from being mistaken for
 /// the future published `pitgun.racing@3.0.0` workload.
@@ -44,7 +44,7 @@ pub fn racing_model_v3_candidate_identity() -> ArtifactIdentity {
         id: "pitgun.racing-v3-candidate"
             .parse()
             .expect("static Racing V3 candidate model id"),
-        version: "0.2.0"
+        version: "0.3.0"
             .parse()
             .expect("static Racing V3 candidate model version"),
         digest: pitgun_contract::Digest::from_bytes(RACING_MODEL_V3_CANDIDATE_MANIFEST),
@@ -232,12 +232,12 @@ mod tests {
         let candidate = racing_model_v3_candidate_identity();
 
         assert_eq!(candidate.id.to_string(), "pitgun.racing-v3-candidate");
-        assert_eq!(candidate.version.to_string(), "0.2.0");
+        assert_eq!(candidate.version.to_string(), "0.3.0");
         assert_eq!(
             candidate.digest.to_string(),
-            "sha256:9ede22efaa6a798adb2e21432a88294327fbb7d4e40e6c7956765dc91d3cc459"
+            "sha256:79a262d7c1625ca577627e0d134a744284f6aabd15ee683133c572dd4af4e35c"
         );
         assert_ne!(candidate, racing_model_v2_identity());
-        assert!(racing_model_identity_for_version("0.2.0").is_err());
+        assert!(racing_model_identity_for_version("0.3.0").is_err());
     }
 }

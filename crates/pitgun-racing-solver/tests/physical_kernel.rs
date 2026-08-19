@@ -1,10 +1,11 @@
 use pitgun_racing_solver::{
     AERO_FULL_CORNER_CURVATURE_RAD_PER_M, AERO_FULL_STRAIGHT_CURVATURE_RAD_PER_M, AeroParams,
-    ChassisParams, CurvatureAeroResponse, Driver, EngineParams, PitPlan,
-    ResolvedSimulationRequestV3, SimConfig, SimulationRequest, TireContactParamsV3, TireParams,
-    Track, Tuning, TuningResponseV1, VehicleParams, VehicleState, aggregate_tire_force_capacity_v3,
-    apply_tuning, apply_tuning_with_response, combined_force_utilization, curvature_aero_blend,
-    describe_circuit, remaining_longitudinal_force, run_resolved_simulation_v3, run_simulation,
+    ChassisParams, CurvatureAeroResponse, Driver, DriverControlParamsV3, EngineParams,
+    MechanicalParamsV3, PitPlan, ResolvedSimulationRequestV3, SimConfig, SimulationRequest,
+    TireContactParamsV3, TireParams, Track, Tuning, TuningResponseV1, VehicleParams, VehicleState,
+    aggregate_tire_force_capacity_v3, apply_tuning, apply_tuning_with_response,
+    combined_force_utilization, curvature_aero_blend, describe_circuit,
+    remaining_longitudinal_force, run_resolved_simulation_v3, run_simulation,
     run_simulation_with_model_response, run_simulation_with_tuning_response,
 };
 
@@ -100,6 +101,13 @@ fn resolved_v3_request(request: &SimulationRequest) -> ResolvedSimulationRequest
         pit_plan: request.pit_plan.clone(),
         driver: request.driver.clone(),
         tire_contact: TireContactParamsV3::default(),
+        mechanical: MechanicalParamsV3 {
+            fixed_drag_area_m2: 0.5 * (request.vehicle.aero.cd_a_x + request.vehicle.aero.cd_a_z),
+            fixed_downforce_area_m2: 0.5
+                * (request.vehicle.aero.cl_a_x + request.vehicle.aero.cl_a_z),
+            ..MechanicalParamsV3::default()
+        },
+        driver_control: DriverControlParamsV3::default(),
     }
 }
 
@@ -239,10 +247,163 @@ fn v3_resolved_boundary_is_deterministic_without_gameplay_tuning() {
 
     assert_eq!(first, second);
     assert_eq!(first.applied_vehicle.chassis, request.vehicle.chassis);
-    assert_eq!(first.applied_vehicle.aero, request.vehicle.aero);
+    assert_eq!(
+        first.applied_vehicle.aero.cd_a_x,
+        request.mechanical.fixed_drag_area_m2
+    );
+    assert_eq!(
+        first.applied_vehicle.aero.cd_a_z,
+        request.mechanical.fixed_drag_area_m2
+    );
+    assert_eq!(
+        first.applied_vehicle.aero.cl_a_x,
+        request.mechanical.fixed_downforce_area_m2
+    );
+    assert_eq!(
+        first.applied_vehicle.aero.cl_a_z,
+        request.mechanical.fixed_downforce_area_m2
+    );
     assert_eq!(first.applied_vehicle.engine, request.vehicle.engine);
     assert!(first.total_time_s.is_finite());
     assert!(first.total_time_s > 0.0);
+}
+
+#[test]
+fn v3_gearbox_is_sequential_and_exposes_shift_cost() {
+    let mut request = resolved_v3_request(&synthetic_request());
+    request.mechanical.upshift_rpm = 6_000.0;
+    request.mechanical.downshift_rpm = 2_000.0;
+    request.mechanical.shift_duration_s = 0.20;
+
+    let shifted = run_resolved_simulation_v3(&request).expect("sequential gearbox solve");
+    let diagnostics = shifted
+        .mechanical_diagnostics_v3
+        .expect("V3 mechanical diagnostics");
+
+    assert!(diagnostics.sequential_shift_count > 0);
+    assert!(diagnostics.shift_interruption_time_s > 0.0);
+    assert!(
+        shifted
+            .solution
+            .gear
+            .windows(2)
+            .all(|gears| gears[0].abs_diff(gears[1]) <= 1),
+        "a sequential gearbox may only select an adjacent ratio"
+    );
+    assert!(
+        shifted
+            .solution
+            .shift_power_fraction
+            .iter()
+            .any(|fraction| *fraction < 1.0)
+    );
+
+    let mut instant = request;
+    instant.mechanical.shift_duration_s = 0.0;
+    let instant = run_resolved_simulation_v3(&instant).expect("instant gearbox solve");
+    assert!(shifted.total_time_s >= instant.total_time_s);
+}
+
+#[test]
+fn v3_braking_is_bounded_by_the_named_system_limit() {
+    let mut request = resolved_v3_request(&synthetic_request());
+    request.track.kappa[7..15].fill(0.004);
+    request.mechanical.maximum_brake_force_n = 4_000.0;
+    let weak = run_resolved_simulation_v3(&request).expect("limited brake solve");
+
+    assert!(
+        weak.solution
+            .brake_force_budget_n
+            .iter()
+            .all(|force| *force <= 4_000.0 + f64::EPSILON)
+    );
+    assert!(
+        weak.mechanical_diagnostics_v3
+            .expect("V3 mechanical diagnostics")
+            .brake_limit_activation_count
+            > 0
+    );
+
+    request.mechanical.maximum_brake_force_n = 18_000.0;
+    let strong = run_resolved_simulation_v3(&request).expect("strong brake solve");
+    assert!(weak.total_time_s >= strong.total_time_s);
+}
+
+#[test]
+fn v3_driver_operates_physical_limits_without_post_solve_time_scaling() {
+    let mut first_request = resolved_v3_request(&synthetic_request());
+    first_request.driver_control.control_error = 0.0;
+    let mut second_request = first_request.clone();
+    second_request.driver.id = "another-driver".to_string();
+    second_request.driver.display_name = "Another Driver".to_string();
+    second_request.driver.aggressiveness = 1.0;
+
+    let first = run_resolved_simulation_v3(&first_request).expect("first driver solve");
+    let second = run_resolved_simulation_v3(&second_request).expect("second driver solve");
+
+    assert_eq!(first.solution, second.solution);
+    assert_eq!(first.lap_times_s, second.lap_times_s);
+    assert_ne!(first.applied_driver, second.applied_driver);
+}
+
+#[test]
+fn v3_fixed_aero_is_independent_of_curvature_and_drag_cannot_help_terminal_speed() {
+    let mut low_drag_request = resolved_v3_request(&synthetic_request());
+    low_drag_request.lap_count = 1;
+    low_drag_request.mechanical.fixed_drag_area_m2 = 0.50;
+    let low_drag = run_resolved_simulation_v3(&low_drag_request).expect("low drag solve");
+
+    let mut high_drag_request = low_drag_request;
+    high_drag_request.mechanical.fixed_drag_area_m2 = 1.50;
+    let high_drag = run_resolved_simulation_v3(&high_drag_request).expect("high drag solve");
+
+    let low_terminal = low_drag.solution.v.iter().copied().fold(0.0, f64::max);
+    let high_terminal = high_drag.solution.v.iter().copied().fold(0.0, f64::max);
+    assert!(high_terminal <= low_terminal);
+    assert!(high_drag.total_time_s >= low_drag.total_time_s);
+    assert_eq!(
+        low_drag
+            .mechanical_diagnostics_v3
+            .expect("low drag diagnostics")
+            .fixed_drag_area_m2,
+        0.50
+    );
+    assert_eq!(low_drag.applied_vehicle.aero.cd_a_x, 0.50);
+    assert_eq!(low_drag.applied_vehicle.aero.cd_a_z, 0.50);
+    assert_eq!(
+        low_drag.applied_vehicle.aero.cl_a_x,
+        low_drag.applied_vehicle.aero.cl_a_z
+    );
+}
+
+#[test]
+fn v3_cooling_is_observable_and_only_acts_through_temperature() {
+    let mut weak_request = resolved_v3_request(&synthetic_request());
+    weak_request.lap_count = 20;
+    weak_request.vehicle.engine.t_soft = 92.0;
+    weak_request.vehicle.engine.p_cool0 = 0.0;
+    weak_request.vehicle.engine.k_cool = 0.0;
+    let weak = run_resolved_simulation_v3(&weak_request).expect("weak cooling solve");
+
+    let mut strong_request = weak_request;
+    strong_request.vehicle.engine.p_cool0 = 500.0;
+    strong_request.vehicle.engine.k_cool = 100.0;
+    let strong = run_resolved_simulation_v3(&strong_request).expect("strong cooling solve");
+
+    let weak_diagnostics = weak
+        .mechanical_diagnostics_v3
+        .expect("weak cooling diagnostics");
+    let strong_diagnostics = strong
+        .mechanical_diagnostics_v3
+        .expect("strong cooling diagnostics");
+    assert!(weak_diagnostics.generated_engine_heat_kj > 0.0);
+    assert_eq!(weak_diagnostics.removed_engine_heat_kj, 0.0);
+    assert!(strong_diagnostics.removed_engine_heat_kj > 0.0);
+    assert!(
+        strong_diagnostics.maximum_engine_temperature_c
+            <= weak_diagnostics.maximum_engine_temperature_c
+    );
+    assert!(strong_diagnostics.engine_derated_time_s <= weak_diagnostics.engine_derated_time_s);
 }
 
 #[test]
@@ -290,6 +451,20 @@ fn v3_rejects_invalid_resolved_physics_before_solving() {
     assert_eq!(
         run_resolved_simulation_v3(&bad_contact).unwrap_err(),
         "tire_contact.load_sensitivity_exponent must be <= 0.3"
+    );
+
+    let mut bad_mechanical = resolved_v3_request(&synthetic_request());
+    bad_mechanical.mechanical.driveline_efficiency = 0.0;
+    assert_eq!(
+        run_resolved_simulation_v3(&bad_mechanical).unwrap_err(),
+        "mechanical.driveline_efficiency must be greater than 0"
+    );
+
+    let mut bad_driver = resolved_v3_request(&synthetic_request());
+    bad_driver.driver_control.braking_utilization = 0.49;
+    assert_eq!(
+        run_resolved_simulation_v3(&bad_driver).unwrap_err(),
+        "driver_control.braking_utilization must be finite and in [0.5, 1]"
     );
 }
 

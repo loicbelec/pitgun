@@ -340,6 +340,68 @@ pub struct ResolvedSimulationRequestV3 {
     pub driver: Driver,
     /// Aggregate contact-patch coefficients selected by the V3 model profile.
     pub tire_contact: TireContactParamsV3,
+    /// Resolved mechanical limits and losses selected by the V3 model profile.
+    pub mechanical: MechanicalParamsV3,
+    /// Bounded physical-limit utilization selected for this driver.
+    pub driver_control: DriverControlParamsV3,
+}
+
+/// Physically interpretable mechanical controls for Model V3.
+///
+/// Every field is expressed in SI units or as a bounded ratio. These values
+/// are candidate inputs for offline screening, not calibrated production
+/// truths.
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct MechanicalParamsV3 {
+    pub maximum_brake_force_n: f64,
+    pub upshift_rpm: f64,
+    pub downshift_rpm: f64,
+    pub shift_duration_s: f64,
+    pub shift_power_fraction: f64,
+    pub driveline_efficiency: f64,
+    pub fixed_drag_area_m2: f64,
+    pub fixed_downforce_area_m2: f64,
+}
+
+impl Default for MechanicalParamsV3 {
+    fn default() -> Self {
+        Self {
+            maximum_brake_force_n: 18_000.0,
+            upshift_rpm: 11_000.0,
+            downshift_rpm: 5_500.0,
+            shift_duration_s: 0.050,
+            shift_power_fraction: 0.0,
+            driveline_efficiency: 0.95,
+            fixed_drag_area_m2: 0.95,
+            fixed_downforce_area_m2: 3.20,
+        }
+    }
+}
+
+/// Driver interaction with the mechanical envelope for Model V3.
+///
+/// A driver never receives a hidden lap-time multiplier. Instead, each control
+/// determines how much of a named force limit may be used. `control_error`
+/// deterministically reduces that utilization at individual track samples.
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct DriverControlParamsV3 {
+    pub cornering_utilization: f64,
+    pub braking_utilization: f64,
+    pub traction_utilization: f64,
+    pub control_error: f64,
+}
+
+impl Default for DriverControlParamsV3 {
+    fn default() -> Self {
+        Self {
+            cornering_utilization: 0.98,
+            braking_utilization: 0.97,
+            traction_utilization: 0.98,
+            control_error: 0.01,
+        }
+    }
 }
 
 /// Reviewed reduced-order tire/contact-patch coefficients for Model V3.
@@ -397,6 +459,18 @@ pub struct SimulationSolution {
     pub tire_normal_load_n: Vec<f64>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub tire_available_force_n: Vec<f64>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub brake_force_budget_n: Vec<f64>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub driver_cornering_utilization: Vec<f64>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub driver_braking_utilization: Vec<f64>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub driver_traction_utilization: Vec<f64>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub engine_derating_factor: Vec<f64>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub shift_power_fraction: Vec<f64>,
 }
 
 #[derive(Debug, Clone, Copy, Default, Serialize, Deserialize, PartialEq)]
@@ -411,6 +485,24 @@ pub struct TireDiagnosticsV3 {
     pub contact_workload_mj: f64,
 }
 
+#[derive(Debug, Clone, Copy, Default, Serialize, Deserialize, PartialEq)]
+pub struct MechanicalDiagnosticsV3 {
+    pub maximum_brake_force_n: f64,
+    pub brake_limit_activation_count: u64,
+    pub sequential_shift_count: u64,
+    pub shift_interruption_time_s: f64,
+    pub driveline_loss_kj: f64,
+    pub maximum_engine_temperature_c: f64,
+    pub engine_derated_time_s: f64,
+    pub generated_engine_heat_kj: f64,
+    pub removed_engine_heat_kj: f64,
+    pub minimum_cornering_utilization: f64,
+    pub minimum_braking_utilization: f64,
+    pub minimum_traction_utilization: f64,
+    pub fixed_drag_area_m2: f64,
+    pub fixed_downforce_area_m2: f64,
+}
+
 pub const CORNER_CURVATURE_THRESHOLD_RAD_PER_M: f64 = 0.001;
 pub const AERO_FULL_STRAIGHT_CURVATURE_RAD_PER_M: f64 = 0.0;
 pub const AERO_FULL_CORNER_CURVATURE_RAD_PER_M: f64 = 0.001;
@@ -423,6 +515,7 @@ pub enum CurvatureAeroResponse {
     #[default]
     LegacyBinary,
     ContinuousV1,
+    FixedV3,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -442,6 +535,7 @@ struct TireEnvelopeState<'a> {
     dynamics: TireDynamics<'a>,
     temperatures_c: &'a [f64],
     wear: &'a [f64],
+    lateral_utilization: &'a [f64],
 }
 
 #[derive(Debug, Clone, Copy, Default, Serialize, Deserialize, PartialEq)]
@@ -500,6 +594,8 @@ pub struct SimulationResult {
     pub diagnostics: SetupResponseDiagnosticsV1,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub tire_diagnostics_v3: Option<TireDiagnosticsV3>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub mechanical_diagnostics_v3: Option<MechanicalDiagnosticsV3>,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq)]
@@ -559,10 +655,11 @@ pub fn run_simulation_with_model_response(
         curvature_response,
         SpatialIntegration::UniformGridCompatibility,
         TireDynamics::Compatibility,
+        None,
     )
 }
 
-/// Executes the first Racing Game Model V3 mechanical slice.
+/// Executes the offline Racing Game Model V3 mechanical candidate.
 ///
 /// The request already contains a physically resolved vehicle. Track
 /// integration uses each explicit segment length and derives vertical-path
@@ -577,6 +674,8 @@ pub fn run_resolved_simulation_v3(
     validate_resolved_state_v3(&input.state)?;
     validate_resolved_config_v3(&input.config)?;
     validate_tire_contact_v3(&input.tire_contact)?;
+    validate_mechanical_v3(&input.mechanical, &input.vehicle)?;
+    validate_driver_control_v3(&input.driver_control)?;
     for stop in &input.pit_plan.stops {
         validate_tire_params(&stop.tire)?;
     }
@@ -592,12 +691,21 @@ pub fn run_resolved_simulation_v3(
         tuning: None,
     };
 
+    let mut fixed_aero_vehicle = input.vehicle.clone();
+    fixed_aero_vehicle.aero = AeroParams {
+        cd_a_x: input.mechanical.fixed_drag_area_m2,
+        cd_a_z: input.mechanical.fixed_drag_area_m2,
+        cl_a_x: input.mechanical.fixed_downforce_area_m2,
+        cl_a_z: input.mechanical.fixed_downforce_area_m2,
+    };
+
     run_resolved_simulation_kernel(
         &compatibility_request,
-        input.vehicle.clone(),
-        CurvatureAeroResponse::ContinuousV1,
+        fixed_aero_vehicle,
+        CurvatureAeroResponse::FixedV3,
         SpatialIntegration::PerSegmentV1,
         TireDynamics::AggregateV1(&input.tire_contact),
+        Some((&input.mechanical, &input.driver_control)),
     )
 }
 
@@ -904,6 +1012,12 @@ fn run_compatibility_simulation_kernel(
         tire_force_utilization: Vec::new(),
         tire_normal_load_n: Vec::new(),
         tire_available_force_n: Vec::new(),
+        brake_force_budget_n: Vec::new(),
+        driver_cornering_utilization: Vec::new(),
+        driver_braking_utilization: Vec::new(),
+        driver_traction_utilization: Vec::new(),
+        engine_derating_factor: Vec::new(),
+        shift_power_fraction: Vec::new(),
     };
     let total_time_s = solution.t.last().copied().unwrap_or(0.0);
     let diagnostics = diagnose_setup_response_with_model_response(
@@ -922,6 +1036,7 @@ fn run_compatibility_simulation_kernel(
         applied_driver: driver,
         diagnostics,
         tire_diagnostics_v3: None,
+        mechanical_diagnostics_v3: None,
     })
 }
 
@@ -931,6 +1046,7 @@ fn run_resolved_simulation_kernel(
     curvature_response: CurvatureAeroResponse,
     spatial_integration: SpatialIntegration,
     tire_dynamics: TireDynamics<'_>,
+    v3_controls: Option<(&MechanicalParamsV3, &DriverControlParamsV3)>,
 ) -> Result<SimulationResult, String> {
     if matches!(tire_dynamics, TireDynamics::Compatibility) {
         return run_compatibility_simulation_kernel(
@@ -941,11 +1057,12 @@ fn run_resolved_simulation_kernel(
         );
     }
 
+    let (mechanical, driver_control) = v3_controls
+        .ok_or_else(|| "V3 mechanical controls are required for aggregate dynamics".to_string())?;
+
     let lap_count = input.lap_count.max(1);
     let driver = input.driver.clone();
-    let effects = driver_effects(&driver);
     let mut vehicle = tuned_vehicle.clone();
-    vehicle.tire = apply_driver_to_tire(&vehicle.tire, &effects);
 
     let s = &input.track.s;
     let n = s.len();
@@ -969,8 +1086,22 @@ fn run_resolved_simulation_kernel(
     let mut out_tire_utilization = Vec::new();
     let mut out_tire_normal_load = Vec::new();
     let mut out_tire_available_force = Vec::new();
+    let mut out_brake_force = Vec::new();
+    let mut out_driver_cornering_utilization = Vec::new();
+    let mut out_driver_braking_utilization = Vec::new();
+    let mut out_driver_traction_utilization = Vec::new();
+    let mut out_engine_derating = Vec::new();
+    let mut out_shift_power_fraction = Vec::new();
     let mut generated_tire_heat_j = 0.0;
     let mut contact_workload_j = 0.0;
+    let mut generated_engine_heat_j = 0.0;
+    let mut removed_engine_heat_j = 0.0;
+    let mut driveline_loss_j = 0.0;
+    let mut engine_derated_time_s = 0.0;
+    let mut shift_interruption_time_s = 0.0;
+    let mut sequential_shift_count = 0_u64;
+    let mut brake_limit_activation_count = 0_u64;
+    let mut maximum_brake_force_n = 0.0_f64;
 
     let mut state_curr = input.state.clone();
     let initial_tire_temp = input.state.tire_temp;
@@ -978,6 +1109,7 @@ fn run_resolved_simulation_kernel(
     let mut s_offset = 0.0;
     let mut prev_end_speed: Option<f64> = None;
     let mut prev_end_gear: Option<u8> = None;
+    let mut prev_shift_time_remaining_s = 0.0;
     let mut lap_times_s = Vec::with_capacity(lap_count as usize);
 
     let mut pit_stops = input.pit_plan.stops.clone();
@@ -986,6 +1118,33 @@ fn run_resolved_simulation_kernel(
     for lap_idx in 1..=lap_count {
         let mass = vehicle.chassis.mass_empty + state_curr.total_mass_delta();
         let tire_curr = tire_for_lap(&vehicle.tire, &pit_stops, lap_idx);
+        let cornering_utilization = resolved_driver_utilization_profile(
+            driver_control.cornering_utilization,
+            driver_control.control_error,
+            input.config.sim_seed,
+            &driver.id,
+            lap_idx,
+            n,
+            "cornering",
+        );
+        let braking_utilization = resolved_driver_utilization_profile(
+            driver_control.braking_utilization,
+            driver_control.control_error,
+            input.config.sim_seed,
+            &driver.id,
+            lap_idx,
+            n,
+            "braking",
+        );
+        let traction_utilization = resolved_driver_utilization_profile(
+            driver_control.traction_utilization,
+            driver_control.control_error,
+            input.config.sim_seed,
+            &driver.id,
+            lap_idx,
+            n,
+            "traction",
+        );
         let mut tire_temp_reference = vec![state_curr.tire_temp; n];
         let mut tire_wear_reference = vec![state_curr.tire_wear; n];
         let coupling_iterations = match tire_dynamics {
@@ -997,6 +1156,14 @@ fn run_resolved_simulation_kernel(
             let is_final_coupling_iteration = coupling_iteration + 1 == coupling_iterations;
             let mut iteration_generated_heat_j = 0.0;
             let mut iteration_contact_workload_j = 0.0;
+            let mut iteration_generated_engine_heat_j = 0.0;
+            let mut iteration_removed_engine_heat_j = 0.0;
+            let mut iteration_driveline_loss_j = 0.0;
+            let mut iteration_engine_derated_time_s = 0.0;
+            let mut iteration_shift_interruption_time_s = 0.0;
+            let mut iteration_sequential_shift_count = 0_u64;
+            let mut iteration_brake_limit_activation_count = 0_u64;
+            let mut iteration_maximum_brake_force_n = 0.0_f64;
             let v_corner = corner_speed_limit(
                 &input.track,
                 &vehicle,
@@ -1008,10 +1175,12 @@ fn run_resolved_simulation_kernel(
                     dynamics: tire_dynamics,
                     temperatures_c: &tire_temp_reference,
                     wear: &tire_wear_reference,
+                    lateral_utilization: &cornering_utilization,
                 },
             );
 
             let mut v_bwd = v_corner.clone();
+            let mut brake_force = vec![0.0; n];
             for i in (0..(n - 1)).rev() {
                 let segment_ds = segment_distance(spatial_integration, s, ds, i);
                 let v_target = v_bwd[i + 1];
@@ -1045,14 +1214,23 @@ fn run_resolved_simulation_kernel(
                 let grip_avail = tire_force_capacity(mu_eff, normal_load, tire_dynamics);
 
                 let f_lat_req = mass * v_target * v_target * input.track.kappa[i].abs();
-                let f_brake_max = if f_lat_req >= grip_avail {
+                let tire_brake_capacity = if f_lat_req >= grip_avail {
                     0.0
                 } else {
                     (grip_avail * grip_avail - f_lat_req * f_lat_req).sqrt()
                 };
+                let driver_limited_capacity =
+                    tire_brake_capacity * braking_utilization[i].clamp(0.0, 1.0);
+                let f_brake_max = driver_limited_capacity.min(mechanical.maximum_brake_force_n);
+                brake_force[i] = f_brake_max;
+                iteration_maximum_brake_force_n = iteration_maximum_brake_force_n.max(f_brake_max);
+                if driver_limited_capacity >= mechanical.maximum_brake_force_n
+                    && mechanical.maximum_brake_force_n > 0.0
+                {
+                    iteration_brake_limit_activation_count += 1;
+                }
 
-                let mut a_decel = (f_brake_max + f_drag + f_roll + f_slope) / mass.max(1e-9);
-                a_decel = a_decel.min(6.0 * vehicle.chassis.g);
+                let a_decel = (f_brake_max + f_drag + f_roll + f_slope) / mass.max(1e-9);
 
                 let v_max_braking = (v_target * v_target + 2.0 * a_decel * segment_ds)
                     .max(0.0)
@@ -1071,6 +1249,9 @@ fn run_resolved_simulation_kernel(
             let mut tire_utilization = vec![0.0; n];
             let mut tire_normal_load = vec![0.0; n];
             let mut tire_available_force = vec![0.0; n];
+            let mut engine_derating = vec![1.0; n];
+            let mut shift_power_fraction = vec![1.0; n];
+            let mut shift_time_remaining_s = prev_shift_time_remaining_s;
 
             v_fwd[n - 1] = match prev_end_speed {
                 Some(speed) => speed.min(v_bwd[n - 1]),
@@ -1093,9 +1274,41 @@ fn run_resolved_simulation_kernel(
                 let v_safe = v.max(1.0);
                 let dt = segment_ds / v_safe;
 
-                let (mut pwr, _, best_gear) =
-                    best_power_at_speed(v_safe, &vehicle.engine, &vehicle.chassis);
-                pwr *= derating_factor(temp[i], &vehicle.engine);
+                let previous_gear = gear[i].clamp(1, vehicle.engine.gear_ratios.len() as u8);
+                let (selected_gear, shifted) = select_sequential_gear_v3(
+                    v_safe,
+                    previous_gear,
+                    &vehicle.engine,
+                    &vehicle.chassis,
+                    mechanical,
+                    shift_time_remaining_s <= 0.0,
+                );
+                gear[i] = selected_gear;
+                if shifted {
+                    shift_time_remaining_s = mechanical.shift_duration_s;
+                    iteration_sequential_shift_count += 1;
+                }
+                let shift_fraction = (shift_time_remaining_s / dt.max(1e-9)).clamp(0.0, 1.0);
+                let delivered_shift_fraction =
+                    1.0 - shift_fraction * (1.0 - mechanical.shift_power_fraction);
+                shift_power_fraction[i] = delivered_shift_fraction;
+                iteration_shift_interruption_time_s += shift_time_remaining_s.min(dt);
+                shift_time_remaining_s = (shift_time_remaining_s - dt).max(0.0);
+
+                let ratio = vehicle.engine.gear_ratios[selected_gear as usize - 1];
+                let rpm =
+                    rpm_from_speed_gear(v_safe, ratio, &vehicle.chassis).max(vehicle.engine.n_idle);
+                let engine_power_kw = power_kw_from_rpm(rpm, &vehicle.engine);
+                let derating = derating_factor(temp[i], &vehicle.engine);
+                engine_derating[i] = derating;
+                if derating < 1.0 {
+                    iteration_engine_derated_time_s += dt;
+                }
+                let pwr = engine_power_kw
+                    * derating
+                    * mechanical.driveline_efficiency
+                    * delivered_shift_fraction;
+                let mut engine_load_power_kw = 0.0;
 
                 if v_fwd[i] >= v_bwd[i] {
                     power[i] = 0.0;
@@ -1134,13 +1347,19 @@ fn run_resolved_simulation_kernel(
                     let f_lat_req = mass * v_safe * v_safe * input.track.kappa[i].abs();
                     let f_drive = match tire_dynamics {
                         TireDynamics::Compatibility => f_eng_max.min(force_capacity),
-                        TireDynamics::AggregateV1(_) => {
-                            f_eng_max.min(remaining_longitudinal_force(force_capacity, f_lat_req))
-                        }
+                        TireDynamics::AggregateV1(_) => f_eng_max.min(
+                            remaining_longitudinal_force(force_capacity, f_lat_req)
+                                * traction_utilization[i].clamp(0.0, 1.0),
+                        ),
                     };
 
                     power[i] = if f_eng_max > 0.0 {
                         pwr * (f_drive / f_eng_max)
+                    } else {
+                        0.0
+                    };
+                    engine_load_power_kw = if mechanical.driveline_efficiency > 0.0 {
+                        power[i] / mechanical.driveline_efficiency
                     } else {
                         0.0
                     };
@@ -1150,10 +1369,14 @@ fn run_resolved_simulation_kernel(
                     v_fwd[i + 1] = (v_safe * v_safe + 2.0 * a * segment_ds).max(0.0).sqrt();
                 }
 
-                let heat = 1000.0 * vehicle.engine.alpha_heat * power[i];
+                iteration_driveline_loss_j +=
+                    1_000.0 * engine_load_power_kw * (1.0 - mechanical.driveline_efficiency) * dt;
+                let heat = 1000.0 * vehicle.engine.alpha_heat * engine_load_power_kw;
                 let cool = (vehicle.engine.p_cool0 + vehicle.engine.k_cool * v_safe)
                     * (temp[i] - vehicle.engine.t_amb);
                 temp[i + 1] = temp[i] + (heat - cool) / vehicle.engine.c_th.max(1e-9) * dt;
+                iteration_generated_engine_heat_j += heat * dt;
+                iteration_removed_engine_heat_j += cool.max(0.0) * dt;
 
                 let a_long =
                     (v_fwd[i + 1] * v_fwd[i + 1] - v_safe * v_safe) / (2.0 * segment_ds).max(1e-3);
@@ -1211,9 +1434,8 @@ fn run_resolved_simulation_kernel(
                         tire_temp[i + 1] = (tire_temp[i]
                             + (heat_w - cooling_w) / contact.thermal_capacity_j_per_c * dt)
                             .clamp(0.0, 250.0);
-                        let wear_delta = (contact.baseline_wear_per_s * dt
-                            + workload_w * dt / contact.workload_energy_to_full_wear_j)
-                            * effects.tire_wear_multiplier;
+                        let wear_delta = contact.baseline_wear_per_s * dt
+                            + workload_w * dt / contact.workload_energy_to_full_wear_j;
                         tire_wear[i + 1] = (tire_wear[i] + wear_delta).clamp(0.0, 1.0);
                         tire_utilization[i] = utilization;
                         tire_normal_load[i] = normal_load;
@@ -1223,26 +1445,7 @@ fn run_resolved_simulation_kernel(
                     }
                 }
 
-                if i > 0 {
-                    let prev_idx = gear[i - 1].saturating_sub(1) as usize;
-                    let ratio = vehicle
-                        .engine
-                        .gear_ratios
-                        .get(prev_idx)
-                        .copied()
-                        .unwrap_or(0.0);
-                    let rpm_current = rpm_from_speed_gear(v_safe, ratio, &vehicle.chassis);
-                    let pwr_current = derating_factor(temp[i], &vehicle.engine)
-                        * power_kw_from_rpm(rpm_current, &vehicle.engine);
-                    gear[i] = if vehicle.engine.n_idle <= rpm_current
-                        && rpm_current <= vehicle.engine.n_max
-                        && pwr_current >= power[i]
-                    {
-                        gear[i - 1]
-                    } else {
-                        best_gear
-                    };
-                }
+                gear[i + 1] = gear[i];
             }
 
             gear[n - 1] = if n > 1 { gear[n - 2] } else { gear[n - 1] };
@@ -1250,6 +1453,9 @@ fn run_resolved_simulation_kernel(
                 tire_utilization[n - 1] = tire_utilization[n - 2];
                 tire_normal_load[n - 1] = tire_normal_load[n - 2];
                 tire_available_force[n - 1] = tire_available_force[n - 2];
+                brake_force[n - 1] = brake_force[n - 2];
+                engine_derating[n - 1] = engine_derating[n - 2];
+                shift_power_fraction[n - 1] = shift_power_fraction[n - 2];
             }
 
             let v_final: Vec<f64> = v_fwd
@@ -1265,6 +1471,14 @@ fn run_resolved_simulation_kernel(
             }
             generated_tire_heat_j += iteration_generated_heat_j;
             contact_workload_j += iteration_contact_workload_j;
+            generated_engine_heat_j += iteration_generated_engine_heat_j;
+            removed_engine_heat_j += iteration_removed_engine_heat_j;
+            driveline_loss_j += iteration_driveline_loss_j;
+            engine_derated_time_s += iteration_engine_derated_time_s;
+            shift_interruption_time_s += iteration_shift_interruption_time_s;
+            sequential_shift_count += iteration_sequential_shift_count;
+            brake_limit_activation_count += iteration_brake_limit_activation_count;
+            maximum_brake_force_n = maximum_brake_force_n.max(iteration_maximum_brake_force_n);
 
             let mut dt = vec![0.0; n];
             let v_safe: Vec<f64> = v_final.iter().map(|value| value.max(1.0)).collect();
@@ -1277,11 +1491,7 @@ fn run_resolved_simulation_kernel(
             let lap_time = *t
                 .last()
                 .ok_or_else(|| "simulation produced an empty time grid".to_string())?;
-            let lap_time_delta_ms = effects.peak_pace_bonus_ms as f64
-                + lap_noise_ms(input.config.sim_seed, &driver.id, lap_idx, &effects);
-            let lap_time_adj = (lap_time + lap_time_delta_ms / 1000.0).max(0.1);
-            let time_scale = lap_time_adj / lap_time.max(1e-6);
-            let t_scaled: Vec<f64> = t.iter().map(|value| value * time_scale).collect();
+            let lap_time_adj = lap_time.max(0.1);
             lap_times_s.push(lap_time_adj);
 
             let start_idx = if lap_idx == 1 { 0 } else { 1 };
@@ -1290,7 +1500,7 @@ fn run_resolved_simulation_kernel(
                     .iter()
                     .map(|value| value + s_offset),
             );
-            out_t.extend(t_scaled[start_idx..].iter().map(|value| value + t_offset));
+            out_t.extend(t[start_idx..].iter().map(|value| value + t_offset));
             out_v.extend_from_slice(&v_final[start_idx..]);
             out_power.extend_from_slice(&power[start_idx..]);
             out_temp.extend_from_slice(&temp[start_idx..]);
@@ -1301,13 +1511,22 @@ fn run_resolved_simulation_kernel(
                 out_tire_utilization.extend_from_slice(&tire_utilization[start_idx..]);
                 out_tire_normal_load.extend_from_slice(&tire_normal_load[start_idx..]);
                 out_tire_available_force.extend_from_slice(&tire_available_force[start_idx..]);
+                out_brake_force.extend_from_slice(&brake_force[start_idx..]);
+                out_driver_cornering_utilization
+                    .extend_from_slice(&cornering_utilization[start_idx..]);
+                out_driver_braking_utilization.extend_from_slice(&braking_utilization[start_idx..]);
+                out_driver_traction_utilization
+                    .extend_from_slice(&traction_utilization[start_idx..]);
+                out_engine_derating.extend_from_slice(&engine_derating[start_idx..]);
+                out_shift_power_fraction.extend_from_slice(&shift_power_fraction[start_idx..]);
             }
             out_lap.extend((start_idx..n).map(|_| lap_idx));
 
-            t_offset += *t_scaled.last().unwrap_or(&0.0);
+            t_offset += *t.last().unwrap_or(&0.0);
             s_offset += *input.track.s.last().unwrap_or(&0.0);
             prev_end_speed = v_final.last().copied();
             prev_end_gear = gear.last().copied();
+            prev_shift_time_remaining_s = shift_time_remaining_s;
 
             let mut fuel_left =
                 (state_curr.fuel_mass - vehicle.engine.fuel_burn_kg_per_s * lap_time_adj).max(0.0);
@@ -1321,9 +1540,10 @@ fn run_resolved_simulation_kernel(
                 t_offset += input.config.pit_time_penalty_s.max(0.0);
                 wear_next = 0.0;
                 tire_temp_next = input.config.pit_tire_temp.unwrap_or(initial_tire_temp);
-                vehicle.tire = apply_driver_to_tire(&pit_stop.tire, &effects);
+                vehicle.tire = pit_stop.tire.clone();
                 prev_end_speed = None;
                 prev_end_gear = None;
+                prev_shift_time_remaining_s = 0.0;
             }
 
             state_curr = VehicleState {
@@ -1348,6 +1568,12 @@ fn run_resolved_simulation_kernel(
         tire_force_utilization: out_tire_utilization,
         tire_normal_load_n: out_tire_normal_load,
         tire_available_force_n: out_tire_available_force,
+        brake_force_budget_n: out_brake_force,
+        driver_cornering_utilization: out_driver_cornering_utilization,
+        driver_braking_utilization: out_driver_braking_utilization,
+        driver_traction_utilization: out_driver_traction_utilization,
+        engine_derating_factor: out_engine_derating,
+        shift_power_fraction: out_shift_power_fraction,
     };
     let total_time_s = solution.t.last().copied().unwrap_or(0.0);
     let diagnostics = diagnose_setup_response_with_model_response(
@@ -1366,6 +1592,34 @@ fn run_resolved_simulation_kernel(
     } else {
         None
     };
+    let mechanical_diagnostics_v3 = Some(MechanicalDiagnosticsV3 {
+        maximum_brake_force_n,
+        brake_limit_activation_count,
+        sequential_shift_count,
+        shift_interruption_time_s,
+        driveline_loss_kj: driveline_loss_j / 1_000.0,
+        maximum_engine_temperature_c: solution.temp.iter().copied().fold(0.0, f64::max),
+        engine_derated_time_s,
+        generated_engine_heat_kj: generated_engine_heat_j / 1_000.0,
+        removed_engine_heat_kj: removed_engine_heat_j / 1_000.0,
+        minimum_cornering_utilization: solution
+            .driver_cornering_utilization
+            .iter()
+            .copied()
+            .fold(1.0, f64::min),
+        minimum_braking_utilization: solution
+            .driver_braking_utilization
+            .iter()
+            .copied()
+            .fold(1.0, f64::min),
+        minimum_traction_utilization: solution
+            .driver_traction_utilization
+            .iter()
+            .copied()
+            .fold(1.0, f64::min),
+        fixed_drag_area_m2: mechanical.fixed_drag_area_m2,
+        fixed_downforce_area_m2: mechanical.fixed_downforce_area_m2,
+    });
 
     Ok(SimulationResult {
         solution,
@@ -1376,6 +1630,7 @@ fn run_resolved_simulation_kernel(
         applied_driver: driver,
         diagnostics,
         tire_diagnostics_v3,
+        mechanical_diagnostics_v3,
     })
 }
 
@@ -1750,6 +2005,56 @@ pub fn best_power_at_speed(
     (pwr_max, rpm_pmax, gear_choice)
 }
 
+/// Selects at most one adjacent gear from the previous deterministic state.
+/// No global "best gear" lookup is permitted on the V3 path.
+pub fn select_sequential_gear_v3(
+    speed_mps: f64,
+    current_gear: u8,
+    engine: &EngineParams,
+    chassis: &ChassisParams,
+    mechanical: &MechanicalParamsV3,
+    shift_available: bool,
+) -> (u8, bool) {
+    let maximum_gear = engine.gear_ratios.len().max(1) as u8;
+    let current = current_gear.clamp(1, maximum_gear);
+    if !shift_available {
+        return (current, false);
+    }
+    let ratio = engine.gear_ratios[current as usize - 1];
+    let rpm = rpm_from_speed_gear(speed_mps, ratio, chassis);
+    if rpm >= mechanical.upshift_rpm && current < maximum_gear {
+        (current + 1, true)
+    } else if rpm <= mechanical.downshift_rpm && current > 1 {
+        (current - 1, true)
+    } else {
+        (current, false)
+    }
+}
+
+fn resolved_driver_utilization_profile(
+    maximum_utilization: f64,
+    control_error: f64,
+    simulation_seed: u64,
+    driver_id: &str,
+    lap_index: u16,
+    sample_count: usize,
+    channel: &str,
+) -> Vec<f64> {
+    (0..sample_count)
+        .map(|sample_index| {
+            let identity =
+                format!("{simulation_seed}:{driver_id}:{lap_index}:{sample_index}:{channel}");
+            let digest = Md5::digest(identity.as_bytes());
+            let raw = u64::from_be_bytes([
+                digest[0], digest[1], digest[2], digest[3], digest[4], digest[5], digest[6],
+                digest[7],
+            ]);
+            let unit_error = raw as f64 / u64::MAX as f64;
+            (maximum_utilization * (1.0 - control_error * unit_error)).clamp(0.0, 1.0)
+        })
+        .collect()
+}
+
 fn validate_track(track: &Track) -> Result<(), String> {
     let n = track.s.len();
     if n < 3 {
@@ -1833,6 +2138,81 @@ fn validate_tire_contact_v3(contact: &TireContactParamsV3) -> Result<(), String>
     }
     if contact.heat_generation_fraction > 1.0 {
         return Err("tire_contact.heat_generation_fraction must be <= 1".to_string());
+    }
+    Ok(())
+}
+
+fn validate_mechanical_v3(
+    mechanical: &MechanicalParamsV3,
+    vehicle: &VehicleParams,
+) -> Result<(), String> {
+    require_positive(
+        "mechanical.maximum_brake_force_n",
+        mechanical.maximum_brake_force_n,
+    )?;
+    require_positive("mechanical.upshift_rpm", mechanical.upshift_rpm)?;
+    require_positive("mechanical.downshift_rpm", mechanical.downshift_rpm)?;
+    require_non_negative("mechanical.shift_duration_s", mechanical.shift_duration_s)?;
+    require_positive(
+        "mechanical.fixed_drag_area_m2",
+        mechanical.fixed_drag_area_m2,
+    )?;
+    require_non_negative(
+        "mechanical.fixed_downforce_area_m2",
+        mechanical.fixed_downforce_area_m2,
+    )?;
+    for (name, value) in [
+        (
+            "mechanical.shift_power_fraction",
+            mechanical.shift_power_fraction,
+        ),
+        (
+            "mechanical.driveline_efficiency",
+            mechanical.driveline_efficiency,
+        ),
+    ] {
+        if !value.is_finite() || !(0.0..=1.0).contains(&value) {
+            return Err(format!("{name} must be finite and in [0, 1]"));
+        }
+    }
+    if mechanical.driveline_efficiency == 0.0 {
+        return Err("mechanical.driveline_efficiency must be greater than 0".to_string());
+    }
+    if mechanical.shift_duration_s > 0.5 {
+        return Err("mechanical.shift_duration_s must be <= 0.5".to_string());
+    }
+    if mechanical.downshift_rpm >= mechanical.upshift_rpm
+        || mechanical.upshift_rpm > vehicle.engine.n_max
+    {
+        return Err(
+            "mechanical shift thresholds must satisfy downshift < upshift <= engine maximum rpm"
+                .to_string(),
+        );
+    }
+    Ok(())
+}
+
+fn validate_driver_control_v3(control: &DriverControlParamsV3) -> Result<(), String> {
+    for (name, value) in [
+        (
+            "driver_control.cornering_utilization",
+            control.cornering_utilization,
+        ),
+        (
+            "driver_control.braking_utilization",
+            control.braking_utilization,
+        ),
+        (
+            "driver_control.traction_utilization",
+            control.traction_utilization,
+        ),
+    ] {
+        if !value.is_finite() || !(0.5..=1.0).contains(&value) {
+            return Err(format!("{name} must be finite and in [0.5, 1]"));
+        }
+    }
+    if !control.control_error.is_finite() || !(0.0..=0.25).contains(&control.control_error) {
+        return Err("driver_control.control_error must be finite and in [0, 0.25]".to_string());
     }
     Ok(())
 }
@@ -2178,7 +2558,13 @@ fn corner_speed_limit(
                 TireDynamics::Compatibility => mu_eff * (vehicle.chassis.g + downforce / mass),
                 TireDynamics::AggregateV1(_) => {
                     let normal_load = mass * vehicle.chassis.g + downforce;
-                    tire_force_capacity(mu_eff, normal_load, envelope.dynamics) / mass
+                    tire_force_capacity(mu_eff, normal_load, envelope.dynamics)
+                        * envelope
+                            .lateral_utilization
+                            .get(idx)
+                            .copied()
+                            .unwrap_or(1.0)
+                        / mass
                 }
             };
             v = (a_lat_max / k_val).max(1e-1).sqrt();
@@ -2200,6 +2586,7 @@ fn aero_forces(
     let blend = match response {
         CurvatureAeroResponse::LegacyBinary => f64::from(legacy_corner_mode),
         CurvatureAeroResponse::ContinuousV1 => curvature_aero_blend(curvature_rad_per_m),
+        CurvatureAeroResponse::FixedV3 => 0.0,
     };
     let cd_a = lerp(aero.cd_a_x, aero.cd_a_z, blend);
     let cl_a = lerp(aero.cl_a_x, aero.cl_a_z, blend);
