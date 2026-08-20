@@ -62,6 +62,7 @@ databricks bundle run strategy_effect_job -t dev -p pitgun-free
 databricks bundle run budget_effect_job -t dev -p pitgun-free
 databricks bundle run budget_effect_v2_job -t dev -p pitgun-free
 databricks bundle run early_allocation_effect_job -t dev -p pitgun-free
+databricks bundle run v3_tire_degradation_job -t dev -p pitgun-free
 ```
 
 Repeat `deploy` and `run`: schema and table creation are idempotent. The job may
@@ -78,11 +79,12 @@ state remain isolated below the attended user's `dev` deployment root.
 
 ## Packaged Rust runner
 
-`adapter/build.sh` rebuilds the Rust CLI and tuning-response probe separately
-for Linux/arm64, then places both inside a platform wheel. Its persistent Cargo
-cache is invalidated for those packages first so a Git checkout cannot leave a
-stale runner in the wheel. The bundle uploads that wheel as the only custom
-library of `runner_spike_job`. Generated binaries and wheels are ignored by Git.
+`adapter/build.sh` rebuilds the Rust CLI, tuning-response probe, and V3
+validation probe separately for Linux/arm64, then places them inside a platform
+wheel. Its persistent Cargo cache is invalidated for those packages first so a
+Git checkout cannot leave a stale runner in the wheel. The bundle uploads that
+wheel as the only custom library of `runner_spike_job`. Generated binaries and
+wheels are ignored by Git.
 
 The bounded adapter accepts only reviewed identifiers and a seed, executes an
 embedded scenario, and records the exact runner and result digests. The Racing
@@ -172,6 +174,18 @@ controlled field. It resumes accepted natural keys, writes the governed result
 to Delta and MLflow, and cannot select or publish a policy automatically. The
 completed evidence and human decision are documented in
 [Racing early-allocation effect V1](../../docs/RACING_EARLY_ALLOCATION_EFFECT_V1.md).
+
+## Model V3 tire degradation
+
+The V3 tire-degradation campaign freezes 236 full scenario/profile pairs in
+[`campaigns/racing-v3-tire-degradation-v1.json`](campaigns/racing-v3-tire-degradation-v1.json).
+The wheel executes them with the same native `v3_validation_probe` used by the
+local campaign, verifies their content-derived identities, and persists
+compound, strategy, driver, and parameter-screen evidence to the governed
+experimental Delta tables. The MLflow report is explicitly review-only and
+cannot publish a catalog release. The physical law, local evidence, and known
+calibration gap are documented in
+[Racing Model V3 compound-dependent tire degradation](../racing_v3_tire_degradation/README.md).
 
 ## Reference campaign
 

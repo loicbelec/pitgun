@@ -348,6 +348,11 @@ pub struct ResolvedSimulationRequestV3 {
     /// `None` preserves the immutable time-based semantics of older candidates.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub fuel_mass: Option<FuelMassParamsV3>,
+    /// Optional compound-dependent degradation law selected by the V3 profile.
+    /// `None` preserves the immutable Aggregate V1 semantics of candidates up
+    /// to and including 0.8.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub tire_degradation: Option<TireDegradationParamsV3>,
 }
 
 /// Reduced-order combustion fuel and mass model for Racing Model V3.
@@ -385,6 +390,54 @@ impl FuelMassParamsV3 {
             || !(0.0..=0.01).contains(&self.idle_fuel_flow_kg_per_s)
         {
             return Err("V3 idle fuel flow must be in [0, 0.01] kg/s".to_string());
+        }
+        Ok(())
+    }
+}
+
+/// Compound-dependent degradation parameters for the Aggregate V2 tire law.
+///
+/// Tire resources own their baseline wear and load-wear coefficients. This
+/// profile owns only the global interpretation of those coefficients inside
+/// the reduced-order contact patch. The load coefficient is normalized by a
+/// named reference with identical units, while thermal deviation is expressed
+/// in multiples of each compound's configured temperature sigma.
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct TireDegradationParamsV3 {
+    pub reference_load_wear_coefficient: f64,
+    pub thermal_deviation_wear_gain: f64,
+    pub maximum_thermal_wear_multiplier: f64,
+}
+
+impl Default for TireDegradationParamsV3 {
+    fn default() -> Self {
+        Self {
+            reference_load_wear_coefficient: 0.000_000_1,
+            thermal_deviation_wear_gain: 0.35,
+            maximum_thermal_wear_multiplier: 3.0,
+        }
+    }
+}
+
+impl TireDegradationParamsV3 {
+    pub fn validate(&self) -> Result<(), String> {
+        if !self.reference_load_wear_coefficient.is_finite()
+            || self.reference_load_wear_coefficient <= 0.0
+        {
+            return Err(
+                "V3 reference load-wear coefficient must be finite and positive".to_string(),
+            );
+        }
+        if !self.thermal_deviation_wear_gain.is_finite()
+            || !(0.0..=10.0).contains(&self.thermal_deviation_wear_gain)
+        {
+            return Err("V3 thermal-deviation wear gain must be in [0, 10]".to_string());
+        }
+        if !self.maximum_thermal_wear_multiplier.is_finite()
+            || !(1.0..=20.0).contains(&self.maximum_thermal_wear_multiplier)
+        {
+            return Err("V3 maximum thermal-wear multiplier must be in [1, 20]".to_string());
         }
         Ok(())
     }
@@ -533,6 +586,17 @@ pub struct TireDiagnosticsV3 {
     pub contact_workload_mj: f64,
 }
 
+/// Explainable wear lineage emitted only by the Aggregate V2 tire law.
+#[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq)]
+pub struct TireDegradationDiagnosticsV3 {
+    pub requested_baseline_wear_fraction: f64,
+    pub requested_workload_wear_fraction: f64,
+    pub minimum_thermal_wear_multiplier: f64,
+    pub maximum_thermal_wear_multiplier: f64,
+    pub wear_before_service_after_lap: Vec<f64>,
+    pub wear_after_service_after_lap: Vec<f64>,
+}
+
 #[derive(Debug, Clone, Copy, Default, Serialize, Deserialize, PartialEq)]
 pub struct MechanicalDiagnosticsV3 {
     pub maximum_brake_force_n: f64,
@@ -593,6 +657,7 @@ enum SpatialIntegration {
 enum TireDynamics<'a> {
     Compatibility,
     AggregateV1(&'a TireContactParamsV3, f64),
+    AggregateV2(&'a TireContactParamsV3, f64, &'a TireDegradationParamsV3),
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -663,6 +728,8 @@ pub struct SimulationResult {
     pub mechanical_diagnostics_v3: Option<MechanicalDiagnosticsV3>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub fuel_mass_diagnostics_v3: Option<FuelMassDiagnosticsV3>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub tire_degradation_diagnostics_v3: Option<TireDegradationDiagnosticsV3>,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq)]
@@ -752,6 +819,9 @@ pub fn run_resolved_simulation_v3(
             );
         }
     }
+    if let Some(tire_degradation) = &input.tire_degradation {
+        tire_degradation.validate()?;
+    }
     for stop in &input.pit_plan.stops {
         validate_tire_params(&stop.tire)?;
     }
@@ -775,15 +845,24 @@ pub fn run_resolved_simulation_v3(
         cl_a_z: input.mechanical.fixed_downforce_area_m2,
     };
 
+    let tire_dynamics = match input.tire_degradation.as_ref() {
+        Some(degradation) => TireDynamics::AggregateV2(
+            &input.tire_contact,
+            input.mechanical.chassis_force_transfer_efficiency,
+            degradation,
+        ),
+        None => TireDynamics::AggregateV1(
+            &input.tire_contact,
+            input.mechanical.chassis_force_transfer_efficiency,
+        ),
+    };
+
     run_resolved_simulation_kernel(
         &compatibility_request,
         fixed_aero_vehicle,
         CurvatureAeroResponse::FixedV3,
         SpatialIntegration::PerSegmentV1,
-        TireDynamics::AggregateV1(
-            &input.tire_contact,
-            input.mechanical.chassis_force_transfer_efficiency,
-        ),
+        tire_dynamics,
         Some((&input.mechanical, &input.driver_control)),
         input.fuel_mass.as_ref(),
     )
@@ -1118,6 +1197,7 @@ fn run_compatibility_simulation_kernel(
         tire_diagnostics_v3: None,
         mechanical_diagnostics_v3: None,
         fuel_mass_diagnostics_v3: None,
+        tire_degradation_diagnostics_v3: None,
     })
 }
 
@@ -1176,6 +1256,12 @@ fn run_resolved_simulation_kernel(
     let mut out_shift_power_fraction = Vec::new();
     let mut generated_tire_heat_j = 0.0;
     let mut contact_workload_j = 0.0;
+    let mut requested_baseline_tire_wear = 0.0;
+    let mut requested_workload_tire_wear = 0.0;
+    let mut minimum_thermal_wear_multiplier = f64::INFINITY;
+    let mut maximum_thermal_wear_multiplier = 0.0_f64;
+    let mut wear_before_service_after_lap = Vec::with_capacity(lap_count as usize);
+    let mut wear_after_service_after_lap = Vec::with_capacity(lap_count as usize);
     let mut generated_engine_heat_j = 0.0;
     let mut removed_engine_heat_j = 0.0;
     let mut driveline_loss_j = 0.0;
@@ -1236,13 +1322,19 @@ fn run_resolved_simulation_kernel(
         let mut tire_wear_reference = vec![state_curr.tire_wear; n];
         let coupling_iterations = match tire_dynamics {
             TireDynamics::Compatibility => 1,
-            TireDynamics::AggregateV1(_, _) => V3_TIRE_COUPLING_ITERATIONS,
+            TireDynamics::AggregateV1(_, _) | TireDynamics::AggregateV2(_, _, _) => {
+                V3_TIRE_COUPLING_ITERATIONS
+            }
         };
 
         for coupling_iteration in 0..coupling_iterations {
             let is_final_coupling_iteration = coupling_iteration + 1 == coupling_iterations;
             let mut iteration_generated_heat_j = 0.0;
             let mut iteration_contact_workload_j = 0.0;
+            let mut iteration_requested_baseline_tire_wear = 0.0;
+            let mut iteration_requested_workload_tire_wear = 0.0;
+            let mut iteration_minimum_thermal_wear_multiplier = f64::INFINITY;
+            let mut iteration_maximum_thermal_wear_multiplier = 0.0_f64;
             let mut iteration_generated_engine_heat_j = 0.0;
             let mut iteration_removed_engine_heat_j = 0.0;
             let mut iteration_driveline_loss_j = 0.0;
@@ -1435,10 +1527,12 @@ fn run_resolved_simulation_kernel(
                     let f_lat_req = mass * v_safe * v_safe * input.track.kappa[i].abs();
                     let f_drive = match tire_dynamics {
                         TireDynamics::Compatibility => f_eng_max.min(force_capacity),
-                        TireDynamics::AggregateV1(_, _) => f_eng_max.min(
-                            remaining_longitudinal_force(force_capacity, f_lat_req)
-                                * traction_utilization[i].clamp(0.0, 1.0),
-                        ),
+                        TireDynamics::AggregateV1(_, _) | TireDynamics::AggregateV2(_, _, _) => {
+                            f_eng_max.min(
+                                remaining_longitudinal_force(force_capacity, f_lat_req)
+                                    * traction_utilization[i].clamp(0.0, 1.0),
+                            )
+                        }
                     };
 
                     power[i] = if f_eng_max > 0.0 {
@@ -1532,6 +1626,80 @@ fn run_resolved_simulation_kernel(
                         iteration_generated_heat_j += heat_w * dt;
                         iteration_contact_workload_j += workload_w * dt;
                     }
+                    TireDynamics::AggregateV2(contact, _, degradation) => {
+                        let (drag, downforce) = aero_forces(
+                            v_safe,
+                            input.track.kappa[i],
+                            &vehicle.aero,
+                            &vehicle.chassis,
+                            curvature_response,
+                            input.track.kappa[i].abs() > CORNER_CURVATURE_THRESHOLD_RAD_PER_M,
+                        );
+                        let a_vert = vertical_acceleration(
+                            spatial_integration,
+                            v_safe,
+                            slope_change[i],
+                            slope_gradient[i],
+                            ds,
+                        );
+                        let normal_load =
+                            (mass * (vehicle.chassis.g + a_vert) + downforce).max(0.0);
+                        let mu_eff = effective_mu(
+                            vehicle.chassis.mu0,
+                            tire_wear_reference[i],
+                            tire_temp_reference[i],
+                            &tire_curr,
+                        );
+                        let available_force =
+                            tire_force_capacity(mu_eff, normal_load, tire_dynamics);
+                        let rolling = vehicle.chassis.c_rr * normal_load;
+                        let slope_force = mass * vehicle.chassis.g * input.track.slope[i];
+                        let longitudinal_force = mass * a_long + drag + rolling + slope_force;
+                        let lateral_force = mass * a_lat;
+                        let utilization = combined_force_utilization(
+                            longitudinal_force,
+                            lateral_force,
+                            available_force,
+                        );
+                        let workload_w = available_force * v_safe * utilization * utilization;
+                        let heat_w = contact.heat_generation_fraction * workload_w;
+                        let cooling_w = (contact.cooling_w_per_c
+                            + contact.speed_cooling_w_per_mps_c * v_safe)
+                            * (tire_temp[i] - input.config.tire_temp_amb);
+                        tire_temp[i + 1] = (tire_temp[i]
+                            + (heat_w - cooling_w) / contact.thermal_capacity_j_per_c * dt)
+                            .clamp(0.0, 250.0);
+
+                        let normalized_thermal_deviation =
+                            (tire_temp[i] - tire_curr.temp_opt) / tire_curr.temp_sigma.max(1e-9);
+                        let thermal_wear_multiplier = (1.0
+                            + degradation.thermal_deviation_wear_gain
+                                * normalized_thermal_deviation
+                                * normalized_thermal_deviation)
+                            .min(degradation.maximum_thermal_wear_multiplier);
+                        let compound_workload_multiplier =
+                            tire_curr.wear_load_k / degradation.reference_load_wear_coefficient;
+                        let baseline_wear_delta = tire_curr.wear_per_s * dt;
+                        let workload_wear_delta = workload_w * dt
+                            / contact.workload_energy_to_full_wear_j
+                            * compound_workload_multiplier;
+                        let wear_delta =
+                            (baseline_wear_delta + workload_wear_delta) * thermal_wear_multiplier;
+                        tire_wear[i + 1] = (tire_wear[i] + wear_delta).clamp(0.0, 1.0);
+                        tire_utilization[i] = utilization;
+                        tire_normal_load[i] = normal_load;
+                        tire_available_force[i] = available_force;
+                        iteration_generated_heat_j += heat_w * dt;
+                        iteration_contact_workload_j += workload_w * dt;
+                        iteration_requested_baseline_tire_wear +=
+                            baseline_wear_delta * thermal_wear_multiplier;
+                        iteration_requested_workload_tire_wear +=
+                            workload_wear_delta * thermal_wear_multiplier;
+                        iteration_minimum_thermal_wear_multiplier =
+                            iteration_minimum_thermal_wear_multiplier.min(thermal_wear_multiplier);
+                        iteration_maximum_thermal_wear_multiplier =
+                            iteration_maximum_thermal_wear_multiplier.max(thermal_wear_multiplier);
+                    }
                 }
 
                 gear[i + 1] = gear[i];
@@ -1560,6 +1728,12 @@ fn run_resolved_simulation_kernel(
             }
             generated_tire_heat_j += iteration_generated_heat_j;
             contact_workload_j += iteration_contact_workload_j;
+            requested_baseline_tire_wear += iteration_requested_baseline_tire_wear;
+            requested_workload_tire_wear += iteration_requested_workload_tire_wear;
+            minimum_thermal_wear_multiplier =
+                minimum_thermal_wear_multiplier.min(iteration_minimum_thermal_wear_multiplier);
+            maximum_thermal_wear_multiplier =
+                maximum_thermal_wear_multiplier.max(iteration_maximum_thermal_wear_multiplier);
             generated_engine_heat_j += iteration_generated_engine_heat_j;
             removed_engine_heat_j += iteration_removed_engine_heat_j;
             driveline_loss_j += iteration_driveline_loss_j;
@@ -1597,7 +1771,10 @@ fn run_resolved_simulation_kernel(
             out_gear.extend_from_slice(&gear[start_idx..]);
             out_tire_temp.extend_from_slice(&tire_temp[start_idx..]);
             out_tire_wear.extend_from_slice(&tire_wear[start_idx..]);
-            if matches!(tire_dynamics, TireDynamics::AggregateV1(_, _)) {
+            if matches!(
+                tire_dynamics,
+                TireDynamics::AggregateV1(_, _) | TireDynamics::AggregateV2(_, _, _)
+            ) {
                 out_tire_utilization.extend_from_slice(&tire_utilization[start_idx..]);
                 out_tire_normal_load.extend_from_slice(&tire_normal_load[start_idx..]);
                 out_tire_available_force.extend_from_slice(&tire_available_force[start_idx..]);
@@ -1638,6 +1815,9 @@ fn run_resolved_simulation_kernel(
             }
             let mut wear_next = *tire_wear.last().unwrap_or(&state_curr.tire_wear);
             let mut tire_temp_next = *tire_temp.last().unwrap_or(&state_curr.tire_temp);
+            if matches!(tire_dynamics, TireDynamics::AggregateV2(_, _, _)) {
+                wear_before_service_after_lap.push(wear_next);
+            }
 
             if let Some(pit_stop) = pit_stops.iter().find(|stop| stop.lap == lap_idx) {
                 t_offset += input.config.pit_time_penalty_s.max(0.0);
@@ -1647,6 +1827,10 @@ fn run_resolved_simulation_kernel(
                 prev_end_speed = None;
                 prev_end_gear = None;
                 prev_shift_time_remaining_s = 0.0;
+            }
+
+            if matches!(tire_dynamics, TireDynamics::AggregateV2(_, _, _)) {
+                wear_after_service_after_lap.push(wear_next);
             }
 
             state_curr = VehicleState {
@@ -1689,7 +1873,10 @@ fn run_resolved_simulation_kernel(
         curvature_response,
     )?;
 
-    let tire_diagnostics_v3 = if matches!(tire_dynamics, TireDynamics::AggregateV1(_, _)) {
+    let tire_diagnostics_v3 = if matches!(
+        tire_dynamics,
+        TireDynamics::AggregateV1(_, _) | TireDynamics::AggregateV2(_, _, _)
+    ) {
         Some(summarize_tire_diagnostics_v3(
             &solution,
             generated_tire_heat_j,
@@ -1737,6 +1924,21 @@ fn run_resolved_simulation_kernel(
         maximum_total_vehicle_mass_kg,
         fuel_mass_after_lap_kg,
     });
+    let tire_degradation_diagnostics_v3 =
+        matches!(tire_dynamics, TireDynamics::AggregateV2(_, _, _)).then(|| {
+            TireDegradationDiagnosticsV3 {
+                requested_baseline_wear_fraction: requested_baseline_tire_wear,
+                requested_workload_wear_fraction: requested_workload_tire_wear,
+                minimum_thermal_wear_multiplier: if minimum_thermal_wear_multiplier.is_finite() {
+                    minimum_thermal_wear_multiplier
+                } else {
+                    0.0
+                },
+                maximum_thermal_wear_multiplier,
+                wear_before_service_after_lap,
+                wear_after_service_after_lap,
+            }
+        });
 
     Ok(SimulationResult {
         solution,
@@ -1749,6 +1951,7 @@ fn run_resolved_simulation_kernel(
         tire_diagnostics_v3,
         mechanical_diagnostics_v3,
         fuel_mass_diagnostics_v3,
+        tire_degradation_diagnostics_v3,
     })
 }
 
@@ -2531,7 +2734,8 @@ fn segment_distance(
 fn tire_force_capacity(nominal_mu: f64, normal_load_n: f64, dynamics: TireDynamics<'_>) -> f64 {
     match dynamics {
         TireDynamics::Compatibility => nominal_mu * normal_load_n,
-        TireDynamics::AggregateV1(contact, chassis_efficiency) => {
+        TireDynamics::AggregateV1(contact, chassis_efficiency)
+        | TireDynamics::AggregateV2(contact, chassis_efficiency, _) => {
             aggregate_tire_force_capacity_v3(nominal_mu, normal_load_n, contact)
                 * chassis_efficiency
         }
@@ -2684,7 +2888,7 @@ fn corner_speed_limit(
             let mass = (vehicle.chassis.mass_empty + state.total_mass_delta()).max(1e-9);
             let a_lat_max = match envelope.dynamics {
                 TireDynamics::Compatibility => mu_eff * (vehicle.chassis.g + downforce / mass),
-                TireDynamics::AggregateV1(_, _) => {
+                TireDynamics::AggregateV1(_, _) | TireDynamics::AggregateV2(_, _, _) => {
                     let normal_load = mass * vehicle.chassis.g + downforce;
                     tire_force_capacity(mu_eff, normal_load, envelope.dynamics)
                         * envelope

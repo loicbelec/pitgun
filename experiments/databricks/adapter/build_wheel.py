@@ -36,6 +36,7 @@ def wheel_entries(version: str) -> dict[str, bytes]:
     package_root = ROOT / PACKAGE
     runner = ROOT / "build" / "pitgun"
     tuning_response_probe = ROOT / "build" / "tuning_response_probe"
+    v3_validation_probe = ROOT / "build" / "v3_validation_probe"
     scenario_roots = (
         FRAMEWORK / "apps" / "pitgun-cli" / "scenarios" / "racing-batch-v1",
         FRAMEWORK / "apps" / "pitgun-cli" / "scenarios" / "racing-circuit-sweep-v1",
@@ -56,6 +57,8 @@ def wheel_entries(version: str) -> dict[str, bytes]:
         raise SystemExit(
             f"missing Linux tuning-response probe: {tuning_response_probe}"
         )
+    if not v3_validation_probe.is_file():
+        raise SystemExit(f"missing Linux V3 validation probe: {v3_validation_probe}")
 
     dist_info = f"{DISTRIBUTION}-{version}.dist-info"
     entries = {
@@ -86,8 +89,12 @@ def wheel_entries(version: str) -> dict[str, bytes]:
         f"{PACKAGE}/early_allocation_effect.py": (
             package_root / "early_allocation_effect.py"
         ).read_bytes(),
+        f"{PACKAGE}/tire_degradation.py": (
+            package_root / "tire_degradation.py"
+        ).read_bytes(),
         f"{PACKAGE}/bin/pitgun": runner.read_bytes(),
         f"{PACKAGE}/bin/tuning_response_probe": tuning_response_probe.read_bytes(),
+        f"{PACKAGE}/bin/v3_validation_probe": v3_validation_probe.read_bytes(),
         f"{dist_info}/METADATA": (
             "Metadata-Version: 2.1\n"
             "Name: pitgun-databricks-adapter\n"
@@ -149,8 +156,8 @@ def main() -> None:
         for name, data in sorted(entries.items()):
             info = zipfile.ZipInfo(name, TIMESTAMP)
             info.compress_type = zipfile.ZIP_DEFLATED
-            executable = name.endswith("/pitgun") or name.endswith(
-                "/tuning_response_probe"
+            executable = name.endswith(
+                ("/pitgun", "/tuning_response_probe", "/v3_validation_probe")
             )
             info.external_attr = (0o755 if executable else 0o644) << 16
             archive.writestr(info, data)

@@ -2,7 +2,7 @@
 
 This experiment is the bounded local gate for the multi-era physical decision
 audit tracked by [#244](https://github.com/loicbelec/pitgun/issues/244). It uses
-the offline-only `pitgun.racing-v3-candidate@0.8.0`; it cannot change the game,
+the offline-only `pitgun.racing-v3-candidate@0.9.0`; it cannot change the game,
 catalog `LATEST`, Authority, Verifier, or opponent policy.
 
 The screen deliberately separates two questions:
@@ -46,6 +46,11 @@ fidelity to candidate `0.7.0`; its governed replay lives in
 `experiments/racing_v3_validation/`. The V6 profile adds explicit
 power-dependent combustion fuel and lap-level mass lineage under candidate
 `0.8.0`; its bounded validation lives in `experiments/racing_v3_fuel_mass/`.
+
+The V7 profile adds compound-dependent baseline, workload, and thermal wear
+under candidate `0.9.0`. Its 236-point local and Databricks-ready campaign lives
+in `experiments/racing_v3_tire_degradation/`. Profiles V1–V6 retain their
+previous identities and behavior.
 
 The current transmission interpretation is documented in
 [`RACING_V3_TRANSMISSION_RESOLUTION_V1.md`](../../docs/RACING_V3_TRANSMISSION_RESOLUTION_V1.md).

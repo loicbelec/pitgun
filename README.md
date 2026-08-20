@@ -322,6 +322,7 @@ The current sequence is intentionally proof-driven:
 - [Racing Era Capability Matrix V1](docs/RACING_ERA_CAPABILITY_MATRIX_V1.md) — implemented and target capabilities across the seven game eras
 - [Racing Parameter Inventory V1](docs/RACING_PARAMETER_INVENTORY_V1.md) — coefficients, defaults, dead inputs, ownership, and evidence status
 - [Racing Model Approximation Audit V1](docs/RACING_MODEL_APPROXIMATION_AUDIT_V1.md) — equation review, validity domains, Game/Reference fidelity, and Model V3 direction
+- [Racing Model V3 tire degradation](experiments/racing_v3_tire_degradation/README.md) — compound wear law, diagnostics, local evidence, and governed Databricks replay
 - [Racing Game Vehicle Contract V1](docs/RACING_GAME_VEHICLE_CONTRACT_V1.md) — governed vehicle unlocks across enabled game eras and Catalog 1.3.0
 - [Racing demo CLI contract](docs/RACING_DEMO_CLI_V1.md) — command, bundle layout, report, and failures
 - [Racing batch runner V1](docs/RACING_BATCH_RUNNER_V1.md) — resolved scenario input and canonical compact result

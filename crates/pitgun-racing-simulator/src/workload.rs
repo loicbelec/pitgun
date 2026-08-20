@@ -12,6 +12,8 @@ use crate::{
 const RACING_MODEL_V1_MANIFEST: &[u8] = b"pitgun.racing:model:1.0.0:conformance-vector";
 const RACING_MODEL_V2_MANIFEST: &[u8] = b"pitgun.racing:model:2.0.0:continuous-curvature-v1";
 const RACING_MODEL_V3_CANDIDATE_MANIFEST: &[u8] =
+    b"pitgun.racing-v3-candidate:model:0.9.0:resolved-vehicle:per-segment-v1:aggregate-contact-v2:mechanical-controls-v1:aero-efficiency-v1:development-resolution-v1:transmission-resolution-v1:zero-downforce-v1:first-stint-tire-v1:power-based-fuel-mass-v1:compound-degradation-v1";
+const RACING_MODEL_V3_FUEL_MASS_CANDIDATE_MANIFEST: &[u8] =
     b"pitgun.racing-v3-candidate:model:0.8.0:resolved-vehicle:per-segment-v1:aggregate-contact-v1:mechanical-controls-v1:aero-efficiency-v1:development-resolution-v1:transmission-resolution-v1:zero-downforce-v1:first-stint-tire-v1:power-based-fuel-mass-v1";
 const RACING_MODEL_V3_FIDELITY_CANDIDATE_MANIFEST: &[u8] =
     b"pitgun.racing-v3-candidate:model:0.7.0:resolved-vehicle:per-segment-v1:aggregate-contact-v1:mechanical-controls-v1:aero-efficiency-v1:development-resolution-v1:transmission-resolution-v1:zero-downforce-v1:first-stint-tire-v1";
@@ -44,7 +46,7 @@ pub fn racing_model_v2_identity() -> ArtifactIdentity {
     }
 }
 
-/// Returns the non-production identity of the current Model V3 mechanical slice.
+/// Returns the non-production identity of the current Model V3 tire slice.
 ///
 /// This candidate namespace prevents an incomplete V3 from being mistaken for
 /// the future published `pitgun.racing@3.0.0` workload.
@@ -54,10 +56,24 @@ pub fn racing_model_v3_candidate_identity() -> ArtifactIdentity {
         id: "pitgun.racing-v3-candidate"
             .parse()
             .expect("static Racing V3 candidate model id"),
-        version: "0.8.0"
+        version: "0.9.0"
             .parse()
             .expect("static Racing V3 candidate model version"),
         digest: pitgun_contract::Digest::from_bytes(RACING_MODEL_V3_CANDIDATE_MANIFEST),
+    }
+}
+
+/// Returns the immutable identity of the preceding fuel and mass slice.
+#[must_use]
+pub fn racing_model_v3_fuel_mass_candidate_identity() -> ArtifactIdentity {
+    ArtifactIdentity {
+        id: "pitgun.racing-v3-candidate"
+            .parse()
+            .expect("static Racing V3 candidate model id"),
+        version: "0.8.0"
+            .parse()
+            .expect("static Racing V3 fuel-mass candidate model version"),
+        digest: pitgun_contract::Digest::from_bytes(RACING_MODEL_V3_FUEL_MASS_CANDIDATE_MANIFEST),
     }
 }
 
@@ -281,7 +297,8 @@ mod tests {
         RacingWorkload, racing_model_identity_for_version, racing_model_v2_identity,
         racing_model_v3_aero_candidate_identity, racing_model_v3_candidate_identity,
         racing_model_v3_development_candidate_identity,
-        racing_model_v3_fidelity_candidate_identity, racing_model_v3_mechanical_candidate_identity,
+        racing_model_v3_fidelity_candidate_identity, racing_model_v3_fuel_mass_candidate_identity,
+        racing_model_v3_mechanical_candidate_identity,
         racing_model_v3_transmission_candidate_identity,
     };
     use pitgun_runtime::LinkedWorkload;
@@ -326,13 +343,20 @@ mod tests {
         let candidate = racing_model_v3_candidate_identity();
 
         assert_eq!(candidate.id.to_string(), "pitgun.racing-v3-candidate");
-        assert_eq!(candidate.version.to_string(), "0.8.0");
+        assert_eq!(candidate.version.to_string(), "0.9.0");
         assert_eq!(
             candidate.digest.to_string(),
-            "sha256:01c7d8abbe33e8dd7afa87a5ba13668f579f746de8a781ed242e2ac73e0bed6e"
+            "sha256:d8767c911912c1ae19cf50f8bb2c6455f7308d83a762d6192f4ef090ef199d99"
         );
         assert_ne!(candidate, racing_model_v2_identity());
-        assert!(racing_model_identity_for_version("0.8.0").is_err());
+        assert!(racing_model_identity_for_version("0.9.0").is_err());
+
+        let fuel_mass = racing_model_v3_fuel_mass_candidate_identity();
+        assert_eq!(fuel_mass.version.to_string(), "0.8.0");
+        assert_eq!(
+            fuel_mass.digest.to_string(),
+            "sha256:01c7d8abbe33e8dd7afa87a5ba13668f579f746de8a781ed242e2ac73e0bed6e"
+        );
 
         let fidelity = racing_model_v3_fidelity_candidate_identity();
         assert_eq!(fidelity.version.to_string(), "0.7.0");
