@@ -360,6 +360,9 @@ pub struct MechanicalParamsV3 {
     pub shift_duration_s: f64,
     pub shift_power_fraction: f64,
     pub driveline_efficiency: f64,
+    /// Fraction of the theoretical aggregate tire force that the chassis can
+    /// transfer through its suspension and contact patches.
+    pub chassis_force_transfer_efficiency: f64,
     pub fixed_drag_area_m2: f64,
     pub fixed_downforce_area_m2: f64,
 }
@@ -373,6 +376,7 @@ impl Default for MechanicalParamsV3 {
             shift_duration_s: 0.050,
             shift_power_fraction: 0.0,
             driveline_efficiency: 0.95,
+            chassis_force_transfer_efficiency: 1.0,
             fixed_drag_area_m2: 0.95,
             fixed_downforce_area_m2: 3.20,
         }
@@ -499,6 +503,7 @@ pub struct MechanicalDiagnosticsV3 {
     pub minimum_cornering_utilization: f64,
     pub minimum_braking_utilization: f64,
     pub minimum_traction_utilization: f64,
+    pub chassis_force_transfer_efficiency: f64,
     pub fixed_drag_area_m2: f64,
     pub fixed_downforce_area_m2: f64,
 }
@@ -527,7 +532,7 @@ enum SpatialIntegration {
 #[derive(Debug, Clone, Copy)]
 enum TireDynamics<'a> {
     Compatibility,
-    AggregateV1(&'a TireContactParamsV3),
+    AggregateV1(&'a TireContactParamsV3, f64),
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -704,7 +709,10 @@ pub fn run_resolved_simulation_v3(
         fixed_aero_vehicle,
         CurvatureAeroResponse::FixedV3,
         SpatialIntegration::PerSegmentV1,
-        TireDynamics::AggregateV1(&input.tire_contact),
+        TireDynamics::AggregateV1(
+            &input.tire_contact,
+            input.mechanical.chassis_force_transfer_efficiency,
+        ),
         Some((&input.mechanical, &input.driver_control)),
     )
 }
@@ -1149,7 +1157,7 @@ fn run_resolved_simulation_kernel(
         let mut tire_wear_reference = vec![state_curr.tire_wear; n];
         let coupling_iterations = match tire_dynamics {
             TireDynamics::Compatibility => 1,
-            TireDynamics::AggregateV1(_) => V3_TIRE_COUPLING_ITERATIONS,
+            TireDynamics::AggregateV1(_, _) => V3_TIRE_COUPLING_ITERATIONS,
         };
 
         for coupling_iteration in 0..coupling_iterations {
@@ -1347,7 +1355,7 @@ fn run_resolved_simulation_kernel(
                     let f_lat_req = mass * v_safe * v_safe * input.track.kappa[i].abs();
                     let f_drive = match tire_dynamics {
                         TireDynamics::Compatibility => f_eng_max.min(force_capacity),
-                        TireDynamics::AggregateV1(_) => f_eng_max.min(
+                        TireDynamics::AggregateV1(_, _) => f_eng_max.min(
                             remaining_longitudinal_force(force_capacity, f_lat_req)
                                 * traction_utilization[i].clamp(0.0, 1.0),
                         ),
@@ -1391,7 +1399,7 @@ fn run_resolved_simulation_kernel(
                         let wear_rate = tire_curr.wear_per_s + tire_curr.wear_load_k * load_metric;
                         tire_wear[i + 1] = (tire_wear[i] + wear_rate * dt).min(1.0);
                     }
-                    TireDynamics::AggregateV1(contact) => {
+                    TireDynamics::AggregateV1(contact, _) => {
                         let (drag, downforce) = aero_forces(
                             v_safe,
                             input.track.kappa[i],
@@ -1507,7 +1515,7 @@ fn run_resolved_simulation_kernel(
             out_gear.extend_from_slice(&gear[start_idx..]);
             out_tire_temp.extend_from_slice(&tire_temp[start_idx..]);
             out_tire_wear.extend_from_slice(&tire_wear[start_idx..]);
-            if matches!(tire_dynamics, TireDynamics::AggregateV1(_)) {
+            if matches!(tire_dynamics, TireDynamics::AggregateV1(_, _)) {
                 out_tire_utilization.extend_from_slice(&tire_utilization[start_idx..]);
                 out_tire_normal_load.extend_from_slice(&tire_normal_load[start_idx..]);
                 out_tire_available_force.extend_from_slice(&tire_available_force[start_idx..]);
@@ -1583,7 +1591,7 @@ fn run_resolved_simulation_kernel(
         curvature_response,
     )?;
 
-    let tire_diagnostics_v3 = if matches!(tire_dynamics, TireDynamics::AggregateV1(_)) {
+    let tire_diagnostics_v3 = if matches!(tire_dynamics, TireDynamics::AggregateV1(_, _)) {
         Some(summarize_tire_diagnostics_v3(
             &solution,
             generated_tire_heat_j,
@@ -1617,6 +1625,7 @@ fn run_resolved_simulation_kernel(
             .iter()
             .copied()
             .fold(1.0, f64::min),
+        chassis_force_transfer_efficiency: mechanical.chassis_force_transfer_efficiency,
         fixed_drag_area_m2: mechanical.fixed_drag_area_m2,
         fixed_downforce_area_m2: mechanical.fixed_downforce_area_m2,
     });
@@ -2170,6 +2179,10 @@ fn validate_mechanical_v3(
             "mechanical.driveline_efficiency",
             mechanical.driveline_efficiency,
         ),
+        (
+            "mechanical.chassis_force_transfer_efficiency",
+            mechanical.chassis_force_transfer_efficiency,
+        ),
     ] {
         if !value.is_finite() || !(0.0..=1.0).contains(&value) {
             return Err(format!("{name} must be finite and in [0, 1]"));
@@ -2177,6 +2190,11 @@ fn validate_mechanical_v3(
     }
     if mechanical.driveline_efficiency == 0.0 {
         return Err("mechanical.driveline_efficiency must be greater than 0".to_string());
+    }
+    if mechanical.chassis_force_transfer_efficiency == 0.0 {
+        return Err(
+            "mechanical.chassis_force_transfer_efficiency must be greater than 0".to_string(),
+        );
     }
     if mechanical.shift_duration_s > 0.5 {
         return Err("mechanical.shift_duration_s must be <= 0.5".to_string());
@@ -2404,8 +2422,9 @@ fn segment_distance(
 fn tire_force_capacity(nominal_mu: f64, normal_load_n: f64, dynamics: TireDynamics<'_>) -> f64 {
     match dynamics {
         TireDynamics::Compatibility => nominal_mu * normal_load_n,
-        TireDynamics::AggregateV1(contact) => {
+        TireDynamics::AggregateV1(contact, chassis_efficiency) => {
             aggregate_tire_force_capacity_v3(nominal_mu, normal_load_n, contact)
+                * chassis_efficiency
         }
     }
 }
@@ -2556,7 +2575,7 @@ fn corner_speed_limit(
             let mass = (vehicle.chassis.mass_empty + state.total_mass_delta()).max(1e-9);
             let a_lat_max = match envelope.dynamics {
                 TireDynamics::Compatibility => mu_eff * (vehicle.chassis.g + downforce / mass),
-                TireDynamics::AggregateV1(_) => {
+                TireDynamics::AggregateV1(_, _) => {
                     let normal_load = mass * vehicle.chassis.g + downforce;
                     tire_force_capacity(mu_eff, normal_load, envelope.dynamics)
                         * envelope

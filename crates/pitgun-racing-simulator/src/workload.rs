@@ -12,6 +12,8 @@ use crate::{
 const RACING_MODEL_V1_MANIFEST: &[u8] = b"pitgun.racing:model:1.0.0:conformance-vector";
 const RACING_MODEL_V2_MANIFEST: &[u8] = b"pitgun.racing:model:2.0.0:continuous-curvature-v1";
 const RACING_MODEL_V3_CANDIDATE_MANIFEST: &[u8] =
+    b"pitgun.racing-v3-candidate:model:0.5.0:resolved-vehicle:per-segment-v1:aggregate-contact-v1:mechanical-controls-v1:aero-efficiency-v1:development-resolution-v1";
+const RACING_MODEL_V3_AERO_CANDIDATE_MANIFEST: &[u8] =
     b"pitgun.racing-v3-candidate:model:0.4.0:resolved-vehicle:per-segment-v1:aggregate-contact-v1:mechanical-controls-v1:aero-efficiency-v1";
 const RACING_MODEL_V3_MECHANICAL_CANDIDATE_MANIFEST: &[u8] =
     b"pitgun.racing-v3-candidate:model:0.3.0:resolved-vehicle:per-segment-v1:aggregate-contact-v1:mechanical-controls-v1";
@@ -46,10 +48,26 @@ pub fn racing_model_v3_candidate_identity() -> ArtifactIdentity {
         id: "pitgun.racing-v3-candidate"
             .parse()
             .expect("static Racing V3 candidate model id"),
-        version: "0.4.0"
+        version: "0.5.0"
             .parse()
             .expect("static Racing V3 candidate model version"),
         digest: pitgun_contract::Digest::from_bytes(RACING_MODEL_V3_CANDIDATE_MANIFEST),
+    }
+}
+
+/// Returns the immutable identity of the preceding aerodynamic-efficiency slice.
+///
+/// It remains executable only for replaying the local V2 screening profile.
+#[must_use]
+pub fn racing_model_v3_aero_candidate_identity() -> ArtifactIdentity {
+    ArtifactIdentity {
+        id: "pitgun.racing-v3-candidate"
+            .parse()
+            .expect("static Racing V3 candidate model id"),
+        version: "0.4.0"
+            .parse()
+            .expect("static Racing V3 aero candidate model version"),
+        digest: pitgun_contract::Digest::from_bytes(RACING_MODEL_V3_AERO_CANDIDATE_MANIFEST),
     }
 }
 
@@ -206,7 +224,8 @@ impl LinkedWorkload for RacingWorkload {
 mod tests {
     use super::{
         RacingWorkload, racing_model_identity_for_version, racing_model_v2_identity,
-        racing_model_v3_candidate_identity, racing_model_v3_mechanical_candidate_identity,
+        racing_model_v3_aero_candidate_identity, racing_model_v3_candidate_identity,
+        racing_model_v3_mechanical_candidate_identity,
     };
     use pitgun_runtime::LinkedWorkload;
 
@@ -250,13 +269,21 @@ mod tests {
         let candidate = racing_model_v3_candidate_identity();
 
         assert_eq!(candidate.id.to_string(), "pitgun.racing-v3-candidate");
-        assert_eq!(candidate.version.to_string(), "0.4.0");
+        assert_eq!(candidate.version.to_string(), "0.5.0");
         assert_eq!(
             candidate.digest.to_string(),
-            "sha256:849d109d7a15345f58d2cdd5f33f62e5f429ff49cb7f14989775f50c1a050598"
+            "sha256:359720d98e93dfdd7ed51f9bdf2ce52fc593a00f76024bb1f90839c90f27dc16"
         );
         assert_ne!(candidate, racing_model_v2_identity());
-        assert!(racing_model_identity_for_version("0.4.0").is_err());
+        assert!(racing_model_identity_for_version("0.5.0").is_err());
+
+        let aero_candidate = racing_model_v3_aero_candidate_identity();
+        assert_eq!(aero_candidate.version.to_string(), "0.4.0");
+        assert_eq!(
+            aero_candidate.digest.to_string(),
+            "sha256:849d109d7a15345f58d2cdd5f33f62e5f429ff49cb7f14989775f50c1a050598"
+        );
+        assert_ne!(candidate, aero_candidate);
 
         let mechanical = racing_model_v3_mechanical_candidate_identity();
         assert_eq!(mechanical.version.to_string(), "0.3.0");
