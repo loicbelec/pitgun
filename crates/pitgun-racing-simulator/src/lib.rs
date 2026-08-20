@@ -8,7 +8,8 @@ pub use catalog::{
 pub use workload::{
     RacingWorkload, RacingWorkloadError, racing_model_identity_for_version,
     racing_model_v1_identity, racing_model_v2_identity, racing_model_v3_aero_candidate_identity,
-    racing_model_v3_candidate_identity, racing_model_v3_mechanical_candidate_identity,
+    racing_model_v3_candidate_identity, racing_model_v3_development_candidate_identity,
+    racing_model_v3_mechanical_candidate_identity,
 };
 
 use std::collections::HashMap;
@@ -276,6 +277,60 @@ pub struct V3DevelopmentResolutionParams {
     pub cooling_capacity_gain_at_cap: f64,
 }
 
+/// Gameplay gearing resolved as one physically interpretable final drive.
+///
+/// The normalized setup selects a target vehicle speed. At that speed, top
+/// gear reaches the configured fraction of maximum engine speed. The internal
+/// spacing between gearbox ratios is deliberately preserved.
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct V3TransmissionResolutionParams {
+    pub minimum_target_top_speed_mps: f64,
+    pub maximum_target_top_speed_mps: f64,
+    pub target_engine_speed_fraction: f64,
+}
+
+impl Default for V3TransmissionResolutionParams {
+    fn default() -> Self {
+        Self {
+            minimum_target_top_speed_mps: 85.0,
+            maximum_target_top_speed_mps: 105.0,
+            target_engine_speed_fraction: 0.98,
+        }
+    }
+}
+
+impl V3TransmissionResolutionParams {
+    pub fn validate(&self) -> Result<(), String> {
+        let values = [
+            self.minimum_target_top_speed_mps,
+            self.maximum_target_top_speed_mps,
+            self.target_engine_speed_fraction,
+        ];
+        if values.iter().any(|value| !value.is_finite()) {
+            return Err("V3 transmission-resolution coefficients must be finite".to_string());
+        }
+        if self.minimum_target_top_speed_mps < 40.0
+            || self.maximum_target_top_speed_mps <= self.minimum_target_top_speed_mps
+            || self.maximum_target_top_speed_mps > 150.0
+        {
+            return Err(
+                "V3 target top speeds must satisfy 40 <= minimum < maximum <= 150 m/s".to_string(),
+            );
+        }
+        if !(0.5..=1.0).contains(&self.target_engine_speed_fraction) {
+            return Err("V3 target engine-speed fraction must be in [0.5, 1]".to_string());
+        }
+        Ok(())
+    }
+
+    fn target_top_speed_mps(&self, normalized_setup: f64) -> f64 {
+        self.minimum_target_top_speed_mps
+            + (self.maximum_target_top_speed_mps - self.minimum_target_top_speed_mps)
+                * normalized_setup.clamp(0.0, 1.0)
+    }
+}
+
 impl Default for V3DevelopmentResolutionParams {
     fn default() -> Self {
         Self {
@@ -344,6 +399,8 @@ pub enum V3CandidateExperimentProfileVersion {
     V2,
     #[serde(rename = "pitgun.racing-v3-experiment-profile/v3")]
     V3,
+    #[serde(rename = "pitgun.racing-v3-experiment-profile/v4")]
+    V4,
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq)]
@@ -356,6 +413,8 @@ pub struct V3CandidateExperimentProfile {
     pub aero_resolution: Option<V3AeroResolutionParams>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub development_resolution: Option<V3DevelopmentResolutionParams>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub transmission_resolution: Option<V3TransmissionResolutionParams>,
     #[serde(default)]
     pub mechanical_overrides: V3MechanicalOverrides,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -365,11 +424,12 @@ pub struct V3CandidateExperimentProfile {
 impl Default for V3CandidateExperimentProfile {
     fn default() -> Self {
         Self {
-            schema_version: V3CandidateExperimentProfileVersion::V3,
+            schema_version: V3CandidateExperimentProfileVersion::V4,
             tuning_response: TuningResponseV1::default(),
             tire_contact: TireContactParamsV3::default(),
             aero_resolution: Some(V3AeroResolutionParams::default()),
             development_resolution: Some(V3DevelopmentResolutionParams::default()),
+            transmission_resolution: Some(V3TransmissionResolutionParams::default()),
             mechanical_overrides: V3MechanicalOverrides::default(),
             driver_control_override: None,
         }
@@ -383,23 +443,43 @@ impl V3CandidateExperimentProfile {
             self.schema_version,
             self.aero_resolution,
             self.development_resolution,
+            self.transmission_resolution,
         ) {
-            (V3CandidateExperimentProfileVersion::V1, None, None) => Ok(()),
-            (V3CandidateExperimentProfileVersion::V2, Some(aero), None) => aero.validate(),
-            (V3CandidateExperimentProfileVersion::V3, Some(aero), Some(development)) => {
+            (V3CandidateExperimentProfileVersion::V1, None, None, None) => Ok(()),
+            (V3CandidateExperimentProfileVersion::V2, Some(aero), None, None) => aero.validate(),
+            (
+                V3CandidateExperimentProfileVersion::V3,
+                Some(aero),
+                Some(development),
+                None,
+            ) => {
                 aero.validate()?;
                 development.validate()
             }
-            (V3CandidateExperimentProfileVersion::V1, _, _) => Err(
-                "V3 experiment profile V1 cannot define V2 or V3 resolution resources"
+            (
+                V3CandidateExperimentProfileVersion::V4,
+                Some(aero),
+                Some(development),
+                Some(transmission),
+            ) => {
+                aero.validate()?;
+                development.validate()?;
+                transmission.validate()
+            }
+            (V3CandidateExperimentProfileVersion::V1, _, _, _) => Err(
+                "V3 experiment profile V1 cannot define later resolution resources"
                     .to_string(),
             ),
-            (V3CandidateExperimentProfileVersion::V2, _, _) => Err(
+            (V3CandidateExperimentProfileVersion::V2, _, _, _) => Err(
                 "V3 experiment profile V2 requires aero_resolution and forbids development_resolution"
                     .to_string(),
             ),
-            (V3CandidateExperimentProfileVersion::V3, _, _) => Err(
-                "V3 experiment profile V3 requires aero_resolution and development_resolution"
+            (V3CandidateExperimentProfileVersion::V3, _, _, _) => Err(
+                "V3 experiment profile V3 requires aero and development resolution and forbids transmission resolution"
+                    .to_string(),
+            ),
+            (V3CandidateExperimentProfileVersion::V4, _, _, _) => Err(
+                "V3 experiment profile V4 requires aero, development and transmission resolution"
                     .to_string(),
             ),
         }
@@ -412,7 +492,10 @@ impl V3CandidateExperimentProfile {
                 racing_model_v3_mechanical_candidate_identity()
             }
             V3CandidateExperimentProfileVersion::V2 => racing_model_v3_aero_candidate_identity(),
-            V3CandidateExperimentProfileVersion::V3 => racing_model_v3_candidate_identity(),
+            V3CandidateExperimentProfileVersion::V3 => {
+                racing_model_v3_development_candidate_identity()
+            }
+            V3CandidateExperimentProfileVersion::V4 => racing_model_v3_candidate_identity(),
         }
     }
 }
@@ -770,9 +853,9 @@ pub fn resolve_v3_physical_vehicle(
 /// Resolves the current V3 experiment profile to one fixed aerodynamic state.
 ///
 /// Profile V1 retains the immutable 0.3.0 transitional mapping. Profile V2
-/// replaces only its aerodynamic resolution. Profile V3 also replaces the
-/// chassis, cooling and engine development mapping while retaining the
-/// transitional gear-ratio mapping for its own later slice.
+/// replaces its aerodynamic resolution. Profile V3 also replaces chassis,
+/// cooling and engine development. Profile V4 finally resolves the gearing
+/// slider as an explicit target-speed final drive.
 pub fn resolve_v3_physical_vehicle_with_profile(
     vehicle: &VehicleParams,
     tuning: &Tuning,
@@ -851,7 +934,84 @@ pub fn resolve_v3_physical_vehicle_with_profile(
         cl_a_x: fixed_downforce_area_m2,
         cl_a_z: fixed_downforce_area_m2,
     };
+    if let Some(transmission_resolution) = profile.transmission_resolution {
+        resolved.engine.gear_ratios = resolve_v3_transmission_gear_ratios(
+            vehicle,
+            tuning.gear_ratio_slider,
+            &transmission_resolution,
+        )?;
+    }
     Ok(resolved)
+}
+
+/// Resolves one normalized gearbox control as an explicit final drive.
+///
+/// The selected target speed is reached in top gear at a configured fraction
+/// of maximum engine speed. Multiplying all source ratios by one factor keeps
+/// their internal spacing unchanged.
+pub fn resolve_v3_transmission_gear_ratios(
+    vehicle: &VehicleParams,
+    normalized_setup: f64,
+    parameters: &V3TransmissionResolutionParams,
+) -> Result<Vec<f64>, String> {
+    parameters.validate()?;
+    if !vehicle.chassis.r_wheel.is_finite() || vehicle.chassis.r_wheel <= 0.0 {
+        return Err("V3 transmission resolution requires a positive wheel radius".to_string());
+    }
+    if !vehicle.engine.n_max.is_finite() || vehicle.engine.n_max <= 0.0 {
+        return Err("V3 transmission resolution requires a positive maximum RPM".to_string());
+    }
+    if vehicle.engine.gear_ratios.is_empty()
+        || vehicle
+            .engine
+            .gear_ratios
+            .iter()
+            .any(|ratio| !ratio.is_finite() || *ratio <= 0.0)
+    {
+        return Err("V3 transmission resolution requires positive finite gear ratios".to_string());
+    }
+
+    let target_speed_mps = parameters.target_top_speed_mps(normalized_setup);
+    let target_rpm = parameters.target_engine_speed_fraction * vehicle.engine.n_max;
+    let required_top_ratio =
+        target_rpm * std::f64::consts::TAU * vehicle.chassis.r_wheel / (target_speed_mps * 60.0);
+    let source_top_ratio = *vehicle
+        .engine
+        .gear_ratios
+        .last()
+        .expect("non-empty ratios checked above");
+    let final_drive_multiplier = required_top_ratio / source_top_ratio;
+    if !final_drive_multiplier.is_finite() || final_drive_multiplier <= 0.0 {
+        return Err("V3 transmission resolution produced an invalid final drive".to_string());
+    }
+    Ok(vehicle
+        .engine
+        .gear_ratios
+        .iter()
+        .map(|ratio| ratio * final_drive_multiplier)
+        .collect())
+}
+
+fn theoretical_top_speed_at_max_rpm_kph(vehicle: &VehicleParams) -> Result<f64, String> {
+    let top_ratio = vehicle
+        .engine
+        .gear_ratios
+        .last()
+        .copied()
+        .ok_or_else(|| "V3 transmission diagnostics require a top gear".to_string())?;
+    if !top_ratio.is_finite()
+        || top_ratio <= 0.0
+        || !vehicle.engine.n_max.is_finite()
+        || vehicle.engine.n_max <= 0.0
+        || !vehicle.chassis.r_wheel.is_finite()
+        || vehicle.chassis.r_wheel <= 0.0
+    {
+        return Err("V3 transmission diagnostics require positive finite inputs".to_string());
+    }
+    Ok(
+        vehicle.engine.n_max * std::f64::consts::TAU * vehicle.chassis.r_wheel / (60.0 * top_ratio)
+            * 3.6,
+    )
 }
 
 /// Resolves the named Model V3 mechanical envelope after vehicle resolution.
@@ -1206,7 +1366,7 @@ fn run_single_session(
             driver,
             tuning: Some(tuning.clone()),
         };
-        let result = match model {
+        let mut result = match model {
             SessionPhysicalModel::Historical {
                 tuning_response,
                 curvature_response,
@@ -1245,6 +1405,17 @@ fn run_single_session(
             }
         }
         .map_err(|err| format!("simulation failed for competitor {}: {err}", competitor.id))?;
+
+        if matches!(
+            model,
+            SessionPhysicalModel::V3Candidate { profile }
+                if profile.transmission_resolution.is_some()
+        ) && let Some(diagnostics) = result.mechanical_diagnostics_v3.as_mut()
+        {
+            diagnostics.theoretical_top_speed_at_max_rpm_kph = Some(
+                theoretical_top_speed_at_max_rpm_kph(&result.applied_vehicle)?,
+            );
+        }
 
         let lap_times_ms = lap_times_ms(&result.lap_times_s, &stint_plan, pit_loss_ms);
         let total_time_ms = lap_times_ms.iter().copied().sum::<u64>();
@@ -3252,6 +3423,13 @@ mod tests {
         );
         assert_ne!(baseline.total_time_ms, constrained.total_time_ms);
         assert!(baseline.player_tire_diagnostics_v3.is_some());
+        assert!(
+            baseline
+                .player_mechanical_diagnostics_v3
+                .expect("baseline mechanical diagnostics")
+                .theoretical_top_speed_at_max_rpm_kph
+                .is_some_and(|speed| speed.is_finite() && speed > 0.0)
+        );
     }
 
     #[test]
@@ -3364,11 +3542,67 @@ mod tests {
     }
 
     #[test]
+    fn v3_transmission_resolves_target_speed_without_changing_gear_spacing() {
+        let catalog = EmbeddedCatalog::load_default().expect("catalog");
+        let (vehicle, _) = catalog.resolve_vehicle("f1_2026").expect("vehicle");
+        let parameters = V3TransmissionResolutionParams::default();
+
+        let short = resolve_v3_transmission_gear_ratios(&vehicle, 0.0, &parameters)
+            .expect("short final drive");
+        let long = resolve_v3_transmission_gear_ratios(&vehicle, 1.0, &parameters)
+            .expect("long final drive");
+
+        assert!(short.last().expect("short top gear") > long.last().expect("long top gear"));
+        for index in 0..(vehicle.engine.gear_ratios.len() - 1) {
+            let source_spacing =
+                vehicle.engine.gear_ratios[index] / vehicle.engine.gear_ratios[index + 1];
+            assert!((short[index] / short[index + 1] - source_spacing).abs() < 1e-12);
+            assert!((long[index] / long[index + 1] - source_spacing).abs() < 1e-12);
+        }
+
+        for (ratios, target_speed_mps) in [
+            (&short, parameters.minimum_target_top_speed_mps),
+            (&long, parameters.maximum_target_top_speed_mps),
+        ] {
+            let rpm = rpm_from_speed_gear(
+                target_speed_mps,
+                *ratios.last().expect("resolved top gear"),
+                &vehicle.chassis,
+            );
+            assert!(
+                (rpm - parameters.target_engine_speed_fraction * vehicle.engine.n_max).abs() < 1e-9
+            );
+        }
+    }
+
+    #[test]
+    fn v3_transmission_parameters_fail_closed() {
+        for parameters in [
+            V3TransmissionResolutionParams {
+                minimum_target_top_speed_mps: f64::NAN,
+                ..V3TransmissionResolutionParams::default()
+            },
+            V3TransmissionResolutionParams {
+                minimum_target_top_speed_mps: 105.0,
+                maximum_target_top_speed_mps: 85.0,
+                ..V3TransmissionResolutionParams::default()
+            },
+            V3TransmissionResolutionParams {
+                target_engine_speed_fraction: 1.01,
+                ..V3TransmissionResolutionParams::default()
+            },
+        ] {
+            assert!(parameters.validate().is_err());
+        }
+    }
+
+    #[test]
     fn v3_profile_versions_bind_exact_candidate_semantics() {
         let mechanical_profile = V3CandidateExperimentProfile {
             schema_version: V3CandidateExperimentProfileVersion::V1,
             aero_resolution: None,
             development_resolution: None,
+            transmission_resolution: None,
             ..V3CandidateExperimentProfile::default()
         };
         assert_eq!(
@@ -3380,6 +3614,7 @@ mod tests {
         let aero_profile = V3CandidateExperimentProfile {
             schema_version: V3CandidateExperimentProfileVersion::V2,
             development_resolution: None,
+            transmission_resolution: None,
             ..V3CandidateExperimentProfile::default()
         };
         assert_eq!(
@@ -3388,12 +3623,23 @@ mod tests {
         );
         assert!(aero_profile.validate().is_ok());
 
-        let development_profile = V3CandidateExperimentProfile::default();
+        let development_profile = V3CandidateExperimentProfile {
+            schema_version: V3CandidateExperimentProfileVersion::V3,
+            transmission_resolution: None,
+            ..V3CandidateExperimentProfile::default()
+        };
         assert_eq!(
             development_profile.model_identity(),
-            racing_model_v3_candidate_identity()
+            racing_model_v3_development_candidate_identity()
         );
         assert!(development_profile.validate().is_ok());
+
+        let transmission_profile = V3CandidateExperimentProfile::default();
+        assert_eq!(
+            transmission_profile.model_identity(),
+            racing_model_v3_candidate_identity()
+        );
+        assert!(transmission_profile.validate().is_ok());
 
         let malformed = V3CandidateExperimentProfile {
             schema_version: V3CandidateExperimentProfileVersion::V2,

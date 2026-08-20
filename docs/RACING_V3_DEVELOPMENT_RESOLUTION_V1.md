@@ -93,9 +93,10 @@ profiles yet.
 
 Next:
 
-1. replace the transitional gear-ratio slider with explicit transmission
-   semantics;
-2. extend the campaign to held-out circuits, longer thermal windows and active
+1. extend the campaign to held-out circuits, longer thermal windows and active
    eras;
-3. replay the accepted candidate through Delta and MLflow on Databricks;
-4. publish reviewed parameter resources only after those gates pass.
+2. replay the accepted candidate through Delta and MLflow on Databricks;
+3. publish reviewed parameter resources only after those gates pass.
+
+The explicit transmission slice is now reviewed in
+[`RACING_V3_TRANSMISSION_RESOLUTION_V1.md`](RACING_V3_TRANSMISSION_RESOLUTION_V1.md).

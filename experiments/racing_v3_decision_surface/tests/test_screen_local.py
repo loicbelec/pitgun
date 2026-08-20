@@ -30,7 +30,7 @@ class LocalScreenTests(unittest.TestCase):
 
     def test_plan_is_bounded_and_covers_three_seeds_per_circuit(self):
         plan = SCREEN.build_plan(self.scenario, self.profile)
-        self.assertEqual(len(plan), 738)
+        self.assertEqual(len(plan), 792)
         self.assertEqual({point["seed"] for point in plan}, {7, 42, 99})
         self.assertEqual(
             {point["circuit_slug"] for point in plan},
