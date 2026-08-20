@@ -97,10 +97,10 @@ fn v3_candidate_contact_patch_is_deterministic_across_supported_runtimes() {
     );
     assert_eq!(
         racing_model_v3_candidate_identity().version.to_string(),
-        "0.3.0"
+        "0.4.0"
     );
     assert_eq!(
-        first.total_time_ms, 94_766,
+        first.total_time_ms, 94_437,
         "V3 candidate output changed without a new candidate identity"
     );
 }

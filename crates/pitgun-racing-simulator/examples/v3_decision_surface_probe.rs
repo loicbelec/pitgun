@@ -8,7 +8,7 @@ use pitgun_contract::{ArtifactIdentity, canonical_json_digest};
 use pitgun_racing_simulator::{
     MechanicalDiagnosticsV3, RacingCatalogSnapshot, RunRaceInput, RunRaceRequest,
     SetupResponseDiagnosticsV1, TireDiagnosticsV3, V3CandidateExperimentProfile,
-    racing_model_v3_candidate_identity, run_race_with_catalog_and_v3_profile,
+    run_race_with_catalog_and_v3_profile,
 };
 use serde::Serialize;
 use serde_json::Value;
@@ -75,7 +75,10 @@ fn run() -> Result<(), String> {
     )?)
     .map_err(|error| format!("invalid V3 experiment profile: {error}"))?;
 
-    let model = racing_model_v3_candidate_identity();
+    profile
+        .validate()
+        .map_err(|error| format!("invalid V3 experiment profile: {error}"))?;
+    let model = profile.model_identity();
     let scenario_digest = canonical_json_digest(&scenario)
         .map_err(|error| format!("cannot digest scenario: {error}"))?;
     let profile_digest = canonical_json_digest(&profile)

@@ -10,12 +10,13 @@ The screen deliberately separates two questions:
 1. do the new physical controls actually affect the result?
 2. do gameplay decisions produce different useful optima by circuit?
 
-It executes 351 deterministic three-lap simulations across Monza, Monaco and
+The current V2 screen executes 648 deterministic three-lap simulations across Monza, Monaco and
 Suzuka with seeds `7`, `42`, and `99`. The plan covers:
 
 - a fixed forty-point development simplex for engine, cooling, aero and chassis;
-- low/high downforce and gearing plus their coarse interaction grid;
-- isolated V3 braking, transmission, driveline, tire and driver controls.
+- low/high downforce and gearing plus their five-by-five interaction grid;
+- isolated V3 aerodynamic-resolution, braking, transmission, driveline, tire
+  and driver controls.
 
 Build and run from the repository root:
 
@@ -36,6 +37,10 @@ The profile is a Rust-only experiment boundary: absent overrides preserve the
 candidate resolver, while a named override changes exactly one resolved Solver
 input.
 
-The reviewed interpretation is documented in
-[`RACING_V3_LOCAL_DECISION_SCREEN_V1.md`](../../docs/RACING_V3_LOCAL_DECISION_SCREEN_V1.md).
+The immutable V1 report retains the mechanical candidate `0.3.0`. The current
+V2 profile and report bind the aerodynamic-efficiency candidate `0.4.0`.
 
+The current aerodynamic-efficiency interpretation is documented in
+[`RACING_V3_AERO_EFFICIENCY_V1.md`](../../docs/RACING_V3_AERO_EFFICIENCY_V1.md).
+The preceding mechanical-screen interpretation remains in
+[`RACING_V3_LOCAL_DECISION_SCREEN_V1.md`](../../docs/RACING_V3_LOCAL_DECISION_SCREEN_V1.md).

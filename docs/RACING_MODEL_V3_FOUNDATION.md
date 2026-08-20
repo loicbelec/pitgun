@@ -1,6 +1,6 @@
 # Racing Game Model V3 — Foundation Candidate
 
-Status: offline candidate `pitgun.racing-v3-candidate@0.3.0`. It is not
+Status: offline candidate `pitgun.racing-v3-candidate@0.4.0`. It is not
 authorized by a production catalog and cannot be selected by the game,
 Authority, or Verifier.
 
@@ -110,6 +110,30 @@ The Solver exposes per-sample combined utilization, normal load and available
 force plus summary heat/workload diagnostics. These are calibration evidence,
 not hidden pace multipliers.
 
+## Aerodynamic efficiency
+
+The `0.4.0` candidate replaces the transitional linear setup response with one
+fixed aerodynamic state resolved before the Solver. The setup selects `ClA`;
+the corresponding `CdA` follows a reduced-order quadratic polar:
+
+```text
+ClA = ClA_reference * setup_multiplier * development_downforce_gain
+CdA = (CdA_reference * base_drag_multiplier
+       + induced_drag_factor * added_ClA^2)
+      * development_drag_reduction
+```
+
+The six resolution coefficients are explicit in experiment profile V2.
+Aerodynamic development improves the resulting `ClA/CdA` ratio rather than
+scaling drag and downforce together. The Solver still receives only the final
+fixed `CdA` and `ClA`; it has no knowledge of sliders or development points.
+
+The five-by-five local setup grid produces three distinct representative
+optima: Monza `0.50/0.25`, Monaco `1.00/0.25`, and Suzuka `0.75/0.50`
+(downforce/gearing). This removes universal setup dominance without embedding
+circuit-specific rules. The evidence is documented in
+[`RACING_V3_AERO_EFFICIENCY_V1.md`](RACING_V3_AERO_EFFICIENCY_V1.md).
+
 ## Mechanical controls
 
 The `0.3.0` candidate removes four remaining shortcuts from the V3 path.
@@ -191,7 +215,8 @@ interruption time and driveline loss.
 ## Identity and compatibility
 
 - historical `pitgun.racing@1.0.0` and `pitgun.racing@2.0.0` remain unchanged;
-- the incomplete candidate uses `pitgun.racing-v3-candidate@0.3.0`;
+- mechanical-controls profile V1 retains `pitgun.racing-v3-candidate@0.3.0`;
+- aerodynamic-efficiency profile V2 uses `pitgun.racing-v3-candidate@0.4.0`;
 - `pitgun.racing@3.0.0` is reserved for the reviewed production Game Model;
 - no existing Racing Catalog declares compatibility with the candidate;
 - browser, Authority, and Verifier cannot select it.
