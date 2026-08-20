@@ -19,9 +19,9 @@ ROOT = pathlib.Path(__file__).resolve().parents[2]
 BASE_SCENARIO = (
     ROOT / "apps" / "pitgun-cli" / "scenarios" / "racing-batch-v1" / "balanced.json"
 )
-BASE_PROFILE = pathlib.Path(__file__).with_name("profile-v2.aero-efficiency.json")
-DEFAULT_OUTPUT = pathlib.Path(__file__).parent / "results" / "local-screen-v2.json"
-SCHEMA_VERSION = "pitgun.racing-v3-local-screen/v2"
+BASE_PROFILE = pathlib.Path(__file__).with_name("profile-v3.development-resolution.json")
+DEFAULT_OUTPUT = pathlib.Path(__file__).parent / "results" / "local-screen-v3.json"
+SCHEMA_VERSION = "pitgun.racing-v3-local-screen/v3"
 SEEDS = (7, 42, 99)
 CIRCUITS = (
     ("it-1922", "power", "monza"),
@@ -116,6 +116,36 @@ def scenario_variants(base: dict[str, Any]) -> list[dict[str, Any]]:
 
 
 PROFILE_AXES: tuple[tuple[str, str, float, float], ...] = (
+    (
+        "development_chassis_base_efficiency",
+        "development_resolution.chassis_force_transfer_efficiency_without_development",
+        0.94,
+        0.98,
+    ),
+    (
+        "development_chassis_cap_efficiency",
+        "development_resolution.chassis_force_transfer_efficiency_at_cap",
+        0.985,
+        1.0,
+    ),
+    (
+        "development_engine_torque_gain",
+        "development_resolution.engine_torque_gain_at_cap",
+        0.03,
+        0.09,
+    ),
+    (
+        "development_cooling_base_capacity",
+        "development_resolution.cooling_capacity_multiplier_without_development",
+        0.6,
+        0.9,
+    ),
+    (
+        "development_cooling_capacity_gain",
+        "development_resolution.cooling_capacity_gain_at_cap",
+        0.25,
+        0.75,
+    ),
     (
         "aero_minimum_downforce",
         "aero_resolution.minimum_downforce_area_multiplier",
@@ -326,6 +356,18 @@ def summarize_pairs(points: list[dict[str, Any]]) -> list[dict[str, Any]]:
                 }
             )
         time_effects = [abs(item["high_minus_low"]["total_time_ms"]) for item in circuits]
+        observable_effects = [
+            abs(item["high_minus_low"][metric]) > threshold
+            for item in circuits
+            for metric, threshold in (
+                ("total_time_ms", 5.0),
+                ("maximum_speed_kph", 0.01),
+                ("maximum_engine_temperature_c", 0.1),
+                ("engine_derated_time_s", 0.01),
+                ("maximum_tire_utilization", 0.00001),
+                ("tire_generated_heat_kj", 0.1),
+            )
+        ]
         if not circuits:
             continue
         signs = {
@@ -338,6 +380,7 @@ def summarize_pairs(points: list[dict[str, Any]]) -> list[dict[str, Any]]:
                 "family": family,
                 "assessment": {
                     "active_above_5ms": bool(time_effects) and max(time_effects) > 5.0,
+                    "active_in_reviewed_observables": any(observable_effects),
                     "maximum_absolute_time_effect_ms": max(time_effects, default=0.0),
                     "circuit_dependent_direction": len(signs) > 1,
                     "universally_faster_level": (
@@ -401,7 +444,9 @@ def campaign_verdicts(
         item for item in pair_summaries if item["family"].startswith("development.")
     ]
     setup = [by_family["setup.downforce_slider"], by_family["setup.gear_ratio_slider"]]
-    physical_active = all(item["assessment"]["active_above_5ms"] for item in physical)
+    physical_active = all(
+        item["assessment"]["active_in_reviewed_observables"] for item in physical
+    )
     setup_universal = all(
         item["assessment"]["universally_faster_level"] is not None for item in setup
     )
@@ -419,9 +464,9 @@ def campaign_verdicts(
             "capability": "physical_parameter_activation",
             "verdict": "PASS" if physical_active else "REFINE",
             "reason": (
-                "Every screened V3 physical control changes at least one representative circuit by more than 5 ms."
+                "Every screened V3 physical control changes at least one governed pace, thermal, speed, tire or derating observable."
                 if physical_active
-                else "At least one screened V3 physical control remains inactive in the reviewed range."
+                else "At least one screened V3 physical control remains inactive across the governed observables."
             ),
         },
         {

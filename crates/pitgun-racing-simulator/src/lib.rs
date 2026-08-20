@@ -7,8 +7,8 @@ pub use catalog::{
 };
 pub use workload::{
     RacingWorkload, RacingWorkloadError, racing_model_identity_for_version,
-    racing_model_v1_identity, racing_model_v2_identity, racing_model_v3_candidate_identity,
-    racing_model_v3_mechanical_candidate_identity,
+    racing_model_v1_identity, racing_model_v2_identity, racing_model_v3_aero_candidate_identity,
+    racing_model_v3_candidate_identity, racing_model_v3_mechanical_candidate_identity,
 };
 
 use std::collections::HashMap;
@@ -159,6 +159,8 @@ pub struct V3MechanicalOverrides {
     pub fixed_drag_area_m2: Option<f64>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub fixed_downforce_area_m2: Option<f64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub chassis_force_transfer_efficiency: Option<f64>,
 }
 
 impl V3MechanicalOverrides {
@@ -178,6 +180,7 @@ impl V3MechanicalOverrides {
         apply!(driveline_efficiency);
         apply!(fixed_drag_area_m2);
         apply!(fixed_downforce_area_m2);
+        apply!(chassis_force_transfer_efficiency);
         mechanical
     }
 }
@@ -257,6 +260,77 @@ impl V3AeroResolutionParams {
     }
 }
 
+/// Gameplay development resolved into named Model V3 physical quantities.
+///
+/// Tire friction remains a tire property. Chassis development instead raises
+/// the bounded fraction of the theoretical contact-patch force that the
+/// suspension can transfer. Engine and cooling points act on torque and heat
+/// rejection through separate, inspectable coefficients.
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct V3DevelopmentResolutionParams {
+    pub chassis_force_transfer_efficiency_without_development: f64,
+    pub chassis_force_transfer_efficiency_at_cap: f64,
+    pub engine_torque_gain_at_cap: f64,
+    pub cooling_capacity_multiplier_without_development: f64,
+    pub cooling_capacity_gain_at_cap: f64,
+}
+
+impl Default for V3DevelopmentResolutionParams {
+    fn default() -> Self {
+        Self {
+            chassis_force_transfer_efficiency_without_development: 0.97,
+            chassis_force_transfer_efficiency_at_cap: 1.0,
+            engine_torque_gain_at_cap: 0.06,
+            cooling_capacity_multiplier_without_development: 0.75,
+            cooling_capacity_gain_at_cap: 0.50,
+        }
+    }
+}
+
+impl V3DevelopmentResolutionParams {
+    pub fn validate(&self) -> Result<(), String> {
+        let values = [
+            self.chassis_force_transfer_efficiency_without_development,
+            self.chassis_force_transfer_efficiency_at_cap,
+            self.engine_torque_gain_at_cap,
+            self.cooling_capacity_multiplier_without_development,
+            self.cooling_capacity_gain_at_cap,
+        ];
+        if values.iter().any(|value| !value.is_finite()) {
+            return Err("V3 development-resolution coefficients must be finite".to_string());
+        }
+        if self.chassis_force_transfer_efficiency_without_development <= 0.0
+            || self.chassis_force_transfer_efficiency_at_cap
+                < self.chassis_force_transfer_efficiency_without_development
+            || self.chassis_force_transfer_efficiency_at_cap > 1.0
+        {
+            return Err(
+                "V3 chassis force-transfer efficiencies must satisfy 0 < base <= cap <= 1"
+                    .to_string(),
+            );
+        }
+        if !(0.0..=0.5).contains(&self.engine_torque_gain_at_cap) {
+            return Err("V3 engine torque gain must be in [0, 0.5]".to_string());
+        }
+        if self.cooling_capacity_multiplier_without_development <= 0.0
+            || !(0.0..=2.0).contains(&self.cooling_capacity_gain_at_cap)
+        {
+            return Err(
+                "V3 cooling capacity base must be positive and gain must be in [0, 2]".to_string(),
+            );
+        }
+        Ok(())
+    }
+
+    fn chassis_force_transfer_efficiency(&self, normalized_points: f64) -> f64 {
+        self.chassis_force_transfer_efficiency_without_development
+            + (self.chassis_force_transfer_efficiency_at_cap
+                - self.chassis_force_transfer_efficiency_without_development)
+                * normalized_points
+    }
+}
+
 /// Versioned, offline-only parameter boundary for Model V3 screening.
 ///
 /// This profile is deliberately absent from the game, WASM, Authority and
@@ -268,6 +342,8 @@ pub enum V3CandidateExperimentProfileVersion {
     V1,
     #[serde(rename = "pitgun.racing-v3-experiment-profile/v2")]
     V2,
+    #[serde(rename = "pitgun.racing-v3-experiment-profile/v3")]
+    V3,
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq)]
@@ -278,6 +354,8 @@ pub struct V3CandidateExperimentProfile {
     pub tire_contact: TireContactParamsV3,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub aero_resolution: Option<V3AeroResolutionParams>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub development_resolution: Option<V3DevelopmentResolutionParams>,
     #[serde(default)]
     pub mechanical_overrides: V3MechanicalOverrides,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -287,10 +365,11 @@ pub struct V3CandidateExperimentProfile {
 impl Default for V3CandidateExperimentProfile {
     fn default() -> Self {
         Self {
-            schema_version: V3CandidateExperimentProfileVersion::V2,
+            schema_version: V3CandidateExperimentProfileVersion::V3,
             tuning_response: TuningResponseV1::default(),
             tire_contact: TireContactParamsV3::default(),
             aero_resolution: Some(V3AeroResolutionParams::default()),
+            development_resolution: Some(V3DevelopmentResolutionParams::default()),
             mechanical_overrides: V3MechanicalOverrides::default(),
             driver_control_override: None,
         }
@@ -300,15 +379,29 @@ impl Default for V3CandidateExperimentProfile {
 impl V3CandidateExperimentProfile {
     pub fn validate(&self) -> Result<(), String> {
         self.tuning_response.validate()?;
-        match (self.schema_version, self.aero_resolution) {
-            (V3CandidateExperimentProfileVersion::V1, None) => Ok(()),
-            (V3CandidateExperimentProfileVersion::V2, Some(parameters)) => parameters.validate(),
-            (V3CandidateExperimentProfileVersion::V1, Some(_)) => {
-                Err("V3 experiment profile V1 cannot define aero_resolution".to_string())
+        match (
+            self.schema_version,
+            self.aero_resolution,
+            self.development_resolution,
+        ) {
+            (V3CandidateExperimentProfileVersion::V1, None, None) => Ok(()),
+            (V3CandidateExperimentProfileVersion::V2, Some(aero), None) => aero.validate(),
+            (V3CandidateExperimentProfileVersion::V3, Some(aero), Some(development)) => {
+                aero.validate()?;
+                development.validate()
             }
-            (V3CandidateExperimentProfileVersion::V2, None) => {
-                Err("V3 experiment profile V2 requires aero_resolution".to_string())
-            }
+            (V3CandidateExperimentProfileVersion::V1, _, _) => Err(
+                "V3 experiment profile V1 cannot define V2 or V3 resolution resources"
+                    .to_string(),
+            ),
+            (V3CandidateExperimentProfileVersion::V2, _, _) => Err(
+                "V3 experiment profile V2 requires aero_resolution and forbids development_resolution"
+                    .to_string(),
+            ),
+            (V3CandidateExperimentProfileVersion::V3, _, _) => Err(
+                "V3 experiment profile V3 requires aero_resolution and development_resolution"
+                    .to_string(),
+            ),
         }
     }
 
@@ -318,7 +411,8 @@ impl V3CandidateExperimentProfile {
             V3CandidateExperimentProfileVersion::V1 => {
                 racing_model_v3_mechanical_candidate_identity()
             }
-            V3CandidateExperimentProfileVersion::V2 => racing_model_v3_candidate_identity(),
+            V3CandidateExperimentProfileVersion::V2 => racing_model_v3_aero_candidate_identity(),
+            V3CandidateExperimentProfileVersion::V3 => racing_model_v3_candidate_identity(),
         }
     }
 }
@@ -676,8 +770,9 @@ pub fn resolve_v3_physical_vehicle(
 /// Resolves the current V3 experiment profile to one fixed aerodynamic state.
 ///
 /// Profile V1 retains the immutable 0.3.0 transitional mapping. Profile V2
-/// replaces only its aerodynamic resolution; chassis, cooling, engine and gear
-/// development remain explicit transitional inputs for later slices.
+/// replaces only its aerodynamic resolution. Profile V3 also replaces the
+/// chassis, cooling and engine development mapping while retaining the
+/// transitional gear-ratio mapping for its own later slice.
 pub fn resolve_v3_physical_vehicle_with_profile(
     vehicle: &VehicleParams,
     tuning: &Tuning,
@@ -687,6 +782,31 @@ pub fn resolve_v3_physical_vehicle_with_profile(
         .validate()
         .map_err(|error| format!("invalid V3 experiment profile: {error}"))?;
     let mut resolved = resolve_v3_physical_vehicle(vehicle, tuning, &profile.tuning_response)?;
+    if let Some(development_resolution) = profile.development_resolution {
+        let points_cap = profile.tuning_response.development_points_cap;
+        let engine_development = (tuning.engine_points as f64).clamp(0.0, points_cap) / points_cap;
+        let cooling_development =
+            (tuning.cooling_points as f64).clamp(0.0, points_cap) / points_cap;
+
+        // Tire friction is deliberately restored to its catalog value. Model
+        // V3 resolves chassis progression through MechanicalParamsV3 instead.
+        resolved.chassis.mu0 = vehicle.chassis.mu0;
+
+        let torque_multiplier =
+            1.0 + development_resolution.engine_torque_gain_at_cap * engine_development;
+        resolved.engine.trq = vehicle
+            .engine
+            .trq
+            .iter()
+            .map(|torque| torque * torque_multiplier)
+            .collect();
+
+        let cooling_multiplier = development_resolution
+            .cooling_capacity_multiplier_without_development
+            + development_resolution.cooling_capacity_gain_at_cap * cooling_development;
+        resolved.engine.p_cool0 = vehicle.engine.p_cool0 * cooling_multiplier;
+        resolved.engine.k_cool = vehicle.engine.k_cool * cooling_multiplier;
+    }
     let Some(aero_resolution) = profile.aero_resolution else {
         return Ok(resolved);
     };
@@ -732,6 +852,36 @@ pub fn resolve_v3_physical_vehicle_with_profile(
         cl_a_z: fixed_downforce_area_m2,
     };
     Ok(resolved)
+}
+
+/// Resolves the named Model V3 mechanical envelope after vehicle resolution.
+///
+/// The aerodynamic areas come from the resolved vehicle. Profile V3 additionally
+/// maps chassis development to a bounded force-transfer efficiency without
+/// changing tire friction. Older profiles retain an efficiency of one and are
+/// therefore exactly replayable.
+pub fn resolve_v3_mechanical_params(
+    physical_vehicle: &VehicleParams,
+    tuning: &Tuning,
+    profile: &V3CandidateExperimentProfile,
+) -> Result<MechanicalParamsV3, String> {
+    profile
+        .validate()
+        .map_err(|error| format!("invalid V3 experiment profile: {error}"))?;
+    let mut mechanical = MechanicalParamsV3 {
+        fixed_drag_area_m2: 0.5 * (physical_vehicle.aero.cd_a_x + physical_vehicle.aero.cd_a_z),
+        fixed_downforce_area_m2: 0.5
+            * (physical_vehicle.aero.cl_a_x + physical_vehicle.aero.cl_a_z),
+        ..MechanicalParamsV3::default()
+    };
+    if let Some(development_resolution) = profile.development_resolution {
+        let points_cap = profile.tuning_response.development_points_cap;
+        let chassis_development =
+            (tuning.chassis_points as f64).clamp(0.0, points_cap) / points_cap;
+        mechanical.chassis_force_transfer_efficiency =
+            development_resolution.chassis_force_transfer_efficiency(chassis_development);
+    }
+    Ok(profile.mechanical_overrides.apply_to(mechanical))
 }
 
 fn resolve_v3_driver_control(driver: &Driver) -> DriverControlParamsV3 {
@@ -1070,13 +1220,13 @@ fn run_single_session(
                                 competitor.id
                             )
                         })?;
-                let mechanical = profile.mechanical_overrides.apply_to(MechanicalParamsV3 {
-                    fixed_drag_area_m2: 0.5
-                        * (physical_vehicle.aero.cd_a_x + physical_vehicle.aero.cd_a_z),
-                    fixed_downforce_area_m2: 0.5
-                        * (physical_vehicle.aero.cl_a_x + physical_vehicle.aero.cl_a_z),
-                    ..MechanicalParamsV3::default()
-                });
+                let mechanical = resolve_v3_mechanical_params(&physical_vehicle, &tuning, profile)
+                    .map_err(|error| {
+                        format!(
+                            "cannot resolve V3 mechanical envelope for competitor {}: {error}",
+                            competitor.id
+                        )
+                    })?;
                 let driver_control = profile
                     .driver_control_override
                     .unwrap_or_else(|| resolve_v3_driver_control(&request.driver));
@@ -3173,10 +3323,52 @@ mod tests {
     }
 
     #[test]
+    fn v3_development_keeps_tire_friction_separate_from_chassis_efficiency() {
+        let catalog = EmbeddedCatalog::load_default().expect("catalog");
+        let (base_vehicle, _) = catalog.resolve_vehicle("f1_2026").expect("base vehicle");
+        let profile = V3CandidateExperimentProfile::default();
+        let tuning = |chassis_points, engine_points, cooling_points| Tuning {
+            engine_points,
+            cooling_points,
+            aero_points: 0,
+            chassis_points,
+            downforce_slider: 0.5,
+            gear_ratio_slider: 0.5,
+        };
+
+        let undeveloped_tuning = tuning(0, 0, 0);
+        let developed_tuning = tuning(20, 20, 20);
+        let undeveloped_vehicle =
+            resolve_v3_physical_vehicle_with_profile(&base_vehicle, &undeveloped_tuning, &profile)
+                .expect("undeveloped physical vehicle");
+        let developed_vehicle =
+            resolve_v3_physical_vehicle_with_profile(&base_vehicle, &developed_tuning, &profile)
+                .expect("developed physical vehicle");
+
+        assert_eq!(undeveloped_vehicle.chassis.mu0, base_vehicle.chassis.mu0);
+        assert_eq!(developed_vehicle.chassis.mu0, base_vehicle.chassis.mu0);
+        assert!(developed_vehicle.engine.trq[2] > undeveloped_vehicle.engine.trq[2]);
+        assert!(developed_vehicle.engine.k_cool > undeveloped_vehicle.engine.k_cool);
+
+        let undeveloped_mechanical =
+            resolve_v3_mechanical_params(&undeveloped_vehicle, &undeveloped_tuning, &profile)
+                .expect("undeveloped mechanical envelope");
+        let developed_mechanical =
+            resolve_v3_mechanical_params(&developed_vehicle, &developed_tuning, &profile)
+                .expect("developed mechanical envelope");
+        assert!(
+            undeveloped_mechanical.chassis_force_transfer_efficiency
+                < developed_mechanical.chassis_force_transfer_efficiency
+        );
+        assert_eq!(developed_mechanical.chassis_force_transfer_efficiency, 1.0);
+    }
+
+    #[test]
     fn v3_profile_versions_bind_exact_candidate_semantics() {
         let mechanical_profile = V3CandidateExperimentProfile {
             schema_version: V3CandidateExperimentProfileVersion::V1,
             aero_resolution: None,
+            development_resolution: None,
             ..V3CandidateExperimentProfile::default()
         };
         assert_eq!(
@@ -3185,16 +3377,28 @@ mod tests {
         );
         assert!(mechanical_profile.validate().is_ok());
 
-        let aero_profile = V3CandidateExperimentProfile::default();
+        let aero_profile = V3CandidateExperimentProfile {
+            schema_version: V3CandidateExperimentProfileVersion::V2,
+            development_resolution: None,
+            ..V3CandidateExperimentProfile::default()
+        };
         assert_eq!(
             aero_profile.model_identity(),
-            racing_model_v3_candidate_identity()
+            racing_model_v3_aero_candidate_identity()
         );
         assert!(aero_profile.validate().is_ok());
+
+        let development_profile = V3CandidateExperimentProfile::default();
+        assert_eq!(
+            development_profile.model_identity(),
+            racing_model_v3_candidate_identity()
+        );
+        assert!(development_profile.validate().is_ok());
 
         let malformed = V3CandidateExperimentProfile {
             schema_version: V3CandidateExperimentProfileVersion::V2,
             aero_resolution: None,
+            development_resolution: None,
             ..V3CandidateExperimentProfile::default()
         };
         assert!(malformed.validate().is_err());

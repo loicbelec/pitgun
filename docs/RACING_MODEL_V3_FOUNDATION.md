@@ -1,6 +1,6 @@
 # Racing Game Model V3 — Foundation Candidate
 
-Status: offline candidate `pitgun.racing-v3-candidate@0.4.0`. It is not
+Status: offline candidate `pitgun.racing-v3-candidate@0.5.0`. It is not
 authorized by a production catalog and cannot be selected by the game,
 Authority, or Verifier.
 
@@ -129,10 +129,27 @@ scaling drag and downforce together. The Solver still receives only the final
 fixed `CdA` and `ClA`; it has no knowledge of sliders or development points.
 
 The five-by-five local setup grid produces three distinct representative
-optima: Monza `0.50/0.25`, Monaco `1.00/0.25`, and Suzuka `0.75/0.50`
+optima in candidate `0.4.0`: Monza `0.50/0.25`, Monaco `1.00/0.25`, and Suzuka `0.75/0.50`
 (downforce/gearing). This removes universal setup dominance without embedding
 circuit-specific rules. The evidence is documented in
 [`RACING_V3_AERO_EFFICIENCY_V1.md`](RACING_V3_AERO_EFFICIENCY_V1.md).
+
+## Development resolution
+
+The `0.5.0` candidate removes the transitional shortcut that made chassis
+points multiply the tire-friction coefficient. Tire `mu0` now remains an
+unchanged tire property. Chassis progression resolves a bounded suspension and
+contact-patch force-transfer efficiency in `(0, 1]`; engine progression resolves
+torque gain; cooling progression resolves heat-rejection capacity. All three
+quantities are explicit experiment-profile coefficients.
+
+Cooling still has no direct time bonus: a coefficient is considered physically
+active when it changes the governed thermal or derating observables, even if a
+three-lap time is unchanged. The 738-run local screen removes sole chassis
+dominance and makes engine allocation circuit-dependent. The initial values
+remain candidates rather than calibrated truths. Full interpretation and
+evidence are in
+[`RACING_V3_DEVELOPMENT_RESOLUTION_V1.md`](RACING_V3_DEVELOPMENT_RESOLUTION_V1.md).
 
 ## Mechanical controls
 
@@ -217,6 +234,7 @@ interruption time and driveline loss.
 - historical `pitgun.racing@1.0.0` and `pitgun.racing@2.0.0` remain unchanged;
 - mechanical-controls profile V1 retains `pitgun.racing-v3-candidate@0.3.0`;
 - aerodynamic-efficiency profile V2 uses `pitgun.racing-v3-candidate@0.4.0`;
+- development-resolution profile V3 uses `pitgun.racing-v3-candidate@0.5.0`;
 - `pitgun.racing@3.0.0` is reserved for the reviewed production Game Model;
 - no existing Racing Catalog declares compatibility with the candidate;
 - browser, Authority, and Verifier cannot select it.
@@ -241,13 +259,16 @@ model while retaining deterministic identity for offline evidence.
   identical;
 - increasing drag alone cannot improve isolated terminal speed;
 - cooling is visible only through heat removal, temperature and derating;
+- chassis development leaves tire friction unchanged and exposes its resolved
+  force-transfer efficiency;
 - historical V1/V2 tests continue to protect compatibility.
 
 ## Next physics slices
 
-1. local screening followed by the governed multi-era Databricks campaign;
-2. reviewed V3 catalog resources and production identity;
-3. explicit combustion/hybrid energy accounting.
+1. explicit transmission and gear-ratio setup semantics;
+2. held-out and multi-era screening followed by governed Databricks replay;
+3. reviewed V3 catalog resources and production identity;
+4. explicit combustion/hybrid energy accounting.
 
 Distinct historical Era 3/4 vehicles are not restored by this foundation.
 Their reviewed physical resources should be introduced only after the V3

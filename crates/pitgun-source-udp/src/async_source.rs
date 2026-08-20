@@ -193,7 +193,6 @@ impl SequenceTracker {
         }
         // sequence == last means duplicate, ignore
     }
-
 }
 
 /// Statistics for the UDP source
