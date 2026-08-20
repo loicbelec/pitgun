@@ -1,0 +1,31 @@
+{
+  "schema_version": "pitgun.racing-v3-experiment-profile/v1",
+  "tuning_response": {
+    "schema_version": "pitgun.racing-tuning-response/v1",
+    "development_points_cap": 20.0,
+    "aero_development_gain": 0.1,
+    "drag_base": 0.85,
+    "drag_slider_gain": 0.3,
+    "downforce_base": 0.75,
+    "downforce_slider_gain": 0.55,
+    "straight_aero_scale": 0.95,
+    "corner_aero_scale": 1.05,
+    "chassis_grip_development_gain": 0.08,
+    "cooling_base": 0.75,
+    "cooling_development_gain": 0.5,
+    "engine_torque_development_gain": 0.01,
+    "gear_ratio_base": 1.1,
+    "gear_ratio_slider_reduction": 0.2
+  },
+  "tire_contact": {
+    "reference_normal_load_n": 8500.0,
+    "load_sensitivity_exponent": 0.08,
+    "thermal_capacity_j_per_c": 180000.0,
+    "heat_generation_fraction": 0.006,
+    "cooling_w_per_c": 80.0,
+    "speed_cooling_w_per_mps_c": 0.8,
+    "baseline_wear_per_s": 0.000001,
+    "workload_energy_to_full_wear_j": 8000000000.0
+  },
+  "mechanical_overrides": {}
+}

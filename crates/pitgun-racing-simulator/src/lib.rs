@@ -39,8 +39,8 @@ pub use pitgun_racing_solver::{
     MechanicalDiagnosticsV3, MechanicalParamsV3, PitPlan, PitStop, ResampledTelemetry,
     ResolvedSimulationRequestV3, SetupResponseDiagnosticsV1, SetupResponseDiagnosticsVersion,
     SimConfig, SimulationRequest, SimulationResult, SimulationSolution, TireContactParamsV3,
-    TireParams, Track, Tuning, TuningResponseV1, TuningResponseVersion, VehicleParams,
-    VehicleState, apply_driver_to_tire, apply_tuning, apply_tuning_with_response,
+    TireDiagnosticsV3, TireParams, Track, Tuning, TuningResponseV1, TuningResponseVersion,
+    VehicleParams, VehicleState, apply_driver_to_tire, apply_tuning, apply_tuning_with_response,
     best_power_at_speed, curvature_aero_blend, derating_factor, describe_circuit,
     diagnose_setup_response, driver_effects, effective_mu, power_kw_from_rpm,
     resample_telemetry as resample_solution, rpm_from_speed_gear,
@@ -128,6 +128,92 @@ pub struct RaceOutput {
     pub player_batches: Vec<TelemetryEnvelope>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub player_diagnostics: Option<SetupResponseDiagnosticsV1>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub player_tire_diagnostics_v3: Option<TireDiagnosticsV3>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub player_mechanical_diagnostics_v3: Option<MechanicalDiagnosticsV3>,
+}
+
+/// Exact overrides for the mechanically resolved Model V3 experiment input.
+///
+/// Missing values retain the candidate resolver's current behavior. This
+/// makes one coefficient independently screenable without copying the whole
+/// resolved vehicle or changing the browser and hosted-verification contracts.
+#[derive(Debug, Clone, Copy, Default, Serialize, Deserialize, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct V3MechanicalOverrides {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub maximum_brake_force_n: Option<f64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub upshift_rpm: Option<f64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub downshift_rpm: Option<f64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub shift_duration_s: Option<f64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub shift_power_fraction: Option<f64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub driveline_efficiency: Option<f64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub fixed_drag_area_m2: Option<f64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub fixed_downforce_area_m2: Option<f64>,
+}
+
+impl V3MechanicalOverrides {
+    fn apply_to(self, mut mechanical: MechanicalParamsV3) -> MechanicalParamsV3 {
+        macro_rules! apply {
+            ($field:ident) => {
+                if let Some(value) = self.$field {
+                    mechanical.$field = value;
+                }
+            };
+        }
+        apply!(maximum_brake_force_n);
+        apply!(upshift_rpm);
+        apply!(downshift_rpm);
+        apply!(shift_duration_s);
+        apply!(shift_power_fraction);
+        apply!(driveline_efficiency);
+        apply!(fixed_drag_area_m2);
+        apply!(fixed_downforce_area_m2);
+        mechanical
+    }
+}
+
+/// Versioned, offline-only parameter boundary for Model V3 screening.
+///
+/// This profile is deliberately absent from the game, WASM, Authority and
+/// Verifier. Its canonical JSON digest identifies the exact parameters used by
+/// local and Databricks experiments.
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq)]
+pub enum V3CandidateExperimentProfileVersion {
+    #[serde(rename = "pitgun.racing-v3-experiment-profile/v1")]
+    V1,
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct V3CandidateExperimentProfile {
+    pub schema_version: V3CandidateExperimentProfileVersion,
+    pub tuning_response: TuningResponseV1,
+    pub tire_contact: TireContactParamsV3,
+    #[serde(default)]
+    pub mechanical_overrides: V3MechanicalOverrides,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub driver_control_override: Option<DriverControlParamsV3>,
+}
+
+impl Default for V3CandidateExperimentProfile {
+    fn default() -> Self {
+        Self {
+            schema_version: V3CandidateExperimentProfileVersion::V1,
+            tuning_response: TuningResponseV1::default(),
+            tire_contact: TireContactParamsV3::default(),
+            mechanical_overrides: V3MechanicalOverrides::default(),
+            driver_control_override: None,
+        }
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -595,7 +681,25 @@ pub fn run_race_with_catalog_and_v3_candidate(
     snapshot: &RacingCatalogSnapshot,
     tuning_response: &TuningResponseV1,
 ) -> Result<RaceOutput, String> {
-    tuning_response
+    let profile = V3CandidateExperimentProfile {
+        tuning_response: *tuning_response,
+        ..V3CandidateExperimentProfile::default()
+    };
+    run_race_with_catalog_and_v3_profile(request, snapshot, &profile)
+}
+
+/// Runs one governed offline Model V3 experiment with explicit parameters.
+///
+/// The profile is not part of any published workload contract. It exists so a
+/// local campaign and its Databricks replay can execute the same canonical
+/// parameter document against the same immutable candidate binary.
+pub fn run_race_with_catalog_and_v3_profile(
+    request: RunRaceRequest,
+    snapshot: &RacingCatalogSnapshot,
+    profile: &V3CandidateExperimentProfile,
+) -> Result<RaceOutput, String> {
+    profile
+        .tuning_response
         .validate()
         .map_err(|error| format!("invalid V3 candidate resolution response: {error}"))?;
     if request.input.race.competitors.is_empty() {
@@ -624,7 +728,7 @@ pub fn run_race_with_catalog_and_v3_candidate(
             track_profile: request.input.track_profile.as_ref(),
             laps: normalized_race.laps,
             seed: request.seed,
-            model: SessionPhysicalModel::V3Candidate { tuning_response },
+            model: SessionPhysicalModel::V3Candidate { profile },
         },
     )
 }
@@ -699,7 +803,7 @@ enum SessionPhysicalModel<'a> {
         curvature_response: CurvatureAeroResponse,
     },
     V3Candidate {
-        tuning_response: &'a TuningResponseV1,
+        profile: &'a V3CandidateExperimentProfile,
     },
 }
 
@@ -739,6 +843,8 @@ fn run_single_session(
     let mut player_lap_times_ms = Vec::new();
     let mut player_resolved_pit_laps = Vec::new();
     let mut player_diagnostics = None;
+    let mut player_tire_diagnostics_v3 = None;
+    let mut player_mechanical_diagnostics_v3 = None;
 
     for competitor in &race.competitors {
         let stint_plan =
@@ -788,23 +894,28 @@ fn run_single_session(
                 tuning_response,
                 curvature_response,
             } => solve_with_model_response(&request, tuning_response, curvature_response),
-            SessionPhysicalModel::V3Candidate { tuning_response } => {
-                let physical_vehicle =
-                    resolve_v3_physical_vehicle(&request.vehicle, &tuning, tuning_response)
-                        .map_err(|error| {
-                            format!(
-                                "cannot resolve V3 physical vehicle for competitor {}: {error}",
-                                competitor.id
-                            )
-                        })?;
-                let mechanical = MechanicalParamsV3 {
+            SessionPhysicalModel::V3Candidate { profile } => {
+                let physical_vehicle = resolve_v3_physical_vehicle(
+                    &request.vehicle,
+                    &tuning,
+                    &profile.tuning_response,
+                )
+                .map_err(|error| {
+                    format!(
+                        "cannot resolve V3 physical vehicle for competitor {}: {error}",
+                        competitor.id
+                    )
+                })?;
+                let mechanical = profile.mechanical_overrides.apply_to(MechanicalParamsV3 {
                     fixed_drag_area_m2: 0.5
                         * (physical_vehicle.aero.cd_a_x + physical_vehicle.aero.cd_a_z),
                     fixed_downforce_area_m2: 0.5
                         * (physical_vehicle.aero.cl_a_x + physical_vehicle.aero.cl_a_z),
                     ..MechanicalParamsV3::default()
-                };
-                let driver_control = resolve_v3_driver_control(&request.driver);
+                });
+                let driver_control = profile
+                    .driver_control_override
+                    .unwrap_or_else(|| resolve_v3_driver_control(&request.driver));
                 solve_resolved_v3(&ResolvedSimulationRequestV3 {
                     track: request.track.clone(),
                     vehicle: physical_vehicle,
@@ -813,7 +924,7 @@ fn run_single_session(
                     lap_count: request.lap_count,
                     pit_plan: request.pit_plan.clone(),
                     driver: request.driver.clone(),
-                    tire_contact: TireContactParamsV3::default(),
+                    tire_contact: profile.tire_contact,
                     mechanical,
                     driver_control,
                 })
@@ -850,6 +961,8 @@ fn run_single_session(
             player_lap_times_ms = lap_times_ms.clone();
             player_resolved_pit_laps = stint_plan.pit_laps.clone();
             player_diagnostics = Some(result.diagnostics);
+            player_tire_diagnostics_v3 = result.tire_diagnostics_v3;
+            player_mechanical_diagnostics_v3 = result.mechanical_diagnostics_v3;
         }
 
         rows.push(SimulatedCompetitor {
@@ -883,6 +996,8 @@ fn run_single_session(
         player_lap_times_ms,
         player_batches: telemetry_batches(player_frames),
         player_diagnostics,
+        player_tire_diagnostics_v3,
+        player_mechanical_diagnostics_v3,
     })
 }
 
@@ -2792,6 +2907,37 @@ mod tests {
             racing_model_v2_identity(),
             "even an equivalent uniform-grid fixture must retain distinct model lineage",
         );
+    }
+
+    #[test]
+    fn v3_experiment_profile_applies_exact_mechanical_overrides() {
+        let snapshot = RacingCatalogSnapshot::embedded_model_v2().expect("catalog snapshot");
+        let baseline = run_race_with_catalog_and_v3_profile(
+            one_lap_request(),
+            &snapshot,
+            &V3CandidateExperimentProfile::default(),
+        )
+        .expect("baseline V3 profile");
+        let profile = V3CandidateExperimentProfile {
+            mechanical_overrides: V3MechanicalOverrides {
+                maximum_brake_force_n: Some(10_000.0),
+                ..V3MechanicalOverrides::default()
+            },
+            ..V3CandidateExperimentProfile::default()
+        };
+        let constrained =
+            run_race_with_catalog_and_v3_profile(one_lap_request(), &snapshot, &profile)
+                .expect("constrained V3 profile");
+
+        assert_eq!(
+            constrained
+                .player_mechanical_diagnostics_v3
+                .expect("mechanical diagnostics")
+                .maximum_brake_force_n,
+            10_000.0,
+        );
+        assert_ne!(baseline.total_time_ms, constrained.total_time_ms);
+        assert!(baseline.player_tire_diagnostics_v3.is_some());
     }
 
     #[test]
