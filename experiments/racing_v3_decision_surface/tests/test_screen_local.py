@@ -30,7 +30,7 @@ class LocalScreenTests(unittest.TestCase):
 
     def test_plan_is_bounded_and_covers_three_seeds_per_circuit(self):
         plan = SCREEN.build_plan(self.scenario, self.profile)
-        self.assertEqual(len(plan), 792)
+        self.assertEqual(len(plan), 882)
         self.assertEqual({point["seed"] for point in plan}, {7, 42, 99})
         self.assertEqual(
             {point["circuit_slug"] for point in plan},
@@ -58,6 +58,38 @@ class LocalScreenTests(unittest.TestCase):
         expected = json.loads(json.dumps(baseline))
         SCREEN.set_path(expected, "mechanical_overrides.maximum_brake_force_n", 14_000.0)
         self.assertEqual(brake_low["profile"], expected)
+
+    def test_v5_profile_covers_fuel_and_degradation_controls(self):
+        families = {item["family"] for item in SCREEN.profile_variants(self.profile)}
+        self.assertIn("physical.fuel_brake_specific_consumption", families)
+        self.assertIn("physical.fuel_idle_flow", families)
+        self.assertIn("physical.degradation_reference_load_coefficient", families)
+        self.assertIn("physical.degradation_thermal_gain", families)
+        self.assertIn("physical.degradation_thermal_cap", families)
+
+    def test_long_run_evidence_is_checksumming_and_binds_v3_09(self):
+        evidence = SCREEN.load_long_run_evidence(SCREEN.LONG_RUN_REPORT)
+        self.assertEqual(evidence["model"]["version"], "0.9.0")
+        self.assertEqual(evidence["execution_count"], 236)
+        self.assertEqual(evidence["ordered_wear_group_count"], 32)
+        self.assertGreater(evidence["maximum_observed_thermal_wear_multiplier"], 1.5)
+        self.assertLess(evidence["maximum_observed_thermal_wear_multiplier"], 3.0)
+        self.assertEqual(evidence["fastest_stop_laps"], [22])
+
+    def test_stored_v5_report_is_complete_and_checksumed(self):
+        report_bytes = SCREEN.DEFAULT_OUTPUT.read_bytes()
+        digest = SCREEN.DEFAULT_OUTPUT.with_suffix(".sha256").read_text().strip()
+        report = json.loads(report_bytes)
+        self.assertEqual(digest, SCREEN.sha256(report_bytes))
+        self.assertEqual(report["schema_version"], "pitgun.racing-v3-local-screen/v5")
+        self.assertEqual(report["campaign"]["model"]["version"], "0.9.0")
+        self.assertEqual(report["campaign"]["execution_count"], 882)
+        self.assertEqual(len(report["points"]), 882)
+        self.assertIsInstance(report["verdicts"], list)
+        self.assertGreater(len(report["verdicts"]), 0)
+        self.assertEqual(
+            report["long_run_evidence"]["model"], report["campaign"]["model"]
+        )
 
 
 if __name__ == "__main__":
