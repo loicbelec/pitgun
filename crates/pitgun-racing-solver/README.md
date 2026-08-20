@@ -35,11 +35,16 @@ Those responsibilities belong to the Racing Simulator.
 carry game development points or setup sliders, validates resolved physical
 inputs, and integrates the real distance of every track segment.
 
-Candidate `0.2.0` adds one aggregate contact patch shared by cornering,
+Candidate `0.3.0` contains one aggregate contact patch shared by cornering,
 braking, and traction. Its load-sensitive combined force budget is bounded;
 temperature and wear evolve from a named contact-workload energy proxy through
-a fixed deterministic coupling loop. The Solver publishes force utilization,
-normal load, available force, heat, and workload diagnostics for calibration.
+a fixed deterministic coupling loop.
+
+The same candidate adds a sequential gearbox with explicit shift cost and
+driveline efficiency, a named brake-force limit, fixed drag/downforce areas,
+physical driver-limit utilization, and observable engine cooling/derating. It
+publishes force, control, shift, thermal, and loss diagnostics for calibration;
+it applies no post-solve driver time bonus.
 
 The candidate is offline-only and documented in
 [`RACING_MODEL_V3_FOUNDATION.md`](../../docs/RACING_MODEL_V3_FOUNDATION.md).

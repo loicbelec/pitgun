@@ -35,13 +35,14 @@ use wasm_bindgen::prelude::*;
 pub use pitgun_racing_solver::{
     AERO_FULL_CORNER_CURVATURE_RAD_PER_M, AERO_FULL_STRAIGHT_CURVATURE_RAD_PER_M, AeroParams,
     CORNER_CURVATURE_THRESHOLD_RAD_PER_M, ChassisParams, CircuitDescriptorsV1,
-    CurvatureAeroResponse, Driver, DriverEffects, EngineParams, PitPlan, PitStop,
-    ResampledTelemetry, ResolvedSimulationRequestV3, SetupResponseDiagnosticsV1,
-    SetupResponseDiagnosticsVersion, SimConfig, SimulationRequest, SimulationResult,
-    SimulationSolution, TireContactParamsV3, TireParams, Track, Tuning, TuningResponseV1,
-    TuningResponseVersion, VehicleParams, VehicleState, apply_driver_to_tire, apply_tuning,
-    apply_tuning_with_response, best_power_at_speed, curvature_aero_blend, derating_factor,
-    describe_circuit, diagnose_setup_response, driver_effects, effective_mu, power_kw_from_rpm,
+    CurvatureAeroResponse, Driver, DriverControlParamsV3, DriverEffects, EngineParams,
+    MechanicalDiagnosticsV3, MechanicalParamsV3, PitPlan, PitStop, ResampledTelemetry,
+    ResolvedSimulationRequestV3, SetupResponseDiagnosticsV1, SetupResponseDiagnosticsVersion,
+    SimConfig, SimulationRequest, SimulationResult, SimulationSolution, TireContactParamsV3,
+    TireParams, Track, Tuning, TuningResponseV1, TuningResponseVersion, VehicleParams,
+    VehicleState, apply_driver_to_tire, apply_tuning, apply_tuning_with_response,
+    best_power_at_speed, curvature_aero_blend, derating_factor, describe_circuit,
+    diagnose_setup_response, driver_effects, effective_mu, power_kw_from_rpm,
     resample_telemetry as resample_solution, rpm_from_speed_gear,
     run_resolved_simulation_v3 as solve_resolved_v3, run_simulation as solve,
     run_simulation_with_model_response as solve_with_model_response,
@@ -391,7 +392,7 @@ fn tuning_response_from_model_parameters(
 }
 
 /// Resolves transitional gameplay controls to the physical vehicle accepted by
-/// the first V3 candidate.
+/// the offline V3 candidate.
 ///
 /// The formulas intentionally reproduce the reviewed Model V2 compatibility
 /// response while moving their execution to the Simulator side of the V3
@@ -477,6 +478,16 @@ pub fn resolve_v3_physical_vehicle(
         engine,
         tire: vehicle.tire.clone(),
     })
+}
+
+fn resolve_v3_driver_control(driver: &Driver) -> DriverControlParamsV3 {
+    let aggressiveness = driver.aggressiveness.clamp(0.0, 1.0);
+    DriverControlParamsV3 {
+        cornering_utilization: 0.94 + 0.05 * aggressiveness,
+        braking_utilization: 0.93 + 0.06 * aggressiveness,
+        traction_utilization: 0.95 + 0.04 * aggressiveness,
+        control_error: 0.04 - 0.03 * aggressiveness,
+    }
 }
 
 /// Runs one offline calibration race with an explicit physical tuning response.
@@ -573,7 +584,7 @@ pub fn run_race_with_catalog_and_model_response(
     )
 }
 
-/// Runs the first offline Racing Game Model V3 vertical slice.
+/// Runs the offline Racing Game Model V3 vertical slice.
 ///
 /// The Simulator resolves gameplay tuning to physical vehicle parameters, then
 /// invokes the V3 Solver boundary that cannot accept development points or
@@ -786,6 +797,14 @@ fn run_single_session(
                                 competitor.id
                             )
                         })?;
+                let mechanical = MechanicalParamsV3 {
+                    fixed_drag_area_m2: 0.5
+                        * (physical_vehicle.aero.cd_a_x + physical_vehicle.aero.cd_a_z),
+                    fixed_downforce_area_m2: 0.5
+                        * (physical_vehicle.aero.cl_a_x + physical_vehicle.aero.cl_a_z),
+                    ..MechanicalParamsV3::default()
+                };
+                let driver_control = resolve_v3_driver_control(&request.driver);
                 solve_resolved_v3(&ResolvedSimulationRequestV3 {
                     track: request.track.clone(),
                     vehicle: physical_vehicle,
@@ -795,6 +814,8 @@ fn run_single_session(
                     pit_plan: request.pit_plan.clone(),
                     driver: request.driver.clone(),
                     tire_contact: TireContactParamsV3::default(),
+                    mechanical,
+                    driver_control,
                 })
             }
         }

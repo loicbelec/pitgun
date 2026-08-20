@@ -330,6 +330,11 @@ track geometry still selects a vehicle aerodynamic state. V3 should distinguish:
 Ground effect and ride-height sensitivity can be added later. A Reference
 Model may use aerodynamic maps over ride height, yaw, steering, and speed.
 
+Model V3 candidate `0.3.0` implements the fixed-aero boundary: one resolved
+`CdA/ClA` pair is used for every segment, independently of track curvature.
+The transitional Simulator resolver still derives that pair from historical
+fields; governed screening must replace this bridge with reviewed resources.
+
 ### 6. Combustion engine and thermal state
 
 The torque-curve representation and linear interpolation are useful
@@ -359,6 +364,11 @@ The Reference Model may later distinguish combustion, coolant, oil, motor,
 inverter, and battery temperatures. V3 needs only states that create a useful,
 explainable decision.
 
+Model V3 candidate `0.3.0` keeps the lumped equation but evaluates heat from
+loaded engine power and publishes generated heat, removed heat, peak
+temperature, and derated duration. Cooling therefore has an inspectable
+activation domain and no direct pace multiplier.
+
 ### 7. Transmission and driveline
 
 Every spatial sample currently evaluates all gears and immediately chooses the
@@ -381,6 +391,11 @@ V3 should replace this with one deterministic sequential gear state:
 
 Individual ratio design may remain outside the first Game Model UI. The
 Reference Model can later include clutch, differential, and richer losses.
+
+Model V3 candidate `0.3.0` implements adjacent deterministic shifts, resolved
+RPM thresholds, shift duration and power interruption, plus driveline
+efficiency. The first-ratio/idle clamp remains an explicit reduced-order launch
+approximation.
 
 ### 8. Fuel, power flow, and modular hybrid energy
 
@@ -449,6 +464,10 @@ during the solve, for example:
 The Simulator may still add racecraft or incident behavior later. An external
 agent must receive the same public observations and bounded actions as a human
 or authored controller; it receives no private pace multiplier.
+
+Model V3 candidate `0.3.0` implements bounded braking, cornering and traction
+utilization plus deterministic control error inside the force solve. Its V3
+time axis is no longer scaled by a driver bonus or noise after solving.
 
 ### 10. Pit stops and race orchestration
 
