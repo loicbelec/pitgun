@@ -108,6 +108,7 @@ fn resolved_v3_request(request: &SimulationRequest) -> ResolvedSimulationRequest
             ..MechanicalParamsV3::default()
         },
         driver_control: DriverControlParamsV3::default(),
+        fuel_mass: None,
     }
 }
 

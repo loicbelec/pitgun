@@ -414,6 +414,14 @@ a simple power-dependent specific-consumption law. It does not need a complete
 combustion simulation, but consumed fuel energy must be connected to delivered
 work and modeled losses.
 
+Offline candidate `pitgun.racing-v3-candidate@0.8.0` implements that first
+replacement as integrated engine-output work multiplied by a reviewed
+brake-specific consumption coefficient, plus bounded idle flow. Fuel remains
+constant within one solved lap and updates total mass for the following lap.
+The full after-lap fuel trajectory and accounting terms are exposed for audit.
+One coefficient set is shared across eras in this first slice, so it is an
+inspectable structural foundation rather than an engine-specific calibration.
+
 From the first hybrid-capable era, the Game Model must expose a simplified but
 real modular energy flow:
 

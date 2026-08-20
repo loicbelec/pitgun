@@ -9,7 +9,8 @@ pub use workload::{
     RacingWorkload, RacingWorkloadError, racing_model_identity_for_version,
     racing_model_v1_identity, racing_model_v2_identity, racing_model_v3_aero_candidate_identity,
     racing_model_v3_candidate_identity, racing_model_v3_development_candidate_identity,
-    racing_model_v3_mechanical_candidate_identity, racing_model_v3_transmission_candidate_identity,
+    racing_model_v3_fidelity_candidate_identity, racing_model_v3_mechanical_candidate_identity,
+    racing_model_v3_transmission_candidate_identity,
 };
 
 use std::collections::HashMap;
@@ -38,14 +39,14 @@ pub use pitgun_racing_solver::{
     AERO_FULL_CORNER_CURVATURE_RAD_PER_M, AERO_FULL_STRAIGHT_CURVATURE_RAD_PER_M, AeroParams,
     CORNER_CURVATURE_THRESHOLD_RAD_PER_M, ChassisParams, CircuitDescriptorsV1,
     CurvatureAeroResponse, Driver, DriverControlParamsV3, DriverEffects, EngineParams,
-    MechanicalDiagnosticsV3, MechanicalParamsV3, PitPlan, PitStop, ResampledTelemetry,
-    ResolvedSimulationRequestV3, SetupResponseDiagnosticsV1, SetupResponseDiagnosticsVersion,
-    SimConfig, SimulationRequest, SimulationResult, SimulationSolution, TireContactParamsV3,
-    TireDiagnosticsV3, TireParams, Track, Tuning, TuningResponseV1, TuningResponseVersion,
-    VehicleParams, VehicleState, apply_driver_to_tire, apply_tuning, apply_tuning_with_response,
-    best_power_at_speed, curvature_aero_blend, derating_factor, describe_circuit,
-    diagnose_setup_response, driver_effects, effective_mu, power_kw_from_rpm,
-    resample_telemetry as resample_solution, rpm_from_speed_gear,
+    FuelMassDiagnosticsV3, FuelMassParamsV3, MechanicalDiagnosticsV3, MechanicalParamsV3, PitPlan,
+    PitStop, ResampledTelemetry, ResolvedSimulationRequestV3, SetupResponseDiagnosticsV1,
+    SetupResponseDiagnosticsVersion, SimConfig, SimulationRequest, SimulationResult,
+    SimulationSolution, TireContactParamsV3, TireDiagnosticsV3, TireParams, Track, Tuning,
+    TuningResponseV1, TuningResponseVersion, VehicleParams, VehicleState, apply_driver_to_tire,
+    apply_tuning, apply_tuning_with_response, best_power_at_speed, curvature_aero_blend,
+    derating_factor, describe_circuit, diagnose_setup_response, driver_effects, effective_mu,
+    power_kw_from_rpm, resample_telemetry as resample_solution, rpm_from_speed_gear,
     run_resolved_simulation_v3 as solve_resolved_v3, run_simulation as solve,
     run_simulation_with_model_response as solve_with_model_response,
     run_simulation_with_tuning_response as solve_with_tuning_response,
@@ -67,6 +68,10 @@ pub struct RunRaceInput {
     pub era: i32,
     #[serde(default)]
     pub hz: f64,
+    /// Offline V3 experiment input. Published game calls omit it and retain
+    /// the historical 100 kg initial load.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub initial_fuel_mass_kg: Option<f64>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -134,6 +139,8 @@ pub struct RaceOutput {
     pub player_tire_diagnostics_v3: Option<TireDiagnosticsV3>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub player_mechanical_diagnostics_v3: Option<MechanicalDiagnosticsV3>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub player_fuel_mass_diagnostics_v3: Option<FuelMassDiagnosticsV3>,
 }
 
 /// Exact overrides for the mechanically resolved Model V3 experiment input.
@@ -403,6 +410,8 @@ pub enum V3CandidateExperimentProfileVersion {
     V4,
     #[serde(rename = "pitgun.racing-v3-experiment-profile/v5")]
     V5,
+    #[serde(rename = "pitgun.racing-v3-experiment-profile/v6")]
+    V6,
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq)]
@@ -421,12 +430,14 @@ pub struct V3CandidateExperimentProfile {
     pub mechanical_overrides: V3MechanicalOverrides,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub driver_control_override: Option<DriverControlParamsV3>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub fuel_mass: Option<FuelMassParamsV3>,
 }
 
 impl Default for V3CandidateExperimentProfile {
     fn default() -> Self {
         Self {
-            schema_version: V3CandidateExperimentProfileVersion::V5,
+            schema_version: V3CandidateExperimentProfileVersion::V6,
             tuning_response: TuningResponseV1::default(),
             tire_contact: TireContactParamsV3::default(),
             aero_resolution: Some(V3AeroResolutionParams::default()),
@@ -434,6 +445,7 @@ impl Default for V3CandidateExperimentProfile {
             transmission_resolution: Some(V3TransmissionResolutionParams::default()),
             mechanical_overrides: V3MechanicalOverrides::default(),
             driver_control_override: None,
+            fuel_mass: Some(FuelMassParamsV3::default()),
         }
     }
 }
@@ -441,7 +453,7 @@ impl Default for V3CandidateExperimentProfile {
 impl V3CandidateExperimentProfile {
     pub fn validate(&self) -> Result<(), String> {
         self.tuning_response.validate()?;
-        match (
+        let resolution = match (
             self.schema_version,
             self.aero_resolution,
             self.development_resolution,
@@ -460,7 +472,8 @@ impl V3CandidateExperimentProfile {
             }
             (
                 V3CandidateExperimentProfileVersion::V4
-                | V3CandidateExperimentProfileVersion::V5,
+                | V3CandidateExperimentProfileVersion::V5
+                | V3CandidateExperimentProfileVersion::V6,
                 Some(aero),
                 Some(development),
                 Some(transmission),
@@ -489,6 +502,21 @@ impl V3CandidateExperimentProfile {
                 "V3 experiment profile V5 requires aero, development and transmission resolution"
                     .to_string(),
             ),
+            (V3CandidateExperimentProfileVersion::V6, _, _, _) => Err(
+                "V3 experiment profile V6 requires aero, development and transmission resolution"
+                    .to_string(),
+            ),
+        };
+        resolution?;
+        match (self.schema_version, self.fuel_mass) {
+            (V3CandidateExperimentProfileVersion::V6, Some(fuel_mass)) => fuel_mass.validate(),
+            (V3CandidateExperimentProfileVersion::V6, None) => {
+                Err("V3 experiment profile V6 requires fuel_mass".to_string())
+            }
+            (_, None) => Ok(()),
+            (_, Some(_)) => {
+                Err("historical V3 experiment profiles cannot define fuel_mass".to_string())
+            }
         }
     }
 
@@ -505,16 +533,25 @@ impl V3CandidateExperimentProfile {
             V3CandidateExperimentProfileVersion::V4 => {
                 racing_model_v3_transmission_candidate_identity()
             }
-            V3CandidateExperimentProfileVersion::V5 => racing_model_v3_candidate_identity(),
+            V3CandidateExperimentProfileVersion::V5 => {
+                racing_model_v3_fidelity_candidate_identity()
+            }
+            V3CandidateExperimentProfileVersion::V6 => racing_model_v3_candidate_identity(),
         }
     }
 
     fn applies_first_stint_tire(self) -> bool {
-        self.schema_version == V3CandidateExperimentProfileVersion::V5
+        matches!(
+            self.schema_version,
+            V3CandidateExperimentProfileVersion::V5 | V3CandidateExperimentProfileVersion::V6
+        )
     }
 
     fn accepts_zero_downforce(self) -> bool {
-        self.schema_version == V3CandidateExperimentProfileVersion::V5
+        matches!(
+            self.schema_version,
+            V3CandidateExperimentProfileVersion::V5 | V3CandidateExperimentProfileVersion::V6
+        )
     }
 }
 
@@ -1166,6 +1203,7 @@ pub fn run_race_with_catalog_and_model_response(
             track_profile: request.input.track_profile.as_ref(),
             laps: normalized_race.laps,
             seed: request.seed,
+            initial_fuel_mass_kg: 100.0,
             model: SessionPhysicalModel::Historical {
                 tuning_response,
                 curvature_response,
@@ -1221,6 +1259,10 @@ pub fn run_race_with_catalog_and_v3_profile(
     .map_err(|err| format!("invalid race input: {err}"))?;
     let vehicle_id = resolve_vehicle_id(request.input.vehicle_id.as_deref())?;
     let catalog = EmbeddedCatalog::from_snapshot(snapshot)?;
+    let initial_fuel_mass_kg = request.input.initial_fuel_mass_kg.unwrap_or(100.0);
+    if !initial_fuel_mass_kg.is_finite() || !(1.0..=200.0).contains(&initial_fuel_mass_kg) {
+        return Err("V3 initial fuel mass must be in [1, 200] kg".to_string());
+    }
 
     run_single_session(
         &catalog,
@@ -1231,6 +1273,7 @@ pub fn run_race_with_catalog_and_v3_profile(
             track_profile: request.input.track_profile.as_ref(),
             laps: normalized_race.laps,
             seed: request.seed,
+            initial_fuel_mass_kg,
             model: SessionPhysicalModel::V3Candidate { profile },
         },
     )
@@ -1275,6 +1318,7 @@ pub fn run_sessions_with_catalog(
                 track_profile: request.track_profile.as_ref(),
                 laps: session.laps,
                 seed: request.seed,
+                initial_fuel_mass_kg: 100.0,
                 model: SessionPhysicalModel::Historical {
                     tuning_response: &tuning_response,
                     curvature_response: CurvatureAeroResponse::LegacyBinary,
@@ -1296,6 +1340,7 @@ struct SessionExecution<'a> {
     track_profile: Option<&'a SolverTrackProfile>,
     laps: u16,
     seed: u64,
+    initial_fuel_mass_kg: f64,
     model: SessionPhysicalModel<'a>,
 }
 
@@ -1321,6 +1366,7 @@ fn run_single_session(
         track_profile,
         laps,
         seed,
+        initial_fuel_mass_kg,
         model,
     } = execution;
     let track_id = normalize_track_id(&race.track_id);
@@ -1348,6 +1394,7 @@ fn run_single_session(
     let mut player_diagnostics = None;
     let mut player_tire_diagnostics_v3 = None;
     let mut player_mechanical_diagnostics_v3 = None;
+    let mut player_fuel_mass_diagnostics_v3 = None;
 
     for competitor in &race.competitors {
         let stint_plan =
@@ -1393,7 +1440,7 @@ fn run_single_session(
             track: track_record.track.clone(),
             vehicle: initial_vehicle.clone(),
             state: VehicleState {
-                fuel_mass: 100.0,
+                fuel_mass: initial_fuel_mass_kg,
                 tire_wear: 0.0,
                 tire_temp: 90.0,
                 engine_temp: initial_vehicle.engine.t_init,
@@ -1439,6 +1486,7 @@ fn run_single_session(
                     tire_contact: profile.tire_contact,
                     mechanical,
                     driver_control,
+                    fuel_mass: profile.fuel_mass,
                 })
             }
         }
@@ -1486,6 +1534,7 @@ fn run_single_session(
             player_diagnostics = Some(result.diagnostics);
             player_tire_diagnostics_v3 = result.tire_diagnostics_v3;
             player_mechanical_diagnostics_v3 = result.mechanical_diagnostics_v3;
+            player_fuel_mass_diagnostics_v3 = result.fuel_mass_diagnostics_v3;
         }
 
         rows.push(SimulatedCompetitor {
@@ -1521,6 +1570,7 @@ fn run_single_session(
         player_diagnostics,
         player_tire_diagnostics_v3,
         player_mechanical_diagnostics_v3,
+        player_fuel_mass_diagnostics_v3,
     })
 }
 
@@ -3143,6 +3193,7 @@ mod tests {
                 competitor_profiles: HashMap::new(),
                 era: 2026,
                 hz: 20.0,
+                initial_fuel_mass_kg: None,
             },
             seed: 7,
             era: Some(2026),
@@ -3676,6 +3727,7 @@ mod tests {
 
         let historical_profile = V3CandidateExperimentProfile {
             schema_version: V3CandidateExperimentProfileVersion::V4,
+            fuel_mass: None,
             ..profile
         };
         assert!(
@@ -3720,6 +3772,7 @@ mod tests {
 
         let historical_profile = V3CandidateExperimentProfile {
             schema_version: V3CandidateExperimentProfileVersion::V4,
+            fuel_mass: None,
             ..profile
         };
         let historical_soft = run_race_with_catalog_and_v3_profile(
@@ -3746,12 +3799,75 @@ mod tests {
     }
 
     #[test]
+    fn v3_fuel_mass_profile_exposes_power_based_mass_lineage() {
+        fn request_with_fuel(fuel_mass_kg: f64) -> RunRaceRequest {
+            let mut request = one_lap_request();
+            request.input.race.laps = 8;
+            request.input.initial_fuel_mass_kg = Some(fuel_mass_kg);
+            request
+        }
+
+        let snapshot = RacingCatalogSnapshot::embedded().expect("catalog");
+        let profile = V3CandidateExperimentProfile::default();
+        let light =
+            run_race_with_catalog_and_v3_profile(request_with_fuel(40.0), &snapshot, &profile)
+                .expect("light fuel load");
+        let heavy =
+            run_race_with_catalog_and_v3_profile(request_with_fuel(100.0), &snapshot, &profile)
+                .expect("heavy fuel load");
+
+        let diagnostics = light
+            .player_fuel_mass_diagnostics_v3
+            .expect("fuel diagnostics");
+        assert_eq!(diagnostics.initial_fuel_mass_kg, 40.0);
+        assert_eq!(diagnostics.fuel_mass_after_lap_kg.len(), 8);
+        assert!(diagnostics.final_fuel_mass_kg >= 0.0);
+        assert!(diagnostics.final_fuel_mass_kg < diagnostics.initial_fuel_mass_kg);
+        assert!(
+            diagnostics
+                .fuel_mass_after_lap_kg
+                .windows(2)
+                .all(|window| window[1] <= window[0])
+        );
+        let expected_consumption = diagnostics.engine_output_work_kj / 3_600.0
+            * profile
+                .fuel_mass
+                .expect("fuel parameters")
+                .brake_specific_fuel_consumption_kg_per_kwh
+            + profile
+                .fuel_mass
+                .expect("fuel parameters")
+                .idle_fuel_flow_kg_per_s
+                * (light.total_time_ms as f64 / 1_000.0);
+        approx_eq(
+            diagnostics.fuel_consumed_kg,
+            expected_consumption,
+            0.001,
+            "power-based fuel consumption",
+        );
+        assert!(light.total_time_ms < heavy.total_time_ms);
+        assert!(
+            diagnostics.maximum_total_vehicle_mass_kg
+                < heavy
+                    .player_fuel_mass_diagnostics_v3
+                    .expect("heavy fuel diagnostics")
+                    .maximum_total_vehicle_mass_kg
+        );
+
+        let error =
+            run_race_with_catalog_and_v3_profile(request_with_fuel(0.0), &snapshot, &profile)
+                .expect_err("an empty fuel load must fail closed");
+        assert!(error.contains("initial fuel mass"));
+    }
+
+    #[test]
     fn v3_profile_versions_bind_exact_candidate_semantics() {
         let mechanical_profile = V3CandidateExperimentProfile {
             schema_version: V3CandidateExperimentProfileVersion::V1,
             aero_resolution: None,
             development_resolution: None,
             transmission_resolution: None,
+            fuel_mass: None,
             ..V3CandidateExperimentProfile::default()
         };
         assert_eq!(
@@ -3764,6 +3880,7 @@ mod tests {
             schema_version: V3CandidateExperimentProfileVersion::V2,
             development_resolution: None,
             transmission_resolution: None,
+            fuel_mass: None,
             ..V3CandidateExperimentProfile::default()
         };
         assert_eq!(
@@ -3775,6 +3892,7 @@ mod tests {
         let development_profile = V3CandidateExperimentProfile {
             schema_version: V3CandidateExperimentProfileVersion::V3,
             transmission_resolution: None,
+            fuel_mass: None,
             ..V3CandidateExperimentProfile::default()
         };
         assert_eq!(
@@ -3785,6 +3903,7 @@ mod tests {
 
         let transmission_profile = V3CandidateExperimentProfile {
             schema_version: V3CandidateExperimentProfileVersion::V4,
+            fuel_mass: None,
             ..V3CandidateExperimentProfile::default()
         };
         assert_eq!(
@@ -3793,17 +3912,29 @@ mod tests {
         );
         assert!(transmission_profile.validate().is_ok());
 
-        let fidelity_profile = V3CandidateExperimentProfile::default();
+        let fidelity_profile = V3CandidateExperimentProfile {
+            schema_version: V3CandidateExperimentProfileVersion::V5,
+            fuel_mass: None,
+            ..V3CandidateExperimentProfile::default()
+        };
         assert_eq!(
             fidelity_profile.model_identity(),
-            racing_model_v3_candidate_identity()
+            racing_model_v3_fidelity_candidate_identity()
         );
         assert!(fidelity_profile.validate().is_ok());
+
+        let fuel_mass_profile = V3CandidateExperimentProfile::default();
+        assert_eq!(
+            fuel_mass_profile.model_identity(),
+            racing_model_v3_candidate_identity()
+        );
+        assert!(fuel_mass_profile.validate().is_ok());
 
         let malformed = V3CandidateExperimentProfile {
             schema_version: V3CandidateExperimentProfileVersion::V2,
             aero_resolution: None,
             development_resolution: None,
+            fuel_mass: None,
             ..V3CandidateExperimentProfile::default()
         };
         assert!(malformed.validate().is_err());

@@ -344,6 +344,50 @@ pub struct ResolvedSimulationRequestV3 {
     pub mechanical: MechanicalParamsV3,
     /// Bounded physical-limit utilization selected for this driver.
     pub driver_control: DriverControlParamsV3,
+    /// Optional power-based combustion model selected by the V3 profile.
+    /// `None` preserves the immutable time-based semantics of older candidates.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub fuel_mass: Option<FuelMassParamsV3>,
+}
+
+/// Reduced-order combustion fuel and mass model for Racing Model V3.
+///
+/// Brake-specific consumption converts integrated engine output work into fuel
+/// mass. Idle flow represents consumption that is not captured by positive
+/// propulsion work. Detailed combustion thermodynamics remain outside this
+/// Game Model slice.
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct FuelMassParamsV3 {
+    pub brake_specific_fuel_consumption_kg_per_kwh: f64,
+    pub idle_fuel_flow_kg_per_s: f64,
+}
+
+impl Default for FuelMassParamsV3 {
+    fn default() -> Self {
+        Self {
+            brake_specific_fuel_consumption_kg_per_kwh: 0.24,
+            idle_fuel_flow_kg_per_s: 0.000_4,
+        }
+    }
+}
+
+impl FuelMassParamsV3 {
+    pub fn validate(&self) -> Result<(), String> {
+        if !self.brake_specific_fuel_consumption_kg_per_kwh.is_finite()
+            || !(0.05..=1.0).contains(&self.brake_specific_fuel_consumption_kg_per_kwh)
+        {
+            return Err(
+                "V3 brake-specific fuel consumption must be in [0.05, 1.0] kg/kWh".to_string(),
+            );
+        }
+        if !self.idle_fuel_flow_kg_per_s.is_finite()
+            || !(0.0..=0.01).contains(&self.idle_fuel_flow_kg_per_s)
+        {
+            return Err("V3 idle fuel flow must be in [0, 0.01] kg/s".to_string());
+        }
+        Ok(())
+    }
 }
 
 /// Physically interpretable mechanical controls for Model V3.
@@ -512,6 +556,18 @@ pub struct MechanicalDiagnosticsV3 {
     pub theoretical_top_speed_at_max_rpm_kph: Option<f64>,
 }
 
+/// Inspectable lap-level lineage for the reduced-order V3 combustion model.
+#[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq)]
+pub struct FuelMassDiagnosticsV3 {
+    pub initial_fuel_mass_kg: f64,
+    pub final_fuel_mass_kg: f64,
+    pub fuel_consumed_kg: f64,
+    pub engine_output_work_kj: f64,
+    pub minimum_total_vehicle_mass_kg: f64,
+    pub maximum_total_vehicle_mass_kg: f64,
+    pub fuel_mass_after_lap_kg: Vec<f64>,
+}
+
 pub const CORNER_CURVATURE_THRESHOLD_RAD_PER_M: f64 = 0.001;
 pub const AERO_FULL_STRAIGHT_CURVATURE_RAD_PER_M: f64 = 0.0;
 pub const AERO_FULL_CORNER_CURVATURE_RAD_PER_M: f64 = 0.001;
@@ -605,6 +661,8 @@ pub struct SimulationResult {
     pub tire_diagnostics_v3: Option<TireDiagnosticsV3>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub mechanical_diagnostics_v3: Option<MechanicalDiagnosticsV3>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub fuel_mass_diagnostics_v3: Option<FuelMassDiagnosticsV3>,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq)]
@@ -665,6 +723,7 @@ pub fn run_simulation_with_model_response(
         SpatialIntegration::UniformGridCompatibility,
         TireDynamics::Compatibility,
         None,
+        None,
     )
 }
 
@@ -685,6 +744,14 @@ pub fn run_resolved_simulation_v3(
     validate_tire_contact_v3(&input.tire_contact)?;
     validate_mechanical_v3(&input.mechanical, &input.vehicle)?;
     validate_driver_control_v3(&input.driver_control)?;
+    if let Some(fuel_mass) = &input.fuel_mass {
+        fuel_mass.validate()?;
+        if input.state.fuel_mass <= 0.0 {
+            return Err(
+                "V3 power-based fuel model requires a positive initial fuel mass".to_string(),
+            );
+        }
+    }
     for stop in &input.pit_plan.stops {
         validate_tire_params(&stop.tire)?;
     }
@@ -718,6 +785,7 @@ pub fn run_resolved_simulation_v3(
             input.mechanical.chassis_force_transfer_efficiency,
         ),
         Some((&input.mechanical, &input.driver_control)),
+        input.fuel_mass.as_ref(),
     )
 }
 
@@ -1049,6 +1117,7 @@ fn run_compatibility_simulation_kernel(
         diagnostics,
         tire_diagnostics_v3: None,
         mechanical_diagnostics_v3: None,
+        fuel_mass_diagnostics_v3: None,
     })
 }
 
@@ -1059,6 +1128,7 @@ fn run_resolved_simulation_kernel(
     spatial_integration: SpatialIntegration,
     tire_dynamics: TireDynamics<'_>,
     v3_controls: Option<(&MechanicalParamsV3, &DriverControlParamsV3)>,
+    fuel_mass: Option<&FuelMassParamsV3>,
 ) -> Result<SimulationResult, String> {
     if matches!(tire_dynamics, TireDynamics::Compatibility) {
         return run_compatibility_simulation_kernel(
@@ -1114,6 +1184,11 @@ fn run_resolved_simulation_kernel(
     let mut sequential_shift_count = 0_u64;
     let mut brake_limit_activation_count = 0_u64;
     let mut maximum_brake_force_n = 0.0_f64;
+    let initial_fuel_mass_kg = input.state.fuel_mass;
+    let mut engine_output_work_j = 0.0;
+    let mut fuel_mass_after_lap_kg = Vec::with_capacity(input.lap_count.max(1) as usize);
+    let mut minimum_total_vehicle_mass_kg = tuned_vehicle.chassis.mass_empty + initial_fuel_mass_kg;
+    let maximum_total_vehicle_mass_kg = minimum_total_vehicle_mass_kg;
 
     let mut state_curr = input.state.clone();
     let initial_tire_temp = input.state.tire_temp;
@@ -1171,6 +1246,7 @@ fn run_resolved_simulation_kernel(
             let mut iteration_generated_engine_heat_j = 0.0;
             let mut iteration_removed_engine_heat_j = 0.0;
             let mut iteration_driveline_loss_j = 0.0;
+            let mut iteration_engine_output_work_j = 0.0;
             let mut iteration_engine_derated_time_s = 0.0;
             let mut iteration_shift_interruption_time_s = 0.0;
             let mut iteration_sequential_shift_count = 0_u64;
@@ -1383,6 +1459,7 @@ fn run_resolved_simulation_kernel(
 
                 iteration_driveline_loss_j +=
                     1_000.0 * engine_load_power_kw * (1.0 - mechanical.driveline_efficiency) * dt;
+                iteration_engine_output_work_j += 1_000.0 * engine_load_power_kw * dt;
                 let heat = 1000.0 * vehicle.engine.alpha_heat * engine_load_power_kw;
                 let cool = (vehicle.engine.p_cool0 + vehicle.engine.k_cool * v_safe)
                     * (temp[i] - vehicle.engine.t_amb);
@@ -1486,6 +1563,7 @@ fn run_resolved_simulation_kernel(
             generated_engine_heat_j += iteration_generated_engine_heat_j;
             removed_engine_heat_j += iteration_removed_engine_heat_j;
             driveline_loss_j += iteration_driveline_loss_j;
+            engine_output_work_j += iteration_engine_output_work_j;
             engine_derated_time_s += iteration_engine_derated_time_s;
             shift_interruption_time_s += iteration_shift_interruption_time_s;
             sequential_shift_count += iteration_sequential_shift_count;
@@ -1540,8 +1618,21 @@ fn run_resolved_simulation_kernel(
             prev_end_gear = gear.last().copied();
             prev_shift_time_remaining_s = shift_time_remaining_s;
 
-            let mut fuel_left =
-                (state_curr.fuel_mass - vehicle.engine.fuel_burn_kg_per_s * lap_time_adj).max(0.0);
+            let requested_fuel_burn_kg = match fuel_mass {
+                Some(parameters) => {
+                    iteration_engine_output_work_j / 3_600_000.0
+                        * parameters.brake_specific_fuel_consumption_kg_per_kwh
+                        + parameters.idle_fuel_flow_kg_per_s * lap_time_adj
+                }
+                None => vehicle.engine.fuel_burn_kg_per_s * lap_time_adj,
+            };
+            if fuel_mass.is_some() && requested_fuel_burn_kg > state_curr.fuel_mass + 1e-9 {
+                return Err(format!(
+                    "V3 fuel depleted on lap {lap_idx}: required {requested_fuel_burn_kg:.6} kg, available {:.6} kg",
+                    state_curr.fuel_mass
+                ));
+            }
+            let mut fuel_left = (state_curr.fuel_mass - requested_fuel_burn_kg.max(0.0)).max(0.0);
             if !fuel_left.is_finite() {
                 fuel_left = 0.0;
             }
@@ -1564,6 +1655,9 @@ fn run_resolved_simulation_kernel(
                 tire_temp: tire_temp_next,
                 engine_temp: *temp.last().unwrap_or(&state_curr.engine_temp),
             };
+            fuel_mass_after_lap_kg.push(state_curr.fuel_mass);
+            minimum_total_vehicle_mass_kg = minimum_total_vehicle_mass_kg
+                .min(vehicle.chassis.mass_empty + state_curr.fuel_mass);
         }
     }
 
@@ -1634,6 +1728,15 @@ fn run_resolved_simulation_kernel(
         fixed_downforce_area_m2: mechanical.fixed_downforce_area_m2,
         theoretical_top_speed_at_max_rpm_kph: None,
     });
+    let fuel_mass_diagnostics_v3 = fuel_mass.map(|_| FuelMassDiagnosticsV3 {
+        initial_fuel_mass_kg,
+        final_fuel_mass_kg: state_curr.fuel_mass,
+        fuel_consumed_kg: initial_fuel_mass_kg - state_curr.fuel_mass,
+        engine_output_work_kj: engine_output_work_j / 1_000.0,
+        minimum_total_vehicle_mass_kg,
+        maximum_total_vehicle_mass_kg,
+        fuel_mass_after_lap_kg,
+    });
 
     Ok(SimulationResult {
         solution,
@@ -1645,6 +1748,7 @@ fn run_resolved_simulation_kernel(
         diagnostics,
         tire_diagnostics_v3,
         mechanical_diagnostics_v3,
+        fuel_mass_diagnostics_v3,
     })
 }
 

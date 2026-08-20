@@ -682,6 +682,7 @@ mod tests {
                 competitor_profiles: HashMap::new(),
                 era: 6,
                 hz: 20.0,
+                initial_fuel_mass_kg: None,
             },
             catalog_release: Some(
                 state

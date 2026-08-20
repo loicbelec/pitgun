@@ -3,7 +3,8 @@
 This experiment first diagnosed the frozen
 `pitgun.racing-v3-candidate@0.6.0`, then replays the exact same campaign against
 `pitgun.racing-v3-candidate@0.7.0`. It is the gate between the
-decision-surface work and the next versioned fuel/mass slice.
+decision-surface work and the versioned fuel/mass slice now validated in
+`experiments/racing_v3_fuel_mass/`.
 
 The bounded campaign contains exactly 280 deterministic executions:
 
@@ -65,12 +66,13 @@ supported circuit/vehicle groups. Multiple coarse setup optima remain visible.
 The latest sampled medium-to-soft stop (`L16`) is still universally fastest.
 This does not block the fidelity correction, but it keeps strategy-window
 diversity at `REFINE` and feeds the later tire-degradation work. Fuel-mass
-observability also remains a required structural change for the next slice.
+observability is supplied only by the subsequent candidate `0.8.0`; this
+stored `0.7.0` report deliberately retains its original verdict.
 
 ## Interpretation boundary
 
 The report checks held-out setup response, tire activation, one-stop-window
 diversity and enabled-era execution. It also records a deliberate limitation:
-neither candidate exposes its fuel-mass trajectory. That missing observability
-must be addressed by the next versioned model slice before fuel load and mass
-variation can be audited independently.
+neither candidate in this campaign exposes its fuel-mass trajectory. Candidate
+`0.8.0` addresses that gap under a new identity and a separate report rather
+than mutating this evidence.
