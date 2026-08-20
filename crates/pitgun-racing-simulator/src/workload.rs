@@ -12,6 +12,8 @@ use crate::{
 const RACING_MODEL_V1_MANIFEST: &[u8] = b"pitgun.racing:model:1.0.0:conformance-vector";
 const RACING_MODEL_V2_MANIFEST: &[u8] = b"pitgun.racing:model:2.0.0:continuous-curvature-v1";
 const RACING_MODEL_V3_CANDIDATE_MANIFEST: &[u8] =
+    b"pitgun.racing-v3-candidate:model:0.7.0:resolved-vehicle:per-segment-v1:aggregate-contact-v1:mechanical-controls-v1:aero-efficiency-v1:development-resolution-v1:transmission-resolution-v1:zero-downforce-v1:first-stint-tire-v1";
+const RACING_MODEL_V3_TRANSMISSION_CANDIDATE_MANIFEST: &[u8] =
     b"pitgun.racing-v3-candidate:model:0.6.0:resolved-vehicle:per-segment-v1:aggregate-contact-v1:mechanical-controls-v1:aero-efficiency-v1:development-resolution-v1:transmission-resolution-v1";
 const RACING_MODEL_V3_DEVELOPMENT_CANDIDATE_MANIFEST: &[u8] =
     b"pitgun.racing-v3-candidate:model:0.5.0:resolved-vehicle:per-segment-v1:aggregate-contact-v1:mechanical-controls-v1:aero-efficiency-v1:development-resolution-v1";
@@ -50,10 +52,29 @@ pub fn racing_model_v3_candidate_identity() -> ArtifactIdentity {
         id: "pitgun.racing-v3-candidate"
             .parse()
             .expect("static Racing V3 candidate model id"),
-        version: "0.6.0"
+        version: "0.7.0"
             .parse()
             .expect("static Racing V3 candidate model version"),
         digest: pitgun_contract::Digest::from_bytes(RACING_MODEL_V3_CANDIDATE_MANIFEST),
+    }
+}
+
+/// Returns the immutable identity of the preceding transmission-resolution slice.
+///
+/// It remains executable only for replaying the local V4 screening and first
+/// held-out validation profile.
+#[must_use]
+pub fn racing_model_v3_transmission_candidate_identity() -> ArtifactIdentity {
+    ArtifactIdentity {
+        id: "pitgun.racing-v3-candidate"
+            .parse()
+            .expect("static Racing V3 candidate model id"),
+        version: "0.6.0"
+            .parse()
+            .expect("static Racing V3 transmission candidate model version"),
+        digest: pitgun_contract::Digest::from_bytes(
+            RACING_MODEL_V3_TRANSMISSION_CANDIDATE_MANIFEST,
+        ),
     }
 }
 
@@ -245,6 +266,7 @@ mod tests {
         racing_model_v3_aero_candidate_identity, racing_model_v3_candidate_identity,
         racing_model_v3_development_candidate_identity,
         racing_model_v3_mechanical_candidate_identity,
+        racing_model_v3_transmission_candidate_identity,
     };
     use pitgun_runtime::LinkedWorkload;
 
@@ -288,13 +310,21 @@ mod tests {
         let candidate = racing_model_v3_candidate_identity();
 
         assert_eq!(candidate.id.to_string(), "pitgun.racing-v3-candidate");
-        assert_eq!(candidate.version.to_string(), "0.6.0");
+        assert_eq!(candidate.version.to_string(), "0.7.0");
         assert_eq!(
             candidate.digest.to_string(),
-            "sha256:ecb7bd48bb0ed556f3b6e9f20f15f12646eca0ef70a57afd05de8e59f435f936"
+            "sha256:fa8f557fde751d8d38e52bf0d5961ae2b06b4dd1915825c6deb1d869592f0afa"
         );
         assert_ne!(candidate, racing_model_v2_identity());
-        assert!(racing_model_identity_for_version("0.6.0").is_err());
+        assert!(racing_model_identity_for_version("0.7.0").is_err());
+
+        let transmission = racing_model_v3_transmission_candidate_identity();
+        assert_eq!(transmission.version.to_string(), "0.6.0");
+        assert_eq!(
+            transmission.digest.to_string(),
+            "sha256:ecb7bd48bb0ed556f3b6e9f20f15f12646eca0ef70a57afd05de8e59f435f936"
+        );
+        assert_ne!(candidate, transmission);
 
         let development = racing_model_v3_development_candidate_identity();
         assert_eq!(development.version.to_string(), "0.5.0");

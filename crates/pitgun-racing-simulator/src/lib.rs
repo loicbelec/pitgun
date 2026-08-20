@@ -9,7 +9,7 @@ pub use workload::{
     RacingWorkload, RacingWorkloadError, racing_model_identity_for_version,
     racing_model_v1_identity, racing_model_v2_identity, racing_model_v3_aero_candidate_identity,
     racing_model_v3_candidate_identity, racing_model_v3_development_candidate_identity,
-    racing_model_v3_mechanical_candidate_identity,
+    racing_model_v3_mechanical_candidate_identity, racing_model_v3_transmission_candidate_identity,
 };
 
 use std::collections::HashMap;
@@ -401,6 +401,8 @@ pub enum V3CandidateExperimentProfileVersion {
     V3,
     #[serde(rename = "pitgun.racing-v3-experiment-profile/v4")]
     V4,
+    #[serde(rename = "pitgun.racing-v3-experiment-profile/v5")]
+    V5,
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq)]
@@ -424,7 +426,7 @@ pub struct V3CandidateExperimentProfile {
 impl Default for V3CandidateExperimentProfile {
     fn default() -> Self {
         Self {
-            schema_version: V3CandidateExperimentProfileVersion::V4,
+            schema_version: V3CandidateExperimentProfileVersion::V5,
             tuning_response: TuningResponseV1::default(),
             tire_contact: TireContactParamsV3::default(),
             aero_resolution: Some(V3AeroResolutionParams::default()),
@@ -457,7 +459,8 @@ impl V3CandidateExperimentProfile {
                 development.validate()
             }
             (
-                V3CandidateExperimentProfileVersion::V4,
+                V3CandidateExperimentProfileVersion::V4
+                | V3CandidateExperimentProfileVersion::V5,
                 Some(aero),
                 Some(development),
                 Some(transmission),
@@ -482,6 +485,10 @@ impl V3CandidateExperimentProfile {
                 "V3 experiment profile V4 requires aero, development and transmission resolution"
                     .to_string(),
             ),
+            (V3CandidateExperimentProfileVersion::V5, _, _, _) => Err(
+                "V3 experiment profile V5 requires aero, development and transmission resolution"
+                    .to_string(),
+            ),
         }
     }
 
@@ -495,8 +502,19 @@ impl V3CandidateExperimentProfile {
             V3CandidateExperimentProfileVersion::V3 => {
                 racing_model_v3_development_candidate_identity()
             }
-            V3CandidateExperimentProfileVersion::V4 => racing_model_v3_candidate_identity(),
+            V3CandidateExperimentProfileVersion::V4 => {
+                racing_model_v3_transmission_candidate_identity()
+            }
+            V3CandidateExperimentProfileVersion::V5 => racing_model_v3_candidate_identity(),
         }
+    }
+
+    fn applies_first_stint_tire(self) -> bool {
+        self.schema_version == V3CandidateExperimentProfileVersion::V5
+    }
+
+    fn accepts_zero_downforce(self) -> bool {
+        self.schema_version == V3CandidateExperimentProfileVersion::V5
     }
 }
 
@@ -854,8 +872,9 @@ pub fn resolve_v3_physical_vehicle(
 ///
 /// Profile V1 retains the immutable 0.3.0 transitional mapping. Profile V2
 /// replaces its aerodynamic resolution. Profile V3 also replaces chassis,
-/// cooling and engine development. Profile V4 finally resolves the gearing
-/// slider as an explicit target-speed final drive.
+/// cooling and engine development. Profile V4 resolves the gearing slider as
+/// an explicit target-speed final drive. Profile V5 retains body drag while
+/// accepting vehicles with no aerodynamic downforce.
 pub fn resolve_v3_physical_vehicle_with_profile(
     vehicle: &VehicleParams,
     tuning: &Tuning,
@@ -896,12 +915,17 @@ pub fn resolve_v3_physical_vehicle_with_profile(
 
     let reference_drag_area_m2 = 0.5 * (vehicle.aero.cd_a_x + vehicle.aero.cd_a_z);
     let reference_downforce_area_m2 = 0.5 * (vehicle.aero.cl_a_x + vehicle.aero.cl_a_z);
-    if !reference_drag_area_m2.is_finite()
-        || reference_drag_area_m2 <= 0.0
-        || !reference_downforce_area_m2.is_finite()
-        || reference_downforce_area_m2 <= 0.0
-    {
-        return Err("V3 aero resolution requires positive finite reference areas".to_string());
+    let invalid_downforce = !reference_downforce_area_m2.is_finite()
+        || if profile.accepts_zero_downforce() {
+            reference_downforce_area_m2 < 0.0
+        } else {
+            reference_downforce_area_m2 <= 0.0
+        };
+    if !reference_drag_area_m2.is_finite() || reference_drag_area_m2 <= 0.0 || invalid_downforce {
+        return Err(
+            "V3 aero resolution requires positive drag and supported finite downforce areas"
+                .to_string(),
+        );
     }
 
     let setup = tuning.downforce_slider.clamp(0.0, 1.0);
@@ -921,11 +945,13 @@ pub fn resolve_v3_physical_vehicle_with_profile(
         + aero_resolution.induced_drag_factor_per_m2 * added_downforce_area_m2.powi(2))
         * (1.0 - aero_resolution.development_drag_reduction_at_cap * development);
 
-    if !fixed_drag_area_m2.is_finite()
-        || fixed_drag_area_m2 <= 0.0
-        || !fixed_downforce_area_m2.is_finite()
-        || fixed_downforce_area_m2 <= 0.0
-    {
+    let invalid_fixed_downforce = !fixed_downforce_area_m2.is_finite()
+        || if profile.accepts_zero_downforce() {
+            fixed_downforce_area_m2 < 0.0
+        } else {
+            fixed_downforce_area_m2 <= 0.0
+        };
+    if !fixed_drag_area_m2.is_finite() || fixed_drag_area_m2 <= 0.0 || invalid_fixed_downforce {
         return Err("V3 aero resolution produced invalid fixed areas".to_string());
     }
     resolved.aero = AeroParams {
@@ -1326,6 +1352,18 @@ fn run_single_session(
     for competitor in &race.competitors {
         let stint_plan =
             resolve_stint_plan(competitor, laps, &resolved_vehicle.1, &player_pit_laps)?;
+        let initial_vehicle = match model {
+            SessionPhysicalModel::V3Candidate { profile } if profile.applies_first_stint_tire() => {
+                let tire_id = stint_plan
+                    .tire_by_lap
+                    .first()
+                    .ok_or_else(|| "resolved stint plan has no initial tire".to_string())?;
+                let mut vehicle = resolved_vehicle.0.clone();
+                vehicle.tire = catalog.resolve_tire(tire_id)?;
+                vehicle
+            }
+            _ => resolved_vehicle.0.clone(),
+        };
         let driver = catalog.resolve_driver(competitor.driver_id.as_deref())?;
         let sim_config = SimConfig {
             ds: track_record
@@ -1353,12 +1391,12 @@ fn run_single_session(
         };
         let request = SimulationRequest {
             track: track_record.track.clone(),
-            vehicle: resolved_vehicle.0.clone(),
+            vehicle: initial_vehicle.clone(),
             state: VehicleState {
                 fuel_mass: 100.0,
                 tire_wear: 0.0,
                 tire_temp: 90.0,
-                engine_temp: resolved_vehicle.0.engine.t_init,
+                engine_temp: initial_vehicle.engine.t_init,
             },
             config: sim_config,
             lap_count: laps.max(1),
@@ -2241,6 +2279,13 @@ impl EmbeddedCatalog {
             },
             record.tire_id.clone(),
         ))
+    }
+
+    fn resolve_tire(&self, tire_id: &str) -> Result<TireParams, String> {
+        self.tires
+            .get(tire_id)
+            .cloned()
+            .ok_or_else(|| format!("unknown tire '{tire_id}'"))
     }
 
     fn resolve_driver(&self, driver_id: Option<&str>) -> Result<Driver, String> {
@@ -3597,6 +3642,110 @@ mod tests {
     }
 
     #[test]
+    fn v3_fidelity_profile_preserves_drag_without_inventing_legacy_downforce() {
+        let catalog = EmbeddedCatalog::load_default().expect("catalog");
+        let (vehicle, _) = catalog
+            .resolve_vehicle("classic_v8_1960")
+            .expect("legacy vehicle");
+        assert!(vehicle.aero.cd_a_x > 0.0);
+        assert_eq!(vehicle.aero.cl_a_x, 0.0);
+
+        let profile = V3CandidateExperimentProfile::default();
+        let low = resolve_v3_physical_vehicle_with_profile(
+            &vehicle,
+            &Tuning {
+                downforce_slider: 0.0,
+                ..Tuning::default()
+            },
+            &profile,
+        )
+        .expect("low-downforce legacy vehicle");
+        let high = resolve_v3_physical_vehicle_with_profile(
+            &vehicle,
+            &Tuning {
+                downforce_slider: 1.0,
+                ..Tuning::default()
+            },
+            &profile,
+        )
+        .expect("high-downforce legacy vehicle");
+
+        assert!(low.aero.cd_a_x > 0.0, "body drag must remain physical");
+        assert_eq!(low.aero.cl_a_x, 0.0, "the resolver must not invent aero");
+        assert_eq!(low.aero, high.aero, "the downforce setup must be inert");
+
+        let historical_profile = V3CandidateExperimentProfile {
+            schema_version: V3CandidateExperimentProfileVersion::V4,
+            ..profile
+        };
+        assert!(
+            resolve_v3_physical_vehicle_with_profile(
+                &vehicle,
+                &Tuning::default(),
+                &historical_profile,
+            )
+            .is_err(),
+            "candidate 0.6 semantics must remain immutable"
+        );
+    }
+
+    #[test]
+    fn v3_fidelity_profile_applies_the_declared_first_stint_tire() {
+        fn request_with_tire(tire_id: &str) -> RunRaceRequest {
+            let mut request = one_lap_request();
+            request.input.race.laps = 6;
+            request.input.race.competitors[0].stint_strategy = Some(CompetitorStintStrategy {
+                stints: vec![pitgun_racing_contract::RaceStint {
+                    tire_id: tire_id.to_string(),
+                    laps: 6,
+                }],
+                pit_laps: Vec::new(),
+            });
+            request
+        }
+
+        let snapshot = RacingCatalogSnapshot::embedded().expect("catalog");
+        let profile = V3CandidateExperimentProfile::default();
+        let soft =
+            run_race_with_catalog_and_v3_profile(request_with_tire("soft"), &snapshot, &profile)
+                .expect("soft first stint");
+        let hard =
+            run_race_with_catalog_and_v3_profile(request_with_tire("hard"), &snapshot, &profile)
+                .expect("hard first stint");
+        assert_ne!(soft.total_time_ms, hard.total_time_ms);
+        assert_ne!(
+            soft.player_tire_diagnostics_v3,
+            hard.player_tire_diagnostics_v3
+        );
+
+        let historical_profile = V3CandidateExperimentProfile {
+            schema_version: V3CandidateExperimentProfileVersion::V4,
+            ..profile
+        };
+        let historical_soft = run_race_with_catalog_and_v3_profile(
+            request_with_tire("soft"),
+            &snapshot,
+            &historical_profile,
+        )
+        .expect("historical soft declaration");
+        let historical_hard = run_race_with_catalog_and_v3_profile(
+            request_with_tire("hard"),
+            &snapshot,
+            &historical_profile,
+        )
+        .expect("historical hard declaration");
+        assert_eq!(historical_soft.total_time_ms, historical_hard.total_time_ms);
+        assert_eq!(
+            historical_soft.player_lap_times_ms,
+            historical_hard.player_lap_times_ms
+        );
+        assert_eq!(
+            historical_soft.player_tire_diagnostics_v3, historical_hard.player_tire_diagnostics_v3,
+            "candidate 0.6 must retain its historical first-stint physics"
+        );
+    }
+
+    #[test]
     fn v3_profile_versions_bind_exact_candidate_semantics() {
         let mechanical_profile = V3CandidateExperimentProfile {
             schema_version: V3CandidateExperimentProfileVersion::V1,
@@ -3634,12 +3783,22 @@ mod tests {
         );
         assert!(development_profile.validate().is_ok());
 
-        let transmission_profile = V3CandidateExperimentProfile::default();
+        let transmission_profile = V3CandidateExperimentProfile {
+            schema_version: V3CandidateExperimentProfileVersion::V4,
+            ..V3CandidateExperimentProfile::default()
+        };
         assert_eq!(
             transmission_profile.model_identity(),
-            racing_model_v3_candidate_identity()
+            racing_model_v3_transmission_candidate_identity()
         );
         assert!(transmission_profile.validate().is_ok());
+
+        let fidelity_profile = V3CandidateExperimentProfile::default();
+        assert_eq!(
+            fidelity_profile.model_identity(),
+            racing_model_v3_candidate_identity()
+        );
+        assert!(fidelity_profile.validate().is_ok());
 
         let malformed = V3CandidateExperimentProfile {
             schema_version: V3CandidateExperimentProfileVersion::V2,
