@@ -1,7 +1,8 @@
 # Racing Model V3 held-out validation
 
-This experiment validates the frozen `pitgun.racing-v3-candidate@0.6.0`
-without changing its equations or identity. It is the gate between the
+This experiment first diagnosed the frozen
+`pitgun.racing-v3-candidate@0.6.0`, then replays the exact same campaign against
+`pitgun.racing-v3-candidate@0.7.0`. It is the gate between the
 decision-surface work and the next versioned fuel/mass slice.
 
 The bounded campaign contains exactly 280 deterministic executions:
@@ -25,8 +26,9 @@ python3 experiments/racing_v3_validation/validate_local.py --jobs 4
 python3 experiments/racing_v3_validation/validate_local.py --jobs 4 --check
 ```
 
-The report and its SHA-256 sidecar live in `results/`. Replay compares the
-complete canonical bytes, not only aggregate metrics.
+Both reports and their SHA-256 sidecars live in `results/`. The V1 artifact is
+the immutable 0.6 diagnostic; the V2 artifact is the 0.7 replay. Replay compares
+the complete canonical bytes, not only aggregate metrics.
 
 ## Frozen-candidate findings
 
@@ -49,10 +51,26 @@ These results deliberately remain attached to candidate `0.6.0`. Fixing the
 legacy no-aero vehicle and applying the declared first-stint tire both require
 a new candidate identity and a replay of this unchanged validation campaign.
 
+## Candidate 0.7 replay
+
+Candidate `0.7.0` preserves positive body drag while accepting zero downforce
+for `classic_v8_1960`; its downforce slider cannot invent aerodynamic load. It
+also resolves the first declared stint tire into the initial physical vehicle.
+
+The unchanged V2 replay completes all 280 executions and 3,408 simulated laps.
+All four active vehicle resources and game eras 1 through 5 are covered. Soft,
+medium and hard produce distinct long-run time and wear in every one of the 16
+supported circuit/vehicle groups. Multiple coarse setup optima remain visible.
+
+The latest sampled medium-to-soft stop (`L16`) is still universally fastest.
+This does not block the fidelity correction, but it keeps strategy-window
+diversity at `REFINE` and feeds the later tire-degradation work. Fuel-mass
+observability also remains a required structural change for the next slice.
+
 ## Interpretation boundary
 
 The report checks held-out setup response, tire activation, one-stop-window
 diversity and enabled-era execution. It also records a deliberate limitation:
-candidate `0.6.0` does not expose its fuel-mass trajectory. That missing
-observability must be addressed by the next versioned model slice before fuel
-load and mass variation can be audited independently.
+neither candidate exposes its fuel-mass trajectory. That missing observability
+must be addressed by the next versioned model slice before fuel load and mass
+variation can be audited independently.

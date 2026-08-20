@@ -23,10 +23,10 @@ BASE_PROFILE = (
     ROOT
     / "experiments"
     / "racing_v3_decision_surface"
-    / "profile-v4.transmission-resolution.json"
+    / "profile-v5.active-vehicle-tire-fidelity.json"
 )
-DEFAULT_OUTPUT = pathlib.Path(__file__).parent / "results" / "local-validation-v1.json"
-SCHEMA_VERSION = "pitgun.racing-v3-local-validation/v1"
+DEFAULT_OUTPUT = pathlib.Path(__file__).parent / "results" / "local-validation-v2.json"
+SCHEMA_VERSION = "pitgun.racing-v3-local-validation/v2"
 PROBE_SCHEMA_VERSION = "pitgun.racing-v3-validation-probe/v1"
 MAX_JOBS = 16
 
@@ -524,7 +524,7 @@ def campaign_verdicts(
         {
             "capability": "fuel_mass_observability",
             "verdict": "STRUCTURAL_CHANGE_REQUIRED",
-            "reason": "The frozen 0.6 output does not expose initial, per-lap or final fuel mass, so mass evolution cannot yet be independently audited.",
+            "reason": "The candidate output does not expose initial, per-lap or final fuel mass, so mass evolution cannot yet be independently audited.",
         },
         {
             "capability": "production_or_opponent_policy_change",
