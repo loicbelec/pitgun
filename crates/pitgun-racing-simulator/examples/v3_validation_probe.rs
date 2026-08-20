@@ -7,8 +7,8 @@ use std::path::Path;
 use pitgun_contract::{ArtifactIdentity, canonical_json_digest};
 use pitgun_racing_simulator::{
     FuelMassDiagnosticsV3, MechanicalDiagnosticsV3, RacingCatalogSnapshot, RunRaceInput,
-    RunRaceRequest, SetupResponseDiagnosticsV1, TireDiagnosticsV3, V3CandidateExperimentProfile,
-    run_race_with_catalog_and_v3_profile,
+    RunRaceRequest, SetupResponseDiagnosticsV1, TireDegradationDiagnosticsV3, TireDiagnosticsV3,
+    V3CandidateExperimentProfile, run_race_with_catalog_and_v3_profile,
 };
 use serde::Serialize;
 use serde_json::Value;
@@ -45,6 +45,8 @@ struct ProbeOutput {
     mechanical_diagnostics: MechanicalDiagnosticsV3,
     #[serde(skip_serializing_if = "Option::is_none")]
     fuel_mass_diagnostics: Option<FuelMassDiagnosticsV3>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    tire_degradation_diagnostics: Option<TireDegradationDiagnosticsV3>,
 }
 
 fn main() {
@@ -137,6 +139,7 @@ fn run() -> Result<(), String> {
             .player_mechanical_diagnostics_v3
             .ok_or_else(|| "race output contains no V3 mechanical diagnostics".to_string())?,
         fuel_mass_diagnostics: output.player_fuel_mass_diagnostics_v3,
+        tire_degradation_diagnostics: output.player_tire_degradation_diagnostics_v3,
     };
     println!(
         "{}",

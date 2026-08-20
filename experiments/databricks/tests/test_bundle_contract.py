@@ -291,6 +291,25 @@ class BundleContractTest(unittest.TestCase):
         self.assertIn("execute_packaged_tuning_response", runner)
         self.assertNotIn("shell=True", runner)
 
+    def test_v3_tire_job_reuses_exact_probe_contract_and_cannot_promote(self):
+        job = (ROOT / "resources" / "jobs.yml").read_text()
+        notebook = (ROOT / "src" / "execute_v3_tire_degradation.py").read_text()
+        runner = (
+            ROOT / "adapter" / "pitgun_databricks_adapter" / "runner.py"
+        ).read_text()
+        builder = (ROOT / "adapter" / "build_wheel.py").read_text()
+
+        self.assertIn("v3_tire_degradation_job:", job)
+        self.assertIn("campaign_name: racing-v3-tire-degradation-v1", job)
+        self.assertIn("execute_packaged_v3_tire_degradation", notebook)
+        self.assertIn("expected_experimental_execution_id", notebook)
+        self.assertIn('"automatic_catalog_promotion": False', notebook)
+        self.assertIn("V3_VALIDATION_RESULT_VERSION", runner)
+        self.assertIn('f"{PACKAGE}/bin/v3_validation_probe"', builder)
+        self.assertNotIn("shell=True", runner)
+        for forbidden in ("policy_releases", '"release_state": "PUBLISHED"'):
+            self.assertNotIn(forbidden, notebook)
+
     def test_candidate_review_pins_delta_and_cannot_promote_automatically(self):
         job = (ROOT / "resources" / "jobs.yml").read_text()
         notebook = (ROOT / "src" / "review_candidate_evidence.py").read_text()

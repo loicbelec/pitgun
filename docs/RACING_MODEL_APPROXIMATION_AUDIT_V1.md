@@ -284,6 +284,15 @@ four fixed iterations, and a named contact-workload energy proxy for heat and
 wear. Its coefficients remain pre-calibration candidate inputs rather than
 published catalog truth.
 
+Candidate `0.9.0` completes the first compound-dependent degradation slice.
+The tire resource now supplies baseline wear, load-wear response, optimum
+temperature, and thermal-window width; a V7 runtime profile supplies bounded
+global interpretation coefficients. Baseline and contact-workload wear are
+reported separately with lap-level service lineage. The 236-point local screen
+confirms compound ordering and parameter observability, but also shows that hard
+tires and late stops are currently over-favored. The equation is therefore an
+explorable structural candidate, not calibrated catalog truth.
+
 The audit assigns `REPLACE` to the equations, not to the idea of one aggregate
 tire state. The first V3 tire model should remain approachable:
 

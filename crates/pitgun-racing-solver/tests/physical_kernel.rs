@@ -2,9 +2,9 @@ use pitgun_racing_solver::{
     AERO_FULL_CORNER_CURVATURE_RAD_PER_M, AERO_FULL_STRAIGHT_CURVATURE_RAD_PER_M, AeroParams,
     ChassisParams, CurvatureAeroResponse, Driver, DriverControlParamsV3, EngineParams,
     MechanicalParamsV3, PitPlan, ResolvedSimulationRequestV3, SimConfig, SimulationRequest,
-    TireContactParamsV3, TireParams, Track, Tuning, TuningResponseV1, VehicleParams, VehicleState,
-    aggregate_tire_force_capacity_v3, apply_tuning, apply_tuning_with_response,
-    combined_force_utilization, curvature_aero_blend, describe_circuit,
+    TireContactParamsV3, TireDegradationParamsV3, TireParams, Track, Tuning, TuningResponseV1,
+    VehicleParams, VehicleState, aggregate_tire_force_capacity_v3, apply_tuning,
+    apply_tuning_with_response, combined_force_utilization, curvature_aero_blend, describe_circuit,
     remaining_longitudinal_force, run_resolved_simulation_v3, run_simulation,
     run_simulation_with_model_response, run_simulation_with_tuning_response,
 };
@@ -109,6 +109,7 @@ fn resolved_v3_request(request: &SimulationRequest) -> ResolvedSimulationRequest
         },
         driver_control: DriverControlParamsV3::default(),
         fuel_mass: None,
+        tire_degradation: None,
     }
 }
 
@@ -466,6 +467,16 @@ fn v3_rejects_invalid_resolved_physics_before_solving() {
     assert_eq!(
         run_resolved_simulation_v3(&bad_driver).unwrap_err(),
         "driver_control.braking_utilization must be finite and in [0.5, 1]"
+    );
+
+    let mut bad_degradation = resolved_v3_request(&synthetic_request());
+    bad_degradation.tire_degradation = Some(TireDegradationParamsV3 {
+        maximum_thermal_wear_multiplier: 0.5,
+        ..TireDegradationParamsV3::default()
+    });
+    assert_eq!(
+        run_resolved_simulation_v3(&bad_degradation).unwrap_err(),
+        "V3 maximum thermal-wear multiplier must be in [1, 20]"
     );
 }
 

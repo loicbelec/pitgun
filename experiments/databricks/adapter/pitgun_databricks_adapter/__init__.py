@@ -40,8 +40,14 @@ from .runner import (
     execute_packaged_racing_catalog_scenario,
     execute_packaged_racing_scenario,
     execute_packaged_tuning_response,
+    execute_packaged_v3_tire_degradation,
     inspect_packaged_runner,
     inspect_packaged_tuning_response_probe,
+    inspect_packaged_v3_validation_probe,
+)
+from .tire_degradation import (
+    load_tire_degradation_campaign,
+    materialize_tire_degradation_plan,
 )
 from .strategy_effect import (
     extract_strategy_effect_evidence,
@@ -56,7 +62,11 @@ __all__ = [
     "execute_packaged_racing_scenario",
     "inspect_packaged_runner",
     "execute_packaged_tuning_response",
+    "execute_packaged_v3_tire_degradation",
     "inspect_packaged_tuning_response_probe",
+    "inspect_packaged_v3_validation_probe",
+    "load_tire_degradation_campaign",
+    "materialize_tire_degradation_plan",
     "load_reference_campaign",
     "load_calibration_campaign",
     "materialize_plan",

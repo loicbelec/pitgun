@@ -6,6 +6,7 @@ from pitgun_databricks_adapter import (
     execute_packaged_racing_catalog_scenario,
     execute_packaged_racing_scenario,
     execute_packaged_tuning_response,
+    execute_packaged_v3_tire_degradation,
     inspect_packaged_runner,
     load_calibration_campaign,
     load_candidate_review_policy,
@@ -13,10 +14,12 @@ from pitgun_databricks_adapter import (
     load_early_allocation_effect_campaign,
     load_opponent_audit_campaign,
     load_reference_campaign,
+    load_tire_degradation_campaign,
     materialize_opponent_audit_plan,
     materialize_budget_effect_v2_plan,
     materialize_early_allocation_effect_plan,
     materialize_plan,
+    materialize_tire_degradation_plan,
 )
 
 
@@ -159,6 +162,21 @@ for response_id in {entry["response_id"] for entry in candidate_plan}:
     )
     assert candidate_result["experimental_execution_id"].startswith("sha256:")
 
+v3_tire_manifest, v3_tire_manifest_digest = load_tire_degradation_campaign()
+v3_tire_plan = materialize_tire_degradation_plan(v3_tire_manifest)
+assert v3_tire_manifest_digest.startswith("sha256:")
+assert len(v3_tire_plan) == v3_tire_manifest["planned_run_count"] == 236
+first_v3_tire = v3_tire_plan[0]
+v3_tire_result = execute_packaged_v3_tire_degradation(first_v3_tire["id"])["result"]
+assert v3_tire_result["model"] == v3_tire_manifest["model"]
+assert v3_tire_result["scenario_digest"] == first_v3_tire["expected_scenario_digest"]
+assert v3_tire_result["profile_digest"] == first_v3_tire["expected_profile_digest"]
+assert (
+    v3_tire_result["experimental_execution_id"]
+    == first_v3_tire["expected_experimental_execution_id"]
+)
+assert "tire_degradation_diagnostics" in v3_tire_result
+
 try:
     execute_packaged_racing(42, "../../arbitrary")
 except ValueError:
@@ -197,3 +215,10 @@ except ValueError:
     pass
 else:
     raise AssertionError("an arbitrary tuning response path was accepted")
+
+try:
+    execute_packaged_v3_tire_degradation("../../arbitrary")
+except ValueError:
+    pass
+else:
+    raise AssertionError("an arbitrary V3 configuration path was accepted")
