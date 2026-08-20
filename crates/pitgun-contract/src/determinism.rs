@@ -196,7 +196,9 @@ impl FromStr for Digest {
 
         let mut bytes = [0_u8; 32];
         let hexadecimal = hexadecimal.as_bytes();
-        for (index, pair) in hexadecimal.chunks_exact(2).enumerate() {
+        let (pairs, remainder) = hexadecimal.as_chunks::<2>();
+        debug_assert!(remainder.is_empty());
+        for (index, pair) in pairs.iter().enumerate() {
             let high = decode_lower_hex(pair[0], index * 2)?;
             let low = decode_lower_hex(pair[1], index * 2 + 1)?;
             bytes[index] = (high << 4) | low;
