@@ -293,6 +293,14 @@ confirms compound ordering and parameter observability, but also shows that hard
 tires and late stops are currently over-favored. The equation is therefore an
 explorable structural candidate, not calibrated catalog truth.
 
+The unified V5 decision screen then replays 882 short mechanical and gameplay
+configurations against the exact same `0.9.0` identity and links the checksummed
+long-run evidence instead of duplicating it. It preserves distinct setup optima
+for Monza, Monaco and Suzuka, exposes fuel and degradation parameters in the
+same report, and identifies the maximum thermal-wear multiplier as a dormant
+safety bound in the reviewed nominal domain. Development and strategy diversity
+remain `REFINE` gates before multi-era and held-out promotion.
+
 The audit assigns `REPLACE` to the equations, not to the idea of one aggregate
 tire state. The first V3 tire model should remain approachable:
 

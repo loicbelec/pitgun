@@ -6,14 +6,15 @@ use std::path::Path;
 
 use pitgun_contract::{ArtifactIdentity, canonical_json_digest};
 use pitgun_racing_simulator::{
-    MechanicalDiagnosticsV3, RacingCatalogSnapshot, RunRaceInput, RunRaceRequest,
-    SetupResponseDiagnosticsV1, TireDiagnosticsV3, V3CandidateExperimentProfile,
-    run_race_with_catalog_and_v3_profile,
+    FuelMassDiagnosticsV3, MechanicalDiagnosticsV3, RacingCatalogSnapshot, RunRaceInput,
+    RunRaceRequest, SetupResponseDiagnosticsV1, TireDegradationDiagnosticsV3, TireDiagnosticsV3,
+    V3CandidateExperimentProfile, run_race_with_catalog_and_v3_profile,
 };
 use serde::Serialize;
 use serde_json::Value;
 
 const PARAM_SPEED_KPH: u16 = 5005;
+const PARAM_TIRE_WEAR_PCT: u16 = 5016;
 
 #[derive(Serialize)]
 struct ExperimentalIdentity<'a> {
@@ -34,9 +35,14 @@ struct ProbeOutput {
     seed: String,
     total_time_ms: u64,
     observed_maximum_speed_kph: f64,
+    final_tire_wear_pct: f64,
     setup_response: SetupResponseDiagnosticsV1,
     tire_diagnostics: TireDiagnosticsV3,
     mechanical_diagnostics: MechanicalDiagnosticsV3,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    fuel_mass_diagnostics: Option<FuelMassDiagnosticsV3>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    tire_degradation_diagnostics: Option<TireDegradationDiagnosticsV3>,
 }
 
 fn main() {
@@ -113,6 +119,15 @@ fn run() -> Result<(), String> {
         .filter_map(|sample| sample.value.as_f64())
         .reduce(f64::max)
         .ok_or_else(|| "race output contains no player speed telemetry".to_string())?;
+    let final_tire_wear_pct = output
+        .player_batches
+        .iter()
+        .flat_map(|batch| &batch.frames)
+        .flat_map(|frame| &frame.samples)
+        .filter(|sample| sample.parameter_id == PARAM_TIRE_WEAR_PCT)
+        .filter_map(|sample| sample.value.as_f64())
+        .next_back()
+        .ok_or_else(|| "race output contains no player tire wear telemetry".to_string())?;
 
     let probe = ProbeOutput {
         schema_version: "pitgun.racing-v3-decision-surface-probe/v1",
@@ -123,6 +138,7 @@ fn run() -> Result<(), String> {
         seed: seed.to_string(),
         total_time_ms: output.total_time_ms,
         observed_maximum_speed_kph,
+        final_tire_wear_pct,
         setup_response: output
             .player_diagnostics
             .ok_or_else(|| "race output contains no setup diagnostics".to_string())?,
@@ -132,6 +148,8 @@ fn run() -> Result<(), String> {
         mechanical_diagnostics: output
             .player_mechanical_diagnostics_v3
             .ok_or_else(|| "race output contains no V3 mechanical diagnostics".to_string())?,
+        fuel_mass_diagnostics: output.player_fuel_mass_diagnostics_v3,
+        tire_degradation_diagnostics: output.player_tire_degradation_diagnostics_v3,
     };
     println!(
         "{}",

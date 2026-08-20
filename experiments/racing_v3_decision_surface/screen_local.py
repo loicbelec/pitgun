@@ -19,9 +19,15 @@ ROOT = pathlib.Path(__file__).resolve().parents[2]
 BASE_SCENARIO = (
     ROOT / "apps" / "pitgun-cli" / "scenarios" / "racing-batch-v1" / "balanced.json"
 )
-BASE_PROFILE = pathlib.Path(__file__).with_name("profile-v4.transmission-resolution.json")
-DEFAULT_OUTPUT = pathlib.Path(__file__).parent / "results" / "local-screen-v4.json"
-SCHEMA_VERSION = "pitgun.racing-v3-local-screen/v4"
+BASE_PROFILE = pathlib.Path(__file__).with_name("profile-v7.compound-degradation.json")
+DEFAULT_OUTPUT = pathlib.Path(__file__).parent / "results" / "local-screen-v5.json"
+LONG_RUN_REPORT = (
+    pathlib.Path(__file__).parents[1]
+    / "racing_v3_tire_degradation"
+    / "results"
+    / "local-tire-degradation-v1.json"
+)
+SCHEMA_VERSION = "pitgun.racing-v3-local-screen/v5"
 SEEDS = (7, 42, 99)
 CIRCUITS = (
     ("it-1922", "power", "monza"),
@@ -216,6 +222,31 @@ PROFILE_AXES: tuple[tuple[str, str, float, float], ...] = (
     ("driver_braking", "driver_control_override.braking_utilization", 0.85, 0.99),
     ("driver_traction", "driver_control_override.traction_utilization", 0.85, 0.99),
     ("driver_control_error", "driver_control_override.control_error", 0.08, 0.005),
+    (
+        "fuel_brake_specific_consumption",
+        "fuel_mass.brake_specific_fuel_consumption_kg_per_kwh",
+        0.18,
+        0.30,
+    ),
+    ("fuel_idle_flow", "fuel_mass.idle_fuel_flow_kg_per_s", 0.0002, 0.0008),
+    (
+        "degradation_reference_load_coefficient",
+        "tire_degradation.reference_load_wear_coefficient",
+        0.00000005,
+        0.00000015,
+    ),
+    (
+        "degradation_thermal_gain",
+        "tire_degradation.thermal_deviation_wear_gain",
+        0.0,
+        0.7,
+    ),
+    (
+        "degradation_thermal_cap",
+        "tire_degradation.maximum_thermal_wear_multiplier",
+        1.1,
+        4.0,
+    ),
 )
 
 
@@ -345,6 +376,22 @@ def median_metrics(points: list[dict[str, Any]]) -> dict[str, float]:
             point["mechanical_diagnostics"]["theoretical_top_speed_at_max_rpm_kph"]
             for point in points
         ),
+        "fuel_consumed_kg": statistics.median(
+            point["fuel_mass_diagnostics"]["fuel_consumed_kg"] for point in points
+        ),
+        "final_vehicle_mass_kg": statistics.median(
+            point["fuel_mass_diagnostics"]["minimum_total_vehicle_mass_kg"]
+            for point in points
+        ),
+        "final_tire_wear_pct": statistics.median(
+            point["final_tire_wear_pct"] for point in points
+        ),
+        "requested_workload_wear_fraction": statistics.median(
+            point["tire_degradation_diagnostics"][
+                "requested_workload_wear_fraction"
+            ]
+            for point in points
+        ),
     }
 
 
@@ -389,6 +436,10 @@ def summarize_pairs(points: list[dict[str, Any]]) -> list[dict[str, Any]]:
                 ("maximum_tire_utilization", 0.00001),
                 ("tire_generated_heat_kj", 0.1),
                 ("theoretical_top_speed_at_max_rpm_kph", 0.1),
+                ("fuel_consumed_kg", 0.000001),
+                ("final_vehicle_mass_kg", 0.000001),
+                ("final_tire_wear_pct", 0.000001),
+                ("requested_workload_wear_fraction", 0.000000001),
             )
         ]
         if not circuits:
@@ -526,8 +577,53 @@ def campaign_verdicts(
     ]
 
 
+def load_long_run_evidence(path: pathlib.Path) -> dict[str, Any]:
+    report_bytes = path.read_bytes()
+    digest = sha256(report_bytes)
+    digest_path = path.with_suffix(".sha256")
+    if digest_path.read_text().strip() != digest:
+        raise ScreenError("long-run tire evidence does not match its SHA-256 file")
+    try:
+        report = json.loads(report_bytes)
+    except (UnicodeDecodeError, json.JSONDecodeError) as error:
+        raise ScreenError("long-run tire evidence is invalid JSON") from error
+    if report.get("schema_version") != "pitgun.racing-v3-tire-degradation-validation/v1":
+        raise ScreenError("long-run tire evidence uses an unsupported schema")
+    campaign = report.get("campaign", {})
+    verdicts = report.get("verdicts", [])
+    strategy_groups = report.get("strategy_summary", {}).get("groups", [])
+    compound_groups = report.get("compound_summary", {}).get("groups", [])
+    thermal_multipliers = [
+        compound["maximum_thermal_wear_multiplier"]
+        for group in compound_groups
+        for compound in group.get("compounds", {}).values()
+    ]
+    return {
+        "path": str(path.relative_to(ROOT)),
+        "digest": digest,
+        "model": campaign.get("model"),
+        "execution_count": campaign.get("execution_count"),
+        "simulated_lap_count": campaign.get("simulated_lap_count"),
+        "compound_group_count": report.get("compound_summary", {}).get("group_count"),
+        "ordered_wear_group_count": report.get("compound_summary", {}).get(
+            "ordered_wear_group_count"
+        ),
+        "maximum_observed_thermal_wear_multiplier": max(
+            thermal_multipliers, default=None
+        ),
+        "strategy_group_count": len(strategy_groups),
+        "fastest_stop_laps": sorted(
+            {group["fastest_stop_lap"] for group in strategy_groups}
+        ),
+        "verdicts": verdicts,
+    }
+
+
 def build_report(
-    runner: pathlib.Path, jobs: int, profile_path: pathlib.Path = BASE_PROFILE
+    runner: pathlib.Path,
+    jobs: int,
+    profile_path: pathlib.Path = BASE_PROFILE,
+    long_run_report_path: pathlib.Path = LONG_RUN_REPORT,
 ) -> dict[str, Any]:
     if not runner.is_file():
         raise ScreenError(f"missing V3 probe runner: {runner}")
@@ -544,11 +640,15 @@ def build_report(
         raise ScreenError("screen mixed multiple model identities")
     pair_summaries = summarize_pairs(points)
     setup_interaction = summarize_setup_interaction(points)
+    long_run_evidence = load_long_run_evidence(long_run_report_path)
+    screen_model = json.loads(next(iter(model_identities)))
+    if long_run_evidence["model"] != screen_model:
+        raise ScreenError("short screen and long-run evidence bind different models")
     return {
         "schema_version": SCHEMA_VERSION,
         "campaign": {
             "purpose": "bounded local activation screen before governed Databricks replay",
-            "model": json.loads(next(iter(model_identities))),
+            "model": screen_model,
             "runner": {
                 "path": str(runner.relative_to(ROOT)),
                 "digest": sha256(runner.read_bytes()),
@@ -566,6 +666,7 @@ def build_report(
         "verdicts": campaign_verdicts(pair_summaries, setup_interaction),
         "pair_summaries": pair_summaries,
         "setup_interaction": setup_interaction,
+        "long_run_evidence": long_run_evidence,
         "points": points,
     }
 
@@ -592,12 +693,18 @@ def main() -> int:
     )
     parser.add_argument("--jobs", type=int, default=4)
     parser.add_argument("--profile", type=pathlib.Path, default=BASE_PROFILE)
+    parser.add_argument(
+        "--long-run-report", type=pathlib.Path, default=LONG_RUN_REPORT
+    )
     parser.add_argument("--output", type=pathlib.Path, default=DEFAULT_OUTPUT)
     parser.add_argument("--check", action="store_true")
     arguments = parser.parse_args()
     try:
         report = build_report(
-            arguments.runner.resolve(), arguments.jobs, arguments.profile.resolve()
+            arguments.runner.resolve(),
+            arguments.jobs,
+            arguments.profile.resolve(),
+            arguments.long_run_report.resolve(),
         )
         write_or_check(report, arguments.output.resolve(), arguments.check)
     except (OSError, ValueError, ScreenError) as error:
