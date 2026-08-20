@@ -8,6 +8,7 @@ pub use catalog::{
 pub use workload::{
     RacingWorkload, RacingWorkloadError, racing_model_identity_for_version,
     racing_model_v1_identity, racing_model_v2_identity, racing_model_v3_candidate_identity,
+    racing_model_v3_mechanical_candidate_identity,
 };
 
 use std::collections::HashMap;
@@ -181,6 +182,81 @@ impl V3MechanicalOverrides {
     }
 }
 
+/// Gameplay-to-physics aerodynamic resolution for Model V3.
+///
+/// The setup selects one fixed downforce area. Its drag cost contains a base
+/// area plus a quadratic term in the added downforce area, matching the
+/// reduced-order aerodynamic polar `Cd = Cd0 + k * Cl^2`. Development points
+/// improve efficiency through separate downforce gain and drag reduction.
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct V3AeroResolutionParams {
+    pub minimum_downforce_area_multiplier: f64,
+    pub maximum_downforce_area_multiplier: f64,
+    pub base_drag_area_multiplier: f64,
+    pub induced_drag_factor_per_m2: f64,
+    pub development_downforce_gain_at_cap: f64,
+    pub development_drag_reduction_at_cap: f64,
+}
+
+impl Default for V3AeroResolutionParams {
+    fn default() -> Self {
+        Self {
+            minimum_downforce_area_multiplier: 0.75,
+            maximum_downforce_area_multiplier: 1.25,
+            base_drag_area_multiplier: 0.85,
+            induced_drag_factor_per_m2: 0.25,
+            development_downforce_gain_at_cap: 0.08,
+            development_drag_reduction_at_cap: 0.04,
+        }
+    }
+}
+
+impl V3AeroResolutionParams {
+    pub fn validate(&self) -> Result<(), String> {
+        let values = [
+            self.minimum_downforce_area_multiplier,
+            self.maximum_downforce_area_multiplier,
+            self.base_drag_area_multiplier,
+            self.induced_drag_factor_per_m2,
+            self.development_downforce_gain_at_cap,
+            self.development_drag_reduction_at_cap,
+        ];
+        if values.iter().any(|value| !value.is_finite()) {
+            return Err("V3 aero-resolution coefficients must be finite".to_string());
+        }
+        if self.minimum_downforce_area_multiplier <= 0.0
+            || self.maximum_downforce_area_multiplier <= self.minimum_downforce_area_multiplier
+        {
+            return Err("V3 downforce multipliers must satisfy 0 < minimum < maximum".to_string());
+        }
+        if self.maximum_downforce_area_multiplier > 2.0 {
+            return Err("V3 maximum downforce multiplier must be <= 2".to_string());
+        }
+        if self.base_drag_area_multiplier <= 0.0 {
+            return Err("V3 base drag multiplier must be positive".to_string());
+        }
+        if !(0.0..=2.0).contains(&self.induced_drag_factor_per_m2) {
+            return Err("V3 induced drag factor must be in [0, 2] 1/m2".to_string());
+        }
+        for (name, value) in [
+            (
+                "development downforce gain",
+                self.development_downforce_gain_at_cap,
+            ),
+            (
+                "development drag reduction",
+                self.development_drag_reduction_at_cap,
+            ),
+        ] {
+            if !(0.0..=0.5).contains(&value) {
+                return Err(format!("V3 {name} must be in [0, 0.5]"));
+            }
+        }
+        Ok(())
+    }
+}
+
 /// Versioned, offline-only parameter boundary for Model V3 screening.
 ///
 /// This profile is deliberately absent from the game, WASM, Authority and
@@ -190,6 +266,8 @@ impl V3MechanicalOverrides {
 pub enum V3CandidateExperimentProfileVersion {
     #[serde(rename = "pitgun.racing-v3-experiment-profile/v1")]
     V1,
+    #[serde(rename = "pitgun.racing-v3-experiment-profile/v2")]
+    V2,
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq)]
@@ -198,6 +276,8 @@ pub struct V3CandidateExperimentProfile {
     pub schema_version: V3CandidateExperimentProfileVersion,
     pub tuning_response: TuningResponseV1,
     pub tire_contact: TireContactParamsV3,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub aero_resolution: Option<V3AeroResolutionParams>,
     #[serde(default)]
     pub mechanical_overrides: V3MechanicalOverrides,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -207,11 +287,38 @@ pub struct V3CandidateExperimentProfile {
 impl Default for V3CandidateExperimentProfile {
     fn default() -> Self {
         Self {
-            schema_version: V3CandidateExperimentProfileVersion::V1,
+            schema_version: V3CandidateExperimentProfileVersion::V2,
             tuning_response: TuningResponseV1::default(),
             tire_contact: TireContactParamsV3::default(),
+            aero_resolution: Some(V3AeroResolutionParams::default()),
             mechanical_overrides: V3MechanicalOverrides::default(),
             driver_control_override: None,
+        }
+    }
+}
+
+impl V3CandidateExperimentProfile {
+    pub fn validate(&self) -> Result<(), String> {
+        self.tuning_response.validate()?;
+        match (self.schema_version, self.aero_resolution) {
+            (V3CandidateExperimentProfileVersion::V1, None) => Ok(()),
+            (V3CandidateExperimentProfileVersion::V2, Some(parameters)) => parameters.validate(),
+            (V3CandidateExperimentProfileVersion::V1, Some(_)) => {
+                Err("V3 experiment profile V1 cannot define aero_resolution".to_string())
+            }
+            (V3CandidateExperimentProfileVersion::V2, None) => {
+                Err("V3 experiment profile V2 requires aero_resolution".to_string())
+            }
+        }
+    }
+
+    #[must_use]
+    pub fn model_identity(&self) -> ArtifactIdentity {
+        match self.schema_version {
+            V3CandidateExperimentProfileVersion::V1 => {
+                racing_model_v3_mechanical_candidate_identity()
+            }
+            V3CandidateExperimentProfileVersion::V2 => racing_model_v3_candidate_identity(),
         }
     }
 }
@@ -566,6 +673,67 @@ pub fn resolve_v3_physical_vehicle(
     })
 }
 
+/// Resolves the current V3 experiment profile to one fixed aerodynamic state.
+///
+/// Profile V1 retains the immutable 0.3.0 transitional mapping. Profile V2
+/// replaces only its aerodynamic resolution; chassis, cooling, engine and gear
+/// development remain explicit transitional inputs for later slices.
+pub fn resolve_v3_physical_vehicle_with_profile(
+    vehicle: &VehicleParams,
+    tuning: &Tuning,
+    profile: &V3CandidateExperimentProfile,
+) -> Result<VehicleParams, String> {
+    profile
+        .validate()
+        .map_err(|error| format!("invalid V3 experiment profile: {error}"))?;
+    let mut resolved = resolve_v3_physical_vehicle(vehicle, tuning, &profile.tuning_response)?;
+    let Some(aero_resolution) = profile.aero_resolution else {
+        return Ok(resolved);
+    };
+
+    let reference_drag_area_m2 = 0.5 * (vehicle.aero.cd_a_x + vehicle.aero.cd_a_z);
+    let reference_downforce_area_m2 = 0.5 * (vehicle.aero.cl_a_x + vehicle.aero.cl_a_z);
+    if !reference_drag_area_m2.is_finite()
+        || reference_drag_area_m2 <= 0.0
+        || !reference_downforce_area_m2.is_finite()
+        || reference_downforce_area_m2 <= 0.0
+    {
+        return Err("V3 aero resolution requires positive finite reference areas".to_string());
+    }
+
+    let setup = tuning.downforce_slider.clamp(0.0, 1.0);
+    let points_cap = profile.tuning_response.development_points_cap;
+    let development = (tuning.aero_points as f64).clamp(0.0, points_cap) / points_cap;
+    let setup_downforce_multiplier = aero_resolution.minimum_downforce_area_multiplier
+        + (aero_resolution.maximum_downforce_area_multiplier
+            - aero_resolution.minimum_downforce_area_multiplier)
+            * setup;
+    let setup_downforce_area_m2 = reference_downforce_area_m2 * setup_downforce_multiplier;
+    let fixed_downforce_area_m2 = setup_downforce_area_m2
+        * (1.0 + aero_resolution.development_downforce_gain_at_cap * development);
+    let minimum_downforce_area_m2 =
+        reference_downforce_area_m2 * aero_resolution.minimum_downforce_area_multiplier;
+    let added_downforce_area_m2 = setup_downforce_area_m2 - minimum_downforce_area_m2;
+    let fixed_drag_area_m2 = (reference_drag_area_m2 * aero_resolution.base_drag_area_multiplier
+        + aero_resolution.induced_drag_factor_per_m2 * added_downforce_area_m2.powi(2))
+        * (1.0 - aero_resolution.development_drag_reduction_at_cap * development);
+
+    if !fixed_drag_area_m2.is_finite()
+        || fixed_drag_area_m2 <= 0.0
+        || !fixed_downforce_area_m2.is_finite()
+        || fixed_downforce_area_m2 <= 0.0
+    {
+        return Err("V3 aero resolution produced invalid fixed areas".to_string());
+    }
+    resolved.aero = AeroParams {
+        cd_a_x: fixed_drag_area_m2,
+        cd_a_z: fixed_drag_area_m2,
+        cl_a_x: fixed_downforce_area_m2,
+        cl_a_z: fixed_downforce_area_m2,
+    };
+    Ok(resolved)
+}
+
 fn resolve_v3_driver_control(driver: &Driver) -> DriverControlParamsV3 {
     let aggressiveness = driver.aggressiveness.clamp(0.0, 1.0);
     DriverControlParamsV3 {
@@ -699,9 +867,8 @@ pub fn run_race_with_catalog_and_v3_profile(
     profile: &V3CandidateExperimentProfile,
 ) -> Result<RaceOutput, String> {
     profile
-        .tuning_response
         .validate()
-        .map_err(|error| format!("invalid V3 candidate resolution response: {error}"))?;
+        .map_err(|error| format!("invalid V3 candidate experiment profile: {error}"))?;
     if request.input.race.competitors.is_empty() {
         return Err("race requires at least one competitor".to_string());
     }
@@ -895,17 +1062,14 @@ fn run_single_session(
                 curvature_response,
             } => solve_with_model_response(&request, tuning_response, curvature_response),
             SessionPhysicalModel::V3Candidate { profile } => {
-                let physical_vehicle = resolve_v3_physical_vehicle(
-                    &request.vehicle,
-                    &tuning,
-                    &profile.tuning_response,
-                )
-                .map_err(|error| {
-                    format!(
-                        "cannot resolve V3 physical vehicle for competitor {}: {error}",
-                        competitor.id
-                    )
-                })?;
+                let physical_vehicle =
+                    resolve_v3_physical_vehicle_with_profile(&request.vehicle, &tuning, profile)
+                        .map_err(|error| {
+                            format!(
+                                "cannot resolve V3 physical vehicle for competitor {}: {error}",
+                                competitor.id
+                            )
+                        })?;
                 let mechanical = profile.mechanical_overrides.apply_to(MechanicalParamsV3 {
                     fixed_drag_area_m2: 0.5
                         * (physical_vehicle.aero.cd_a_x + physical_vehicle.aero.cd_a_z),
@@ -2962,6 +3126,78 @@ mod tests {
                 .expect("historical compatibility transform");
 
         assert_eq!(simulator_resolved, historical_transform);
+    }
+
+    #[test]
+    fn v3_aero_resolution_creates_a_nonlinear_setup_cost_and_development_efficiency() {
+        let snapshot = RacingCatalogSnapshot::embedded_model_v2().expect("catalog snapshot");
+        let catalog = EmbeddedCatalog::from_snapshot(&snapshot).expect("resolved catalog");
+        let (base_vehicle, _) = catalog.resolve_vehicle("f1_2026").expect("base vehicle");
+        let profile = V3CandidateExperimentProfile::default();
+        let tuning = |downforce_slider, aero_points| Tuning {
+            engine_points: 0,
+            cooling_points: 0,
+            aero_points,
+            chassis_points: 0,
+            downforce_slider,
+            gear_ratio_slider: 0.5,
+        };
+
+        let low =
+            resolve_v3_physical_vehicle_with_profile(&base_vehicle, &tuning(0.2, 0), &profile)
+                .expect("low-downforce vehicle");
+        let middle =
+            resolve_v3_physical_vehicle_with_profile(&base_vehicle, &tuning(0.5, 0), &profile)
+                .expect("middle-downforce vehicle");
+        let high =
+            resolve_v3_physical_vehicle_with_profile(&base_vehicle, &tuning(0.8, 0), &profile)
+                .expect("high-downforce vehicle");
+
+        assert!(low.aero.cl_a_x < middle.aero.cl_a_x);
+        assert!(middle.aero.cl_a_x < high.aero.cl_a_x);
+        assert!(low.aero.cd_a_x < middle.aero.cd_a_x);
+        assert!(middle.aero.cd_a_x < high.aero.cd_a_x);
+        assert!(
+            high.aero.cd_a_x - middle.aero.cd_a_x > middle.aero.cd_a_x - low.aero.cd_a_x,
+            "the induced-drag cost must grow quadratically with added downforce",
+        );
+
+        let developed =
+            resolve_v3_physical_vehicle_with_profile(&base_vehicle, &tuning(0.5, 20), &profile)
+                .expect("aerodynamically developed vehicle");
+        assert!(developed.aero.cl_a_x > middle.aero.cl_a_x);
+        assert!(
+            developed.aero.cl_a_x / developed.aero.cd_a_x > middle.aero.cl_a_x / middle.aero.cd_a_x,
+            "aero development must improve the resolved ClA/CdA ratio",
+        );
+    }
+
+    #[test]
+    fn v3_profile_versions_bind_exact_candidate_semantics() {
+        let mechanical_profile = V3CandidateExperimentProfile {
+            schema_version: V3CandidateExperimentProfileVersion::V1,
+            aero_resolution: None,
+            ..V3CandidateExperimentProfile::default()
+        };
+        assert_eq!(
+            mechanical_profile.model_identity(),
+            racing_model_v3_mechanical_candidate_identity(),
+        );
+        assert!(mechanical_profile.validate().is_ok());
+
+        let aero_profile = V3CandidateExperimentProfile::default();
+        assert_eq!(
+            aero_profile.model_identity(),
+            racing_model_v3_candidate_identity()
+        );
+        assert!(aero_profile.validate().is_ok());
+
+        let malformed = V3CandidateExperimentProfile {
+            schema_version: V3CandidateExperimentProfileVersion::V2,
+            aero_resolution: None,
+            ..V3CandidateExperimentProfile::default()
+        };
+        assert!(malformed.validate().is_err());
     }
 
     #[test]

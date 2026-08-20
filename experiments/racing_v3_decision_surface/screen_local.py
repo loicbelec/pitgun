@@ -19,9 +19,9 @@ ROOT = pathlib.Path(__file__).resolve().parents[2]
 BASE_SCENARIO = (
     ROOT / "apps" / "pitgun-cli" / "scenarios" / "racing-batch-v1" / "balanced.json"
 )
-BASE_PROFILE = pathlib.Path(__file__).with_name("profile-v1.default.json")
-DEFAULT_OUTPUT = pathlib.Path(__file__).parent / "results" / "local-screen-v1.json"
-SCHEMA_VERSION = "pitgun.racing-v3-local-screen/v1"
+BASE_PROFILE = pathlib.Path(__file__).with_name("profile-v2.aero-efficiency.json")
+DEFAULT_OUTPUT = pathlib.Path(__file__).parent / "results" / "local-screen-v2.json"
+SCHEMA_VERSION = "pitgun.racing-v3-local-screen/v2"
 SEEDS = (7, 42, 99)
 CIRCUITS = (
     ("it-1922", "power", "monza"),
@@ -104,8 +104,8 @@ def scenario_variants(base: dict[str, Any]) -> list[dict[str, Any]]:
     for axis in ("downforce_slider", "gear_ratio_slider"):
         add(f"setup-{axis}-low", f"setup.{axis}", "low", {axis: 0.2})
         add(f"setup-{axis}-high", f"setup.{axis}", "high", {axis: 0.8})
-    for downforce in (0.2, 0.8):
-        for gearing in (0.2, 0.8):
+    for downforce in (0.0, 0.25, 0.5, 0.75, 1.0):
+        for gearing in (0.0, 0.25, 0.5, 0.75, 1.0):
             add(
                 f"setup-interaction-df-{downforce}-gear-{gearing}",
                 "setup.interaction",
@@ -116,6 +116,42 @@ def scenario_variants(base: dict[str, Any]) -> list[dict[str, Any]]:
 
 
 PROFILE_AXES: tuple[tuple[str, str, float, float], ...] = (
+    (
+        "aero_minimum_downforce",
+        "aero_resolution.minimum_downforce_area_multiplier",
+        0.65,
+        0.85,
+    ),
+    (
+        "aero_maximum_downforce",
+        "aero_resolution.maximum_downforce_area_multiplier",
+        1.15,
+        1.35,
+    ),
+    (
+        "aero_base_drag",
+        "aero_resolution.base_drag_area_multiplier",
+        0.75,
+        0.95,
+    ),
+    (
+        "aero_induced_drag",
+        "aero_resolution.induced_drag_factor_per_m2",
+        0.15,
+        0.35,
+    ),
+    (
+        "aero_development_downforce",
+        "aero_resolution.development_downforce_gain_at_cap",
+        0.04,
+        0.12,
+    ),
+    (
+        "aero_development_drag_reduction",
+        "aero_resolution.development_drag_reduction_at_cap",
+        0.02,
+        0.08,
+    ),
     ("brake_force", "mechanical_overrides.maximum_brake_force_n", 14_000.0, 22_000.0),
     ("shift_duration", "mechanical_overrides.shift_duration_s", 0.03, 0.09),
     ("driveline_efficiency", "mechanical_overrides.driveline_efficiency", 0.92, 0.98),
@@ -393,11 +429,15 @@ def campaign_verdicts(
             "verdict": (
                 "STRUCTURAL_CHANGE_REQUIRED"
                 if setup_universal and not setup_interaction["circuit_specific_optima"]
+                else "PASS"
+                if setup_interaction["distinct_optimum_count"] == len(CIRCUITS)
                 else "REFINE"
             ),
             "reason": (
                 "The reviewed downforce and gearing directions are universal and the coarse interaction optimum is identical on every circuit."
                 if setup_universal and not setup_interaction["circuit_specific_optima"]
+                else "Every representative circuit has a distinct optimum on the reviewed setup grid."
+                if setup_interaction["distinct_optimum_count"] == len(CIRCUITS)
                 else "The screen found circuit-dependent setup behavior that requires a denser review."
             ),
         },
@@ -418,13 +458,15 @@ def campaign_verdicts(
     ]
 
 
-def build_report(runner: pathlib.Path, jobs: int) -> dict[str, Any]:
+def build_report(
+    runner: pathlib.Path, jobs: int, profile_path: pathlib.Path = BASE_PROFILE
+) -> dict[str, Any]:
     if not runner.is_file():
         raise ScreenError(f"missing V3 probe runner: {runner}")
     if jobs < 1 or jobs > MAX_JOBS:
         raise ValueError(f"jobs must be between 1 and {MAX_JOBS}")
     scenario_bytes = BASE_SCENARIO.read_bytes()
-    profile_bytes = BASE_PROFILE.read_bytes()
+    profile_bytes = profile_path.read_bytes()
     plan = build_plan(json.loads(scenario_bytes), json.loads(profile_bytes))
     with concurrent.futures.ThreadPoolExecutor(max_workers=jobs) as executor:
         points = list(executor.map(lambda point: execute_point(runner, point), plan))
@@ -445,6 +487,7 @@ def build_report(runner: pathlib.Path, jobs: int) -> dict[str, Any]:
             },
             "base_scenario_digest": sha256(scenario_bytes),
             "base_profile_digest": sha256(profile_bytes),
+            "base_profile_path": str(profile_path.relative_to(ROOT)),
             "seeds": list(SEEDS),
             "circuits": [
                 {"id": circuit_id, "archetype": archetype, "slug": slug}
@@ -480,11 +523,14 @@ def main() -> int:
         default=ROOT / "target" / "release" / "examples" / "v3_decision_surface_probe",
     )
     parser.add_argument("--jobs", type=int, default=4)
+    parser.add_argument("--profile", type=pathlib.Path, default=BASE_PROFILE)
     parser.add_argument("--output", type=pathlib.Path, default=DEFAULT_OUTPUT)
     parser.add_argument("--check", action="store_true")
     arguments = parser.parse_args()
     try:
-        report = build_report(arguments.runner.resolve(), arguments.jobs)
+        report = build_report(
+            arguments.runner.resolve(), arguments.jobs, arguments.profile.resolve()
+        )
         write_or_check(report, arguments.output.resolve(), arguments.check)
     except (OSError, ValueError, ScreenError) as error:
         print(f"error: {error}", file=__import__("sys").stderr)
