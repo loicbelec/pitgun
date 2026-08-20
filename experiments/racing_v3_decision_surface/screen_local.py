@@ -19,9 +19,9 @@ ROOT = pathlib.Path(__file__).resolve().parents[2]
 BASE_SCENARIO = (
     ROOT / "apps" / "pitgun-cli" / "scenarios" / "racing-batch-v1" / "balanced.json"
 )
-BASE_PROFILE = pathlib.Path(__file__).with_name("profile-v3.development-resolution.json")
-DEFAULT_OUTPUT = pathlib.Path(__file__).parent / "results" / "local-screen-v3.json"
-SCHEMA_VERSION = "pitgun.racing-v3-local-screen/v3"
+BASE_PROFILE = pathlib.Path(__file__).with_name("profile-v4.transmission-resolution.json")
+DEFAULT_OUTPUT = pathlib.Path(__file__).parent / "results" / "local-screen-v4.json"
+SCHEMA_VERSION = "pitgun.racing-v3-local-screen/v4"
 SEEDS = (7, 42, 99)
 CIRCUITS = (
     ("it-1922", "power", "monza"),
@@ -185,6 +185,24 @@ PROFILE_AXES: tuple[tuple[str, str, float, float], ...] = (
     ("brake_force", "mechanical_overrides.maximum_brake_force_n", 14_000.0, 22_000.0),
     ("shift_duration", "mechanical_overrides.shift_duration_s", 0.03, 0.09),
     ("driveline_efficiency", "mechanical_overrides.driveline_efficiency", 0.92, 0.98),
+    (
+        "transmission_minimum_target_speed",
+        "transmission_resolution.minimum_target_top_speed_mps",
+        80.0,
+        90.0,
+    ),
+    (
+        "transmission_maximum_target_speed",
+        "transmission_resolution.maximum_target_top_speed_mps",
+        100.0,
+        110.0,
+    ),
+    (
+        "transmission_target_engine_speed",
+        "transmission_resolution.target_engine_speed_fraction",
+        0.92,
+        0.995,
+    ),
     ("tire_load_sensitivity", "tire_contact.load_sensitivity_exponent", 0.04, 0.12),
     ("tire_heat_generation", "tire_contact.heat_generation_fraction", 0.003, 0.012),
     ("tire_static_cooling", "tire_contact.cooling_w_per_c", 40.0, 160.0),
@@ -323,6 +341,10 @@ def median_metrics(points: list[dict[str, Any]]) -> dict[str, float]:
         "tire_generated_heat_kj": statistics.median(
             point["tire_diagnostics"]["generated_heat_kj"] for point in points
         ),
+        "theoretical_top_speed_at_max_rpm_kph": statistics.median(
+            point["mechanical_diagnostics"]["theoretical_top_speed_at_max_rpm_kph"]
+            for point in points
+        ),
     }
 
 
@@ -366,6 +388,7 @@ def summarize_pairs(points: list[dict[str, Any]]) -> list[dict[str, Any]]:
                 ("engine_derated_time_s", 0.01),
                 ("maximum_tire_utilization", 0.00001),
                 ("tire_generated_heat_kj", 0.1),
+                ("theoretical_top_speed_at_max_rpm_kph", 0.1),
             )
         ]
         if not circuits:

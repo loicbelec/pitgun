@@ -1,6 +1,6 @@
 # Racing Game Model V3 — Foundation Candidate
 
-Status: offline candidate `pitgun.racing-v3-candidate@0.5.0`. It is not
+Status: offline candidate `pitgun.racing-v3-candidate@0.6.0`. It is not
 authorized by a production catalog and cannot be selected by the game,
 Authority, or Verifier.
 
@@ -151,6 +151,20 @@ remain candidates rather than calibrated truths. Full interpretation and
 evidence are in
 [`RACING_V3_DEVELOPMENT_RESOLUTION_V1.md`](RACING_V3_DEVELOPMENT_RESOLUTION_V1.md).
 
+## Transmission resolution
+
+The `0.6.0` candidate replaces the opaque common gear-ratio multiplier with an
+explicit final-drive calculation. The normalized setup selects a target top
+speed; maximum engine speed, wheel radius and the catalog top-gear ratio then
+determine one common multiplier. Internal gearbox spacing is preserved, while
+the resolved theoretical top speed is exposed in diagnostics.
+
+The 792-run local screen keeps the transmission active and circuit-dependent:
+Monza, Monaco and Suzuka retain three distinct combined setup optima. The
+initial `85..105 m/s` range is experimental rather than calibrated. Full
+interpretation and evidence are in
+[`RACING_V3_TRANSMISSION_RESOLUTION_V1.md`](RACING_V3_TRANSMISSION_RESOLUTION_V1.md).
+
 ## Mechanical controls
 
 The `0.3.0` candidate removes four remaining shortcuts from the V3 path.
@@ -235,6 +249,7 @@ interruption time and driveline loss.
 - mechanical-controls profile V1 retains `pitgun.racing-v3-candidate@0.3.0`;
 - aerodynamic-efficiency profile V2 uses `pitgun.racing-v3-candidate@0.4.0`;
 - development-resolution profile V3 uses `pitgun.racing-v3-candidate@0.5.0`;
+- transmission-resolution profile V4 uses `pitgun.racing-v3-candidate@0.6.0`;
 - `pitgun.racing@3.0.0` is reserved for the reviewed production Game Model;
 - no existing Racing Catalog declares compatibility with the candidate;
 - browser, Authority, and Verifier cannot select it.

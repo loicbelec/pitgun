@@ -506,6 +506,10 @@ pub struct MechanicalDiagnosticsV3 {
     pub chassis_force_transfer_efficiency: f64,
     pub fixed_drag_area_m2: f64,
     pub fixed_downforce_area_m2: f64,
+    /// Vehicle speed in top gear at maximum engine speed after transmission
+    /// resolution. Older candidate profiles omit this diagnostic.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub theoretical_top_speed_at_max_rpm_kph: Option<f64>,
 }
 
 pub const CORNER_CURVATURE_THRESHOLD_RAD_PER_M: f64 = 0.001;
@@ -1628,6 +1632,7 @@ fn run_resolved_simulation_kernel(
         chassis_force_transfer_efficiency: mechanical.chassis_force_transfer_efficiency,
         fixed_drag_area_m2: mechanical.fixed_drag_area_m2,
         fixed_downforce_area_m2: mechanical.fixed_downforce_area_m2,
+        theoretical_top_speed_at_max_rpm_kph: None,
     });
 
     Ok(SimulationResult {
