@@ -50,8 +50,10 @@ owned by issue `#246`.
 ## Controlled release path
 
 1. Integrate the candidate resolver in the Rust simulator and expose the same
-   resolved profile to WASM (`#303`).
-2. Prove native/WASM parity and fail-closed behavior for unknown vehicles.
+   resolved profile to WASM (`#303`; implemented by the runtime integration
+   candidate).
+2. Prove native/WASM parity and fail-closed behavior for unknown vehicles
+   (implemented by the portable runtime tests).
 3. Publish a new versioned Racing Catalog candidate that references the
    integrated model and profile identities.
 4. Promote the same catalog identity through Authority and Verifier.

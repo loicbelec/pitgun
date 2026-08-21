@@ -1,9 +1,17 @@
 mod catalog;
 pub mod evidence;
+mod thermal_profile;
 pub mod workload;
 
 pub use catalog::{
     RacingCatalogBundleV1, RacingCatalogFileV1, RacingCatalogResolutionError, RacingCatalogSnapshot,
+};
+pub use thermal_profile::{
+    ResolvedV3ThermalFamilyProfileV1, V3_THERMAL_FAMILY_PROFILE_DIGEST,
+    V3_THERMAL_FAMILY_PROFILE_ID, V3_THERMAL_FAMILY_PROFILE_SCHEMA,
+    V3_THERMAL_FAMILY_PROFILE_VERSION, V3ThermalFamilyBindingsV1, V3ThermalFamilyEntryV1,
+    V3ThermalFamilyProfileCandidateV1, V3ThermalFamilyResolutionContractV1,
+    V3ThermalFamilyResolutionV1, V3ThermalFamilySourceEvidenceV1,
 };
 pub use workload::{
     RacingWorkload, RacingWorkloadError, racing_model_identity_for_version,
@@ -145,6 +153,8 @@ pub struct RaceOutput {
     pub player_fuel_mass_diagnostics_v3: Option<FuelMassDiagnosticsV3>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub player_tire_degradation_diagnostics_v3: Option<TireDegradationDiagnosticsV3>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub player_thermal_family_resolution_v3: Option<V3ThermalFamilyResolutionV1>,
 }
 
 /// Exact overrides for the mechanically resolved Model V3 experiment input.
@@ -1457,6 +1467,28 @@ pub fn run_race_with_catalog_and_v3_profile(
     )
 }
 
+/// Runs the reviewed Model V3 thermal candidate selected by exact vehicle id.
+///
+/// The candidate can only be constructed from its exact content-addressed JSON
+/// bytes. This integration boundary is shared by native Rust and WASM but is
+/// not selected by any published catalog or hosted-verification workload yet.
+pub fn run_race_with_catalog_and_v3_thermal_family_profile(
+    request: RunRaceRequest,
+    snapshot: &RacingCatalogSnapshot,
+    candidate: &V3ThermalFamilyProfileCandidateV1,
+) -> Result<RaceOutput, String> {
+    let vehicle_id = resolve_vehicle_id(request.input.vehicle_id.as_deref())?;
+    let resolved = candidate.resolve_vehicle(vehicle_id)?;
+    let profile = V3CandidateExperimentProfile {
+        schema_version: V3CandidateExperimentProfileVersion::V8,
+        engine_thermal_resolution: Some(resolved.engine_thermal_resolution),
+        ..V3CandidateExperimentProfile::default()
+    };
+    let mut output = run_race_with_catalog_and_v3_profile(request, snapshot, &profile)?;
+    output.player_thermal_family_resolution_v3 = Some(resolved.evidence);
+    Ok(output)
+}
+
 pub fn run_sessions(request: SessionRunRequest) -> Result<SessionRunOutput, String> {
     let catalog = RacingCatalogSnapshot::embedded()
         .map_err(|error| format!("invalid embedded Racing catalog: {error}"))?;
@@ -1771,6 +1803,7 @@ fn run_single_session(
         player_mechanical_diagnostics_v3,
         player_fuel_mass_diagnostics_v3,
         player_tire_degradation_diagnostics_v3,
+        player_thermal_family_resolution_v3: None,
     })
 }
 
@@ -1807,6 +1840,32 @@ pub fn run_race_with_catalog_json(input_json: String, catalog_bundle_json: Strin
     };
 
     match run_race_with_catalog(request, &catalog) {
+        Ok(output) => serialize_json(&output),
+        Err(error) => json_error(&error),
+    }
+}
+
+/// Browser facade for the reviewed family-specific Model V3 thermal candidate.
+#[cfg_attr(feature = "wasm", wasm_bindgen)]
+pub fn run_race_with_catalog_and_v3_thermal_family_profile_json(
+    input_json: String,
+    catalog_bundle_json: String,
+    candidate_json: String,
+) -> String {
+    let request = match parse_run_race_request(&input_json) {
+        Ok(request) => request,
+        Err(error) => return json_error(&error),
+    };
+    let catalog = match RacingCatalogSnapshot::from_bundle_json(&catalog_bundle_json) {
+        Ok(catalog) => catalog,
+        Err(error) => return json_error(&format!("invalid Racing catalog: {error}")),
+    };
+    let candidate = match V3ThermalFamilyProfileCandidateV1::from_exact_json(&candidate_json) {
+        Ok(candidate) => candidate,
+        Err(error) => return json_error(&error),
+    };
+
+    match run_race_with_catalog_and_v3_thermal_family_profile(request, &catalog, &candidate) {
         Ok(output) => serialize_json(&output),
         Err(error) => json_error(&error),
     }
