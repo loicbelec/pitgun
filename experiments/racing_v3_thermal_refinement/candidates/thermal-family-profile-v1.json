@@ -1,0 +1,122 @@
+{
+  "schema_version": "pitgun.racing-v3-thermal-family-profile-candidate/v1",
+  "id": "pitgun.racing-v3-thermal-family-profile",
+  "version": "1.0.0-rc.1",
+  "status": "REVIEWED_CANDIDATE",
+  "model": {
+    "digest": "sha256:cc1394a1ba52d83ddb9be6f6272729c29f87944969c41a21991d43997379e5cd",
+    "id": "pitgun.racing-v3-candidate",
+    "version": "0.10.0"
+  },
+  "source_evidence": {
+    "campaign_id": "racing-v3-thermal-refinement-validation-2026-v2",
+    "campaign_digest": "sha256:5d336d09a1ed51086893285b7f2713730a6f9934872140831fe91fd9907ffc93",
+    "review_id": "racing-v3-thermal-refinement-validation-review-v1",
+    "review_digest": "sha256:b4747fe3193defec84889b90a755ad74417440d594433f2703c0b80a779aff42",
+    "databricks_job_id": "657259324536960",
+    "databricks_run_id": "176771852333040",
+    "read_only_review_run_id": "206668022732405",
+    "evidence_versions": {
+      "campaigns": 51,
+      "experimental_runs": 57,
+      "experimental_metrics": 56
+    }
+  },
+  "resolution_contract": {
+    "resolver_owner": "pitgun-racing-simulator",
+    "solver_input": "one resolved engine_thermal_resolution per execution",
+    "selection_key": "vehicle_id",
+    "unknown_vehicle_behavior": "reject",
+    "era_only_selection_forbidden": true
+  },
+  "profiles": {
+    "f1_2026": {
+      "parameter_set_id": "f1-2026-adaptive-038",
+      "validated_profile_ref": "sha256:537a824e6cf85183b997d293b335a186e36742ef624fa60dae1a85ecddcd52a4",
+      "bindings": {
+        "vehicle_ids": [
+          "f1_2026"
+        ],
+        "eras": [
+          5
+        ]
+      },
+      "engine_thermal_resolution": {
+        "thermal_capacity_multiplier": 0.98828125,
+        "heat_generation_multiplier": 1.3950617283950617,
+        "static_cooling_multiplier": 1.0,
+        "speed_cooling_multiplier": 1.4540000000000002,
+        "soft_limit_offset_c": 0.9183673469387728,
+        "derate_slope_multiplier": 1.21900826446281,
+        "minimum_power_fraction": 0.4739644970414202,
+        "derating_shape": "linear-threshold",
+        "smooth_knee_width_c": 0.0,
+        "cooling_drag_area_m2_at_cap": 0.03633217993079584
+      }
+    },
+    "historical_v8": {
+      "parameter_set_id": "historical-default",
+      "validated_profile_ref": "sha256:e576e0afb0c921949ba175ab4f9ef6a66b7a31e8d3dfd92f126466a2b5823cde",
+      "bindings": {
+        "vehicle_ids": [
+          "classic_v8_1960",
+          "classic_v8_1970"
+        ],
+        "eras": [
+          1,
+          4
+        ]
+      },
+      "engine_thermal_resolution": {
+        "thermal_capacity_multiplier": 1.0,
+        "heat_generation_multiplier": 1.0,
+        "static_cooling_multiplier": 1.0,
+        "speed_cooling_multiplier": 1.0,
+        "soft_limit_offset_c": 0.0,
+        "derate_slope_multiplier": 1.0,
+        "minimum_power_fraction": 0.2,
+        "derating_shape": "linear-threshold",
+        "smooth_knee_width_c": 0.0,
+        "cooling_drag_area_m2_at_cap": 0.0
+      }
+    },
+    "modern_v6t": {
+      "parameter_set_id": "modern-v6t-soft-limit--3.0c",
+      "validated_profile_ref": "sha256:d509297a06bc607c9e01351a0c30e7cc61f2a9da09767371d4cdc137d1d4ca8a",
+      "bindings": {
+        "vehicle_ids": [
+          "modern_v6t"
+        ],
+        "eras": [
+          5
+        ]
+      },
+      "engine_thermal_resolution": {
+        "thermal_capacity_multiplier": 0.98828125,
+        "heat_generation_multiplier": 1.3950617283950617,
+        "static_cooling_multiplier": 1.0,
+        "speed_cooling_multiplier": 1.4540000000000002,
+        "soft_limit_offset_c": -3.0,
+        "derate_slope_multiplier": 1.21900826446281,
+        "minimum_power_fraction": 0.4739644970414202,
+        "derating_shape": "linear-threshold",
+        "smooth_knee_width_c": 0.0,
+        "cooling_drag_area_m2_at_cap": 0.03633217993079584
+      }
+    }
+  },
+  "excluded_from_candidate": {
+    "experimental_fuel_reservoir_kg": 130.0,
+    "reason": "Fuel was a validation nuisance-control input and is owned by the staged energy contract.",
+    "owner_issue": 246
+  },
+  "promotion": {
+    "candidate_creation_authorized": true,
+    "rust_wasm_integration_authorized": true,
+    "catalog_publication_authorized": false,
+    "authority_verifier_promotion_authorized": false,
+    "game_staging_promotion_authorized": false,
+    "production_promotion_authorized": false,
+    "automatic_promotion": false
+  }
+}
