@@ -1,4 +1,5 @@
 import copy
+import hashlib
 import importlib.util
 import json
 import pathlib
@@ -6,6 +7,7 @@ import unittest
 
 
 EXPERIMENT = pathlib.Path(__file__).parents[1]
+RESULT = EXPERIMENT / "results" / "local-refinement-v1.json"
 SPEC = importlib.util.spec_from_file_location("thermal_refinement", EXPERIMENT / "screen_local.py")
 MODULE = importlib.util.module_from_spec(SPEC)
 assert SPEC.loader is not None
@@ -54,6 +56,19 @@ class ThermalRefinementTests(unittest.TestCase):
             MODULE.sha256(review.read_bytes()),
             source["review_digest"],
         )
+
+    def test_frozen_result_selects_only_the_preregistered_candidate(self):
+        payload = RESULT.read_bytes()
+        expected = RESULT.with_suffix(".sha256").read_text().strip()
+        self.assertEqual(expected, "sha256:" + hashlib.sha256(payload).hexdigest())
+        result = json.loads(payload)
+        self.assertEqual(result["contract_id"], self.contract["contract_id"])
+        self.assertEqual(result["selection_verdict"], "PASS")
+        self.assertEqual(result["selected_parameter_set_id"], "soft-limit--3.0c")
+        self.assertEqual(result["execution_count"], 126)
+        self.assertFalse(result["governance"]["silverstone_executed_locally"])
+        passing = [item for item in result["candidates"] if item["passed"]]
+        self.assertEqual([item["parameter_set_id"] for item in passing], ["soft-limit--3.0c"])
 
     def test_candidate_evaluation_requires_an_interior_optimum(self):
         def point(circuit, seed, cooling, elapsed, temperature, derated):
