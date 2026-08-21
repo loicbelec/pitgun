@@ -56,6 +56,11 @@ from .tire_degradation import (
     load_tire_degradation_campaign,
     materialize_tire_degradation_plan,
 )
+from .thermal_surface import (
+    load_thermal_surface_campaign,
+    load_thermal_surface_execution,
+    materialize_thermal_surface_plan,
+)
 from .strategy_effect import (
     extract_strategy_effect_evidence,
     load_strategy_effect_campaign,
@@ -79,6 +84,9 @@ __all__ = [
     "materialize_decision_surface_plan",
     "load_tire_degradation_campaign",
     "materialize_tire_degradation_plan",
+    "load_thermal_surface_campaign",
+    "load_thermal_surface_execution",
+    "materialize_thermal_surface_plan",
     "load_reference_campaign",
     "load_calibration_campaign",
     "materialize_plan",
