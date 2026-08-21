@@ -100,6 +100,9 @@ def wheel_entries(version: str) -> dict[str, bytes]:
         f"{PACKAGE}/decision_surface.py": (
             package_root / "decision_surface.py"
         ).read_bytes(),
+        f"{PACKAGE}/thermal_surface.py": (
+            package_root / "thermal_surface.py"
+        ).read_bytes(),
         f"{PACKAGE}/bin/pitgun": runner.read_bytes(),
         f"{PACKAGE}/bin/tuning_response_probe": tuning_response_probe.read_bytes(),
         f"{PACKAGE}/bin/v3_validation_probe": v3_validation_probe.read_bytes(),

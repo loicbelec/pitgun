@@ -221,6 +221,19 @@ allow a review to pin exact historical snapshots. The completed V2 review pins
 coefficient selection or write path: future thermal candidates remain separate
 immutable campaigns.
 
+## Model V3 thermal adequacy
+
+The checksummed
+[`racing-v3-thermal-adequacy-v1.json`](campaigns/racing-v3-thermal-adequacy-v1.json)
+manifest freezes the review boundary between the adaptive local screen and the
+next Databricks replay. It contains 1,560 exact run keys: 720 local parity
+replays, 288 points that densify the healthy/hot transition, and 552 reserved
+Barcelona validations using a new seed. The adapter rejects changed manifests,
+remote inputs, private player data, incomplete local evidence, and any campaign
+that can promote itself. The evidence partitions and era-aware decision
+contract are documented in
+[Racing Model V3 thermal Databricks plan V1](../../docs/RACING_V3_THERMAL_DATABRICKS_PLAN_V1.md).
+
 ## Reference campaign
 
 The frozen V1 campaign manifest is
