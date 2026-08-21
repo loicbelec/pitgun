@@ -927,6 +927,10 @@ include!(concat!(
     env!("CARGO_MANIFEST_DIR"),
     "/../../generated/racing_catalog_model_v2.rs"
 ));
+include!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../generated/racing_catalog_model_v3_thermal.rs"
+));
 const PRESENTATION_INDEX: &[u8] = include_bytes!(concat!(
     env!("CARGO_MANIFEST_DIR"),
     "/../../catalogs/racing/v1.0.0/presentation/index.json"
@@ -2448,6 +2452,10 @@ impl EmbeddedCatalog {
                 // The validated snapshot owns this resource. The physical
                 // catalog only acknowledges its category here so it cannot be
                 // mistaken for a vehicle component.
+            }
+            "thermal-profiles" => {
+                // The validated snapshot owns and resolves this exact candidate.
+                // The physical component catalog only acknowledges the category.
             }
             _ => {
                 return Err(format!(

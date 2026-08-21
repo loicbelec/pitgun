@@ -16,14 +16,18 @@ CATALOG_ROOT = ROOT / "catalogs" / "racing"
 VERSION_PATTERN = re.compile(r"^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$")
 EMBEDDED_RUST = ROOT / "generated" / "racing_catalog_v1.rs"
 MODEL_V2_EMBEDDED_RUST = ROOT / "generated" / "racing_catalog_model_v2.rs"
+MODEL_V3_THERMAL_EMBEDDED_RUST = (
+    ROOT / "generated" / "racing_catalog_model_v3_thermal.rs"
+)
 
 DIGEST_PREFIX = "sha256:"
 MODEL_COMPATIBILITY_BY_RELEASE = {
-    "1.0.0": ["1.0.0"],
-    "1.1.0": ["1.0.0"],
-    "1.2.0": ["2.0.0"],
-    "1.3.0": ["2.0.0"],
-    "1.4.0": ["2.0.0"],
+    "1.0.0": ("pitgun.racing", ["1.0.0"]),
+    "1.1.0": ("pitgun.racing", ["1.0.0"]),
+    "1.2.0": ("pitgun.racing", ["2.0.0"]),
+    "1.3.0": ("pitgun.racing", ["2.0.0"]),
+    "1.4.0": ("pitgun.racing", ["2.0.0"]),
+    "1.5.0": ("pitgun.racing-v3-candidate", ["0.10.0"]),
 }
 
 
@@ -185,7 +189,9 @@ def validate_opponent_policies(release_root: Path) -> None:
 def generated_release_artifacts(release_root: Path) -> dict[Path, bytes]:
     version = release_root.name.removeprefix("v")
     try:
-        compatible_model_versions = MODEL_COMPATIBILITY_BY_RELEASE[version]
+        compatible_model_id, compatible_model_versions = (
+            MODEL_COMPATIBILITY_BY_RELEASE[version]
+        )
     except KeyError as error:
         raise SystemExit(
             f"FAIL Racing catalog: model compatibility is not governed for {version}"
@@ -245,7 +251,7 @@ def generated_release_artifacts(release_root: Path) -> dict[Path, bytes]:
             "contract_versions": ["pitgun.deterministic-run/v1"],
             "models": [
                 {
-                    "id": "pitgun.racing",
+                    "id": compatible_model_id,
                     "versions": compatible_model_versions,
                 }
             ],
@@ -299,6 +305,9 @@ def generated_artifacts() -> dict[Path, bytes]:
     artifacts[EMBEDDED_RUST] = generated_embedded_artifact(selected)
     artifacts[MODEL_V2_EMBEDDED_RUST] = generated_embedded_artifact(
         CATALOG_ROOT / "v1.2.0", "MODEL_V2_EMBEDDED_FILES"
+    )
+    artifacts[MODEL_V3_THERMAL_EMBEDDED_RUST] = generated_embedded_artifact(
+        CATALOG_ROOT / "v1.5.0", "MODEL_V3_THERMAL_EMBEDDED_FILES"
     )
     return artifacts
 

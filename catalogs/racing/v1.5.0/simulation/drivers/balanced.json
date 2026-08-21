@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "id": "balanced",
+  "display_name": "Balanced",
+  "style": "balanced",
+  "engine_mode": "balanced",
+  "tire_id": "medium",
+  "downforce_bias": 0.0,
+  "gear_ratio_bias": 0.0,
+  "pace_variance_ms": 35.0
+}
