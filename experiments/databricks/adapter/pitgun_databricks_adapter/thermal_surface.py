@@ -12,6 +12,8 @@ from typing import Any
 
 CAMPAIGN_NAME = "racing-v3-thermal-adequacy-v1"
 SCHEMA_VERSION = "pitgun.racing-v3-thermal-adequacy-campaign/v1"
+REVIEW_NAME = "racing-v3-thermal-adequacy-review-v1"
+REVIEW_SCHEMA_VERSION = "pitgun.racing-v3-thermal-adequacy-review/v1"
 MODEL_ID = "pitgun.racing-v3-candidate"
 MODEL_VERSION = "0.10.0"
 SHA256_PATTERN = re.compile(r"sha256:[0-9a-f]{64}")
@@ -20,6 +22,38 @@ EXECUTION_KEY_PATTERN = re.compile(r"v3th-[0-9a-f]{16}")
 
 class ThermalSurfaceCampaignError(ValueError):
     """Raised when the packaged thermal campaign is incomplete or changed."""
+
+
+def load_thermal_surface_review(
+    name: str = REVIEW_NAME,
+) -> tuple[dict[str, Any], str]:
+    """Load the immutable human review without granting a promotion path."""
+
+    if name != REVIEW_NAME:
+        raise ThermalSurfaceCampaignError(
+            "thermal review is not packaged or allowlisted"
+        )
+    resource = (
+        importlib.resources.files("pitgun_databricks_adapter")
+        / "reviews"
+        / f"{name}.json"
+    )
+    payload = resource.read_bytes()
+    review = json.loads(payload)
+    if review.get("schema_version") != REVIEW_SCHEMA_VERSION:
+        raise ThermalSurfaceCampaignError("unsupported thermal review")
+    if review.get("automatic_catalog_promotion") is not False:
+        raise ThermalSurfaceCampaignError(
+            "thermal review cannot enable automatic promotion"
+        )
+    if (
+        review.get("next_gate", {}).get("automatic_catalog_promotion")
+        is not False
+    ):
+        raise ThermalSurfaceCampaignError(
+            "thermal refinement gate cannot enable automatic promotion"
+        )
+    return review, "sha256:" + hashlib.sha256(payload).hexdigest()
 
 
 def _contains_remote_reference(value: object) -> bool:

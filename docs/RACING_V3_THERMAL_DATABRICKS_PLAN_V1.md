@@ -78,3 +78,6 @@ regenerate an opponent policy.
 Execution and read-only review are the next delivery slice. Only the reviewed
 per-era verdict may authorize either a candidate parameter profile or a new
 thermal equation proposal.
+
+The completed evidence and conservative per-family verdicts are recorded in
+[Racing Model V3 thermal Databricks review V1](RACING_V3_THERMAL_DATABRICKS_REVIEW_V1.md).

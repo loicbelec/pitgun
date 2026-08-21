@@ -60,6 +60,7 @@ from .tire_degradation import (
 from .thermal_surface import (
     load_thermal_surface_campaign,
     load_thermal_surface_execution,
+    load_thermal_surface_review,
     materialize_thermal_surface_plan,
 )
 from .strategy_effect import (
@@ -88,6 +89,7 @@ __all__ = [
     "materialize_tire_degradation_plan",
     "load_thermal_surface_campaign",
     "load_thermal_surface_execution",
+    "load_thermal_surface_review",
     "materialize_thermal_surface_plan",
     "load_reference_campaign",
     "load_calibration_campaign",
