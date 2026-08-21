@@ -310,6 +310,35 @@ class BundleContractTest(unittest.TestCase):
         for forbidden in ("policy_releases", '"release_state": "PUBLISHED"'):
             self.assertNotIn(forbidden, notebook)
 
+    def test_v3_decision_surface_job_replays_local_evidence_and_review_is_read_only(self):
+        job = (ROOT / "resources" / "jobs.yml").read_text()
+        executor = (ROOT / "src" / "execute_v3_decision_surface.py").read_text()
+        review = (ROOT / "src" / "visualize_v3_response_surfaces.py").read_text()
+        runner = (
+            ROOT / "adapter" / "pitgun_databricks_adapter" / "runner.py"
+        ).read_text()
+        builder = (ROOT / "adapter" / "build_wheel.py").read_text()
+
+        self.assertIn("v3_decision_surface_job:", job)
+        self.assertIn("v3_response_surface_review_job:", job)
+        self.assertIn("racing-v3-decision-surface-v2", job)
+        self.assertIn('campaigns_table_version\n          default: "45"', job)
+        self.assertIn('runs_table_version\n          default: "38"', job)
+        self.assertIn("Execute or resume all 4,928 immutable V3 run keys", job)
+        self.assertIn("execute_packaged_v3_decision_surface", executor)
+        self.assertIn("expected_portable_point_digest", executor)
+        self.assertIn("portable_local_point_parity", executor)
+        self.assertIn('"automatic_catalog_promotion": False', executor)
+        self.assertIn("V3_DECISION_SURFACE_RESULT_VERSION", runner)
+        self.assertIn('f"{PACKAGE}/bin/v3_decision_surface_probe"', builder)
+        self.assertIn('.option("versionAsOf", int(version))', review)
+        self.assertIn("Marginal value of one development point", review)
+        self.assertIn("Cooling response and maximum engine temperature", review)
+        for forbidden in ("DeltaTable", "MERGE INTO", "UPDATE ", "DELETE "):
+            self.assertNotIn(forbidden, review)
+        for forbidden in ("policy_releases", '"release_state": "PUBLISHED"'):
+            self.assertNotIn(forbidden, executor)
+
     def test_candidate_review_pins_delta_and_cannot_promote_automatically(self):
         job = (ROOT / "resources" / "jobs.yml").read_text()
         notebook = (ROOT / "src" / "review_candidate_evidence.py").read_text()

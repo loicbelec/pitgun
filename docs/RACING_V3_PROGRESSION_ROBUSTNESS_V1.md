@@ -89,3 +89,36 @@ artifact as its local baseline. It must preserve calibration/held-out labels,
 retain per-vehicle and per-progression verdicts, and reject automatic promotion.
 Only after that governed replay should a new immutable V3 candidate alter aero,
 chassis, cooling or engine parameters.
+
+The replay contract is materialized as the checksummed
+`experiments/databricks/campaigns/racing-v3-decision-surface-v2.json` manifest.
+It deduplicates the physical inputs but retains all 4,928 natural run keys and
+the expected digest of every full Rust result and compact evidence point. The
+read-only response-surface notebook consumes the resulting Delta rows for
+visual review; it is deliberately not a parameter registry or a promotion
+engine.
+
+## Databricks replay result
+
+The attended Free Edition run `938570754697451` completed all 4,928 Linux/ARM64
+executions successfully. The portable point-set digest produced from Delta is
+identical to the accepted local digest:
+
+`sha256:4843f38346d1f64b9ddad1cad87cb75ad3395aaf2ded53718927f11dce02acc6`
+
+The replay contains 2,112 calibration points and 2,816 held-out points, with no
+failed or invalid terminal row. Raw floating-point serialization differs
+between macOS and Linux, so raw result digests remain lineage rather than a
+cross-platform acceptance gate. Portable parity keeps integral outputs exact
+and rounds the eight audited continuous metrics to nine decimal places before
+digesting the point set. It reported zero portable mismatch.
+
+MLflow run `f36b782e0343471b9ba69cd4418f3fe4` records the immutable manifest and
+review report. The successful visual review pins `campaigns@45` and
+`experimental_runs@38`; it writes no Delta row and selects no coefficient.
+
+This governed replay confirms the local diagnosis rather than changing it.
+The next immutable experiment should vary bounded thermal coefficients and at
+least one smooth cooling-cost shape. It must retain the present development,
+thermal, setup, and held-out views so a human can distinguish scalar tuning
+from a structural improvement before any Model V3 or catalog promotion.
