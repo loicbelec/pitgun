@@ -216,7 +216,8 @@ portable digest. Failures remain visible with their phase and error, and the MLf
 `v3_response_surface_review_job` is a read-only presentation layer over one
 completed campaign. It renders development marginal value, cooling/temperature
 behavior, and a selectable 5 × 5 setup-regret heatmap. Optional Delta versions
-allow a review to pin exact historical snapshots. The notebook contains no
+allow a review to pin exact historical snapshots. The completed V2 review pins
+`campaigns@45` and `experimental_runs@38` by default. The notebook contains no
 coefficient selection or write path: future thermal candidates remain separate
 immutable campaigns.
 

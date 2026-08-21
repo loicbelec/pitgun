@@ -612,9 +612,9 @@ resources:
         - name: campaign_id
           default: racing-v3-decision-surface-2026-v2
         - name: campaigns_table_version
-          default: ""
+          default: "45"
         - name: runs_table_version
-          default: ""
+          default: "38"
         - name: vehicle_id
           default: f1_2026
         - name: circuit_id

@@ -322,6 +322,8 @@ class BundleContractTest(unittest.TestCase):
         self.assertIn("v3_decision_surface_job:", job)
         self.assertIn("v3_response_surface_review_job:", job)
         self.assertIn("racing-v3-decision-surface-v2", job)
+        self.assertIn('campaigns_table_version\n          default: "45"', job)
+        self.assertIn('runs_table_version\n          default: "38"', job)
         self.assertIn("Execute or resume all 4,928 immutable V3 run keys", job)
         self.assertIn("execute_packaged_v3_decision_surface", executor)
         self.assertIn("expected_portable_point_digest", executor)
