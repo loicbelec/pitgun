@@ -689,6 +689,59 @@ resources:
         pitgun.analysis: racing-v3-thermal-adequacy-review-v1
         pitgun.promotion: forbidden
 
+    v3_thermal_refinement_validation_job:
+      name: pitgun-racing-v3-thermal-refinement-validation-v1
+      description: >-
+        Execute the 12-run independent full-race Silverstone validation for
+        the frozen historical, modern V6T, and F1 2026 thermal profiles.
+      max_concurrent_runs: 1
+      performance_target: STANDARD
+      parameters:
+        - name: max_workers
+          default: "8"
+      environments:
+        - environment_key: serverless_v3_thermal_refinement_validation
+          spec:
+            environment_version: "4"
+            dependencies:
+              - ../adapter/dist/*.whl
+      tasks:
+        - task_key: bootstrap_governed_tables
+          description: Validate the governed Delta tables.
+          environment_key: serverless_v3_thermal_refinement_validation
+          notebook_task:
+            notebook_path: ../src/bootstrap_tables.py
+            source: WORKSPACE
+            base_parameters:
+              operation: bootstrap
+              campaign_id: racing-v3-thermal-refinement-validation-2026-v1
+              catalog_name: ${var.catalog_name}
+              calibration_schema: ${resources.schemas.calibration.name}
+              policies_schema: ${resources.schemas.policies.name}
+              experiment_id: ${resources.experiments.calibration_experiment.id}
+          timeout_seconds: 900
+        - task_key: execute_v3_thermal_refinement_validation
+          description: Execute only the immutable reserved Silverstone keys.
+          depends_on:
+            - task_key: bootstrap_governed_tables
+          environment_key: serverless_v3_thermal_refinement_validation
+          notebook_task:
+            notebook_path: ../src/execute_v3_thermal_surface.py
+            source: WORKSPACE
+            base_parameters:
+              catalog_name: ${var.catalog_name}
+              calibration_schema: ${resources.schemas.calibration.name}
+              experiment_id: ${resources.experiments.calibration_experiment.id}
+              campaign_name: racing-v3-thermal-refinement-validation-v1
+              max_workers: "{{job.parameters.max_workers}}"
+          timeout_seconds: 3600
+      tags:
+        pitgun.domain: calibration
+        pitgun.compute: serverless
+        pitgun.runner: rust-native-experimental
+        pitgun.campaign: racing-v3-thermal-refinement-validation-v1
+        pitgun.promotion: human-review-required
+
     v3_response_surface_review_job:
       name: pitgun-racing-v3-response-surface-review-v1
       description: >-

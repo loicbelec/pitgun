@@ -68,6 +68,7 @@ databricks bundle run v3_tire_degradation_job -t dev -p pitgun-free
 databricks bundle run v3_decision_surface_job -t dev -p pitgun-free
 databricks bundle run v3_response_surface_review_job -t dev -p pitgun-free \
   --params vehicle_id=f1_2026,circuit_id=it-1922
+databricks bundle run v3_thermal_refinement_validation_job -t dev -p pitgun-free
 ```
 
 Repeat `deploy` and `run`: schema and table creation are idempotent. The job may
@@ -256,6 +257,13 @@ databricks bundle run v3_thermal_surface_review_job -t dev -p pitgun-free
 It reproduces the 1,560-run ledger, renders the two retained candidate surfaces,
 and exposes the recorded `PASS`/`REFINE` verdicts without a Delta, catalog, or
 game write path.
+
+The follow-up `v3_thermal_refinement_validation_job` is a separate immutable
+12-run gate. It evaluates two unchanged historical V8 anchors, the locally
+selected modern V6T `soft-limit--3.0c` profile, and the retained F1 2026
+`adaptive-038` profile at 0/10/20 cooling points. Every run uses the reserved
+Silverstone circuit, seed `20260901`, and a 52-lap full-race workload. The job
+stores new Delta and MLflow evidence but cannot promote a profile.
 
 ## Reference campaign
 

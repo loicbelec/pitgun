@@ -11,6 +11,8 @@ from typing import Any
 
 
 CAMPAIGN_NAME = "racing-v3-thermal-adequacy-v1"
+REFINEMENT_VALIDATION_CAMPAIGN_NAME = "racing-v3-thermal-refinement-validation-v1"
+CAMPAIGN_NAMES = frozenset({CAMPAIGN_NAME, REFINEMENT_VALIDATION_CAMPAIGN_NAME})
 SCHEMA_VERSION = "pitgun.racing-v3-thermal-adequacy-campaign/v1"
 REVIEW_NAME = "racing-v3-thermal-adequacy-review-v1"
 REVIEW_SCHEMA_VERSION = "pitgun.racing-v3-thermal-adequacy-review/v1"
@@ -66,13 +68,13 @@ def _contains_remote_reference(value: object) -> bool:
     return False
 
 
-@functools.lru_cache(maxsize=1)
+@functools.lru_cache(maxsize=len(CAMPAIGN_NAMES))
 def load_thermal_surface_campaign(
     name: str = CAMPAIGN_NAME,
 ) -> tuple[dict[str, Any], str]:
     """Return the exact checksummed campaign embedded in the adapter wheel."""
 
-    if name != CAMPAIGN_NAME:
+    if name not in CAMPAIGN_NAMES:
         raise ThermalSurfaceCampaignError("campaign is not packaged or allowlisted")
     root = importlib.resources.files("pitgun_databricks_adapter") / "campaigns"
     filename = name + ".json"
@@ -167,7 +169,7 @@ def materialize_thermal_surface_plan(
     ]
 
 
-@functools.lru_cache(maxsize=1)
+@functools.lru_cache(maxsize=len(CAMPAIGN_NAMES))
 def _execution_index(name: str) -> dict[str, dict[str, Any]]:
     manifest, _ = load_thermal_surface_campaign(name)
     return {

@@ -1,0 +1,1166 @@
+{
+  "schema_version": "pitgun.racing-v3-thermal-adequacy-campaign/v1",
+  "campaign_id": "racing-v3-thermal-refinement-validation-2026-v1",
+  "execution_class": "experimental-v3-thermal-physics",
+  "parameter_space_version": "racing-v3-thermal-refinement-validation-v1",
+  "question": "Do the frozen era-specific thermal profiles transfer to a full Silverstone race without reusing local selection evidence?",
+  "promotion_policy": "human-review-required",
+  "automatic_catalog_promotion": false,
+  "model": {
+    "digest": "sha256:cc1394a1ba52d83ddb9be6f6272729c29f87944969c41a21991d43997379e5cd",
+    "id": "pitgun.racing-v3-candidate",
+    "version": "0.10.0"
+  },
+  "runner": {
+    "kind": "v3_decision_surface_probe",
+    "contract": "pitgun.racing-v3-decision-surface-probe/v1",
+    "local_artifact_digest": "sha256:ad38af426ab0779a29577270a89db20caabada47c9300bd9b36c80289976d653"
+  },
+  "source_evidence": {
+    "schema_version": "pitgun.racing-v3-thermal-refinement-local/v1",
+    "artifact_digest": "sha256:60315233d18f863e723f7a14c22cee11eb6c119cbe1d65455437096ab3afcb5a",
+    "contract_digest": "sha256:c2cb24515df12f7e84a86d3cd5bde10290152301a440f1f28a6161b732ae534c",
+    "reviewed_campaign_digest": "sha256:f6129f0799aaa849ae002534e5b148ae38be10f89f4edc283923b2da24fd54b2",
+    "base_scenario_digest": "sha256:108210d068b866b683cf694b781b1340188c8475336d2d240bc1ed61a05338f4",
+    "base_profile_digest": "sha256:32e2f46c9c7faf6ece77d7b04a01119308dce6aa1572a9d336871d293566d5e8",
+    "selected_parameter_set_id": "soft-limit--3.0c"
+  },
+  "adequacy_contract": {
+    "classification_only_not_real_f1_calibration": true,
+    "global_pathology_guards": {
+      "maximum_engine_temperature_c": 180.0,
+      "maximum_engine_derated_fraction": 1.0,
+      "all_metrics_finite": true,
+      "zero_cooling_severity_is_not_a_pathology": true
+    },
+    "historical_v8": {
+      "required": [
+        "safe",
+        "cooling_not_beneficial"
+      ],
+      "thermal_engagement_required": false
+    },
+    "modern_v6t": {
+      "required": [
+        "safe",
+        "monotonic_thermal_recovery",
+        "interior_cooling_optimum"
+      ]
+    },
+    "f1_2026": {
+      "required": [
+        "safe",
+        "monotonic_thermal_recovery",
+        "interior_cooling_optimum"
+      ],
+      "energy_controller_pace_feedback_in_scope": false
+    },
+    "verdicts": [
+      "PASS",
+      "REFINE",
+      "STRUCTURAL_CHANGE_REQUIRED"
+    ]
+  },
+  "dimensions": {
+    "profiles_by_family": {
+      "historical_v8": "historical-default",
+      "modern_v6t": "modern-v6t-soft-limit--3.0c",
+      "f1_2026": "f1-2026-adaptive-038"
+    },
+    "vehicles": [
+      "classic_v8_1960",
+      "classic_v8_1970",
+      "modern_v6t",
+      "f1_2026"
+    ],
+    "eras": [
+      1,
+      4,
+      5
+    ],
+    "circuits": [
+      "gb-1948"
+    ],
+    "splits": [
+      "independent_final_validation"
+    ],
+    "cooling_levels": [
+      0,
+      10,
+      20
+    ],
+    "reserved_validation_seed": 20260901,
+    "workloads": {
+      "full-race": 52
+    }
+  },
+  "governance": {
+    "rust_is_sole_physics_evaluator": true,
+    "private_player_data_allowed": false,
+    "automatic_game_or_catalog_promotion": false,
+    "automatic_authority_or_verifier_promotion": false,
+    "local_replay_is_independent_validation": false,
+    "final_validation_inputs_reserved_during_local_selection": true,
+    "all_configurations_are_new_validation_evidence": true
+  },
+  "planned_run_count": 12,
+  "local_replay_run_count": 0,
+  "new_evidence_run_count": 12,
+  "unique_scenario_count": 12,
+  "unique_profile_count": 3,
+  "parameter_sets": [
+    {
+      "parameter_set_id": "f1-2026-adaptive-038",
+      "origin": "pre_registered_family_validation",
+      "profile_ref": "sha256:537a824e6cf85183b997d293b335a186e36742ef624fa60dae1a85ecddcd52a4"
+    },
+    {
+      "parameter_set_id": "historical-default",
+      "origin": "pre_registered_family_validation",
+      "profile_ref": "sha256:e576e0afb0c921949ba175ab4f9ef6a66b7a31e8d3dfd92f126466a2b5823cde"
+    },
+    {
+      "parameter_set_id": "modern-v6t-soft-limit--3.0c",
+      "origin": "pre_registered_family_validation",
+      "profile_ref": "sha256:d509297a06bc607c9e01351a0c30e7cc61f2a9da09767371d4cdc137d1d4ca8a"
+    }
+  ],
+  "profiles": {
+    "sha256:537a824e6cf85183b997d293b335a186e36742ef624fa60dae1a85ecddcd52a4": {
+      "schema_version": "pitgun.racing-v3-experiment-profile/v8",
+      "tuning_response": {
+        "schema_version": "pitgun.racing-tuning-response/v1",
+        "development_points_cap": 20.0,
+        "aero_development_gain": 0.1,
+        "drag_base": 0.85,
+        "drag_slider_gain": 0.3,
+        "downforce_base": 0.75,
+        "downforce_slider_gain": 0.55,
+        "straight_aero_scale": 0.95,
+        "corner_aero_scale": 1.05,
+        "chassis_grip_development_gain": 0.08,
+        "cooling_base": 0.75,
+        "cooling_development_gain": 0.5,
+        "engine_torque_development_gain": 0.01,
+        "gear_ratio_base": 1.1,
+        "gear_ratio_slider_reduction": 0.2
+      },
+      "tire_contact": {
+        "reference_normal_load_n": 8500.0,
+        "load_sensitivity_exponent": 0.08,
+        "thermal_capacity_j_per_c": 180000.0,
+        "heat_generation_fraction": 0.006,
+        "cooling_w_per_c": 80.0,
+        "speed_cooling_w_per_mps_c": 0.8,
+        "baseline_wear_per_s": 1e-06,
+        "workload_energy_to_full_wear_j": 8000000000.0
+      },
+      "aero_resolution": {
+        "minimum_downforce_area_multiplier": 0.75,
+        "maximum_downforce_area_multiplier": 1.25,
+        "base_drag_area_multiplier": 0.85,
+        "induced_drag_factor_per_m2": 0.25,
+        "development_downforce_gain_at_cap": 0.08,
+        "development_drag_reduction_at_cap": 0.04
+      },
+      "development_resolution": {
+        "chassis_force_transfer_efficiency_without_development": 0.97,
+        "chassis_force_transfer_efficiency_at_cap": 1.0,
+        "engine_torque_gain_at_cap": 0.06,
+        "cooling_capacity_multiplier_without_development": 0.75,
+        "cooling_capacity_gain_at_cap": 0.5
+      },
+      "transmission_resolution": {
+        "minimum_target_top_speed_mps": 85.0,
+        "maximum_target_top_speed_mps": 105.0,
+        "target_engine_speed_fraction": 0.98
+      },
+      "mechanical_overrides": {},
+      "fuel_mass": {
+        "brake_specific_fuel_consumption_kg_per_kwh": 0.24,
+        "idle_fuel_flow_kg_per_s": 0.0004
+      },
+      "tire_degradation": {
+        "reference_load_wear_coefficient": 1e-07,
+        "thermal_deviation_wear_gain": 0.35,
+        "maximum_thermal_wear_multiplier": 3.0
+      },
+      "engine_thermal_resolution": {
+        "thermal_capacity_multiplier": 0.98828125,
+        "heat_generation_multiplier": 1.3950617283950617,
+        "static_cooling_multiplier": 1.0,
+        "speed_cooling_multiplier": 1.4540000000000002,
+        "soft_limit_offset_c": 0.9183673469387728,
+        "derate_slope_multiplier": 1.21900826446281,
+        "minimum_power_fraction": 0.4739644970414202,
+        "derating_shape": "linear-threshold",
+        "smooth_knee_width_c": 0.0,
+        "cooling_drag_area_m2_at_cap": 0.03633217993079584
+      }
+    },
+    "sha256:d509297a06bc607c9e01351a0c30e7cc61f2a9da09767371d4cdc137d1d4ca8a": {
+      "schema_version": "pitgun.racing-v3-experiment-profile/v8",
+      "tuning_response": {
+        "schema_version": "pitgun.racing-tuning-response/v1",
+        "development_points_cap": 20.0,
+        "aero_development_gain": 0.1,
+        "drag_base": 0.85,
+        "drag_slider_gain": 0.3,
+        "downforce_base": 0.75,
+        "downforce_slider_gain": 0.55,
+        "straight_aero_scale": 0.95,
+        "corner_aero_scale": 1.05,
+        "chassis_grip_development_gain": 0.08,
+        "cooling_base": 0.75,
+        "cooling_development_gain": 0.5,
+        "engine_torque_development_gain": 0.01,
+        "gear_ratio_base": 1.1,
+        "gear_ratio_slider_reduction": 0.2
+      },
+      "tire_contact": {
+        "reference_normal_load_n": 8500.0,
+        "load_sensitivity_exponent": 0.08,
+        "thermal_capacity_j_per_c": 180000.0,
+        "heat_generation_fraction": 0.006,
+        "cooling_w_per_c": 80.0,
+        "speed_cooling_w_per_mps_c": 0.8,
+        "baseline_wear_per_s": 1e-06,
+        "workload_energy_to_full_wear_j": 8000000000.0
+      },
+      "aero_resolution": {
+        "minimum_downforce_area_multiplier": 0.75,
+        "maximum_downforce_area_multiplier": 1.25,
+        "base_drag_area_multiplier": 0.85,
+        "induced_drag_factor_per_m2": 0.25,
+        "development_downforce_gain_at_cap": 0.08,
+        "development_drag_reduction_at_cap": 0.04
+      },
+      "development_resolution": {
+        "chassis_force_transfer_efficiency_without_development": 0.97,
+        "chassis_force_transfer_efficiency_at_cap": 1.0,
+        "engine_torque_gain_at_cap": 0.06,
+        "cooling_capacity_multiplier_without_development": 0.75,
+        "cooling_capacity_gain_at_cap": 0.5
+      },
+      "transmission_resolution": {
+        "minimum_target_top_speed_mps": 85.0,
+        "maximum_target_top_speed_mps": 105.0,
+        "target_engine_speed_fraction": 0.98
+      },
+      "mechanical_overrides": {},
+      "fuel_mass": {
+        "brake_specific_fuel_consumption_kg_per_kwh": 0.24,
+        "idle_fuel_flow_kg_per_s": 0.0004
+      },
+      "tire_degradation": {
+        "reference_load_wear_coefficient": 1e-07,
+        "thermal_deviation_wear_gain": 0.35,
+        "maximum_thermal_wear_multiplier": 3.0
+      },
+      "engine_thermal_resolution": {
+        "thermal_capacity_multiplier": 0.98828125,
+        "heat_generation_multiplier": 1.3950617283950617,
+        "static_cooling_multiplier": 1.0,
+        "speed_cooling_multiplier": 1.4540000000000002,
+        "soft_limit_offset_c": -3.0,
+        "derate_slope_multiplier": 1.21900826446281,
+        "minimum_power_fraction": 0.4739644970414202,
+        "derating_shape": "linear-threshold",
+        "smooth_knee_width_c": 0.0,
+        "cooling_drag_area_m2_at_cap": 0.03633217993079584
+      }
+    },
+    "sha256:e576e0afb0c921949ba175ab4f9ef6a66b7a31e8d3dfd92f126466a2b5823cde": {
+      "schema_version": "pitgun.racing-v3-experiment-profile/v8",
+      "tuning_response": {
+        "schema_version": "pitgun.racing-tuning-response/v1",
+        "development_points_cap": 20.0,
+        "aero_development_gain": 0.1,
+        "drag_base": 0.85,
+        "drag_slider_gain": 0.3,
+        "downforce_base": 0.75,
+        "downforce_slider_gain": 0.55,
+        "straight_aero_scale": 0.95,
+        "corner_aero_scale": 1.05,
+        "chassis_grip_development_gain": 0.08,
+        "cooling_base": 0.75,
+        "cooling_development_gain": 0.5,
+        "engine_torque_development_gain": 0.01,
+        "gear_ratio_base": 1.1,
+        "gear_ratio_slider_reduction": 0.2
+      },
+      "tire_contact": {
+        "reference_normal_load_n": 8500.0,
+        "load_sensitivity_exponent": 0.08,
+        "thermal_capacity_j_per_c": 180000.0,
+        "heat_generation_fraction": 0.006,
+        "cooling_w_per_c": 80.0,
+        "speed_cooling_w_per_mps_c": 0.8,
+        "baseline_wear_per_s": 1e-06,
+        "workload_energy_to_full_wear_j": 8000000000.0
+      },
+      "aero_resolution": {
+        "minimum_downforce_area_multiplier": 0.75,
+        "maximum_downforce_area_multiplier": 1.25,
+        "base_drag_area_multiplier": 0.85,
+        "induced_drag_factor_per_m2": 0.25,
+        "development_downforce_gain_at_cap": 0.08,
+        "development_drag_reduction_at_cap": 0.04
+      },
+      "development_resolution": {
+        "chassis_force_transfer_efficiency_without_development": 0.97,
+        "chassis_force_transfer_efficiency_at_cap": 1.0,
+        "engine_torque_gain_at_cap": 0.06,
+        "cooling_capacity_multiplier_without_development": 0.75,
+        "cooling_capacity_gain_at_cap": 0.5
+      },
+      "transmission_resolution": {
+        "minimum_target_top_speed_mps": 85.0,
+        "maximum_target_top_speed_mps": 105.0,
+        "target_engine_speed_fraction": 0.98
+      },
+      "mechanical_overrides": {},
+      "fuel_mass": {
+        "brake_specific_fuel_consumption_kg_per_kwh": 0.24,
+        "idle_fuel_flow_kg_per_s": 0.0004
+      },
+      "tire_degradation": {
+        "reference_load_wear_coefficient": 1e-07,
+        "thermal_deviation_wear_gain": 0.35,
+        "maximum_thermal_wear_multiplier": 3.0
+      },
+      "engine_thermal_resolution": {
+        "thermal_capacity_multiplier": 1.0,
+        "heat_generation_multiplier": 1.0,
+        "static_cooling_multiplier": 1.0,
+        "speed_cooling_multiplier": 1.0,
+        "soft_limit_offset_c": 0.0,
+        "derate_slope_multiplier": 1.0,
+        "minimum_power_fraction": 0.2,
+        "derating_shape": "linear-threshold",
+        "smooth_knee_width_c": 0.0,
+        "cooling_drag_area_m2_at_cap": 0.0
+      }
+    }
+  },
+  "scenarios": {
+    "sha256:07ed27582e4830aeb9ffec1bd139c7fa6fb087bce836c690a7c30c54b8427cf1": {
+      "schema_version": "pitgun.racing-resolved-scenario/v1",
+      "scenario": {
+        "id": "racing.single-lap",
+        "version": "1.0.0"
+      },
+      "model": {
+        "id": "pitgun.racing",
+        "version": "1.0.0",
+        "digest": "sha256:03541bcc24f946d11071e6fb67915ec5d429dce63362d456aba2c3d339a3fe38"
+      },
+      "data_pack": {
+        "id": "pitgun.racing.2026",
+        "version": "1.0.0",
+        "digest": "sha256:fc6ade498d399cd439cfb33d74ab0e2e6ee1279ed19441ed99b8cea9963875c9"
+      },
+      "clock": {
+        "tick_numerator_us": 200000,
+        "tick_denominator": 1
+      },
+      "request": {
+        "track_id": "gb-1948",
+        "laps": 52,
+        "competitors": [
+          {
+            "id": "player",
+            "driver_id": "default",
+            "name": "Player",
+            "team_id": "pitgun",
+            "is_player": true,
+            "tuning": {
+              "engine_points": 10.0,
+              "cooling_points": 20.0,
+              "aero_points": 10.0,
+              "chassis_points": 10.0,
+              "downforce_slider": 0.5,
+              "gear_ratio_slider": 0.5
+            },
+            "budget_cap": 100.0
+          }
+        ],
+        "vehicle_id": "modern_v6t",
+        "era": 5,
+        "hz": 5.0,
+        "initial_fuel_mass_kg": 80.0
+      }
+    },
+    "sha256:0cd91ac2fddd3fe3cd741fb96809d25c987f9d7b57b99e8db987d24dd7a070af": {
+      "schema_version": "pitgun.racing-resolved-scenario/v1",
+      "scenario": {
+        "id": "racing.single-lap",
+        "version": "1.0.0"
+      },
+      "model": {
+        "id": "pitgun.racing",
+        "version": "1.0.0",
+        "digest": "sha256:03541bcc24f946d11071e6fb67915ec5d429dce63362d456aba2c3d339a3fe38"
+      },
+      "data_pack": {
+        "id": "pitgun.racing.2026",
+        "version": "1.0.0",
+        "digest": "sha256:fc6ade498d399cd439cfb33d74ab0e2e6ee1279ed19441ed99b8cea9963875c9"
+      },
+      "clock": {
+        "tick_numerator_us": 200000,
+        "tick_denominator": 1
+      },
+      "request": {
+        "track_id": "gb-1948",
+        "laps": 52,
+        "competitors": [
+          {
+            "id": "player",
+            "driver_id": "default",
+            "name": "Player",
+            "team_id": "pitgun",
+            "is_player": true,
+            "tuning": {
+              "engine_points": 10.0,
+              "cooling_points": 0.0,
+              "aero_points": 10.0,
+              "chassis_points": 10.0,
+              "downforce_slider": 0.5,
+              "gear_ratio_slider": 0.5
+            },
+            "budget_cap": 100.0
+          }
+        ],
+        "vehicle_id": "classic_v8_1970",
+        "era": 4,
+        "hz": 5.0,
+        "initial_fuel_mass_kg": 80.0
+      }
+    },
+    "sha256:6a5b64f44a3651a1d94ad384a702c941ebfc77338f9f1ee1b98c5c2479cfd9bd": {
+      "schema_version": "pitgun.racing-resolved-scenario/v1",
+      "scenario": {
+        "id": "racing.single-lap",
+        "version": "1.0.0"
+      },
+      "model": {
+        "id": "pitgun.racing",
+        "version": "1.0.0",
+        "digest": "sha256:03541bcc24f946d11071e6fb67915ec5d429dce63362d456aba2c3d339a3fe38"
+      },
+      "data_pack": {
+        "id": "pitgun.racing.2026",
+        "version": "1.0.0",
+        "digest": "sha256:fc6ade498d399cd439cfb33d74ab0e2e6ee1279ed19441ed99b8cea9963875c9"
+      },
+      "clock": {
+        "tick_numerator_us": 200000,
+        "tick_denominator": 1
+      },
+      "request": {
+        "track_id": "gb-1948",
+        "laps": 52,
+        "competitors": [
+          {
+            "id": "player",
+            "driver_id": "default",
+            "name": "Player",
+            "team_id": "pitgun",
+            "is_player": true,
+            "tuning": {
+              "engine_points": 10.0,
+              "cooling_points": 20.0,
+              "aero_points": 10.0,
+              "chassis_points": 10.0,
+              "downforce_slider": 0.5,
+              "gear_ratio_slider": 0.5
+            },
+            "budget_cap": 100.0
+          }
+        ],
+        "vehicle_id": "classic_v8_1970",
+        "era": 4,
+        "hz": 5.0,
+        "initial_fuel_mass_kg": 80.0
+      }
+    },
+    "sha256:87f0639aa0fadba8e3fd3fb5fdb747e8fca0bf56ab58b03277f82133e9536bd5": {
+      "schema_version": "pitgun.racing-resolved-scenario/v1",
+      "scenario": {
+        "id": "racing.single-lap",
+        "version": "1.0.0"
+      },
+      "model": {
+        "id": "pitgun.racing",
+        "version": "1.0.0",
+        "digest": "sha256:03541bcc24f946d11071e6fb67915ec5d429dce63362d456aba2c3d339a3fe38"
+      },
+      "data_pack": {
+        "id": "pitgun.racing.2026",
+        "version": "1.0.0",
+        "digest": "sha256:fc6ade498d399cd439cfb33d74ab0e2e6ee1279ed19441ed99b8cea9963875c9"
+      },
+      "clock": {
+        "tick_numerator_us": 200000,
+        "tick_denominator": 1
+      },
+      "request": {
+        "track_id": "gb-1948",
+        "laps": 52,
+        "competitors": [
+          {
+            "id": "player",
+            "driver_id": "default",
+            "name": "Player",
+            "team_id": "pitgun",
+            "is_player": true,
+            "tuning": {
+              "engine_points": 10.0,
+              "cooling_points": 10.0,
+              "aero_points": 10.0,
+              "chassis_points": 10.0,
+              "downforce_slider": 0.5,
+              "gear_ratio_slider": 0.5
+            },
+            "budget_cap": 100.0
+          }
+        ],
+        "vehicle_id": "f1_2026",
+        "era": 5,
+        "hz": 5.0,
+        "initial_fuel_mass_kg": 80.0
+      }
+    },
+    "sha256:91a47e8d93d05f10599a8d9018a3523d71e0b5521dc362876f4d390086af9da2": {
+      "schema_version": "pitgun.racing-resolved-scenario/v1",
+      "scenario": {
+        "id": "racing.single-lap",
+        "version": "1.0.0"
+      },
+      "model": {
+        "id": "pitgun.racing",
+        "version": "1.0.0",
+        "digest": "sha256:03541bcc24f946d11071e6fb67915ec5d429dce63362d456aba2c3d339a3fe38"
+      },
+      "data_pack": {
+        "id": "pitgun.racing.2026",
+        "version": "1.0.0",
+        "digest": "sha256:fc6ade498d399cd439cfb33d74ab0e2e6ee1279ed19441ed99b8cea9963875c9"
+      },
+      "clock": {
+        "tick_numerator_us": 200000,
+        "tick_denominator": 1
+      },
+      "request": {
+        "track_id": "gb-1948",
+        "laps": 52,
+        "competitors": [
+          {
+            "id": "player",
+            "driver_id": "default",
+            "name": "Player",
+            "team_id": "pitgun",
+            "is_player": true,
+            "tuning": {
+              "engine_points": 10.0,
+              "cooling_points": 0.0,
+              "aero_points": 10.0,
+              "chassis_points": 10.0,
+              "downforce_slider": 0.5,
+              "gear_ratio_slider": 0.5
+            },
+            "budget_cap": 100.0
+          }
+        ],
+        "vehicle_id": "f1_2026",
+        "era": 5,
+        "hz": 5.0,
+        "initial_fuel_mass_kg": 80.0
+      }
+    },
+    "sha256:98dcbabb419c281a77ff842051b2b7d52e5285249aca7a4dbaf1e0d837d25e26": {
+      "schema_version": "pitgun.racing-resolved-scenario/v1",
+      "scenario": {
+        "id": "racing.single-lap",
+        "version": "1.0.0"
+      },
+      "model": {
+        "id": "pitgun.racing",
+        "version": "1.0.0",
+        "digest": "sha256:03541bcc24f946d11071e6fb67915ec5d429dce63362d456aba2c3d339a3fe38"
+      },
+      "data_pack": {
+        "id": "pitgun.racing.2026",
+        "version": "1.0.0",
+        "digest": "sha256:fc6ade498d399cd439cfb33d74ab0e2e6ee1279ed19441ed99b8cea9963875c9"
+      },
+      "clock": {
+        "tick_numerator_us": 200000,
+        "tick_denominator": 1
+      },
+      "request": {
+        "track_id": "gb-1948",
+        "laps": 52,
+        "competitors": [
+          {
+            "id": "player",
+            "driver_id": "default",
+            "name": "Player",
+            "team_id": "pitgun",
+            "is_player": true,
+            "tuning": {
+              "engine_points": 10.0,
+              "cooling_points": 0.0,
+              "aero_points": 10.0,
+              "chassis_points": 10.0,
+              "downforce_slider": 0.5,
+              "gear_ratio_slider": 0.5
+            },
+            "budget_cap": 100.0
+          }
+        ],
+        "vehicle_id": "classic_v8_1960",
+        "era": 1,
+        "hz": 5.0,
+        "initial_fuel_mass_kg": 80.0
+      }
+    },
+    "sha256:abb092be805b0a050e6420e2fbe7cc8bd235d595cc43ce73353040f3cdec6d99": {
+      "schema_version": "pitgun.racing-resolved-scenario/v1",
+      "scenario": {
+        "id": "racing.single-lap",
+        "version": "1.0.0"
+      },
+      "model": {
+        "id": "pitgun.racing",
+        "version": "1.0.0",
+        "digest": "sha256:03541bcc24f946d11071e6fb67915ec5d429dce63362d456aba2c3d339a3fe38"
+      },
+      "data_pack": {
+        "id": "pitgun.racing.2026",
+        "version": "1.0.0",
+        "digest": "sha256:fc6ade498d399cd439cfb33d74ab0e2e6ee1279ed19441ed99b8cea9963875c9"
+      },
+      "clock": {
+        "tick_numerator_us": 200000,
+        "tick_denominator": 1
+      },
+      "request": {
+        "track_id": "gb-1948",
+        "laps": 52,
+        "competitors": [
+          {
+            "id": "player",
+            "driver_id": "default",
+            "name": "Player",
+            "team_id": "pitgun",
+            "is_player": true,
+            "tuning": {
+              "engine_points": 10.0,
+              "cooling_points": 20.0,
+              "aero_points": 10.0,
+              "chassis_points": 10.0,
+              "downforce_slider": 0.5,
+              "gear_ratio_slider": 0.5
+            },
+            "budget_cap": 100.0
+          }
+        ],
+        "vehicle_id": "classic_v8_1960",
+        "era": 1,
+        "hz": 5.0,
+        "initial_fuel_mass_kg": 80.0
+      }
+    },
+    "sha256:bfc3b31063e62491c6cb5777c10377c9f3995949d8179804795854df809caf68": {
+      "schema_version": "pitgun.racing-resolved-scenario/v1",
+      "scenario": {
+        "id": "racing.single-lap",
+        "version": "1.0.0"
+      },
+      "model": {
+        "id": "pitgun.racing",
+        "version": "1.0.0",
+        "digest": "sha256:03541bcc24f946d11071e6fb67915ec5d429dce63362d456aba2c3d339a3fe38"
+      },
+      "data_pack": {
+        "id": "pitgun.racing.2026",
+        "version": "1.0.0",
+        "digest": "sha256:fc6ade498d399cd439cfb33d74ab0e2e6ee1279ed19441ed99b8cea9963875c9"
+      },
+      "clock": {
+        "tick_numerator_us": 200000,
+        "tick_denominator": 1
+      },
+      "request": {
+        "track_id": "gb-1948",
+        "laps": 52,
+        "competitors": [
+          {
+            "id": "player",
+            "driver_id": "default",
+            "name": "Player",
+            "team_id": "pitgun",
+            "is_player": true,
+            "tuning": {
+              "engine_points": 10.0,
+              "cooling_points": 10.0,
+              "aero_points": 10.0,
+              "chassis_points": 10.0,
+              "downforce_slider": 0.5,
+              "gear_ratio_slider": 0.5
+            },
+            "budget_cap": 100.0
+          }
+        ],
+        "vehicle_id": "classic_v8_1960",
+        "era": 1,
+        "hz": 5.0,
+        "initial_fuel_mass_kg": 80.0
+      }
+    },
+    "sha256:cb2d21416c2eb95bae208ca8a7f941629c0011ff198c72b709539f42df193fec": {
+      "schema_version": "pitgun.racing-resolved-scenario/v1",
+      "scenario": {
+        "id": "racing.single-lap",
+        "version": "1.0.0"
+      },
+      "model": {
+        "id": "pitgun.racing",
+        "version": "1.0.0",
+        "digest": "sha256:03541bcc24f946d11071e6fb67915ec5d429dce63362d456aba2c3d339a3fe38"
+      },
+      "data_pack": {
+        "id": "pitgun.racing.2026",
+        "version": "1.0.0",
+        "digest": "sha256:fc6ade498d399cd439cfb33d74ab0e2e6ee1279ed19441ed99b8cea9963875c9"
+      },
+      "clock": {
+        "tick_numerator_us": 200000,
+        "tick_denominator": 1
+      },
+      "request": {
+        "track_id": "gb-1948",
+        "laps": 52,
+        "competitors": [
+          {
+            "id": "player",
+            "driver_id": "default",
+            "name": "Player",
+            "team_id": "pitgun",
+            "is_player": true,
+            "tuning": {
+              "engine_points": 10.0,
+              "cooling_points": 20.0,
+              "aero_points": 10.0,
+              "chassis_points": 10.0,
+              "downforce_slider": 0.5,
+              "gear_ratio_slider": 0.5
+            },
+            "budget_cap": 100.0
+          }
+        ],
+        "vehicle_id": "f1_2026",
+        "era": 5,
+        "hz": 5.0,
+        "initial_fuel_mass_kg": 80.0
+      }
+    },
+    "sha256:f62536fb295bf56670cfb7671111dfedb3cf041d353ead55cd82cf1fc2213a68": {
+      "schema_version": "pitgun.racing-resolved-scenario/v1",
+      "scenario": {
+        "id": "racing.single-lap",
+        "version": "1.0.0"
+      },
+      "model": {
+        "id": "pitgun.racing",
+        "version": "1.0.0",
+        "digest": "sha256:03541bcc24f946d11071e6fb67915ec5d429dce63362d456aba2c3d339a3fe38"
+      },
+      "data_pack": {
+        "id": "pitgun.racing.2026",
+        "version": "1.0.0",
+        "digest": "sha256:fc6ade498d399cd439cfb33d74ab0e2e6ee1279ed19441ed99b8cea9963875c9"
+      },
+      "clock": {
+        "tick_numerator_us": 200000,
+        "tick_denominator": 1
+      },
+      "request": {
+        "track_id": "gb-1948",
+        "laps": 52,
+        "competitors": [
+          {
+            "id": "player",
+            "driver_id": "default",
+            "name": "Player",
+            "team_id": "pitgun",
+            "is_player": true,
+            "tuning": {
+              "engine_points": 10.0,
+              "cooling_points": 0.0,
+              "aero_points": 10.0,
+              "chassis_points": 10.0,
+              "downforce_slider": 0.5,
+              "gear_ratio_slider": 0.5
+            },
+            "budget_cap": 100.0
+          }
+        ],
+        "vehicle_id": "modern_v6t",
+        "era": 5,
+        "hz": 5.0,
+        "initial_fuel_mass_kg": 80.0
+      }
+    },
+    "sha256:fcf1d30d84c2c25ec2ccfa9910c8ba67f050d457d5c3e5b4d374326456a2ac69": {
+      "schema_version": "pitgun.racing-resolved-scenario/v1",
+      "scenario": {
+        "id": "racing.single-lap",
+        "version": "1.0.0"
+      },
+      "model": {
+        "id": "pitgun.racing",
+        "version": "1.0.0",
+        "digest": "sha256:03541bcc24f946d11071e6fb67915ec5d429dce63362d456aba2c3d339a3fe38"
+      },
+      "data_pack": {
+        "id": "pitgun.racing.2026",
+        "version": "1.0.0",
+        "digest": "sha256:fc6ade498d399cd439cfb33d74ab0e2e6ee1279ed19441ed99b8cea9963875c9"
+      },
+      "clock": {
+        "tick_numerator_us": 200000,
+        "tick_denominator": 1
+      },
+      "request": {
+        "track_id": "gb-1948",
+        "laps": 52,
+        "competitors": [
+          {
+            "id": "player",
+            "driver_id": "default",
+            "name": "Player",
+            "team_id": "pitgun",
+            "is_player": true,
+            "tuning": {
+              "engine_points": 10.0,
+              "cooling_points": 10.0,
+              "aero_points": 10.0,
+              "chassis_points": 10.0,
+              "downforce_slider": 0.5,
+              "gear_ratio_slider": 0.5
+            },
+            "budget_cap": 100.0
+          }
+        ],
+        "vehicle_id": "classic_v8_1970",
+        "era": 4,
+        "hz": 5.0,
+        "initial_fuel_mass_kg": 80.0
+      }
+    },
+    "sha256:ffa3a252f22db9b9c5a38fdad767d17ea5a2885cd0e7c9a8ccb148701f9eb779": {
+      "schema_version": "pitgun.racing-resolved-scenario/v1",
+      "scenario": {
+        "id": "racing.single-lap",
+        "version": "1.0.0"
+      },
+      "model": {
+        "id": "pitgun.racing",
+        "version": "1.0.0",
+        "digest": "sha256:03541bcc24f946d11071e6fb67915ec5d429dce63362d456aba2c3d339a3fe38"
+      },
+      "data_pack": {
+        "id": "pitgun.racing.2026",
+        "version": "1.0.0",
+        "digest": "sha256:fc6ade498d399cd439cfb33d74ab0e2e6ee1279ed19441ed99b8cea9963875c9"
+      },
+      "clock": {
+        "tick_numerator_us": 200000,
+        "tick_denominator": 1
+      },
+      "request": {
+        "track_id": "gb-1948",
+        "laps": 52,
+        "competitors": [
+          {
+            "id": "player",
+            "driver_id": "default",
+            "name": "Player",
+            "team_id": "pitgun",
+            "is_player": true,
+            "tuning": {
+              "engine_points": 10.0,
+              "cooling_points": 10.0,
+              "aero_points": 10.0,
+              "chassis_points": 10.0,
+              "downforce_slider": 0.5,
+              "gear_ratio_slider": 0.5
+            },
+            "budget_cap": 100.0
+          }
+        ],
+        "vehicle_id": "modern_v6t",
+        "era": 5,
+        "hz": 5.0,
+        "initial_fuel_mass_kg": 80.0
+      }
+    }
+  },
+  "configurations": [
+    {
+      "execution_key": "v3th-2fb463cf95878280",
+      "configuration_id": "sha256:2fb463cf95878280cd80bd8dbccc46a8846f9b5a21aac20a5b3bd93a79337381",
+      "parameter_set_id": "historical-default",
+      "parameter_origin": "pre_registered_family_validation",
+      "profile_ref": "sha256:e576e0afb0c921949ba175ab4f9ef6a66b7a31e8d3dfd92f126466a2b5823cde",
+      "scenario_ref": "sha256:0cd91ac2fddd3fe3cd741fb96809d25c987f9d7b57b99e8db987d24dd7a070af",
+      "anchor_id": "era4-classic70",
+      "era": 4,
+      "vehicle_id": "classic_v8_1970",
+      "vehicle_family": "historical_v8",
+      "circuit_id": "gb-1948",
+      "circuit_slug": "silverstone",
+      "circuit_archetype": "high-speed-mixed",
+      "split": "independent_final_validation",
+      "workload": "full-race",
+      "laps": 52,
+      "cooling_points": 0,
+      "seed": "20260901",
+      "expected_local_evidence": null
+    },
+    {
+      "execution_key": "v3th-3136cc29649a9a58",
+      "configuration_id": "sha256:3136cc29649a9a58feca582448f0caa47bf809a90e49fde3ed4d0eba91b11802",
+      "parameter_set_id": "historical-default",
+      "parameter_origin": "pre_registered_family_validation",
+      "profile_ref": "sha256:e576e0afb0c921949ba175ab4f9ef6a66b7a31e8d3dfd92f126466a2b5823cde",
+      "scenario_ref": "sha256:6a5b64f44a3651a1d94ad384a702c941ebfc77338f9f1ee1b98c5c2479cfd9bd",
+      "anchor_id": "era4-classic70",
+      "era": 4,
+      "vehicle_id": "classic_v8_1970",
+      "vehicle_family": "historical_v8",
+      "circuit_id": "gb-1948",
+      "circuit_slug": "silverstone",
+      "circuit_archetype": "high-speed-mixed",
+      "split": "independent_final_validation",
+      "workload": "full-race",
+      "laps": 52,
+      "cooling_points": 20,
+      "seed": "20260901",
+      "expected_local_evidence": null
+    },
+    {
+      "execution_key": "v3th-3748af7c1899ca43",
+      "configuration_id": "sha256:3748af7c1899ca432dfe385bf85c085ba74bfb13f8f3847046328a78683e5eb5",
+      "parameter_set_id": "historical-default",
+      "parameter_origin": "pre_registered_family_validation",
+      "profile_ref": "sha256:e576e0afb0c921949ba175ab4f9ef6a66b7a31e8d3dfd92f126466a2b5823cde",
+      "scenario_ref": "sha256:fcf1d30d84c2c25ec2ccfa9910c8ba67f050d457d5c3e5b4d374326456a2ac69",
+      "anchor_id": "era4-classic70",
+      "era": 4,
+      "vehicle_id": "classic_v8_1970",
+      "vehicle_family": "historical_v8",
+      "circuit_id": "gb-1948",
+      "circuit_slug": "silverstone",
+      "circuit_archetype": "high-speed-mixed",
+      "split": "independent_final_validation",
+      "workload": "full-race",
+      "laps": 52,
+      "cooling_points": 10,
+      "seed": "20260901",
+      "expected_local_evidence": null
+    },
+    {
+      "execution_key": "v3th-739418e82184abac",
+      "configuration_id": "sha256:739418e82184abaca84519f0b9e3fd80d4e61804b555951e7194ca8077086708",
+      "parameter_set_id": "historical-default",
+      "parameter_origin": "pre_registered_family_validation",
+      "profile_ref": "sha256:e576e0afb0c921949ba175ab4f9ef6a66b7a31e8d3dfd92f126466a2b5823cde",
+      "scenario_ref": "sha256:98dcbabb419c281a77ff842051b2b7d52e5285249aca7a4dbaf1e0d837d25e26",
+      "anchor_id": "era1-classic60",
+      "era": 1,
+      "vehicle_id": "classic_v8_1960",
+      "vehicle_family": "historical_v8",
+      "circuit_id": "gb-1948",
+      "circuit_slug": "silverstone",
+      "circuit_archetype": "high-speed-mixed",
+      "split": "independent_final_validation",
+      "workload": "full-race",
+      "laps": 52,
+      "cooling_points": 0,
+      "seed": "20260901",
+      "expected_local_evidence": null
+    },
+    {
+      "execution_key": "v3th-7cb86743b00497fb",
+      "configuration_id": "sha256:7cb86743b00497fb8068832ab01103a2a781dac9809173754bc92bbcf15b70ca",
+      "parameter_set_id": "historical-default",
+      "parameter_origin": "pre_registered_family_validation",
+      "profile_ref": "sha256:e576e0afb0c921949ba175ab4f9ef6a66b7a31e8d3dfd92f126466a2b5823cde",
+      "scenario_ref": "sha256:bfc3b31063e62491c6cb5777c10377c9f3995949d8179804795854df809caf68",
+      "anchor_id": "era1-classic60",
+      "era": 1,
+      "vehicle_id": "classic_v8_1960",
+      "vehicle_family": "historical_v8",
+      "circuit_id": "gb-1948",
+      "circuit_slug": "silverstone",
+      "circuit_archetype": "high-speed-mixed",
+      "split": "independent_final_validation",
+      "workload": "full-race",
+      "laps": 52,
+      "cooling_points": 10,
+      "seed": "20260901",
+      "expected_local_evidence": null
+    },
+    {
+      "execution_key": "v3th-9a72b05423055d93",
+      "configuration_id": "sha256:9a72b05423055d9394ce5163d24871e7558951167cf72dd57c8ccbf8d8ee04eb",
+      "parameter_set_id": "historical-default",
+      "parameter_origin": "pre_registered_family_validation",
+      "profile_ref": "sha256:e576e0afb0c921949ba175ab4f9ef6a66b7a31e8d3dfd92f126466a2b5823cde",
+      "scenario_ref": "sha256:abb092be805b0a050e6420e2fbe7cc8bd235d595cc43ce73353040f3cdec6d99",
+      "anchor_id": "era1-classic60",
+      "era": 1,
+      "vehicle_id": "classic_v8_1960",
+      "vehicle_family": "historical_v8",
+      "circuit_id": "gb-1948",
+      "circuit_slug": "silverstone",
+      "circuit_archetype": "high-speed-mixed",
+      "split": "independent_final_validation",
+      "workload": "full-race",
+      "laps": 52,
+      "cooling_points": 20,
+      "seed": "20260901",
+      "expected_local_evidence": null
+    },
+    {
+      "execution_key": "v3th-b3bb90b187f42e62",
+      "configuration_id": "sha256:b3bb90b187f42e62206c5d68eea3a3510ebe922599a04b81b2b8c6d80ece9389",
+      "parameter_set_id": "f1-2026-adaptive-038",
+      "parameter_origin": "pre_registered_family_validation",
+      "profile_ref": "sha256:537a824e6cf85183b997d293b335a186e36742ef624fa60dae1a85ecddcd52a4",
+      "scenario_ref": "sha256:87f0639aa0fadba8e3fd3fb5fdb747e8fca0bf56ab58b03277f82133e9536bd5",
+      "anchor_id": "era5-hybrid",
+      "era": 5,
+      "vehicle_id": "f1_2026",
+      "vehicle_family": "f1_2026",
+      "circuit_id": "gb-1948",
+      "circuit_slug": "silverstone",
+      "circuit_archetype": "high-speed-mixed",
+      "split": "independent_final_validation",
+      "workload": "full-race",
+      "laps": 52,
+      "cooling_points": 10,
+      "seed": "20260901",
+      "expected_local_evidence": null
+    },
+    {
+      "execution_key": "v3th-b5306e2b1d14b114",
+      "configuration_id": "sha256:b5306e2b1d14b114e61a791a155916e1b512184c039f40e794aa99d0d6b01b9d",
+      "parameter_set_id": "f1-2026-adaptive-038",
+      "parameter_origin": "pre_registered_family_validation",
+      "profile_ref": "sha256:537a824e6cf85183b997d293b335a186e36742ef624fa60dae1a85ecddcd52a4",
+      "scenario_ref": "sha256:91a47e8d93d05f10599a8d9018a3523d71e0b5521dc362876f4d390086af9da2",
+      "anchor_id": "era5-hybrid",
+      "era": 5,
+      "vehicle_id": "f1_2026",
+      "vehicle_family": "f1_2026",
+      "circuit_id": "gb-1948",
+      "circuit_slug": "silverstone",
+      "circuit_archetype": "high-speed-mixed",
+      "split": "independent_final_validation",
+      "workload": "full-race",
+      "laps": 52,
+      "cooling_points": 0,
+      "seed": "20260901",
+      "expected_local_evidence": null
+    },
+    {
+      "execution_key": "v3th-bf72957889ff1a35",
+      "configuration_id": "sha256:bf72957889ff1a359f1dbd4f000bc1394a403ba5fef74e216f12ffbff89da1eb",
+      "parameter_set_id": "f1-2026-adaptive-038",
+      "parameter_origin": "pre_registered_family_validation",
+      "profile_ref": "sha256:537a824e6cf85183b997d293b335a186e36742ef624fa60dae1a85ecddcd52a4",
+      "scenario_ref": "sha256:cb2d21416c2eb95bae208ca8a7f941629c0011ff198c72b709539f42df193fec",
+      "anchor_id": "era5-hybrid",
+      "era": 5,
+      "vehicle_id": "f1_2026",
+      "vehicle_family": "f1_2026",
+      "circuit_id": "gb-1948",
+      "circuit_slug": "silverstone",
+      "circuit_archetype": "high-speed-mixed",
+      "split": "independent_final_validation",
+      "workload": "full-race",
+      "laps": 52,
+      "cooling_points": 20,
+      "seed": "20260901",
+      "expected_local_evidence": null
+    },
+    {
+      "execution_key": "v3th-d80dcbb9540ecd46",
+      "configuration_id": "sha256:d80dcbb9540ecd46e7fefba45adac37e3e4498578799ac3371a0bec293a8cefc",
+      "parameter_set_id": "modern-v6t-soft-limit--3.0c",
+      "parameter_origin": "pre_registered_family_validation",
+      "profile_ref": "sha256:d509297a06bc607c9e01351a0c30e7cc61f2a9da09767371d4cdc137d1d4ca8a",
+      "scenario_ref": "sha256:07ed27582e4830aeb9ffec1bd139c7fa6fb087bce836c690a7c30c54b8427cf1",
+      "anchor_id": "era5-v6t",
+      "era": 5,
+      "vehicle_id": "modern_v6t",
+      "vehicle_family": "modern_v6t",
+      "circuit_id": "gb-1948",
+      "circuit_slug": "silverstone",
+      "circuit_archetype": "high-speed-mixed",
+      "split": "independent_final_validation",
+      "workload": "full-race",
+      "laps": 52,
+      "cooling_points": 20,
+      "seed": "20260901",
+      "expected_local_evidence": null
+    },
+    {
+      "execution_key": "v3th-ddaa3d02ad78ba11",
+      "configuration_id": "sha256:ddaa3d02ad78ba1185c1c262c1bc23e5a4b8dca15bc64d41c27cc6d7c05d8431",
+      "parameter_set_id": "modern-v6t-soft-limit--3.0c",
+      "parameter_origin": "pre_registered_family_validation",
+      "profile_ref": "sha256:d509297a06bc607c9e01351a0c30e7cc61f2a9da09767371d4cdc137d1d4ca8a",
+      "scenario_ref": "sha256:f62536fb295bf56670cfb7671111dfedb3cf041d353ead55cd82cf1fc2213a68",
+      "anchor_id": "era5-v6t",
+      "era": 5,
+      "vehicle_id": "modern_v6t",
+      "vehicle_family": "modern_v6t",
+      "circuit_id": "gb-1948",
+      "circuit_slug": "silverstone",
+      "circuit_archetype": "high-speed-mixed",
+      "split": "independent_final_validation",
+      "workload": "full-race",
+      "laps": 52,
+      "cooling_points": 0,
+      "seed": "20260901",
+      "expected_local_evidence": null
+    },
+    {
+      "execution_key": "v3th-e02fa30878a43c60",
+      "configuration_id": "sha256:e02fa30878a43c60d85f0bf5c90ecde42e5adaabdc7755090d00d1085ad55ceb",
+      "parameter_set_id": "modern-v6t-soft-limit--3.0c",
+      "parameter_origin": "pre_registered_family_validation",
+      "profile_ref": "sha256:d509297a06bc607c9e01351a0c30e7cc61f2a9da09767371d4cdc137d1d4ca8a",
+      "scenario_ref": "sha256:ffa3a252f22db9b9c5a38fdad767d17ea5a2885cd0e7c9a8ccb148701f9eb779",
+      "anchor_id": "era5-v6t",
+      "era": 5,
+      "vehicle_id": "modern_v6t",
+      "vehicle_family": "modern_v6t",
+      "circuit_id": "gb-1948",
+      "circuit_slug": "silverstone",
+      "circuit_archetype": "high-speed-mixed",
+      "split": "independent_final_validation",
+      "workload": "full-race",
+      "laps": 52,
+      "cooling_points": 10,
+      "seed": "20260901",
+      "expected_local_evidence": null
+    }
+  ]
+}
