@@ -491,21 +491,12 @@ def execute_packaged_v3_decision_surface(
     """Execute one exact scenario/profile/seed from the reviewed campaign."""
 
     from .decision_surface import (
-        load_decision_surface_campaign,
-        materialize_decision_surface_plan,
+        load_decision_surface_execution,
     )
 
     if not V3_DECISION_SURFACE_EXECUTION_PATTERN.fullmatch(execution_key):
         raise ValueError("execution key must be one canonical packaged identifier")
-    manifest, _ = load_decision_surface_campaign(campaign_name)
-    configurations = {
-        row["execution_key"]: row
-        for row in materialize_decision_surface_plan(manifest)
-    }
-    try:
-        configuration = configurations[execution_key]
-    except KeyError as error:
-        raise ValueError("execution key is not packaged or allowlisted") from error
+    configuration = load_decision_surface_execution(execution_key, campaign_name)
 
     package = importlib.resources.files("pitgun_databricks_adapter")
     probe_bytes = package.joinpath("bin", "v3_decision_surface_probe").read_bytes()

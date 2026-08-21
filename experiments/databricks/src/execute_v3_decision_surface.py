@@ -340,151 +340,160 @@ with tracking_context as tracking_run:
         for entry in plan
         if (entry["configuration_id"], entry["seed"]) not in accepted
     ]
+
+    def persist_attempts(attempts: list[dict]) -> None:
+        run_rows = []
+        metric_rows = []
+        for attempt in attempts:
+            entry = attempt["entry"]
+            result = attempt["result"]
+            adapter_result = attempt["adapter_result"]
+            completed_at = datetime.now(timezone.utc)
+            execution_id = result["experimental_execution_id"] if result else None
+            if result:
+                mechanical = result["mechanical_diagnostics"]
+                tire = result["tire_diagnostics"]
+                fuel = result["fuel_mass_diagnostics"]
+                degradation = result["tire_degradation_diagnostics"]
+                metrics = (
+                    ("racing.total-time", result["total_time_ms"], "ms", "total"),
+                    (
+                        "racing.maximum-speed",
+                        result["observed_maximum_speed_kph"],
+                        "km/h",
+                        "maximum",
+                    ),
+                    (
+                        "racing.maximum-engine-temperature",
+                        mechanical["maximum_engine_temperature_c"],
+                        "celsius",
+                        "maximum",
+                    ),
+                    (
+                        "racing.engine-derated-time",
+                        mechanical["engine_derated_time_s"],
+                        "s",
+                        "total",
+                    ),
+                    (
+                        "racing.maximum-tire-utilization",
+                        tire["maximum_combined_utilization"],
+                        "ratio",
+                        "maximum",
+                    ),
+                    (
+                        "racing.fuel-consumed",
+                        fuel["fuel_consumed_kg"],
+                        "kg",
+                        "total",
+                    ),
+                    (
+                        "racing.final-tire-wear",
+                        result["final_tire_wear_pct"],
+                        "percent",
+                        "final",
+                    ),
+                    (
+                        "racing.maximum-thermal-wear-multiplier",
+                        degradation["maximum_thermal_wear_multiplier"],
+                        "ratio",
+                        "maximum",
+                    ),
+                )
+                for metric_id, value, unit, statistic in metrics:
+                    metric_rows.append(
+                        {
+                            "campaign_id": campaign_id,
+                            "experimental_execution_id": execution_id,
+                            "experimental_configuration_id": entry[
+                                "configuration_id"
+                            ],
+                            "response_id": entry["family"],
+                            "seed": entry["seed"],
+                            "metric_id": metric_id,
+                            "metric_value": float(value),
+                            "metric_unit": unit,
+                            "statistic": statistic,
+                            "recorded_at": completed_at,
+                        }
+                    )
+            strategy = entry["scenario"]["request"]["competitors"][0].get(
+                "stint_strategy", {}
+            )
+            run_rows.append(
+                {
+                    "campaign_id": campaign_id,
+                    "experimental_configuration_id": entry["configuration_id"],
+                    "response_id": entry["family"],
+                    "response_digest": entry["profile_ref"],
+                    "seed": entry["seed"],
+                    "experimental_execution_id": execution_id,
+                    "scenario_digest": entry["scenario_ref"],
+                    "adapter_version": adapter_version,
+                    "probe_artifact_digest": probe_identity["digest"],
+                    "canonical_result_digest": adapter_result[
+                        "canonical_result_digest"
+                    ]
+                    if adapter_result
+                    else None,
+                    "source_git_revision": source_git_revision,
+                    "circuit_id": entry["circuit_id"],
+                    "era": entry["era"],
+                    "setup_json": json.dumps(
+                        entry["metadata"], sort_keys=True, separators=(",", ":")
+                    ),
+                    "strategy_json": json.dumps(
+                        strategy, sort_keys=True, separators=(",", ":")
+                    ),
+                    "execution_status": attempt["status"],
+                    "failure_phase": attempt["phase"],
+                    "failure_code": attempt["code"],
+                    "failure_message": attempt["message"],
+                    "duration_ms": attempt["duration_ms"],
+                    "result_json": json.dumps(
+                        result, sort_keys=True, separators=(",", ":")
+                    )
+                    if result
+                    else None,
+                    "started_at": attempt["started_at"],
+                    "completed_at": completed_at,
+                    "ingested_at": completed_at,
+                }
+            )
+
+        if run_rows:
+            source = spark.createDataFrame(run_rows, run_row_schema)
+            (
+                DeltaTable.forName(spark, runs_table)
+                .alias("target")
+                .merge(
+                    source.alias("source"),
+                    "target.campaign_id = source.campaign_id AND target.experimental_configuration_id = source.experimental_configuration_id AND target.seed = source.seed",
+                )
+                .whenMatchedUpdateAll(
+                    condition="target.execution_status <> 'SUCCESS'"
+                )
+                .whenNotMatchedInsertAll()
+                .execute()
+            )
+        if metric_rows:
+            source = spark.createDataFrame(metric_rows, metric_row_schema)
+            (
+                DeltaTable.forName(spark, metrics_table)
+                .alias("target")
+                .merge(
+                    source.alias("source"),
+                    "target.experimental_execution_id = source.experimental_execution_id AND target.metric_id = source.metric_id",
+                )
+                .whenNotMatchedInsertAll()
+                .execute()
+            )
+
+    batch_size = 256
     with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
-        attempts = list(executor.map(execute_entry, pending))
-
-    run_rows = []
-    metric_rows = []
-    for attempt in attempts:
-        entry = attempt["entry"]
-        result = attempt["result"]
-        adapter_result = attempt["adapter_result"]
-        completed_at = datetime.now(timezone.utc)
-        execution_id = result["experimental_execution_id"] if result else None
-        if result:
-            mechanical = result["mechanical_diagnostics"]
-            tire = result["tire_diagnostics"]
-            fuel = result["fuel_mass_diagnostics"]
-            degradation = result["tire_degradation_diagnostics"]
-            metrics = (
-                ("racing.total-time", result["total_time_ms"], "ms", "total"),
-                (
-                    "racing.maximum-speed",
-                    result["observed_maximum_speed_kph"],
-                    "km/h",
-                    "maximum",
-                ),
-                (
-                    "racing.maximum-engine-temperature",
-                    mechanical["maximum_engine_temperature_c"],
-                    "celsius",
-                    "maximum",
-                ),
-                (
-                    "racing.engine-derated-time",
-                    mechanical["engine_derated_time_s"],
-                    "s",
-                    "total",
-                ),
-                (
-                    "racing.maximum-tire-utilization",
-                    tire["maximum_combined_utilization"],
-                    "ratio",
-                    "maximum",
-                ),
-                (
-                    "racing.fuel-consumed",
-                    fuel["fuel_consumed_kg"],
-                    "kg",
-                    "total",
-                ),
-                (
-                    "racing.final-tire-wear",
-                    result["final_tire_wear_pct"],
-                    "percent",
-                    "final",
-                ),
-                (
-                    "racing.maximum-thermal-wear-multiplier",
-                    degradation["maximum_thermal_wear_multiplier"],
-                    "ratio",
-                    "maximum",
-                ),
-            )
-            for metric_id, value, unit, statistic in metrics:
-                metric_rows.append(
-                    {
-                        "campaign_id": campaign_id,
-                        "experimental_execution_id": execution_id,
-                        "experimental_configuration_id": entry["configuration_id"],
-                        "response_id": entry["family"],
-                        "seed": entry["seed"],
-                        "metric_id": metric_id,
-                        "metric_value": float(value),
-                        "metric_unit": unit,
-                        "statistic": statistic,
-                        "recorded_at": completed_at,
-                    }
-                )
-        strategy = entry["scenario"]["request"]["competitors"][0].get(
-            "stint_strategy", {}
-        )
-        run_rows.append(
-            {
-                "campaign_id": campaign_id,
-                "experimental_configuration_id": entry["configuration_id"],
-                "response_id": entry["family"],
-                "response_digest": entry["profile_ref"],
-                "seed": entry["seed"],
-                "experimental_execution_id": execution_id,
-                "scenario_digest": entry["scenario_ref"],
-                "adapter_version": adapter_version,
-                "probe_artifact_digest": probe_identity["digest"],
-                "canonical_result_digest": adapter_result[
-                    "canonical_result_digest"
-                ]
-                if adapter_result
-                else None,
-                "source_git_revision": source_git_revision,
-                "circuit_id": entry["circuit_id"],
-                "era": entry["era"],
-                "setup_json": json.dumps(
-                    entry["metadata"], sort_keys=True, separators=(",", ":")
-                ),
-                "strategy_json": json.dumps(
-                    strategy, sort_keys=True, separators=(",", ":")
-                ),
-                "execution_status": attempt["status"],
-                "failure_phase": attempt["phase"],
-                "failure_code": attempt["code"],
-                "failure_message": attempt["message"],
-                "duration_ms": attempt["duration_ms"],
-                "result_json": json.dumps(
-                    result, sort_keys=True, separators=(",", ":")
-                )
-                if result
-                else None,
-                "started_at": attempt["started_at"],
-                "completed_at": completed_at,
-                "ingested_at": completed_at,
-            }
-        )
-
-    if run_rows:
-        source = spark.createDataFrame(run_rows, run_row_schema)
-        (
-            DeltaTable.forName(spark, runs_table)
-            .alias("target")
-            .merge(
-                source.alias("source"),
-                "target.campaign_id = source.campaign_id AND target.experimental_configuration_id = source.experimental_configuration_id AND target.seed = source.seed",
-            )
-            .whenMatchedUpdateAll(condition="target.execution_status <> 'SUCCESS'")
-            .whenNotMatchedInsertAll()
-            .execute()
-        )
-    if metric_rows:
-        source = spark.createDataFrame(metric_rows, metric_row_schema)
-        (
-            DeltaTable.forName(spark, metrics_table)
-            .alias("target")
-            .merge(
-                source.alias("source"),
-                "target.experimental_execution_id = source.experimental_execution_id AND target.metric_id = source.metric_id",
-            )
-            .whenNotMatchedInsertAll()
-            .execute()
-        )
+        for offset in range(0, len(pending), batch_size):
+            attempts = list(executor.map(execute_entry, pending[offset : offset + batch_size]))
+            persist_attempts(attempts)
 
     persisted = (
         spark.table(runs_table)

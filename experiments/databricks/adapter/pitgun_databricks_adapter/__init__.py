@@ -49,6 +49,7 @@ from .runner import (
 )
 from .decision_surface import (
     load_decision_surface_campaign,
+    load_decision_surface_execution,
     materialize_decision_surface_plan,
 )
 from .tire_degradation import (
@@ -74,6 +75,7 @@ __all__ = [
     "inspect_packaged_v3_validation_probe",
     "inspect_packaged_v3_decision_surface_probe",
     "load_decision_surface_campaign",
+    "load_decision_surface_execution",
     "materialize_decision_surface_plan",
     "load_tire_degradation_campaign",
     "materialize_tire_degradation_plan",

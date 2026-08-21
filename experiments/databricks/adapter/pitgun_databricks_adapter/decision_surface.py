@@ -141,3 +141,26 @@ def materialize_decision_surface_plan(
         dict(row, scenario=scenarios[row["scenario_ref"]], profile=profiles[row["profile_ref"]])
         for row in manifest["configurations"]
     ]
+
+
+@functools.lru_cache(maxsize=1)
+def _decision_surface_execution_index(name: str) -> dict[str, dict[str, Any]]:
+    manifest, _ = load_decision_surface_campaign(name)
+    return {
+        row["execution_key"]: row
+        for row in materialize_decision_surface_plan(manifest)
+    }
+
+
+def load_decision_surface_execution(
+    execution_key: str,
+    name: str = "racing-v3-decision-surface-v1",
+) -> dict[str, Any]:
+    """Resolve one run through the process-wide immutable campaign index."""
+
+    try:
+        return _decision_surface_execution_index(name)[execution_key]
+    except KeyError as error:
+        raise DecisionSurfaceCampaignError(
+            "execution key is not packaged or allowlisted"
+        ) from error
