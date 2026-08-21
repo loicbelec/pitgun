@@ -26,6 +26,31 @@ class BundleContractTest(unittest.TestCase):
         self.assertIn("execute_packaged_v3_thermal_surface", notebook)
         self.assertNotIn("automatic_catalog_promotion\": True", notebook)
 
+    def test_v3_thermal_review_is_pinned_read_only_and_non_promoting(self):
+        job = (ROOT / "resources" / "jobs.yml").read_text()
+        notebook = (ROOT / "src" / "review_v3_thermal_surface.py").read_text()
+        review = json.loads(
+            (
+                ROOT / "reviews" / "racing-v3-thermal-adequacy-review-v1.json"
+            ).read_text()
+        )
+
+        self.assertIn("v3_thermal_surface_review_job:", job)
+        self.assertIn('campaigns_table_version: "47"', job)
+        self.assertIn('experimental_runs_table_version: "55"', job)
+        self.assertIn('experimental_metrics_table_version: "53"', job)
+        self.assertIn('.option("versionAsOf", campaigns_version)', notebook)
+        self.assertIn('.option("versionAsOf", runs_version)', notebook)
+        self.assertIn('.option("versionAsOf", metrics_version)', notebook)
+        self.assertEqual(
+            {family["verdict"] for family in review["per_family_verdicts"].values()},
+            {"PASS", "REFINE"},
+        )
+        self.assertFalse(review["automatic_catalog_promotion"])
+        self.assertFalse(review["next_gate"]["automatic_catalog_promotion"])
+        for forbidden in ("DeltaTable", "MERGE INTO", "UPDATE ", "DELETE "):
+            self.assertNotIn(forbidden, notebook)
+
     def test_bootstrap_owns_only_the_seven_governed_tables(self):
         source = (ROOT / "src" / "bootstrap_tables.py").read_text()
         expected = {

@@ -1,0 +1,60 @@
+{
+  "schema_version": "pitgun.racing-v3-thermal-adequacy-review/v1",
+  "id": "racing-v3-thermal-adequacy-review-v1",
+  "campaign_id": "racing-v3-thermal-adequacy-2026-v1",
+  "manifest_digest": "sha256:f6129f0799aaa849ae002534e5b148ae38be10f89f4edc283923b2da24fd54b2",
+  "source_git_revision": "90cbe75",
+  "databricks": {
+    "job_id": "440549274049391",
+    "run_id": "655118884447136"
+  },
+  "evidence_versions": {
+    "campaigns": 47,
+    "experimental_runs": 55,
+    "experimental_metrics": 53
+  },
+  "observed_evidence": {
+    "planned_execution_count": 1560,
+    "successful_execution_count": 1560,
+    "local_parity_failure_count": 0,
+    "vehicle_family_execution_counts": {
+      "historical_v8": 1040,
+      "modern_v6t": 260,
+      "f1_2026": 260
+    },
+    "pathological_execution_counts": {
+      "historical_v8": 0,
+      "modern_v6t": 58,
+      "f1_2026": 62
+    }
+  },
+  "per_family_verdicts": {
+    "historical_v8": {
+      "verdict": "PASS",
+      "reason": "All executions are safe and additional cooling consistently costs pace instead of creating an unexplained historical thermal-management optimum.",
+      "candidate_parameter_set_id": null
+    },
+    "modern_v6t": {
+      "verdict": "REFINE",
+      "reason": "A safe engaged region exists, but no reviewed profile produces an interior cooling optimum on Monza, Singapore, and Barcelona together.",
+      "candidate_parameter_set_id": null
+    },
+    "f1_2026": {
+      "verdict": "REFINE",
+      "reason": "adaptive-038 produces a safe interior cooling optimum on all three circuits, but its maximum observed derated fraction is 0.498225 against the pre-registered 0.50 pathology guard, leaving insufficient robustness margin.",
+      "candidate_parameter_set_id": "adaptive-038"
+    }
+  },
+  "next_gate": {
+    "objective": "Pre-register a small era-specific refinement around adaptive-038 and adaptive-044, then validate new points without reusing them as selection evidence.",
+    "candidate_centres": [
+      "adaptive-038",
+      "adaptive-044"
+    ],
+    "family_specific_coefficients_allowed": true,
+    "new_validation_required": true,
+    "automatic_catalog_promotion": false
+  },
+  "classification_only_not_real_f1_calibration": true,
+  "automatic_catalog_promotion": false
+}

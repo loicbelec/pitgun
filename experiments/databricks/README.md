@@ -246,6 +246,17 @@ metrics. New transition and Barcelona points are persisted with eight metrics,
 including derated fraction. Completion ends at `REVIEW_REQUIRED`; a separate
 read-only review selects the per-family verdicts.
 
+The completed V1 review pins `campaigns@47`, `experimental_runs@55`, and
+`experimental_metrics@53`. Run it after deploying the reviewed bundle:
+
+```bash
+databricks bundle run v3_thermal_surface_review_job -t dev -p pitgun-free
+```
+
+It reproduces the 1,560-run ledger, renders the two retained candidate surfaces,
+and exposes the recorded `PASS`/`REFINE` verdicts without a Delta, catalog, or
+game write path.
+
 ## Reference campaign
 
 The frozen V1 campaign manifest is
