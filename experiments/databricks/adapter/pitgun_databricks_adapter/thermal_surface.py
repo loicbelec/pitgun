@@ -11,8 +11,14 @@ from typing import Any
 
 
 CAMPAIGN_NAME = "racing-v3-thermal-adequacy-v1"
-REFINEMENT_VALIDATION_CAMPAIGN_NAME = "racing-v3-thermal-refinement-validation-v1"
-CAMPAIGN_NAMES = frozenset({CAMPAIGN_NAME, REFINEMENT_VALIDATION_CAMPAIGN_NAME})
+REFINEMENT_VALIDATION_CAMPAIGN_NAME = "racing-v3-thermal-refinement-validation-v2"
+REFINEMENT_VALIDATION_CAMPAIGN_NAMES = frozenset(
+    {
+        "racing-v3-thermal-refinement-validation-v1",
+        REFINEMENT_VALIDATION_CAMPAIGN_NAME,
+    }
+)
+CAMPAIGN_NAMES = frozenset({CAMPAIGN_NAME}) | REFINEMENT_VALIDATION_CAMPAIGN_NAMES
 SCHEMA_VERSION = "pitgun.racing-v3-thermal-adequacy-campaign/v1"
 REVIEW_NAME = "racing-v3-thermal-adequacy-review-v1"
 REVIEW_SCHEMA_VERSION = "pitgun.racing-v3-thermal-adequacy-review/v1"
