@@ -17,10 +17,10 @@ LOCAL_RESULT = ROOT / "experiments" / "racing_v3_thermal_refinement" / "results"
 SOURCE_CAMPAIGN = ROOT / "experiments" / "databricks" / "campaigns" / "racing-v3-thermal-adequacy-v1.json"
 BASE_SCENARIO = ROOT / "apps" / "pitgun-cli" / "scenarios" / "racing-batch-v1" / "balanced.json"
 BASE_PROFILE = ROOT / "experiments" / "racing_v3_decision_surface" / "profile-v8.engine-thermal-resolution.json"
-OUTPUT = ROOT / "experiments" / "databricks" / "campaigns" / "racing-v3-thermal-refinement-validation-v1.json"
+OUTPUT = ROOT / "experiments" / "databricks" / "campaigns" / "racing-v3-thermal-refinement-validation-v2.json"
 SCHEMA_VERSION = "pitgun.racing-v3-thermal-adequacy-campaign/v1"
-CAMPAIGN_ID = "racing-v3-thermal-refinement-validation-2026-v1"
-CAMPAIGN_NAME = "racing-v3-thermal-refinement-validation-v1"
+CAMPAIGN_ID = "racing-v3-thermal-refinement-validation-2026-v2"
+CAMPAIGN_NAME = "racing-v3-thermal-refinement-validation-v2"
 
 
 class ValidationManifestError(RuntimeError):
@@ -63,7 +63,9 @@ def configure_scenario(base: dict[str, Any], *, vehicle_id: str, era: int, cooli
             "era": era,
             "laps": 52,
             "hz": 5.0,
-            "initial_fuel_mass_kg": 80.0,
+            # Full-race validation isolates thermal behavior. The original
+            # 80 kg screen reservoir depleted before 52 laps on V6T engines.
+            "initial_fuel_mass_kg": 130.0,
         }
     )
     competitor = request["competitors"][0]
@@ -183,7 +185,7 @@ def build_manifest(
         "schema_version": SCHEMA_VERSION,
         "campaign_id": CAMPAIGN_ID,
         "execution_class": "experimental-v3-thermal-physics",
-        "parameter_space_version": "racing-v3-thermal-refinement-validation-v1",
+        "parameter_space_version": "racing-v3-thermal-refinement-validation-v2",
         "question": "Do the frozen era-specific thermal profiles transfer to a full Silverstone race without reusing local selection evidence?",
         "promotion_policy": "human-review-required",
         "automatic_catalog_promotion": False,
@@ -197,6 +199,9 @@ def build_manifest(
             "base_scenario_digest": sha256(scenario_bytes),
             "base_profile_digest": sha256(base_profile_bytes),
             "selected_parameter_set_id": result["selected_parameter_set_id"],
+            "supersedes_campaign_id": "racing-v3-thermal-refinement-validation-2026-v1",
+            "experimental_fuel_reservoir_kg": 130.0,
+            "correction_reason": "The inherited 80 kg local-screen reservoir depleted before the reserved 52-lap workload for modern V6T and F1 2026.",
         },
         "adequacy_contract": {
             "classification_only_not_real_f1_calibration": True,

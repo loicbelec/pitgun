@@ -690,7 +690,7 @@ resources:
         pitgun.promotion: forbidden
 
     v3_thermal_refinement_validation_job:
-      name: pitgun-racing-v3-thermal-refinement-validation-v1
+      name: pitgun-racing-v3-thermal-refinement-validation-v2
       description: >-
         Execute the 12-run independent full-race Silverstone validation for
         the frozen historical, modern V6T, and F1 2026 thermal profiles.
@@ -714,7 +714,7 @@ resources:
             source: WORKSPACE
             base_parameters:
               operation: bootstrap
-              campaign_id: racing-v3-thermal-refinement-validation-2026-v1
+              campaign_id: racing-v3-thermal-refinement-validation-2026-v2
               catalog_name: ${var.catalog_name}
               calibration_schema: ${resources.schemas.calibration.name}
               policies_schema: ${resources.schemas.policies.name}
@@ -732,14 +732,14 @@ resources:
               catalog_name: ${var.catalog_name}
               calibration_schema: ${resources.schemas.calibration.name}
               experiment_id: ${resources.experiments.calibration_experiment.id}
-              campaign_name: racing-v3-thermal-refinement-validation-v1
+              campaign_name: racing-v3-thermal-refinement-validation-v2
               max_workers: "{{job.parameters.max_workers}}"
           timeout_seconds: 3600
       tags:
         pitgun.domain: calibration
         pitgun.compute: serverless
         pitgun.runner: rust-native-experimental
-        pitgun.campaign: racing-v3-thermal-refinement-validation-v1
+        pitgun.campaign: racing-v3-thermal-refinement-validation-v2
         pitgun.promotion: human-review-required
 
     v3_response_surface_review_job:

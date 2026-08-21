@@ -35,6 +35,14 @@ class V3ThermalRefinementValidationTests(unittest.TestCase):
         self.assertEqual(self.manifest["local_replay_run_count"], 0)
         self.assertEqual(self.manifest["new_evidence_run_count"], 12)
         self.assertFalse(self.manifest["automatic_catalog_promotion"])
+        self.assertEqual(
+            self.manifest["source_evidence"]["experimental_fuel_reservoir_kg"],
+            130.0,
+        )
+        self.assertEqual(
+            self.manifest["source_evidence"]["supersedes_campaign_id"],
+            "racing-v3-thermal-refinement-validation-2026-v1",
+        )
 
     def test_plan_uses_only_the_reserved_validation_boundary(self):
         self.assertEqual({row["circuit_id"] for row in self.plan}, {"gb-1948"})
@@ -72,7 +80,7 @@ class V3ThermalRefinementValidationTests(unittest.TestCase):
     def test_job_uses_the_bounded_shared_executor(self):
         jobs = (ROOT / "resources" / "jobs.yml").read_text()
         self.assertIn("v3_thermal_refinement_validation_job:", jobs)
-        self.assertIn("campaign_name: racing-v3-thermal-refinement-validation-v1", jobs)
+        self.assertIn("campaign_name: racing-v3-thermal-refinement-validation-v2", jobs)
         self.assertIn("pitgun.promotion: human-review-required", jobs)
 
 
