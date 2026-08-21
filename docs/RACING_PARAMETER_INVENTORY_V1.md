@@ -148,7 +148,7 @@ decision.
 | engine-force speed floor | 10.0 | m/s | numerical regularization | shapes low-speed acceleration; not audited |
 | mass and heat-capacity divisor floor | `1e-9` | respective unit | numerical safety detail | compiled |
 | acceleration distance floor | `1e-3` | m | numerical safety detail | compiled |
-| thermal power floor after derating | 0.20 | ratio | calibrable physical guard | compiled, not independently validated |
+| thermal power floor after derating | 0.20 | ratio | calibrable physical guard | compiled for historical models and V3 profiles V1–V7; explicit in offline thermal profile V8 |
 | tire temperature sigma floor | `1e-3` | °C | numerical safety detail | compiled |
 | tire wear bounds | `0..1` | ratio | state invariant | compiled |
 | tire temperature floor | 0.0 | °C | state guard | numerically safe but not physically sufficient |
@@ -276,6 +276,10 @@ Every published engine currently shares `t_amb=35 °C`, `t_init=90 °C`,
 `c_th=100,000 J/°C`, `alpha_heat=0.45`, `p_cool0=0`, `k_cool=45`, and
 `t_soft=110 °C`. Only `beta_derate` differs. This strong duplication suggests
 authored defaults rather than independently calibrated power-unit thermal data.
+The offline V8 thermal profile now exposes bounded relative multipliers for
+capacity, heat generation, static and speed cooling, threshold, derating slope,
+minimum power, response shape, and cooling drag. It preserves these engine
+resources as era-aware references and authorizes no production calibration.
 
 ### Tires
 

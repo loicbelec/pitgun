@@ -353,6 +353,70 @@ pub struct ResolvedSimulationRequestV3 {
     /// to and including 0.8.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub tire_degradation: Option<TireDegradationParamsV3>,
+    /// Optional explicit thermal guard selected by the V3 experiment profile.
+    /// `None` preserves the immutable 0.9 minimum-power behavior.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub engine_thermal: Option<EngineThermalParamsV3>,
+}
+
+/// Calibrable guard for the reduced-order engine thermal law.
+///
+/// Heat generation, inertia, rejection, thresholds and slope are already
+/// resolved into [`EngineParams`]. This separate value removes the last
+/// physical guard from compiled source while preserving old candidates when
+/// the optional boundary is absent.
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct EngineThermalParamsV3 {
+    pub derating_shape: EngineThermalDeratingShapeV3,
+    /// Width of the progressive onset above the soft limit, in degC.
+    /// Linear profiles require zero; smooth-knee profiles require a positive value.
+    pub smooth_knee_width_c: f64,
+    pub minimum_power_fraction: f64,
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq)]
+pub enum EngineThermalDeratingShapeV3 {
+    #[serde(rename = "linear-threshold")]
+    LinearThreshold,
+    #[serde(rename = "smooth-knee")]
+    SmoothKnee,
+}
+
+impl Default for EngineThermalParamsV3 {
+    fn default() -> Self {
+        Self {
+            derating_shape: EngineThermalDeratingShapeV3::LinearThreshold,
+            smooth_knee_width_c: 0.0,
+            minimum_power_fraction: 0.20,
+        }
+    }
+}
+
+impl EngineThermalParamsV3 {
+    pub fn validate(&self) -> Result<(), String> {
+        if !self.smooth_knee_width_c.is_finite()
+            || match self.derating_shape {
+                EngineThermalDeratingShapeV3::LinearThreshold => self.smooth_knee_width_c != 0.0,
+                EngineThermalDeratingShapeV3::SmoothKnee => {
+                    !(0.1..=50.0).contains(&self.smooth_knee_width_c)
+                }
+            }
+        {
+            return Err(
+                "V3 linear thermal response requires a zero knee width; smooth response requires [0.1, 50] degC"
+                    .to_string(),
+            );
+        }
+        if !self.minimum_power_fraction.is_finite()
+            || !(0.05..=1.0).contains(&self.minimum_power_fraction)
+        {
+            return Err(
+                "V3 engine thermal minimum-power fraction must be in [0.05, 1]".to_string(),
+            );
+        }
+        Ok(())
+    }
 }
 
 /// Reduced-order combustion fuel and mass model for Racing Model V3.
@@ -822,6 +886,9 @@ pub fn run_resolved_simulation_v3(
     if let Some(tire_degradation) = &input.tire_degradation {
         tire_degradation.validate()?;
     }
+    if let Some(engine_thermal) = &input.engine_thermal {
+        engine_thermal.validate()?;
+    }
     for stop in &input.pit_plan.stops {
         validate_tire_params(&stop.tire)?;
     }
@@ -863,7 +930,11 @@ pub fn run_resolved_simulation_v3(
         CurvatureAeroResponse::FixedV3,
         SpatialIntegration::PerSegmentV1,
         tire_dynamics,
-        Some((&input.mechanical, &input.driver_control)),
+        Some((
+            &input.mechanical,
+            &input.driver_control,
+            input.engine_thermal.as_ref(),
+        )),
         input.fuel_mass.as_ref(),
     )
 }
@@ -1207,7 +1278,11 @@ fn run_resolved_simulation_kernel(
     curvature_response: CurvatureAeroResponse,
     spatial_integration: SpatialIntegration,
     tire_dynamics: TireDynamics<'_>,
-    v3_controls: Option<(&MechanicalParamsV3, &DriverControlParamsV3)>,
+    v3_controls: Option<(
+        &MechanicalParamsV3,
+        &DriverControlParamsV3,
+        Option<&EngineThermalParamsV3>,
+    )>,
     fuel_mass: Option<&FuelMassParamsV3>,
 ) -> Result<SimulationResult, String> {
     if matches!(tire_dynamics, TireDynamics::Compatibility) {
@@ -1219,7 +1294,7 @@ fn run_resolved_simulation_kernel(
         );
     }
 
-    let (mechanical, driver_control) = v3_controls
+    let (mechanical, driver_control, engine_thermal) = v3_controls
         .ok_or_else(|| "V3 mechanical controls are required for aggregate dynamics".to_string())?;
 
     let lap_count = input.lap_count.max(1);
@@ -1479,7 +1554,11 @@ fn run_resolved_simulation_kernel(
                 let rpm =
                     rpm_from_speed_gear(v_safe, ratio, &vehicle.chassis).max(vehicle.engine.n_idle);
                 let engine_power_kw = power_kw_from_rpm(rpm, &vehicle.engine);
-                let derating = derating_factor(temp[i], &vehicle.engine);
+                let derating = derating_factor_v3(
+                    temp[i],
+                    &vehicle.engine,
+                    engine_thermal.copied().unwrap_or_default(),
+                );
                 engine_derating[i] = derating;
                 if derating < 1.0 {
                     iteration_engine_derated_time_s += dt;
@@ -1961,6 +2040,16 @@ pub fn resample_telemetry(
     vehicle: &VehicleParams,
     hz: f64,
 ) -> Result<ResampledTelemetry, String> {
+    resample_telemetry_with_engine_thermal(track, solution, vehicle, hz, None)
+}
+
+pub fn resample_telemetry_with_engine_thermal(
+    track: &Track,
+    solution: &SimulationSolution,
+    vehicle: &VehicleParams,
+    hz: f64,
+    engine_thermal: Option<EngineThermalParamsV3>,
+) -> Result<ResampledTelemetry, String> {
     validate_track(track)?;
     if solution.t.is_empty() {
         return Ok(ResampledTelemetry::default());
@@ -2077,7 +2166,11 @@ pub fn resample_telemetry(
         rpm[i] = rpm_from_speed_gear(v, ratio, &vehicle.chassis);
 
         let p_theo = power_kw_from_rpm(rpm[i], &vehicle.engine);
-        let p_act = p_theo * derating_factor(temp_t[i], &vehicle.engine);
+        let derating = engine_thermal.map_or_else(
+            || derating_factor(temp_t[i], &vehicle.engine),
+            |thermal| derating_factor_v3(temp_t[i], &vehicle.engine, thermal),
+        );
+        let p_act = p_theo * derating;
 
         if power_t[i] > 0.0 {
             brake[i] = 0.0;
@@ -2282,11 +2375,37 @@ pub fn combined_force_utilization(
 }
 
 pub fn derating_factor(temp: f64, engine: &EngineParams) -> f64 {
+    derating_factor_with_minimum(temp, engine, 0.20)
+}
+
+fn derating_factor_with_minimum(
+    temp: f64,
+    engine: &EngineParams,
+    minimum_power_fraction: f64,
+) -> f64 {
     if temp <= engine.t_soft {
         1.0
     } else {
-        (1.0 - (temp - engine.t_soft) * engine.beta_derate).max(0.2)
+        (1.0 - (temp - engine.t_soft) * engine.beta_derate).max(minimum_power_fraction)
     }
+}
+
+/// Evaluates the explicit candidate thermal response.
+///
+/// The smooth knee replaces the abrupt non-zero slope at the soft limit with a
+/// cubic transition. At the configured knee width it rejoins the exact linear
+/// excess-temperature law with a continuous first derivative.
+pub fn derating_factor_v3(temp: f64, engine: &EngineParams, thermal: EngineThermalParamsV3) -> f64 {
+    let excess = (temp - engine.t_soft).max(0.0);
+    let effective_excess = match thermal.derating_shape {
+        EngineThermalDeratingShapeV3::LinearThreshold => excess,
+        EngineThermalDeratingShapeV3::SmoothKnee if excess < thermal.smooth_knee_width_c => {
+            let normalized = excess / thermal.smooth_knee_width_c;
+            excess * normalized * normalized * (3.0 - 2.0 * normalized)
+        }
+        EngineThermalDeratingShapeV3::SmoothKnee => excess,
+    };
+    (1.0 - effective_excess * engine.beta_derate).max(thermal.minimum_power_fraction)
 }
 
 pub fn rpm_from_speed_gear(speed: f64, gear_ratio: f64, chassis: &ChassisParams) -> f64 {

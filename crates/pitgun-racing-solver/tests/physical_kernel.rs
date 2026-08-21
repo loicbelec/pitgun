@@ -1,10 +1,11 @@
 use pitgun_racing_solver::{
     AERO_FULL_CORNER_CURVATURE_RAD_PER_M, AERO_FULL_STRAIGHT_CURVATURE_RAD_PER_M, AeroParams,
     ChassisParams, CurvatureAeroResponse, Driver, DriverControlParamsV3, EngineParams,
-    MechanicalParamsV3, PitPlan, ResolvedSimulationRequestV3, SimConfig, SimulationRequest,
-    TireContactParamsV3, TireDegradationParamsV3, TireParams, Track, Tuning, TuningResponseV1,
-    VehicleParams, VehicleState, aggregate_tire_force_capacity_v3, apply_tuning,
-    apply_tuning_with_response, combined_force_utilization, curvature_aero_blend, describe_circuit,
+    EngineThermalDeratingShapeV3, EngineThermalParamsV3, MechanicalParamsV3, PitPlan,
+    ResolvedSimulationRequestV3, SimConfig, SimulationRequest, TireContactParamsV3,
+    TireDegradationParamsV3, TireParams, Track, Tuning, TuningResponseV1, VehicleParams,
+    VehicleState, aggregate_tire_force_capacity_v3, apply_tuning, apply_tuning_with_response,
+    combined_force_utilization, curvature_aero_blend, derating_factor_v3, describe_circuit,
     remaining_longitudinal_force, run_resolved_simulation_v3, run_simulation,
     run_simulation_with_model_response, run_simulation_with_tuning_response,
 };
@@ -110,6 +111,7 @@ fn resolved_v3_request(request: &SimulationRequest) -> ResolvedSimulationRequest
         driver_control: DriverControlParamsV3::default(),
         fuel_mass: None,
         tire_degradation: None,
+        engine_thermal: None,
     }
 }
 
@@ -406,6 +408,67 @@ fn v3_cooling_is_observable_and_only_acts_through_temperature() {
             <= weak_diagnostics.maximum_engine_temperature_c
     );
     assert!(strong_diagnostics.engine_derated_time_s <= weak_diagnostics.engine_derated_time_s);
+}
+
+#[test]
+fn v3_thermal_minimum_power_guard_is_explicit_and_bounded() {
+    let mut baseline_request = resolved_v3_request(&synthetic_request());
+    baseline_request.lap_count = 20;
+    baseline_request.vehicle.engine.t_soft = 90.0;
+    baseline_request.vehicle.engine.p_cool0 = 0.0;
+    baseline_request.vehicle.engine.k_cool = 0.0;
+    let baseline = run_resolved_simulation_v3(&baseline_request).expect("baseline thermal solve");
+
+    let mut guarded_request = baseline_request;
+    guarded_request.engine_thermal = Some(EngineThermalParamsV3 {
+        minimum_power_fraction: 0.60,
+        ..EngineThermalParamsV3::default()
+    });
+    let guarded = run_resolved_simulation_v3(&guarded_request).expect("guarded thermal solve");
+
+    assert!(guarded.total_time_s < baseline.total_time_s);
+    assert!(
+        guarded
+            .solution
+            .engine_derating_factor
+            .iter()
+            .copied()
+            .fold(1.0, f64::min)
+            >= 0.60
+    );
+
+    guarded_request
+        .engine_thermal
+        .as_mut()
+        .expect("thermal boundary")
+        .minimum_power_fraction = 0.0;
+    assert!(run_resolved_simulation_v3(&guarded_request).is_err());
+}
+
+#[test]
+fn v3_smooth_thermal_knee_is_continuous_and_less_abrupt() {
+    let request = synthetic_request();
+    let engine = &request.vehicle.engine;
+    let linear = EngineThermalParamsV3::default();
+    let smooth = EngineThermalParamsV3 {
+        derating_shape: EngineThermalDeratingShapeV3::SmoothKnee,
+        smooth_knee_width_c: 10.0,
+        ..linear
+    };
+
+    assert_eq!(derating_factor_v3(engine.t_soft, engine, smooth), 1.0);
+    assert!(
+        derating_factor_v3(engine.t_soft + 2.0, engine, smooth)
+            > derating_factor_v3(engine.t_soft + 2.0, engine, linear)
+    );
+    assert_eq!(
+        derating_factor_v3(engine.t_soft + 10.0, engine, smooth),
+        derating_factor_v3(engine.t_soft + 10.0, engine, linear)
+    );
+    assert!(
+        derating_factor_v3(engine.t_soft + 10.001, engine, smooth)
+            <= derating_factor_v3(engine.t_soft + 10.0, engine, smooth)
+    );
 }
 
 #[test]

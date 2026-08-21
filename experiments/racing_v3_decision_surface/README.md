@@ -61,6 +61,14 @@ in `experiments/racing_v3_tire_degradation/`. The current local-screen V5 report
 uses this V7 profile; screen-report and profile version numbers are independent.
 Profiles V1–V6 retain their previous identities and behavior.
 
+The V8 profile introduces the explicit engine-thermal experiment boundary
+under candidate `0.10.0`. Its identity-valued baseline reproduces V7 while
+exposing bounded heat-generation, inertia, heat-rejection, threshold,
+derating, smooth-knee, and cooling-drag parameters. It is the input boundary
+for #287, not a new default for this historical V5 screen. The parameter
+semantics are documented in
+[`RACING_V3_THERMAL_PARAMETER_BOUNDARY_V1.md`](../../docs/RACING_V3_THERMAL_PARAMETER_BOUNDARY_V1.md).
+
 ## Current V5 result
 
 - all 882 short executions bind the same Model V3 `0.9.0` identity;
