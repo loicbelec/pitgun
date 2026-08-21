@@ -1,0 +1,104 @@
+{
+  "schema_version": "pitgun.racing-v3-thermal-refinement-contract/v1",
+  "contract_id": "racing-v3-thermal-refinement-2026-v1",
+  "question": "Can the modern V6T family expose a robust interior cooling optimum by changing only its thermal soft limit around adaptive-038?",
+  "model": {
+    "id": "pitgun.racing-v3-candidate",
+    "version": "0.10.0",
+    "digest": "sha256:cc1394a1ba52d83ddb9be6f6272729c29f87944969c41a21991d43997379e5cd"
+  },
+  "source_evidence": {
+    "campaign_id": "racing-v3-thermal-adequacy-2026-v1",
+    "campaign_digest": "sha256:f6129f0799aaa849ae002534e5b148ae38be10f89f4edc283923b2da24fd54b2",
+    "review_artifact": "experiments/databricks/reviews/racing-v3-thermal-adequacy-review-v1.json",
+    "review_digest": "sha256:1b9d3167a7b51c9cc6552a22ee6172db1ebda9568bbbe321c0aaf1d0f9b3c539",
+    "issue": 296,
+    "anchor_parameter_set_id": "adaptive-038"
+  },
+  "family_policy": {
+    "historical_v8": {
+      "selection_action": "unchanged",
+      "reason": "Historical vehicles must remain safe without acquiring artificial thermal gameplay."
+    },
+    "f1_2026": {
+      "selection_action": "retain-adaptive-038",
+      "reason": "The reviewed candidate already produced the intended interior optimum on all three reviewed circuits."
+    },
+    "modern_v6t": {
+      "selection_action": "one-axis-refinement",
+      "changed_axis": "soft_limit_offset_c",
+      "unit": "degC",
+      "physical_meaning": "Offset applied to the authored engine temperature at which power derating begins.",
+      "declared_bound": [-15.0, 15.0],
+      "reason": "The reviewed response is bounded and recoverable, but zero cooling remains marginally faster than ten cooling points on Singapore and Barcelona."
+    }
+  },
+  "anchor_parameters": {
+    "thermal_capacity_multiplier": 0.98828125,
+    "heat_generation_multiplier": 1.3950617283950617,
+    "static_cooling_multiplier": 1.0,
+    "speed_cooling_multiplier": 1.4540000000000002,
+    "soft_limit_offset_c": 0.9183673469387728,
+    "derate_slope_multiplier": 1.21900826446281,
+    "minimum_power_fraction": 0.4739644970414202,
+    "derating_shape": "linear-threshold",
+    "smooth_knee_width_c": 0.0,
+    "cooling_drag_area_m2_at_cap": 0.03633217993079584
+  },
+  "candidate_values": [
+    0.9183673469387728,
+    0.5,
+    0.0,
+    -0.5,
+    -1.0,
+    -2.0,
+    -3.0
+  ],
+  "local_selection": {
+    "vehicle_family": "modern_v6t",
+    "vehicle_id": "modern_v6t",
+    "era": 5,
+    "circuits": [
+      {"id": "it-1922", "slug": "monza", "archetype": "power"},
+      {"id": "sg-2008", "slug": "singapore", "archetype": "street-high-downforce"},
+      {"id": "es-1991", "slug": "barcelona", "archetype": "mixed"}
+    ],
+    "seeds": [42, 99],
+    "laps": 18,
+    "cooling_points": [0, 10, 20],
+    "fixed_tuning": {
+      "engine_points": 10.0,
+      "aero_points": 10.0,
+      "chassis_points": 10.0,
+      "downforce_slider": 0.5,
+      "gear_ratio_slider": 0.5
+    }
+  },
+  "selection_rule": {
+    "candidate_order": "smallest absolute change from adaptive-038",
+    "required_for_every_circuit_and_seed": [
+      "all metrics are finite",
+      "maximum engine temperature is at most 180 degC",
+      "temperature and derated fraction do not increase as cooling is added",
+      "ten cooling points are faster than zero cooling points",
+      "twenty cooling points are slower than ten cooling points"
+    ],
+    "zero_cooling_derated_fraction_cap": null,
+    "zero_cooling_interpretation": "A severe but bounded zero-cooling setup is allowed; recoverability and an attainable interior optimum are the gate."
+  },
+  "reserved_final_validation": {
+    "location": "Databricks Free Edition",
+    "circuit": {"id": "gb-1948", "slug": "silverstone", "archetype": "high-speed-mixed"},
+    "seed": 20260901,
+    "workload": "full-race",
+    "must_not_run_during_local_selection": true
+  },
+  "governance": {
+    "production_change_authorized": false,
+    "catalog_change_authorized": false,
+    "game_change_authorized": false,
+    "automatic_promotion": false,
+    "selection_and_validation_are_disjoint": true,
+    "only_pass_may_create_a_versioned_candidate": true
+  }
+}
