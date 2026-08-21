@@ -43,3 +43,19 @@ boundary.
 
 The existing presentation-oriented race and session functions remain
 unchanged during game migration.
+
+## Reviewed Model V3 thermal candidate
+
+The simulator also owns the candidate-only family resolver introduced by
+`V3ThermalFamilyProfileCandidateV1`. It accepts only the exact reviewed
+`pitgun.racing-v3-thermal-family-profile@1.0.0-rc.1` bytes, selects by
+`vehicle_id` and fails closed for an unreviewed vehicle.
+
+Native Rust uses `run_race_with_catalog_and_v3_thermal_family_profile` while
+the browser-compatible boundary uses
+`run_race_with_catalog_and_v3_thermal_family_profile_json`. Both attach the
+same model, candidate, family and parameter-set identity to `RaceOutput`.
+
+These APIs are an integration gate, not a published workload. The game and
+hosted-verification services continue using their current catalog until a
+later coordinated release authorizes the candidate model and profile.
