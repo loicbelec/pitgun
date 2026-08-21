@@ -10,7 +10,7 @@ import re
 from typing import Any
 
 
-CAMPAIGNS = frozenset({"racing-v3-decision-surface-v1"})
+CAMPAIGNS = frozenset({"racing-v3-decision-surface-v2"})
 SCHEMA_VERSION = "pitgun.racing-v3-decision-surface-campaign/v1"
 MODEL_ID = "pitgun.racing-v3-candidate"
 MODEL_VERSION = "0.9.0"
@@ -45,7 +45,7 @@ def _contains_remote_reference(value: object) -> bool:
 
 @functools.lru_cache(maxsize=1)
 def load_decision_surface_campaign(
-    name: str = "racing-v3-decision-surface-v1",
+    name: str = "racing-v3-decision-surface-v2",
 ) -> tuple[dict[str, Any], str]:
     """Return the checksummed explicit campaign embedded in the wheel."""
 
@@ -114,10 +114,25 @@ def load_decision_surface_campaign(
             "expected_experimental_execution_id",
             "expected_probe_result_digest",
             "expected_compact_point_digest",
+            "expected_portable_point_digest",
         ):
             if not SHA256_PATTERN.fullmatch(str(row.get(key, ""))):
                 raise DecisionSurfaceCampaignError(f"configuration {key} is invalid")
         natural_keys.append((row["configuration_id"], seed))
+        expected_metrics = row.get("expected_metrics", {})
+        if set(expected_metrics) != {
+            "total_time_ms",
+            "maximum_speed_kph",
+            "maximum_engine_temperature_c",
+            "engine_derated_time_s",
+            "maximum_tire_utilization",
+            "fuel_consumed_kg",
+            "final_tire_wear_pct",
+            "thermal_wear_multiplier",
+        } or not all(isinstance(value, (int, float)) for value in expected_metrics.values()):
+            raise DecisionSurfaceCampaignError(
+                "configuration expected metrics are incomplete"
+            )
 
     if len(set(execution_keys)) != len(execution_keys):
         raise DecisionSurfaceCampaignError("execution keys are not unique")
@@ -154,7 +169,7 @@ def _decision_surface_execution_index(name: str) -> dict[str, dict[str, Any]]:
 
 def load_decision_surface_execution(
     execution_key: str,
-    name: str = "racing-v3-decision-surface-v1",
+    name: str = "racing-v3-decision-surface-v2",
 ) -> dict[str, Any]:
     """Resolve one run through the process-wide immutable campaign index."""
 

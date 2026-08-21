@@ -9,6 +9,7 @@ from datetime import datetime, timezone
 import hashlib
 import importlib.metadata
 import json
+import math
 import re
 import time
 
@@ -27,7 +28,7 @@ from pitgun_databricks_adapter import (
 dbutils.widgets.text("catalog_name", "workspace")
 dbutils.widgets.text("calibration_schema", "pitgun_calibration")
 dbutils.widgets.text("experiment_id", "")
-dbutils.widgets.text("campaign_name", "racing-v3-decision-surface-v1")
+dbutils.widgets.text("campaign_name", "racing-v3-decision-surface-v2")
 dbutils.widgets.text("max_workers", "8")
 
 catalog_name = dbutils.widgets.get("catalog_name")
@@ -49,6 +50,20 @@ def canonical_pretty(value: object) -> bytes:
 
 def sha256(data: bytes) -> str:
     return "sha256:" + hashlib.sha256(data).hexdigest()
+
+
+def portable_point(value: object) -> object:
+    if isinstance(value, float):
+        return round(value, 9)
+    if isinstance(value, dict):
+        return {
+            key: portable_point(item)
+            for key, item in value.items()
+            if key != "result_digest"
+        }
+    if isinstance(value, list):
+        return [portable_point(item) for item in value]
+    return value
 
 
 def compact_point(entry: dict, result: dict) -> dict:
@@ -213,15 +228,63 @@ def execute_entry(entry: dict) -> dict:
             if result.get(key) != value
         }
         if mismatches:
-            raise ValueError(
-                "probe identity differs from immutable plan: "
-                + json.dumps(mismatches, sort_keys=True)
-            )
-        if sha256(canonical_pretty(result)) != entry["expected_probe_result_digest"]:
-            raise ValueError("probe result differs from accepted local evidence")
+            return {
+                "entry": entry,
+                "started_at": started_at,
+                "duration_ms": (time.perf_counter_ns() - invocation_started)
+                // 1_000_000,
+                "status": "INVALID",
+                "phase": "IDENTITY",
+                "code": "immutable_identity_mismatch",
+                "message": (
+                    "probe identity differs from immutable plan: "
+                    + json.dumps(mismatches, sort_keys=True)
+                )[:2000],
+                "adapter_result": adapter_result,
+                "result": result,
+                "compact": None,
+                "raw_result_match": False,
+            }
+        raw_result_match = (
+            sha256(canonical_pretty(result)) == entry["expected_probe_result_digest"]
+        )
         compact = compact_point(entry, result)
-        if sha256(canonical_pretty(compact)) != entry["expected_compact_point_digest"]:
-            raise ValueError("compact point differs from accepted local evidence")
+        actual_metrics = {
+            key: compact[key] for key in entry["expected_metrics"]
+        }
+        metric_mismatches = {
+            key: [entry["expected_metrics"][key], actual]
+            for key, actual in actual_metrics.items()
+            if not (
+                actual == entry["expected_metrics"][key]
+                if key == "total_time_ms"
+                else math.isclose(
+                    float(actual),
+                    float(entry["expected_metrics"][key]),
+                    rel_tol=1e-9,
+                    abs_tol=1e-9,
+                )
+            )
+        }
+        portable_digest = sha256(canonical_pretty(portable_point(compact)))
+        if (
+            metric_mismatches
+            or portable_digest != entry["expected_portable_point_digest"]
+        ):
+            return {
+                "entry": entry,
+                "started_at": started_at,
+                "duration_ms": (time.perf_counter_ns() - invocation_started)
+                // 1_000_000,
+                "status": "INVALID",
+                "phase": "PORTABLE_PARITY",
+                "code": "portable_metric_mismatch",
+                "message": json.dumps(metric_mismatches, sort_keys=True)[:2000],
+                "adapter_result": adapter_result,
+                "result": result,
+                "compact": compact,
+                "raw_result_match": raw_result_match,
+            }
         return {
             "entry": entry,
             "started_at": started_at,
@@ -233,6 +296,7 @@ def execute_entry(entry: dict) -> dict:
             "adapter_result": adapter_result,
             "result": result,
             "compact": compact,
+            "raw_result_match": raw_result_match,
         }
     except ValueError as error:
         status, phase, code = "INVALID", "IDENTITY", "immutable_identity_mismatch"
@@ -251,6 +315,7 @@ def execute_entry(entry: dict) -> dict:
         "adapter_result": None,
         "result": None,
         "compact": None,
+        "raw_result_match": False,
     }
 
 
@@ -350,7 +415,7 @@ with tracking_context as tracking_run:
             adapter_result = attempt["adapter_result"]
             completed_at = datetime.now(timezone.utc)
             execution_id = result["experimental_execution_id"] if result else None
-            if result:
+            if result and attempt["status"] == "SUCCESS":
                 mechanical = result["mechanical_diagnostics"]
                 tire = result["tire_diagnostics"]
                 fuel = result["fuel_mass_diagnostics"]
@@ -513,6 +578,7 @@ with tracking_context as tracking_run:
     entry_by_key = {(row["configuration_id"], row["seed"]): row for row in plan}
     compact_points = []
     parity_failures = []
+    raw_result_match_count = 0
     for row in persisted:
         if row["execution_status"] != "SUCCESS":
             continue
@@ -520,19 +586,26 @@ with tracking_context as tracking_run:
         entry = entry_by_key[key]
         result = json.loads(row["result_json"])
         point = compact_point(entry, result)
-        if sha256(canonical_pretty(point)) != entry["expected_compact_point_digest"]:
+        if sha256(canonical_pretty(portable_point(point))) != entry[
+            "expected_portable_point_digest"
+        ]:
             parity_failures.append(entry["execution_key"])
+        if sha256(canonical_pretty(result)) == entry["expected_probe_result_digest"]:
+            raw_result_match_count += 1
         compact_points.append(point)
     compact_points.sort(key=point_sort_key)
-    point_set_digest = sha256(canonical_pretty(compact_points))
-    expected_point_set_digest = manifest["local_evidence"]["point_set_digest"]
-    exact_local_parity = (
+    point_set_digest = sha256(canonical_pretty(portable_point(compact_points)))
+    expected_point_set_digest = manifest["local_evidence"][
+        "portable_point_set_digest"
+    ]
+    portable_local_parity = (
         not parity_failures
         and len(compact_points) == manifest["planned_run_count"]
         and point_set_digest == expected_point_set_digest
     )
     completed = (
-        counts["SUCCESS"] == manifest["planned_run_count"] and exact_local_parity
+        counts["SUCCESS"] == manifest["planned_run_count"]
+        and portable_local_parity
     )
     report = {
         "schema_version": "pitgun.racing-v3-decision-surface-databricks-report/v1",
@@ -541,9 +614,11 @@ with tracking_context as tracking_run:
         "status": "COMPLETED" if completed else "FAILED",
         "planned_execution_count": manifest["planned_run_count"],
         "terminal_counts": dict(counts),
-        "local_point_set_digest": expected_point_set_digest,
-        "databricks_point_set_digest": point_set_digest,
-        "exact_local_point_parity": exact_local_parity,
+        "local_raw_point_set_digest": manifest["local_evidence"]["point_set_digest"],
+        "local_portable_point_set_digest": expected_point_set_digest,
+        "databricks_portable_point_set_digest": point_set_digest,
+        "portable_local_point_parity": portable_local_parity,
+        "raw_probe_result_match_count": raw_result_match_count,
         "parity_failure_count": len(parity_failures),
         "local_summary_digests": manifest["local_evidence"]["summary_digests"],
         "calibration_split_count": sum(
@@ -565,7 +640,9 @@ with tracking_context as tracking_run:
             "held_out_split_count": report["held_out_split_count"],
         }
     )
-    mlflow.set_tag("pitgun.exact_local_point_parity", str(exact_local_parity).lower())
+    mlflow.set_tag(
+        "pitgun.portable_local_point_parity", str(portable_local_parity).lower()
+    )
     mlflow.set_tag("pitgun.decision", report["decision"])
     mlflow.log_dict(report, "reports/v3-decision-surface.json")
 

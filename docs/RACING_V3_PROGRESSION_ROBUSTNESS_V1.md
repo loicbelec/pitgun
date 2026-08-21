@@ -91,7 +91,7 @@ Only after that governed replay should a new immutable V3 candidate alter aero,
 chassis, cooling or engine parameters.
 
 The replay contract is materialized as the checksummed
-`experiments/databricks/campaigns/racing-v3-decision-surface-v1.json` manifest.
+`experiments/databricks/campaigns/racing-v3-decision-surface-v2.json` manifest.
 It deduplicates the physical inputs but retains all 4,928 natural run keys and
 the expected digest of every full Rust result and compact evidence point. The
 read-only response-surface notebook consumes the resulting Delta rows for

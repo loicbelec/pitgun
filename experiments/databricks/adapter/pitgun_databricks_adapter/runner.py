@@ -11,6 +11,7 @@ import platform
 import re
 import subprocess
 import tempfile
+import threading
 import time
 from typing import Any
 
@@ -31,6 +32,11 @@ RESPONSE_RESOURCE_PATTERN = re.compile(r"racing-[a-z0-9]+(?:-[a-z0-9]+)*")
 CATALOG_RESOURCE_PATTERN = re.compile(r"racing-v[0-9]+(?:-[0-9]+)*")
 V3_CONFIGURATION_PATTERN = re.compile(r"[a-z0-9]+(?:-[a-z0-9]+)*")
 V3_DECISION_SURFACE_EXECUTION_PATTERN = re.compile(r"v3ds-[0-9]{4}-[0-9]{6}")
+_DECISION_SURFACE_PROBE_ROOT = pathlib.Path(
+    tempfile.mkdtemp(prefix="pitgun-v3-decision-surface-probe-")
+)
+_DECISION_SURFACE_PROBE_LOCK = threading.Lock()
+_DECISION_SURFACE_PROBES: dict[str, pathlib.Path] = {}
 
 
 class RunnerExecutionError(RuntimeError):
@@ -267,13 +273,19 @@ def _execute_v3_decision_surface_probe(
     if not 0 <= seed <= 2**64 - 1:
         raise ValueError("seed must be an unsigned 64-bit integer")
 
+    probe_digest = _sha256(probe_bytes)
+    with _DECISION_SURFACE_PROBE_LOCK:
+        probe = _DECISION_SURFACE_PROBES.get(probe_digest)
+        if probe is None:
+            probe = _DECISION_SURFACE_PROBE_ROOT / probe_digest.removeprefix("sha256:")
+            probe.write_bytes(probe_bytes)
+            probe.chmod(0o500)
+            _DECISION_SURFACE_PROBES[probe_digest] = probe
+
     with tempfile.TemporaryDirectory(prefix="pitgun-v3-decision-surface-") as temporary:
         root = pathlib.Path(temporary)
-        probe = root / "v3_decision_surface_probe"
         scenario = root / "scenario.json"
         profile = root / "profile.json"
-        probe.write_bytes(probe_bytes)
-        probe.chmod(0o500)
         scenario.write_bytes(scenario_bytes)
         profile.write_bytes(profile_bytes)
         process, execution_duration_ms = _run(
@@ -486,7 +498,7 @@ def inspect_packaged_v3_validation_probe() -> dict[str, str]:
 
 def execute_packaged_v3_decision_surface(
     execution_key: str,
-    campaign_name: str = "racing-v3-decision-surface-v1",
+    campaign_name: str = "racing-v3-decision-surface-v2",
 ) -> dict[str, Any]:
     """Execute one exact scenario/profile/seed from the reviewed campaign."""
 

@@ -13,7 +13,7 @@ from pyspark.sql import functions as F
 
 dbutils.widgets.text("catalog_name", "workspace")
 dbutils.widgets.text("calibration_schema", "pitgun_calibration")
-dbutils.widgets.text("campaign_id", "racing-v3-decision-surface-2026-v1")
+dbutils.widgets.text("campaign_id", "racing-v3-decision-surface-2026-v2")
 dbutils.widgets.text("campaigns_table_version", "")
 dbutils.widgets.text("runs_table_version", "")
 dbutils.widgets.text("vehicle_id", "f1_2026")

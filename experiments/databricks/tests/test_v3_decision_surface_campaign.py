@@ -18,7 +18,7 @@ from pitgun_databricks_adapter.decision_surface import (  # noqa: E402
 )
 
 
-MANIFEST = ROOT / "campaigns" / "racing-v3-decision-surface-v1.json"
+MANIFEST = ROOT / "campaigns" / "racing-v3-decision-surface-v2.json"
 CHECKSUM = MANIFEST.with_suffix(".sha256")
 SHA256_PATTERN = re.compile(r"sha256:[0-9a-f]{64}")
 
@@ -57,8 +57,10 @@ class V3DecisionSurfaceCampaignTests(unittest.TestCase):
                 "expected_experimental_execution_id",
                 "expected_probe_result_digest",
                 "expected_compact_point_digest",
+                "expected_portable_point_digest",
             ):
                 self.assertRegex(row[key], SHA256_PATTERN)
+            self.assertEqual(len(row["expected_metrics"]), 8)
             natural_keys.add((row["configuration_id"], row["seed"]))
             execution_keys.add(row["execution_key"])
         self.assertEqual(len(natural_keys), 4928)

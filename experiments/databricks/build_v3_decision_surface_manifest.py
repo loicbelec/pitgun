@@ -21,7 +21,7 @@ OUTPUT = (
     / "experiments"
     / "databricks"
     / "campaigns"
-    / "racing-v3-decision-surface-v1.json"
+    / "racing-v3-decision-surface-v2.json"
 )
 LOCAL_REPORT = (
     ROOT
@@ -46,6 +46,22 @@ def canonical_pretty(value: object) -> bytes:
 
 def sha256(data: bytes) -> str:
     return "sha256:" + hashlib.sha256(data).hexdigest()
+
+
+def portable_point(value: object) -> object:
+    """Normalize audited scalars across supported OS/libm implementations."""
+
+    if isinstance(value, float):
+        return round(value, 9)
+    if isinstance(value, dict):
+        return {
+            key: portable_point(item)
+            for key, item in value.items()
+            if key != "result_digest"
+        }
+    if isinstance(value, list):
+        return [portable_point(item) for item in value]
+    return value
 
 
 def point_key(point: dict[str, Any]) -> tuple[Any, ...]:
@@ -150,6 +166,19 @@ def build_manifest(
             )
         )
         compact = dict(expected_point)
+        expected_metrics = {
+            key: expected_point[key]
+            for key in (
+                "total_time_ms",
+                "maximum_speed_kph",
+                "maximum_engine_temperature_c",
+                "engine_derated_time_s",
+                "maximum_tire_utilization",
+                "fuel_consumed_kg",
+                "final_tire_wear_pct",
+                "thermal_wear_multiplier",
+            )
+        }
         configurations.append(
             {
                 "execution_key": f"v3ds-{int(planned['seed']):04d}-{index:06d}",
@@ -174,6 +203,10 @@ def build_manifest(
                 ],
                 "expected_probe_result_digest": probe_result_digest,
                 "expected_compact_point_digest": sha256(canonical_pretty(compact)),
+                "expected_portable_point_digest": sha256(
+                    canonical_pretty(portable_point(compact))
+                ),
+                "expected_metrics": expected_metrics,
             }
         )
 
@@ -190,9 +223,12 @@ def build_manifest(
         )
     }
     local_point_set_digest = sha256(canonical_pretty(report["points"]))
+    portable_point_set_digest = sha256(
+        canonical_pretty(portable_point(report["points"]))
+    )
     return {
         "schema_version": SCHEMA_VERSION,
-        "campaign_id": "racing-v3-decision-surface-2026-v1",
+        "campaign_id": "racing-v3-decision-surface-2026-v2",
         "execution_class": "experimental-v3-physics",
         "question": (
             "Do Model V3 development, setup, thermal, and strategy responses remain "
@@ -222,6 +258,7 @@ def build_manifest(
             "schema_version": report["schema_version"],
             "artifact_digest": sha256(report_bytes),
             "point_set_digest": local_point_set_digest,
+            "portable_point_set_digest": portable_point_set_digest,
             "summary_digests": local_summary,
         },
         "dimensions": {

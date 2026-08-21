@@ -195,7 +195,7 @@ calibration gap are documented in
 ## Model V3 governed decision surfaces
 
 The checksummed
-[`racing-v3-decision-surface-v1.json`](campaigns/racing-v3-decision-surface-v1.json)
+[`racing-v3-decision-surface-v2.json`](campaigns/racing-v3-decision-surface-v2.json)
 manifest transports the accepted local progression audit to Databricks without
 transporting Python physics. It describes 4,928 exact run keys across four
 vehicles, seven circuits, three progression budgets, three experiment families,
@@ -205,9 +205,12 @@ content-addressed and deduplicated inside the manifest.
 `v3_decision_surface_job` executes or resumes those keys through the exact
 native `v3_decision_surface_probe`. A successful row must match its expected
 scenario, profile, model, experimental execution identity, full probe result,
-and compact local evidence point before it is accepted. The completed Delta
-point-set digest must equal the accepted local artifact digest. Failures remain
-visible with their phase and error, and the MLflow report ends at
+and portable compact local evidence point before it is accepted. Portable
+parity preserves integral outputs exactly and normalizes audited floating-point
+scalars to nine decimal places, avoiding false failures caused only by macOS
+versus Linux `libm` tails. The raw local digests remain recorded separately.
+The completed Delta portable point-set digest must equal the accepted local
+portable digest. Failures remain visible with their phase and error, and the MLflow report ends at
 `REVIEW_REQUIRED`; it cannot mutate a catalog or opponent policy.
 
 `v3_response_surface_review_job` is a read-only presentation layer over one

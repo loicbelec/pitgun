@@ -549,7 +549,7 @@ resources:
         pitgun.promotion: human-review-required
 
     v3_decision_surface_job:
-      name: pitgun-racing-v3-decision-surface-v1
+      name: pitgun-racing-v3-decision-surface-v2
       description: >-
         Replay the accepted 4,928-run multi-era Model V3 decision surface with
         the exact packaged Rust probe, retain failures, and prove local/Delta parity.
@@ -573,7 +573,7 @@ resources:
             source: WORKSPACE
             base_parameters:
               operation: bootstrap
-              campaign_id: racing-v3-decision-surface-2026-v1
+              campaign_id: racing-v3-decision-surface-2026-v2
               catalog_name: ${var.catalog_name}
               calibration_schema: ${resources.schemas.calibration.name}
               policies_schema: ${resources.schemas.policies.name}
@@ -591,14 +591,14 @@ resources:
               catalog_name: ${var.catalog_name}
               calibration_schema: ${resources.schemas.calibration.name}
               experiment_id: ${resources.experiments.calibration_experiment.id}
-              campaign_name: racing-v3-decision-surface-v1
+              campaign_name: racing-v3-decision-surface-v2
               max_workers: "{{job.parameters.max_workers}}"
           timeout_seconds: 7200
       tags:
         pitgun.domain: calibration
         pitgun.compute: serverless
         pitgun.runner: rust-native-experimental
-        pitgun.campaign: racing-v3-decision-surface-v1
+        pitgun.campaign: racing-v3-decision-surface-v2
         pitgun.promotion: human-review-required
 
     v3_response_surface_review_job:
@@ -610,7 +610,7 @@ resources:
       performance_target: STANDARD
       parameters:
         - name: campaign_id
-          default: racing-v3-decision-surface-2026-v1
+          default: racing-v3-decision-surface-2026-v2
         - name: campaigns_table_version
           default: ""
         - name: runs_table_version
