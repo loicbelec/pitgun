@@ -21,6 +21,10 @@ REFINEMENT_VALIDATION_CAMPAIGN_NAMES = frozenset(
 CAMPAIGN_NAMES = frozenset({CAMPAIGN_NAME}) | REFINEMENT_VALIDATION_CAMPAIGN_NAMES
 SCHEMA_VERSION = "pitgun.racing-v3-thermal-adequacy-campaign/v1"
 REVIEW_NAME = "racing-v3-thermal-adequacy-review-v1"
+REFINEMENT_VALIDATION_REVIEW_NAME = (
+    "racing-v3-thermal-refinement-validation-review-v1"
+)
+REVIEW_NAMES = frozenset({REVIEW_NAME, REFINEMENT_VALIDATION_REVIEW_NAME})
 REVIEW_SCHEMA_VERSION = "pitgun.racing-v3-thermal-adequacy-review/v1"
 MODEL_ID = "pitgun.racing-v3-candidate"
 MODEL_VERSION = "0.10.0"
@@ -32,12 +36,13 @@ class ThermalSurfaceCampaignError(ValueError):
     """Raised when the packaged thermal campaign is incomplete or changed."""
 
 
+@functools.lru_cache(maxsize=len(REVIEW_NAMES))
 def load_thermal_surface_review(
     name: str = REVIEW_NAME,
 ) -> tuple[dict[str, Any], str]:
     """Load the immutable human review without granting a promotion path."""
 
-    if name != REVIEW_NAME:
+    if name not in REVIEW_NAMES:
         raise ThermalSurfaceCampaignError(
             "thermal review is not packaged or allowlisted"
         )
@@ -61,6 +66,17 @@ def load_thermal_surface_review(
         raise ThermalSurfaceCampaignError(
             "thermal refinement gate cannot enable automatic promotion"
         )
+    if set(review.get("per_family_verdicts", {})) != {
+        "historical_v8",
+        "modern_v6t",
+        "f1_2026",
+    }:
+        raise ThermalSurfaceCampaignError("thermal review families are incomplete")
+    if any(
+        row.get("verdict") not in {"PASS", "REFINE", "STRUCTURAL_CHANGE_REQUIRED"}
+        for row in review["per_family_verdicts"].values()
+    ):
+        raise ThermalSurfaceCampaignError("thermal review contains an invalid verdict")
     return review, "sha256:" + hashlib.sha256(payload).hexdigest()
 
 

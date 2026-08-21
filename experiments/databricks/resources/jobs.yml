@@ -742,6 +742,41 @@ resources:
         pitgun.campaign: racing-v3-thermal-refinement-validation-v2
         pitgun.promotion: human-review-required
 
+    v3_thermal_refinement_review_job:
+      name: pitgun-racing-v3-thermal-refinement-validation-review-v1
+      description: >-
+        Reconcile the pinned full-race thermal validation snapshots and expose
+        the recorded family-level human verdicts without mutating governed data.
+      max_concurrent_runs: 1
+      performance_target: STANDARD
+      environments:
+        - environment_key: serverless_v3_thermal_refinement_review
+          spec:
+            environment_version: "4"
+            dependencies:
+              - ../adapter/dist/*.whl
+      tasks:
+        - task_key: review_v3_thermal_refinement
+          description: Read only the pinned thermal refinement evidence.
+          environment_key: serverless_v3_thermal_refinement_review
+          notebook_task:
+            notebook_path: ../src/review_v3_thermal_surface.py
+            source: WORKSPACE
+            base_parameters:
+              catalog_name: ${var.catalog_name}
+              calibration_schema: ${resources.schemas.calibration.name}
+              campaign_name: racing-v3-thermal-refinement-validation-v2
+              review_name: racing-v3-thermal-refinement-validation-review-v1
+              campaigns_table_version: "51"
+              experimental_runs_table_version: "57"
+              experimental_metrics_table_version: "56"
+          timeout_seconds: 900
+      tags:
+        pitgun.domain: calibration
+        pitgun.compute: serverless
+        pitgun.analysis: racing-v3-thermal-refinement-validation-review-v1
+        pitgun.promotion: forbidden
+
     v3_response_surface_review_job:
       name: pitgun-racing-v3-response-surface-review-v1
       description: >-

@@ -187,7 +187,7 @@ display(family_summary)
 # COMMAND ----------
 
 cooling_summary = (
-    evidence.where(F.col("workload") == "long")
+    evidence.where(F.col("workload").isin("long", "full-race"))
     .groupBy("vehicle_family", "split", "cooling_points")
     .agg(
         F.count("*").alias("execution_count"),
@@ -206,10 +206,25 @@ cooling_summary = (
 )
 display(cooling_summary)
 
+candidate_response_ids = sorted(
+    {
+        response_id
+        for response_id in (
+            review.get("next_gate", {}).get("candidate_centres", [])
+            + [
+                row.get("candidate_parameter_set_id")
+                for row in review["per_family_verdicts"].values()
+            ]
+        )
+        if response_id
+    }
+)
+if not candidate_response_ids:
+    raise RuntimeError("thermal review does not identify any response to render")
 candidate_surface = (
     evidence.where(
-        (F.col("workload") == "long")
-        & F.col("response_id").isin("adaptive-038", "adaptive-044")
+        F.col("workload").isin("long", "full-race")
+        & F.col("response_id").isin(*candidate_response_ids)
     )
     .groupBy(
         "vehicle_family",
