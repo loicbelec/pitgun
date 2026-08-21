@@ -7,6 +7,7 @@ use crate::evidence::{RacingEvidenceError, RacingRunEvidenceV1};
 use crate::{
     CurvatureAeroResponse, RaceOutput, RacingCatalogSnapshot, RunRaceInput, RunRaceRequest,
     resolve_catalog_tuning_response, run_race, run_race_with_catalog_and_model_response,
+    run_race_with_catalog_and_v3_thermal_family_profile,
 };
 
 const RACING_MODEL_V1_MANIFEST: &[u8] = b"pitgun.racing:model:1.0.0:conformance-vector";
@@ -183,8 +184,9 @@ pub fn racing_model_identity_for_version(version: &str) -> Result<ArtifactIdenti
     match version {
         "1.0.0" => Ok(racing_model_v1_identity()),
         "2.0.0" => Ok(racing_model_v2_identity()),
+        "0.10.0" => Ok(racing_model_v3_thermal_candidate_identity()),
         _ => Err(format!(
-            "unsupported Racing model version {version:?}; expected 1.0.0 or 2.0.0"
+            "unsupported Racing model version {version:?}; expected 1.0.0, 2.0.0 or 0.10.0"
         )),
     }
 }
@@ -228,6 +230,16 @@ impl RacingWorkload {
         }
     }
 
+    /// Creates the non-production V3 thermal adapter pinned to its exact catalog.
+    #[must_use]
+    pub fn v3_thermal_with_catalog(catalog: RacingCatalogSnapshot) -> Self {
+        Self {
+            model: racing_model_v3_thermal_candidate_identity(),
+            catalog: Some(catalog),
+            curvature_response: CurvatureAeroResponse::ContinuousV1,
+        }
+    }
+
     /// Selects the statically linked workload for one exact model/catalog pair.
     pub fn for_model(
         model: &ArtifactIdentity,
@@ -243,6 +255,8 @@ impl RacingWorkload {
             Ok(Self::with_catalog(catalog))
         } else if *model == racing_model_v2_identity() {
             Ok(Self::v2_with_catalog(catalog))
+        } else if *model == racing_model_v3_thermal_candidate_identity() {
+            Ok(Self::v3_thermal_with_catalog(catalog))
         } else {
             Err(format!(
                 "unsupported Racing model identity {}@{} {}",
@@ -293,14 +307,29 @@ impl LinkedWorkload for RacingWorkload {
                     .compatibility
                     .validate_for(&self.model, pitgun_contract::ContractVersion::V1)
                     .map_err(|error| RacingWorkloadError::Simulation(error.to_string()))?;
-                let tuning_response = resolve_catalog_tuning_response(catalog, Some(&self.model))
-                    .map_err(RacingWorkloadError::Simulation)?;
-                run_race_with_catalog_and_model_response(
-                    request,
-                    catalog,
-                    &tuning_response,
-                    self.curvature_response,
-                )
+                if self.model == racing_model_v3_thermal_candidate_identity() {
+                    let thermal_profile = catalog.thermal_family_profile().ok_or_else(|| {
+                        RacingWorkloadError::Simulation(
+                            "Model V3 thermal catalog has no reviewed thermal-family profile"
+                                .to_string(),
+                        )
+                    })?;
+                    run_race_with_catalog_and_v3_thermal_family_profile(
+                        request,
+                        catalog,
+                        thermal_profile,
+                    )
+                } else {
+                    let tuning_response =
+                        resolve_catalog_tuning_response(catalog, Some(&self.model))
+                            .map_err(RacingWorkloadError::Simulation)?;
+                    run_race_with_catalog_and_model_response(
+                        request,
+                        catalog,
+                        &tuning_response,
+                        self.curvature_response,
+                    )
+                }
             }
             None => run_race(request),
         }
@@ -353,6 +382,10 @@ mod tests {
         assert_eq!(
             racing_model_identity_for_version("2.0.0").expect("supported V2"),
             racing_model_v2_identity()
+        );
+        assert_eq!(
+            racing_model_identity_for_version("0.10.0").expect("supported V3 thermal candidate"),
+            racing_model_v3_thermal_candidate_identity()
         );
         assert!(racing_model_identity_for_version("2").is_err());
         assert!(racing_model_identity_for_version("3.0.0").is_err());

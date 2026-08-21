@@ -904,6 +904,39 @@ mod tests {
     }
 
     #[test]
+    fn racing_v3_thermal_authorization_binds_the_exact_candidate_catalog() {
+        let state = test_state_for("0.10.0", "v1.5.0");
+        let response = build_signed_racing_run_authorization(
+            1_710_000_000_000,
+            &state,
+            racing_request(&state),
+        )
+        .expect("Racing Model V3 thermal authorization");
+        let catalog = state.racing_catalog.as_ref().expect("catalog");
+
+        assert_eq!(
+            response.signed.authorization.contract.model,
+            state.racing_model
+        );
+        assert_eq!(
+            response.signed.authorization.contract.data_pack,
+            catalog.manifest().simulation_pack.identity
+        );
+        assert_eq!(
+            response.catalog_release.as_ref(),
+            Some(catalog.release_identity())
+        );
+        assert_eq!(
+            catalog
+                .thermal_family_profile_identity()
+                .expect("thermal-family profile")
+                .digest
+                .to_string(),
+            "sha256:8aefd230da307e3439eef115fbfcd1117c8a8bbb1128c2c4b00138d6026f2f57"
+        );
+    }
+
+    #[test]
     fn identical_semantic_requests_share_run_id_but_not_nonce() {
         let state = test_state();
         let first = build_signed_racing_run_authorization(

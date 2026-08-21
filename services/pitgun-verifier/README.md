@@ -14,6 +14,11 @@ The verification engine:
 7. replays the exact Racing workload through `pitgun-runtime`;
 8. emits `VerificationVerdictV1`.
 
+For the non-production Model V3 thermal candidate, submitted lineage also
+contains the exact catalog release, Simulation Pack, model, and reviewed
+thermal-family profile digest. The Verifier reconstructs that projection from
+its retained catalog before replay and rejects substitutions.
+
 ## Catalog-backed and direct-pack runs
 
 The signed deterministic contract contains the immutable Simulation Pack
@@ -54,17 +59,18 @@ The worker loads:
   `PITGUN_SIGNING_SECRET_FILE` (or inline material only for local development);
 - its retained key identifier from `PITGUN_SIGNING_KEY_ID`;
 - its expected audience from `PITGUN_VERIFIER_AUDIENCE`;
-- its exact Racing generation from `PITGUN_RACING_MODEL_VERSION` (V1 by default);
+- its exact Racing generation from `PITGUN_RACING_MODEL_VERSION` (V1 by default,
+  with `0.10.0` reserved for the non-production V3 thermal candidate);
 - the immutable Racing release from `PITGUN_RACING_CATALOG_RELEASE_DIR`;
 - the accepted tuning policy from `PITGUN_TUNING_POLICY_PATH`.
 
 `/readyz` fails closed when signing-key verification material or retained
 catalog bytes are unavailable.
 
-The published container retains the immutable Racing `v1.0.0`, `v1.2.0` and
-`v1.3.0` releases. Environments select one exact release directory together
-with its compatible model generation; the image never follows mutable catalog
-discovery.
+The published container retains the immutable Racing `v1.0.0`, `v1.2.0`,
+`v1.3.0`, and non-production `v1.5.0` releases. Environments select one exact
+release directory together with its compatible model generation; the image
+never follows mutable catalog discovery.
 
 The HTTP endpoint is an internal boundary. It must not be routed directly to a
 browser. Durable nonce consumption and idempotent verdict persistence belong to

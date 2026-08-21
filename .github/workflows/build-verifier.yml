@@ -100,8 +100,8 @@ jobs:
             --volume /tmp/pitgun-verifier-signing-secret:/run/secrets/pitgun_verifier_signing_secret:ro \
             --env PITGUN_SIGNING_SECRET_FILE=/run/secrets/pitgun_verifier_signing_secret \
             --env PITGUN_SIGNING_KEY_ID=ci-smoke \
-            --env PITGUN_RACING_MODEL_VERSION=2.0.0 \
-            --env PITGUN_RACING_CATALOG_RELEASE_DIR=/opt/pitgun/catalogs/racing/v1.3.0 \
+            --env PITGUN_RACING_MODEL_VERSION=0.10.0 \
+            --env PITGUN_RACING_CATALOG_RELEASE_DIR=/opt/pitgun/catalogs/racing/v1.5.0 \
             "${LOCAL_IMAGE}"
 
           for attempt in $(seq 1 30); do

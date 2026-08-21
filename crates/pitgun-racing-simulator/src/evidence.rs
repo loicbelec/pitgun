@@ -10,7 +10,7 @@ use pitgun_contract::{
 };
 use serde::{Deserialize, Serialize};
 
-use crate::{RaceOutput, RunRaceInput, StandingStatus};
+use crate::{RaceOutput, RacingCatalogSnapshot, RunRaceInput, StandingStatus};
 
 /// Wire version of the browser-to-WASM hosted execution request.
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Deserialize, Serialize)]
@@ -42,13 +42,16 @@ pub enum RacingExecutionResolutionVersion {
     /// First lineage block for a catalog-owned model-parameter resource.
     #[serde(rename = "pitgun.racing-execution-resolution/v1")]
     V1,
+    /// Lineage block supporting an exact reviewed thermal-family profile.
+    #[serde(rename = "pitgun.racing-execution-resolution/v2")]
+    V2,
 }
 
 /// Exact immutable resources selected for one catalog-backed Racing execution.
 ///
 /// The signed run contract already binds `model` and `simulation_pack`. This
 /// explicit projection makes the complete lineage inspectable and lets the
-/// Verifier fail closed on a missing or substituted parameter resource.
+/// Verifier fail closed on a missing or substituted execution resource.
 #[derive(Clone, Debug, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub struct RacingExecutionResolutionV1 {
@@ -60,8 +63,36 @@ pub struct RacingExecutionResolutionV1 {
     pub simulation_pack: ArtifactIdentity,
     /// Exact statically linked executable model identity.
     pub model: ArtifactIdentity,
-    /// Semantic version and digest of the exact model-parameter resource bytes.
-    pub model_parameters: ArtifactIdentity,
+    /// Semantic version and digest of exact model-parameter resource bytes.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub model_parameters: Option<ArtifactIdentity>,
+    /// Semantic version and digest of the exact thermal-family profile bytes.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub thermal_family_profile: Option<ArtifactIdentity>,
+}
+
+impl RacingExecutionResolutionV1 {
+    /// Projects the exact execution-affecting resources selected by a catalog.
+    #[must_use]
+    pub fn from_catalog(catalog: &RacingCatalogSnapshot, model: &ArtifactIdentity) -> Option<Self> {
+        let model_parameters = catalog.model_parameters_identity().cloned();
+        let thermal_family_profile = catalog.thermal_family_profile_identity().cloned();
+        if model_parameters.is_none() && thermal_family_profile.is_none() {
+            return None;
+        }
+        Some(Self {
+            schema_version: if thermal_family_profile.is_some() {
+                RacingExecutionResolutionVersion::V2
+            } else {
+                RacingExecutionResolutionVersion::V1
+            },
+            catalog_release: catalog.release_identity().clone(),
+            simulation_pack: catalog.manifest().simulation_pack.identity.clone(),
+            model: model.clone(),
+            model_parameters,
+            thermal_family_profile,
+        })
+    }
 }
 
 /// Complete evidence payload accepted by the hosted Racing Verifier.
@@ -78,10 +109,11 @@ pub struct RacingVerificationSubmissionV1 {
     pub output: RacingOutputV1,
     /// Canonical domain-neutral summary of the execution telemetry.
     pub telemetry_summary: TelemetrySummaryV1,
-    /// Explicit lineage for parameter-backed releases.
+    /// Explicit lineage for releases with separately resolved model resources.
     ///
     /// Historical submissions omit this field and retain their exact wire
-    /// representation. A catalog containing model parameters requires it.
+    /// representation. A catalog containing model parameters or a reviewed
+    /// thermal-family profile requires it.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub execution_resolution: Option<RacingExecutionResolutionV1>,
 }
