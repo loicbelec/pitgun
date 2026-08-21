@@ -51,11 +51,12 @@ export interface RacingVerificationSubmissionV1 {
   output: unknown;
   telemetry_summary: unknown;
   execution_resolution?: {
-    schema_version: "pitgun.racing-execution-resolution/v1";
+    schema_version: "pitgun.racing-execution-resolution/v1" | "pitgun.racing-execution-resolution/v2";
     catalog_release: unknown;
     simulation_pack: unknown;
     model: unknown;
-    model_parameters: unknown;
+    model_parameters?: unknown;
+    thermal_family_profile?: unknown;
   };
 }
 "#;

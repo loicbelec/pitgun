@@ -154,6 +154,7 @@ fn load_policy_identity() -> Result<ArtifactIdentity, String> {
 fn load_catalog(model_version: &str) -> Option<RacingCatalogSnapshot> {
     let loaded = match std::env::var_os("PITGUN_RACING_CATALOG_RELEASE_DIR") {
         Some(path) => RacingCatalogSnapshot::from_release_dir(PathBuf::from(path)),
+        None if model_version == "0.10.0" => RacingCatalogSnapshot::embedded_model_v3_thermal(),
         None if model_version == "2.0.0" => RacingCatalogSnapshot::embedded_model_v2(),
         None => RacingCatalogSnapshot::embedded(),
     };

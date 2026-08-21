@@ -13,9 +13,7 @@ use pitgun_contract::{
     VerificationVerdictError, VerificationVerdictV1, VerificationVerdictVersion,
     VerifiedResolutionV1, canonical_json_digest,
 };
-use pitgun_racing_simulator::evidence::{
-    RacingExecutionResolutionV1, RacingExecutionResolutionVersion,
-};
+use pitgun_racing_simulator::evidence::RacingExecutionResolutionV1;
 use pitgun_racing_simulator::{RacingCatalogSnapshot, RacingWorkload, RunRaceInput};
 use pitgun_runtime::{LinkedWorkloadError, execute_linked};
 use pitgun_signing::{AuthorizationVerificationError, VerificationKeyring};
@@ -135,15 +133,7 @@ impl RacingVerifier {
             );
         }
         let expected_execution_resolution =
-            catalog.model_parameters_identity().map(|model_parameters| {
-                RacingExecutionResolutionV1 {
-                    schema_version: RacingExecutionResolutionVersion::V1,
-                    catalog_release: catalog.release_identity().clone(),
-                    simulation_pack: catalog.manifest().simulation_pack.identity.clone(),
-                    model: contract.model.clone(),
-                    model_parameters: model_parameters.clone(),
-                }
-            });
+            RacingExecutionResolutionV1::from_catalog(catalog, &contract.model);
         if submission.execution_resolution != expected_execution_resolution {
             return self.rejected(
                 submission,
@@ -426,7 +416,8 @@ mod tests {
         VerificationReasonCode, VerificationStatus, canonical_json_digest,
     };
     use pitgun_racing_simulator::evidence::{
-        RacingHostedExecutionRequestV1, RacingHostedExecutionRequestVersion,
+        RacingExecutionResolutionVersion, RacingHostedExecutionRequestV1,
+        RacingHostedExecutionRequestVersion,
     };
     use pitgun_racing_simulator::{
         RacingCatalogSnapshot, RunRaceInput, execute_authorized_race,
@@ -486,6 +477,8 @@ mod tests {
                 .join("../../catalogs/racing")
                 .join(catalog_version);
             RacingCatalogSnapshot::from_release_dir(catalog_path).expect("retained catalog release")
+        } else if model_version == "0.10.0" {
+            RacingCatalogSnapshot::embedded_model_v3_thermal().expect("embedded V3 thermal catalog")
         } else if model_version == "2.0.0" {
             RacingCatalogSnapshot::embedded_model_v2().expect("embedded V2 catalog")
         } else {
@@ -680,7 +673,11 @@ mod tests {
             resolution.simulation_pack,
             fixture.catalog.manifest().simulation_pack.identity
         );
-        assert_eq!(resolution.model_parameters, *expected_parameters);
+        assert_eq!(
+            resolution.model_parameters.as_ref(),
+            Some(expected_parameters)
+        );
+        assert!(resolution.thermal_family_profile.is_none());
         assert_eq!(
             reason(&fixture.verifier, &fixture.submission),
             (VerificationStatus::Verified, None)
@@ -702,7 +699,58 @@ mod tests {
             .as_mut()
             .expect("resolution")
             .model_parameters
+            .as_mut()
+            .expect("model parameters")
             .digest = Digest::from_bytes(b"substituted-parameter-resource");
+        assert_eq!(
+            reason(&fixture.verifier, &substituted),
+            (
+                VerificationStatus::Rejected,
+                Some(VerificationReasonCode::ArtifactDigestMismatch)
+            )
+        );
+    }
+
+    #[test]
+    fn thermal_candidate_submission_records_and_verifies_exact_resolution() {
+        let fixture = fixture_for_catalog("0.10.0", Some("v1.5.0"));
+        let expected_profile = fixture
+            .catalog
+            .thermal_family_profile_identity()
+            .expect("thermal-family profile");
+        let resolution = fixture
+            .submission
+            .execution_resolution
+            .as_ref()
+            .expect("V3 thermal execution resolution");
+
+        assert_eq!(
+            resolution.schema_version,
+            RacingExecutionResolutionVersion::V2
+        );
+        assert_eq!(
+            resolution.model,
+            racing_model_identity_for_version("0.10.0").unwrap()
+        );
+        assert!(resolution.model_parameters.is_none());
+        assert_eq!(
+            resolution.thermal_family_profile.as_ref(),
+            Some(expected_profile)
+        );
+        assert_eq!(
+            reason(&fixture.verifier, &fixture.submission),
+            (VerificationStatus::Verified, None)
+        );
+
+        let mut substituted = fixture.submission.clone();
+        substituted
+            .execution_resolution
+            .as_mut()
+            .expect("resolution")
+            .thermal_family_profile
+            .as_mut()
+            .expect("thermal-family profile")
+            .digest = Digest::from_bytes(b"substituted-thermal-family-profile");
         assert_eq!(
             reason(&fixture.verifier, &substituted),
             (

@@ -1951,15 +1951,8 @@ pub fn execute_authorized_race(
         .evidence
         .execution_receipt(contract, request.execution_id, runtime)
         .map_err(|error| format!("cannot create Racing execution receipt: {error}"))?;
-    let execution_resolution = catalog.model_parameters_identity().map(|parameters| {
-        evidence::RacingExecutionResolutionV1 {
-            schema_version: evidence::RacingExecutionResolutionVersion::V1,
-            catalog_release: catalog.release_identity().clone(),
-            simulation_pack: catalog.manifest().simulation_pack.identity.clone(),
-            model: contract.model.clone(),
-            model_parameters: parameters.clone(),
-        }
-    });
+    let execution_resolution =
+        evidence::RacingExecutionResolutionV1::from_catalog(catalog, &contract.model);
 
     Ok(evidence::RacingVerificationSubmissionV1 {
         signed_authorization: request.signed_authorization,
@@ -3354,6 +3347,8 @@ mod tests {
         let model_v1_catalog = RacingCatalogSnapshot::embedded().expect("model V1 catalog");
         let model_v2_catalog =
             RacingCatalogSnapshot::embedded_model_v2().expect("model V2 catalog");
+        let model_v3_catalog =
+            RacingCatalogSnapshot::embedded_model_v3_thermal().expect("model V3 thermal catalog");
 
         let selected = racing_workload_for(&racing_model_v2_identity(), &model_v2_catalog)
             .expect("exact model V2 selection");
@@ -3369,6 +3364,19 @@ mod tests {
         assert!(
             racing_workload_for(&racing_model_v3_candidate_identity(), &model_v2_catalog).is_err(),
             "the offline V3 candidate must not run through a production V2 catalog"
+        );
+        let selected_v3 = racing_workload_for(
+            &racing_model_v3_thermal_candidate_identity(),
+            &model_v3_catalog,
+        )
+        .expect("exact Model V3 thermal selection");
+        assert_eq!(
+            selected_v3.model_identity(),
+            &racing_model_v3_thermal_candidate_identity()
+        );
+        assert!(
+            racing_workload_for(&racing_model_v2_identity(), &model_v3_catalog).is_err(),
+            "model V2 must not run against the V3 thermal catalog"
         );
 
         let mut forged = racing_model_v2_identity();

@@ -10,11 +10,12 @@ use pitgun_contract::{
 };
 use pitgun_racing_simulator::{
     CurvatureAeroResponse, TuningResponseV1, racing_model_v3_candidate_identity,
-    run_race_with_catalog_and_model_response, run_race_with_catalog_and_v3_candidate,
+    racing_model_v3_thermal_candidate_identity, run_race_with_catalog_and_model_response,
+    run_race_with_catalog_and_v3_candidate,
 };
 use pitgun_solver::evidence::{
-    RacingHostedExecutionRequestV1, RacingHostedExecutionRequestVersion, RacingRunEvidenceV1,
-    RacingVerificationSubmissionV1,
+    RacingExecutionResolutionVersion, RacingHostedExecutionRequestV1,
+    RacingHostedExecutionRequestVersion, RacingRunEvidenceV1, RacingVerificationSubmissionV1,
 };
 use pitgun_solver::{
     RaceOutput, RacingCatalogFileV1, RacingCatalogSnapshot, RunRaceInput, RunRaceRequest,
@@ -736,15 +737,19 @@ fn parameter_resource_has_identical_native_and_wasm_evidence() {
     );
     assert_eq!(resolution.model, racing_model_v2_identity());
     assert_eq!(
-        resolution.model_parameters,
-        *catalog
-            .model_parameters_identity()
-            .expect("parameter identity")
+        resolution.model_parameters.as_ref(),
+        catalog.model_parameters_identity()
     );
     assert_eq!(
-        resolution.model_parameters.digest.to_string(),
+        resolution
+            .model_parameters
+            .as_ref()
+            .expect("parameter identity")
+            .digest
+            .to_string(),
         "sha256:89c0da5b058cf51b43953d0d31fe2e0f61f3c7038f9149e2fa59ad92c930ef71"
     );
+    assert!(resolution.thermal_family_profile.is_none());
     assert_eq!(submission.receipt.receipt.run_id, run_id);
     assert_eq!(
         run_id.to_string(),
@@ -755,6 +760,100 @@ fn parameter_resource_has_identical_native_and_wasm_evidence() {
     let round_trip = serde_json::to_string(&submission).expect("submission JSON");
     let decoded = serde_json::from_str::<RacingVerificationSubmissionV1>(&round_trip)
         .expect("strict parameter-backed submission");
+    assert_eq!(
+        canonical_json_bytes(&decoded).expect("decoded submission bytes"),
+        canonical_json_bytes(&submission).expect("submission bytes")
+    );
+}
+
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
+fn thermal_candidate_has_identical_native_and_wasm_lineage() {
+    let request_fixture: RunRaceRequest =
+        serde_json::from_str(INPUT_V2).expect("Racing input fixture");
+    let input = request_fixture.input;
+    let catalog =
+        RacingCatalogSnapshot::embedded_model_v3_thermal().expect("Model V3 thermal catalog");
+    let model = racing_model_v3_thermal_candidate_identity();
+    let contract = DeterministicRunContractV1 {
+        contract_version: ContractVersion::V1,
+        scenario: ScenarioIdentity {
+            id: "racing.race".parse().expect("scenario id"),
+            version: "1.0.0".parse().expect("scenario version"),
+        },
+        model: model.clone(),
+        data_pack: catalog.manifest().simulation_pack.identity.clone(),
+        runtime_profile: RuntimeProfile::PortableExactV1,
+        random: RandomContractV1 {
+            seed: Seed::new(7),
+            algorithm: RandomAlgorithm::PitgunSplitMix64V1,
+            stream_derivation: StreamDerivation::Sha256LabelV1,
+        },
+        clock: LogicalClockV1::new(0, 50_000, 1).expect("clock"),
+        event_ordering: EventOrderingV1::v1(),
+        input: InputIdentity {
+            media_type: InputMediaType::ApplicationJson,
+            canonicalization: InputCanonicalization::JcsRfc8785,
+            digest: canonical_json_digest(&input).expect("input digest"),
+        },
+    };
+    let run_id = contract.run_id().expect("Model V3 thermal run id");
+    let submission = execute_authorized_race(
+        RacingHostedExecutionRequestV1 {
+            schema_version: RacingHostedExecutionRequestVersion::V1,
+            signed_authorization: SignedRunAuthorizationV1 {
+                authorization: RunAuthorizationV1 {
+                    authorization_version: RunAuthorizationVersion::V1,
+                    nonce: Digest::from_bytes(b"wasm-golden-v3-thermal-nonce"),
+                    subject: "career.wasm-golden-v3-thermal".parse().expect("subject"),
+                    audience: "pitgun.verifier".parse().expect("audience"),
+                    contract,
+                    run_id,
+                    policy: ArtifactIdentity {
+                        id: "pitgun.racing.tuning".parse().expect("policy id"),
+                        version: "1.0.0".parse().expect("policy version"),
+                        digest: Digest::from_bytes(include_bytes!(
+                            "../../../policies/gametuning.v1.yaml"
+                        )),
+                    },
+                    signing_key_id: "wasm-golden-v3-thermal".parse().expect("key id"),
+                    validity: AuthorizationValidityV1 {
+                        issued_at_ms: 1_722_345_600_000,
+                        expires_at_ms: 1_722_345_900_000,
+                        late_submission_grace_ms: 900_000,
+                    },
+                },
+                algorithm: AuthorizationSignatureAlgorithm::HmacSha256,
+                signature: "fixture-only-signature".to_string(),
+            },
+            input,
+            execution_id: "018f3b78-7e9a-7d20-a5e1-4ed92f02a594"
+                .parse()
+                .expect("execution id"),
+            wasm_artifact_digest: Digest::from_bytes(b"exact-golden-wasm-module-v3-thermal"),
+        },
+        &catalog,
+    )
+    .expect("Model V3 thermal hosted execution");
+    let resolution = submission
+        .execution_resolution
+        .as_ref()
+        .expect("Model V3 thermal execution resolution");
+
+    assert_eq!(submission.receipt.receipt.run_id, run_id);
+    assert_eq!(
+        resolution.schema_version,
+        RacingExecutionResolutionVersion::V2
+    );
+    assert_eq!(resolution.model, model);
+    assert!(resolution.model_parameters.is_none());
+    assert_eq!(
+        resolution.thermal_family_profile.as_ref(),
+        catalog.thermal_family_profile_identity()
+    );
+    let round_trip = serde_json::to_string(&submission).expect("submission JSON");
+    let decoded = serde_json::from_str::<RacingVerificationSubmissionV1>(&round_trip)
+        .expect("strict Model V3 thermal submission");
     assert_eq!(
         canonical_json_bytes(&decoded).expect("decoded submission bytes"),
         canonical_json_bytes(&submission).expect("submission bytes")
