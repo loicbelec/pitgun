@@ -26,3 +26,19 @@ python3 experiments/racing_v3_thermal_refinement/screen_local.py --jobs 12
 
 Silverstone, seed `20260901` and the full-race workload are reserved for the
 later Databricks validation and are rejected by the local runner.
+
+## Local result
+
+The immutable local screen completed 126/126 executions. Only
+`soft-limit--3.0c` passed every circuit/seed triplet, so the local verdict is
+`PASS` and this parameter set advances to independent validation. No catalog
+or game change is authorized by that result.
+
+The selected response is intentionally severe at zero cooling, particularly
+at Monza, but remains finite, below 115 °C in the observed selection points
+and fully recovers at ten cooling points. Twenty points are slower than ten on
+all reviewed circuits because their additional drag exceeds their thermal
+benefit.
+
+The detailed interpretation is documented in
+[`RACING_V3_THERMAL_REFINEMENT_LOCAL_V1.md`](../../docs/RACING_V3_THERMAL_REFINEMENT_LOCAL_V1.md).
