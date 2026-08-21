@@ -36,9 +36,13 @@ class BundleContractTest(unittest.TestCase):
         )
 
         self.assertIn("v3_thermal_surface_review_job:", job)
+        self.assertIn("v3_thermal_refinement_review_job:", job)
         self.assertIn('campaigns_table_version: "47"', job)
         self.assertIn('experimental_runs_table_version: "55"', job)
         self.assertIn('experimental_metrics_table_version: "53"', job)
+        self.assertIn('campaigns_table_version: "51"', job)
+        self.assertIn('experimental_runs_table_version: "57"', job)
+        self.assertIn('experimental_metrics_table_version: "56"', job)
         self.assertIn('.option("versionAsOf", campaigns_version)', notebook)
         self.assertIn('.option("versionAsOf", runs_version)', notebook)
         self.assertIn('.option("versionAsOf", metrics_version)', notebook)

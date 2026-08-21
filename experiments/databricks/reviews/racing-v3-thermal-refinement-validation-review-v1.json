@@ -1,0 +1,171 @@
+{
+  "schema_version": "pitgun.racing-v3-thermal-adequacy-review/v1",
+  "id": "racing-v3-thermal-refinement-validation-review-v1",
+  "campaign_id": "racing-v3-thermal-refinement-validation-2026-v2",
+  "manifest_digest": "sha256:5d336d09a1ed51086893285b7f2713730a6f9934872140831fe91fd9907ffc93",
+  "source_git_revision": "620b8b7",
+  "databricks": {
+    "job_id": "657259324536960",
+    "run_id": "176771852333040"
+  },
+  "evidence_versions": {
+    "campaigns": 51,
+    "experimental_runs": 57,
+    "experimental_metrics": 56
+  },
+  "observed_evidence": {
+    "planned_execution_count": 12,
+    "successful_execution_count": 12,
+    "local_parity_failure_count": 0,
+    "vehicle_family_execution_counts": {
+      "historical_v8": 6,
+      "modern_v6t": 3,
+      "f1_2026": 3
+    },
+    "pathological_execution_counts": {
+      "historical_v8": 0,
+      "modern_v6t": 0,
+      "f1_2026": 0
+    }
+  },
+  "response_summary": [
+    {
+      "anchor_id": "era1-classic60",
+      "vehicle_family": "historical_v8",
+      "parameter_set_id": "historical-default",
+      "cooling_points": 0,
+      "total_time_ms": 7856625.0,
+      "maximum_temperature_c": 90.110166,
+      "derated_fraction": 0.0
+    },
+    {
+      "anchor_id": "era1-classic60",
+      "vehicle_family": "historical_v8",
+      "parameter_set_id": "historical-default",
+      "cooling_points": 10,
+      "total_time_ms": 7856625.0,
+      "maximum_temperature_c": 90.080794,
+      "derated_fraction": 0.0
+    },
+    {
+      "anchor_id": "era1-classic60",
+      "vehicle_family": "historical_v8",
+      "parameter_set_id": "historical-default",
+      "cooling_points": 20,
+      "total_time_ms": 7856625.0,
+      "maximum_temperature_c": 90.062766,
+      "derated_fraction": 0.0
+    },
+    {
+      "anchor_id": "era4-classic70",
+      "vehicle_family": "historical_v8",
+      "parameter_set_id": "historical-default",
+      "cooling_points": 0,
+      "total_time_ms": 6946433.0,
+      "maximum_temperature_c": 92.573084,
+      "derated_fraction": 0.0
+    },
+    {
+      "anchor_id": "era4-classic70",
+      "vehicle_family": "historical_v8",
+      "parameter_set_id": "historical-default",
+      "cooling_points": 10,
+      "total_time_ms": 6946433.0,
+      "maximum_temperature_c": 91.360525,
+      "derated_fraction": 0.0
+    },
+    {
+      "anchor_id": "era4-classic70",
+      "vehicle_family": "historical_v8",
+      "parameter_set_id": "historical-default",
+      "cooling_points": 20,
+      "total_time_ms": 6946433.0,
+      "maximum_temperature_c": 90.671017,
+      "derated_fraction": 0.0
+    },
+    {
+      "anchor_id": "era5-v6t",
+      "vehicle_family": "modern_v6t",
+      "parameter_set_id": "modern-v6t-soft-limit--3.0c",
+      "cooling_points": 0,
+      "total_time_ms": 6288832.0,
+      "maximum_temperature_c": 113.821162,
+      "derated_fraction": 0.321161362
+    },
+    {
+      "anchor_id": "era5-v6t",
+      "vehicle_family": "modern_v6t",
+      "parameter_set_id": "modern-v6t-soft-limit--3.0c",
+      "cooling_points": 10,
+      "total_time_ms": 6285730.0,
+      "maximum_temperature_c": 98.681921,
+      "derated_fraction": 0.0
+    },
+    {
+      "anchor_id": "era5-v6t",
+      "vehicle_family": "modern_v6t",
+      "parameter_set_id": "modern-v6t-soft-limit--3.0c",
+      "cooling_points": 20,
+      "total_time_ms": 6288910.0,
+      "maximum_temperature_c": 95.210983,
+      "derated_fraction": 0.0
+    },
+    {
+      "anchor_id": "era5-hybrid",
+      "vehicle_family": "f1_2026",
+      "parameter_set_id": "f1-2026-adaptive-038",
+      "cooling_points": 0,
+      "total_time_ms": 5774153.0,
+      "maximum_temperature_c": 116.795863,
+      "derated_fraction": 0.312054641
+    },
+    {
+      "anchor_id": "era5-hybrid",
+      "vehicle_family": "f1_2026",
+      "parameter_set_id": "f1-2026-adaptive-038",
+      "cooling_points": 10,
+      "total_time_ms": 5765968.0,
+      "maximum_temperature_c": 100.803371,
+      "derated_fraction": 0.0
+    },
+    {
+      "anchor_id": "era5-hybrid",
+      "vehicle_family": "f1_2026",
+      "parameter_set_id": "f1-2026-adaptive-038",
+      "cooling_points": 20,
+      "total_time_ms": 5768936.0,
+      "maximum_temperature_c": 95.740589,
+      "derated_fraction": 0.0
+    }
+  ],
+  "per_family_verdicts": {
+    "historical_v8": {
+      "verdict": "PASS",
+      "reason": "Both unchanged historical anchors remain safe without derating, and cooling does not create an artificial pace advantage.",
+      "candidate_parameter_set_id": "historical-default"
+    },
+    "modern_v6t": {
+      "verdict": "PASS",
+      "reason": "The selected soft-limit--3.0c profile is bounded at zero cooling, fully recovers at ten points, and exposes a 3.102 s interior optimum over zero cooling and 3.180 s over maximum cooling.",
+      "candidate_parameter_set_id": "modern-v6t-soft-limit--3.0c"
+    },
+    "f1_2026": {
+      "verdict": "PASS",
+      "reason": "The retained adaptive-038 profile is bounded at zero cooling, fully recovers at ten points, and exposes an 8.185 s interior optimum over zero cooling and 2.968 s over maximum cooling.",
+      "candidate_parameter_set_id": "f1-2026-adaptive-038"
+    }
+  },
+  "fuel_control": {
+    "experimental_reservoir_kg": 130.0,
+    "purpose": "Prevent fuel depletion from confounding the 52-lap thermal validation.",
+    "game_or_real_f1_calibration": false
+  },
+  "next_gate": {
+    "objective": "Create one versioned era-specific thermal profile candidate, then pass Rust/WASM parity and the normal catalog release chain.",
+    "family_specific_coefficients_allowed": true,
+    "new_thermal_validation_required": false,
+    "automatic_catalog_promotion": false
+  },
+  "classification_only_not_real_f1_calibration": true,
+  "automatic_catalog_promotion": false
+}
