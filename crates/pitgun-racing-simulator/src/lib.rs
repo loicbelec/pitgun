@@ -10,7 +10,8 @@ pub use workload::{
     racing_model_v1_identity, racing_model_v2_identity, racing_model_v3_aero_candidate_identity,
     racing_model_v3_candidate_identity, racing_model_v3_development_candidate_identity,
     racing_model_v3_fidelity_candidate_identity, racing_model_v3_fuel_mass_candidate_identity,
-    racing_model_v3_mechanical_candidate_identity, racing_model_v3_transmission_candidate_identity,
+    racing_model_v3_mechanical_candidate_identity, racing_model_v3_thermal_candidate_identity,
+    racing_model_v3_transmission_candidate_identity,
 };
 
 use std::collections::HashMap;
@@ -26,7 +27,7 @@ use pitgun_racing_contract::{
     RacingModelParametersV1, RacingPresentationIndexV1,
 };
 use pitgun_racing_policy::normalize_and_validate_race_input;
-use pitgun_racing_solver::resample_telemetry;
+use pitgun_racing_solver::resample_telemetry_with_engine_thermal;
 #[cfg(test)]
 use pitgun_racing_solver::run_simulation;
 use pitgun_runtime::execute_linked;
@@ -39,16 +40,16 @@ pub use pitgun_racing_solver::{
     AERO_FULL_CORNER_CURVATURE_RAD_PER_M, AERO_FULL_STRAIGHT_CURVATURE_RAD_PER_M, AeroParams,
     CORNER_CURVATURE_THRESHOLD_RAD_PER_M, ChassisParams, CircuitDescriptorsV1,
     CurvatureAeroResponse, Driver, DriverControlParamsV3, DriverEffects, EngineParams,
-    FuelMassDiagnosticsV3, FuelMassParamsV3, MechanicalDiagnosticsV3, MechanicalParamsV3, PitPlan,
-    PitStop, ResampledTelemetry, ResolvedSimulationRequestV3, SetupResponseDiagnosticsV1,
-    SetupResponseDiagnosticsVersion, SimConfig, SimulationRequest, SimulationResult,
-    SimulationSolution, TireContactParamsV3, TireDegradationDiagnosticsV3, TireDegradationParamsV3,
-    TireDiagnosticsV3, TireParams, Track, Tuning, TuningResponseV1, TuningResponseVersion,
-    VehicleParams, VehicleState, apply_driver_to_tire, apply_tuning, apply_tuning_with_response,
-    best_power_at_speed, curvature_aero_blend, derating_factor, describe_circuit,
-    diagnose_setup_response, driver_effects, effective_mu, power_kw_from_rpm,
-    resample_telemetry as resample_solution, rpm_from_speed_gear,
-    run_resolved_simulation_v3 as solve_resolved_v3, run_simulation as solve,
+    EngineThermalDeratingShapeV3, EngineThermalParamsV3, FuelMassDiagnosticsV3, FuelMassParamsV3,
+    MechanicalDiagnosticsV3, MechanicalParamsV3, PitPlan, PitStop, ResampledTelemetry,
+    ResolvedSimulationRequestV3, SetupResponseDiagnosticsV1, SetupResponseDiagnosticsVersion,
+    SimConfig, SimulationRequest, SimulationResult, SimulationSolution, TireContactParamsV3,
+    TireDegradationDiagnosticsV3, TireDegradationParamsV3, TireDiagnosticsV3, TireParams, Track,
+    Tuning, TuningResponseV1, TuningResponseVersion, VehicleParams, VehicleState,
+    apply_driver_to_tire, apply_tuning, apply_tuning_with_response, best_power_at_speed,
+    curvature_aero_blend, derating_factor, describe_circuit, diagnose_setup_response,
+    driver_effects, effective_mu, power_kw_from_rpm, resample_telemetry as resample_solution,
+    rpm_from_speed_gear, run_resolved_simulation_v3 as solve_resolved_v3, run_simulation as solve,
     run_simulation_with_model_response as solve_with_model_response,
     run_simulation_with_tuning_response as solve_with_tuning_response,
 };
@@ -287,6 +288,107 @@ pub struct V3DevelopmentResolutionParams {
     pub cooling_capacity_gain_at_cap: f64,
 }
 
+/// Relative engine-thermal coefficients exposed only to governed V3 studies.
+///
+/// The immutable engine resource remains the era-aware reference. Multipliers
+/// retain the authored differences between engines while allowing a campaign
+/// to vary heat generation, inertia, rejection and derating independently.
+/// An identity-valued instance reproduces candidate 0.9 numerically.
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct V3EngineThermalResolutionParams {
+    /// Multiplier applied to engine thermal capacity, in J/degC.
+    pub thermal_capacity_multiplier: f64,
+    /// Multiplier applied to the fraction of loaded engine power converted to heat.
+    pub heat_generation_multiplier: f64,
+    /// Multiplier applied to speed-independent heat rejection, in W/degC.
+    pub static_cooling_multiplier: f64,
+    /// Multiplier applied to speed-dependent heat rejection, in W/(m/s)/degC.
+    pub speed_cooling_multiplier: f64,
+    /// Offset applied to the catalog soft-limit temperature, in degC.
+    pub soft_limit_offset_c: f64,
+    /// Multiplier applied to the catalog linear derating slope, per degC.
+    pub derate_slope_multiplier: f64,
+    /// Minimum fraction of engine power retained after thermal derating.
+    pub minimum_power_fraction: f64,
+    /// Shape used when temperature exceeds the soft-limit temperature.
+    pub derating_shape: EngineThermalDeratingShapeV3,
+    /// Width of the smooth derating onset, in degC; zero for the linear baseline.
+    pub smooth_knee_width_c: f64,
+    /// Additional fixed drag area at the cooling-development cap, in m2.
+    pub cooling_drag_area_m2_at_cap: f64,
+}
+
+impl Default for V3EngineThermalResolutionParams {
+    fn default() -> Self {
+        Self {
+            thermal_capacity_multiplier: 1.0,
+            heat_generation_multiplier: 1.0,
+            static_cooling_multiplier: 1.0,
+            speed_cooling_multiplier: 1.0,
+            soft_limit_offset_c: 0.0,
+            derate_slope_multiplier: 1.0,
+            minimum_power_fraction: 0.20,
+            derating_shape: EngineThermalDeratingShapeV3::LinearThreshold,
+            smooth_knee_width_c: 0.0,
+            cooling_drag_area_m2_at_cap: 0.0,
+        }
+    }
+}
+
+impl V3EngineThermalResolutionParams {
+    pub fn validate(&self) -> Result<(), String> {
+        for (name, value) in [
+            (
+                "thermal capacity multiplier",
+                self.thermal_capacity_multiplier,
+            ),
+            (
+                "heat generation multiplier",
+                self.heat_generation_multiplier,
+            ),
+            ("static cooling multiplier", self.static_cooling_multiplier),
+            ("speed cooling multiplier", self.speed_cooling_multiplier),
+            ("derate slope multiplier", self.derate_slope_multiplier),
+        ] {
+            if !value.is_finite() || !(0.1..=4.0).contains(&value) {
+                return Err(format!("V3 {name} must be finite and in [0.1, 4]"));
+            }
+        }
+        if !self.soft_limit_offset_c.is_finite()
+            || !(-50.0..=50.0).contains(&self.soft_limit_offset_c)
+        {
+            return Err("V3 thermal soft-limit offset must be in [-50, 50] degC".to_string());
+        }
+        if !self.minimum_power_fraction.is_finite()
+            || !(0.05..=1.0).contains(&self.minimum_power_fraction)
+        {
+            return Err("V3 thermal minimum-power fraction must be in [0.05, 1]".to_string());
+        }
+        EngineThermalParamsV3 {
+            derating_shape: self.derating_shape,
+            smooth_knee_width_c: self.smooth_knee_width_c,
+            minimum_power_fraction: self.minimum_power_fraction,
+        }
+        .validate()?;
+        if !self.cooling_drag_area_m2_at_cap.is_finite()
+            || !(0.0..=0.5).contains(&self.cooling_drag_area_m2_at_cap)
+        {
+            return Err("V3 cooling drag area at cap must be in [0, 0.5] m2".to_string());
+        }
+        Ok(())
+    }
+
+    fn apply_to(self, engine: &mut EngineParams) {
+        engine.c_th *= self.thermal_capacity_multiplier;
+        engine.alpha_heat *= self.heat_generation_multiplier;
+        engine.p_cool0 *= self.static_cooling_multiplier;
+        engine.k_cool *= self.speed_cooling_multiplier;
+        engine.t_soft += self.soft_limit_offset_c;
+        engine.beta_derate *= self.derate_slope_multiplier;
+    }
+}
+
 /// Gameplay gearing resolved as one physically interpretable final drive.
 ///
 /// The normalized setup selects a target vehicle speed. At that speed, top
@@ -417,6 +519,8 @@ pub enum V3CandidateExperimentProfileVersion {
     V6,
     #[serde(rename = "pitgun.racing-v3-experiment-profile/v7")]
     V7,
+    #[serde(rename = "pitgun.racing-v3-experiment-profile/v8")]
+    V8,
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq)]
@@ -439,6 +543,8 @@ pub struct V3CandidateExperimentProfile {
     pub fuel_mass: Option<FuelMassParamsV3>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub tire_degradation: Option<TireDegradationParamsV3>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub engine_thermal_resolution: Option<V3EngineThermalResolutionParams>,
 }
 
 impl Default for V3CandidateExperimentProfile {
@@ -454,6 +560,7 @@ impl Default for V3CandidateExperimentProfile {
             driver_control_override: None,
             fuel_mass: Some(FuelMassParamsV3::default()),
             tire_degradation: Some(TireDegradationParamsV3::default()),
+            engine_thermal_resolution: None,
         }
     }
 }
@@ -482,7 +589,8 @@ impl V3CandidateExperimentProfile {
                 V3CandidateExperimentProfileVersion::V4
                 | V3CandidateExperimentProfileVersion::V5
                 | V3CandidateExperimentProfileVersion::V6
-                | V3CandidateExperimentProfileVersion::V7,
+                | V3CandidateExperimentProfileVersion::V7
+                | V3CandidateExperimentProfileVersion::V8,
                 Some(aero),
                 Some(development),
                 Some(transmission),
@@ -519,33 +627,54 @@ impl V3CandidateExperimentProfile {
                 "V3 experiment profile V7 requires aero, development and transmission resolution"
                     .to_string(),
             ),
+            (V3CandidateExperimentProfileVersion::V8, _, _, _) => Err(
+                "V3 experiment profile V8 requires aero, development and transmission resolution"
+                    .to_string(),
+            ),
         };
         resolution?;
         match (self.schema_version, self.fuel_mass) {
             (
-                V3CandidateExperimentProfileVersion::V6 | V3CandidateExperimentProfileVersion::V7,
+                V3CandidateExperimentProfileVersion::V6
+                | V3CandidateExperimentProfileVersion::V7
+                | V3CandidateExperimentProfileVersion::V8,
                 Some(fuel_mass),
             ) => fuel_mass.validate(),
             (
-                V3CandidateExperimentProfileVersion::V6 | V3CandidateExperimentProfileVersion::V7,
+                V3CandidateExperimentProfileVersion::V6
+                | V3CandidateExperimentProfileVersion::V7
+                | V3CandidateExperimentProfileVersion::V8,
                 None,
-            ) => Err("V3 experiment profiles V6 and V7 require fuel_mass".to_string()),
+            ) => Err("V3 experiment profiles V6 through V8 require fuel_mass".to_string()),
             (_, None) => Ok(()),
             (_, Some(_)) => {
                 Err("historical V3 experiment profiles cannot define fuel_mass".to_string())
             }
         }?;
         match (self.schema_version, self.tire_degradation) {
-            (V3CandidateExperimentProfileVersion::V7, Some(tire_degradation)) => {
-                tire_degradation.validate()
-            }
-            (V3CandidateExperimentProfileVersion::V7, None) => {
-                Err("V3 experiment profile V7 requires tire_degradation".to_string())
-            }
+            (
+                V3CandidateExperimentProfileVersion::V7 | V3CandidateExperimentProfileVersion::V8,
+                Some(tire_degradation),
+            ) => tire_degradation.validate(),
+            (
+                V3CandidateExperimentProfileVersion::V7 | V3CandidateExperimentProfileVersion::V8,
+                None,
+            ) => Err("V3 experiment profiles V7 and V8 require tire_degradation".to_string()),
             (_, None) => Ok(()),
             (_, Some(_)) => {
                 Err("historical V3 experiment profiles cannot define tire_degradation".to_string())
             }
+        }?;
+        match (self.schema_version, self.engine_thermal_resolution) {
+            (V3CandidateExperimentProfileVersion::V8, Some(thermal)) => thermal.validate(),
+            (V3CandidateExperimentProfileVersion::V8, None) => {
+                Err("V3 experiment profile V8 requires engine_thermal_resolution".to_string())
+            }
+            (_, None) => Ok(()),
+            (_, Some(_)) => Err(
+                "historical V3 experiment profiles cannot define engine_thermal_resolution"
+                    .to_string(),
+            ),
         }
     }
 
@@ -569,6 +698,7 @@ impl V3CandidateExperimentProfile {
                 racing_model_v3_fuel_mass_candidate_identity()
             }
             V3CandidateExperimentProfileVersion::V7 => racing_model_v3_candidate_identity(),
+            V3CandidateExperimentProfileVersion::V8 => racing_model_v3_thermal_candidate_identity(),
         }
     }
 
@@ -578,6 +708,7 @@ impl V3CandidateExperimentProfile {
             V3CandidateExperimentProfileVersion::V5
                 | V3CandidateExperimentProfileVersion::V6
                 | V3CandidateExperimentProfileVersion::V7
+                | V3CandidateExperimentProfileVersion::V8
         )
     }
 
@@ -587,6 +718,7 @@ impl V3CandidateExperimentProfile {
             V3CandidateExperimentProfileVersion::V5
                 | V3CandidateExperimentProfileVersion::V6
                 | V3CandidateExperimentProfileVersion::V7
+                | V3CandidateExperimentProfileVersion::V8
         )
     }
 }
@@ -982,6 +1114,9 @@ pub fn resolve_v3_physical_vehicle_with_profile(
         resolved.engine.p_cool0 = vehicle.engine.p_cool0 * cooling_multiplier;
         resolved.engine.k_cool = vehicle.engine.k_cool * cooling_multiplier;
     }
+    if let Some(engine_thermal_resolution) = profile.engine_thermal_resolution {
+        engine_thermal_resolution.apply_to(&mut resolved.engine);
+    }
     let Some(aero_resolution) = profile.aero_resolution else {
         return Ok(resolved);
     };
@@ -1014,9 +1149,16 @@ pub fn resolve_v3_physical_vehicle_with_profile(
     let minimum_downforce_area_m2 =
         reference_downforce_area_m2 * aero_resolution.minimum_downforce_area_multiplier;
     let added_downforce_area_m2 = setup_downforce_area_m2 - minimum_downforce_area_m2;
-    let fixed_drag_area_m2 = (reference_drag_area_m2 * aero_resolution.base_drag_area_multiplier
+    let mut fixed_drag_area_m2 = (reference_drag_area_m2
+        * aero_resolution.base_drag_area_multiplier
         + aero_resolution.induced_drag_factor_per_m2 * added_downforce_area_m2.powi(2))
         * (1.0 - aero_resolution.development_drag_reduction_at_cap * development);
+    if let Some(engine_thermal_resolution) = profile.engine_thermal_resolution {
+        let cooling_development =
+            (tuning.cooling_points as f64).clamp(0.0, points_cap) / points_cap;
+        fixed_drag_area_m2 +=
+            engine_thermal_resolution.cooling_drag_area_m2_at_cap * cooling_development;
+    }
 
     let invalid_fixed_downforce = !fixed_downforce_area_m2.is_finite()
         || if profile.accepts_zero_downforce() {
@@ -1525,6 +1667,13 @@ fn run_single_session(
                     driver_control,
                     fuel_mass: profile.fuel_mass,
                     tire_degradation: profile.tire_degradation,
+                    engine_thermal: profile.engine_thermal_resolution.map(|thermal| {
+                        EngineThermalParamsV3 {
+                            derating_shape: thermal.derating_shape,
+                            smooth_knee_width_c: thermal.smooth_knee_width_c,
+                            minimum_power_fraction: thermal.minimum_power_fraction,
+                        }
+                    }),
                 })
             }
         }
@@ -1547,11 +1696,22 @@ fn run_single_session(
 
         if competitor.is_player || competitor.id == "player" {
             let telemetry_hz = 5.0;
-            let resampled = resample_telemetry(
+            let engine_thermal = match model {
+                SessionPhysicalModel::V3Candidate { profile } => profile
+                    .engine_thermal_resolution
+                    .map(|thermal| EngineThermalParamsV3 {
+                        derating_shape: thermal.derating_shape,
+                        smooth_knee_width_c: thermal.smooth_knee_width_c,
+                        minimum_power_fraction: thermal.minimum_power_fraction,
+                    }),
+                SessionPhysicalModel::Historical { .. } => None,
+            };
+            let resampled = resample_telemetry_with_engine_thermal(
                 &request.track,
                 &result.solution,
                 &result.applied_vehicle,
                 5.0,
+                engine_thermal,
             )
             .map_err(|err| format!("telemetry resampling failed: {err}"))?;
             player_frames = gateway_frames_from_resampled(
@@ -4053,6 +4213,66 @@ mod tests {
             racing_model_v3_candidate_identity()
         );
         assert!(tire_degradation_profile.validate().is_ok());
+
+        let thermal_profile = V3CandidateExperimentProfile {
+            schema_version: V3CandidateExperimentProfileVersion::V8,
+            engine_thermal_resolution: Some(V3EngineThermalResolutionParams::default()),
+            ..V3CandidateExperimentProfile::default()
+        };
+        assert_eq!(
+            thermal_profile.model_identity(),
+            racing_model_v3_thermal_candidate_identity()
+        );
+        assert!(thermal_profile.validate().is_ok());
+
+        let snapshot = RacingCatalogSnapshot::embedded().expect("catalog");
+        let baseline = run_race_with_catalog_and_v3_profile(
+            one_lap_request(),
+            &snapshot,
+            &tire_degradation_profile,
+        )
+        .expect("0.9 baseline");
+        let explicit =
+            run_race_with_catalog_and_v3_profile(one_lap_request(), &snapshot, &thermal_profile)
+                .expect("0.10 identity thermal profile");
+        assert_eq!(explicit.total_time_ms, baseline.total_time_ms);
+        assert_eq!(
+            explicit.player_mechanical_diagnostics_v3, baseline.player_mechanical_diagnostics_v3,
+            "identity-valued V8 thermal parameters must reproduce candidate 0.9"
+        );
+
+        let embedded = EmbeddedCatalog::from_snapshot(&snapshot).expect("resolved catalog");
+        let (vehicle, _) = embedded.resolve_vehicle("f1_2026").expect("vehicle");
+        let tuning = Tuning {
+            cooling_points: 20,
+            ..Tuning::default()
+        };
+        let identity_vehicle =
+            resolve_v3_physical_vehicle_with_profile(&vehicle, &tuning, &thermal_profile)
+                .expect("identity thermal vehicle");
+        let mut costly_profile = thermal_profile;
+        costly_profile
+            .engine_thermal_resolution
+            .as_mut()
+            .expect("thermal parameters")
+            .cooling_drag_area_m2_at_cap = 0.10;
+        let costly_vehicle =
+            resolve_v3_physical_vehicle_with_profile(&vehicle, &tuning, &costly_profile)
+                .expect("cooling-cost vehicle");
+        approx_eq(
+            costly_vehicle.aero.cd_a_x - identity_vehicle.aero.cd_a_x,
+            0.10,
+            1e-12,
+            "cooling drag at cap",
+        );
+
+        let mut malformed_thermal = thermal_profile;
+        malformed_thermal
+            .engine_thermal_resolution
+            .as_mut()
+            .expect("thermal parameters")
+            .thermal_capacity_multiplier = 0.0;
+        assert!(malformed_thermal.validate().is_err());
 
         let malformed = V3CandidateExperimentProfile {
             schema_version: V3CandidateExperimentProfileVersion::V2,

@@ -253,6 +253,7 @@ interruption time and driveline loss.
 - active-vehicle profile V5 uses `pitgun.racing-v3-candidate@0.7.0`;
 - power-based fuel-mass profile V6 uses `pitgun.racing-v3-candidate@0.8.0`;
 - compound-degradation profile V7 uses `pitgun.racing-v3-candidate@0.9.0`;
+- engine-thermal experiment profile V8 uses `pitgun.racing-v3-candidate@0.10.0`;
 - `pitgun.racing@3.0.0` is reserved for the reviewed production Game Model;
 - no existing Racing Catalog declares compatibility with the candidate;
 - browser, Authority, and Verifier cannot select it.

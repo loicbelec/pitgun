@@ -13,6 +13,8 @@ const RACING_MODEL_V1_MANIFEST: &[u8] = b"pitgun.racing:model:1.0.0:conformance-
 const RACING_MODEL_V2_MANIFEST: &[u8] = b"pitgun.racing:model:2.0.0:continuous-curvature-v1";
 const RACING_MODEL_V3_CANDIDATE_MANIFEST: &[u8] =
     b"pitgun.racing-v3-candidate:model:0.9.0:resolved-vehicle:per-segment-v1:aggregate-contact-v2:mechanical-controls-v1:aero-efficiency-v1:development-resolution-v1:transmission-resolution-v1:zero-downforce-v1:first-stint-tire-v1:power-based-fuel-mass-v1:compound-degradation-v1";
+const RACING_MODEL_V3_THERMAL_CANDIDATE_MANIFEST: &[u8] =
+    b"pitgun.racing-v3-candidate:model:0.10.0:resolved-vehicle:per-segment-v1:aggregate-contact-v2:mechanical-controls-v1:aero-efficiency-v1:development-resolution-v1:transmission-resolution-v1:zero-downforce-v1:first-stint-tire-v1:power-based-fuel-mass-v1:compound-degradation-v1:engine-thermal-resolution-v1";
 const RACING_MODEL_V3_FUEL_MASS_CANDIDATE_MANIFEST: &[u8] =
     b"pitgun.racing-v3-candidate:model:0.8.0:resolved-vehicle:per-segment-v1:aggregate-contact-v1:mechanical-controls-v1:aero-efficiency-v1:development-resolution-v1:transmission-resolution-v1:zero-downforce-v1:first-stint-tire-v1:power-based-fuel-mass-v1";
 const RACING_MODEL_V3_FIDELITY_CANDIDATE_MANIFEST: &[u8] =
@@ -60,6 +62,24 @@ pub fn racing_model_v3_candidate_identity() -> ArtifactIdentity {
             .parse()
             .expect("static Racing V3 candidate model version"),
         digest: pitgun_contract::Digest::from_bytes(RACING_MODEL_V3_CANDIDATE_MANIFEST),
+    }
+}
+
+/// Returns the non-production identity of the explicit thermal-parameter slice.
+///
+/// Candidate 0.10 keeps the 0.9 equations as its baseline while moving every
+/// reviewed engine heat, inertia, rejection, threshold and derating response
+/// behind a checksummed experiment profile.
+#[must_use]
+pub fn racing_model_v3_thermal_candidate_identity() -> ArtifactIdentity {
+    ArtifactIdentity {
+        id: "pitgun.racing-v3-candidate"
+            .parse()
+            .expect("static Racing V3 candidate model id"),
+        version: "0.10.0"
+            .parse()
+            .expect("static Racing V3 thermal candidate model version"),
+        digest: pitgun_contract::Digest::from_bytes(RACING_MODEL_V3_THERMAL_CANDIDATE_MANIFEST),
     }
 }
 
@@ -298,7 +318,7 @@ mod tests {
         racing_model_v3_aero_candidate_identity, racing_model_v3_candidate_identity,
         racing_model_v3_development_candidate_identity,
         racing_model_v3_fidelity_candidate_identity, racing_model_v3_fuel_mass_candidate_identity,
-        racing_model_v3_mechanical_candidate_identity,
+        racing_model_v3_mechanical_candidate_identity, racing_model_v3_thermal_candidate_identity,
         racing_model_v3_transmission_candidate_identity,
     };
     use pitgun_runtime::LinkedWorkload;
@@ -350,6 +370,14 @@ mod tests {
         );
         assert_ne!(candidate, racing_model_v2_identity());
         assert!(racing_model_identity_for_version("0.9.0").is_err());
+
+        let thermal = racing_model_v3_thermal_candidate_identity();
+        assert_eq!(thermal.version.to_string(), "0.10.0");
+        assert_eq!(
+            thermal.digest.to_string(),
+            "sha256:cc1394a1ba52d83ddb9be6f6272729c29f87944969c41a21991d43997379e5cd"
+        );
+        assert_ne!(candidate, thermal);
 
         let fuel_mass = racing_model_v3_fuel_mass_candidate_identity();
         assert_eq!(fuel_mass.version.to_string(), "0.8.0");
