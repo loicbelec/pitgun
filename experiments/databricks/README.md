@@ -234,6 +234,18 @@ that can promote itself. The evidence partitions and era-aware decision
 contract are documented in
 [Racing Model V3 thermal Databricks plan V1](../../docs/RACING_V3_THERMAL_DATABRICKS_PLAN_V1.md).
 
+Deploy and execute the resumable campaign only from a reviewed revision:
+
+```bash
+databricks bundle deploy -t dev -p pitgun-free
+databricks bundle run v3_thermal_surface_job -t dev -p pitgun-free
+```
+
+Successful replays must match their local Rust identities and seven thermal
+metrics. New transition and Barcelona points are persisted with eight metrics,
+including derated fraction. Completion ends at `REVIEW_REQUIRED`; a separate
+read-only review selects the per-family verdicts.
+
 ## Reference campaign
 
 The frozen V1 campaign manifest is

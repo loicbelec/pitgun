@@ -32,6 +32,7 @@ RESPONSE_RESOURCE_PATTERN = re.compile(r"racing-[a-z0-9]+(?:-[a-z0-9]+)*")
 CATALOG_RESOURCE_PATTERN = re.compile(r"racing-v[0-9]+(?:-[0-9]+)*")
 V3_CONFIGURATION_PATTERN = re.compile(r"[a-z0-9]+(?:-[a-z0-9]+)*")
 V3_DECISION_SURFACE_EXECUTION_PATTERN = re.compile(r"v3ds-[0-9]{4}-[0-9]{6}")
+V3_THERMAL_SURFACE_EXECUTION_PATTERN = re.compile(r"v3th-[0-9a-f]{16}")
 _DECISION_SURFACE_PROBE_ROOT = pathlib.Path(
     tempfile.mkdtemp(prefix="pitgun-v3-decision-surface-probe-")
 )
@@ -510,6 +511,33 @@ def execute_packaged_v3_decision_surface(
         raise ValueError("execution key must be one canonical packaged identifier")
     configuration = load_decision_surface_execution(execution_key, campaign_name)
 
+    package = importlib.resources.files("pitgun_databricks_adapter")
+    probe_bytes = package.joinpath("bin", "v3_decision_surface_probe").read_bytes()
+    scenario_bytes = json.dumps(
+        configuration["scenario"], indent=2, ensure_ascii=False
+    ).encode() + b"\n"
+    profile_bytes = json.dumps(
+        configuration["profile"], indent=2, ensure_ascii=False
+    ).encode() + b"\n"
+    return _execute_v3_decision_surface_probe(
+        probe_bytes,
+        scenario_bytes,
+        profile_bytes,
+        int(configuration["seed"]),
+    )
+
+
+def execute_packaged_v3_thermal_surface(
+    execution_key: str,
+    campaign_name: str = "racing-v3-thermal-adequacy-v1",
+) -> dict[str, Any]:
+    """Execute one exact thermal scenario/profile/seed from the reviewed campaign."""
+
+    from .thermal_surface import load_thermal_surface_execution
+
+    if not V3_THERMAL_SURFACE_EXECUTION_PATTERN.fullmatch(execution_key):
+        raise ValueError("thermal execution key must be one canonical identifier")
+    configuration = load_thermal_surface_execution(execution_key, campaign_name)
     package = importlib.resources.files("pitgun_databricks_adapter")
     probe_bytes = package.joinpath("bin", "v3_decision_surface_probe").read_bytes()
     scenario_bytes = json.dumps(

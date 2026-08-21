@@ -14,6 +14,18 @@ class BundleContractTest(unittest.TestCase):
             if path != pathlib.Path(__file__):
                 ast.parse(path.read_text(), filename=str(path))
 
+    def test_v3_thermal_job_is_packaged_bounded_and_non_promoting(self):
+        job = (ROOT / "resources" / "jobs.yml").read_text()
+        builder = (ROOT / "adapter" / "build_wheel.py").read_text()
+        notebook = (ROOT / "src" / "execute_v3_thermal_surface.py").read_text()
+        self.assertIn("v3_thermal_surface_job:", job)
+        self.assertIn("campaign_name: racing-v3-thermal-adequacy-v1", job)
+        self.assertIn("timeout_seconds: 7200", job)
+        self.assertIn('f"{PACKAGE}/thermal_surface.py"', builder)
+        self.assertIn("load_thermal_surface_campaign", notebook)
+        self.assertIn("execute_packaged_v3_thermal_surface", notebook)
+        self.assertNotIn("automatic_catalog_promotion\": True", notebook)
+
     def test_bootstrap_owns_only_the_seven_governed_tables(self):
         source = (ROOT / "src" / "bootstrap_tables.py").read_text()
         expected = {

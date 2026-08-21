@@ -129,6 +129,24 @@ class V3ThermalSurfaceCampaignTests(unittest.TestCase):
         ):
             self.assertNotIn(forbidden, serialized)
 
+    def test_executor_is_bounded_resumable_and_review_only(self):
+        runner = (
+            ROOT / "adapter" / "pitgun_databricks_adapter" / "runner.py"
+        ).read_text()
+        notebook = (ROOT / "src" / "execute_v3_thermal_surface.py").read_text()
+        jobs = (ROOT / "resources" / "jobs.yml").read_text()
+        self.assertIn("execute_packaged_v3_thermal_surface", runner)
+        self.assertIn("V3_THERMAL_SURFACE_EXECUTION_PATTERN.fullmatch", runner)
+        self.assertIn("v3_thermal_surface_job:", jobs)
+        self.assertIn("racing-v3-thermal-adequacy-2026-v1", jobs)
+        self.assertIn("execute_v3_thermal_surface.py", jobs)
+        self.assertIn("target.execution_status <> 'SUCCESS'", notebook)
+        self.assertIn("local_thermal_evidence_mismatch", notebook)
+        self.assertIn('"per_family_verdicts_selected": False', notebook)
+        self.assertIn('"automatic_catalog_promotion": False', notebook)
+        for forbidden in ("policy_releases", "catalogs/racing", "requests.get"):
+            self.assertNotIn(forbidden, notebook)
+
 
 if __name__ == "__main__":
     unittest.main()
