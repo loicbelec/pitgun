@@ -1,0 +1,6 @@
+{
+  "schema_version": "pitgun.catalog-release-identity/v1",
+  "id": "pitgun.racing",
+  "version": "1.5.0",
+  "manifest_digest": "sha256:a2a5298eb58fd951ae5bc7a069369b670dc60112ec124762d275617c7d876816"
+}

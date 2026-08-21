@@ -20,11 +20,20 @@ use pitgun_racing_contract::{
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 
-use crate::{EMBEDDED_FILES, MODEL_V2_EMBEDDED_FILES, PRESENTATION_INDEX};
+use crate::{
+    EMBEDDED_FILES, MODEL_V2_EMBEDDED_FILES, MODEL_V3_THERMAL_EMBEDDED_FILES, PRESENTATION_INDEX,
+    V3ThermalFamilyProfileCandidateV1, racing_model_v3_thermal_candidate_identity,
+};
 
-const KNOWN_RACING_MODEL_VERSIONS: [&str; 2] = ["1.0.0", "2.0.0"];
+const KNOWN_RACING_MODELS: [(&str, &str); 3] = [
+    ("pitgun.racing", "1.0.0"),
+    ("pitgun.racing", "2.0.0"),
+    ("pitgun.racing-v3-candidate", "0.10.0"),
+];
 const MODEL_PARAMETERS_ID_PREFIX: &str = "pitgun.racing.model-parameters.";
 const MODEL_PARAMETERS_PATH_PREFIX: &str = "simulation/model-parameters/";
+const THERMAL_FAMILY_RESOURCE_ID: &str = "pitgun.racing.thermal-profiles.family-v1";
+const THERMAL_FAMILY_PROFILE_PATH: &str = "simulation/thermal-profiles/family-v1.json";
 
 const CATALOG_MANIFEST: &[u8] = include_bytes!(concat!(
     env!("CARGO_MANIFEST_DIR"),
@@ -53,6 +62,22 @@ const MODEL_V2_SIMULATION_INDEX: &[u8] = include_bytes!(concat!(
 const MODEL_V2_PRESENTATION_INDEX: &[u8] = include_bytes!(concat!(
     env!("CARGO_MANIFEST_DIR"),
     "/../../catalogs/racing/v1.2.0/presentation/index.json"
+));
+const MODEL_V3_THERMAL_CATALOG_MANIFEST: &[u8] = include_bytes!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../catalogs/racing/v1.5.0/catalog.json"
+));
+const MODEL_V3_THERMAL_RELEASE_IDENTITY: &[u8] = include_bytes!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../catalogs/racing/v1.5.0/release.json"
+));
+const MODEL_V3_THERMAL_SIMULATION_INDEX: &[u8] = include_bytes!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../catalogs/racing/v1.5.0/simulation/index.json"
+));
+const MODEL_V3_THERMAL_PRESENTATION_INDEX: &[u8] = include_bytes!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../catalogs/racing/v1.5.0/presentation/index.json"
 ));
 
 /// One exact release-relative file supplied by a browser or another adapter.
@@ -94,6 +119,8 @@ pub struct RacingCatalogSnapshot {
     resources: BTreeMap<CatalogPath, Vec<u8>>,
     model_parameters: Option<RacingModelParametersV1>,
     model_parameters_identity: Option<ArtifactIdentity>,
+    thermal_family_profile: Option<V3ThermalFamilyProfileCandidateV1>,
+    thermal_family_profile_identity: Option<ArtifactIdentity>,
 }
 
 /// Failure produced before a Racing Catalog may enter simulation.
@@ -304,6 +331,12 @@ impl RacingCatalogSnapshot {
             .map_or((None, None), |(parameters, identity)| {
                 (Some(parameters), Some(identity))
             });
+        let resolved_thermal_family_profile =
+            resolve_thermal_family_profile(&manifest, &simulation_index, &supplied)?;
+        let (thermal_family_profile, thermal_family_profile_identity) =
+            resolved_thermal_family_profile.map_or((None, None), |(profile, identity)| {
+                (Some(profile), Some(identity))
+            });
 
         let snapshot = Self {
             manifest,
@@ -313,6 +346,8 @@ impl RacingCatalogSnapshot {
             resources: supplied,
             model_parameters,
             model_parameters_identity,
+            thermal_family_profile,
+            thermal_family_profile_identity,
         };
         crate::EmbeddedCatalog::from_snapshot(&snapshot)
             .map_err(RacingCatalogResolutionError::InvalidResolvedResources)?;
@@ -346,6 +381,22 @@ impl RacingCatalogSnapshot {
             MODEL_V2_RELEASE_IDENTITY,
             MODEL_V2_SIMULATION_INDEX,
             MODEL_V2_PRESENTATION_INDEX,
+            resources,
+        )
+    }
+
+    /// Resolves the immutable non-production catalog for the reviewed V3 thermal candidate.
+    ///
+    /// This leaves the public `LATEST` pointer and both published model fallbacks unchanged.
+    pub fn embedded_model_v3_thermal() -> Result<Self, RacingCatalogResolutionError> {
+        let resources = MODEL_V3_THERMAL_EMBEDDED_FILES
+            .iter()
+            .map(|(path, bytes)| (format!("simulation/{path}"), bytes.to_vec()));
+        Self::from_bytes(
+            MODEL_V3_THERMAL_CATALOG_MANIFEST,
+            MODEL_V3_THERMAL_RELEASE_IDENTITY,
+            MODEL_V3_THERMAL_SIMULATION_INDEX,
+            MODEL_V3_THERMAL_PRESENTATION_INDEX,
             resources,
         )
     }
@@ -453,6 +504,18 @@ impl RacingCatalogSnapshot {
     #[must_use]
     pub const fn model_parameters_identity(&self) -> Option<&ArtifactIdentity> {
         self.model_parameters_identity.as_ref()
+    }
+
+    /// Returns the reviewed thermal-family profile selected by this release.
+    #[must_use]
+    pub const fn thermal_family_profile(&self) -> Option<&V3ThermalFamilyProfileCandidateV1> {
+        self.thermal_family_profile.as_ref()
+    }
+
+    /// Returns the exact semantic and byte identity of the thermal-family profile.
+    #[must_use]
+    pub const fn thermal_family_profile_identity(&self) -> Option<&ArtifactIdentity> {
+        self.thermal_family_profile_identity.as_ref()
     }
 
     /// Recreates the transport-neutral bundle for this validated snapshot.
@@ -605,20 +668,86 @@ fn resolve_model_parameters(
     Ok(Some((parameters, identity)))
 }
 
+fn resolve_thermal_family_profile(
+    manifest: &ResourceCatalogManifestV1,
+    simulation_index: &RacingSimulationIndexV1,
+    supplied: &BTreeMap<CatalogPath, Vec<u8>>,
+) -> Result<
+    Option<(V3ThermalFamilyProfileCandidateV1, ArtifactIdentity)>,
+    RacingCatalogResolutionError,
+> {
+    let model = racing_model_v3_thermal_candidate_identity();
+    let supports_v3_thermal = manifest
+        .compatibility
+        .validate_for(&model, ContractVersion::V1)
+        .is_ok();
+    let mut indexed = simulation_index.resources.iter().filter(|resource| {
+        resource.id.as_str() == THERMAL_FAMILY_RESOURCE_ID
+            || resource.path.as_str() == THERMAL_FAMILY_PROFILE_PATH
+    });
+    let Some(resource) = indexed.next() else {
+        if supports_v3_thermal {
+            return Err(RacingCatalogResolutionError::InvalidResolvedResources(
+                "Model V3 thermal catalog is missing its thermal-family profile".to_string(),
+            ));
+        }
+        return Ok(None);
+    };
+    if indexed.next().is_some() {
+        return Err(RacingCatalogResolutionError::InvalidResolvedResources(
+            "Racing catalog must select exactly one thermal-family profile".to_string(),
+        ));
+    }
+    if !supports_v3_thermal {
+        return Err(RacingCatalogResolutionError::InvalidResolvedResources(
+            "thermal-family profile requires the exact Model V3 thermal compatibility".to_string(),
+        ));
+    }
+    if resource.id.as_str() != THERMAL_FAMILY_RESOURCE_ID
+        || resource.path.as_str() != THERMAL_FAMILY_PROFILE_PATH
+    {
+        return Err(RacingCatalogResolutionError::InvalidResolvedResources(
+            format!(
+                "thermal-family profile must use resource ID {THERMAL_FAMILY_RESOURCE_ID} and path {THERMAL_FAMILY_PROFILE_PATH}"
+            ),
+        ));
+    }
+
+    let bytes = supplied
+        .get(&resource.path)
+        .expect("indexed resources are checked before thermal-profile resolution");
+    let text = std::str::from_utf8(bytes).map_err(|error| {
+        RacingCatalogResolutionError::InvalidResource {
+            path: resource.path.clone(),
+            reason: error.to_string(),
+        }
+    })?;
+    let profile = V3ThermalFamilyProfileCandidateV1::from_exact_json(text).map_err(|reason| {
+        RacingCatalogResolutionError::InvalidResource {
+            path: resource.path.clone(),
+            reason,
+        }
+    })?;
+    let identity = profile.identity();
+    if identity.digest != resource.digest {
+        return Err(RacingCatalogResolutionError::InvalidResolvedResources(
+            "thermal-family profile identity does not match its indexed bytes".to_string(),
+        ));
+    }
+
+    Ok(Some((profile, identity)))
+}
+
 fn validate_known_racing_model_compatibility(
     manifest: &ResourceCatalogManifestV1,
 ) -> Result<(), RacingCatalogResolutionError> {
-    let supports_known_model = KNOWN_RACING_MODEL_VERSIONS.iter().any(|version| {
+    let supports_known_model = KNOWN_RACING_MODELS.iter().any(|(id, version)| {
         let racing_model = ArtifactIdentity {
-            id: "pitgun.racing"
-                .parse()
-                .expect("static Racing model identifier"),
+            id: id.parse().expect("static Racing model identifier"),
             version: version.parse().expect("static Racing model version"),
             // Catalog compatibility is intentionally based on ID and version.
             // The executable model digest remains bound by the run contract.
-            digest: Digest::from_bytes(
-                format!("pitgun.racing:model-compatibility:{version}").as_bytes(),
-            ),
+            digest: Digest::from_bytes(format!("{id}:model-compatibility:{version}").as_bytes()),
         };
         manifest
             .compatibility
@@ -630,8 +759,12 @@ fn validate_known_racing_model_compatibility(
         Ok(())
     } else {
         Err(RacingCatalogResolutionError::InvalidManifest(format!(
-            "catalog does not support a known Racing model version ({})",
-            KNOWN_RACING_MODEL_VERSIONS.join(", ")
+            "catalog does not support a known Racing model ({})",
+            KNOWN_RACING_MODELS
+                .iter()
+                .map(|(id, version)| format!("{id}@{version}"))
+                .collect::<Vec<_>>()
+                .join(", ")
         )))
     }
 }
@@ -1049,6 +1182,8 @@ mod tests {
         let model_v1_catalog = RacingCatalogSnapshot::embedded().expect("model V1 catalog");
         let model_v2_catalog =
             RacingCatalogSnapshot::embedded_model_v2().expect("model V2 catalog");
+        let model_v3_catalog =
+            RacingCatalogSnapshot::embedded_model_v3_thermal().expect("model V3 thermal catalog");
 
         assert!(
             model_v1_catalog
@@ -1064,6 +1199,75 @@ mod tests {
                 .validate_for(&crate::racing_model_v1_identity(), ContractVersion::V1)
                 .is_err()
         );
+        assert!(
+            model_v3_catalog
+                .manifest()
+                .compatibility
+                .validate_for(
+                    &crate::racing_model_v3_thermal_candidate_identity(),
+                    ContractVersion::V1
+                )
+                .is_ok()
+        );
+        for legacy_model in [
+            crate::racing_model_v1_identity(),
+            crate::racing_model_v2_identity(),
+        ] {
+            assert!(
+                model_v3_catalog
+                    .manifest()
+                    .compatibility
+                    .validate_for(&legacy_model, ContractVersion::V1)
+                    .is_err()
+            );
+        }
+    }
+
+    #[test]
+    fn model_v3_catalog_resolves_the_exact_reviewed_thermal_profile() {
+        let snapshot =
+            RacingCatalogSnapshot::embedded_model_v3_thermal().expect("model V3 thermal catalog");
+        let profile = snapshot
+            .thermal_family_profile()
+            .expect("thermal-family profile");
+        let identity = snapshot
+            .thermal_family_profile_identity()
+            .expect("thermal-family profile identity");
+
+        assert_eq!(identity, &profile.identity());
+        assert_eq!(
+            identity.digest.to_string(),
+            crate::V3_THERMAL_FAMILY_PROFILE_DIGEST
+        );
+        assert!(snapshot.model_parameters().is_none());
+        assert!(profile.resolve_vehicle("classic_v8_1960").is_ok());
+        assert!(profile.resolve_vehicle("classic_v8_1970").is_ok());
+        assert!(profile.resolve_vehicle("modern_v6t").is_ok());
+        assert!(profile.resolve_vehicle("f1_2026").is_ok());
+        assert!(profile.resolve_vehicle("unreviewed-prototype").is_err());
+    }
+
+    #[test]
+    #[cfg(not(target_arch = "wasm32"))]
+    fn model_v3_catalog_rejects_a_resigned_but_modified_thermal_profile() {
+        let mut bundle = filesystem_bundle("1.5.0");
+        let profile = bundle
+            .resources
+            .iter_mut()
+            .find(|file| file.path == THERMAL_FAMILY_PROFILE_PATH)
+            .expect("thermal-family profile");
+        profile.contents = profile.contents.replace(
+            "\"thermal_capacity_multiplier\": 1.0",
+            "\"thermal_capacity_multiplier\": 1.0001",
+        );
+        resign_bundle(&mut bundle);
+
+        assert!(matches!(
+            RacingCatalogSnapshot::from_bundle(bundle),
+            Err(RacingCatalogResolutionError::InvalidResource { path, reason })
+                if path.as_str() == THERMAL_FAMILY_PROFILE_PATH
+                    && reason.contains("unsupported thermal family profile digest")
+        ));
     }
 
     #[test]
@@ -1080,7 +1284,7 @@ mod tests {
         assert!(matches!(
             error,
             RacingCatalogResolutionError::InvalidManifest(reason)
-                if reason.contains("known Racing model version")
+                if reason.contains("known Racing model")
         ));
     }
 

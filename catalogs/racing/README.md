@@ -7,9 +7,13 @@ reference workload.
 opponent policy for model V1. `v1.2.0` carries the same governed resources but
 declares compatibility exclusively with Racing model V2. `v1.3.0` adds the
 first game-compatible Competitive opponent policy for Racing model V2 while
-keeping its publication separate from pointer promotion. `LATEST`
-remains on `v1.0.0` until the coordinated game, Authority, and Verifier rollout
-is ready. Each version directory is immutable:
+keeping its publication separate from pointer promotion. `v1.4.0` carries the
+reviewed V2 policy and model-parameter compatibility resource. `v1.5.0` is the
+first non-production catalog compatible exclusively with the reviewed Racing
+Model V3 thermal candidate; it embeds the exact content-addressed thermal
+family profile but does not promote it. `LATEST` remains on `v1.0.0` until a
+coordinated game, Authority, and Verifier rollout is explicitly approved. Each
+version directory is immutable:
 
 ```text
 LATEST
@@ -27,6 +31,11 @@ v1.2.0/
 └── model compatibility: pitgun.racing@2.0.0
 v1.3.0/
 └── simulation/policies/competitive.json
+v1.4.0/
+└── simulation/model-parameters/v2-compatibility.json
+v1.5.0/
+├── model compatibility: pitgun.racing-v3-candidate@0.10.0
+└── simulation/thermal-profiles/family-v1.json
 ```
 
 The Simulation Pack contains every byte that may influence physical execution.
