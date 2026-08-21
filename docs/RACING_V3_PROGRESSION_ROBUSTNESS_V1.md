@@ -89,3 +89,11 @@ artifact as its local baseline. It must preserve calibration/held-out labels,
 retain per-vehicle and per-progression verdicts, and reject automatic promotion.
 Only after that governed replay should a new immutable V3 candidate alter aero,
 chassis, cooling or engine parameters.
+
+The replay contract is materialized as the checksummed
+`experiments/databricks/campaigns/racing-v3-decision-surface-v1.json` manifest.
+It deduplicates the physical inputs but retains all 4,928 natural run keys and
+the expected digest of every full Rust result and compact evidence point. The
+read-only response-surface notebook consumes the resulting Delta rows for
+visual review; it is deliberately not a parameter registry or a promotion
+engine.

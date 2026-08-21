@@ -18,6 +18,9 @@ from typing import Any
 RESULT_VERSION = "pitgun.databricks-runner-result/v1"
 TUNING_RESPONSE_RESULT_VERSION = "pitgun.databricks-tuning-response-result/v1"
 V3_VALIDATION_RESULT_VERSION = "pitgun.databricks-v3-validation-result/v1"
+V3_DECISION_SURFACE_RESULT_VERSION = (
+    "pitgun.databricks-v3-decision-surface-result/v1"
+)
 RUNNER_TARGET = "aarch64-unknown-linux-gnu"
 PROCESS_TIMEOUT_SECONDS = 120
 SCENARIO_FAMILIES = frozenset({"balanced", "high-downforce", "low-downforce"})
@@ -27,6 +30,7 @@ SCENARIO_RESOURCE_PATTERN = re.compile(
 RESPONSE_RESOURCE_PATTERN = re.compile(r"racing-[a-z0-9]+(?:-[a-z0-9]+)*")
 CATALOG_RESOURCE_PATTERN = re.compile(r"racing-v[0-9]+(?:-[0-9]+)*")
 V3_CONFIGURATION_PATTERN = re.compile(r"[a-z0-9]+(?:-[a-z0-9]+)*")
+V3_DECISION_SURFACE_EXECUTION_PATTERN = re.compile(r"v3ds-[0-9]{4}-[0-9]{6}")
 
 
 class RunnerExecutionError(RuntimeError):
@@ -254,6 +258,67 @@ def _execute_v3_validation_probe(
         }
 
 
+def _execute_v3_decision_surface_probe(
+    probe_bytes: bytes,
+    scenario_bytes: bytes,
+    profile_bytes: bytes,
+    seed: int,
+) -> dict[str, Any]:
+    if not 0 <= seed <= 2**64 - 1:
+        raise ValueError("seed must be an unsigned 64-bit integer")
+
+    with tempfile.TemporaryDirectory(prefix="pitgun-v3-decision-surface-") as temporary:
+        root = pathlib.Path(temporary)
+        probe = root / "v3_decision_surface_probe"
+        scenario = root / "scenario.json"
+        profile = root / "profile.json"
+        probe.write_bytes(probe_bytes)
+        probe.chmod(0o500)
+        scenario.write_bytes(scenario_bytes)
+        profile.write_bytes(profile_bytes)
+        process, execution_duration_ms = _run(
+            [str(probe), str(scenario), str(profile), str(seed)]
+        )
+        if process.returncode != 0:
+            diagnostic = process.stderr.decode("utf-8", errors="replace").strip()
+            raise RunnerExecutionError(
+                "packaged V3 decision-surface probe failed with exit "
+                f"{process.returncode}: {diagnostic}"
+            )
+        if process.stderr:
+            raise RunnerExecutionError(
+                "successful V3 decision-surface probe wrote unexpected stderr"
+            )
+        try:
+            result = json.loads(process.stdout)
+        except (UnicodeDecodeError, json.JSONDecodeError) as error:
+            raise RunnerExecutionError(
+                "V3 decision-surface probe returned invalid JSON"
+            ) from error
+        if (
+            result.get("schema_version")
+            != "pitgun.racing-v3-decision-surface-probe/v1"
+        ):
+            raise RunnerExecutionError(
+                "V3 decision-surface probe returned an unsupported contract"
+            )
+        return {
+            "schema_version": V3_DECISION_SURFACE_RESULT_VERSION,
+            "adapter": {
+                "version": importlib.metadata.version("pitgun-databricks-adapter")
+            },
+            "runner_artifact": {
+                "kind": "v3_decision_surface_probe",
+                "target": RUNNER_TARGET,
+                "digest": _sha256(probe_bytes),
+            },
+            "host": {"machine": platform.machine(), "system": platform.system()},
+            "measurements": {"execution_duration_ms": execution_duration_ms},
+            "canonical_result_digest": _sha256(process.stdout),
+            "result": result,
+        }
+
+
 def execute_packaged_racing(
     seed: int = 42, configuration_family: str = "balanced"
 ) -> dict[str, Any]:
@@ -416,4 +481,51 @@ def inspect_packaged_v3_validation_probe() -> dict[str, str]:
 
     package = importlib.resources.files("pitgun_databricks_adapter")
     probe_bytes = package.joinpath("bin", "v3_validation_probe").read_bytes()
+    return {"target": RUNNER_TARGET, "digest": _sha256(probe_bytes)}
+
+
+def execute_packaged_v3_decision_surface(
+    execution_key: str,
+    campaign_name: str = "racing-v3-decision-surface-v1",
+) -> dict[str, Any]:
+    """Execute one exact scenario/profile/seed from the reviewed campaign."""
+
+    from .decision_surface import (
+        load_decision_surface_campaign,
+        materialize_decision_surface_plan,
+    )
+
+    if not V3_DECISION_SURFACE_EXECUTION_PATTERN.fullmatch(execution_key):
+        raise ValueError("execution key must be one canonical packaged identifier")
+    manifest, _ = load_decision_surface_campaign(campaign_name)
+    configurations = {
+        row["execution_key"]: row
+        for row in materialize_decision_surface_plan(manifest)
+    }
+    try:
+        configuration = configurations[execution_key]
+    except KeyError as error:
+        raise ValueError("execution key is not packaged or allowlisted") from error
+
+    package = importlib.resources.files("pitgun_databricks_adapter")
+    probe_bytes = package.joinpath("bin", "v3_decision_surface_probe").read_bytes()
+    scenario_bytes = json.dumps(
+        configuration["scenario"], indent=2, ensure_ascii=False
+    ).encode() + b"\n"
+    profile_bytes = json.dumps(
+        configuration["profile"], indent=2, ensure_ascii=False
+    ).encode() + b"\n"
+    return _execute_v3_decision_surface_probe(
+        probe_bytes,
+        scenario_bytes,
+        profile_bytes,
+        int(configuration["seed"]),
+    )
+
+
+def inspect_packaged_v3_decision_surface_probe() -> dict[str, str]:
+    """Return the exact packaged decision-surface probe identity."""
+
+    package = importlib.resources.files("pitgun_databricks_adapter")
+    probe_bytes = package.joinpath("bin", "v3_decision_surface_probe").read_bytes()
     return {"target": RUNNER_TARGET, "digest": _sha256(probe_bytes)}
