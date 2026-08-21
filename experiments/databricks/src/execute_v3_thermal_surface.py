@@ -249,7 +249,9 @@ with tracking_context as tracking_run:
         "campaign_id": campaign_id,
         "manifest_digest": manifest_digest,
         "question": manifest["question"],
-        "parameter_space_version": "racing-v3-thermal-adequacy-v1",
+        "parameter_space_version": manifest.get(
+            "parameter_space_version", "racing-v3-thermal-adequacy-v1"
+        ),
         "scenario_id": "embedded-thermal-plan",
         "scenario_version": "v1",
         "scenario_digest": manifest["source_evidence"]["artifact_digest"],
@@ -298,7 +300,7 @@ with tracking_context as tracking_run:
                 "adapter_version": adapter_version,
             }
         )
-        mlflow.log_dict(manifest, "inputs/v3-thermal-adequacy-manifest.json")
+        mlflow.log_dict(manifest, f"inputs/{campaign_name}-manifest.json")
 
     existing = (
         spark.table(runs_table)
@@ -502,7 +504,7 @@ with tracking_context as tracking_run:
     )
     mlflow.set_tag("pitgun.local_parity", str(local_parity_failures == 0).lower())
     mlflow.set_tag("pitgun.decision", report["decision"])
-    mlflow.log_dict(report, "reports/v3-thermal-adequacy.json")
+    mlflow.log_dict(report, f"reports/{campaign_name}.json")
 
     completed_at = datetime.now(timezone.utc)
     completion_source = spark.createDataFrame(
