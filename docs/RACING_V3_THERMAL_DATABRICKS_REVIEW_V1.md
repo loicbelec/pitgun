@@ -23,6 +23,10 @@ their Rust identities and seven retained metrics without one parity failure.
 The campaign added 288 transition points and 552 Barcelona validations rather
 than relabelling local selection evidence as validation.
 
+The pinned read-only review was then reproduced by Databricks job
+`790541785404532`, run `209058852212033`. It reconciled 1,560 executions and
+12,480 metric rows before returning the recorded verdicts.
+
 ## What the evidence says
 
 | Family | Executions | Pathological | Verdict | Interpretation |
