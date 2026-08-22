@@ -27,6 +27,7 @@
 - [Racing Model Approximation Audit V1](RACING_MODEL_APPROXIMATION_AUDIT_V1.md)
 - [Racing Game Vehicle Contract V1](RACING_GAME_VEHICLE_CONTRACT_V1.md)
 - [Racing Model V3 driver-control contract V1](RACING_V3_DRIVER_CONTROL_CONTRACT_V1.md)
+- [Racing Model V3 driver-control runtime V1](RACING_V3_DRIVER_CONTROL_RUNTIME_V1.md)
 
 ## Architecture Decisions
 

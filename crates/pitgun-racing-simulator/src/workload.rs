@@ -19,6 +19,8 @@ const RACING_MODEL_V3_THERMAL_CANDIDATE_MANIFEST: &[u8] =
     b"pitgun.racing-v3-candidate:model:0.10.0:resolved-vehicle:per-segment-v1:aggregate-contact-v2:mechanical-controls-v1:aero-efficiency-v1:development-resolution-v1:transmission-resolution-v1:zero-downforce-v1:first-stint-tire-v1:power-based-fuel-mass-v1:compound-degradation-v1:engine-thermal-resolution-v1";
 const RACING_MODEL_V3_COMPONENT_CANDIDATE_MANIFEST: &[u8] =
     b"pitgun.racing-v3-candidate:model:0.11.0:resolved-vehicle:per-segment-v1:aggregate-contact-v2:mechanical-controls-v1:aero-efficiency-v1:development-resolution-v1:transmission-resolution-v1:zero-downforce-v1:first-stint-tire-v1:power-based-fuel-mass-v1:compound-degradation-v1:engine-thermal-resolution-v2:per-competitor-components-v1";
+const RACING_MODEL_V3_DRIVER_CONTROL_CANDIDATE_MANIFEST: &[u8] =
+    b"pitgun.racing-v3-candidate:model:0.12.0:resolved-vehicle:per-segment-v1:aggregate-contact-v2:mechanical-controls-v1:aero-efficiency-v1:development-resolution-v1:transmission-resolution-v1:zero-downforce-v1:first-stint-tire-v1:power-based-fuel-mass-v1:compound-degradation-v1:engine-thermal-resolution-v2:per-competitor-components-v1:driver-traits-v1:driving-mode-v1:correction-workload-v1";
 const RACING_MODEL_V3_FUEL_MASS_CANDIDATE_MANIFEST: &[u8] =
     b"pitgun.racing-v3-candidate:model:0.8.0:resolved-vehicle:per-segment-v1:aggregate-contact-v1:mechanical-controls-v1:aero-efficiency-v1:development-resolution-v1:transmission-resolution-v1:zero-downforce-v1:first-stint-tire-v1:power-based-fuel-mass-v1";
 const RACING_MODEL_V3_FIDELITY_CANDIDATE_MANIFEST: &[u8] =
@@ -103,6 +105,26 @@ pub fn racing_model_v3_component_candidate_identity() -> ArtifactIdentity {
             .parse()
             .expect("static Racing V3 component candidate model version"),
         digest: pitgun_contract::Digest::from_bytes(RACING_MODEL_V3_COMPONENT_CANDIDATE_MANIFEST),
+    }
+}
+
+/// Returns the non-production identity of the explicit driver-control slice.
+///
+/// Candidate 0.12 preserves the complete 0.11 vehicle and thermal semantics,
+/// then resolves named driver traits and an explicit session mode into force
+/// utilization, deterministic error and correction-induced tire workload.
+#[must_use]
+pub fn racing_model_v3_driver_control_candidate_identity() -> ArtifactIdentity {
+    ArtifactIdentity {
+        id: "pitgun.racing-v3-candidate"
+            .parse()
+            .expect("static Racing V3 candidate model id"),
+        version: "0.12.0"
+            .parse()
+            .expect("static Racing V3 driver-control candidate model version"),
+        digest: pitgun_contract::Digest::from_bytes(
+            RACING_MODEL_V3_DRIVER_CONTROL_CANDIDATE_MANIFEST,
+        ),
     }
 }
 

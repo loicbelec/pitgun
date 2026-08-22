@@ -1,8 +1,10 @@
 # Racing Model V3 driver-control contract V1
 
-Status: proposed implementation contract under
+Status: contract implemented by offline candidate Model `0.12.0` under
 [`loicbelec/pitgun#311`](https://github.com/loicbelec/pitgun/issues/311).
-It does not change any published model or immutable catalog release.
+It does not change any published model or immutable catalog release. Runtime
+details are documented in
+[`RACING_V3_DRIVER_CONTROL_RUNTIME_V1.md`](RACING_V3_DRIVER_CONTROL_RUNTIME_V1.md).
 
 ## Problem
 

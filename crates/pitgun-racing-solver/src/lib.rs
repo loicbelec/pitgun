@@ -344,6 +344,13 @@ pub struct ResolvedSimulationRequestV3 {
     pub mechanical: MechanicalParamsV3,
     /// Bounded physical-limit utilization selected for this driver.
     pub driver_control: DriverControlParamsV3,
+    /// Optional workload cost of deterministic driver corrections.
+    ///
+    /// `None` preserves every published candidate through Model `0.11.0`.
+    /// Newer candidates resolve a multiplier greater than or equal to one
+    /// from explicit driver traits and a session driving mode.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub driver_correction_workload_multiplier: Option<f64>,
     /// Optional power-based combustion model selected by the V3 profile.
     /// `None` preserves the immutable time-based semantics of older candidates.
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -648,6 +655,15 @@ pub struct TireDiagnosticsV3 {
     pub maximum_available_force_n: f64,
     pub generated_heat_kj: f64,
     pub contact_workload_mj: f64,
+    /// Base physical contact workload before driver corrections.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub base_contact_workload_mj: Option<f64>,
+    /// Additional deterministic workload caused by driver corrections.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub correction_contact_workload_mj: Option<f64>,
+    /// Tire heat attributed to the additional correction workload.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub correction_generated_heat_kj: Option<f64>,
 }
 
 /// Explainable wear lineage emitted only by the Aggregate V2 tire law.
@@ -655,6 +671,9 @@ pub struct TireDiagnosticsV3 {
 pub struct TireDegradationDiagnosticsV3 {
     pub requested_baseline_wear_fraction: f64,
     pub requested_workload_wear_fraction: f64,
+    /// Workload-wear fraction attributed to deterministic corrections.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub requested_correction_wear_fraction: Option<f64>,
     pub minimum_thermal_wear_multiplier: f64,
     pub maximum_thermal_wear_multiplier: f64,
     pub wear_before_service_after_lap: Vec<f64>,
@@ -682,6 +701,25 @@ pub struct MechanicalDiagnosticsV3 {
     /// resolution. Older candidate profiles omit this diagnostic.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub theoretical_top_speed_at_max_rpm_kph: Option<f64>,
+}
+
+/// Requested and realized utilization for one physical force channel.
+#[derive(Debug, Clone, Copy, Default, Serialize, Deserialize, PartialEq)]
+pub struct DriverUtilizationDiagnosticsV3 {
+    pub requested_limit: f64,
+    pub minimum_realized: f64,
+    pub mean_realized: f64,
+    pub maximum_realized: f64,
+}
+
+/// Explainable sample-level response of the Model `0.12.0` driver controls.
+#[derive(Debug, Clone, Copy, Default, Serialize, Deserialize, PartialEq)]
+pub struct DriverControlDiagnosticsV3 {
+    pub control_error_amplitude: f64,
+    pub correction_workload_multiplier: f64,
+    pub cornering: DriverUtilizationDiagnosticsV3,
+    pub braking: DriverUtilizationDiagnosticsV3,
+    pub traction: DriverUtilizationDiagnosticsV3,
 }
 
 /// Inspectable lap-level lineage for the reduced-order V3 combustion model.
@@ -794,6 +832,8 @@ pub struct SimulationResult {
     pub fuel_mass_diagnostics_v3: Option<FuelMassDiagnosticsV3>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub tire_degradation_diagnostics_v3: Option<TireDegradationDiagnosticsV3>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub driver_control_diagnostics_v3: Option<DriverControlDiagnosticsV3>,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq)]
@@ -875,6 +915,13 @@ pub fn run_resolved_simulation_v3(
     validate_tire_contact_v3(&input.tire_contact)?;
     validate_mechanical_v3(&input.mechanical, &input.vehicle)?;
     validate_driver_control_v3(&input.driver_control)?;
+    if let Some(multiplier) = input.driver_correction_workload_multiplier
+        && (!multiplier.is_finite() || !(1.0..=3.5).contains(&multiplier))
+    {
+        return Err(
+            "driver_correction_workload_multiplier must be finite and in [1, 3.5]".to_string(),
+        );
+    }
     if let Some(fuel_mass) = &input.fuel_mass {
         fuel_mass.validate()?;
         if input.state.fuel_mass <= 0.0 {
@@ -934,6 +981,7 @@ pub fn run_resolved_simulation_v3(
             &input.mechanical,
             &input.driver_control,
             input.engine_thermal.as_ref(),
+            input.driver_correction_workload_multiplier,
         )),
         input.fuel_mass.as_ref(),
     )
@@ -1269,6 +1317,7 @@ fn run_compatibility_simulation_kernel(
         mechanical_diagnostics_v3: None,
         fuel_mass_diagnostics_v3: None,
         tire_degradation_diagnostics_v3: None,
+        driver_control_diagnostics_v3: None,
     })
 }
 
@@ -1282,6 +1331,7 @@ fn run_resolved_simulation_kernel(
         &MechanicalParamsV3,
         &DriverControlParamsV3,
         Option<&EngineThermalParamsV3>,
+        Option<f64>,
     )>,
     fuel_mass: Option<&FuelMassParamsV3>,
 ) -> Result<SimulationResult, String> {
@@ -1294,8 +1344,10 @@ fn run_resolved_simulation_kernel(
         );
     }
 
-    let (mechanical, driver_control, engine_thermal) = v3_controls
-        .ok_or_else(|| "V3 mechanical controls are required for aggregate dynamics".to_string())?;
+    let (mechanical, driver_control, engine_thermal, driver_correction_workload_multiplier) =
+        v3_controls.ok_or_else(|| {
+            "V3 mechanical controls are required for aggregate dynamics".to_string()
+        })?;
 
     let lap_count = input.lap_count.max(1);
     let driver = input.driver.clone();
@@ -1331,8 +1383,12 @@ fn run_resolved_simulation_kernel(
     let mut out_shift_power_fraction = Vec::new();
     let mut generated_tire_heat_j = 0.0;
     let mut contact_workload_j = 0.0;
+    let mut base_contact_workload_j = 0.0;
+    let mut correction_contact_workload_j = 0.0;
+    let mut correction_generated_tire_heat_j = 0.0;
     let mut requested_baseline_tire_wear = 0.0;
     let mut requested_workload_tire_wear = 0.0;
+    let mut requested_correction_tire_wear = 0.0;
     let mut minimum_thermal_wear_multiplier = f64::INFINITY;
     let mut maximum_thermal_wear_multiplier = 0.0_f64;
     let mut wear_before_service_after_lap = Vec::with_capacity(lap_count as usize);
@@ -1406,8 +1462,12 @@ fn run_resolved_simulation_kernel(
             let is_final_coupling_iteration = coupling_iteration + 1 == coupling_iterations;
             let mut iteration_generated_heat_j = 0.0;
             let mut iteration_contact_workload_j = 0.0;
+            let mut iteration_base_contact_workload_j = 0.0;
+            let mut iteration_correction_contact_workload_j = 0.0;
+            let mut iteration_correction_generated_heat_j = 0.0;
             let mut iteration_requested_baseline_tire_wear = 0.0;
             let mut iteration_requested_workload_tire_wear = 0.0;
+            let mut iteration_requested_correction_tire_wear = 0.0;
             let mut iteration_minimum_thermal_wear_multiplier = f64::INFINITY;
             let mut iteration_maximum_thermal_wear_multiplier = 0.0_f64;
             let mut iteration_generated_engine_heat_j = 0.0;
@@ -1688,8 +1748,13 @@ fn run_resolved_simulation_kernel(
                             lateral_force,
                             available_force,
                         );
-                        let workload_w = available_force * v_safe * utilization * utilization;
+                        let base_workload_w = available_force * v_safe * utilization * utilization;
+                        let correction_workload_w = base_workload_w
+                            * (driver_correction_workload_multiplier.unwrap_or(1.0) - 1.0);
+                        let workload_w = base_workload_w + correction_workload_w;
                         let heat_w = contact.heat_generation_fraction * workload_w;
+                        let correction_heat_w =
+                            contact.heat_generation_fraction * correction_workload_w;
                         let cooling_w = (contact.cooling_w_per_c
                             + contact.speed_cooling_w_per_mps_c * v_safe)
                             * (tire_temp[i] - input.config.tire_temp_amb);
@@ -1704,6 +1769,9 @@ fn run_resolved_simulation_kernel(
                         tire_available_force[i] = available_force;
                         iteration_generated_heat_j += heat_w * dt;
                         iteration_contact_workload_j += workload_w * dt;
+                        iteration_base_contact_workload_j += base_workload_w * dt;
+                        iteration_correction_contact_workload_j += correction_workload_w * dt;
+                        iteration_correction_generated_heat_j += correction_heat_w * dt;
                     }
                     TireDynamics::AggregateV2(contact, _, degradation) => {
                         let (drag, downforce) = aero_forces(
@@ -1740,8 +1808,13 @@ fn run_resolved_simulation_kernel(
                             lateral_force,
                             available_force,
                         );
-                        let workload_w = available_force * v_safe * utilization * utilization;
+                        let base_workload_w = available_force * v_safe * utilization * utilization;
+                        let correction_workload_w = base_workload_w
+                            * (driver_correction_workload_multiplier.unwrap_or(1.0) - 1.0);
+                        let workload_w = base_workload_w + correction_workload_w;
                         let heat_w = contact.heat_generation_fraction * workload_w;
+                        let correction_heat_w =
+                            contact.heat_generation_fraction * correction_workload_w;
                         let cooling_w = (contact.cooling_w_per_c
                             + contact.speed_cooling_w_per_mps_c * v_safe)
                             * (tire_temp[i] - input.config.tire_temp_amb);
@@ -1762,6 +1835,9 @@ fn run_resolved_simulation_kernel(
                         let workload_wear_delta = workload_w * dt
                             / contact.workload_energy_to_full_wear_j
                             * compound_workload_multiplier;
+                        let correction_workload_wear_delta = correction_workload_w * dt
+                            / contact.workload_energy_to_full_wear_j
+                            * compound_workload_multiplier;
                         let wear_delta =
                             (baseline_wear_delta + workload_wear_delta) * thermal_wear_multiplier;
                         tire_wear[i + 1] = (tire_wear[i] + wear_delta).clamp(0.0, 1.0);
@@ -1770,10 +1846,15 @@ fn run_resolved_simulation_kernel(
                         tire_available_force[i] = available_force;
                         iteration_generated_heat_j += heat_w * dt;
                         iteration_contact_workload_j += workload_w * dt;
+                        iteration_base_contact_workload_j += base_workload_w * dt;
+                        iteration_correction_contact_workload_j += correction_workload_w * dt;
+                        iteration_correction_generated_heat_j += correction_heat_w * dt;
                         iteration_requested_baseline_tire_wear +=
                             baseline_wear_delta * thermal_wear_multiplier;
                         iteration_requested_workload_tire_wear +=
                             workload_wear_delta * thermal_wear_multiplier;
+                        iteration_requested_correction_tire_wear +=
+                            correction_workload_wear_delta * thermal_wear_multiplier;
                         iteration_minimum_thermal_wear_multiplier =
                             iteration_minimum_thermal_wear_multiplier.min(thermal_wear_multiplier);
                         iteration_maximum_thermal_wear_multiplier =
@@ -1807,8 +1888,12 @@ fn run_resolved_simulation_kernel(
             }
             generated_tire_heat_j += iteration_generated_heat_j;
             contact_workload_j += iteration_contact_workload_j;
+            base_contact_workload_j += iteration_base_contact_workload_j;
+            correction_contact_workload_j += iteration_correction_contact_workload_j;
+            correction_generated_tire_heat_j += iteration_correction_generated_heat_j;
             requested_baseline_tire_wear += iteration_requested_baseline_tire_wear;
             requested_workload_tire_wear += iteration_requested_workload_tire_wear;
+            requested_correction_tire_wear += iteration_requested_correction_tire_wear;
             minimum_thermal_wear_multiplier =
                 minimum_thermal_wear_multiplier.min(iteration_minimum_thermal_wear_multiplier);
             maximum_thermal_wear_multiplier =
@@ -1960,6 +2045,9 @@ fn run_resolved_simulation_kernel(
             &solution,
             generated_tire_heat_j,
             contact_workload_j,
+            driver_correction_workload_multiplier.map(|_| base_contact_workload_j),
+            driver_correction_workload_multiplier.map(|_| correction_contact_workload_j),
+            driver_correction_workload_multiplier.map(|_| correction_generated_tire_heat_j),
         ))
     } else {
         None
@@ -2008,6 +2096,8 @@ fn run_resolved_simulation_kernel(
             TireDegradationDiagnosticsV3 {
                 requested_baseline_wear_fraction: requested_baseline_tire_wear,
                 requested_workload_wear_fraction: requested_workload_tire_wear,
+                requested_correction_wear_fraction: driver_correction_workload_multiplier
+                    .map(|_| requested_correction_tire_wear),
                 minimum_thermal_wear_multiplier: if minimum_thermal_wear_multiplier.is_finite() {
                     minimum_thermal_wear_multiplier
                 } else {
@@ -2017,6 +2107,23 @@ fn run_resolved_simulation_kernel(
                 wear_before_service_after_lap,
                 wear_after_service_after_lap,
             }
+        });
+    let driver_control_diagnostics_v3 =
+        driver_correction_workload_multiplier.map(|multiplier| DriverControlDiagnosticsV3 {
+            control_error_amplitude: driver_control.control_error,
+            correction_workload_multiplier: multiplier,
+            cornering: summarize_driver_utilization_v3(
+                driver_control.cornering_utilization,
+                &solution.driver_cornering_utilization,
+            ),
+            braking: summarize_driver_utilization_v3(
+                driver_control.braking_utilization,
+                &solution.driver_braking_utilization,
+            ),
+            traction: summarize_driver_utilization_v3(
+                driver_control.traction_utilization,
+                &solution.driver_traction_utilization,
+            ),
         });
 
     Ok(SimulationResult {
@@ -2031,6 +2138,7 @@ fn run_resolved_simulation_kernel(
         mechanical_diagnostics_v3,
         fuel_mass_diagnostics_v3,
         tire_degradation_diagnostics_v3,
+        driver_control_diagnostics_v3,
     })
 }
 
@@ -2865,6 +2973,9 @@ fn summarize_tire_diagnostics_v3(
     solution: &SimulationSolution,
     generated_heat_j: f64,
     contact_workload_j: f64,
+    base_contact_workload_j: Option<f64>,
+    correction_contact_workload_j: Option<f64>,
+    correction_generated_heat_j: Option<f64>,
 ) -> TireDiagnosticsV3 {
     let sample_count = solution.tire_force_utilization.len();
     let mean_combined_utilization = if sample_count == 0 {
@@ -2901,6 +3012,31 @@ fn summarize_tire_diagnostics_v3(
         maximum_available_force_n,
         generated_heat_kj: generated_heat_j / 1_000.0,
         contact_workload_mj: contact_workload_j / 1_000_000.0,
+        base_contact_workload_mj: base_contact_workload_j.map(|value| value / 1_000_000.0),
+        correction_contact_workload_mj: correction_contact_workload_j
+            .map(|value| value / 1_000_000.0),
+        correction_generated_heat_kj: correction_generated_heat_j.map(|value| value / 1_000.0),
+    }
+}
+
+fn summarize_driver_utilization_v3(
+    requested_limit: f64,
+    values: &[f64],
+) -> DriverUtilizationDiagnosticsV3 {
+    let (minimum_realized, maximum_realized, mean_realized) = if values.is_empty() {
+        (0.0, 0.0, 0.0)
+    } else {
+        let (minimum, maximum, sum) = values.iter().copied().fold(
+            (f64::INFINITY, f64::NEG_INFINITY, 0.0),
+            |(minimum, maximum, sum), value| (minimum.min(value), maximum.max(value), sum + value),
+        );
+        (minimum, maximum, sum / values.len() as f64)
+    };
+    DriverUtilizationDiagnosticsV3 {
+        requested_limit,
+        minimum_realized,
+        mean_realized,
+        maximum_realized,
     }
 }
 
