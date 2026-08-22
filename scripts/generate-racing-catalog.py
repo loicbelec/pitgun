@@ -19,6 +19,9 @@ MODEL_V2_EMBEDDED_RUST = ROOT / "generated" / "racing_catalog_model_v2.rs"
 MODEL_V3_THERMAL_EMBEDDED_RUST = (
     ROOT / "generated" / "racing_catalog_model_v3_thermal.rs"
 )
+MODEL_V3_COMPONENT_EMBEDDED_RUST = (
+    ROOT / "generated" / "racing_catalog_model_v3_component.rs"
+)
 
 DIGEST_PREFIX = "sha256:"
 MODEL_COMPATIBILITY_BY_RELEASE = {
@@ -28,6 +31,7 @@ MODEL_COMPATIBILITY_BY_RELEASE = {
     "1.3.0": ("pitgun.racing", ["2.0.0"]),
     "1.4.0": ("pitgun.racing", ["2.0.0"]),
     "1.5.0": ("pitgun.racing-v3-candidate", ["0.10.0"]),
+    "1.6.0": ("pitgun.racing-v3-candidate", ["0.11.0"]),
 }
 
 
@@ -308,6 +312,9 @@ def generated_artifacts() -> dict[Path, bytes]:
     )
     artifacts[MODEL_V3_THERMAL_EMBEDDED_RUST] = generated_embedded_artifact(
         CATALOG_ROOT / "v1.5.0", "MODEL_V3_THERMAL_EMBEDDED_FILES"
+    )
+    artifacts[MODEL_V3_COMPONENT_EMBEDDED_RUST] = generated_embedded_artifact(
+        CATALOG_ROOT / "v1.6.0", "MODEL_V3_COMPONENT_EMBEDDED_FILES"
     )
     return artifacts
 

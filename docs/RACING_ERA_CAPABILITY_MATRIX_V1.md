@@ -135,13 +135,16 @@ Era 6 remains disabled until the energy balance and automatic controller are
 stable. Agent control must use the same public action boundary as a human or
 authored controller; it receives no private pace control.
 
-## Era 7 — Theoretical Limit / Pod-Drone bridge
+## Era 7 — Pod Racing domain bridge
 
-Physical intent: evolve the late Racing energy system into a fictional
-Pod/Drone mission that creates professionally relevant energy-management
-questions without initially solving trajectories.
+Physical intent: use the game's seventh era as the transition into a real
+second simulation domain, **Pod Racing**. It preserves the racing loop and its
+approachable decisions while introducing drone-equivalent propulsion, lift,
+storage, thermal, and reserve concepts. Pod Racing owns a dedicated domain
+contract and model identity; it is not another Formula vehicle or a universal
+Racing Solver mode.
 
-The first Era 7 model operates on an already resolved, ordered mission path.
+The first Pod Racing model operates on an already resolved, ordered mission path.
 Segments may describe launch, acceleration, climb, cruise, maneuver, descent,
 and reserve. The Solver computes energy feasibility and state evolution; it
 does not choose a three-dimensional path or implement a flight controller.
@@ -160,6 +163,14 @@ The bridge should prefer reusable concepts such as energy source, storage,
 load, conversion efficiency, thermal state, reserve, and mission segment. It
 must not force Racing and Drone code into a generic crate before two working
 domains demonstrate a stable abstraction.
+
+The game may use a versioned transition adapter to carry player progression
+into a Pod Racing contract, but the resulting execution, evidence, and catalog
+resources remain domain-owned. This is also the intended framework validation
+sequence: Racing first, Pod Racing/Drone energy second, then separate
+applications for domains such as energy grids, trading, or broader drone
+workloads. Those future domains do not belong in the racing game UI merely to
+demonstrate generality.
 
 ## Cross-era acceptance gates
 

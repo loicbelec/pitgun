@@ -35,8 +35,10 @@ use pitgun_contract::{
     SampleValue, SignalQuality, TelemetryFrame,
 };
 use pitgun_racing_contract::{
-    CircuitCatalogEntry, CompetitorSpec, CompetitorStintStrategy, EngineCatalogEntry, RaceInput,
-    RacingModelParametersV1, RacingPresentationIndexV1, VehicleComponentSelectionV1,
+    CircuitCatalogEntry, CompetitorSpec, CompetitorStintStrategy, ComponentCapabilityDefinitionV1,
+    ComponentCapabilityProfileV1, EngineCatalogEntry, RaceInput, RacingModelParametersV1,
+    RacingPresentationIndexV1, ResolvedVehicleCapabilitiesV1, VehicleComponentKind,
+    VehicleComponentSelectionV1,
 };
 use pitgun_racing_policy::normalize_and_validate_race_input;
 use pitgun_racing_solver::resample_telemetry_with_engine_thermal;
@@ -170,6 +172,10 @@ pub struct RaceOutput {
     #[serde(default, skip_serializing_if = "std::collections::BTreeMap::is_empty")]
     pub competitor_power_unit_thermal_resolutions_v3:
         std::collections::BTreeMap<String, V3PowerUnitThermalResolutionV2>,
+    /// Exact installed components and effective controls for every competitor.
+    #[serde(default, skip_serializing_if = "std::collections::BTreeMap::is_empty")]
+    pub competitor_vehicle_capabilities_v3:
+        std::collections::BTreeMap<String, ResolvedVehicleCapabilitiesV1>,
 }
 
 /// Exact overrides for the mechanically resolved Model V3 experiment input.
@@ -824,6 +830,12 @@ pub struct CatalogSnapshot {
     pub vehicles: Vec<VehicleCatalogEntry>,
     pub drivers: Vec<DriverCatalogEntry>,
     pub tires: Vec<TireCatalogEntry>,
+    /// Governed component capabilities. Historical catalogs omit this field.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub components: Vec<ComponentCapabilityDefinitionV1>,
+    /// Exact catalog resource that authored `components`.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub component_capability_profile: Option<ArtifactIdentity>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -855,6 +867,14 @@ pub struct VehicleCatalogEntry {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct TireCatalogEntry {
     pub id: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ResolveVehicleCapabilitiesRequestV1 {
+    pub vehicle_id: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub components: Option<VehicleComponentSelectionV1>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -919,6 +939,7 @@ struct EmbeddedCatalog {
     tracks: HashMap<String, TrackRecord>,
     vehicles: HashMap<String, VehicleRecord>,
     drivers: HashMap<String, Driver>,
+    component_capability_profile: Option<ComponentCapabilityProfileV1>,
 }
 
 #[derive(Debug, Clone)]
@@ -967,6 +988,10 @@ include!(concat!(
 include!(concat!(
     env!("CARGO_MANIFEST_DIR"),
     "/../../generated/racing_catalog_model_v3_thermal.rs"
+));
+include!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../generated/racing_catalog_model_v3_component.rs"
 ));
 const PRESENTATION_INDEX: &[u8] = include_bytes!(concat!(
     env!("CARGO_MANIFEST_DIR"),
@@ -1743,9 +1768,15 @@ fn run_single_session(
     let mut player_tire_degradation_diagnostics_v3 = None;
     let mut player_power_unit_thermal_resolution_v3 = None;
     let mut competitor_power_unit_thermal_resolutions_v3 = std::collections::BTreeMap::new();
+    let mut competitor_vehicle_capabilities_v3 = std::collections::BTreeMap::new();
 
     for competitor in &race.competitors {
         let component_selection = competitor_vehicle_components.get(&competitor.id);
+        if let Some(capabilities) =
+            catalog.resolve_vehicle_capabilities(vehicle_id, component_selection)?
+        {
+            competitor_vehicle_capabilities_v3.insert(competitor.id.clone(), capabilities);
+        }
         let resolved_vehicle =
             catalog.resolve_vehicle_with_components(vehicle_id, component_selection)?;
         let effective_v3_profile = match model {
@@ -1977,6 +2008,7 @@ fn run_single_session(
         player_thermal_family_resolution_v3: None,
         player_power_unit_thermal_resolution_v3,
         competitor_power_unit_thermal_resolutions_v3,
+        competitor_vehicle_capabilities_v3,
     })
 }
 
@@ -2407,7 +2439,47 @@ pub fn catalog_snapshot_with_catalog(
         vehicles,
         drivers,
         tires,
+        components: snapshot
+            .component_capability_profile()
+            .map(|profile| profile.components.clone())
+            .unwrap_or_default(),
+        component_capability_profile: snapshot.component_capability_profile_identity().cloned(),
     })
+}
+
+/// Resolves the exact installed component identities and effective controls.
+pub fn resolve_vehicle_capabilities_with_catalog(
+    snapshot: &RacingCatalogSnapshot,
+    vehicle_id: &str,
+    selection: Option<&VehicleComponentSelectionV1>,
+) -> Result<ResolvedVehicleCapabilitiesV1, String> {
+    EmbeddedCatalog::from_snapshot(snapshot)?
+        .resolve_vehicle_capabilities(vehicle_id, selection)?
+        .ok_or_else(|| "Racing catalog has no component-capability profile".to_string())
+}
+
+/// Browser facade for resolving controls from an immutable catalog bundle.
+#[cfg_attr(feature = "wasm", wasm_bindgen)]
+pub fn resolve_vehicle_capabilities_json_from_bundle(
+    request_json: String,
+    catalog_bundle_json: String,
+) -> String {
+    let request: ResolveVehicleCapabilitiesRequestV1 = match serde_json::from_str(&request_json) {
+        Ok(request) => request,
+        Err(error) => return json_error(&format!("invalid capability request: {error}")),
+    };
+    let snapshot = match RacingCatalogSnapshot::from_bundle_json(&catalog_bundle_json) {
+        Ok(snapshot) => snapshot,
+        Err(error) => return json_error(&format!("invalid Racing catalog: {error}")),
+    };
+    match resolve_vehicle_capabilities_with_catalog(
+        &snapshot,
+        &request.vehicle_id,
+        request.components.as_ref(),
+    ) {
+        Ok(resolved) => serialize_json(&resolved),
+        Err(error) => json_error(&error),
+    }
 }
 
 pub fn list_browser_circuits() -> Result<Vec<BrowserCircuitCatalogEntry>, String> {
@@ -2566,7 +2638,10 @@ impl EmbeddedCatalog {
     }
 
     fn from_snapshot(snapshot: &RacingCatalogSnapshot) -> Result<Self, String> {
-        let mut catalog = Self::default();
+        let mut catalog = Self {
+            component_capability_profile: snapshot.component_capability_profile().cloned(),
+            ..Self::default()
+        };
         for (path, raw) in snapshot.resources() {
             let relative_path = path
                 .as_str()
@@ -2644,6 +2719,9 @@ impl EmbeddedCatalog {
             "thermal-profiles" => {
                 // The validated snapshot owns and resolves this exact candidate.
                 // The physical component catalog only acknowledges the category.
+            }
+            "component-capabilities" => {
+                // Parsed and coverage-validated by `RacingCatalogSnapshot`.
             }
             _ => {
                 return Err(format!(
@@ -2764,6 +2842,51 @@ impl EmbeddedCatalog {
         vehicle_id: &str,
         selection: Option<&VehicleComponentSelectionV1>,
     ) -> Result<(VehicleParams, String), String> {
+        let installed = self.resolve_installed_components(vehicle_id, selection)?;
+        let aero_id = installed
+            .get(&VehicleComponentKind::AerodynamicPackage)
+            .expect("resolved aerodynamic package");
+        let chassis_id = installed
+            .get(&VehicleComponentKind::Chassis)
+            .expect("resolved chassis");
+        let engine_id = installed
+            .get(&VehicleComponentKind::PowerUnit)
+            .expect("resolved power unit");
+        let tire_id = installed
+            .get(&VehicleComponentKind::TireSpecification)
+            .expect("resolved tire specification");
+        let aero = self
+            .aeros
+            .get(aero_id)
+            .expect("installed aero was validated");
+        let chassis = self
+            .chassis
+            .get(chassis_id)
+            .expect("installed chassis was validated");
+        let engine = self
+            .engines
+            .get(engine_id)
+            .expect("installed engine was validated");
+        let tire = self
+            .tires
+            .get(tire_id)
+            .expect("installed tire was validated");
+        Ok((
+            VehicleParams {
+                chassis: chassis.clone(),
+                aero: aero.clone(),
+                engine: engine.clone(),
+                tire: tire.clone(),
+            },
+            tire_id.clone(),
+        ))
+    }
+
+    fn resolve_installed_components(
+        &self,
+        vehicle_id: &str,
+        selection: Option<&VehicleComponentSelectionV1>,
+    ) -> Result<std::collections::BTreeMap<VehicleComponentKind, String>, String> {
         let record = self
             .vehicles
             .get(vehicle_id)
@@ -2783,31 +2906,42 @@ impl EmbeddedCatalog {
         let tire_id = selection
             .and_then(|value| value.tire_id.as_deref())
             .unwrap_or(&record.tire_id);
-        let aero = self
-            .aeros
-            .get(aero_id)
-            .ok_or_else(|| format!("unknown aero '{aero_id}'"))?;
-        let chassis = self
-            .chassis
-            .get(chassis_id)
-            .ok_or_else(|| format!("unknown chassis '{chassis_id}'"))?;
-        let engine = self
-            .engines
-            .get(engine_id)
-            .ok_or_else(|| format!("unknown engine '{engine_id}'"))?;
-        let tire = self
-            .tires
-            .get(tire_id)
-            .ok_or_else(|| format!("unknown tire '{tire_id}'"))?;
-        Ok((
-            VehicleParams {
-                chassis: chassis.clone(),
-                aero: aero.clone(),
-                engine: engine.clone(),
-                tire: tire.clone(),
-            },
-            tire_id.to_string(),
-        ))
+        if !self.aeros.contains_key(aero_id) {
+            return Err(format!("unknown aero '{aero_id}'"));
+        }
+        if !self.chassis.contains_key(chassis_id) {
+            return Err(format!("unknown chassis '{chassis_id}'"));
+        }
+        if !self.engines.contains_key(engine_id) {
+            return Err(format!("unknown engine '{engine_id}'"));
+        }
+        if !self.tires.contains_key(tire_id) {
+            return Err(format!("unknown tire '{tire_id}'"));
+        }
+        Ok(std::collections::BTreeMap::from([
+            (
+                VehicleComponentKind::AerodynamicPackage,
+                aero_id.to_string(),
+            ),
+            (VehicleComponentKind::Chassis, chassis_id.to_string()),
+            (VehicleComponentKind::PowerUnit, engine_id.to_string()),
+            (VehicleComponentKind::TireSpecification, tire_id.to_string()),
+        ]))
+    }
+
+    fn resolve_vehicle_capabilities(
+        &self,
+        vehicle_id: &str,
+        selection: Option<&VehicleComponentSelectionV1>,
+    ) -> Result<Option<ResolvedVehicleCapabilitiesV1>, String> {
+        let Some(profile) = &self.component_capability_profile else {
+            return Ok(None);
+        };
+        let installed = self.resolve_installed_components(vehicle_id, selection)?;
+        profile
+            .resolve(vehicle_id, installed)
+            .map(Some)
+            .map_err(|error| format!("cannot resolve vehicle capabilities: {error}"))
     }
 
     fn resolve_engine_id_with_components<'a>(
@@ -3642,6 +3776,8 @@ mod tests {
             RacingCatalogSnapshot::embedded_model_v2().expect("model V2 catalog");
         let model_v3_catalog =
             RacingCatalogSnapshot::embedded_model_v3_thermal().expect("model V3 thermal catalog");
+        let component_model_catalog = RacingCatalogSnapshot::embedded_model_v3_component()
+            .expect("component-composed Model V3 catalog");
 
         let selected = racing_workload_for(&racing_model_v2_identity(), &model_v2_catalog)
             .expect("exact model V2 selection");
@@ -3670,6 +3806,15 @@ mod tests {
         assert!(
             racing_workload_for(&racing_model_v2_identity(), &model_v3_catalog).is_err(),
             "model V2 must not run against the V3 thermal catalog"
+        );
+        let selected_component = racing_workload_for(
+            &racing_model_v3_component_candidate_identity(),
+            &component_model_catalog,
+        )
+        .expect("exact component Model V3 selection");
+        assert_eq!(
+            selected_component.model_identity(),
+            &racing_model_v3_component_candidate_identity()
         );
 
         let mut forged = racing_model_v2_identity();
@@ -3838,6 +3983,95 @@ mod tests {
                 .expect_err("empty selection")
                 .contains("must override at least one component")
         );
+    }
+
+    #[test]
+    fn component_catalog_exposes_effective_controls_and_unavailable_reasons() {
+        let snapshot = RacingCatalogSnapshot::embedded_model_v3_component()
+            .expect("component-composed catalog");
+        let historical =
+            resolve_vehicle_capabilities_with_catalog(&snapshot, "classic_v8_1960", None)
+                .expect("historical capabilities");
+        assert!(
+            historical
+                .supported_capabilities
+                .contains(&pitgun_racing_contract::VehicleCapability::AdjustableGearRatio)
+        );
+        let unavailable_downforce = historical
+            .unavailable_capabilities
+            .iter()
+            .find(|entry| {
+                entry.capability == pitgun_racing_contract::VehicleCapability::AdjustableDownforce
+            })
+            .expect("unavailable downforce explanation");
+        assert_eq!(unavailable_downforce.installed_component_id, "none");
+
+        let upgraded = resolve_vehicle_capabilities_with_catalog(
+            &snapshot,
+            "classic_v8_1960",
+            Some(&component_selection(Some("basic"), None, None, None)),
+        )
+        .expect("upgraded capabilities");
+        assert!(
+            upgraded
+                .supported_capabilities
+                .contains(&pitgun_racing_contract::VehicleCapability::AdjustableDownforce)
+        );
+        assert!(
+            upgraded
+                .unavailable_capabilities
+                .iter()
+                .any(|entry| entry.capability
+                    == pitgun_racing_contract::VehicleCapability::EnergyDeployment),
+            "future energy controls must not be advertised before their equations exist"
+        );
+
+        let browser_snapshot = catalog_snapshot_with_catalog(&snapshot).expect("browser snapshot");
+        assert_eq!(browser_snapshot.components.len(), 12);
+        assert!(browser_snapshot.component_capability_profile.is_some());
+        let historical_snapshot = catalog_snapshot().expect("historical browser snapshot");
+        assert!(historical_snapshot.components.is_empty());
+        assert!(historical_snapshot.component_capability_profile.is_none());
+    }
+
+    #[test]
+    fn capability_resolution_has_native_and_browser_bundle_parity() {
+        let snapshot = RacingCatalogSnapshot::embedded_model_v3_component()
+            .expect("component-composed catalog");
+        let request = ResolveVehicleCapabilitiesRequestV1 {
+            vehicle_id: "f1_2026".to_string(),
+            components: None,
+        };
+        let native = resolve_vehicle_capabilities_with_catalog(&snapshot, "f1_2026", None)
+            .expect("native resolution");
+        let browser_json = resolve_vehicle_capabilities_json_from_bundle(
+            serde_json::to_string(&request).expect("request JSON"),
+            serde_json::to_string(&snapshot.to_bundle().expect("catalog bundle"))
+                .expect("bundle JSON"),
+        );
+        let browser: ResolvedVehicleCapabilitiesV1 =
+            serde_json::from_str(&browser_json).expect("browser resolution");
+        assert_eq!(browser, native);
+    }
+
+    #[test]
+    fn component_model_output_records_each_competitor_composition() {
+        let snapshot = RacingCatalogSnapshot::embedded_model_v3_component()
+            .expect("component-composed catalog");
+        let output = run_race_with_catalog_and_v3_power_unit_thermal_profile(
+            one_lap_request(),
+            &snapshot,
+            snapshot
+                .power_unit_thermal_profile()
+                .expect("power-unit thermal profile"),
+        )
+        .expect("component-composed race");
+        let player = output
+            .competitor_vehicle_capabilities_v3
+            .get("player")
+            .expect("player component lineage");
+        assert_eq!(player.baseline_vehicle_id, "f1_2026");
+        assert_eq!(player.components.len(), 4);
     }
 
     #[test]

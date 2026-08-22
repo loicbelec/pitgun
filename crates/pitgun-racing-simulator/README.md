@@ -74,4 +74,8 @@ adapters use the matching `_json` facade. `RaceOutput` records the exact
 candidate, model, family, installed power-unit, parameter-set and reviewed
 profile digest for every competitor. Unknown, missing, duplicate or mutated
 bindings fail closed. Catalog `1.5.0` remains byte-for-byte vehicle-bound and
-replayable; publication of this candidate requires a later catalog identity.
+replayable. Catalog `1.6.0` provides the distinct non-production identity and a
+strict component-capability resource. The same governed bytes let the
+Simulator expose exact component lineage and let browser clients enable only
+controls that the installed components really implement. Energy deployment
+and recovery remain explicitly unavailable until their equations exist.

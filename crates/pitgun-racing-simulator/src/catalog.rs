@@ -15,25 +15,33 @@ use pitgun_contract::{
     canonical_json_digest, canonicalize_json_str,
 };
 use pitgun_racing_contract::{
-    RacingModelParametersV1, RacingPresentationIndexV1, RacingSimulationIndexV1,
+    ComponentCapabilityProfileV1, RacingModelParametersV1, RacingPresentationIndexV1,
+    RacingSimulationIndexV1, VehicleComponentKind,
 };
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    EMBEDDED_FILES, MODEL_V2_EMBEDDED_FILES, MODEL_V3_THERMAL_EMBEDDED_FILES, PRESENTATION_INDEX,
-    V3ThermalFamilyProfileCandidateV1, racing_model_v3_thermal_candidate_identity,
+    EMBEDDED_FILES, MODEL_V2_EMBEDDED_FILES, MODEL_V3_COMPONENT_EMBEDDED_FILES,
+    MODEL_V3_THERMAL_EMBEDDED_FILES, PRESENTATION_INDEX, V3PowerUnitThermalProfileCandidateV2,
+    V3ThermalFamilyProfileCandidateV1, racing_model_v3_component_candidate_identity,
+    racing_model_v3_thermal_candidate_identity,
 };
 
-const KNOWN_RACING_MODELS: [(&str, &str); 3] = [
+const KNOWN_RACING_MODELS: [(&str, &str); 4] = [
     ("pitgun.racing", "1.0.0"),
     ("pitgun.racing", "2.0.0"),
     ("pitgun.racing-v3-candidate", "0.10.0"),
+    ("pitgun.racing-v3-candidate", "0.11.0"),
 ];
 const MODEL_PARAMETERS_ID_PREFIX: &str = "pitgun.racing.model-parameters.";
 const MODEL_PARAMETERS_PATH_PREFIX: &str = "simulation/model-parameters/";
 const THERMAL_FAMILY_RESOURCE_ID: &str = "pitgun.racing.thermal-profiles.family-v1";
 const THERMAL_FAMILY_PROFILE_PATH: &str = "simulation/thermal-profiles/family-v1.json";
+const POWER_UNIT_THERMAL_RESOURCE_ID: &str = "pitgun.racing.thermal-profiles.family-v2";
+const POWER_UNIT_THERMAL_PROFILE_PATH: &str = "simulation/thermal-profiles/family-v2.json";
+const COMPONENT_CAPABILITY_RESOURCE_ID: &str = "pitgun.racing.component-capabilities.v1";
+const COMPONENT_CAPABILITY_PROFILE_PATH: &str = "simulation/component-capabilities/v1.json";
 
 const CATALOG_MANIFEST: &[u8] = include_bytes!(concat!(
     env!("CARGO_MANIFEST_DIR"),
@@ -79,6 +87,22 @@ const MODEL_V3_THERMAL_PRESENTATION_INDEX: &[u8] = include_bytes!(concat!(
     env!("CARGO_MANIFEST_DIR"),
     "/../../catalogs/racing/v1.5.0/presentation/index.json"
 ));
+const MODEL_V3_COMPONENT_CATALOG_MANIFEST: &[u8] = include_bytes!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../catalogs/racing/v1.6.0/catalog.json"
+));
+const MODEL_V3_COMPONENT_RELEASE_IDENTITY: &[u8] = include_bytes!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../catalogs/racing/v1.6.0/release.json"
+));
+const MODEL_V3_COMPONENT_SIMULATION_INDEX: &[u8] = include_bytes!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../catalogs/racing/v1.6.0/simulation/index.json"
+));
+const MODEL_V3_COMPONENT_PRESENTATION_INDEX: &[u8] = include_bytes!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../catalogs/racing/v1.6.0/presentation/index.json"
+));
 
 /// One exact release-relative file supplied by a browser or another adapter.
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
@@ -121,6 +145,10 @@ pub struct RacingCatalogSnapshot {
     model_parameters_identity: Option<ArtifactIdentity>,
     thermal_family_profile: Option<V3ThermalFamilyProfileCandidateV1>,
     thermal_family_profile_identity: Option<ArtifactIdentity>,
+    power_unit_thermal_profile: Option<V3PowerUnitThermalProfileCandidateV2>,
+    power_unit_thermal_profile_identity: Option<ArtifactIdentity>,
+    component_capability_profile: Option<ComponentCapabilityProfileV1>,
+    component_capability_profile_identity: Option<ArtifactIdentity>,
 }
 
 /// Failure produced before a Racing Catalog may enter simulation.
@@ -337,6 +365,18 @@ impl RacingCatalogSnapshot {
             resolved_thermal_family_profile.map_or((None, None), |(profile, identity)| {
                 (Some(profile), Some(identity))
             });
+        let resolved_power_unit_thermal_profile =
+            resolve_power_unit_thermal_profile(&manifest, &simulation_index, &supplied)?;
+        let (power_unit_thermal_profile, power_unit_thermal_profile_identity) =
+            resolved_power_unit_thermal_profile.map_or((None, None), |(profile, identity)| {
+                (Some(profile), Some(identity))
+            });
+        let resolved_component_capability_profile =
+            resolve_component_capability_profile(&manifest, &simulation_index, &supplied)?;
+        let (component_capability_profile, component_capability_profile_identity) =
+            resolved_component_capability_profile.map_or((None, None), |(profile, identity)| {
+                (Some(profile), Some(identity))
+            });
 
         let snapshot = Self {
             manifest,
@@ -348,6 +388,10 @@ impl RacingCatalogSnapshot {
             model_parameters_identity,
             thermal_family_profile,
             thermal_family_profile_identity,
+            power_unit_thermal_profile,
+            power_unit_thermal_profile_identity,
+            component_capability_profile,
+            component_capability_profile_identity,
         };
         crate::EmbeddedCatalog::from_snapshot(&snapshot)
             .map_err(RacingCatalogResolutionError::InvalidResolvedResources)?;
@@ -397,6 +441,20 @@ impl RacingCatalogSnapshot {
             MODEL_V3_THERMAL_RELEASE_IDENTITY,
             MODEL_V3_THERMAL_SIMULATION_INDEX,
             MODEL_V3_THERMAL_PRESENTATION_INDEX,
+            resources,
+        )
+    }
+
+    /// Resolves the immutable component-composed Model V3 candidate catalog.
+    pub fn embedded_model_v3_component() -> Result<Self, RacingCatalogResolutionError> {
+        let resources = MODEL_V3_COMPONENT_EMBEDDED_FILES
+            .iter()
+            .map(|(path, bytes)| (format!("simulation/{path}"), bytes.to_vec()));
+        Self::from_bytes(
+            MODEL_V3_COMPONENT_CATALOG_MANIFEST,
+            MODEL_V3_COMPONENT_RELEASE_IDENTITY,
+            MODEL_V3_COMPONENT_SIMULATION_INDEX,
+            MODEL_V3_COMPONENT_PRESENTATION_INDEX,
             resources,
         )
     }
@@ -516,6 +574,32 @@ impl RacingCatalogSnapshot {
     #[must_use]
     pub const fn thermal_family_profile_identity(&self) -> Option<&ArtifactIdentity> {
         self.thermal_family_profile_identity.as_ref()
+    }
+
+    /// Returns the reviewed thermal profile resolved by installed power unit.
+    #[must_use]
+    pub const fn power_unit_thermal_profile(
+        &self,
+    ) -> Option<&V3PowerUnitThermalProfileCandidateV2> {
+        self.power_unit_thermal_profile.as_ref()
+    }
+
+    /// Returns the exact identity of the installed-power-unit thermal profile.
+    #[must_use]
+    pub const fn power_unit_thermal_profile_identity(&self) -> Option<&ArtifactIdentity> {
+        self.power_unit_thermal_profile_identity.as_ref()
+    }
+
+    /// Returns the versioned component-to-capability mapping selected by this release.
+    #[must_use]
+    pub const fn component_capability_profile(&self) -> Option<&ComponentCapabilityProfileV1> {
+        self.component_capability_profile.as_ref()
+    }
+
+    /// Returns the exact byte identity of the component-capability mapping.
+    #[must_use]
+    pub const fn component_capability_profile_identity(&self) -> Option<&ArtifactIdentity> {
+        self.component_capability_profile_identity.as_ref()
     }
 
     /// Recreates the transport-neutral bundle for this validated snapshot.
@@ -735,6 +819,167 @@ fn resolve_thermal_family_profile(
         ));
     }
 
+    Ok(Some((profile, identity)))
+}
+
+fn resolve_power_unit_thermal_profile(
+    manifest: &ResourceCatalogManifestV1,
+    simulation_index: &RacingSimulationIndexV1,
+    supplied: &BTreeMap<CatalogPath, Vec<u8>>,
+) -> Result<
+    Option<(V3PowerUnitThermalProfileCandidateV2, ArtifactIdentity)>,
+    RacingCatalogResolutionError,
+> {
+    let model = racing_model_v3_component_candidate_identity();
+    let supports_component_model = manifest
+        .compatibility
+        .validate_for(&model, ContractVersion::V1)
+        .is_ok();
+    let mut indexed = simulation_index.resources.iter().filter(|resource| {
+        resource.id.as_str() == POWER_UNIT_THERMAL_RESOURCE_ID
+            || resource.path.as_str() == POWER_UNIT_THERMAL_PROFILE_PATH
+    });
+    let Some(resource) = indexed.next() else {
+        if supports_component_model {
+            return Err(RacingCatalogResolutionError::InvalidResolvedResources(
+                "component-composed Model V3 catalog is missing its power-unit thermal profile"
+                    .to_string(),
+            ));
+        }
+        return Ok(None);
+    };
+    if indexed.next().is_some() {
+        return Err(RacingCatalogResolutionError::InvalidResolvedResources(
+            "Racing catalog must select exactly one power-unit thermal profile".to_string(),
+        ));
+    }
+    if !supports_component_model {
+        return Err(RacingCatalogResolutionError::InvalidResolvedResources(
+            "power-unit thermal profile requires exact component-composed Model V3 compatibility"
+                .to_string(),
+        ));
+    }
+    if resource.id.as_str() != POWER_UNIT_THERMAL_RESOURCE_ID
+        || resource.path.as_str() != POWER_UNIT_THERMAL_PROFILE_PATH
+    {
+        return Err(RacingCatalogResolutionError::InvalidResolvedResources(
+            format!(
+                "power-unit thermal profile must use resource ID {POWER_UNIT_THERMAL_RESOURCE_ID} and path {POWER_UNIT_THERMAL_PROFILE_PATH}"
+            ),
+        ));
+    }
+    let bytes = supplied
+        .get(&resource.path)
+        .expect("indexed resources are checked before power-unit thermal resolution");
+    let text = std::str::from_utf8(bytes).map_err(|error| {
+        RacingCatalogResolutionError::InvalidResource {
+            path: resource.path.clone(),
+            reason: error.to_string(),
+        }
+    })?;
+    let profile =
+        V3PowerUnitThermalProfileCandidateV2::from_exact_json(text).map_err(|reason| {
+            RacingCatalogResolutionError::InvalidResource {
+                path: resource.path.clone(),
+                reason,
+            }
+        })?;
+    let identity = profile.identity();
+    if identity.digest != resource.digest {
+        return Err(RacingCatalogResolutionError::InvalidResolvedResources(
+            "power-unit thermal profile identity does not match its indexed bytes".to_string(),
+        ));
+    }
+    Ok(Some((profile, identity)))
+}
+
+fn resolve_component_capability_profile(
+    manifest: &ResourceCatalogManifestV1,
+    simulation_index: &RacingSimulationIndexV1,
+    supplied: &BTreeMap<CatalogPath, Vec<u8>>,
+) -> Result<Option<(ComponentCapabilityProfileV1, ArtifactIdentity)>, RacingCatalogResolutionError>
+{
+    let model = racing_model_v3_component_candidate_identity();
+    let supports_component_model = manifest
+        .compatibility
+        .validate_for(&model, ContractVersion::V1)
+        .is_ok();
+    let mut indexed = simulation_index.resources.iter().filter(|resource| {
+        resource.id.as_str() == COMPONENT_CAPABILITY_RESOURCE_ID
+            || resource.path.as_str() == COMPONENT_CAPABILITY_PROFILE_PATH
+    });
+    let Some(resource) = indexed.next() else {
+        if supports_component_model {
+            return Err(RacingCatalogResolutionError::InvalidResolvedResources(
+                "component-composed Model V3 catalog is missing its capability profile".to_string(),
+            ));
+        }
+        return Ok(None);
+    };
+    if indexed.next().is_some() {
+        return Err(RacingCatalogResolutionError::InvalidResolvedResources(
+            "Racing catalog must select exactly one component-capability profile".to_string(),
+        ));
+    }
+    if !supports_component_model {
+        return Err(RacingCatalogResolutionError::InvalidResolvedResources(
+            "component-capability profile requires exact component-composed Model V3 compatibility"
+                .to_string(),
+        ));
+    }
+    if resource.id.as_str() != COMPONENT_CAPABILITY_RESOURCE_ID
+        || resource.path.as_str() != COMPONENT_CAPABILITY_PROFILE_PATH
+    {
+        return Err(RacingCatalogResolutionError::InvalidResolvedResources(
+            format!(
+                "component-capability profile must use resource ID {COMPONENT_CAPABILITY_RESOURCE_ID} and path {COMPONENT_CAPABILITY_PROFILE_PATH}"
+            ),
+        ));
+    }
+    let bytes = supplied
+        .get(&resource.path)
+        .expect("indexed resources are checked before capability resolution");
+    let profile: ComponentCapabilityProfileV1 = serde_json::from_slice(bytes).map_err(|error| {
+        RacingCatalogResolutionError::InvalidResource {
+            path: resource.path.clone(),
+            reason: error.to_string(),
+        }
+    })?;
+    let mut expected = BTreeMap::<VehicleComponentKind, BTreeSet<String>>::new();
+    for indexed_resource in &simulation_index.resources {
+        let path = indexed_resource.path.as_str();
+        let (kind, prefix) = if path.starts_with("simulation/aero/") {
+            (VehicleComponentKind::AerodynamicPackage, "simulation/aero/")
+        } else if path.starts_with("simulation/chassis/") {
+            (VehicleComponentKind::Chassis, "simulation/chassis/")
+        } else if path.starts_with("simulation/engines/") {
+            (VehicleComponentKind::PowerUnit, "simulation/engines/")
+        } else if path.starts_with("simulation/tires/") {
+            (VehicleComponentKind::TireSpecification, "simulation/tires/")
+        } else {
+            continue;
+        };
+        let component_id = path
+            .strip_prefix(prefix)
+            .and_then(|value| value.strip_suffix(".json"))
+            .ok_or_else(|| {
+                RacingCatalogResolutionError::InvalidResolvedResources(format!(
+                    "invalid component resource path {path}"
+                ))
+            })?;
+        expected
+            .entry(kind)
+            .or_default()
+            .insert(component_id.to_string());
+    }
+    profile.validate_against(&expected).map_err(|error| {
+        RacingCatalogResolutionError::InvalidResolvedResources(error.to_string())
+    })?;
+    let identity = ArtifactIdentity {
+        id: resource.id.clone(),
+        version: manifest.catalog.version.clone(),
+        digest: resource.digest,
+    };
     Ok(Some((profile, identity)))
 }
 
@@ -1245,6 +1490,53 @@ mod tests {
         assert!(profile.resolve_vehicle("modern_v6t").is_ok());
         assert!(profile.resolve_vehicle("f1_2026").is_ok());
         assert!(profile.resolve_vehicle("unreviewed-prototype").is_err());
+    }
+
+    #[test]
+    fn component_model_catalog_resolves_exact_profiles_and_capability_coverage() {
+        let snapshot = RacingCatalogSnapshot::embedded_model_v3_component()
+            .expect("component-composed Model V3 catalog");
+        assert_eq!(snapshot.manifest().catalog.version.to_string(), "1.6.0");
+        assert_eq!(
+            snapshot
+                .power_unit_thermal_profile_identity()
+                .expect("power-unit thermal identity"),
+            &snapshot
+                .power_unit_thermal_profile()
+                .expect("power-unit thermal profile")
+                .identity()
+        );
+        assert_eq!(
+            snapshot
+                .component_capability_profile()
+                .expect("component capability profile")
+                .components
+                .len(),
+            12
+        );
+        assert!(snapshot.component_capability_profile_identity().is_some());
+        assert!(snapshot.thermal_family_profile().is_none());
+    }
+
+    #[test]
+    #[cfg(not(target_arch = "wasm32"))]
+    fn component_capability_profile_fails_closed_on_incomplete_coverage() {
+        let mut bundle = filesystem_bundle("1.6.0");
+        let resource = bundle
+            .resources
+            .iter_mut()
+            .find(|file| file.path == COMPONENT_CAPABILITY_PROFILE_PATH)
+            .expect("component capability resource");
+        let mut profile: ComponentCapabilityProfileV1 =
+            serde_json::from_str(&resource.contents).expect("capability profile JSON");
+        profile.components.pop();
+        resource.contents = serde_json::to_string(&profile).expect("capability profile JSON");
+        resign_bundle(&mut bundle);
+
+        assert!(matches!(
+            RacingCatalogSnapshot::from_bundle(bundle),
+            Err(RacingCatalogResolutionError::InvalidResolvedResources(_))
+        ));
     }
 
     #[test]

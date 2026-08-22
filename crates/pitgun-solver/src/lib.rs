@@ -15,10 +15,10 @@ pub use pitgun_racing_simulator::{
     DriverCatalogEntry, DriverEffects, EngineDetail, EngineParams, PitPlan, PitStop,
     PitStrategyConfig, RaceOutput, RacingCatalogBundleV1, RacingCatalogFileV1,
     RacingCatalogResolutionError, RacingCatalogSnapshot, RacingWorkload, RacingWorkloadError,
-    ResampledTelemetry, RunRaceInput, RunRaceRequest, RunSimulationRequest, SessionConfig,
-    SessionRunOutput, SessionRunRequest, SessionRunResult, SimConfig, SimulationRequest,
-    SimulationResult, SimulationSolution, SolverTrackProfile, StandingEntry, StandingStatus,
-    TelemetryEnvelope, TireCatalogEntry, TireParams, Track, Tuning,
+    ResampledTelemetry, ResolveVehicleCapabilitiesRequestV1, RunRaceInput, RunRaceRequest,
+    RunSimulationRequest, SessionConfig, SessionRunOutput, SessionRunRequest, SessionRunResult,
+    SimConfig, SimulationRequest, SimulationResult, SimulationSolution, SolverTrackProfile,
+    StandingEntry, StandingStatus, TelemetryEnvelope, TireCatalogEntry, TireParams, Track, Tuning,
     V3_POWER_UNIT_THERMAL_PROFILE_DIGEST, V3_THERMAL_FAMILY_PROFILE_DIGEST,
     V3PowerUnitThermalProfileCandidateV2, V3PowerUnitThermalResolutionV2,
     V3ThermalFamilyProfileCandidateV1, V3ThermalFamilyResolutionV1, VehicleCatalogEntry,
@@ -27,8 +27,9 @@ pub use pitgun_racing_simulator::{
     execute_authorized_race, get_circuit, get_circuit_with_catalog, get_engine,
     get_engine_with_catalog, list_browser_circuits, list_circuits, list_drivers, list_engines,
     list_tires, list_vehicles, power_kw_from_rpm, racing_model_v1_identity,
-    racing_model_v2_identity, resample_solution, rpm_from_speed_gear, run_race,
-    run_race_with_catalog, run_race_with_catalog_and_v3_power_unit_thermal_profile,
+    racing_model_v2_identity, resample_solution, resolve_vehicle_capabilities_with_catalog,
+    rpm_from_speed_gear, run_race, run_race_with_catalog,
+    run_race_with_catalog_and_v3_power_unit_thermal_profile,
     run_race_with_catalog_and_v3_thermal_family_profile, run_sessions, run_sessions_with_catalog,
     solve,
 };
@@ -53,12 +54,14 @@ export interface RacingVerificationSubmissionV1 {
   output: unknown;
   telemetry_summary: unknown;
   execution_resolution?: {
-    schema_version: "pitgun.racing-execution-resolution/v1" | "pitgun.racing-execution-resolution/v2";
+    schema_version: "pitgun.racing-execution-resolution/v1" | "pitgun.racing-execution-resolution/v2" | "pitgun.racing-execution-resolution/v3";
     catalog_release: unknown;
     simulation_pack: unknown;
     model: unknown;
     model_parameters?: unknown;
     thermal_family_profile?: unknown;
+    power_unit_thermal_profile?: unknown;
+    component_capability_profile?: unknown;
   };
 }
 "#;
@@ -76,6 +79,17 @@ pub fn run_race_json(input_json: String) -> String {
 #[wasm_bindgen]
 pub fn run_race_with_catalog_json(input_json: String, catalog_bundle_json: String) -> String {
     pitgun_racing_simulator::run_race_with_catalog_json(input_json, catalog_bundle_json)
+}
+
+#[wasm_bindgen]
+pub fn resolve_vehicle_capabilities_json_from_bundle(
+    request_json: String,
+    catalog_bundle_json: String,
+) -> String {
+    pitgun_racing_simulator::resolve_vehicle_capabilities_json_from_bundle(
+        request_json,
+        catalog_bundle_json,
+    )
 }
 
 #[wasm_bindgen]

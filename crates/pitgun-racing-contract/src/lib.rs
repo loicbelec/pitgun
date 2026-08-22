@@ -6,6 +6,7 @@
 
 mod authority;
 mod catalog;
+mod components;
 mod model_parameters;
 mod race;
 
@@ -14,6 +15,12 @@ pub use catalog::{
     RacingCatalogError, RacingCircuitPresentationV1, RacingDriverPresentationV1,
     RacingPresentationIndexV1, RacingPresentationIndexVersion, RacingSimulationIndexV1,
     RacingSimulationIndexVersion,
+};
+pub use components::{
+    ComponentCapabilityDefinitionV1, ComponentCapabilityError, ComponentCapabilityProfileV1,
+    ComponentCapabilityProfileVersion, InstalledVehicleComponentV1, ResolvedVehicleCapabilitiesV1,
+    ResolvedVehicleCapabilitiesVersion, UnavailableVehicleCapabilityV1, VehicleCapability,
+    VehicleComponentKind,
 };
 pub use model_parameters::{
     RacingAerodynamicStateResponseV1, RacingDevelopmentResolutionV1, RacingModelCompatibilityV1,
