@@ -67,3 +67,21 @@ itself authorize catalog publication, Authority/Verifier promotion, game
 staging or production. See
 [`RACING_V3_THERMAL_FAMILY_PROFILE_CANDIDATE_V1.md`](../../docs/RACING_V3_THERMAL_FAMILY_PROFILE_CANDIDATE_V1.md)
 for the complete release boundary.
+
+## Power-unit binding candidate
+
+Component composition changes the selection semantics without changing the
+reviewed coefficients above. The versioned V2 candidate therefore binds each
+thermal family to stable installed power-unit identities (`v8_1960`,
+`v8_1970`, `v6t`, `v6t_hybrid`) rather than to monolithic vehicle identities.
+It targets the distinct non-production Model V3 `0.11.0` identity and records
+the resolved family for every competitor.
+
+The exact candidate and checksum are:
+
+- `candidates/thermal-family-profile-v2.json`;
+- `candidates/thermal-family-profile-v2.sha256`.
+
+It remains an integration candidate. Catalog publication and hosted service
+promotion are intentionally deferred so Catalog `1.5.0` and Model `0.10.0`
+retain their exact replay semantics.

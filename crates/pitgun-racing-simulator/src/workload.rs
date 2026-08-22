@@ -16,6 +16,8 @@ const RACING_MODEL_V3_CANDIDATE_MANIFEST: &[u8] =
     b"pitgun.racing-v3-candidate:model:0.9.0:resolved-vehicle:per-segment-v1:aggregate-contact-v2:mechanical-controls-v1:aero-efficiency-v1:development-resolution-v1:transmission-resolution-v1:zero-downforce-v1:first-stint-tire-v1:power-based-fuel-mass-v1:compound-degradation-v1";
 const RACING_MODEL_V3_THERMAL_CANDIDATE_MANIFEST: &[u8] =
     b"pitgun.racing-v3-candidate:model:0.10.0:resolved-vehicle:per-segment-v1:aggregate-contact-v2:mechanical-controls-v1:aero-efficiency-v1:development-resolution-v1:transmission-resolution-v1:zero-downforce-v1:first-stint-tire-v1:power-based-fuel-mass-v1:compound-degradation-v1:engine-thermal-resolution-v1";
+const RACING_MODEL_V3_COMPONENT_CANDIDATE_MANIFEST: &[u8] =
+    b"pitgun.racing-v3-candidate:model:0.11.0:resolved-vehicle:per-segment-v1:aggregate-contact-v2:mechanical-controls-v1:aero-efficiency-v1:development-resolution-v1:transmission-resolution-v1:zero-downforce-v1:first-stint-tire-v1:power-based-fuel-mass-v1:compound-degradation-v1:engine-thermal-resolution-v2:per-competitor-components-v1";
 const RACING_MODEL_V3_FUEL_MASS_CANDIDATE_MANIFEST: &[u8] =
     b"pitgun.racing-v3-candidate:model:0.8.0:resolved-vehicle:per-segment-v1:aggregate-contact-v1:mechanical-controls-v1:aero-efficiency-v1:development-resolution-v1:transmission-resolution-v1:zero-downforce-v1:first-stint-tire-v1:power-based-fuel-mass-v1";
 const RACING_MODEL_V3_FIDELITY_CANDIDATE_MANIFEST: &[u8] =
@@ -81,6 +83,25 @@ pub fn racing_model_v3_thermal_candidate_identity() -> ArtifactIdentity {
             .parse()
             .expect("static Racing V3 thermal candidate model version"),
         digest: pitgun_contract::Digest::from_bytes(RACING_MODEL_V3_THERMAL_CANDIDATE_MANIFEST),
+    }
+}
+
+/// Returns the non-production identity of the component-composed V3 slice.
+///
+/// Candidate 0.11 keeps the reviewed 0.10 equations while selecting thermal
+/// parameters from each competitor's installed power unit. It deliberately
+/// has a distinct identity because this changes deterministic resolution
+/// semantics even when the numeric thermal coefficients remain unchanged.
+#[must_use]
+pub fn racing_model_v3_component_candidate_identity() -> ArtifactIdentity {
+    ArtifactIdentity {
+        id: "pitgun.racing-v3-candidate"
+            .parse()
+            .expect("static Racing V3 candidate model id"),
+        version: "0.11.0"
+            .parse()
+            .expect("static Racing V3 component candidate model version"),
+        digest: pitgun_contract::Digest::from_bytes(RACING_MODEL_V3_COMPONENT_CANDIDATE_MANIFEST),
     }
 }
 
@@ -185,8 +206,9 @@ pub fn racing_model_identity_for_version(version: &str) -> Result<ArtifactIdenti
         "1.0.0" => Ok(racing_model_v1_identity()),
         "2.0.0" => Ok(racing_model_v2_identity()),
         "0.10.0" => Ok(racing_model_v3_thermal_candidate_identity()),
+        "0.11.0" => Ok(racing_model_v3_component_candidate_identity()),
         _ => Err(format!(
-            "unsupported Racing model version {version:?}; expected 1.0.0, 2.0.0 or 0.10.0"
+            "unsupported Racing model version {version:?}; expected 1.0.0, 2.0.0, 0.10.0 or 0.11.0"
         )),
     }
 }
@@ -345,6 +367,7 @@ mod tests {
     use super::{
         RacingWorkload, racing_model_identity_for_version, racing_model_v2_identity,
         racing_model_v3_aero_candidate_identity, racing_model_v3_candidate_identity,
+        racing_model_v3_component_candidate_identity,
         racing_model_v3_development_candidate_identity,
         racing_model_v3_fidelity_candidate_identity, racing_model_v3_fuel_mass_candidate_identity,
         racing_model_v3_mechanical_candidate_identity, racing_model_v3_thermal_candidate_identity,
@@ -386,6 +409,10 @@ mod tests {
         assert_eq!(
             racing_model_identity_for_version("0.10.0").expect("supported V3 thermal candidate"),
             racing_model_v3_thermal_candidate_identity()
+        );
+        assert_eq!(
+            racing_model_identity_for_version("0.11.0").expect("supported V3 component candidate"),
+            racing_model_v3_component_candidate_identity()
         );
         assert!(racing_model_identity_for_version("2").is_err());
         assert!(racing_model_identity_for_version("3.0.0").is_err());
