@@ -7,6 +7,7 @@
 mod authority;
 mod catalog;
 mod components;
+mod driver;
 mod model_parameters;
 mod race;
 
@@ -21,6 +22,11 @@ pub use components::{
     ComponentCapabilityProfileVersion, InstalledVehicleComponentV1, ResolvedVehicleCapabilitiesV1,
     ResolvedVehicleCapabilitiesVersion, UnavailableVehicleCapabilityV1, VehicleCapability,
     VehicleComponentKind,
+};
+pub use driver::{
+    RacingDriverContractError, RacingDriverControlProfileV1, RacingDriverControlProfileVersion,
+    RacingDriverResourceV2, RacingDriverResourceVersion, RacingDriverTraitsV1,
+    RacingDriverUtilizationResponseV1, RacingDrivingMode, RacingDrivingModeCommitmentsV1,
 };
 pub use model_parameters::{
     RacingAerodynamicStateResponseV1, RacingDevelopmentResolutionV1, RacingModelCompatibilityV1,
