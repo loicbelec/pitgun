@@ -32,7 +32,7 @@ use pitgun_contract::{
 };
 use pitgun_racing_contract::{
     CircuitCatalogEntry, CompetitorSpec, CompetitorStintStrategy, EngineCatalogEntry, RaceInput,
-    RacingModelParametersV1, RacingPresentationIndexV1,
+    RacingModelParametersV1, RacingPresentationIndexV1, VehicleComponentSelectionV1,
 };
 use pitgun_racing_policy::normalize_and_validate_race_input;
 use pitgun_racing_solver::resample_telemetry_with_engine_thermal;
@@ -68,6 +68,12 @@ pub struct RunRaceInput {
     pub race: RaceInput,
     #[serde(default)]
     pub vehicle_id: Option<String>,
+    /// Optional per-competitor overrides layered over `vehicle_id`.
+    ///
+    /// Empty historical maps are omitted so immutable legacy inputs retain
+    /// their exact wire representation.
+    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
+    pub competitor_vehicle_components: HashMap<String, VehicleComponentSelectionV1>,
     #[serde(default)]
     pub pit_strategy: Option<PitStrategyConfig>,
     #[serde(default)]
@@ -755,6 +761,8 @@ pub struct SessionRunRequest {
     pub race: RaceInput,
     #[serde(default)]
     pub vehicle_id: Option<String>,
+    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
+    pub competitor_vehicle_components: HashMap<String, VehicleComponentSelectionV1>,
     #[serde(default)]
     pub pit_strategy: Option<PitStrategyConfig>,
     #[serde(default)]
@@ -1366,6 +1374,10 @@ pub fn run_race_with_catalog_and_model_response(
     tuning_response: &TuningResponseV1,
     curvature_response: CurvatureAeroResponse,
 ) -> Result<RaceOutput, String> {
+    reject_component_selections_for_model(
+        &request.input.competitor_vehicle_components,
+        "published historical Racing model",
+    )?;
     tuning_response
         .validate()
         .map_err(|error| format!("invalid tuning response: {error}"))?;
@@ -1390,6 +1402,7 @@ pub fn run_race_with_catalog_and_model_response(
         &catalog,
         &normalized_race,
         vehicle_id,
+        &request.input.competitor_vehicle_components,
         SessionExecution {
             pit_strategy: request.input.pit_strategy.as_ref(),
             track_profile: request.input.track_profile.as_ref(),
@@ -1460,6 +1473,7 @@ pub fn run_race_with_catalog_and_v3_profile(
         &catalog,
         &normalized_race,
         vehicle_id,
+        &request.input.competitor_vehicle_components,
         SessionExecution {
             pit_strategy: request.input.pit_strategy.as_ref(),
             track_profile: request.input.track_profile.as_ref(),
@@ -1482,6 +1496,10 @@ pub fn run_race_with_catalog_and_v3_thermal_family_profile(
     candidate: &V3ThermalFamilyProfileCandidateV1,
 ) -> Result<RaceOutput, String> {
     let vehicle_id = resolve_vehicle_id(request.input.vehicle_id.as_deref())?;
+    reject_component_selections_for_model(
+        &request.input.competitor_vehicle_components,
+        "published Model V3 thermal candidate",
+    )?;
     let resolved = candidate.resolve_vehicle(vehicle_id)?;
     let profile = V3CandidateExperimentProfile {
         schema_version: V3CandidateExperimentProfileVersion::V8,
@@ -1507,6 +1525,10 @@ pub fn run_sessions_with_catalog(
     if request.sessions.is_empty() {
         return Err("sessions must be provided explicitly".to_string());
     }
+    reject_component_selections_for_model(
+        &request.competitor_vehicle_components,
+        "published historical Racing session model",
+    )?;
 
     let normalized_race = normalize_and_validate_race_input(
         &request.race,
@@ -1527,6 +1549,7 @@ pub fn run_sessions_with_catalog(
             &catalog,
             &normalized_race,
             vehicle_id,
+            &request.competitor_vehicle_components,
             SessionExecution {
                 pit_strategy: request.pit_strategy.as_ref(),
                 track_profile: request.track_profile.as_ref(),
@@ -1573,6 +1596,7 @@ fn run_single_session(
     catalog: &EmbeddedCatalog,
     race: &RaceInput,
     vehicle_id: &str,
+    competitor_vehicle_components: &HashMap<String, VehicleComponentSelectionV1>,
     execution: SessionExecution<'_>,
 ) -> Result<RaceOutput, String> {
     let SessionExecution {
@@ -1589,7 +1613,7 @@ fn run_single_session(
         track_record = track_from_payload(&track_id, payload, track_record.pit_loss_ms)?;
     }
 
-    let resolved_vehicle = catalog.resolve_vehicle(vehicle_id)?;
+    validate_component_selection_subjects(race, competitor_vehicle_components)?;
     let pit_loss_ms = pit_strategy
         .and_then(|value| value.pit_loss_ms)
         .map(|value| value.max(1_000))
@@ -1612,6 +1636,10 @@ fn run_single_session(
     let mut player_tire_degradation_diagnostics_v3 = None;
 
     for competitor in &race.competitors {
+        let resolved_vehicle = catalog.resolve_vehicle_with_components(
+            vehicle_id,
+            competitor_vehicle_components.get(&competitor.id),
+        )?;
         let stint_plan =
             resolve_stint_plan(competitor, laps, &resolved_vehicle.1, &player_pit_laps)?;
         let initial_vehicle = match model {
@@ -2559,27 +2587,51 @@ impl EmbeddedCatalog {
             .ok_or_else(|| format!("unknown circuit '{id}'"))
     }
 
+    #[cfg(test)]
     fn resolve_vehicle(&self, vehicle_id: &str) -> Result<(VehicleParams, String), String> {
+        self.resolve_vehicle_with_components(vehicle_id, None)
+    }
+
+    fn resolve_vehicle_with_components(
+        &self,
+        vehicle_id: &str,
+        selection: Option<&VehicleComponentSelectionV1>,
+    ) -> Result<(VehicleParams, String), String> {
         let record = self
             .vehicles
             .get(vehicle_id)
             .ok_or_else(|| format!("unknown vehicle '{vehicle_id}'"))?;
+        if let Some(selection) = selection {
+            validate_component_selection(selection)?;
+        }
+        let aero_id = selection
+            .and_then(|value| value.aero_id.as_deref())
+            .unwrap_or(&record.aero_id);
+        let chassis_id = selection
+            .and_then(|value| value.chassis_id.as_deref())
+            .unwrap_or(&record.chassis_id);
+        let engine_id = selection
+            .and_then(|value| value.engine_id.as_deref())
+            .unwrap_or(&record.engine_id);
+        let tire_id = selection
+            .and_then(|value| value.tire_id.as_deref())
+            .unwrap_or(&record.tire_id);
         let aero = self
             .aeros
-            .get(&record.aero_id)
-            .ok_or_else(|| format!("unknown aero '{}'", record.aero_id))?;
+            .get(aero_id)
+            .ok_or_else(|| format!("unknown aero '{aero_id}'"))?;
         let chassis = self
             .chassis
-            .get(&record.chassis_id)
-            .ok_or_else(|| format!("unknown chassis '{}'", record.chassis_id))?;
+            .get(chassis_id)
+            .ok_or_else(|| format!("unknown chassis '{chassis_id}'"))?;
         let engine = self
             .engines
-            .get(&record.engine_id)
-            .ok_or_else(|| format!("unknown engine '{}'", record.engine_id))?;
+            .get(engine_id)
+            .ok_or_else(|| format!("unknown engine '{engine_id}'"))?;
         let tire = self
             .tires
-            .get(&record.tire_id)
-            .ok_or_else(|| format!("unknown tire '{}'", record.tire_id))?;
+            .get(tire_id)
+            .ok_or_else(|| format!("unknown tire '{tire_id}'"))?;
         Ok((
             VehicleParams {
                 chassis: chassis.clone(),
@@ -2587,7 +2639,7 @@ impl EmbeddedCatalog {
                 engine: engine.clone(),
                 tire: tire.clone(),
             },
-            record.tire_id.clone(),
+            tire_id.to_string(),
         ))
     }
 
@@ -2847,6 +2899,58 @@ fn resolve_vehicle_id(vehicle_id: Option<&str>) -> Result<&str, String> {
         .map(str::trim)
         .filter(|value| !value.is_empty())
         .ok_or_else(|| "vehicle_id is required".to_string())
+}
+
+fn validate_component_selection_subjects(
+    race: &RaceInput,
+    selections: &HashMap<String, VehicleComponentSelectionV1>,
+) -> Result<(), String> {
+    for competitor_id in selections.keys() {
+        if !race
+            .competitors
+            .iter()
+            .any(|competitor| competitor.id == *competitor_id)
+        {
+            return Err(format!(
+                "vehicle component selection references unknown competitor '{competitor_id}'"
+            ));
+        }
+    }
+    Ok(())
+}
+
+fn reject_component_selections_for_model(
+    selections: &HashMap<String, VehicleComponentSelectionV1>,
+    model: &str,
+) -> Result<(), String> {
+    if selections.is_empty() {
+        return Ok(());
+    }
+    Err(format!(
+        "{model} does not support vehicle component selection; select a component-aware model and catalog"
+    ))
+}
+
+fn validate_component_selection(selection: &VehicleComponentSelectionV1) -> Result<(), String> {
+    let components = [
+        ("aero", selection.aero_id.as_deref()),
+        ("chassis", selection.chassis_id.as_deref()),
+        ("engine", selection.engine_id.as_deref()),
+        ("tire", selection.tire_id.as_deref()),
+    ];
+    if components.iter().all(|(_, value)| value.is_none()) {
+        return Err("vehicle component selection must override at least one component".to_string());
+    }
+    for (kind, value) in components {
+        if let Some(value) = value
+            && (value.is_empty() || value != value.trim())
+        {
+            return Err(format!(
+                "vehicle component selection has non-canonical {kind} id '{value}'"
+            ));
+        }
+    }
+    Ok(())
 }
 
 fn normalize_track_id(track_id: &str) -> String {
@@ -3338,6 +3442,7 @@ mod tests {
     use super::*;
     use pitgun_racing_contract::{
         CompetitorSpec, RaceInput, RacingModelParametersPurpose, TuningSpec,
+        VehicleComponentSelectionVersion,
     };
     use pitgun_runtime::LinkedWorkload;
     use serde::Deserialize;
@@ -3463,6 +3568,7 @@ mod tests {
                     }],
                 },
                 vehicle_id: Some("f1_2026".to_string()),
+                competitor_vehicle_components: HashMap::new(),
                 pit_strategy: None,
                 track_profile: None,
                 competitor_profiles: HashMap::new(),
@@ -3474,6 +3580,153 @@ mod tests {
             era: Some(2026),
             hz: Some(20.0),
         }
+    }
+
+    fn component_selection(
+        aero_id: Option<&str>,
+        chassis_id: Option<&str>,
+        engine_id: Option<&str>,
+        tire_id: Option<&str>,
+    ) -> VehicleComponentSelectionV1 {
+        VehicleComponentSelectionV1 {
+            schema_version: VehicleComponentSelectionVersion::V1,
+            aero_id: aero_id.map(str::to_string),
+            chassis_id: chassis_id.map(str::to_string),
+            engine_id: engine_id.map(str::to_string),
+            tire_id: tire_id.map(str::to_string),
+        }
+    }
+
+    #[test]
+    fn historical_race_input_omits_empty_component_selection_map() {
+        let value = serde_json::to_value(one_lap_request().input).expect("race input");
+        assert!(value.get("competitor_vehicle_components").is_none());
+    }
+
+    #[test]
+    fn vehicle_components_override_independent_physical_resources() {
+        let catalog = EmbeddedCatalog::load_default().expect("catalog");
+        let (legacy, _) = catalog
+            .resolve_vehicle("classic_v8_1960")
+            .expect("legacy vehicle");
+        let (aero_upgrade, _) = catalog
+            .resolve_vehicle_with_components(
+                "classic_v8_1960",
+                Some(&component_selection(Some("basic"), None, None, None)),
+            )
+            .expect("independent aero upgrade");
+        let (engine_upgrade, _) = catalog
+            .resolve_vehicle_with_components(
+                "classic_v8_1960",
+                Some(&component_selection(None, None, Some("v8_1970"), None)),
+            )
+            .expect("independent engine upgrade");
+
+        assert_eq!(legacy.aero.cl_a_x, 0.0);
+        assert!(aero_upgrade.aero.cl_a_x > 0.0);
+        assert_eq!(aero_upgrade.engine.n_rpm, legacy.engine.n_rpm);
+        assert_eq!(engine_upgrade.aero, legacy.aero);
+        assert_ne!(engine_upgrade.engine.n_rpm, legacy.engine.n_rpm);
+    }
+
+    #[test]
+    fn vehicle_component_selection_rejects_unknown_and_redundant_overrides() {
+        let catalog = EmbeddedCatalog::load_default().expect("catalog");
+        assert!(
+            catalog
+                .resolve_vehicle_with_components(
+                    "classic_v8_1960",
+                    Some(&component_selection(Some("unknown"), None, None, None)),
+                )
+                .expect_err("unknown aero")
+                .contains("unknown aero")
+        );
+        assert!(
+            catalog
+                .resolve_vehicle_with_components(
+                    "classic_v8_1960",
+                    Some(&component_selection(None, None, None, None)),
+                )
+                .expect_err("empty selection")
+                .contains("must override at least one component")
+        );
+    }
+
+    #[test]
+    fn one_race_accepts_distinct_component_selections_for_each_competitor() {
+        let snapshot = RacingCatalogSnapshot::embedded().expect("catalog");
+        let mut request = one_lap_request();
+        let mut rival = request.input.race.competitors[0].clone();
+        rival.id = "rival".to_string();
+        rival.name = "Rival".to_string();
+        rival.is_player = false;
+        request.input.race.competitors.push(rival);
+        request.input.competitor_vehicle_components.insert(
+            "player".to_string(),
+            component_selection(Some("none"), None, None, None),
+        );
+        request.input.competitor_vehicle_components.insert(
+            "rival".to_string(),
+            component_selection(None, None, Some("v8_1970"), None),
+        );
+
+        let output = run_race_with_catalog_and_v3_profile(
+            request,
+            &snapshot,
+            &V3CandidateExperimentProfile::default(),
+        )
+        .expect("race with competitor-specific components");
+        assert_eq!(output.standings.len(), 2);
+    }
+
+    #[test]
+    fn race_rejects_component_selection_for_unknown_competitor() {
+        let snapshot = RacingCatalogSnapshot::embedded().expect("catalog");
+        let mut request = one_lap_request();
+        request.input.competitor_vehicle_components.insert(
+            "ghost".to_string(),
+            component_selection(Some("none"), None, None, None),
+        );
+
+        let error = run_race_with_catalog_and_v3_profile(
+            request,
+            &snapshot,
+            &V3CandidateExperimentProfile::default(),
+        )
+        .expect_err("unknown competitor selection must fail");
+        assert!(error.contains("unknown competitor 'ghost'"));
+    }
+
+    #[test]
+    fn published_historical_model_rejects_new_component_semantics() {
+        let snapshot = RacingCatalogSnapshot::embedded().expect("catalog");
+        let mut request = one_lap_request();
+        request.input.competitor_vehicle_components.insert(
+            "player".to_string(),
+            component_selection(Some("none"), None, None, None),
+        );
+
+        let error = run_race_with_catalog(request, &snapshot)
+            .expect_err("published model identity must keep historical semantics");
+        assert!(error.contains("does not support vehicle component selection"));
+    }
+
+    #[test]
+    fn thermal_profile_rejects_power_unit_overrides_until_power_unit_binding_exists() {
+        let snapshot = RacingCatalogSnapshot::embedded_model_v3_thermal().expect("V3 catalog");
+        let candidate = snapshot
+            .thermal_family_profile()
+            .expect("reviewed thermal family");
+        let mut request = one_lap_request();
+        request.input.competitor_vehicle_components.insert(
+            "player".to_string(),
+            component_selection(None, None, Some("v8_1970"), None),
+        );
+
+        let error =
+            run_race_with_catalog_and_v3_thermal_family_profile(request, &snapshot, candidate)
+                .expect_err("vehicle-bound thermal profile must fail closed");
+        assert!(error.contains("does not support vehicle component selection"));
     }
 
     #[test]
