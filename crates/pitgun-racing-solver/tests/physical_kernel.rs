@@ -109,6 +109,7 @@ fn resolved_v3_request(request: &SimulationRequest) -> ResolvedSimulationRequest
             ..MechanicalParamsV3::default()
         },
         driver_control: DriverControlParamsV3::default(),
+        driver_correction_workload_multiplier: None,
         fuel_mass: None,
         tire_degradation: None,
         engine_thermal: None,
@@ -348,6 +349,38 @@ fn v3_driver_operates_physical_limits_without_post_solve_time_scaling() {
     assert_eq!(first.solution, second.solution);
     assert_eq!(first.lap_times_s, second.lap_times_s);
     assert_ne!(first.applied_driver, second.applied_driver);
+}
+
+#[test]
+fn v3_driver_corrections_add_explainable_heat_and_wear_deterministically() {
+    let mut request = resolved_v3_request(&synthetic_request());
+    request.lap_count = 3;
+    request.tire_degradation = Some(TireDegradationParamsV3::default());
+    request.driver_correction_workload_multiplier = Some(1.20);
+
+    let first = run_resolved_simulation_v3(&request).expect("first corrected solve");
+    let second = run_resolved_simulation_v3(&request).expect("second corrected solve");
+    assert_eq!(first, second);
+
+    let tire = first.tire_diagnostics_v3.expect("tire diagnostics");
+    let base = tire
+        .base_contact_workload_mj
+        .expect("base contact workload");
+    let correction = tire
+        .correction_contact_workload_mj
+        .expect("correction contact workload");
+    assert!(base > 0.0);
+    assert!(correction > 0.0);
+    assert!((tire.contact_workload_mj - base - correction).abs() < 1e-9);
+    assert!(tire.correction_generated_heat_kj.expect("correction heat") > 0.0);
+    assert!(
+        first
+            .tire_degradation_diagnostics_v3
+            .expect("wear diagnostics")
+            .requested_correction_wear_fraction
+            .expect("correction wear")
+            > 0.0
+    );
 }
 
 #[test]
