@@ -11,7 +11,10 @@ keeping its publication separate from pointer promotion. `v1.4.0` carries the
 reviewed V2 policy and model-parameter compatibility resource. `v1.5.0` is the
 first non-production catalog compatible exclusively with the reviewed Racing
 Model V3 thermal candidate; it embeds the exact content-addressed thermal
-family profile but does not promote it. `LATEST` remains on `v1.0.0` until a
+family profile but does not promote it. `v1.6.0` is the non-production
+component-composed candidate for Model `0.11.0`: it binds thermal behavior to
+the installed power unit and publishes the strict component-capability profile
+consumed by Rust, WASM, and browser UI adapters. `LATEST` remains on `v1.0.0` until a
 coordinated game, Authority, and Verifier rollout is explicitly approved. Each
 version directory is immutable:
 
@@ -36,6 +39,10 @@ v1.4.0/
 v1.5.0/
 ├── model compatibility: pitgun.racing-v3-candidate@0.10.0
 └── simulation/thermal-profiles/family-v1.json
+v1.6.0/
+├── model compatibility: pitgun.racing-v3-candidate@0.11.0
+├── simulation/thermal-profiles/family-v2.json
+└── simulation/component-capabilities/v1.json
 ```
 
 The Simulation Pack contains every byte that may influence physical execution.

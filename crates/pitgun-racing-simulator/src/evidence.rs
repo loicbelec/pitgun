@@ -45,6 +45,9 @@ pub enum RacingExecutionResolutionVersion {
     /// Lineage block supporting an exact reviewed thermal-family profile.
     #[serde(rename = "pitgun.racing-execution-resolution/v2")]
     V2,
+    /// Lineage block supporting component-composed vehicle resources.
+    #[serde(rename = "pitgun.racing-execution-resolution/v3")]
+    V3,
 }
 
 /// Exact immutable resources selected for one catalog-backed Racing execution.
@@ -69,6 +72,12 @@ pub struct RacingExecutionResolutionV1 {
     /// Semantic version and digest of the exact thermal-family profile bytes.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub thermal_family_profile: Option<ArtifactIdentity>,
+    /// Exact thermal profile resolved from installed power-unit identities.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub power_unit_thermal_profile: Option<ArtifactIdentity>,
+    /// Exact component-to-capability mapping used by execution and clients.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub component_capability_profile: Option<ArtifactIdentity>,
 }
 
 impl RacingExecutionResolutionV1 {
@@ -77,11 +86,21 @@ impl RacingExecutionResolutionV1 {
     pub fn from_catalog(catalog: &RacingCatalogSnapshot, model: &ArtifactIdentity) -> Option<Self> {
         let model_parameters = catalog.model_parameters_identity().cloned();
         let thermal_family_profile = catalog.thermal_family_profile_identity().cloned();
-        if model_parameters.is_none() && thermal_family_profile.is_none() {
+        let power_unit_thermal_profile = catalog.power_unit_thermal_profile_identity().cloned();
+        let component_capability_profile = catalog.component_capability_profile_identity().cloned();
+        if model_parameters.is_none()
+            && thermal_family_profile.is_none()
+            && power_unit_thermal_profile.is_none()
+            && component_capability_profile.is_none()
+        {
             return None;
         }
         Some(Self {
-            schema_version: if thermal_family_profile.is_some() {
+            schema_version: if power_unit_thermal_profile.is_some()
+                || component_capability_profile.is_some()
+            {
+                RacingExecutionResolutionVersion::V3
+            } else if thermal_family_profile.is_some() {
                 RacingExecutionResolutionVersion::V2
             } else {
                 RacingExecutionResolutionVersion::V1
@@ -91,6 +110,8 @@ impl RacingExecutionResolutionV1 {
             model: model.clone(),
             model_parameters,
             thermal_family_profile,
+            power_unit_thermal_profile,
+            component_capability_profile,
         })
     }
 }

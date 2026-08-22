@@ -31,6 +31,7 @@
 
 - [ADR index](adr/README.md)
 - [ADR 0001: generic runtime and domain workloads](adr/0001-runtime-and-domain-workloads.md)
+- [Racing Component Capabilities V1](RACING_COMPONENT_CAPABILITIES_V1.md)
 - [ADR 0002: optional versioned catalogs and resolved scenarios](adr/0002-optional-versioned-catalogs.md)
 
 ## Deterministic Execution

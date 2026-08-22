@@ -7,6 +7,7 @@ use crate::evidence::{RacingEvidenceError, RacingRunEvidenceV1};
 use crate::{
     CurvatureAeroResponse, RaceOutput, RacingCatalogSnapshot, RunRaceInput, RunRaceRequest,
     resolve_catalog_tuning_response, run_race, run_race_with_catalog_and_model_response,
+    run_race_with_catalog_and_v3_power_unit_thermal_profile,
     run_race_with_catalog_and_v3_thermal_family_profile,
 };
 
@@ -262,6 +263,16 @@ impl RacingWorkload {
         }
     }
 
+    /// Creates the component-composed V3 adapter pinned to its exact catalog.
+    #[must_use]
+    pub fn v3_component_with_catalog(catalog: RacingCatalogSnapshot) -> Self {
+        Self {
+            model: racing_model_v3_component_candidate_identity(),
+            catalog: Some(catalog),
+            curvature_response: CurvatureAeroResponse::ContinuousV1,
+        }
+    }
+
     /// Selects the statically linked workload for one exact model/catalog pair.
     pub fn for_model(
         model: &ArtifactIdentity,
@@ -279,6 +290,8 @@ impl RacingWorkload {
             Ok(Self::v2_with_catalog(catalog))
         } else if *model == racing_model_v3_thermal_candidate_identity() {
             Ok(Self::v3_thermal_with_catalog(catalog))
+        } else if *model == racing_model_v3_component_candidate_identity() {
+            Ok(Self::v3_component_with_catalog(catalog))
         } else {
             Err(format!(
                 "unsupported Racing model identity {}@{} {}",
@@ -337,6 +350,19 @@ impl LinkedWorkload for RacingWorkload {
                         )
                     })?;
                     run_race_with_catalog_and_v3_thermal_family_profile(
+                        request,
+                        catalog,
+                        thermal_profile,
+                    )
+                } else if self.model == racing_model_v3_component_candidate_identity() {
+                    let thermal_profile =
+                        catalog.power_unit_thermal_profile().ok_or_else(|| {
+                            RacingWorkloadError::Simulation(
+                            "component-composed Model V3 catalog has no power-unit thermal profile"
+                                .to_string(),
+                        )
+                        })?;
+                    run_race_with_catalog_and_v3_power_unit_thermal_profile(
                         request,
                         catalog,
                         thermal_profile,
