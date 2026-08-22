@@ -33,6 +33,7 @@ CATALOG_RESOURCE_PATTERN = re.compile(r"racing-v[0-9]+(?:-[0-9]+)*")
 V3_CONFIGURATION_PATTERN = re.compile(r"[a-z0-9]+(?:-[a-z0-9]+)*")
 V3_DECISION_SURFACE_EXECUTION_PATTERN = re.compile(r"v3ds-[0-9]{4}-[0-9]{6}")
 V3_THERMAL_SURFACE_EXECUTION_PATTERN = re.compile(r"v3th-[0-9a-f]{16}")
+V3_DRIVER_CONTROL_EXECUTION_PATTERN = re.compile(r"v3dc-[0-9a-f]{16}")
 _DECISION_SURFACE_PROBE_ROOT = pathlib.Path(
     tempfile.mkdtemp(prefix="pitgun-v3-decision-surface-probe-")
 )
@@ -332,6 +333,69 @@ def _execute_v3_decision_surface_probe(
         }
 
 
+def _execute_v3_driver_control_probe(
+    probe_bytes: bytes,
+    scenario_bytes: bytes,
+    profile_bytes: bytes,
+    driver_experiment_bytes: bytes,
+    seed: int,
+) -> dict[str, Any]:
+    if not 0 <= seed <= 2**64 - 1:
+        raise ValueError("seed must be an unsigned 64-bit integer")
+    with tempfile.TemporaryDirectory(prefix="pitgun-v3-driver-control-") as temporary:
+        root = pathlib.Path(temporary)
+        probe = root / "v3_driver_control_probe"
+        scenario = root / "scenario.json"
+        profile = root / "profile.json"
+        driver_experiment = root / "driver-experiment.json"
+        probe.write_bytes(probe_bytes)
+        probe.chmod(0o500)
+        scenario.write_bytes(scenario_bytes)
+        profile.write_bytes(profile_bytes)
+        driver_experiment.write_bytes(driver_experiment_bytes)
+        process, execution_duration_ms = _run(
+            [
+                str(probe), str(scenario), str(profile),
+                str(driver_experiment), str(seed),
+            ]
+        )
+        if process.returncode != 0:
+            diagnostic = process.stderr.decode("utf-8", errors="replace").strip()
+            raise RunnerExecutionError(
+                "packaged V3 driver-control probe failed with exit "
+                f"{process.returncode}: {diagnostic}"
+            )
+        if process.stderr:
+            raise RunnerExecutionError(
+                "successful V3 driver-control probe wrote unexpected stderr"
+            )
+        try:
+            result = json.loads(process.stdout)
+        except (UnicodeDecodeError, json.JSONDecodeError) as error:
+            raise RunnerExecutionError(
+                "V3 driver-control probe returned invalid JSON"
+            ) from error
+        if result.get("schema_version") != "pitgun.racing-v3-driver-control-probe/v1":
+            raise RunnerExecutionError(
+                "V3 driver-control probe returned an unsupported contract"
+            )
+        return {
+            "schema_version": "pitgun.databricks-v3-driver-control-result/v1",
+            "adapter": {
+                "version": importlib.metadata.version("pitgun-databricks-adapter")
+            },
+            "runner_artifact": {
+                "kind": "v3_driver_control_probe",
+                "target": RUNNER_TARGET,
+                "digest": _sha256(probe_bytes),
+            },
+            "host": {"machine": platform.machine(), "system": platform.system()},
+            "measurements": {"execution_duration_ms": execution_duration_ms},
+            "canonical_result_digest": _sha256(process.stdout),
+            "result": result,
+        }
+
+
 def execute_packaged_racing(
     seed: int = 42, configuration_family: str = "balanced"
 ) -> dict[str, Any]:
@@ -559,4 +623,37 @@ def inspect_packaged_v3_decision_surface_probe() -> dict[str, str]:
 
     package = importlib.resources.files("pitgun_databricks_adapter")
     probe_bytes = package.joinpath("bin", "v3_decision_surface_probe").read_bytes()
+    return {"target": RUNNER_TARGET, "digest": _sha256(probe_bytes)}
+
+
+def execute_packaged_v3_driver_control(
+    execution_key: str,
+    campaign_name: str = "racing-v3-driver-control-surface-v1",
+) -> dict[str, Any]:
+    """Execute one exact governed driver-control surface point."""
+
+    from .driver_control import load_driver_control_execution
+
+    if not V3_DRIVER_CONTROL_EXECUTION_PATTERN.fullmatch(execution_key):
+        raise ValueError("driver-control execution key must be canonical")
+    configuration = load_driver_control_execution(execution_key, campaign_name)
+    package = importlib.resources.files("pitgun_databricks_adapter")
+    probe_bytes = package.joinpath("bin", "v3_driver_control_probe").read_bytes()
+    encode = lambda value: json.dumps(  # noqa: E731
+        value, indent=2, ensure_ascii=False
+    ).encode() + b"\n"
+    return _execute_v3_driver_control_probe(
+        probe_bytes,
+        encode(configuration["scenario"]),
+        encode(configuration["profile"]),
+        encode(configuration["driver_experiment"]),
+        int(configuration["seed"]),
+    )
+
+
+def inspect_packaged_v3_driver_control_probe() -> dict[str, str]:
+    """Return the exact packaged driver-control probe identity."""
+
+    package = importlib.resources.files("pitgun_databricks_adapter")
+    probe_bytes = package.joinpath("bin", "v3_driver_control_probe").read_bytes()
     return {"target": RUNNER_TARGET, "digest": _sha256(probe_bytes)}

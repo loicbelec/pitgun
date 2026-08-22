@@ -7,6 +7,7 @@ from pitgun_databricks_adapter import (
     execute_packaged_racing_scenario,
     execute_packaged_tuning_response,
     execute_packaged_v3_tire_degradation,
+    execute_packaged_v3_driver_control,
     inspect_packaged_runner,
     load_calibration_campaign,
     load_candidate_review_policy,
@@ -15,11 +16,13 @@ from pitgun_databricks_adapter import (
     load_opponent_audit_campaign,
     load_reference_campaign,
     load_tire_degradation_campaign,
+    load_driver_control_campaign,
     materialize_opponent_audit_plan,
     materialize_budget_effect_v2_plan,
     materialize_early_allocation_effect_plan,
     materialize_plan,
     materialize_tire_degradation_plan,
+    materialize_driver_control_plan,
 )
 
 
@@ -177,6 +180,20 @@ assert (
 )
 assert "tire_degradation_diagnostics" in v3_tire_result
 
+driver_manifest, driver_manifest_digest = load_driver_control_campaign()
+driver_plan = materialize_driver_control_plan(driver_manifest)
+assert driver_manifest_digest.startswith("sha256:")
+assert len(driver_plan) == driver_manifest["planned_run_count"] == 1584
+first_driver = next(
+    row for row in driver_plan if row["expected_local_evidence"] is not None
+)
+driver_result = execute_packaged_v3_driver_control(first_driver["execution_key"])["result"]
+expected_driver = first_driver["expected_local_evidence"]
+assert driver_result["experimental_execution_id"] == expected_driver["experimental_execution_id"]
+assert driver_result["scenario_digest"] == expected_driver["scenario_digest"]
+assert driver_result["profile_digest"] == expected_driver["profile_digest"]
+assert driver_result["driver_experiment_digest"] == expected_driver["driver_experiment_digest"]
+
 try:
     execute_packaged_racing(42, "../../arbitrary")
 except ValueError:
@@ -222,3 +239,10 @@ except ValueError:
     pass
 else:
     raise AssertionError("an arbitrary V3 configuration path was accepted")
+
+try:
+    execute_packaged_v3_driver_control("../../arbitrary")
+except ValueError:
+    pass
+else:
+    raise AssertionError("an arbitrary driver-control execution was accepted")

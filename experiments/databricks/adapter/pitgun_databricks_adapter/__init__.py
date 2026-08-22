@@ -43,10 +43,17 @@ from .runner import (
     execute_packaged_v3_tire_degradation,
     execute_packaged_v3_decision_surface,
     execute_packaged_v3_thermal_surface,
+    execute_packaged_v3_driver_control,
     inspect_packaged_runner,
     inspect_packaged_tuning_response_probe,
     inspect_packaged_v3_validation_probe,
     inspect_packaged_v3_decision_surface_probe,
+    inspect_packaged_v3_driver_control_probe,
+)
+from .driver_control import (
+    load_driver_control_campaign,
+    load_driver_control_execution,
+    materialize_driver_control_plan,
 )
 from .decision_surface import (
     load_decision_surface_campaign,
@@ -79,9 +86,14 @@ __all__ = [
     "execute_packaged_v3_tire_degradation",
     "execute_packaged_v3_decision_surface",
     "execute_packaged_v3_thermal_surface",
+    "execute_packaged_v3_driver_control",
     "inspect_packaged_tuning_response_probe",
     "inspect_packaged_v3_validation_probe",
     "inspect_packaged_v3_decision_surface_probe",
+    "inspect_packaged_v3_driver_control_probe",
+    "load_driver_control_campaign",
+    "load_driver_control_execution",
+    "materialize_driver_control_plan",
     "load_decision_surface_campaign",
     "load_decision_surface_execution",
     "materialize_decision_surface_plan",
