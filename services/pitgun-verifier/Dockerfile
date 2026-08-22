@@ -18,7 +18,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     && rm -rf /var/lib/apt/lists/* \
     && useradd --create-home --uid 10001 appuser \
-    && mkdir -p /opt/pitgun/policies /opt/pitgun/catalogs/racing/v1.0.0 /opt/pitgun/catalogs/racing/v1.2.0 /opt/pitgun/catalogs/racing/v1.3.0 /opt/pitgun/catalogs/racing/v1.5.0 \
+    && mkdir -p /opt/pitgun/policies /opt/pitgun/catalogs/racing/v1.0.0 /opt/pitgun/catalogs/racing/v1.2.0 /opt/pitgun/catalogs/racing/v1.3.0 /opt/pitgun/catalogs/racing/v1.5.0 /opt/pitgun/catalogs/racing/v1.6.0 \
     && chown -R appuser:appuser /opt/pitgun
 
 COPY --from=builder /app/target/release/pitgun-verifier /usr/local/bin/pitgun-verifier
@@ -27,6 +27,7 @@ COPY --from=builder /app/catalogs/racing/v1.0.0 /opt/pitgun/catalogs/racing/v1.0
 COPY --from=builder /app/catalogs/racing/v1.2.0 /opt/pitgun/catalogs/racing/v1.2.0
 COPY --from=builder /app/catalogs/racing/v1.3.0 /opt/pitgun/catalogs/racing/v1.3.0
 COPY --from=builder /app/catalogs/racing/v1.5.0 /opt/pitgun/catalogs/racing/v1.5.0
+COPY --from=builder /app/catalogs/racing/v1.6.0 /opt/pitgun/catalogs/racing/v1.6.0
 
 ENV PITGUN_VERIFIER_BIND=0.0.0.0:8080 \
     PITGUN_TUNING_POLICY_PATH=/opt/pitgun/policies/gametuning.v1.yaml \

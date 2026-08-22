@@ -100,8 +100,8 @@ jobs:
             --volume /tmp/pitgun-authority-signing-secret:/run/secrets/pitgun_authority_signing_secret:ro \
             --env PITGUN_SIGNING_SECRET_FILE=/run/secrets/pitgun_authority_signing_secret \
             --env PITGUN_SIGNING_KEY_ID=ci-smoke \
-            --env PITGUN_RACING_MODEL_VERSION=0.10.0 \
-            --env PITGUN_RACING_CATALOG_RELEASE_DIR=/opt/pitgun/catalogs/racing/v1.5.0 \
+            --env PITGUN_RACING_MODEL_VERSION=0.11.0 \
+            --env PITGUN_RACING_CATALOG_RELEASE_DIR=/opt/pitgun/catalogs/racing/v1.6.0 \
             "${LOCAL_IMAGE}"
 
           for attempt in $(seq 1 30); do
@@ -126,8 +126,8 @@ jobs:
               "catalog_release": {
                 "schema_version": "pitgun.catalog-release-identity/v1",
                 "id": "pitgun.racing",
-                "version": "1.5.0",
-                "manifest_digest": "sha256:a2a5298eb58fd951ae5bc7a069369b670dc60112ec124762d275617c7d876816"
+                "version": "1.6.0",
+                "manifest_digest": "sha256:5eccec6bb59baa8f1bcf1876ac087913ad393b53a2db1938532e08fb0393e20b"
               },
               "input": {
                 "track_id": "LASVEGAS",
@@ -141,10 +141,10 @@ jobs:
             --output /tmp/authority-response.json
 
           grep --fixed-strings \
-            '"id":"pitgun.racing.simulation","version":"1.5.0","digest":"sha256:4924af8598806ffc3589d1fe25c2198e89d2f426aa203482ad4139343a947789"' \
+            '"id":"pitgun.racing.simulation","version":"1.6.0","digest":"sha256:f1ef3d02473c8e67003e7c260f5bb2a1ec861a9d312f8a47bf654313e74fcc05"' \
             /tmp/authority-response.json
           grep --fixed-strings \
-            '"id":"pitgun.racing-v3-candidate","version":"0.10.0","digest":"sha256:cc1394a1ba52d83ddb9be6f6272729c29f87944969c41a21991d43997379e5cd"' \
+            '"id":"pitgun.racing-v3-candidate","version":"0.11.0","digest":"sha256:299ed6723fea676f431da80d59f3633e67eed252b6d34a2c737f067529aa6892"' \
             /tmp/authority-response.json
 
       - name: Build and push authority image
