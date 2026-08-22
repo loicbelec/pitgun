@@ -7,19 +7,23 @@ pub use catalog::{
     RacingCatalogBundleV1, RacingCatalogFileV1, RacingCatalogResolutionError, RacingCatalogSnapshot,
 };
 pub use thermal_profile::{
-    ResolvedV3ThermalFamilyProfileV1, V3_THERMAL_FAMILY_PROFILE_DIGEST,
+    ResolvedV3PowerUnitThermalProfileV2, ResolvedV3ThermalFamilyProfileV1,
+    V3_POWER_UNIT_THERMAL_PROFILE_DIGEST, V3_POWER_UNIT_THERMAL_PROFILE_SCHEMA,
+    V3_POWER_UNIT_THERMAL_PROFILE_VERSION, V3_THERMAL_FAMILY_PROFILE_DIGEST,
     V3_THERMAL_FAMILY_PROFILE_ID, V3_THERMAL_FAMILY_PROFILE_SCHEMA,
-    V3_THERMAL_FAMILY_PROFILE_VERSION, V3ThermalFamilyBindingsV1, V3ThermalFamilyEntryV1,
+    V3_THERMAL_FAMILY_PROFILE_VERSION, V3PowerUnitThermalBindingsV2, V3PowerUnitThermalEntryV2,
+    V3PowerUnitThermalProfileCandidateV2, V3PowerUnitThermalResolutionContractV2,
+    V3PowerUnitThermalResolutionV2, V3ThermalFamilyBindingsV1, V3ThermalFamilyEntryV1,
     V3ThermalFamilyProfileCandidateV1, V3ThermalFamilyResolutionContractV1,
     V3ThermalFamilyResolutionV1, V3ThermalFamilySourceEvidenceV1,
 };
 pub use workload::{
     RacingWorkload, RacingWorkloadError, racing_model_identity_for_version,
     racing_model_v1_identity, racing_model_v2_identity, racing_model_v3_aero_candidate_identity,
-    racing_model_v3_candidate_identity, racing_model_v3_development_candidate_identity,
-    racing_model_v3_fidelity_candidate_identity, racing_model_v3_fuel_mass_candidate_identity,
-    racing_model_v3_mechanical_candidate_identity, racing_model_v3_thermal_candidate_identity,
-    racing_model_v3_transmission_candidate_identity,
+    racing_model_v3_candidate_identity, racing_model_v3_component_candidate_identity,
+    racing_model_v3_development_candidate_identity, racing_model_v3_fidelity_candidate_identity,
+    racing_model_v3_fuel_mass_candidate_identity, racing_model_v3_mechanical_candidate_identity,
+    racing_model_v3_thermal_candidate_identity, racing_model_v3_transmission_candidate_identity,
 };
 
 use std::collections::HashMap;
@@ -161,6 +165,11 @@ pub struct RaceOutput {
     pub player_tire_degradation_diagnostics_v3: Option<TireDegradationDiagnosticsV3>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub player_thermal_family_resolution_v3: Option<V3ThermalFamilyResolutionV1>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub player_power_unit_thermal_resolution_v3: Option<V3PowerUnitThermalResolutionV2>,
+    #[serde(default, skip_serializing_if = "std::collections::BTreeMap::is_empty")]
+    pub competitor_power_unit_thermal_resolutions_v3:
+        std::collections::BTreeMap<String, V3PowerUnitThermalResolutionV2>,
 }
 
 /// Exact overrides for the mechanically resolved Model V3 experiment input.
@@ -537,6 +546,8 @@ pub enum V3CandidateExperimentProfileVersion {
     V7,
     #[serde(rename = "pitgun.racing-v3-experiment-profile/v8")]
     V8,
+    #[serde(rename = "pitgun.racing-v3-experiment-profile/v9")]
+    V9,
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq)]
@@ -606,7 +617,8 @@ impl V3CandidateExperimentProfile {
                 | V3CandidateExperimentProfileVersion::V5
                 | V3CandidateExperimentProfileVersion::V6
                 | V3CandidateExperimentProfileVersion::V7
-                | V3CandidateExperimentProfileVersion::V8,
+                | V3CandidateExperimentProfileVersion::V8
+                | V3CandidateExperimentProfileVersion::V9,
                 Some(aero),
                 Some(development),
                 Some(transmission),
@@ -647,21 +659,27 @@ impl V3CandidateExperimentProfile {
                 "V3 experiment profile V8 requires aero, development and transmission resolution"
                     .to_string(),
             ),
+            (V3CandidateExperimentProfileVersion::V9, _, _, _) => Err(
+                "V3 experiment profile V9 requires aero, development and transmission resolution"
+                    .to_string(),
+            ),
         };
         resolution?;
         match (self.schema_version, self.fuel_mass) {
             (
                 V3CandidateExperimentProfileVersion::V6
                 | V3CandidateExperimentProfileVersion::V7
-                | V3CandidateExperimentProfileVersion::V8,
+                | V3CandidateExperimentProfileVersion::V8
+                | V3CandidateExperimentProfileVersion::V9,
                 Some(fuel_mass),
             ) => fuel_mass.validate(),
             (
                 V3CandidateExperimentProfileVersion::V6
                 | V3CandidateExperimentProfileVersion::V7
-                | V3CandidateExperimentProfileVersion::V8,
+                | V3CandidateExperimentProfileVersion::V8
+                | V3CandidateExperimentProfileVersion::V9,
                 None,
-            ) => Err("V3 experiment profiles V6 through V8 require fuel_mass".to_string()),
+            ) => Err("V3 experiment profiles V6 through V9 require fuel_mass".to_string()),
             (_, None) => Ok(()),
             (_, Some(_)) => {
                 Err("historical V3 experiment profiles cannot define fuel_mass".to_string())
@@ -669,13 +687,17 @@ impl V3CandidateExperimentProfile {
         }?;
         match (self.schema_version, self.tire_degradation) {
             (
-                V3CandidateExperimentProfileVersion::V7 | V3CandidateExperimentProfileVersion::V8,
+                V3CandidateExperimentProfileVersion::V7
+                | V3CandidateExperimentProfileVersion::V8
+                | V3CandidateExperimentProfileVersion::V9,
                 Some(tire_degradation),
             ) => tire_degradation.validate(),
             (
-                V3CandidateExperimentProfileVersion::V7 | V3CandidateExperimentProfileVersion::V8,
+                V3CandidateExperimentProfileVersion::V7
+                | V3CandidateExperimentProfileVersion::V8
+                | V3CandidateExperimentProfileVersion::V9,
                 None,
-            ) => Err("V3 experiment profiles V7 and V8 require tire_degradation".to_string()),
+            ) => Err("V3 experiment profiles V7 through V9 require tire_degradation".to_string()),
             (_, None) => Ok(()),
             (_, Some(_)) => {
                 Err("historical V3 experiment profiles cannot define tire_degradation".to_string())
@@ -686,6 +708,8 @@ impl V3CandidateExperimentProfile {
             (V3CandidateExperimentProfileVersion::V8, None) => {
                 Err("V3 experiment profile V8 requires engine_thermal_resolution".to_string())
             }
+            (V3CandidateExperimentProfileVersion::V9, None) => Ok(()),
+            (V3CandidateExperimentProfileVersion::V9, Some(thermal)) => thermal.validate(),
             (_, None) => Ok(()),
             (_, Some(_)) => Err(
                 "historical V3 experiment profiles cannot define engine_thermal_resolution"
@@ -715,6 +739,9 @@ impl V3CandidateExperimentProfile {
             }
             V3CandidateExperimentProfileVersion::V7 => racing_model_v3_candidate_identity(),
             V3CandidateExperimentProfileVersion::V8 => racing_model_v3_thermal_candidate_identity(),
+            V3CandidateExperimentProfileVersion::V9 => {
+                racing_model_v3_component_candidate_identity()
+            }
         }
     }
 
@@ -725,6 +752,7 @@ impl V3CandidateExperimentProfile {
                 | V3CandidateExperimentProfileVersion::V6
                 | V3CandidateExperimentProfileVersion::V7
                 | V3CandidateExperimentProfileVersion::V8
+                | V3CandidateExperimentProfileVersion::V9
         )
     }
 
@@ -735,6 +763,7 @@ impl V3CandidateExperimentProfile {
                 | V3CandidateExperimentProfileVersion::V6
                 | V3CandidateExperimentProfileVersion::V7
                 | V3CandidateExperimentProfileVersion::V8
+                | V3CandidateExperimentProfileVersion::V9
         )
     }
 }
@@ -1480,7 +1509,10 @@ pub fn run_race_with_catalog_and_v3_profile(
             laps: normalized_race.laps,
             seed: request.seed,
             initial_fuel_mass_kg,
-            model: SessionPhysicalModel::V3Candidate { profile },
+            model: SessionPhysicalModel::V3Candidate {
+                profile,
+                power_unit_thermal_profile: None,
+            },
         },
     )
 }
@@ -1509,6 +1541,80 @@ pub fn run_race_with_catalog_and_v3_thermal_family_profile(
     let mut output = run_race_with_catalog_and_v3_profile(request, snapshot, &profile)?;
     output.player_thermal_family_resolution_v3 = Some(resolved.evidence);
     Ok(output)
+}
+
+/// Runs Model V3 with thermal coefficients selected independently for every
+/// competitor from the exact power unit installed by component composition.
+///
+/// This is a candidate boundary: catalog 1.5.0 and Model 0.10.0 keep their
+/// historical vehicle-bound semantics unchanged.
+pub fn run_race_with_catalog_and_v3_power_unit_thermal_profile(
+    request: RunRaceRequest,
+    snapshot: &RacingCatalogSnapshot,
+    candidate: &V3PowerUnitThermalProfileCandidateV2,
+) -> Result<RaceOutput, String> {
+    candidate.validate()?;
+    let profile = V3CandidateExperimentProfile {
+        schema_version: V3CandidateExperimentProfileVersion::V9,
+        engine_thermal_resolution: None,
+        ..V3CandidateExperimentProfile::default()
+    };
+    run_race_with_catalog_and_v3_component_profile(request, snapshot, &profile, candidate)
+}
+
+fn run_race_with_catalog_and_v3_component_profile(
+    request: RunRaceRequest,
+    snapshot: &RacingCatalogSnapshot,
+    profile: &V3CandidateExperimentProfile,
+    candidate: &V3PowerUnitThermalProfileCandidateV2,
+) -> Result<RaceOutput, String> {
+    profile
+        .validate()
+        .map_err(|error| format!("invalid V3 component experiment profile: {error}"))?;
+    if profile.schema_version != V3CandidateExperimentProfileVersion::V9 {
+        return Err("power-unit thermal selection requires V3 experiment profile V9".to_string());
+    }
+    if profile.engine_thermal_resolution.is_some() {
+        return Err(
+            "power-unit thermal selection rejects a pre-resolved thermal profile".to_string(),
+        );
+    }
+    if request.input.race.competitors.is_empty() {
+        return Err("race requires at least one competitor".to_string());
+    }
+    let validation_era = request.era.unwrap_or(request.input.era);
+    let normalized_race = normalize_and_validate_race_input(
+        &request.input.race,
+        if validation_era > 0 {
+            validation_era as u32
+        } else {
+            0
+        },
+    )
+    .map_err(|err| format!("invalid race input: {err}"))?;
+    let vehicle_id = resolve_vehicle_id(request.input.vehicle_id.as_deref())?;
+    let catalog = EmbeddedCatalog::from_snapshot(snapshot)?;
+    let initial_fuel_mass_kg = request.input.initial_fuel_mass_kg.unwrap_or(100.0);
+    if !initial_fuel_mass_kg.is_finite() || !(1.0..=200.0).contains(&initial_fuel_mass_kg) {
+        return Err("V3 initial fuel mass must be in [1, 200] kg".to_string());
+    }
+    run_single_session(
+        &catalog,
+        &normalized_race,
+        vehicle_id,
+        &request.input.competitor_vehicle_components,
+        SessionExecution {
+            pit_strategy: request.input.pit_strategy.as_ref(),
+            track_profile: request.input.track_profile.as_ref(),
+            laps: normalized_race.laps,
+            seed: request.seed,
+            initial_fuel_mass_kg,
+            model: SessionPhysicalModel::V3Candidate {
+                profile,
+                power_unit_thermal_profile: Some(candidate),
+            },
+        },
+    )
 }
 
 pub fn run_sessions(request: SessionRunRequest) -> Result<SessionRunOutput, String> {
@@ -1589,6 +1695,7 @@ enum SessionPhysicalModel<'a> {
     },
     V3Candidate {
         profile: &'a V3CandidateExperimentProfile,
+        power_unit_thermal_profile: Option<&'a V3PowerUnitThermalProfileCandidateV2>,
     },
 }
 
@@ -1634,16 +1741,45 @@ fn run_single_session(
     let mut player_mechanical_diagnostics_v3 = None;
     let mut player_fuel_mass_diagnostics_v3 = None;
     let mut player_tire_degradation_diagnostics_v3 = None;
+    let mut player_power_unit_thermal_resolution_v3 = None;
+    let mut competitor_power_unit_thermal_resolutions_v3 = std::collections::BTreeMap::new();
 
     for competitor in &race.competitors {
-        let resolved_vehicle = catalog.resolve_vehicle_with_components(
-            vehicle_id,
-            competitor_vehicle_components.get(&competitor.id),
-        )?;
+        let component_selection = competitor_vehicle_components.get(&competitor.id);
+        let resolved_vehicle =
+            catalog.resolve_vehicle_with_components(vehicle_id, component_selection)?;
+        let effective_v3_profile = match model {
+            SessionPhysicalModel::Historical { .. } => None,
+            SessionPhysicalModel::V3Candidate {
+                profile,
+                power_unit_thermal_profile,
+            } => {
+                let mut resolved_profile = *profile;
+                if let Some(candidate) = power_unit_thermal_profile {
+                    let power_unit_id = catalog
+                        .resolve_engine_id_with_components(vehicle_id, component_selection)?;
+                    let thermal = candidate.resolve_power_unit(power_unit_id)?;
+                    resolved_profile.engine_thermal_resolution =
+                        Some(thermal.engine_thermal_resolution);
+                    competitor_power_unit_thermal_resolutions_v3
+                        .insert(competitor.id.clone(), thermal.evidence.clone());
+                    if competitor.is_player || competitor.id == "player" {
+                        player_power_unit_thermal_resolution_v3 = Some(thermal.evidence);
+                    }
+                }
+                resolved_profile.validate().map_err(|error| {
+                    format!(
+                        "cannot resolve V3 profile for competitor {}: {error}",
+                        competitor.id
+                    )
+                })?;
+                Some(resolved_profile)
+            }
+        };
         let stint_plan =
             resolve_stint_plan(competitor, laps, &resolved_vehicle.1, &player_pit_laps)?;
-        let initial_vehicle = match model {
-            SessionPhysicalModel::V3Candidate { profile } if profile.applies_first_stint_tire() => {
+        let initial_vehicle = match effective_v3_profile {
+            Some(profile) if profile.applies_first_stint_tire() => {
                 let tire_id = stint_plan
                     .tire_by_lap
                     .first()
@@ -1694,12 +1830,15 @@ fn run_single_session(
             driver,
             tuning: Some(tuning.clone()),
         };
-        let mut result = match model {
-            SessionPhysicalModel::Historical {
-                tuning_response,
-                curvature_response,
-            } => solve_with_model_response(&request, tuning_response, curvature_response),
-            SessionPhysicalModel::V3Candidate { profile } => {
+        let mut result = match (model, effective_v3_profile.as_ref()) {
+            (
+                SessionPhysicalModel::Historical {
+                    tuning_response,
+                    curvature_response,
+                },
+                None,
+            ) => solve_with_model_response(&request, tuning_response, curvature_response),
+            (SessionPhysicalModel::V3Candidate { .. }, Some(profile)) => {
                 let physical_vehicle =
                     resolve_v3_physical_vehicle_with_profile(&request.vehicle, &tuning, profile)
                         .map_err(|error| {
@@ -1740,14 +1879,12 @@ fn run_single_session(
                     }),
                 })
             }
+            _ => unreachable!("session model and resolved V3 profile must agree"),
         }
         .map_err(|err| format!("simulation failed for competitor {}: {err}", competitor.id))?;
 
-        if matches!(
-            model,
-            SessionPhysicalModel::V3Candidate { profile }
-                if profile.transmission_resolution.is_some()
-        ) && let Some(diagnostics) = result.mechanical_diagnostics_v3.as_mut()
+        if effective_v3_profile.is_some_and(|profile| profile.transmission_resolution.is_some())
+            && let Some(diagnostics) = result.mechanical_diagnostics_v3.as_mut()
         {
             diagnostics.theoretical_top_speed_at_max_rpm_kph = Some(
                 theoretical_top_speed_at_max_rpm_kph(&result.applied_vehicle)?,
@@ -1760,15 +1897,17 @@ fn run_single_session(
 
         if competitor.is_player || competitor.id == "player" {
             let telemetry_hz = 5.0;
-            let engine_thermal = match model {
-                SessionPhysicalModel::V3Candidate { profile } => profile
-                    .engine_thermal_resolution
-                    .map(|thermal| EngineThermalParamsV3 {
-                        derating_shape: thermal.derating_shape,
-                        smooth_knee_width_c: thermal.smooth_knee_width_c,
-                        minimum_power_fraction: thermal.minimum_power_fraction,
-                    }),
-                SessionPhysicalModel::Historical { .. } => None,
+            let engine_thermal = match effective_v3_profile {
+                Some(profile) => {
+                    profile
+                        .engine_thermal_resolution
+                        .map(|thermal| EngineThermalParamsV3 {
+                            derating_shape: thermal.derating_shape,
+                            smooth_knee_width_c: thermal.smooth_knee_width_c,
+                            minimum_power_fraction: thermal.minimum_power_fraction,
+                        })
+                }
+                None => None,
             };
             let resampled = resample_telemetry_with_engine_thermal(
                 &request.track,
@@ -1836,6 +1975,8 @@ fn run_single_session(
         player_fuel_mass_diagnostics_v3,
         player_tire_degradation_diagnostics_v3,
         player_thermal_family_resolution_v3: None,
+        player_power_unit_thermal_resolution_v3,
+        competitor_power_unit_thermal_resolutions_v3,
     })
 }
 
@@ -1898,6 +2039,32 @@ pub fn run_race_with_catalog_and_v3_thermal_family_profile_json(
     };
 
     match run_race_with_catalog_and_v3_thermal_family_profile(request, &catalog, &candidate) {
+        Ok(output) => serialize_json(&output),
+        Err(error) => json_error(&error),
+    }
+}
+
+/// Browser facade for per-competitor power-unit thermal selection.
+#[cfg_attr(feature = "wasm", wasm_bindgen)]
+pub fn run_race_with_catalog_and_v3_power_unit_thermal_profile_json(
+    input_json: String,
+    catalog_bundle_json: String,
+    candidate_json: String,
+) -> String {
+    let request = match parse_run_race_request(&input_json) {
+        Ok(request) => request,
+        Err(error) => return json_error(&error),
+    };
+    let catalog = match RacingCatalogSnapshot::from_bundle_json(&catalog_bundle_json) {
+        Ok(catalog) => catalog,
+        Err(error) => return json_error(&format!("invalid Racing catalog: {error}")),
+    };
+    let candidate = match V3PowerUnitThermalProfileCandidateV2::from_exact_json(&candidate_json) {
+        Ok(candidate) => candidate,
+        Err(error) => return json_error(&error),
+    };
+
+    match run_race_with_catalog_and_v3_power_unit_thermal_profile(request, &catalog, &candidate) {
         Ok(output) => serialize_json(&output),
         Err(error) => json_error(&error),
     }
@@ -2641,6 +2808,27 @@ impl EmbeddedCatalog {
             },
             tire_id.to_string(),
         ))
+    }
+
+    fn resolve_engine_id_with_components<'a>(
+        &'a self,
+        vehicle_id: &str,
+        selection: Option<&'a VehicleComponentSelectionV1>,
+    ) -> Result<&'a str, String> {
+        let record = self
+            .vehicles
+            .get(vehicle_id)
+            .ok_or_else(|| format!("unknown vehicle '{vehicle_id}'"))?;
+        if let Some(selection) = selection {
+            validate_component_selection(selection)?;
+        }
+        let engine_id = selection
+            .and_then(|value| value.engine_id.as_deref())
+            .unwrap_or(&record.engine_id);
+        if !self.engines.contains_key(engine_id) {
+            return Err(format!("unknown engine '{engine_id}'"));
+        }
+        Ok(engine_id)
     }
 
     fn resolve_tire(&self, tire_id: &str) -> Result<TireParams, String> {

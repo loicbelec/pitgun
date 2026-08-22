@@ -19,16 +19,18 @@ pub use pitgun_racing_simulator::{
     SessionRunOutput, SessionRunRequest, SessionRunResult, SimConfig, SimulationRequest,
     SimulationResult, SimulationSolution, SolverTrackProfile, StandingEntry, StandingStatus,
     TelemetryEnvelope, TireCatalogEntry, TireParams, Track, Tuning,
-    V3_THERMAL_FAMILY_PROFILE_DIGEST, V3ThermalFamilyProfileCandidateV1,
-    V3ThermalFamilyResolutionV1, VehicleCatalogEntry, VehicleParams, VehicleState,
-    apply_driver_to_tire, apply_tuning, best_power_at_speed, catalog_snapshot,
-    catalog_snapshot_with_catalog, derating_factor, driver_effects, effective_mu,
+    V3_POWER_UNIT_THERMAL_PROFILE_DIGEST, V3_THERMAL_FAMILY_PROFILE_DIGEST,
+    V3PowerUnitThermalProfileCandidateV2, V3PowerUnitThermalResolutionV2,
+    V3ThermalFamilyProfileCandidateV1, V3ThermalFamilyResolutionV1, VehicleCatalogEntry,
+    VehicleParams, VehicleState, apply_driver_to_tire, apply_tuning, best_power_at_speed,
+    catalog_snapshot, catalog_snapshot_with_catalog, derating_factor, driver_effects, effective_mu,
     execute_authorized_race, get_circuit, get_circuit_with_catalog, get_engine,
     get_engine_with_catalog, list_browser_circuits, list_circuits, list_drivers, list_engines,
     list_tires, list_vehicles, power_kw_from_rpm, racing_model_v1_identity,
     racing_model_v2_identity, resample_solution, rpm_from_speed_gear, run_race,
-    run_race_with_catalog, run_race_with_catalog_and_v3_thermal_family_profile, run_sessions,
-    run_sessions_with_catalog, solve,
+    run_race_with_catalog, run_race_with_catalog_and_v3_power_unit_thermal_profile,
+    run_race_with_catalog_and_v3_thermal_family_profile, run_sessions, run_sessions_with_catalog,
+    solve,
 };
 use wasm_bindgen::prelude::*;
 
@@ -83,6 +85,19 @@ pub fn run_race_with_catalog_and_v3_thermal_family_profile_json(
     candidate_json: String,
 ) -> String {
     pitgun_racing_simulator::run_race_with_catalog_and_v3_thermal_family_profile_json(
+        input_json,
+        catalog_bundle_json,
+        candidate_json,
+    )
+}
+
+#[wasm_bindgen]
+pub fn run_race_with_catalog_and_v3_power_unit_thermal_profile_json(
+    input_json: String,
+    catalog_bundle_json: String,
+    candidate_json: String,
+) -> String {
+    pitgun_racing_simulator::run_race_with_catalog_and_v3_power_unit_thermal_profile_json(
         input_json,
         catalog_bundle_json,
         candidate_json,

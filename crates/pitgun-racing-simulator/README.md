@@ -59,3 +59,19 @@ same model, candidate, family and parameter-set identity to `RaceOutput`.
 These APIs are an integration gate, not a published workload. The game and
 hosted-verification services continue using their current catalog until a
 later coordinated release authorizes the candidate model and profile.
+
+## Component-composed Model V3 candidate
+
+The next candidate boundary, Model `0.11.0`, versions thermal selection as
+`V3PowerUnitThermalProfileCandidateV2`. It selects one reviewed thermal family
+from the exact `installed_power_unit_id` of every competitor. Consequently,
+two cars in one deterministic race may use different power units and thermal
+parameters without changing their common vehicle-shell baseline.
+
+Native Rust uses
+`run_race_with_catalog_and_v3_power_unit_thermal_profile`; WASM and other JSON
+adapters use the matching `_json` facade. `RaceOutput` records the exact
+candidate, model, family, installed power-unit, parameter-set and reviewed
+profile digest for every competitor. Unknown, missing, duplicate or mutated
+bindings fail closed. Catalog `1.5.0` remains byte-for-byte vehicle-bound and
+replayable; publication of this candidate requires a later catalog identity.
