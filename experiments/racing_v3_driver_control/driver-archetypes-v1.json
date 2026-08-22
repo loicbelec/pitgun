@@ -1,0 +1,41 @@
+{
+  "schema_version": "pitgun.racing-driver-archetype-screen/v1",
+  "drivers": [
+    {
+      "schema_version": "pitgun.racing-driver/v2",
+      "id": "balanced_reference",
+      "traits": {
+        "limit_exploitation": 0.84,
+        "consistency": 0.84,
+        "tire_management": 0.84
+      }
+    },
+    {
+      "schema_version": "pitgun.racing-driver/v2",
+      "id": "limit_specialist",
+      "traits": {
+        "limit_exploitation": 0.96,
+        "consistency": 0.68,
+        "tire_management": 0.62
+      }
+    },
+    {
+      "schema_version": "pitgun.racing-driver/v2",
+      "id": "smooth_operator",
+      "traits": {
+        "limit_exploitation": 0.82,
+        "consistency": 0.97,
+        "tire_management": 0.76
+      }
+    },
+    {
+      "schema_version": "pitgun.racing-driver/v2",
+      "id": "tire_manager",
+      "traits": {
+        "limit_exploitation": 0.78,
+        "consistency": 0.88,
+        "tire_management": 0.98
+      }
+    }
+  ]
+}
