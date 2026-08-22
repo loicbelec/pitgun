@@ -38,6 +38,7 @@ def wheel_entries(version: str) -> dict[str, bytes]:
     tuning_response_probe = ROOT / "build" / "tuning_response_probe"
     v3_validation_probe = ROOT / "build" / "v3_validation_probe"
     v3_decision_surface_probe = ROOT / "build" / "v3_decision_surface_probe"
+    v3_driver_control_probe = ROOT / "build" / "v3_driver_control_probe"
     scenario_roots = (
         FRAMEWORK / "apps" / "pitgun-cli" / "scenarios" / "racing-batch-v1",
         FRAMEWORK / "apps" / "pitgun-cli" / "scenarios" / "racing-circuit-sweep-v1",
@@ -63,6 +64,10 @@ def wheel_entries(version: str) -> dict[str, bytes]:
     if not v3_decision_surface_probe.is_file():
         raise SystemExit(
             f"missing Linux V3 decision-surface probe: {v3_decision_surface_probe}"
+        )
+    if not v3_driver_control_probe.is_file():
+        raise SystemExit(
+            f"missing Linux V3 driver-control probe: {v3_driver_control_probe}"
         )
 
     dist_info = f"{DISTRIBUTION}-{version}.dist-info"
@@ -103,11 +108,17 @@ def wheel_entries(version: str) -> dict[str, bytes]:
         f"{PACKAGE}/thermal_surface.py": (
             package_root / "thermal_surface.py"
         ).read_bytes(),
+        f"{PACKAGE}/driver_control.py": (
+            package_root / "driver_control.py"
+        ).read_bytes(),
         f"{PACKAGE}/bin/pitgun": runner.read_bytes(),
         f"{PACKAGE}/bin/tuning_response_probe": tuning_response_probe.read_bytes(),
         f"{PACKAGE}/bin/v3_validation_probe": v3_validation_probe.read_bytes(),
         f"{PACKAGE}/bin/v3_decision_surface_probe": (
             v3_decision_surface_probe.read_bytes()
+        ),
+        f"{PACKAGE}/bin/v3_driver_control_probe": (
+            v3_driver_control_probe.read_bytes()
         ),
         f"{dist_info}/METADATA": (
             "Metadata-Version: 2.1\n"
@@ -176,6 +187,7 @@ def main() -> None:
                     "/tuning_response_probe",
                     "/v3_validation_probe",
                     "/v3_decision_surface_probe",
+                    "/v3_driver_control_probe",
                 )
             )
             info.external_attr = (0o755 if executable else 0o644) << 16

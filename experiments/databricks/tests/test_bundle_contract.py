@@ -9,6 +9,18 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 
 
 class BundleContractTest(unittest.TestCase):
+    def test_v3_driver_control_job_is_packaged_bounded_and_non_promoting(self):
+        job = (ROOT / "resources/jobs.yml").read_text()
+        builder = (ROOT / "adapter/build_wheel.py").read_text()
+        notebook = (ROOT / "src/execute_v3_driver_control_surface.py").read_text()
+        self.assertIn("v3_driver_control_surface_job:", job)
+        self.assertIn("campaign_name: racing-v3-driver-control-surface-v1", job)
+        self.assertIn('f"{PACKAGE}/driver_control.py"', builder)
+        self.assertIn('f"{PACKAGE}/bin/v3_driver_control_probe"', builder)
+        self.assertIn("load_driver_control_campaign", notebook)
+        self.assertIn("execute_packaged_v3_driver_control", notebook)
+        self.assertNotIn('"automatic_catalog_promotion": True', notebook)
+
     def test_python_sources_are_syntactically_valid(self):
         for path in ROOT.rglob("*.py"):
             if path != pathlib.Path(__file__):

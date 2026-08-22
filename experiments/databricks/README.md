@@ -66,6 +66,7 @@ databricks bundle run budget_effect_v2_job -t dev -p pitgun-free
 databricks bundle run early_allocation_effect_job -t dev -p pitgun-free
 databricks bundle run v3_tire_degradation_job -t dev -p pitgun-free
 databricks bundle run v3_decision_surface_job -t dev -p pitgun-free
+databricks bundle run v3_driver_control_surface_job -t dev -p pitgun-free
 databricks bundle run v3_response_surface_review_job -t dev -p pitgun-free \
   --params vehicle_id=f1_2026,circuit_id=it-1922
 databricks bundle run v3_thermal_refinement_validation_job -t dev -p pitgun-free
@@ -272,6 +273,34 @@ stores new Delta and MLflow evidence but cannot promote a profile.
 The read-only `v3_thermal_refinement_review_job` pins the completed V2 campaign
 to exact Delta versions, reconciles its 12 executions and returns the recorded
 family-level verdicts. It cannot write governed state or publish a profile.
+
+## Model V3 driver-control coefficient surface
+
+The checksummed
+[`racing-v3-driver-control-surface-v1.json`](campaigns/racing-v3-driver-control-surface-v1.json)
+manifest converts the governed local driver-control screen into a bounded
+Databricks experiment. It evaluates the current V10 profile plus 32
+deterministic Halton points over ordered mode commitments, commitment-driven
+control error, its exponent, and correction workload. Each profile is compared
+on the same 48 circuit, horizon, driver, mode, and seed combinations, for 1,584
+native Rust executions in total.
+
+The 48 baseline points must reproduce their local identities and metrics before
+they can be accepted. The full 702-case local matrix remains outside this
+selection campaign: Suzuka, two driver archetypes, soft/hard compounds and seed
+99 are explicitly reserved for independent validation of a human-selected
+candidate.
+
+`v3_driver_control_surface_job` resumes accepted Delta natural keys, records raw
+evidence and normalized metrics, then ranks parameter sets. Eligibility requires
+some short-run utility for `ATTACK`, at least one non-`ATTACK` long-run winner,
+physical error/workload ordering, and no pathological result. The report always
+ends with `candidate_selected=false` and cannot publish a catalog or game change.
+
+```bash
+databricks bundle deploy -t dev -p pitgun-free
+databricks bundle run v3_driver_control_surface_job -t dev -p pitgun-free
+```
 
 ## Reference campaign
 
