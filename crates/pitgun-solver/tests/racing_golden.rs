@@ -14,13 +14,14 @@ use pitgun_racing_simulator::{
     run_race_with_catalog_and_v3_candidate,
 };
 use pitgun_solver::evidence::{
-    RacingExecutionResolutionVersion, RacingHostedExecutionRequestV1,
-    RacingHostedExecutionRequestVersion, RacingRunEvidenceV1, RacingVerificationSubmissionV1,
+    RacingAuthorizedApplicationResultVersion, RacingExecutionResolutionVersion,
+    RacingHostedExecutionRequestV1, RacingHostedExecutionRequestVersion, RacingRunEvidenceV1,
+    RacingVerificationSubmissionV1,
 };
 use pitgun_solver::{
     RaceOutput, RacingCatalogFileV1, RacingCatalogSnapshot, RunRaceInput, RunRaceRequest,
-    execute_authorized_race, execute_authorized_race_json, racing_model_v1_identity,
-    racing_model_v2_identity, run_race_json,
+    execute_authorized_race, execute_authorized_race_application, execute_authorized_race_json,
+    racing_model_v1_identity, racing_model_v2_identity, run_race_json,
 };
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
@@ -509,11 +510,49 @@ fn hosted_racing_execution_emits_complete_portable_evidence() {
             .expect("execution id"),
         wasm_artifact_digest: Digest::from_bytes(b"exact-golden-wasm-module"),
     };
+    let application = execute_authorized_race_application(request.clone(), &catalog)
+        .expect("application-facing hosted execution");
+    assert_eq!(
+        application.schema_version,
+        RacingAuthorizedApplicationResultVersion::V1
+    );
+    assert!(
+        !application.runtime_output.player_batches.is_empty(),
+        "the application projection must retain raw player telemetry"
+    );
+    assert_eq!(
+        application.runtime_output.player_lap_times_ms,
+        application.evidence.output.player_lap_times_ms
+    );
+    assert_eq!(
+        application.runtime_output.player_pit_laps,
+        application.evidence.output.player_pit_laps
+    );
+    assert_eq!(
+        application.runtime_output.standings.len(),
+        application.evidence.output.standings.len()
+    );
+    for (runtime, canonical) in application
+        .runtime_output
+        .standings
+        .iter()
+        .zip(&application.evidence.output.standings)
+    {
+        assert_eq!(runtime.competitor_id, canonical.competitor_id);
+        assert_eq!(runtime.position, canonical.position);
+        assert_eq!(runtime.total_time_ms, canonical.total_time_ms);
+        assert_eq!(runtime.best_lap_ms, canonical.best_lap_ms);
+    }
     let response = execute_authorized_race_json(
         serde_json::to_string(&request).expect("hosted execution request"),
     );
     let submission: RacingVerificationSubmissionV1 = serde_json::from_str(&response)
         .unwrap_or_else(|error| panic!("invalid hosted evidence: {error}: {response}"));
+    assert_eq!(
+        serde_json::to_value(&application.evidence).expect("application evidence JSON"),
+        serde_json::to_value(&submission).expect("legacy evidence JSON"),
+        "the application envelope must not alter verifier evidence"
+    );
 
     let actual = HostedWasmGoldenDigests {
         run_id: submission.receipt.receipt.run_id,

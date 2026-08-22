@@ -2121,6 +2121,25 @@ pub fn execute_authorized_race_json(request_json: String) -> String {
     }
 }
 
+/// Executes one signed Racing contract and exposes its application projection.
+#[cfg_attr(feature = "wasm", wasm_bindgen)]
+pub fn execute_authorized_race_application_json(request_json: String) -> String {
+    let request =
+        match serde_json::from_str::<evidence::RacingHostedExecutionRequestV1>(&request_json) {
+            Ok(request) => request,
+            Err(error) => return json_error(&format!("invalid hosted execution request: {error}")),
+        };
+    let catalog = match RacingCatalogSnapshot::embedded() {
+        Ok(catalog) => catalog,
+        Err(error) => return json_error(&format!("invalid embedded Racing catalog: {error}")),
+    };
+
+    match execute_authorized_race_application(request, &catalog) {
+        Ok(result) => serialize_json(&result),
+        Err(error) => json_error(&error),
+    }
+}
+
 /// Executes one signed Racing contract through caller-fetched immutable catalog bytes.
 #[cfg_attr(feature = "wasm", wasm_bindgen)]
 pub fn execute_authorized_race_with_catalog_json(
@@ -2143,11 +2162,42 @@ pub fn execute_authorized_race_with_catalog_json(
     }
 }
 
+/// Executes one signed Racing contract against caller-fetched catalog bytes
+/// and exposes complete local runtime data beside the unchanged evidence.
+#[cfg_attr(feature = "wasm", wasm_bindgen)]
+pub fn execute_authorized_race_application_with_catalog_json(
+    request_json: String,
+    catalog_bundle_json: String,
+) -> String {
+    let request =
+        match serde_json::from_str::<evidence::RacingHostedExecutionRequestV1>(&request_json) {
+            Ok(request) => request,
+            Err(error) => return json_error(&format!("invalid hosted execution request: {error}")),
+        };
+    let catalog = match RacingCatalogSnapshot::from_bundle_json(&catalog_bundle_json) {
+        Ok(catalog) => catalog,
+        Err(error) => return json_error(&format!("invalid Racing catalog: {error}")),
+    };
+
+    match execute_authorized_race_application(request, &catalog) {
+        Ok(result) => serialize_json(&result),
+        Err(error) => json_error(&error),
+    }
+}
+
 /// Produces the complete hosted-verification evidence for one browser attempt.
 pub fn execute_authorized_race(
     request: evidence::RacingHostedExecutionRequestV1,
     catalog: &RacingCatalogSnapshot,
 ) -> Result<evidence::RacingVerificationSubmissionV1, String> {
+    execute_authorized_race_application(request, catalog).map(|result| result.evidence)
+}
+
+/// Produces verifier evidence and complete application data from one linked run.
+pub fn execute_authorized_race_application(
+    request: evidence::RacingHostedExecutionRequestV1,
+    catalog: &RacingCatalogSnapshot,
+) -> Result<evidence::RacingAuthorizedApplicationResultV1, String> {
     request
         .signed_authorization
         .authorization
@@ -2181,7 +2231,7 @@ pub fn execute_authorized_race(
     let execution_resolution =
         evidence::RacingExecutionResolutionV1::from_catalog(catalog, &contract.model);
 
-    Ok(evidence::RacingVerificationSubmissionV1 {
+    let evidence = evidence::RacingVerificationSubmissionV1 {
         signed_authorization: request.signed_authorization,
         input: request.input,
         receipt: RunBundleReceiptV1 {
@@ -2191,6 +2241,12 @@ pub fn execute_authorized_race(
         output: execution.evidence.output,
         telemetry_summary: execution.evidence.telemetry_summary,
         execution_resolution,
+    };
+
+    Ok(evidence::RacingAuthorizedApplicationResultV1 {
+        schema_version: evidence::RacingAuthorizedApplicationResultVersion::V1,
+        evidence,
+        runtime_output: execution.output,
     })
 }
 

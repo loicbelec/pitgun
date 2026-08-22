@@ -7,6 +7,7 @@ pub mod rng;
 
 pub use pitgun_racing_simulator::evidence;
 pub use pitgun_racing_simulator::evidence::{
+    RacingAuthorizedApplicationResultV1, RacingAuthorizedApplicationResultVersion,
     RacingHostedExecutionRequestV1, RacingHostedExecutionRequestVersion,
     RacingVerificationSubmissionV1,
 };
@@ -24,12 +25,12 @@ pub use pitgun_racing_simulator::{
     V3ThermalFamilyProfileCandidateV1, V3ThermalFamilyResolutionV1, VehicleCatalogEntry,
     VehicleParams, VehicleState, apply_driver_to_tire, apply_tuning, best_power_at_speed,
     catalog_snapshot, catalog_snapshot_with_catalog, derating_factor, driver_effects, effective_mu,
-    execute_authorized_race, get_circuit, get_circuit_with_catalog, get_engine,
-    get_engine_with_catalog, list_browser_circuits, list_circuits, list_drivers, list_engines,
-    list_tires, list_vehicles, power_kw_from_rpm, racing_model_v1_identity,
-    racing_model_v2_identity, resample_solution, resolve_vehicle_capabilities_with_catalog,
-    rpm_from_speed_gear, run_race, run_race_with_catalog,
-    run_race_with_catalog_and_v3_power_unit_thermal_profile,
+    execute_authorized_race, execute_authorized_race_application, get_circuit,
+    get_circuit_with_catalog, get_engine, get_engine_with_catalog, list_browser_circuits,
+    list_circuits, list_drivers, list_engines, list_tires, list_vehicles, power_kw_from_rpm,
+    racing_model_v1_identity, racing_model_v2_identity, resample_solution,
+    resolve_vehicle_capabilities_with_catalog, rpm_from_speed_gear, run_race,
+    run_race_with_catalog, run_race_with_catalog_and_v3_power_unit_thermal_profile,
     run_race_with_catalog_and_v3_thermal_family_profile, run_sessions, run_sessions_with_catalog,
     solve,
 };
@@ -63,6 +64,12 @@ export interface RacingVerificationSubmissionV1 {
     power_unit_thermal_profile?: unknown;
     component_capability_profile?: unknown;
   };
+}
+
+export interface RacingAuthorizedApplicationResultV1 {
+  schema_version: "pitgun.racing-authorized-application-result/v1";
+  evidence: RacingVerificationSubmissionV1;
+  runtime_output: unknown;
 }
 "#;
 
@@ -129,6 +136,22 @@ pub fn execute_authorized_race_with_catalog_json(
     catalog_bundle_json: String,
 ) -> String {
     pitgun_racing_simulator::execute_authorized_race_with_catalog_json(
+        request_json,
+        catalog_bundle_json,
+    )
+}
+
+#[wasm_bindgen]
+pub fn execute_authorized_race_application_json(request_json: String) -> String {
+    pitgun_racing_simulator::execute_authorized_race_application_json(request_json)
+}
+
+#[wasm_bindgen]
+pub fn execute_authorized_race_application_with_catalog_json(
+    request_json: String,
+    catalog_bundle_json: String,
+) -> String {
+    pitgun_racing_simulator::execute_authorized_race_application_with_catalog_json(
         request_json,
         catalog_bundle_json,
     )

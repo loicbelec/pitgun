@@ -139,6 +139,30 @@ pub struct RacingVerificationSubmissionV1 {
     pub execution_resolution: Option<RacingExecutionResolutionV1>,
 }
 
+/// Wire version of the application-facing authorized execution result.
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Deserialize, Serialize)]
+pub enum RacingAuthorizedApplicationResultVersion {
+    /// First result envelope separating verifier evidence from local runtime data.
+    #[serde(rename = "pitgun.racing-authorized-application-result/v1")]
+    V1,
+}
+
+/// Two projections produced by one authorized linked Racing execution.
+///
+/// `evidence` is the unchanged compact payload accepted by Verifier, while
+/// `runtime_output` remains local to the application and can contain the raw
+/// telemetry required by an interactive Pit Wall.
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct RacingAuthorizedApplicationResultV1 {
+    /// Exact application-result wire semantics.
+    pub schema_version: RacingAuthorizedApplicationResultVersion,
+    /// Compact canonical evidence submitted to Verifier.
+    pub evidence: RacingVerificationSubmissionV1,
+    /// Complete output from the same linked execution, including telemetry.
+    pub runtime_output: RaceOutput,
+}
+
 impl pitgun_runtime::WorkloadEvidence for RacingRunEvidenceV1 {
     fn output_digest(&self) -> Result<Digest, CanonicalJsonError> {
         RacingRunEvidenceV1::output_digest(self)
