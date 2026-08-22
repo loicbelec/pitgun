@@ -1,5 +1,38 @@
 use serde::{Deserialize, Serialize};
 
+/// Wire version of one explicit Racing vehicle-component selection.
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Serialize, Deserialize)]
+pub enum VehicleComponentSelectionVersion {
+    /// First component override contract layered over a catalog vehicle.
+    #[serde(rename = "pitgun.racing-vehicle-components/v1")]
+    V1,
+}
+
+/// Optional physical component overrides for one Racing competitor.
+///
+/// The catalog vehicle selected by the workload remains the compatibility
+/// baseline. Every populated field replaces exactly one component of that
+/// baseline. Game progression and HQ upgrade identities intentionally stay
+/// outside this domain contract.
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct VehicleComponentSelectionV1 {
+    /// Exact wire semantics for this component selection.
+    pub schema_version: VehicleComponentSelectionVersion,
+    /// Optional aerodynamic package resource identity.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub aero_id: Option<String>,
+    /// Optional chassis resource identity.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub chassis_id: Option<String>,
+    /// Optional engine or power-unit resource identity.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub engine_id: Option<String>,
+    /// Optional default tire resource identity used when no stint overrides it.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub tire_id: Option<String>,
+}
+
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 pub struct RunPackage {
     pub input: RaceInput,
@@ -145,7 +178,10 @@ pub fn resolve_vehicle_class(era: i32) -> VehicleClass {
 
 #[cfg(test)]
 mod tests {
-    use super::{VehicleClass, resolve_vehicle_class};
+    use super::{
+        VehicleClass, VehicleComponentSelectionV1, VehicleComponentSelectionVersion,
+        resolve_vehicle_class,
+    };
 
     #[test]
     fn maps_game_eras_to_expected_vehicle_class() {
@@ -164,5 +200,33 @@ mod tests {
         assert_eq!(resolve_vehicle_class(1970), VehicleClass::GroundEffect1970);
         assert_eq!(resolve_vehicle_class(2025), VehicleClass::HybridModern);
         assert_eq!(resolve_vehicle_class(2026), VehicleClass::ActiveAero2026);
+    }
+
+    #[test]
+    fn vehicle_component_selection_has_strict_versioned_wire_semantics() {
+        let selection = VehicleComponentSelectionV1 {
+            schema_version: VehicleComponentSelectionVersion::V1,
+            aero_id: Some("basic".to_string()),
+            chassis_id: None,
+            engine_id: Some("v8_1970".to_string()),
+            tire_id: None,
+        };
+
+        assert_eq!(
+            serde_json::to_value(&selection).expect("component selection"),
+            serde_json::json!({
+                "schema_version": "pitgun.racing-vehicle-components/v1",
+                "aero_id": "basic",
+                "engine_id": "v8_1970"
+            })
+        );
+        assert!(
+            serde_json::from_value::<VehicleComponentSelectionV1>(serde_json::json!({
+                "schema_version": "pitgun.racing-vehicle-components/v1",
+                "aero_id": "basic",
+                "unreviewed_component": "forged"
+            }))
+            .is_err()
+        );
     }
 }

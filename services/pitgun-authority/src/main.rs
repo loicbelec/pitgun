@@ -205,6 +205,11 @@ fn build_signed_racing_run_authorization(
     }
 
     let mut canonical_input = request.input;
+    if !canonical_input.competitor_vehicle_components.is_empty() {
+        return Err(ContractError::BadRequest(
+            "configured Racing model does not support vehicle component selection".to_string(),
+        ));
+    }
     canonical_input.race = normalize_and_validate_race_input_with_policy(
         &canonical_input.race,
         era,
@@ -590,7 +595,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pitgun_racing_contract::{CompetitorSpec, RaceInput, TuningSpec};
+    use pitgun_racing_contract::{
+        CompetitorSpec, RaceInput, TuningSpec, VehicleComponentSelectionV1,
+        VehicleComponentSelectionVersion,
+    };
     use pitgun_racing_simulator::PitStrategyConfig;
     use serde_json::json;
     use std::collections::HashMap;
@@ -674,6 +682,7 @@ mod tests {
                     }],
                 },
                 vehicle_id: Some("f1_2026".to_string()),
+                competitor_vehicle_components: HashMap::new(),
                 pit_strategy: Some(PitStrategyConfig {
                     player_pit_laps: vec![25],
                     pit_loss_ms: None,
@@ -694,6 +703,30 @@ mod tests {
             ),
             data_pack: None,
         }
+    }
+
+    #[test]
+    fn published_racing_model_rejects_component_selection_before_signing() {
+        let state = test_state_for("0.10.0", "v1.5.0");
+        let mut request = racing_request(&state);
+        request.input.competitor_vehicle_components.insert(
+            "player".to_string(),
+            VehicleComponentSelectionV1 {
+                schema_version: VehicleComponentSelectionVersion::V1,
+                aero_id: Some("none".to_string()),
+                chassis_id: None,
+                engine_id: None,
+                tire_id: None,
+            },
+        );
+
+        let error = build_signed_racing_run_authorization(1_000, &state, request)
+            .expect_err("current published model must reject new component semantics");
+        assert!(matches!(
+            error,
+            ContractError::BadRequest(message)
+                if message.contains("does not support vehicle component selection")
+        ));
     }
 
     #[test]

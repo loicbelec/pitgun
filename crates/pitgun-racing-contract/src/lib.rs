@@ -23,5 +23,6 @@ pub use model_parameters::{
 pub use race::{
     CircuitCatalogEntry, CompetitorSpec, CompetitorStatus, CompetitorStintStrategy,
     EngineCatalogEntry, RaceInput, RaceOutput, RaceStint, RunPackage, StandingEntry, TuningSpec,
-    VehicleClass, resolve_vehicle_class,
+    VehicleClass, VehicleComponentSelectionV1, VehicleComponentSelectionVersion,
+    resolve_vehicle_class,
 };
