@@ -111,6 +111,9 @@ def wheel_entries(version: str) -> dict[str, bytes]:
         f"{PACKAGE}/driver_control.py": (
             package_root / "driver_control.py"
         ).read_bytes(),
+        f"{PACKAGE}/driver_control_study.py": (
+            package_root / "driver_control_study.py"
+        ).read_bytes(),
         f"{PACKAGE}/bin/pitgun": runner.read_bytes(),
         f"{PACKAGE}/bin/tuning_response_probe": tuning_response_probe.read_bytes(),
         f"{PACKAGE}/bin/v3_validation_probe": v3_validation_probe.read_bytes(),

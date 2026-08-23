@@ -56,6 +56,7 @@ from .driver_control import (
     load_driver_control_execution,
     materialize_driver_control_plan,
 )
+from .driver_control_study import load_driver_control_study_review
 from .decision_surface import (
     load_decision_surface_campaign,
     load_decision_surface_execution,
@@ -96,6 +97,7 @@ __all__ = [
     "load_driver_control_campaign",
     "load_driver_control_execution",
     "materialize_driver_control_plan",
+    "load_driver_control_study_review",
     "load_decision_surface_campaign",
     "load_decision_surface_execution",
     "materialize_decision_surface_plan",

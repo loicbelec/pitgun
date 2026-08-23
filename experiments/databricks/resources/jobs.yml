@@ -707,6 +707,36 @@ resources:
         pitgun.campaign: racing-v3-driver-control-surface-v2
         pitgun.promotion: human-review-required
 
+    v3_driver_control_study_job:
+      name: pitgun-racing-v3-driver-control-study-v1
+      description: >-
+        Explain the completed 1,584-run driver-control study from immutable,
+        explicitly pinned Delta snapshots without selecting or promoting a model.
+      max_concurrent_runs: 1
+      performance_target: STANDARD
+      environments:
+        - environment_key: serverless_v3_driver_control_study
+          spec:
+            environment_version: "4"
+            dependencies:
+              - ../adapter/dist/*.whl
+      tasks:
+        - task_key: review_v3_driver_control_study
+          description: Reconcile governed evidence and render the public study.
+          environment_key: serverless_v3_driver_control_study
+          notebook_task:
+            notebook_path: ../src/review_v3_driver_control_study.py
+            source: WORKSPACE
+            base_parameters:
+              catalog_name: ${var.catalog_name}
+              calibration_schema: ${resources.schemas.calibration.name}
+          timeout_seconds: 900
+      tags:
+        pitgun.domain: calibration
+        pitgun.compute: serverless
+        pitgun.analysis: racing-v3-driver-control-study-v1
+        pitgun.promotion: forbidden
+
     v3_thermal_surface_review_job:
       name: pitgun-racing-v3-thermal-adequacy-review-v1
       description: >-
