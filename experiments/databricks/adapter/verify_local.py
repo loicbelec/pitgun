@@ -181,16 +181,21 @@ assert (
 )
 assert "tire_degradation_diagnostics" in v3_tire_result
 
-driver_manifest, driver_manifest_digest = load_driver_control_campaign()
+driver_campaign_name = "racing-v3-driver-mode-surface-v3"
+driver_manifest, driver_manifest_digest = load_driver_control_campaign(
+    driver_campaign_name
+)
 driver_plan = materialize_driver_control_plan(driver_manifest)
-driver_preflight = validate_packaged_v3_driver_control_profiles()
+driver_preflight = validate_packaged_v3_driver_control_profiles(driver_campaign_name)
 assert driver_manifest_digest.startswith("sha256:")
-assert len(driver_plan) == driver_manifest["planned_run_count"] == 1584
+assert len(driver_plan) == driver_manifest["planned_run_count"] == 3168
 assert driver_preflight["validated_profile_count"] == 33
 first_driver = next(
     row for row in driver_plan if row["expected_local_evidence"] is not None
 )
-driver_result = execute_packaged_v3_driver_control(first_driver["execution_key"])["result"]
+driver_result = execute_packaged_v3_driver_control(
+    first_driver["execution_key"], driver_campaign_name
+)["result"]
 expected_driver = first_driver["expected_local_evidence"]
 assert driver_result["experimental_execution_id"] == expected_driver["experimental_execution_id"]
 assert driver_result["scenario_digest"] == expected_driver["scenario_digest"]

@@ -155,7 +155,7 @@ source_git_revision = adapter_version.split("+g", 1)[-1]
 probe_identity = inspect_packaged_v3_driver_control_probe()
 profile_preflight = validate_packaged_v3_driver_control_profiles(campaign_name)
 if profile_preflight["validated_profile_count"] != manifest["unique_profile_count"]:
-    raise RuntimeError("Rust profile preflight did not reconcile with the V2 manifest")
+    raise RuntimeError("Rust profile preflight did not reconcile with the manifest")
 
 # COMMAND ----------
 
@@ -503,6 +503,7 @@ with tracking_context as tracking_run:
         raise RuntimeError("driver-control normalized metrics are incomplete")
 
     grouped = defaultdict(dict)
+    global_grouped = defaultdict(dict)
     pathology_counts = Counter()
     local_parity_failures = 0
     for row in persisted:
@@ -517,11 +518,22 @@ with tracking_context as tracking_run:
             entry["driver_id"], entry["seed"],
         )
         grouped[group][entry["mode"]] = metrics
+        global_group = (
+            entry["parameter_set_id"], entry["circuit_id"], entry["horizon"],
+            entry["seed"],
+        )
+        global_grouped[global_group][
+            f"{entry['driver_id']}:{entry['mode']}"
+        ] = metrics
 
     evaluations = {}
     for parameter_set in manifest["parameter_sets"]:
         parameter_set_id = parameter_set["parameter_set_id"]
         short_groups = long_groups = short_attack_wins = long_attack_wins = 0
+        global_short_groups = global_long_groups = 0
+        global_short_attack_wins = global_long_attack_wins = 0
+        global_winning_drivers = Counter()
+        global_winning_modes = Counter()
         ordering_failures = 0
         pace_gains, long_wear_costs = [], []
         for group, modes in grouped.items():
@@ -542,9 +554,54 @@ with tracking_context as tracking_run:
                 and modes["attack"]["correction_contact_workload_mj"] > modes["manage"]["correction_contact_workload_mj"]
             ):
                 ordering_failures += 1
+        for group, candidates in global_grouped.items():
+            if group[0] != parameter_set_id:
+                continue
+            winner = min(
+                candidates,
+                key=lambda candidate: (candidates[candidate]["mean_lap_ms"], candidate),
+            )
+            driver_id, mode = winner.split(":", 1)
+            global_winning_drivers[driver_id] += 1
+            global_winning_modes[mode] += 1
+            if group[2] == "short":
+                global_short_groups += 1
+                global_short_attack_wins += mode == "attack"
+            else:
+                global_long_groups += 1
+                global_long_attack_wins += mode == "attack"
+
+        selection_contract = manifest["selection_contract"]
+        global_mode_gate = True
+        if selection_contract.get("attack_must_win_some_short_global_contexts"):
+            global_mode_gate = global_mode_gate and global_short_attack_wins > 0
+        if selection_contract.get(
+            "attack_must_not_win_every_race_length_global_context"
+        ):
+            global_mode_gate = (
+                global_mode_gate
+                and global_long_groups > 0
+                and global_long_attack_wins < global_long_groups
+            )
+        minimum_winning_drivers = int(
+            selection_contract.get("minimum_global_winning_driver_count", 0)
+        )
+        global_driver_gate = len(global_winning_drivers) >= minimum_winning_drivers
+        paired_mode_gate = True
+        if selection_contract.get("attack_must_win_some_short_groups"):
+            paired_mode_gate = paired_mode_gate and short_attack_wins > 0
+        if selection_contract.get("attack_must_not_win_every_race_length_group"):
+            paired_mode_gate = (
+                paired_mode_gate
+                and long_groups > 0
+                and long_attack_wins < long_groups
+            )
         gate = (
-            short_attack_wins > 0 and long_attack_wins < long_groups
-            and ordering_failures == 0 and pathology_counts[parameter_set_id] == 0
+            paired_mode_gate
+            and global_mode_gate
+            and global_driver_gate
+            and ordering_failures == 0
+            and pathology_counts[parameter_set_id] == 0
         )
         evaluations[parameter_set_id] = {
             "parameter_set_id": parameter_set_id,
@@ -553,6 +610,13 @@ with tracking_context as tracking_run:
             "short_attack_win_count": short_attack_wins,
             "race_length_group_count": long_groups,
             "race_length_attack_win_count": long_attack_wins,
+            "global_short_context_count": global_short_groups,
+            "global_short_attack_win_count": global_short_attack_wins,
+            "global_race_length_context_count": global_long_groups,
+            "global_race_length_attack_win_count": global_long_attack_wins,
+            "global_winning_driver_count": len(global_winning_drivers),
+            "global_winning_driver_counts": dict(sorted(global_winning_drivers.items())),
+            "global_winning_mode_counts": dict(sorted(global_winning_modes.items())),
             "physical_ordering_failure_count": ordering_failures,
             "pathological_execution_count": pathology_counts[parameter_set_id],
             "median_short_attack_gain_ms": statistics.median(pace_gains) if pace_gains else None,
@@ -564,8 +628,12 @@ with tracking_context as tracking_run:
         evaluations.values(),
         key=lambda row: (
             not row["selection_gate_passed"],
-            row["race_length_attack_win_count"],
-            abs(row["short_attack_win_count"] - row["short_group_count"] / 2),
+            row["global_race_length_attack_win_count"],
+            -row["global_winning_driver_count"],
+            abs(
+                row["global_short_attack_win_count"]
+                - row["global_short_context_count"] / 2
+            ),
             row["parameter_set_id"],
         ),
     )

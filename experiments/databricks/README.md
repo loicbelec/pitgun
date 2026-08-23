@@ -324,6 +324,36 @@ structural physical refinement is required before another calibration campaign.
 databricks bundle run v3_driver_control_study_job -t dev -p pitgun-free
 ```
 
+## Model 0.13 equal-budget mode-response surface
+
+The checksummed
+[`racing-v3-driver-mode-surface-v3.json`](campaigns/racing-v3-driver-mode-surface-v3.json)
+manifest follows the independent equal-budget diagnosis. It freezes Model
+`0.13.0`, the exact four-driver roster with a `2.52` trait budget per driver,
+the vehicle, and every non-driver physical coefficient. Only ordered mode
+commitments, commitment-driven error, its exponent, and correction workload
+may vary.
+
+The campaign evaluates the unchanged `halton-19` anchor plus 32 deterministic
+Halton points. Every profile runs the three modes for all four drivers on
+Monaco and Monza, over short and race-length horizons, with seeds 7 and 42:
+3,168 native Rust executions. The 96 anchor cases must reproduce the frozen
+local evidence. Suzuka, soft/hard tires, and seed 99 remain held out for the
+final 702-case validation.
+
+Eligibility is evaluated at the global driver-and-mode level. `ATTACK` must
+remain useful in at least one short context, cease to win every race-length
+context, at least two equal-budget archetypes must win a context, physical
+error/workload ordering must hold, and no pathological output is accepted.
+The job remains decision support: it never selects a candidate or publishes a
+catalog policy automatically.
+
+```bash
+python3 build_v3_driver_mode_manifest.py
+databricks bundle deploy -t dev -p pitgun-free
+databricks bundle run v3_driver_mode_surface_job -t dev -p pitgun-free
+```
+
 ## Reference campaign
 
 The frozen V1 campaign manifest is
