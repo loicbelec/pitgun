@@ -49,6 +49,7 @@ python3 experiments/racing_v3_driver_control/screen_local.py --jobs 4
 python3 experiments/racing_v3_driver_control/screen_local.py --jobs 4 --check
 python3 experiments/racing_v3_driver_control/screen_v11_parameter_surface.py --jobs 8
 python3 experiments/racing_v3_driver_control/screen_v11_parameter_surface.py --jobs 8 --check
+python3 experiments/racing_v3_driver_control/review_v11_shortlist.py --check
 ```
 
 For probe development only, `--limit N` executes the first `N` configurations
@@ -95,3 +96,30 @@ eight race-length groups.
 This is evidence of a usable decision surface, not a selected AI policy. A
 shortlist must next pass the reserved 702-execution matrix without coefficient
 retuning before any profile can enter a catalog or the game.
+
+## Independent shortlist holdout
+
+The governed [`shortlist/shortlist-v1.json`](shortlist/shortlist-v1.json)
+freezes three deliberately different profiles from the exploratory surface:
+
+- `halton-11` applies a strong, near-linear correction cost;
+- `halton-19` concentrates more of that cost near maximum commitment;
+- `halton-27` tests a gentler policy with narrower mode commitments.
+
+Each exact V11 profile is replayed over the independent 702-case matrix without
+coefficient retuning: 2,106 deterministic Rust executions and 71,370 simulated
+laps in total. All three profiles preserve the reviewed causal directions and
+produce zero pathological executions. They also make `balanced` or `manage`
+optimal for the `limit_specialist` in some contexts.
+
+The holdout nevertheless rejects all three profiles. Across the 54 global
+contexts of each profile, `smooth_operator:attack` is always the fastest
+driver/mode combination. The reproducible review therefore records
+`STRUCTURAL_REFINEMENT_REQUIRED`, selects no profile, and performs no catalog or
+game publication. This is a useful negative result: the friction-budget change
+creates meaningful mode trade-offs, while the remaining weakness is now
+localized to the relative balance between driver archetypes.
+
+The compact decision artifact is
+[`results/holdout-driver-control-shortlist-v1.json`](results/holdout-driver-control-shortlist-v1.json).
+It references the three complete per-profile reports and their content hashes.

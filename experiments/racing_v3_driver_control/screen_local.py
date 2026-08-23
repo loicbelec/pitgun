@@ -515,6 +515,12 @@ def analyze(rows: list[dict[str, Any]]) -> dict[str, Any]:
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--jobs", type=int, default=4)
+    parser.add_argument(
+        "--profile",
+        type=pathlib.Path,
+        default=PROFILE,
+        help="immutable V11 experiment profile to validate",
+    )
     parser.add_argument("--output", type=pathlib.Path, default=DEFAULT_OUTPUT)
     parser.add_argument("--check", action="store_true")
     parser.add_argument(
@@ -529,6 +535,13 @@ def main() -> int:
     args = parse_args()
     if not 1 <= args.jobs <= MAX_JOBS:
         raise ScreenError(f"--jobs must be in [1, {MAX_JOBS}]")
+    if not args.profile.is_file():
+        raise ScreenError(f"missing experiment profile: {args.profile}")
+    profile_document = json.loads(args.profile.read_bytes())
+    if profile_document.get("schema_version") != (
+        "pitgun.racing-v3-experiment-profile/v11"
+    ):
+        raise ScreenError("--profile must use the immutable V11 experiment schema")
     base_scenario = json.loads(BASE_SCENARIO.read_bytes())
     driver_document = json.loads(DRIVERS.read_bytes())
     archetypes = driver_document["drivers"]
@@ -551,7 +564,10 @@ def main() -> int:
 
     rows: list[dict[str, Any]] = []
     with concurrent.futures.ThreadPoolExecutor(max_workers=args.jobs) as executor:
-        futures = [executor.submit(execute_point, runner, PROFILE, item) for item in plan]
+        futures = [
+            executor.submit(execute_point, runner, args.profile, item)
+            for item in plan
+        ]
         for index, future in enumerate(concurrent.futures.as_completed(futures), start=1):
             rows.append(future.result())
             if index % 50 == 0 or index == len(futures):
@@ -562,7 +578,7 @@ def main() -> int:
         "schema_version": SCHEMA_VERSION,
         "campaign": {
             "model": "pitgun.racing-v3-candidate@0.13.0",
-            "profile_digest": sha256(json.loads(PROFILE.read_bytes())),
+            "profile_digest": sha256(profile_document),
             "driver_archetype_digest": sha256(driver_document),
             "configuration_count": len(rows),
             "simulated_lap_count": sum(row["laps"] for row in rows),
