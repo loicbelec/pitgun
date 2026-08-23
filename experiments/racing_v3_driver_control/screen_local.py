@@ -521,6 +521,12 @@ def parse_args() -> argparse.Namespace:
         default=PROFILE,
         help="immutable V11 experiment profile to validate",
     )
+    parser.add_argument(
+        "--drivers",
+        type=pathlib.Path,
+        default=DRIVERS,
+        help="versioned driver-archetype roster to validate",
+    )
     parser.add_argument("--output", type=pathlib.Path, default=DEFAULT_OUTPUT)
     parser.add_argument("--check", action="store_true")
     parser.add_argument(
@@ -537,13 +543,15 @@ def main() -> int:
         raise ScreenError(f"--jobs must be in [1, {MAX_JOBS}]")
     if not args.profile.is_file():
         raise ScreenError(f"missing experiment profile: {args.profile}")
+    if not args.drivers.is_file():
+        raise ScreenError(f"missing driver roster: {args.drivers}")
     profile_document = json.loads(args.profile.read_bytes())
     if profile_document.get("schema_version") != (
         "pitgun.racing-v3-experiment-profile/v11"
     ):
         raise ScreenError("--profile must use the immutable V11 experiment schema")
     base_scenario = json.loads(BASE_SCENARIO.read_bytes())
-    driver_document = json.loads(DRIVERS.read_bytes())
+    driver_document = json.loads(args.drivers.read_bytes())
     archetypes = driver_document["drivers"]
     plan = build_plan(base_scenario, archetypes)
     if args.limit is not None:

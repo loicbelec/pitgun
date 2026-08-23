@@ -50,6 +50,7 @@ python3 experiments/racing_v3_driver_control/screen_local.py --jobs 4 --check
 python3 experiments/racing_v3_driver_control/screen_v11_parameter_surface.py --jobs 8
 python3 experiments/racing_v3_driver_control/screen_v11_parameter_surface.py --jobs 8 --check
 python3 experiments/racing_v3_driver_control/review_v11_shortlist.py --check
+python3 experiments/racing_v3_driver_control/review_equal_budget_roster.py --check
 ```
 
 For probe development only, `--limit N` executes the first `N` configurations
@@ -123,3 +124,25 @@ localized to the relative balance between driver archetypes.
 The compact decision artifact is
 [`results/holdout-driver-control-shortlist-v1.json`](results/holdout-driver-control-shortlist-v1.json).
 It references the three complete per-profile reports and their content hashes.
+
+## Equal-budget archetype diagnosis
+
+The first holdout also exposed a confounder in the original roster: the four
+drivers had total trait budgets of 2.52, 2.26, 2.55 and 2.64. The governed
+[`driver-archetypes-equal-budget-v1.json`](driver-archetypes-equal-budget-v1.json)
+therefore keeps the balanced reference at `0.84 / 0.84 / 0.84` and defines
+each specialist as one `0.96` trait plus two compensating `0.78` traits. Every
+driver now has the exact same 2.52 budget.
+
+The three frozen profiles were replayed again over all 702 cases without
+changing Model 0.13 or any profile coefficient. The equal budget removes the
+universal driver for `halton-19` and `halton-27`: the limit specialist wins
+shorter contexts while the smooth operator becomes competitive over race
+distance. This means roster imbalance was material and an immediate rewrite of
+the consistency equation is not justified.
+
+However, `attack` remains the winning mode in every one of the 54 global
+contexts for all three profiles. No profile is selected. The compact
+[`results/equal-budget-driver-control-review-v1.json`](results/equal-budget-driver-control-review-v1.json)
+records `MODE_RESPONSE_REFINEMENT_REQUIRED`: keep the equal-budget roster fixed
+and explore only the mode commitment and correction-cost response next.
