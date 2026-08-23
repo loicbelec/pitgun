@@ -655,7 +655,7 @@ resources:
         pitgun.promotion: human-review-required
 
     v3_driver_control_surface_job:
-      name: pitgun-racing-v3-driver-control-surface-v1
+      name: pitgun-racing-v3-driver-control-surface-v2
       description: >-
         Execute or resume the 1,584-run deterministic driver-control response
         surface, prove baseline portability, and rank candidates for human review.
@@ -679,7 +679,7 @@ resources:
             source: WORKSPACE
             base_parameters:
               operation: bootstrap
-              campaign_id: racing-v3-driver-control-surface-2026-v1
+              campaign_id: racing-v3-driver-control-surface-2026-v2
               catalog_name: ${var.catalog_name}
               calibration_schema: ${resources.schemas.calibration.name}
               policies_schema: ${resources.schemas.policies.name}
@@ -697,14 +697,14 @@ resources:
               catalog_name: ${var.catalog_name}
               calibration_schema: ${resources.schemas.calibration.name}
               experiment_id: ${resources.experiments.calibration_experiment.id}
-              campaign_name: racing-v3-driver-control-surface-v1
+              campaign_name: racing-v3-driver-control-surface-v2
               max_workers: "{{job.parameters.max_workers}}"
           timeout_seconds: 7200
       tags:
         pitgun.domain: calibration
         pitgun.compute: serverless
         pitgun.runner: rust-native-experimental
-        pitgun.campaign: racing-v3-driver-control-surface-v1
+        pitgun.campaign: racing-v3-driver-control-surface-v2
         pitgun.promotion: human-review-required
 
     v3_thermal_surface_review_job:

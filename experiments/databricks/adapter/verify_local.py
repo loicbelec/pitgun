@@ -23,6 +23,7 @@ from pitgun_databricks_adapter import (
     materialize_plan,
     materialize_tire_degradation_plan,
     materialize_driver_control_plan,
+    validate_packaged_v3_driver_control_profiles,
 )
 
 
@@ -182,8 +183,10 @@ assert "tire_degradation_diagnostics" in v3_tire_result
 
 driver_manifest, driver_manifest_digest = load_driver_control_campaign()
 driver_plan = materialize_driver_control_plan(driver_manifest)
+driver_preflight = validate_packaged_v3_driver_control_profiles()
 assert driver_manifest_digest.startswith("sha256:")
 assert len(driver_plan) == driver_manifest["planned_run_count"] == 1584
+assert driver_preflight["validated_profile_count"] == 33
 first_driver = next(
     row for row in driver_plan if row["expected_local_evidence"] is not None
 )

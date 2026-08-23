@@ -10,7 +10,7 @@ import re
 from typing import Any
 
 
-CAMPAIGN_NAME = "racing-v3-driver-control-surface-v1"
+CAMPAIGN_NAME = "racing-v3-driver-control-surface-v2"
 SCHEMA_VERSION = "pitgun.racing-v3-driver-control-surface-campaign/v1"
 MODEL_ID = "pitgun.racing-v3-candidate"
 MODEL_VERSION = "0.12.0"
@@ -54,6 +54,10 @@ def load_driver_control_campaign(
         raise DriverControlCampaignError("human review is required")
     if manifest.get("automatic_catalog_promotion") is not False:
         raise DriverControlCampaignError("automatic catalog promotion is forbidden")
+    if manifest.get("supersedes", {}).get("campaign_id") != (
+        "racing-v3-driver-control-surface-2026-v1"
+    ):
+        raise DriverControlCampaignError("V2 does not identify the failed V1 campaign")
     model = manifest.get("model", {})
     if model.get("id") != MODEL_ID or model.get("version") != MODEL_VERSION:
         raise DriverControlCampaignError("campaign targets an unsupported model")

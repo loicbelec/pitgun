@@ -47,6 +47,13 @@ struct ProbeOutput {
     tire_degradation_diagnostics: TireDegradationDiagnosticsV3,
 }
 
+#[derive(Serialize)]
+struct ProfileValidationOutput {
+    schema_version: &'static str,
+    model: ArtifactIdentity,
+    profile_digest: String,
+}
+
 fn main() {
     if let Err(error) = run() {
         eprintln!("error: {error}");
@@ -56,9 +63,12 @@ fn main() {
 
 fn run() -> Result<(), String> {
     let arguments = env::args().skip(1).collect::<Vec<_>>();
+    if arguments.len() == 2 && arguments[0] == "--validate-profile" {
+        return validate_profile(&arguments[1]);
+    }
     if arguments.len() != 4 {
         return Err(
-            "usage: v3_driver_control_probe SCENARIO_JSON V3_PROFILE_JSON DRIVER_EXPERIMENT_JSON SEED"
+            "usage: v3_driver_control_probe SCENARIO_JSON V3_PROFILE_JSON DRIVER_EXPERIMENT_JSON SEED | --validate-profile V3_PROFILE_JSON"
                 .to_string(),
         );
     }
@@ -155,6 +165,29 @@ fn run() -> Result<(), String> {
         "{}",
         serde_json::to_string(&probe)
             .map_err(|error| format!("cannot serialize probe output: {error}"))?
+    );
+    Ok(())
+}
+
+fn validate_profile(path: impl AsRef<Path>) -> Result<(), String> {
+    let profile = serde_json::from_value::<V3CandidateExperimentProfile>(read_json(
+        path,
+        "V3 experiment profile",
+    )?)
+    .map_err(|error| format!("invalid V3 experiment profile: {error}"))?;
+    profile
+        .validate()
+        .map_err(|error| format!("invalid V3 experiment profile: {error}"))?;
+    let profile_digest = canonical_json_digest(&profile)
+        .map_err(|error| format!("cannot digest V3 experiment profile: {error}"))?;
+    println!(
+        "{}",
+        serde_json::to_string(&ProfileValidationOutput {
+            schema_version: "pitgun.racing-v3-driver-control-profile-validation/v1",
+            model: profile.model_identity(),
+            profile_digest: profile_digest.to_string(),
+        })
+        .map_err(|error| format!("cannot serialize profile validation: {error}"))?
     );
     Ok(())
 }

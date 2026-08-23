@@ -628,7 +628,7 @@ def inspect_packaged_v3_decision_surface_probe() -> dict[str, str]:
 
 def execute_packaged_v3_driver_control(
     execution_key: str,
-    campaign_name: str = "racing-v3-driver-control-surface-v1",
+    campaign_name: str = "racing-v3-driver-control-surface-v2",
 ) -> dict[str, Any]:
     """Execute one exact governed driver-control surface point."""
 
@@ -657,3 +657,52 @@ def inspect_packaged_v3_driver_control_probe() -> dict[str, str]:
     package = importlib.resources.files("pitgun_databricks_adapter")
     probe_bytes = package.joinpath("bin", "v3_driver_control_probe").read_bytes()
     return {"target": RUNNER_TARGET, "digest": _sha256(probe_bytes)}
+
+
+def validate_packaged_v3_driver_control_profiles(
+    campaign_name: str = "racing-v3-driver-control-surface-v2",
+) -> dict[str, Any]:
+    """Validate every packaged unique profile with the authoritative Rust contract."""
+
+    from .driver_control import load_driver_control_campaign
+
+    manifest, manifest_digest = load_driver_control_campaign(campaign_name)
+    package = importlib.resources.files("pitgun_databricks_adapter")
+    probe_bytes = package.joinpath("bin", "v3_driver_control_probe").read_bytes()
+    validated = []
+    with tempfile.TemporaryDirectory(prefix="pitgun-v3-driver-preflight-") as temporary:
+        root = pathlib.Path(temporary)
+        probe = root / "v3_driver_control_probe"
+        probe.write_bytes(probe_bytes)
+        probe.chmod(0o500)
+        for index, (profile_ref, profile) in enumerate(sorted(manifest["profiles"].items())):
+            profile_path = root / f"profile-{index:02d}.json"
+            profile_path.write_text(json.dumps(profile, indent=2, ensure_ascii=False) + "\n")
+            process, _ = _run([str(probe), "--validate-profile", str(profile_path)])
+            if process.returncode != 0:
+                diagnostic = process.stderr.decode("utf-8", errors="replace").strip()
+                raise RunnerExecutionError(
+                    f"packaged driver-control profile {profile_ref} violates the Rust contract: {diagnostic}"
+                )
+            if process.stderr:
+                raise RunnerExecutionError(
+                    f"successful driver-control profile validation wrote stderr: {profile_ref}"
+                )
+            try:
+                result = json.loads(process.stdout)
+            except (UnicodeDecodeError, json.JSONDecodeError) as error:
+                raise RunnerExecutionError("profile preflight returned invalid JSON") from error
+            if (
+                result.get("schema_version")
+                != "pitgun.racing-v3-driver-control-profile-validation/v1"
+                or result.get("model") != manifest["model"]
+            ):
+                raise RunnerExecutionError("profile preflight returned an invalid identity")
+            validated.append(result["profile_digest"])
+    return {
+        "campaign_name": campaign_name,
+        "manifest_digest": manifest_digest,
+        "validated_profile_count": len(validated),
+        "validated_profile_digests": validated,
+        "probe_artifact_digest": _sha256(probe_bytes),
+    }

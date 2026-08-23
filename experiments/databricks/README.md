@@ -277,11 +277,12 @@ family-level verdicts. It cannot write governed state or publish a profile.
 ## Model V3 driver-control coefficient surface
 
 The checksummed
-[`racing-v3-driver-control-surface-v1.json`](campaigns/racing-v3-driver-control-surface-v1.json)
+[`racing-v3-driver-control-surface-v2.json`](campaigns/racing-v3-driver-control-surface-v2.json)
 manifest converts the governed local driver-control screen into a bounded
-Databricks experiment. It evaluates the current V10 profile plus 32
-deterministic Halton points over ordered mode commitments, commitment-driven
-control error, its exponent, and correction workload. Each profile is compared
+Databricks experiment. V2 evaluates the current V10 profile plus 32
+deterministic Halton points over narrower ordered mode commitments,
+commitment-driven control error, its exponent, and contract-valid correction
+workload. Each profile is compared
 on the same 48 circuit, horizon, driver, mode, and seed combinations, for 1,584
 native Rust executions in total.
 
@@ -291,11 +292,19 @@ selection campaign: Suzuka, two driver archetypes, soft/hard compounds and seed
 99 are explicitly reserved for independent validation of a human-selected
 candidate.
 
-`v3_driver_control_surface_job` resumes accepted Delta natural keys, records raw
+Before opening the execution ledger, the packaged Linux/aarch64 Rust probe
+validates all 33 unique profiles against the authoritative driver-control
+contract. `v3_driver_control_surface_job` then resumes accepted Delta natural keys, records raw
 evidence and normalized metrics, then ranks parameter sets. Eligibility requires
 some short-run utility for `ATTACK`, at least one non-`ATTACK` long-run winner,
 physical error/workload ordering, and no pathological result. The report always
 ends with `candidate_selected=false` and cannot publish a catalog or game change.
+
+V2 supersedes the immutable V1 campaign and its failed Databricks run
+`904736248097501`. Four V1 Halton profiles requested a
+`correction_workload_gain` above the Rust maximum of 10, causing exactly 192
+systematic failures. The V1 manifest and Delta/MLflow evidence remain preserved;
+they are not rewritten or presented as a successful campaign.
 
 ```bash
 databricks bundle deploy -t dev -p pitgun-free

@@ -18,8 +18,9 @@ from pitgun_databricks_adapter.driver_control import (  # noqa: E402
 )
 
 
-MANIFEST = ROOT / "campaigns/racing-v3-driver-control-surface-v1.json"
+MANIFEST = ROOT / "campaigns/racing-v3-driver-control-surface-v2.json"
 CHECKSUM = MANIFEST.with_suffix(".sha256")
+FAILED_MANIFEST = ROOT / "campaigns/racing-v3-driver-control-surface-v1.json"
 LOCAL_REPORT = (
     FRAMEWORK
     / "experiments/racing_v3_driver_control/results/local-driver-control-screen-v1.json"
@@ -59,6 +60,35 @@ class V3DriverControlCampaignTests(unittest.TestCase):
             self.assertLess(commitments["balanced"], commitments["attack"])
             self.assertLessEqual(commitments["attack"], 1.0)
             self.assertLessEqual(profile["base_control_error"] + profile["commitment_error_gain"], 0.25)
+            self.assertLessEqual(profile["correction_workload_gain"], 10.0)
+        explored = parameter_sets[1:]
+        self.assertTrue(
+            all(
+                0.01
+                <= row["parameters"]["mode_commitments"]["attack"]
+                - row["parameters"]["mode_commitments"]["balanced"]
+                <= 0.08
+                for row in explored
+            )
+        )
+
+    def test_failed_v1_is_preserved_and_v2_has_a_new_campaign_identity(self):
+        failed = json.loads(FAILED_MANIFEST.read_text())
+        self.assertEqual(
+            failed["campaign_id"], "racing-v3-driver-control-surface-2026-v1"
+        )
+        self.assertEqual(
+            self.manifest["campaign_id"], "racing-v3-driver-control-surface-2026-v2"
+        )
+        self.assertEqual(
+            self.manifest["supersedes"]["campaign_id"], failed["campaign_id"]
+        )
+        self.assertEqual(self.manifest["supersedes"]["failed_run_id"], "904736248097501")
+        invalid_v1 = [
+            row for row in failed["parameter_sets"]
+            if row["parameters"]["correction_workload_gain"] > 10.0
+        ]
+        self.assertEqual(len(invalid_v1), 4)
 
     def test_baseline_replay_preserves_local_rust_evidence(self):
         replay = [row for row in self.plan if row["expected_local_evidence"]]
@@ -113,9 +143,10 @@ class V3DriverControlCampaignTests(unittest.TestCase):
         self.assertIn("execute_packaged_v3_driver_control", runner)
         self.assertIn("V3_DRIVER_CONTROL_EXECUTION_PATTERN.fullmatch", runner)
         self.assertIn("v3_driver_control_surface_job:", jobs)
-        self.assertIn("racing-v3-driver-control-surface-v1", jobs)
+        self.assertIn("racing-v3-driver-control-surface-v2", jobs)
         self.assertIn("target.execution_status <> 'SUCCESS'", notebook)
         self.assertIn("local_driver_control_evidence_mismatch", notebook)
+        self.assertIn("validate_packaged_v3_driver_control_profiles", notebook)
         self.assertIn('"candidate_selected": False', notebook)
         self.assertIn('"automatic_catalog_promotion": False', notebook)
         self.assertNotIn("policy_releases", notebook)

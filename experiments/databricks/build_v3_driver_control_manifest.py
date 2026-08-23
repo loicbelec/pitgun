@@ -15,9 +15,9 @@ LOCAL_REPORT = ROOT / "experiments/racing_v3_driver_control/results/local-driver
 BASE_SCENARIO = ROOT / "apps/pitgun-cli/scenarios/racing-batch-v1/balanced.json"
 BASE_PROFILE = ROOT / "experiments/racing_v3_driver_control/profile-v10.driver-control.json"
 DRIVERS = ROOT / "experiments/racing_v3_driver_control/driver-archetypes-v1.json"
-OUTPUT = ROOT / "experiments/databricks/campaigns/racing-v3-driver-control-surface-v1.json"
+OUTPUT = ROOT / "experiments/databricks/campaigns/racing-v3-driver-control-surface-v2.json"
 SCHEMA_VERSION = "pitgun.racing-v3-driver-control-surface-campaign/v1"
-CAMPAIGN_ID = "racing-v3-driver-control-surface-2026-v1"
+CAMPAIGN_ID = "racing-v3-driver-control-surface-2026-v2"
 MODEL = {
     "id": "pitgun.racing-v3-candidate",
     "version": "0.12.0",
@@ -91,20 +91,18 @@ def parameter_sets(base_profile: dict[str, Any]) -> list[dict[str, Any]]:
         }
     ]
     for index in range(1, 33):
-        manage = 0.50 + 0.18 * halton(index, 2)
-        balanced = manage + 0.12 + 0.12 * halton(index, 3)
-        attack = balanced + 0.10 + 0.10 * halton(index, 5)
-        if attack > 1.0:
-            attack = 1.0
+        manage = 0.58 + 0.16 * halton(index, 2)
+        balanced = manage + 0.04 + 0.10 * halton(index, 3)
+        attack = balanced + 0.01 + 0.07 * halton(index, 5)
         profile = copy.deepcopy(baseline)
         profile["mode_commitments"] = {
             "manage": round(manage, 8),
             "balanced": round(balanced, 8),
             "attack": round(attack, 8),
         }
-        profile["commitment_error_gain"] = round(0.08 + 0.14 * halton(index, 7), 8)
-        profile["commitment_error_exponent"] = round(1.2 + 2.6 * halton(index, 11), 8)
-        profile["correction_workload_gain"] = round(2.0 + 10.0 * halton(index, 13), 8)
+        profile["commitment_error_gain"] = round(0.12 + 0.125 * halton(index, 7), 8)
+        profile["commitment_error_exponent"] = round(1.0 + 3.0 * halton(index, 11), 8)
+        profile["correction_workload_gain"] = round(4.0 + 6.0 * halton(index, 13), 8)
         values.append(
             {
                 "parameter_set_id": f"halton-{index:02d}",
@@ -112,7 +110,33 @@ def parameter_sets(base_profile: dict[str, Any]) -> list[dict[str, Any]]:
                 "parameters": profile,
             }
         )
+    for value in values:
+        validate_driver_control_profile(value["parameters"])
     return values
+
+
+def validate_driver_control_profile(profile: dict[str, Any]) -> None:
+    """Mirror the public contract bounds; the packaged Rust preflight is authoritative."""
+
+    modes = profile["mode_commitments"]
+    if not 0.0 <= modes["manage"] < modes["balanced"] < modes["attack"] <= 1.0:
+        raise DriverControlManifestError("mode commitments violate the contract")
+    for channel in ("cornering", "braking", "traction"):
+        response = profile[channel]
+        if not 0.0 <= response["floor"] <= 1.0 or not 0.0 <= response["span"] <= 1.0:
+            raise DriverControlManifestError(f"{channel} response violates the contract")
+        if response["floor"] + response["span"] > 1.0:
+            raise DriverControlManifestError(f"{channel} response exceeds unity")
+    if not 0.0 <= profile["base_control_error"]:
+        raise DriverControlManifestError("base control error violates the contract")
+    if not 0.0 <= profile["commitment_error_gain"]:
+        raise DriverControlManifestError("commitment error gain violates the contract")
+    if profile["base_control_error"] + profile["commitment_error_gain"] > 0.25:
+        raise DriverControlManifestError("combined control error violates the contract")
+    if not 1.0 <= profile["commitment_error_exponent"] <= 4.0:
+        raise DriverControlManifestError("commitment error exponent violates the contract")
+    if not 0.0 <= profile["correction_workload_gain"] <= 10.0:
+        raise DriverControlManifestError("correction workload gain violates the contract")
 
 
 def resolved_profile(base_profile: dict[str, Any], parameter_set: dict[str, Any]) -> dict[str, Any]:
@@ -292,13 +316,18 @@ def build_manifest() -> dict[str, Any]:
             "local_review_verdict": report["analysis"]["review_verdict"],
         },
         "parameter_space": {
-            "method": "baseline-plus-32-point-deterministic-halton",
+            "method": "baseline-plus-32-point-deterministic-halton-v2",
             "axes": {
-                "mode_commitments": "ordered bounded commitments",
-                "commitment_error_gain": [0.08, 0.22],
-                "commitment_error_exponent": [1.2, 3.8],
-                "correction_workload_gain": [2.0, 12.0],
+                "mode_commitments": "ordered commitments with a 0.01-0.08 balanced-to-attack gap",
+                "commitment_error_gain": [0.12, 0.245],
+                "commitment_error_exponent": [1.0, 4.0],
+                "correction_workload_gain": [4.0, 10.0],
             },
+        },
+        "supersedes": {
+            "campaign_id": "racing-v3-driver-control-surface-2026-v1",
+            "reason": "four V1 profiles exceeded the Rust correction_workload_gain maximum",
+            "failed_run_id": "904736248097501",
         },
         "selection_contract": {
             "attack_must_win_some_short_groups": True,
