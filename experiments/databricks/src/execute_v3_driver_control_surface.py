@@ -332,41 +332,68 @@ with tracking_context as tracking_run:
         if (entry["configuration_id"], entry["seed"]) not in accepted
     ]
 
+    metric_definitions = {
+        "total_time_ms": ("racing.total-time", "ms", "total"),
+        "best_lap_ms": ("racing.best-lap", "ms", "minimum"),
+        "mean_lap_ms": ("racing.mean-lap", "ms", "mean"),
+        "lap_time_stddev_ms": ("racing.lap-time-dispersion", "ms", "stddev"),
+        "final_tire_temperature_c": ("racing.final-tire-temperature", "celsius", "final"),
+        "final_tire_wear_pct": ("racing.final-tire-wear", "percent", "final"),
+        "requested_commitment": ("racing.driver-commitment", "ratio", "requested"),
+        "control_error_amplitude": ("racing.control-error-amplitude", "ratio", "resolved"),
+        "correction_workload_multiplier": ("racing.correction-workload-multiplier", "ratio", "resolved"),
+        "correction_contact_workload_mj": ("racing.correction-contact-workload", "MJ", "total"),
+        "requested_correction_wear_fraction": ("racing.correction-wear-fraction", "ratio", "total"),
+        "mean_cornering_utilization": ("racing.cornering-utilization", "ratio", "mean"),
+        "mean_braking_utilization": ("racing.braking-utilization", "ratio", "mean"),
+        "mean_traction_utilization": ("racing.traction-utilization", "ratio", "mean"),
+    }
+
+    def normalized_metric_rows(
+        entry: dict, result: dict, recorded_at: datetime
+    ) -> list[dict]:
+        execution_id = result["experimental_execution_id"]
+        return [
+            {
+                "campaign_id": campaign_id,
+                "experimental_execution_id": execution_id,
+                "experimental_configuration_id": entry["configuration_id"],
+                "response_id": entry["parameter_set_id"],
+                "seed": entry["seed"],
+                "metric_id": metric_id,
+                "metric_value": float(value),
+                "metric_unit": unit,
+                "statistic": statistic,
+                "recorded_at": recorded_at,
+            }
+            for key, value in driver_metrics(result).items()
+            for metric_id, unit, statistic in [metric_definitions[key]]
+        ]
+
+    def persist_metric_rows(metric_rows: list[dict]) -> None:
+        if not metric_rows:
+            return
+        source = spark.createDataFrame(metric_rows, metric_row_schema)
+        (
+            DeltaTable.forName(spark, metrics_table).alias("target")
+            .merge(
+                source.alias("source"),
+                "target.campaign_id = source.campaign_id "
+                "AND target.experimental_execution_id = source.experimental_execution_id "
+                "AND target.metric_id = source.metric_id",
+            )
+            .whenNotMatchedInsertAll().execute()
+        )
+
     def persist_attempts(attempts: list[dict]) -> None:
         run_rows, metric_rows = [], []
-        definitions = {
-            "total_time_ms": ("racing.total-time", "ms", "total"),
-            "best_lap_ms": ("racing.best-lap", "ms", "minimum"),
-            "mean_lap_ms": ("racing.mean-lap", "ms", "mean"),
-            "lap_time_stddev_ms": ("racing.lap-time-dispersion", "ms", "stddev"),
-            "final_tire_temperature_c": ("racing.final-tire-temperature", "celsius", "final"),
-            "final_tire_wear_pct": ("racing.final-tire-wear", "percent", "final"),
-            "requested_commitment": ("racing.driver-commitment", "ratio", "requested"),
-            "control_error_amplitude": ("racing.control-error-amplitude", "ratio", "resolved"),
-            "correction_workload_multiplier": ("racing.correction-workload-multiplier", "ratio", "resolved"),
-            "correction_contact_workload_mj": ("racing.correction-contact-workload", "MJ", "total"),
-            "requested_correction_wear_fraction": ("racing.correction-wear-fraction", "ratio", "total"),
-            "mean_cornering_utilization": ("racing.cornering-utilization", "ratio", "mean"),
-            "mean_braking_utilization": ("racing.braking-utilization", "ratio", "mean"),
-            "mean_traction_utilization": ("racing.traction-utilization", "ratio", "mean"),
-        }
         for attempt in attempts:
             entry, result = attempt["entry"], attempt["result"]
             adapter_result = attempt["adapter_result"]
             completed_at = datetime.now(timezone.utc)
             execution_id = result["experimental_execution_id"] if result else None
             if result and attempt["status"] == "SUCCESS":
-                for key, value in attempt["metrics"].items():
-                    metric_id, unit, statistic = definitions[key]
-                    metric_rows.append({
-                        "campaign_id": campaign_id,
-                        "experimental_execution_id": execution_id,
-                        "experimental_configuration_id": entry["configuration_id"],
-                        "response_id": entry["parameter_set_id"], "seed": entry["seed"],
-                        "metric_id": metric_id, "metric_value": float(value),
-                        "metric_unit": unit, "statistic": statistic,
-                        "recorded_at": completed_at,
-                    })
+                metric_rows.extend(normalized_metric_rows(entry, result, completed_at))
             metadata = {
                 key: entry[key] for key in (
                     "execution_key", "parameter_set_id", "split", "circuit_slug",
@@ -404,14 +431,7 @@ with tracking_context as tracking_run:
                 .whenMatchedUpdateAll(condition="target.execution_status <> 'SUCCESS'")
                 .whenNotMatchedInsertAll().execute()
             )
-        if metric_rows:
-            source = spark.createDataFrame(metric_rows, metric_row_schema)
-            (
-                DeltaTable.forName(spark, metrics_table).alias("target")
-                .merge(source.alias("source"),
-                    "target.experimental_execution_id = source.experimental_execution_id AND target.metric_id = source.metric_id")
-                .whenNotMatchedInsertAll().execute()
-            )
+        persist_metric_rows(metric_rows)
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
         for offset in range(0, len(pending), 128):
@@ -419,7 +439,10 @@ with tracking_context as tracking_run:
 
     persisted = (
         spark.table(runs_table).where(F.col("campaign_id") == campaign_id)
-        .select("experimental_configuration_id", "seed", "execution_status", "failure_code", "result_json")
+        .select(
+            "experimental_configuration_id", "seed", "execution_status",
+            "failure_code", "experimental_execution_id", "result_json",
+        )
         .collect()
     )
     counts = Counter(row["execution_status"] for row in persisted)
@@ -427,6 +450,58 @@ with tracking_context as tracking_run:
         raise RuntimeError("driver-control ledger does not reconcile with the plan")
 
     entry_by_key = {(row["configuration_id"], row["seed"]): row for row in plan}
+    successful_rows = [row for row in persisted if row["execution_status"] == "SUCCESS"]
+    expected_metric_keys = {
+        (row["experimental_execution_id"], metric_id)
+        for row in successful_rows
+        for metric_id, _, _ in metric_definitions.values()
+    }
+    metric_key_counts = (
+        spark.table(metrics_table).where(F.col("campaign_id") == campaign_id)
+        .groupBy("experimental_execution_id", "metric_id").count().collect()
+    )
+    duplicate_metric_keys = [row.asDict() for row in metric_key_counts if row["count"] != 1]
+    if duplicate_metric_keys:
+        raise RuntimeError("driver-control metrics contain duplicate natural keys")
+    actual_metric_keys = {
+        (row["experimental_execution_id"], row["metric_id"])
+        for row in metric_key_counts
+    }
+    if actual_metric_keys - expected_metric_keys:
+        raise RuntimeError("driver-control metrics contain unexpected natural keys")
+    missing_metric_keys = expected_metric_keys - actual_metric_keys
+    backfill_rows = []
+    backfill_recorded_at = datetime.now(timezone.utc)
+    for row in successful_rows:
+        entry = entry_by_key[(row["experimental_configuration_id"], row["seed"])]
+        result = json.loads(row["result_json"])
+        if result["experimental_execution_id"] != row["experimental_execution_id"]:
+            raise RuntimeError("stored driver-control result identity changed")
+        backfill_rows.extend(
+            metric_row
+            for metric_row in normalized_metric_rows(
+                entry, result, backfill_recorded_at
+            )
+            if (
+                metric_row["experimental_execution_id"], metric_row["metric_id"]
+            ) in missing_metric_keys
+        )
+    if len(backfill_rows) != len(missing_metric_keys):
+        raise RuntimeError("driver-control metric backfill does not reconcile")
+    persist_metric_rows(backfill_rows)
+    normalized_metric_rows_count = (
+        spark.table(metrics_table).where(F.col("campaign_id") == campaign_id).count()
+    )
+    normalized_metric_execution_count = (
+        spark.table(metrics_table).where(F.col("campaign_id") == campaign_id)
+        .select("experimental_execution_id").distinct().count()
+    )
+    if (
+        normalized_metric_rows_count != len(expected_metric_keys)
+        or normalized_metric_execution_count != len(successful_rows)
+    ):
+        raise RuntimeError("driver-control normalized metrics are incomplete")
+
     grouped = defaultdict(dict)
     pathology_counts = Counter()
     local_parity_failures = 0
@@ -502,6 +577,9 @@ with tracking_context as tracking_run:
         "planned_execution_count": manifest["planned_run_count"],
         "terminal_counts": dict(counts),
         "local_parity_failure_count": local_parity_failures,
+        "normalized_metric_row_count": normalized_metric_rows_count,
+        "normalized_metric_execution_count": normalized_metric_execution_count,
+        "backfilled_metric_row_count": len(backfill_rows),
         "ranked_parameter_sets": ranking,
         "selection_gate_pass_count": sum(row["selection_gate_passed"] for row in ranking),
         "candidate_selected": False,
@@ -515,6 +593,9 @@ with tracking_context as tracking_run:
         "failed_execution_count": counts["FAILED"],
         "local_parity_failure_count": local_parity_failures,
         "selection_gate_pass_count": report["selection_gate_pass_count"],
+        "normalized_metric_row_count": normalized_metric_rows_count,
+        "normalized_metric_execution_count": normalized_metric_execution_count,
+        "backfilled_metric_row_count": len(backfill_rows),
     })
     mlflow.set_tag("pitgun.decision", report["decision"])
     mlflow.log_dict(report, f"reports/{campaign_name}.json")
