@@ -181,7 +181,7 @@ for row in successful:
 evidence = pd.DataFrame.from_records(records)
 group_columns = [
     "parameter_set_id",
-    "circuit_id",
+    "circuit_slug",
     "horizon",
     "driver_id",
     "seed",

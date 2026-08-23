@@ -48,6 +48,7 @@ class V3DriverControlStudyTests(unittest.TestCase):
         self.assertIn('option("versionAsOf", version)', notebook)
         self.assertIn("normalized metric count changed", notebook)
         self.assertIn("paired group count changed", notebook)
+        self.assertIn('"circuit_slug",', notebook)
         self.assertIn("race-length winner conclusion changed", notebook)
         self.assertIn("ATTACK wins every paired", notebook)
         self.assertIn("improve the physics before calibrating again", notebook)
