@@ -1343,19 +1343,21 @@ fn run_compatibility_simulation_kernel(
     })
 }
 
+type V3ResolvedControls<'a> = (
+    &'a MechanicalParamsV3,
+    &'a DriverControlParamsV3,
+    Option<&'a EngineThermalParamsV3>,
+    Option<f64>,
+    Option<DriverCorrectionCapacityModelV3>,
+);
+
 fn run_resolved_simulation_kernel(
     input: &SimulationRequest,
     tuned_vehicle: VehicleParams,
     curvature_response: CurvatureAeroResponse,
     spatial_integration: SpatialIntegration,
     tire_dynamics: TireDynamics<'_>,
-    v3_controls: Option<(
-        &MechanicalParamsV3,
-        &DriverControlParamsV3,
-        Option<&EngineThermalParamsV3>,
-        Option<f64>,
-        Option<DriverCorrectionCapacityModelV3>,
-    )>,
+    v3_controls: Option<V3ResolvedControls<'_>>,
     fuel_mass: Option<&FuelMassParamsV3>,
 ) -> Result<SimulationResult, String> {
     if matches!(tire_dynamics, TireDynamics::Compatibility) {
