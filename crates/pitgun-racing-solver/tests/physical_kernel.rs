@@ -1,13 +1,13 @@
 use pitgun_racing_solver::{
     AERO_FULL_CORNER_CURVATURE_RAD_PER_M, AERO_FULL_STRAIGHT_CURVATURE_RAD_PER_M, AeroParams,
-    ChassisParams, CurvatureAeroResponse, Driver, DriverControlParamsV3, EngineParams,
-    EngineThermalDeratingShapeV3, EngineThermalParamsV3, MechanicalParamsV3, PitPlan,
-    ResolvedSimulationRequestV3, SimConfig, SimulationRequest, TireContactParamsV3,
-    TireDegradationParamsV3, TireParams, Track, Tuning, TuningResponseV1, VehicleParams,
-    VehicleState, aggregate_tire_force_capacity_v3, apply_tuning, apply_tuning_with_response,
-    combined_force_utilization, curvature_aero_blend, derating_factor_v3, describe_circuit,
-    remaining_longitudinal_force, run_resolved_simulation_v3, run_simulation,
-    run_simulation_with_model_response, run_simulation_with_tuning_response,
+    ChassisParams, CurvatureAeroResponse, Driver, DriverControlParamsV3,
+    DriverCorrectionCapacityModelV3, EngineParams, EngineThermalDeratingShapeV3,
+    EngineThermalParamsV3, MechanicalParamsV3, PitPlan, ResolvedSimulationRequestV3, SimConfig,
+    SimulationRequest, TireContactParamsV3, TireDegradationParamsV3, TireParams, Track, Tuning,
+    TuningResponseV1, VehicleParams, VehicleState, aggregate_tire_force_capacity_v3, apply_tuning,
+    apply_tuning_with_response, combined_force_utilization, curvature_aero_blend,
+    derating_factor_v3, describe_circuit, remaining_longitudinal_force, run_resolved_simulation_v3,
+    run_simulation, run_simulation_with_model_response, run_simulation_with_tuning_response,
 };
 
 fn synthetic_request() -> SimulationRequest {
@@ -110,6 +110,7 @@ fn resolved_v3_request(request: &SimulationRequest) -> ResolvedSimulationRequest
         },
         driver_control: DriverControlParamsV3::default(),
         driver_correction_workload_multiplier: None,
+        driver_correction_capacity_model: None,
         fuel_mass: None,
         tire_degradation: None,
         engine_thermal: None,
@@ -381,6 +382,44 @@ fn v3_driver_corrections_add_explainable_heat_and_wear_deterministically() {
             .expect("correction wear")
             > 0.0
     );
+}
+
+#[test]
+fn v3_driver_corrections_can_reserve_the_shared_friction_budget() {
+    let mut workload_only = resolved_v3_request(&synthetic_request());
+    workload_only.lap_count = 3;
+    workload_only.tire_degradation = Some(TireDegradationParamsV3::default());
+    workload_only.driver_control = DriverControlParamsV3 {
+        cornering_utilization: 0.99,
+        braking_utilization: 0.99,
+        traction_utilization: 0.99,
+        control_error: 0.03,
+    };
+    workload_only.driver_correction_workload_multiplier = Some(1.20);
+
+    let legacy = run_resolved_simulation_v3(&workload_only).expect("workload-only solve");
+    let mut friction_budget = workload_only;
+    friction_budget.driver_correction_capacity_model =
+        Some(DriverCorrectionCapacityModelV3::FrictionBudgetV1);
+    let first = run_resolved_simulation_v3(&friction_budget).expect("friction-budget solve");
+    let second = run_resolved_simulation_v3(&friction_budget).expect("repeat solve");
+    assert_eq!(first, second);
+    assert!(first.total_time_s >= legacy.total_time_s);
+
+    let legacy_driver = legacy
+        .driver_control_diagnostics_v3
+        .expect("legacy driver diagnostics");
+    let reserved_driver = first
+        .driver_control_diagnostics_v3
+        .expect("reserved driver diagnostics");
+    assert_eq!(legacy_driver.correction_force_capacity_fraction, None);
+    let capacity_fraction = reserved_driver
+        .correction_force_capacity_fraction
+        .expect("correction force capacity");
+    assert!((capacity_fraction - 1.20_f64.sqrt().recip()).abs() < 1e-12);
+    assert!(reserved_driver.cornering.mean_realized < legacy_driver.cornering.mean_realized);
+    assert!(reserved_driver.braking.mean_realized < legacy_driver.braking.mean_realized);
+    assert!(reserved_driver.traction.mean_realized < legacy_driver.traction.mean_realized);
 }
 
 #[test]

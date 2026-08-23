@@ -351,6 +351,13 @@ pub struct ResolvedSimulationRequestV3 {
     /// from explicit driver traits and a session driving mode.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub driver_correction_workload_multiplier: Option<f64>,
+    /// Optional physical treatment of correction workload.
+    ///
+    /// `None` preserves Model `0.12.0`, where corrections add heat and wear but
+    /// do not reserve tire-force capacity. Later candidates may explicitly
+    /// account for that orthogonal force demand inside the friction budget.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub driver_correction_capacity_model: Option<DriverCorrectionCapacityModelV3>,
     /// Optional power-based combustion model selected by the V3 profile.
     /// `None` preserves the immutable time-based semantics of older candidates.
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -565,6 +572,15 @@ pub struct DriverControlParamsV3 {
     pub control_error: f64,
 }
 
+/// Physical interpretation applied to deterministic driver corrections.
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "snake_case")]
+pub enum DriverCorrectionCapacityModelV3 {
+    /// Treat correction workload as an orthogonal demand on the same aggregate
+    /// tire-force envelope used for braking, cornering and traction.
+    FrictionBudgetV1,
+}
+
 impl Default for DriverControlParamsV3 {
     fn default() -> Self {
         Self {
@@ -717,6 +733,11 @@ pub struct DriverUtilizationDiagnosticsV3 {
 pub struct DriverControlDiagnosticsV3 {
     pub control_error_amplitude: f64,
     pub correction_workload_multiplier: f64,
+    /// Fraction of the requested force envelope left for useful vehicle motion
+    /// after deterministic corrections reserve their share. Absent for the
+    /// immutable workload-only Model `0.12.0` behavior.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub correction_force_capacity_fraction: Option<f64>,
     pub cornering: DriverUtilizationDiagnosticsV3,
     pub braking: DriverUtilizationDiagnosticsV3,
     pub traction: DriverUtilizationDiagnosticsV3,
@@ -982,6 +1003,7 @@ pub fn run_resolved_simulation_v3(
             &input.driver_control,
             input.engine_thermal.as_ref(),
             input.driver_correction_workload_multiplier,
+            input.driver_correction_capacity_model,
         )),
         input.fuel_mass.as_ref(),
     )
@@ -1321,18 +1343,21 @@ fn run_compatibility_simulation_kernel(
     })
 }
 
+type V3ResolvedControls<'a> = (
+    &'a MechanicalParamsV3,
+    &'a DriverControlParamsV3,
+    Option<&'a EngineThermalParamsV3>,
+    Option<f64>,
+    Option<DriverCorrectionCapacityModelV3>,
+);
+
 fn run_resolved_simulation_kernel(
     input: &SimulationRequest,
     tuned_vehicle: VehicleParams,
     curvature_response: CurvatureAeroResponse,
     spatial_integration: SpatialIntegration,
     tire_dynamics: TireDynamics<'_>,
-    v3_controls: Option<(
-        &MechanicalParamsV3,
-        &DriverControlParamsV3,
-        Option<&EngineThermalParamsV3>,
-        Option<f64>,
-    )>,
+    v3_controls: Option<V3ResolvedControls<'_>>,
     fuel_mass: Option<&FuelMassParamsV3>,
 ) -> Result<SimulationResult, String> {
     if matches!(tire_dynamics, TireDynamics::Compatibility) {
@@ -1344,10 +1369,34 @@ fn run_resolved_simulation_kernel(
         );
     }
 
-    let (mechanical, driver_control, engine_thermal, driver_correction_workload_multiplier) =
-        v3_controls.ok_or_else(|| {
-            "V3 mechanical controls are required for aggregate dynamics".to_string()
-        })?;
+    let (
+        mechanical,
+        driver_control,
+        engine_thermal,
+        driver_correction_workload_multiplier,
+        driver_correction_capacity_model,
+    ) = v3_controls
+        .ok_or_else(|| "V3 mechanical controls are required for aggregate dynamics".to_string())?;
+    let correction_force_capacity_fraction = match (
+        driver_correction_capacity_model,
+        driver_correction_workload_multiplier,
+    ) {
+        (Some(DriverCorrectionCapacityModelV3::FrictionBudgetV1), Some(multiplier)) => {
+            multiplier.sqrt().recip()
+        }
+        (Some(DriverCorrectionCapacityModelV3::FrictionBudgetV1), None) => {
+            return Err(
+                "driver correction friction budget requires a workload multiplier".to_string(),
+            );
+        }
+        (None, _) => 1.0,
+    };
+    let requested_cornering_utilization =
+        driver_control.cornering_utilization * correction_force_capacity_fraction;
+    let requested_braking_utilization =
+        driver_control.braking_utilization * correction_force_capacity_fraction;
+    let requested_traction_utilization =
+        driver_control.traction_utilization * correction_force_capacity_fraction;
 
     let lap_count = input.lap_count.max(1);
     let driver = input.driver.clone();
@@ -1423,7 +1472,7 @@ fn run_resolved_simulation_kernel(
         let mass = vehicle.chassis.mass_empty + state_curr.total_mass_delta();
         let tire_curr = tire_for_lap(&vehicle.tire, &pit_stops, lap_idx);
         let cornering_utilization = resolved_driver_utilization_profile(
-            driver_control.cornering_utilization,
+            requested_cornering_utilization,
             driver_control.control_error,
             input.config.sim_seed,
             &driver.id,
@@ -1432,7 +1481,7 @@ fn run_resolved_simulation_kernel(
             "cornering",
         );
         let braking_utilization = resolved_driver_utilization_profile(
-            driver_control.braking_utilization,
+            requested_braking_utilization,
             driver_control.control_error,
             input.config.sim_seed,
             &driver.id,
@@ -1441,7 +1490,7 @@ fn run_resolved_simulation_kernel(
             "braking",
         );
         let traction_utilization = resolved_driver_utilization_profile(
-            driver_control.traction_utilization,
+            requested_traction_utilization,
             driver_control.control_error,
             input.config.sim_seed,
             &driver.id,
@@ -2112,16 +2161,18 @@ fn run_resolved_simulation_kernel(
         driver_correction_workload_multiplier.map(|multiplier| DriverControlDiagnosticsV3 {
             control_error_amplitude: driver_control.control_error,
             correction_workload_multiplier: multiplier,
+            correction_force_capacity_fraction: driver_correction_capacity_model
+                .map(|_| correction_force_capacity_fraction),
             cornering: summarize_driver_utilization_v3(
-                driver_control.cornering_utilization,
+                requested_cornering_utilization,
                 &solution.driver_cornering_utilization,
             ),
             braking: summarize_driver_utilization_v3(
-                driver_control.braking_utilization,
+                requested_braking_utilization,
                 &solution.driver_braking_utilization,
             ),
             traction: summarize_driver_utilization_v3(
-                driver_control.traction_utilization,
+                requested_traction_utilization,
                 &solution.driver_traction_utilization,
             ),
         });

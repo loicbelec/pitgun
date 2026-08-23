@@ -22,9 +22,11 @@ pub use workload::{
     racing_model_v1_identity, racing_model_v2_identity, racing_model_v3_aero_candidate_identity,
     racing_model_v3_candidate_identity, racing_model_v3_component_candidate_identity,
     racing_model_v3_development_candidate_identity,
-    racing_model_v3_driver_control_candidate_identity, racing_model_v3_fidelity_candidate_identity,
-    racing_model_v3_fuel_mass_candidate_identity, racing_model_v3_mechanical_candidate_identity,
-    racing_model_v3_thermal_candidate_identity, racing_model_v3_transmission_candidate_identity,
+    racing_model_v3_driver_control_candidate_identity,
+    racing_model_v3_driver_friction_candidate_identity,
+    racing_model_v3_fidelity_candidate_identity, racing_model_v3_fuel_mass_candidate_identity,
+    racing_model_v3_mechanical_candidate_identity, racing_model_v3_thermal_candidate_identity,
+    racing_model_v3_transmission_candidate_identity,
 };
 
 use std::collections::hash_map::DefaultHasher;
@@ -56,15 +58,15 @@ pub use pitgun_racing_solver::{
     AERO_FULL_CORNER_CURVATURE_RAD_PER_M, AERO_FULL_STRAIGHT_CURVATURE_RAD_PER_M, AeroParams,
     CORNER_CURVATURE_THRESHOLD_RAD_PER_M, ChassisParams, CircuitDescriptorsV1,
     CurvatureAeroResponse, Driver, DriverControlDiagnosticsV3, DriverControlParamsV3,
-    DriverEffects, EngineParams, EngineThermalDeratingShapeV3, EngineThermalParamsV3,
-    FuelMassDiagnosticsV3, FuelMassParamsV3, MechanicalDiagnosticsV3, MechanicalParamsV3, PitPlan,
-    PitStop, ResampledTelemetry, ResolvedSimulationRequestV3, SetupResponseDiagnosticsV1,
-    SetupResponseDiagnosticsVersion, SimConfig, SimulationRequest, SimulationResult,
-    SimulationSolution, TireContactParamsV3, TireDegradationDiagnosticsV3, TireDegradationParamsV3,
-    TireDiagnosticsV3, TireParams, Track, Tuning, TuningResponseV1, TuningResponseVersion,
-    VehicleParams, VehicleState, apply_driver_to_tire, apply_tuning, apply_tuning_with_response,
-    best_power_at_speed, curvature_aero_blend, derating_factor, describe_circuit,
-    diagnose_setup_response, driver_effects, effective_mu, power_kw_from_rpm,
+    DriverCorrectionCapacityModelV3, DriverEffects, EngineParams, EngineThermalDeratingShapeV3,
+    EngineThermalParamsV3, FuelMassDiagnosticsV3, FuelMassParamsV3, MechanicalDiagnosticsV3,
+    MechanicalParamsV3, PitPlan, PitStop, ResampledTelemetry, ResolvedSimulationRequestV3,
+    SetupResponseDiagnosticsV1, SetupResponseDiagnosticsVersion, SimConfig, SimulationRequest,
+    SimulationResult, SimulationSolution, TireContactParamsV3, TireDegradationDiagnosticsV3,
+    TireDegradationParamsV3, TireDiagnosticsV3, TireParams, Track, Tuning, TuningResponseV1,
+    TuningResponseVersion, VehicleParams, VehicleState, apply_driver_to_tire, apply_tuning,
+    apply_tuning_with_response, best_power_at_speed, curvature_aero_blend, derating_factor,
+    describe_circuit, diagnose_setup_response, driver_effects, effective_mu, power_kw_from_rpm,
     resample_telemetry as resample_solution, rpm_from_speed_gear,
     run_resolved_simulation_v3 as solve_resolved_v3, run_simulation as solve,
     run_simulation_with_model_response as solve_with_model_response,
@@ -568,6 +570,8 @@ pub enum V3CandidateExperimentProfileVersion {
     V9,
     #[serde(rename = "pitgun.racing-v3-experiment-profile/v10")]
     V10,
+    #[serde(rename = "pitgun.racing-v3-experiment-profile/v11")]
+    V11,
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq)]
@@ -642,7 +646,8 @@ impl V3CandidateExperimentProfile {
                 | V3CandidateExperimentProfileVersion::V7
                 | V3CandidateExperimentProfileVersion::V8
                 | V3CandidateExperimentProfileVersion::V9
-                | V3CandidateExperimentProfileVersion::V10,
+                | V3CandidateExperimentProfileVersion::V10
+                | V3CandidateExperimentProfileVersion::V11,
                 Some(aero),
                 Some(development),
                 Some(transmission),
@@ -691,6 +696,10 @@ impl V3CandidateExperimentProfile {
                 "V3 experiment profile V10 requires aero, development and transmission resolution"
                     .to_string(),
             ),
+            (V3CandidateExperimentProfileVersion::V11, _, _, _) => Err(
+                "V3 experiment profile V11 requires aero, development and transmission resolution"
+                    .to_string(),
+            ),
         };
         resolution?;
         match (self.schema_version, self.fuel_mass) {
@@ -699,7 +708,8 @@ impl V3CandidateExperimentProfile {
                 | V3CandidateExperimentProfileVersion::V7
                 | V3CandidateExperimentProfileVersion::V8
                 | V3CandidateExperimentProfileVersion::V9
-                | V3CandidateExperimentProfileVersion::V10,
+                | V3CandidateExperimentProfileVersion::V10
+                | V3CandidateExperimentProfileVersion::V11,
                 Some(fuel_mass),
             ) => fuel_mass.validate(),
             (
@@ -707,9 +717,10 @@ impl V3CandidateExperimentProfile {
                 | V3CandidateExperimentProfileVersion::V7
                 | V3CandidateExperimentProfileVersion::V8
                 | V3CandidateExperimentProfileVersion::V9
-                | V3CandidateExperimentProfileVersion::V10,
+                | V3CandidateExperimentProfileVersion::V10
+                | V3CandidateExperimentProfileVersion::V11,
                 None,
-            ) => Err("V3 experiment profiles V6 through V10 require fuel_mass".to_string()),
+            ) => Err("V3 experiment profiles V6 through V11 require fuel_mass".to_string()),
             (_, None) => Ok(()),
             (_, Some(_)) => {
                 Err("historical V3 experiment profiles cannot define fuel_mass".to_string())
@@ -720,16 +731,18 @@ impl V3CandidateExperimentProfile {
                 V3CandidateExperimentProfileVersion::V7
                 | V3CandidateExperimentProfileVersion::V8
                 | V3CandidateExperimentProfileVersion::V9
-                | V3CandidateExperimentProfileVersion::V10,
+                | V3CandidateExperimentProfileVersion::V10
+                | V3CandidateExperimentProfileVersion::V11,
                 Some(tire_degradation),
             ) => tire_degradation.validate(),
             (
                 V3CandidateExperimentProfileVersion::V7
                 | V3CandidateExperimentProfileVersion::V8
                 | V3CandidateExperimentProfileVersion::V9
-                | V3CandidateExperimentProfileVersion::V10,
+                | V3CandidateExperimentProfileVersion::V10
+                | V3CandidateExperimentProfileVersion::V11,
                 None,
-            ) => Err("V3 experiment profiles V7 through V10 require tire_degradation".to_string()),
+            ) => Err("V3 experiment profiles V7 through V11 require tire_degradation".to_string()),
             (_, None) => Ok(()),
             (_, Some(_)) => {
                 Err("historical V3 experiment profiles cannot define tire_degradation".to_string())
@@ -744,6 +757,8 @@ impl V3CandidateExperimentProfile {
             (V3CandidateExperimentProfileVersion::V9, Some(thermal)) => thermal.validate(),
             (V3CandidateExperimentProfileVersion::V10, None) => Ok(()),
             (V3CandidateExperimentProfileVersion::V10, Some(thermal)) => thermal.validate(),
+            (V3CandidateExperimentProfileVersion::V11, None) => Ok(()),
+            (V3CandidateExperimentProfileVersion::V11, Some(thermal)) => thermal.validate(),
             (_, None) => Ok(()),
             (_, Some(_)) => Err(
                 "historical V3 experiment profiles cannot define engine_thermal_resolution"
@@ -755,14 +770,27 @@ impl V3CandidateExperimentProfile {
             self.driver_control_override,
             self.driver_control_profile,
         ) {
-            (V3CandidateExperimentProfileVersion::V10, None, Some(profile)) => profile
+            (
+                V3CandidateExperimentProfileVersion::V10 | V3CandidateExperimentProfileVersion::V11,
+                None,
+                Some(profile),
+            ) => profile
                 .validate()
                 .map_err(|error| format!("invalid driver-control profile: {error}")),
-            (V3CandidateExperimentProfileVersion::V10, Some(_), _) => Err(
-                "V3 experiment profile V10 forbids the legacy driver_control_override".to_string(),
+            (
+                V3CandidateExperimentProfileVersion::V10 | V3CandidateExperimentProfileVersion::V11,
+                Some(_),
+                _,
+            ) => Err(
+                "V3 experiment profiles V10 and V11 forbid the legacy driver_control_override"
+                    .to_string(),
             ),
-            (V3CandidateExperimentProfileVersion::V10, None, None) => {
-                Err("V3 experiment profile V10 requires driver_control_profile".to_string())
+            (
+                V3CandidateExperimentProfileVersion::V10 | V3CandidateExperimentProfileVersion::V11,
+                None,
+                None,
+            ) => {
+                Err("V3 experiment profiles V10 and V11 require driver_control_profile".to_string())
             }
             (_, _, None) => Ok(()),
             (_, _, Some(_)) => Err(
@@ -799,6 +827,9 @@ impl V3CandidateExperimentProfile {
             V3CandidateExperimentProfileVersion::V10 => {
                 racing_model_v3_driver_control_candidate_identity()
             }
+            V3CandidateExperimentProfileVersion::V11 => {
+                racing_model_v3_driver_friction_candidate_identity()
+            }
         }
     }
 
@@ -811,6 +842,7 @@ impl V3CandidateExperimentProfile {
                 | V3CandidateExperimentProfileVersion::V8
                 | V3CandidateExperimentProfileVersion::V9
                 | V3CandidateExperimentProfileVersion::V10
+                | V3CandidateExperimentProfileVersion::V11
         )
     }
 
@@ -823,6 +855,7 @@ impl V3CandidateExperimentProfile {
                 | V3CandidateExperimentProfileVersion::V8
                 | V3CandidateExperimentProfileVersion::V9
                 | V3CandidateExperimentProfileVersion::V10
+                | V3CandidateExperimentProfileVersion::V11
         )
     }
 }
@@ -1787,21 +1820,29 @@ fn run_race_with_catalog_and_v3_component_profile(
         .map_err(|error| format!("invalid V3 component experiment profile: {error}"))?;
     match (profile.schema_version, driver_control_experiment) {
         (V3CandidateExperimentProfileVersion::V9, None)
-        | (V3CandidateExperimentProfileVersion::V10, Some(_)) => {}
+        | (
+            V3CandidateExperimentProfileVersion::V10 | V3CandidateExperimentProfileVersion::V11,
+            Some(_),
+        ) => {}
         (V3CandidateExperimentProfileVersion::V9, Some(_)) => {
             return Err(
                 "V3 experiment profile V9 cannot define driver-control experiment inputs"
                     .to_string(),
             );
         }
-        (V3CandidateExperimentProfileVersion::V10, None) => {
+        (
+            V3CandidateExperimentProfileVersion::V10 | V3CandidateExperimentProfileVersion::V11,
+            None,
+        ) => {
             return Err(
-                "V3 experiment profile V10 requires driver-control experiment inputs".to_string(),
+                "V3 experiment profiles V10 and V11 require driver-control experiment inputs"
+                    .to_string(),
             );
         }
         _ => {
             return Err(
-                "power-unit thermal selection requires V3 experiment profile V9 or V10".to_string(),
+                "power-unit thermal selection requires V3 experiment profile V9, V10 or V11"
+                    .to_string(),
             );
         }
     }
@@ -2039,9 +2080,13 @@ fn run_single_session(
                     driver_control_experiment: Some(experiment),
                     ..
                 },
-            ) if profile.schema_version == V3CandidateExperimentProfileVersion::V10 => {
+            ) if matches!(
+                profile.schema_version,
+                V3CandidateExperimentProfileVersion::V10 | V3CandidateExperimentProfileVersion::V11
+            ) =>
+            {
                 let control_profile = profile.driver_control_profile.as_ref().ok_or_else(|| {
-                    "V3 experiment profile V10 has no resolved driver-control profile".to_string()
+                    "V3 driver-control experiment profile has no resolved profile".to_string()
                 })?;
                 Some(experiment.resolve_competitor(competitor, control_profile)?)
             }
@@ -2056,7 +2101,7 @@ fn run_single_session(
             driver.id = competitor
                 .driver_id
                 .clone()
-                .expect("validated V10 driver id");
+                .expect("validated driver-control candidate driver id");
         }
         let sim_config = SimConfig {
             ds: track_record
@@ -2140,6 +2185,9 @@ fn run_single_session(
                     driver_correction_workload_multiplier: driver_control_resolution
                         .as_ref()
                         .map(|resolution| resolution.correction_workload_multiplier),
+                    driver_correction_capacity_model: (profile.schema_version
+                        == V3CandidateExperimentProfileVersion::V11)
+                        .then_some(DriverCorrectionCapacityModelV3::FrictionBudgetV1),
                     fuel_mass: profile.fuel_mass,
                     tire_degradation: profile.tire_degradation,
                     engine_thermal: profile.engine_thermal_resolution.map(|thermal| {
@@ -4265,6 +4313,13 @@ mod tests {
         }
     }
 
+    fn driver_friction_profile_v11() -> V3CandidateExperimentProfile {
+        V3CandidateExperimentProfile {
+            schema_version: V3CandidateExperimentProfileVersion::V11,
+            ..driver_control_profile_v10()
+        }
+    }
+
     fn driver_resource(consistency: f64, tire_management: f64) -> RacingDriverResourceV2 {
         RacingDriverResourceV2 {
             schema_version: RacingDriverResourceVersion::V2,
@@ -5495,6 +5550,10 @@ mod tests {
             .get("player")
             .expect("realized driver-control diagnostics");
         assert_eq!(
+            realized.correction_force_capacity_fraction, None,
+            "candidate 0.12 must retain its reviewed diagnostics"
+        );
+        assert_eq!(
             realized.cornering.requested_limit,
             resolution.cornering_utilization
         );
@@ -5534,5 +5593,75 @@ mod tests {
             .expect_err("missing mode must fail closed")
             .contains("missing driving mode")
         );
+    }
+
+    #[test]
+    fn driver_friction_candidate_is_offline_deterministic_and_reserves_force_capacity() {
+        let snapshot = RacingCatalogSnapshot::embedded_model_v3_component()
+            .expect("component-composed catalog");
+        let thermal = snapshot
+            .power_unit_thermal_profile()
+            .expect("power-unit thermal profile");
+        let profile = driver_friction_profile_v11();
+        let experiment = V3DriverControlExperimentV1 {
+            drivers: BTreeMap::from([("default".to_string(), driver_resource(0.70, 0.55))]),
+            competitor_modes: BTreeMap::from([("player".to_string(), RacingDrivingMode::Attack)]),
+        };
+
+        assert_eq!(
+            profile.model_identity(),
+            racing_model_v3_driver_friction_candidate_identity()
+        );
+        assert!(
+            racing_model_identity_for_version("0.13.0").is_err(),
+            "the friction-budget candidate must not be selectable by hosted verification"
+        );
+
+        let first = run_race_with_catalog_and_v3_driver_control_profile(
+            one_lap_request(),
+            &snapshot,
+            &profile,
+            thermal,
+            &experiment,
+        )
+        .expect("first driver-friction candidate run");
+        let second = run_race_with_catalog_and_v3_driver_control_profile(
+            one_lap_request(),
+            &snapshot,
+            &profile,
+            thermal,
+            &experiment,
+        )
+        .expect("second driver-friction candidate run");
+
+        assert_eq!(
+            serde_json::to_value(&first).expect("first JSON"),
+            serde_json::to_value(&second).expect("second JSON"),
+            "identical driver-friction inputs must be bit-for-bit deterministic"
+        );
+        let realized = first
+            .competitor_driver_control_diagnostics_v3
+            .get("player")
+            .expect("realized driver-control diagnostics");
+        let capacity = realized
+            .correction_force_capacity_fraction
+            .expect("friction-budget capacity fraction");
+        assert!(
+            0.0 < capacity && capacity < 1.0,
+            "correction workload must reserve a bounded part of tire-force capacity"
+        );
+        let resolution = first
+            .competitor_driver_control_resolutions_v3
+            .get("player")
+            .expect("driver-control lineage");
+        approx_eq(
+            capacity,
+            1.0 / resolution.correction_workload_multiplier.sqrt(),
+            1e-12,
+            "correction force capacity",
+        );
+        assert!(realized.cornering.requested_limit < resolution.cornering_utilization);
+        assert!(realized.braking.requested_limit < resolution.braking_utilization);
+        assert!(realized.traction.requested_limit < resolution.traction_utilization);
     }
 }
