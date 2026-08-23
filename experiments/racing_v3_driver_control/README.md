@@ -146,3 +146,13 @@ contexts for all three profiles. No profile is selected. The compact
 [`results/equal-budget-driver-control-review-v1.json`](results/equal-budget-driver-control-review-v1.json)
 records `MODE_RESPONSE_REFINEMENT_REQUIRED`: keep the equal-budget roster fixed
 and explore only the mode commitment and correction-cost response next.
+
+## Governed mode-response campaign
+
+That next experiment is frozen in
+[`../databricks/campaigns/racing-v3-driver-mode-surface-v3.json`](../databricks/campaigns/racing-v3-driver-mode-surface-v3.json).
+It keeps Model 0.13, the equal-budget roster, vehicle tuning, and all
+non-driver physics fixed while exploring only the four explicit mode-response
+axes. The 3,168-run Databricks matrix compares all four drivers and three modes
+in paired short and race-length contexts. Its ranking is advisory and reserves
+the complete 702-case matrix for final validation before any catalog change.

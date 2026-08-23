@@ -14,6 +14,29 @@ CAMPAIGN_NAME = "racing-v3-driver-control-surface-v2"
 SCHEMA_VERSION = "pitgun.racing-v3-driver-control-surface-campaign/v1"
 MODEL_ID = "pitgun.racing-v3-candidate"
 MODEL_VERSION = "0.12.0"
+MODE_CAMPAIGN_NAME = "racing-v3-driver-mode-surface-v3"
+MODE_SCHEMA_VERSION = "pitgun.racing-v3-driver-control-surface-campaign/v2"
+MODE_MODEL_VERSION = "0.13.0"
+CAMPAIGN_SPECS = {
+    CAMPAIGN_NAME: {
+        "schema_version": SCHEMA_VERSION,
+        "model": {
+            "id": MODEL_ID,
+            "version": MODEL_VERSION,
+            "digest": "sha256:5e505840e341181bb87af53d5915fd351d085a6b9a940c56c9683718df31741b",
+        },
+        "predecessor_campaign_id": "racing-v3-driver-control-surface-2026-v1",
+    },
+    MODE_CAMPAIGN_NAME: {
+        "schema_version": MODE_SCHEMA_VERSION,
+        "model": {
+            "id": MODEL_ID,
+            "version": MODE_MODEL_VERSION,
+            "digest": "sha256:34c95f6c345d30db12e2d036d1ded1a93fb689db37df579ac61d77b553537a4f",
+        },
+        "predecessor_campaign_id": "racing-v3-driver-control-surface-2026-v2",
+    },
+}
 EXECUTION_KEY_PATTERN = re.compile(r"v3dc-[0-9a-f]{16}")
 SHA256_PATTERN = re.compile(r"sha256:[0-9a-f]{64}")
 
@@ -32,11 +55,12 @@ def _contains_remote_reference(value: object) -> bool:
     return False
 
 
-@functools.lru_cache(maxsize=1)
+@functools.lru_cache(maxsize=len(CAMPAIGN_SPECS))
 def load_driver_control_campaign(
     name: str = CAMPAIGN_NAME,
 ) -> tuple[dict[str, Any], str]:
-    if name != CAMPAIGN_NAME:
+    spec = CAMPAIGN_SPECS.get(name)
+    if spec is None:
         raise DriverControlCampaignError("campaign is not packaged or allowlisted")
     root = importlib.resources.files("pitgun_databricks_adapter") / "campaigns"
     filename = name + ".json"
@@ -46,7 +70,7 @@ def load_driver_control_campaign(
     if len(checksum) != 2 or checksum != [digest, filename]:
         raise DriverControlCampaignError("campaign does not match its checksum")
     manifest = json.loads(payload)
-    if manifest.get("schema_version") != SCHEMA_VERSION:
+    if manifest.get("schema_version") != spec["schema_version"]:
         raise DriverControlCampaignError("unsupported driver-control campaign")
     if manifest.get("execution_class") != "experimental-v3-driver-control-physics":
         raise DriverControlCampaignError("invalid driver-control execution class")
@@ -54,12 +78,15 @@ def load_driver_control_campaign(
         raise DriverControlCampaignError("human review is required")
     if manifest.get("automatic_catalog_promotion") is not False:
         raise DriverControlCampaignError("automatic catalog promotion is forbidden")
-    if manifest.get("supersedes", {}).get("campaign_id") != (
-        "racing-v3-driver-control-surface-2026-v1"
-    ):
-        raise DriverControlCampaignError("V2 does not identify the failed V1 campaign")
+    predecessor = (
+        manifest.get("supersedes", {}).get("campaign_id")
+        if name == CAMPAIGN_NAME
+        else manifest.get("predecessor_evidence", {}).get("campaign_id")
+    )
+    if predecessor != spec["predecessor_campaign_id"]:
+        raise DriverControlCampaignError("campaign predecessor evidence is incomplete")
     model = manifest.get("model", {})
-    if model.get("id") != MODEL_ID or model.get("version") != MODEL_VERSION:
+    if model != spec["model"]:
         raise DriverControlCampaignError("campaign targets an unsupported model")
     if _contains_remote_reference(manifest):
         raise DriverControlCampaignError("remote campaign inputs are forbidden")
@@ -109,7 +136,10 @@ def load_driver_control_campaign(
 
 
 def materialize_driver_control_plan(manifest: dict[str, Any]) -> list[dict[str, Any]]:
-    if manifest.get("schema_version") != SCHEMA_VERSION:
+    supported_schemas = {
+        spec["schema_version"] for spec in CAMPAIGN_SPECS.values()
+    }
+    if manifest.get("schema_version") not in supported_schemas:
         raise DriverControlCampaignError("unsupported driver-control campaign")
     return [
         dict(
@@ -124,7 +154,7 @@ def materialize_driver_control_plan(manifest: dict[str, Any]) -> list[dict[str, 
     ]
 
 
-@functools.lru_cache(maxsize=1)
+@functools.lru_cache(maxsize=len(CAMPAIGN_SPECS))
 def _execution_index(name: str) -> dict[str, dict[str, Any]]:
     manifest, _ = load_driver_control_campaign(name)
     return {
