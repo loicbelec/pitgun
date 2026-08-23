@@ -49,6 +49,7 @@ from .runner import (
     inspect_packaged_v3_validation_probe,
     inspect_packaged_v3_decision_surface_probe,
     inspect_packaged_v3_driver_control_probe,
+    validate_packaged_v3_driver_control_profiles,
 )
 from .driver_control import (
     load_driver_control_campaign,
@@ -91,6 +92,7 @@ __all__ = [
     "inspect_packaged_v3_validation_probe",
     "inspect_packaged_v3_decision_surface_probe",
     "inspect_packaged_v3_driver_control_probe",
+    "validate_packaged_v3_driver_control_profiles",
     "load_driver_control_campaign",
     "load_driver_control_execution",
     "materialize_driver_control_plan",

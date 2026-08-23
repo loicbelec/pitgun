@@ -23,13 +23,14 @@ from pitgun_databricks_adapter import (
     inspect_packaged_v3_driver_control_probe,
     load_driver_control_campaign,
     materialize_driver_control_plan,
+    validate_packaged_v3_driver_control_profiles,
 )
 
 
 dbutils.widgets.text("catalog_name", "workspace")
 dbutils.widgets.text("calibration_schema", "pitgun_calibration")
 dbutils.widgets.text("experiment_id", "")
-dbutils.widgets.text("campaign_name", "racing-v3-driver-control-surface-v1")
+dbutils.widgets.text("campaign_name", "racing-v3-driver-control-surface-v2")
 dbutils.widgets.text("max_workers", "8")
 
 catalog_name = dbutils.widgets.get("catalog_name")
@@ -152,6 +153,9 @@ campaign_id = manifest["campaign_id"]
 adapter_version = importlib.metadata.version("pitgun-databricks-adapter")
 source_git_revision = adapter_version.split("+g", 1)[-1]
 probe_identity = inspect_packaged_v3_driver_control_probe()
+profile_preflight = validate_packaged_v3_driver_control_profiles(campaign_name)
+if profile_preflight["validated_profile_count"] != manifest["unique_profile_count"]:
+    raise RuntimeError("Rust profile preflight did not reconcile with the V2 manifest")
 
 # COMMAND ----------
 
@@ -300,8 +304,14 @@ with tracking_context as tracking_run:
             "unique_profile_count": manifest["unique_profile_count"],
             "probe_artifact_digest": probe_identity["digest"],
             "adapter_version": adapter_version,
+            "rust_validated_profile_count": profile_preflight[
+                "validated_profile_count"
+            ],
         })
         mlflow.log_dict(manifest, f"inputs/{campaign_name}-manifest.json")
+        mlflow.log_dict(
+            profile_preflight, f"inputs/{campaign_name}-rust-profile-preflight.json"
+        )
 
     existing = (
         spark.table(runs_table).where(F.col("campaign_id") == campaign_id)
