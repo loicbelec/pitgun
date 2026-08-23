@@ -39,6 +39,11 @@ _DECISION_SURFACE_PROBE_ROOT = pathlib.Path(
 )
 _DECISION_SURFACE_PROBE_LOCK = threading.Lock()
 _DECISION_SURFACE_PROBES: dict[str, pathlib.Path] = {}
+_DRIVER_CONTROL_PROBE_ROOT = pathlib.Path(
+    tempfile.mkdtemp(prefix="pitgun-v3-driver-control-probe-")
+)
+_DRIVER_CONTROL_PROBE_LOCK = threading.Lock()
+_DRIVER_CONTROL_PROBES: dict[str, pathlib.Path] = {}
 
 
 class RunnerExecutionError(RuntimeError):
@@ -64,6 +69,20 @@ def _run(command: list[str]) -> tuple[subprocess.CompletedProcess[bytes], int]:
         ) from error
     duration_ms = (time.perf_counter_ns() - started) // 1_000_000
     return completed, duration_ms
+
+
+def _materialize_driver_control_probe(probe_bytes: bytes) -> pathlib.Path:
+    """Materialize one immutable executable per artifact digest and process."""
+
+    probe_digest = _sha256(probe_bytes)
+    with _DRIVER_CONTROL_PROBE_LOCK:
+        probe = _DRIVER_CONTROL_PROBES.get(probe_digest)
+        if probe is None:
+            probe = _DRIVER_CONTROL_PROBE_ROOT / probe_digest.removeprefix("sha256:")
+            probe.write_bytes(probe_bytes)
+            probe.chmod(0o500)
+            _DRIVER_CONTROL_PROBES[probe_digest] = probe
+    return probe
 
 
 def _execute(
@@ -342,14 +361,12 @@ def _execute_v3_driver_control_probe(
 ) -> dict[str, Any]:
     if not 0 <= seed <= 2**64 - 1:
         raise ValueError("seed must be an unsigned 64-bit integer")
+    probe = _materialize_driver_control_probe(probe_bytes)
     with tempfile.TemporaryDirectory(prefix="pitgun-v3-driver-control-") as temporary:
         root = pathlib.Path(temporary)
-        probe = root / "v3_driver_control_probe"
         scenario = root / "scenario.json"
         profile = root / "profile.json"
         driver_experiment = root / "driver-experiment.json"
-        probe.write_bytes(probe_bytes)
-        probe.chmod(0o500)
         scenario.write_bytes(scenario_bytes)
         profile.write_bytes(profile_bytes)
         driver_experiment.write_bytes(driver_experiment_bytes)
