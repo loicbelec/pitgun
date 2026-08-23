@@ -1,0 +1,38 @@
+{
+  "schema_version": "pitgun.racing-v3-driver-control-study-review/v1",
+  "review_id": "racing-v3-driver-control-study-review-2026-v1",
+  "campaign_id": "racing-v3-driver-control-surface-2026-v2",
+  "campaign_manifest_digest": "sha256:e751b3d827ffe8b431089b38669486e0b225e8db60763d0b46db2c08337d5a33",
+  "campaign_status": "COMPLETED",
+  "lineage": {
+    "databricks_job_run_id": "79419775001980",
+    "databricks_task_run_id": "62839283272113",
+    "metric_backfill_job_run_id": "421996403445493",
+    "metric_backfill_task_run_id": "887950598728659",
+    "campaigns_table_version": 61,
+    "experimental_runs_table_version": 95,
+    "experimental_metrics_table_version": 94
+  },
+  "expected_evidence": {
+    "planned_execution_count": 1584,
+    "successful_execution_count": 1584,
+    "normalized_metric_count": 22176,
+    "metrics_per_execution": 14,
+    "backfilled_metric_count": 672,
+    "parameter_set_count": 33,
+    "paired_group_count": 528,
+    "short_group_count_per_parameter_set": 8,
+    "race_length_group_count_per_parameter_set": 8,
+    "local_parity_failure_count": 0,
+    "pathological_execution_count": 0,
+    "physical_ordering_failure_count": 0,
+    "selection_gate_pass_count": 0
+  },
+  "reviewed_conclusion": {
+    "decision": "STRUCTURAL_REFINEMENT_REQUIRED",
+    "candidate_selected": false,
+    "automatic_catalog_promotion": false,
+    "finding": "All 33 bounded coefficient profiles made ATTACK fastest in every short and race-length paired group. Correction workload increased tire wear, but its accumulated physical cost never outweighed the utilization benefit.",
+    "scope": "Pitgun reduced-order deterministic simulation; not real-world Formula 1 calibration."
+  }
+}

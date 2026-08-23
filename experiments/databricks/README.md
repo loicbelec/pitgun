@@ -311,6 +311,19 @@ databricks bundle deploy -t dev -p pitgun-free
 databricks bundle run v3_driver_control_surface_job -t dev -p pitgun-free
 ```
 
+The read-only `v3_driver_control_study_job` turns the completed campaign into an
+explanatory notebook. It reconciles the campaign ledger, 1,584 successful Rust
+executions, 22,176 normalized metrics and all 528 paired mode comparisons from
+explicit Delta snapshots. It then visualizes the short-run ATTACK benefit, the
+accumulated correction workload and tire-wear cost, and the absence of any
+coefficient profile where ATTACK stops dominating over race distance. The
+notebook cannot select or publish a model; its reviewed conclusion is that one
+structural physical refinement is required before another calibration campaign.
+
+```bash
+databricks bundle run v3_driver_control_study_job -t dev -p pitgun-free
+```
+
 ## Reference campaign
 
 The frozen V1 campaign manifest is
