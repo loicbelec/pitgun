@@ -81,6 +81,11 @@ jobs:
       - name: Validate Racing experiment tools
         run: python -m unittest discover -s experiments/racing_response/tests -v
 
+      - name: Validate Racing driver-control holdout evidence
+        run: |
+          python -m unittest discover -s experiments/racing_v3_driver_control/tests -v
+          python experiments/racing_v3_driver_control/review_v11_shortlist.py --check
+
       - name: Validate Racing opponent smoke artifacts
         run: python -m unittest discover -s experiments/opponent_audit -p 'test_*.py' -v
 

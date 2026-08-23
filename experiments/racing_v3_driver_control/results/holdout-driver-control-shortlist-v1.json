@@ -1,0 +1,276 @@
+{
+  "schema_version": "pitgun.racing-v3-driver-control-holdout-review/v1",
+  "shortlist_manifest_digest": "sha256:42b7e31b1cdd67a5bc8861a491b69a81b0d6e741f6581191d504257f9441a985",
+  "model": {
+    "id": "pitgun.racing-v3-candidate",
+    "version": "0.13.0",
+    "digest": "sha256:34c95f6c345d30db12e2d036d1ded1a93fb689db37df579ac61d77b553537a4f"
+  },
+  "source_campaign_id": "racing-v3-driver-control-surface-2026-v2",
+  "holdout": {
+    "schema_version": "pitgun.racing-v3-driver-control-local-screen/v2",
+    "configuration_count_per_profile": 702,
+    "simulated_lap_count_per_profile": 23790,
+    "total_configuration_count": 2106,
+    "total_simulated_lap_count": 71370,
+    "circuits": [
+      "mc-1929",
+      "jp-1962",
+      "it-1922"
+    ],
+    "horizons": [
+      "short",
+      "race-length"
+    ],
+    "compounds": [
+      "soft",
+      "medium",
+      "hard"
+    ],
+    "seeds": [
+      7,
+      42,
+      99
+    ],
+    "coefficient_retuning_allowed": false
+  },
+  "profiles": [
+    {
+      "parameter_set_id": "halton-11",
+      "profile_digest": "sha256:24d9dfee22b05429ce172a639c9dc5acb359e803058b983365a8c4d0c28719f2",
+      "holdout_report_path": "results/holdout-driver-control-halton-11-v1.json",
+      "holdout_report_sha256": "sha256:f1f600efd26febeaa8f11df403ad4adf2dbf3ddaddc702beb315ea3a274ca3a7",
+      "configuration_count": 702,
+      "simulated_lap_count": 23790,
+      "pathological_execution_count": 0,
+      "physical_check_results": {
+        "attack_improves_short_run_pace": true,
+        "attack_pays_error_and_workload_cost": true,
+        "manage_preserves_tires": true,
+        "consistency_reduces_error_and_changes_dispersion": true,
+        "tire_management_reduces_correction_wear": true,
+        "no_universal_driver_mode_winner": false,
+        "no_universal_mode_winner": false
+      },
+      "winner_analysis": {
+        "within_driver_group_count": 216,
+        "within_driver_mode_winner_counts": {
+          "attack": 170,
+          "balanced": 19,
+          "manage": 27
+        },
+        "within_driver_mode_winners_by_horizon": {
+          "race-length": {
+            "attack": 81,
+            "manage": 27
+          },
+          "short": {
+            "attack": 89,
+            "balanced": 19
+          }
+        },
+        "within_driver_mode_winners_by_driver": {
+          "balanced_reference": {
+            "attack": 54
+          },
+          "limit_specialist": {
+            "attack": 8,
+            "balanced": 19,
+            "manage": 27
+          },
+          "smooth_operator": {
+            "attack": 54
+          },
+          "tire_manager": {
+            "attack": 54
+          }
+        },
+        "global_context_count": 54,
+        "global_driver_mode_winner_counts": {
+          "smooth_operator:attack": 54
+        }
+      },
+      "effect_summary": {
+        "short_attack_pace_gain_ms": {
+          "minimum": 14.599999999991269,
+          "median": 548.4000000000015,
+          "maximum": 915.2000000000116
+        },
+        "race_length_attack_pace_gain_ms": {
+          "minimum": -1007.0943396226357,
+          "median": 515.2712868892122,
+          "maximum": 793.5283018867922
+        },
+        "race_length_attack_wear_cost_percentage_points": {
+          "minimum": 0.2968860848125381,
+          "median": 0.8469688091715675,
+          "maximum": 2.4047465927897207
+        },
+        "race_length_attack_correction_workload_cost_mj": {
+          "minimum": 2.3451888648351016,
+          "median": 18.357177224345673,
+          "maximum": 127.47126161322359
+        }
+      },
+      "holdout_gate_passed": false
+    },
+    {
+      "parameter_set_id": "halton-19",
+      "profile_digest": "sha256:4228acc1e2515b0991831ea3377f917b387e0c99ff93e7d14b93c71ee3c13c2b",
+      "holdout_report_path": "results/holdout-driver-control-halton-19-v1.json",
+      "holdout_report_sha256": "sha256:b2e81d4f7021a59dd976e9a2d5bb0ff6a6eabda79847410ec44fd49485f6b3bd",
+      "configuration_count": 702,
+      "simulated_lap_count": 23790,
+      "pathological_execution_count": 0,
+      "physical_check_results": {
+        "attack_improves_short_run_pace": true,
+        "attack_pays_error_and_workload_cost": true,
+        "manage_preserves_tires": true,
+        "consistency_reduces_error_and_changes_dispersion": true,
+        "tire_management_reduces_correction_wear": true,
+        "no_universal_driver_mode_winner": false,
+        "no_universal_mode_winner": false
+      },
+      "winner_analysis": {
+        "within_driver_group_count": 216,
+        "within_driver_mode_winner_counts": {
+          "attack": 162,
+          "manage": 54
+        },
+        "within_driver_mode_winners_by_horizon": {
+          "race-length": {
+            "attack": 81,
+            "manage": 27
+          },
+          "short": {
+            "attack": 81,
+            "manage": 27
+          }
+        },
+        "within_driver_mode_winners_by_driver": {
+          "balanced_reference": {
+            "attack": 54
+          },
+          "limit_specialist": {
+            "manage": 54
+          },
+          "smooth_operator": {
+            "attack": 54
+          },
+          "tire_manager": {
+            "attack": 54
+          }
+        },
+        "global_context_count": 54,
+        "global_driver_mode_winner_counts": {
+          "smooth_operator:attack": 54
+        }
+      },
+      "effect_summary": {
+        "short_attack_pace_gain_ms": {
+          "minimum": -384.1999999999971,
+          "median": 529.0,
+          "maximum": 967.0
+        },
+        "race_length_attack_pace_gain_ms": {
+          "minimum": -1460.1132075471833,
+          "median": 494.8231736816597,
+          "maximum": 850.1320754716871
+        },
+        "race_length_attack_wear_cost_percentage_points": {
+          "minimum": 0.30359071803539095,
+          "median": 0.8505845421225828,
+          "maximum": 2.485054410175991
+        },
+        "race_length_attack_correction_workload_cost_mj": {
+          "minimum": 2.5269883537677527,
+          "median": 19.542902371983264,
+          "maximum": 147.60489476028337
+        }
+      },
+      "holdout_gate_passed": false
+    },
+    {
+      "parameter_set_id": "halton-27",
+      "profile_digest": "sha256:fa507cedf3628dc2c34cbbe7c3e830e9d8b2b2b42b18c0ecdcff133f4864b7de",
+      "holdout_report_path": "results/holdout-driver-control-halton-27-v1.json",
+      "holdout_report_sha256": "sha256:4839b8c9f54b2b2478d23025f5067cc4fa9df3896d0979204032046be7e7663a",
+      "configuration_count": 702,
+      "simulated_lap_count": 23790,
+      "pathological_execution_count": 0,
+      "physical_check_results": {
+        "attack_improves_short_run_pace": true,
+        "attack_pays_error_and_workload_cost": true,
+        "manage_preserves_tires": true,
+        "consistency_reduces_error_and_changes_dispersion": true,
+        "tire_management_reduces_correction_wear": true,
+        "no_universal_driver_mode_winner": false,
+        "no_universal_mode_winner": false
+      },
+      "winner_analysis": {
+        "within_driver_group_count": 216,
+        "within_driver_mode_winner_counts": {
+          "attack": 162,
+          "balanced": 27,
+          "manage": 27
+        },
+        "within_driver_mode_winners_by_horizon": {
+          "race-length": {
+            "attack": 81,
+            "manage": 27
+          },
+          "short": {
+            "attack": 81,
+            "balanced": 27
+          }
+        },
+        "within_driver_mode_winners_by_driver": {
+          "balanced_reference": {
+            "attack": 54
+          },
+          "limit_specialist": {
+            "balanced": 27,
+            "manage": 27
+          },
+          "smooth_operator": {
+            "attack": 54
+          },
+          "tire_manager": {
+            "attack": 54
+          }
+        },
+        "global_context_count": 54,
+        "global_driver_mode_winner_counts": {
+          "smooth_operator:attack": 54
+        }
+      },
+      "effect_summary": {
+        "short_attack_pace_gain_ms": {
+          "minimum": -8.799999999988358,
+          "median": 283.3000000000029,
+          "maximum": 527.2000000000116
+        },
+        "race_length_attack_pace_gain_ms": {
+          "minimum": -395.3584905660391,
+          "median": 282.67924528301955,
+          "maximum": 460.90566037736426
+        },
+        "race_length_attack_wear_cost_percentage_points": {
+          "minimum": 0.15410858018884355,
+          "median": 0.3927558951111081,
+          "maximum": 0.9747586793195921
+        },
+        "race_length_attack_correction_workload_cost_mj": {
+          "minimum": 0.8490918191851522,
+          "median": 6.591046785416262,
+          "maximum": 50.240143252691155
+        }
+      },
+      "holdout_gate_passed": false
+    }
+  ],
+  "selected_profile_ids": [],
+  "verdict": "STRUCTURAL_REFINEMENT_REQUIRED",
+  "recommendation": "Do not promote a profile. All three preserve physical causalities and produce context-dependent modes within the limit-specialist archetype, but smooth_operator:attack remains the global winner in every holdout context. Refine archetype trade-offs before another frozen shortlist.",
+  "automatic_publication_performed": false
+}
