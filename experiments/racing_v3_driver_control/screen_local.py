@@ -20,10 +20,10 @@ ROOT = pathlib.Path(__file__).resolve().parents[2]
 BASE_SCENARIO = (
     ROOT / "apps" / "pitgun-cli" / "scenarios" / "racing-batch-v1" / "balanced.json"
 )
-PROFILE = pathlib.Path(__file__).parent / "profile-v10.driver-control.json"
+PROFILE = pathlib.Path(__file__).parent / "profile-v11.driver-friction.json"
 DRIVERS = pathlib.Path(__file__).parent / "driver-archetypes-v1.json"
-DEFAULT_OUTPUT = pathlib.Path(__file__).parent / "results" / "local-driver-control-screen-v1.json"
-SCHEMA_VERSION = "pitgun.racing-v3-driver-control-local-screen/v1"
+DEFAULT_OUTPUT = pathlib.Path(__file__).parent / "results" / "local-driver-control-screen-v2.json"
+SCHEMA_VERSION = "pitgun.racing-v3-driver-control-local-screen/v2"
 PROBE_SCHEMA_VERSION = "pitgun.racing-v3-driver-control-probe/v1"
 MAX_JOBS = 16
 
@@ -561,7 +561,7 @@ def main() -> int:
     report = {
         "schema_version": SCHEMA_VERSION,
         "campaign": {
-            "model": "pitgun.racing-v3-candidate@0.12.0",
+            "model": "pitgun.racing-v3-candidate@0.13.0",
             "profile_digest": sha256(json.loads(PROFILE.read_bytes())),
             "driver_archetype_digest": sha256(driver_document),
             "configuration_count": len(rows),

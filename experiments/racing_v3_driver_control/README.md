@@ -1,7 +1,15 @@
 # Racing Model V3 driver-control screening
 
-This offline campaign screens candidate Model `0.12.0`. It does not change the
+The preserved V1 report screened candidate Model `0.12.0`. The current V2
+screen evaluates candidate `0.13.0`. Neither changes the
 game, Racing Catalog, Authority, Verifier, WASM package, staging, or production.
+
+Candidate `0.13.0` preserves every reviewed `0.12.0` coefficient and adds the
+smallest structural correction revealed by the Databricks V2 campaign:
+correction workload now reserves part of the same aggregate tire-force budget
+used for useful braking, cornering and traction. The reservation follows
+`1 / sqrt(correction_workload_multiplier)`, so it is derived from existing
+workload lineage rather than introduced as a hidden lap-time penalty.
 
 The campaign keeps the vehicle, component selection, 150 kg screening fuel reserve,
 development budget and setup constant. Only the versioned driver traits, explicit driving mode,
@@ -39,19 +47,31 @@ cargo build --locked --release \
   -p pitgun-racing-simulator --example v3_driver_control_probe
 python3 experiments/racing_v3_driver_control/screen_local.py --jobs 4
 python3 experiments/racing_v3_driver_control/screen_local.py --jobs 4 --check
+python3 experiments/racing_v3_driver_control/screen_v11_parameter_surface.py --jobs 8
+python3 experiments/racing_v3_driver_control/screen_v11_parameter_surface.py --jobs 8 --check
 ```
 
 For probe development only, `--limit N` executes the first `N` configurations
 and writes a deliberately incomplete report.
 
-The canonical report is
-[`results/local-driver-control-screen-v1.json`](results/local-driver-control-screen-v1.json).
+The current canonical report is
+[`results/local-driver-control-screen-v2.json`](results/local-driver-control-screen-v2.json).
+The immutable
+[`results/local-driver-control-screen-v1.json`](results/local-driver-control-screen-v1.json)
+remains the `0.12.0` baseline.
 It records content identities, pace and dispersion, resolved utilization,
 control error, correction workload, correction heat and correction-attributed
 wear. Its review verdict is evidence for refinement or Databricks replay; it
 never promotes a model automatically.
 
-## Local finding
+The second reproducible report,
+[`results/local-driver-friction-parameter-screen-v1.json`](results/local-driver-friction-parameter-screen-v1.json),
+replays the exact 33-profile, 1,584-execution Databricks V2 surface while
+changing only the offline experiment schema from V10 to V11. It therefore
+separates the structural effect of the friction budget from coefficient
+selection.
+
+## Preserved 0.12.0 finding
 
 The seed coefficient set receives a `REFINE` verdict. Every physical direction
 is active: attack is quicker and pays more error/workload, manage preserves
@@ -61,3 +81,17 @@ correction-attributed wear. However, `attack` remains the fastest mode in all
 cost is too small to make mode selection a strategic decision. Databricks must
 therefore explore the coefficient surface rather than merely replaying this
 seed unchanged.
+
+## Preliminary 0.13.0 finding
+
+The unchanged seed coefficients still receive `REFINE`: attack remains fastest
+in all 54 groups of the independent 702-execution screen. The structural change
+is nevertheless material. On the governed 33-profile exploratory surface, 20
+profiles now pass the preliminary selection gate, compared with zero under
+candidate 0.12. All 1,584 runs are finite and physically ordered; several
+profiles make attack fastest in only four of eight short groups and four of
+eight race-length groups.
+
+This is evidence of a usable decision surface, not a selected AI policy. A
+shortlist must next pass the reserved 702-execution matrix without coefficient
+retuning before any profile can enter a catalog or the game.
