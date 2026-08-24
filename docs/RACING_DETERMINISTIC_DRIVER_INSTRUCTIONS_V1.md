@@ -155,6 +155,17 @@ deterministic AI decisions will enter the same acceptance path once the
 incremental runtime in
 [`#312`](https://github.com/loicbelec/pitgun/issues/312) exists.
 
+The Solver boundary accepts an optional, strictly ordered schedule of resolved
+physical controls at zero-based lap boundaries. Its scalar driver-control
+fields remain the lap-zero baseline. The Solver never receives Racing mode
+labels: the Simulator must translate each accepted instruction into bounded
+utilization, control-error and correction-workload values before solving.
+
+An empty resolved schedule is omitted from the wire representation and retains
+the existing static execution exactly. When a schedule is present, the result
+records the baseline and every applied physical transition while preserving
+continuous tire, thermal, fuel, speed, gear and shift state between laps.
+
 ## Identity and verification
 
 Dynamic instructions separate attempt identity from final result identity:
