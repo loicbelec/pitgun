@@ -1,3 +1,4 @@
+pub mod attempt_authorization;
 pub mod authorization;
 pub mod bundle;
 pub mod catalog;
@@ -10,6 +11,10 @@ pub mod run;
 pub mod source;
 pub mod verification;
 
+pub use attempt_authorization::{
+    RunAttemptAuthorizationError, RunAttemptAuthorizationV1, RunAttemptAuthorizationVersion,
+    SignedRunAttemptAuthorizationV1,
+};
 pub use authorization::{
     AuthorizationSignatureAlgorithm, AuthorizationValidityV1, RunAuthorizationError,
     RunAuthorizationV1, RunAuthorizationVersion, SignedRunAuthorizationV1,
