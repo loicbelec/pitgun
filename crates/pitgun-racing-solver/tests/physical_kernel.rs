@@ -2,12 +2,13 @@ use pitgun_racing_solver::{
     AERO_FULL_CORNER_CURVATURE_RAD_PER_M, AERO_FULL_STRAIGHT_CURVATURE_RAD_PER_M, AeroParams,
     ChassisParams, CurvatureAeroResponse, Driver, DriverControlParamsV3,
     DriverCorrectionCapacityModelV3, EngineParams, EngineThermalDeratingShapeV3,
-    EngineThermalParamsV3, MechanicalParamsV3, PitPlan, ResolvedSimulationRequestV3, SimConfig,
-    SimulationRequest, TireContactParamsV3, TireDegradationParamsV3, TireParams, Track, Tuning,
-    TuningResponseV1, VehicleParams, VehicleState, aggregate_tire_force_capacity_v3, apply_tuning,
-    apply_tuning_with_response, combined_force_utilization, curvature_aero_blend,
-    derating_factor_v3, describe_circuit, remaining_longitudinal_force, run_resolved_simulation_v3,
-    run_simulation, run_simulation_with_model_response, run_simulation_with_tuning_response,
+    EngineThermalParamsV3, MechanicalParamsV3, PitPlan, ResolvedDriverControlLapV3,
+    ResolvedSimulationRequestV3, SimConfig, SimulationRequest, TireContactParamsV3,
+    TireDegradationParamsV3, TireParams, Track, Tuning, TuningResponseV1, VehicleParams,
+    VehicleState, aggregate_tire_force_capacity_v3, apply_tuning, apply_tuning_with_response,
+    combined_force_utilization, curvature_aero_blend, derating_factor_v3, describe_circuit,
+    remaining_longitudinal_force, run_resolved_simulation_v3, run_simulation,
+    run_simulation_with_model_response, run_simulation_with_tuning_response,
 };
 
 fn synthetic_request() -> SimulationRequest {
@@ -110,6 +111,7 @@ fn resolved_v3_request(request: &SimulationRequest) -> ResolvedSimulationRequest
         },
         driver_control: DriverControlParamsV3::default(),
         driver_correction_workload_multiplier: None,
+        driver_control_schedule: Vec::new(),
         driver_correction_capacity_model: None,
         fuel_mass: None,
         tire_degradation: None,
@@ -420,6 +422,140 @@ fn v3_driver_corrections_can_reserve_the_shared_friction_budget() {
     assert!(reserved_driver.cornering.mean_realized < legacy_driver.cornering.mean_realized);
     assert!(reserved_driver.braking.mean_realized < legacy_driver.braking.mean_realized);
     assert!(reserved_driver.traction.mean_realized < legacy_driver.traction.mean_realized);
+}
+
+#[test]
+fn v3_driver_control_schedule_is_deterministic_and_preserves_lap_state() {
+    let mut request = resolved_v3_request(&synthetic_request());
+    request.track.kappa[5..=12].fill(0.002);
+    request.lap_count = 4;
+    request.tire_degradation = Some(TireDegradationParamsV3::default());
+    request.driver_control = DriverControlParamsV3 {
+        cornering_utilization: 0.76,
+        braking_utilization: 0.75,
+        traction_utilization: 0.77,
+        control_error: 0.015,
+    };
+    request.driver_correction_workload_multiplier = Some(1.05);
+    request.driver_correction_capacity_model =
+        Some(DriverCorrectionCapacityModelV3::FrictionBudgetV1);
+    request.driver_control_schedule = vec![
+        ResolvedDriverControlLapV3 {
+            lap_index: 1,
+            driver_control: DriverControlParamsV3 {
+                cornering_utilization: 0.99,
+                braking_utilization: 0.98,
+                traction_utilization: 0.99,
+                control_error: 0.04,
+            },
+            correction_workload_multiplier: Some(1.30),
+        },
+        ResolvedDriverControlLapV3 {
+            lap_index: 3,
+            driver_control: DriverControlParamsV3 {
+                cornering_utilization: 0.88,
+                braking_utilization: 0.87,
+                traction_utilization: 0.89,
+                control_error: 0.025,
+            },
+            correction_workload_multiplier: Some(1.12),
+        },
+    ];
+
+    let mut static_baseline = request.clone();
+    static_baseline.driver_control_schedule.clear();
+    let baseline = run_resolved_simulation_v3(&static_baseline).expect("static baseline");
+    let first = run_resolved_simulation_v3(&request).expect("first scheduled solve");
+    let second = run_resolved_simulation_v3(&request).expect("second scheduled solve");
+
+    assert_eq!(first, second);
+    assert_eq!(first.lap_times_s[0], baseline.lap_times_s[0]);
+    let scheduled_second_lap_cornering = first
+        .solution
+        .lap_index
+        .iter()
+        .zip(&first.solution.driver_cornering_utilization)
+        .filter_map(|(lap, utilization)| (*lap == 2).then_some(*utilization))
+        .collect::<Vec<_>>();
+    let baseline_second_lap_cornering = baseline
+        .solution
+        .lap_index
+        .iter()
+        .zip(&baseline.solution.driver_cornering_utilization)
+        .filter_map(|(lap, utilization)| (*lap == 2).then_some(*utilization))
+        .collect::<Vec<_>>();
+    assert_ne!(
+        scheduled_second_lap_cornering,
+        baseline_second_lap_cornering
+    );
+    assert_ne!(first.final_state, baseline.final_state);
+    assert_eq!(first.driver_control_diagnostics_v3, None);
+    assert_eq!(
+        first.applied_driver_control_schedule_v3,
+        vec![
+            ResolvedDriverControlLapV3 {
+                lap_index: 0,
+                driver_control: request.driver_control,
+                correction_workload_multiplier: request.driver_correction_workload_multiplier,
+            },
+            request.driver_control_schedule[0],
+            request.driver_control_schedule[1],
+        ]
+    );
+}
+
+#[test]
+fn v3_driver_control_schedule_fails_closed_and_empty_wire_stays_compatible() {
+    let request = resolved_v3_request(&synthetic_request());
+    let encoded = serde_json::to_value(&request).expect("resolved V3 request JSON");
+    assert!(encoded.get("driver_control_schedule").is_none());
+
+    let transition = ResolvedDriverControlLapV3 {
+        lap_index: 1,
+        driver_control: DriverControlParamsV3::default(),
+        correction_workload_multiplier: None,
+    };
+
+    let mut at_start = request.clone();
+    at_start.driver_control_schedule = vec![ResolvedDriverControlLapV3 {
+        lap_index: 0,
+        ..transition
+    }];
+    assert!(
+        run_resolved_simulation_v3(&at_start)
+            .unwrap_err()
+            .contains("start after zero-based lap 0")
+    );
+
+    let mut duplicate = request.clone();
+    duplicate.driver_control_schedule = vec![transition, transition];
+    assert!(
+        run_resolved_simulation_v3(&duplicate)
+            .unwrap_err()
+            .contains("strictly increasing lap indexes")
+    );
+
+    let mut outside = request.clone();
+    outside.driver_control_schedule = vec![ResolvedDriverControlLapV3 {
+        lap_index: request.lap_count,
+        ..transition
+    }];
+    assert!(
+        run_resolved_simulation_v3(&outside)
+            .unwrap_err()
+            .contains("outside lap_count")
+    );
+
+    let mut missing_workload = request;
+    missing_workload.driver_correction_workload_multiplier = Some(1.10);
+    missing_workload.driver_correction_capacity_model =
+        Some(DriverCorrectionCapacityModelV3::FrictionBudgetV1);
+    missing_workload.driver_control_schedule = vec![transition];
+    assert!(
+        run_resolved_simulation_v3(&missing_workload)
+            .unwrap_err()
+            .contains("requires a workload multiplier")
+    );
 }
 
 #[test]

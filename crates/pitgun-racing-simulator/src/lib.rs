@@ -2185,6 +2185,7 @@ fn run_single_session(
                     driver_correction_workload_multiplier: driver_control_resolution
                         .as_ref()
                         .map(|resolution| resolution.correction_workload_multiplier),
+                    driver_control_schedule: Vec::new(),
                     driver_correction_capacity_model: (profile.schema_version
                         == V3CandidateExperimentProfileVersion::V11)
                         .then_some(DriverCorrectionCapacityModelV3::FrictionBudgetV1),
