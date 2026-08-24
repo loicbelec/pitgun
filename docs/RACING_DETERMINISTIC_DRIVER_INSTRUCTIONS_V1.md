@@ -161,6 +161,13 @@ fields remain the lap-zero baseline. The Solver never receives Racing mode
 labels: the Simulator must translate each accepted instruction into bounded
 utilization, control-error and correction-workload values before solving.
 
+The first Simulator implementation performs that translation for an offline,
+predeclared whole-grid timeline. It validates the canonical events once
+against the resolved competitors, lap count and track, resolves the common
+default independently for every driver, and then derives each competitor's
+physical lap schedule through the existing driver-control equations. Player
+and AI entries therefore traverse the same validation and resolution path.
+
 An empty resolved schedule is omitted from the wire representation and retains
 the existing static execution exactly. When a schedule is present, the result
 records the baseline and every applied physical transition while preserving
@@ -208,7 +215,8 @@ Verification is temporarily unavailable.
 ## Delivery sequence
 
 1. implement predeclared schedules in the Racing Simulator through
-   [`#349`](https://github.com/loicbelec/pitgun/issues/349);
+   [`#349`](https://github.com/loicbelec/pitgun/issues/349) (implemented first
+   as an offline candidate; publication remains gated);
 2. expose deterministic incremental progress through
    [`#312`](https://github.com/loicbelec/pitgun/issues/312);
 3. bind the applied history into Hosted Verification through
