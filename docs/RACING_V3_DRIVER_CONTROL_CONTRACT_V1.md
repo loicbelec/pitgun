@@ -70,6 +70,14 @@ declared interval; it will not silently clamp them.
 
 ## Session driving mode
 
+This section documents the static whole-session input used to evaluate the
+first driver-control candidates. The governed mode-surface review later showed
+that coefficient tuning alone cannot make that static usage sustainable over
+race distance. Future timeline-enabled profiles therefore use the common
+default and ordered transitions defined in
+[`RACING_DETERMINISTIC_DRIVER_INSTRUCTIONS_V1.md`](RACING_DETERMINISTIC_DRIVER_INSTRUCTIONS_V1.md).
+Historical model and catalog identities keep the behavior below unchanged.
+
 Every competitor selects one explicit mode:
 
 - `manage` requests low commitment and protects tires;
@@ -181,7 +189,8 @@ The campaign must demonstrate:
 3. execute the local screening campaign;
 4. replay and review the campaign on Databricks;
 5. publish the reviewed catalog and model identities;
-6. let Pitgun Game select a driver and mode through
+6. let Pitgun Game select a driver, start every competitor from the common
+   catalog-resolved default, and later issue deterministic instructions through
    [`pitgun-game#177`](https://github.com/loicbelec/pitgun-game/issues/177);
 7. regenerate Opponent Policy only after the physical surface is accepted.
 
