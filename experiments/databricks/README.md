@@ -354,6 +354,22 @@ databricks bundle deploy -t dev -p pitgun-free
 databricks bundle run v3_driver_mode_surface_job -t dev -p pitgun-free
 ```
 
+The completed run `171983026871914` executed all 3,168 points and recorded
+44,352 normalized metrics without parity, pathology, or physical-ordering
+failures. Ten profiles produced at least two winning driver archetypes, which
+confirms that the equal-budget roster remains a useful baseline. However,
+`ATTACK` won all eight global contexts for every one of the 33 profiles and no
+profile passed the selection gate.
+
+The checksummed
+[`racing-v3-driver-mode-surface-review-v1.json`](reviews/racing-v3-driver-mode-surface-review-v1.json)
+therefore records `STRUCTURAL_MODE_DYNAMICS_REQUIRED`. Another static
+coefficient sweep is not recommended. The next model boundary must treat the
+driving mode as a deterministic instruction that can change over time while
+tire, thermal, fuel, correction workload, and future hybrid-energy state
+persist. The Solver consumes the active mode; the Simulator owns the ordered
+instruction events; verification must replay that exact history.
+
 ## Reference campaign
 
 The frozen V1 campaign manifest is
