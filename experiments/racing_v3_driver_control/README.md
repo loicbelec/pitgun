@@ -156,3 +156,11 @@ non-driver physics fixed while exploring only the four explicit mode-response
 axes. The 3,168-run Databricks matrix compares all four drivers and three modes
 in paired short and race-length contexts. Its ranking is advisory and reserves
 the complete 702-case matrix for final validation before any catalog change.
+
+The Databricks campaign completed all 3,168 executions successfully, but all
+33 profiles still made `ATTACK` the global winner in every short and
+race-length context. No coefficient set was selected. The governed review in
+[`../databricks/reviews/racing-v3-driver-mode-surface-review-v1.json`](../databricks/reviews/racing-v3-driver-mode-surface-review-v1.json)
+concludes that another static sweep is not justified: the next experiment must
+model driving modes as deterministic instructions that change over time while
+their physical consequences persist.

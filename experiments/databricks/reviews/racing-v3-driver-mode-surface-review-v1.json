@@ -1,0 +1,81 @@
+{
+  "schema_version": "pitgun.racing-v3-driver-mode-surface-review/v1",
+  "campaign": {
+    "id": "racing-v3-driver-mode-surface-2026-v3",
+    "manifest_digest": "sha256:cfe89c0b838c3983d64d6a10d2a63175c72591459e92357487e3a51fd51bf6e2",
+    "model": {
+      "id": "pitgun.racing-v3-candidate",
+      "version": "0.13.0",
+      "digest": "sha256:34c95f6c345d30db12e2d036d1ded1a93fb689db37df579ac61d77b553537a4f"
+    },
+    "databricks_job_run_id": "171983026871914",
+    "databricks_task_run_id": "784785835565665"
+  },
+  "evidence_quality": {
+    "planned_execution_count": 3168,
+    "successful_execution_count": 3168,
+    "normalized_metric_row_count": 44352,
+    "local_parity_failure_count": 0,
+    "pathological_execution_count": 0,
+    "physical_ordering_failure_count": 0,
+    "campaign_completed": true
+  },
+  "driver_roster_finding": {
+    "equal_trait_budget": 2.52,
+    "profile_count": 33,
+    "contextual_driver_profile_count": 10,
+    "contextual_driver_profile_ids": [
+      "anchor-halton-19",
+      "mode-halton-01",
+      "mode-halton-02",
+      "mode-halton-03",
+      "mode-halton-04",
+      "mode-halton-05",
+      "mode-halton-17",
+      "mode-halton-19",
+      "mode-halton-26",
+      "mode-halton-27"
+    ],
+    "conclusion": "The equal-budget roster is physically active: ten profiles produce at least two winning driver archetypes. Driver traits must remain fixed for the next structural experiment."
+  },
+  "mode_response_finding": {
+    "selection_gate_pass_count": 0,
+    "universal_attack_profile_count": 33,
+    "global_context_count_per_profile": 8,
+    "attack_global_win_count_per_profile": 8,
+    "median_short_attack_gain_ms_range": [
+      149.3000000000029,
+      456.1999999999971
+    ],
+    "median_race_length_attack_wear_cost_percentage_point_range": [
+      0.18743449022041503,
+      0.6359609447995318
+    ],
+    "conclusion": "Every bounded coefficient profile leaves ATTACK universally fastest. The observed persistent tire-wear cost is too small to create a sustainable race-distance choice."
+  },
+  "reviewed_decision": {
+    "verdict": "STRUCTURAL_MODE_DYNAMICS_REQUIRED",
+    "selected_parameter_set_ids": [],
+    "another_static_coefficient_sweep_recommended": false,
+    "independent_702_case_validation_authorized": false,
+    "automatic_catalog_promotion_performed": false,
+    "automatic_game_publication_performed": false,
+    "rationale": "The bounded coefficient surface is exhausted for the reviewed question. A further static sweep would tune around a missing temporal decision rather than address it."
+  },
+  "next_structural_boundary": {
+    "solver_responsibility": "Resolve physical response from the currently active deterministic driving mode and persistent vehicle state.",
+    "simulator_responsibility": "Orchestrate default instructions, deterministic mode-change events, session progression, and their ordered event history.",
+    "persistent_state": [
+      "tire wear and temperature",
+      "fuel consumption",
+      "control error and correction workload",
+      "future hybrid energy deployment and recovery"
+    ],
+    "verification_requirement": "The run contract or evidence log must bind every mode-change event so Authority and Verifier can replay the exact instruction history.",
+    "proposed_progression": [
+      "retain a default mode for backward-compatible runs",
+      "introduce a deterministic predeclared mode schedule",
+      "then accept live player and AI instructions at explicit simulation decision boundaries"
+    ]
+  }
+}
