@@ -39,6 +39,18 @@ versioned workload and its canonical inputs, events, outputs, and evidence.
 
 ## Authoring and resolved contracts
 
+The catalog-owned instruction profile fixes the common starting state and the
+accepted event envelope:
+
+```json
+{
+  "schema_version": "pitgun.racing-driver-instruction-profile/v1",
+  "default_mode": "balanced",
+  "boundary_granularity": "lap_start",
+  "max_events_per_session": 64
+}
+```
+
 The authoring contract carries only requested transitions:
 
 ```json
@@ -116,6 +128,8 @@ Validation fails closed when:
 - a competitor is absent from the resolved session;
 - a boundary is outside the session or resolved track;
 - an event targets a finalized or current live boundary;
+- an event targets the initial `(0, 0)` boundary and would bypass the common
+  default before the first physical step;
 - two events target the same competitor at the same boundary;
 - ordering or sequence numbers are non-canonical;
 - the authorized event-count or boundary limits are exceeded.
