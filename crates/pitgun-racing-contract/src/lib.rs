@@ -6,6 +6,7 @@
 
 mod authority;
 mod catalog;
+mod completed_run;
 mod components;
 mod driver;
 mod model_parameters;
@@ -16,6 +17,10 @@ pub use catalog::{
     RacingCatalogError, RacingCircuitPresentationV1, RacingDriverPresentationV1,
     RacingPresentationIndexV1, RacingPresentationIndexVersion, RacingSimulationIndexV1,
     RacingSimulationIndexVersion,
+};
+pub use completed_run::{
+    RacingCompletedDriverInstructionHistoryV1, RacingCompletedRunError, RacingCompletedRunInputV1,
+    RacingCompletedRunInputVersion,
 };
 pub use components::{
     ComponentCapabilityDefinitionV1, ComponentCapabilityError, ComponentCapabilityProfileV1,
