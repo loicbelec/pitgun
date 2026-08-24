@@ -30,7 +30,7 @@ pub use workload::{
 };
 
 use std::collections::hash_map::DefaultHasher;
-use std::collections::{BTreeMap, HashMap};
+use std::collections::{BTreeMap, BTreeSet, HashMap};
 use std::hash::{Hash, Hasher};
 
 use pitgun_contract::{
@@ -40,9 +40,10 @@ use pitgun_contract::{
 use pitgun_racing_contract::{
     CircuitCatalogEntry, CompetitorSpec, CompetitorStintStrategy, ComponentCapabilityDefinitionV1,
     ComponentCapabilityProfileV1, EngineCatalogEntry, RaceInput, RacingDriverControlProfileV1,
-    RacingDriverResourceV2, RacingDriverTraitsV1, RacingDrivingMode, RacingModelParametersV1,
-    RacingPresentationIndexV1, ResolvedVehicleCapabilitiesV1, VehicleComponentKind,
-    VehicleComponentSelectionV1,
+    RacingDriverInstructionBoundaryV1, RacingDriverInstructionProfileV1,
+    RacingDriverInstructionTimelineV1, RacingDriverResourceV2, RacingDriverTraitsV1,
+    RacingDrivingMode, RacingModelParametersV1, RacingPresentationIndexV1,
+    ResolvedVehicleCapabilitiesV1, VehicleComponentKind, VehicleComponentSelectionV1,
 };
 use pitgun_racing_policy::normalize_and_validate_race_input;
 use pitgun_racing_solver::resample_telemetry_with_engine_thermal;
@@ -60,15 +61,15 @@ pub use pitgun_racing_solver::{
     CurvatureAeroResponse, Driver, DriverControlDiagnosticsV3, DriverControlParamsV3,
     DriverCorrectionCapacityModelV3, DriverEffects, EngineParams, EngineThermalDeratingShapeV3,
     EngineThermalParamsV3, FuelMassDiagnosticsV3, FuelMassParamsV3, MechanicalDiagnosticsV3,
-    MechanicalParamsV3, PitPlan, PitStop, ResampledTelemetry, ResolvedSimulationRequestV3,
-    SetupResponseDiagnosticsV1, SetupResponseDiagnosticsVersion, SimConfig, SimulationRequest,
-    SimulationResult, SimulationSolution, TireContactParamsV3, TireDegradationDiagnosticsV3,
-    TireDegradationParamsV3, TireDiagnosticsV3, TireParams, Track, Tuning, TuningResponseV1,
-    TuningResponseVersion, VehicleParams, VehicleState, apply_driver_to_tire, apply_tuning,
-    apply_tuning_with_response, best_power_at_speed, curvature_aero_blend, derating_factor,
-    describe_circuit, diagnose_setup_response, driver_effects, effective_mu, power_kw_from_rpm,
-    resample_telemetry as resample_solution, rpm_from_speed_gear,
-    run_resolved_simulation_v3 as solve_resolved_v3, run_simulation as solve,
+    MechanicalParamsV3, PitPlan, PitStop, ResampledTelemetry, ResolvedDriverControlLapV3,
+    ResolvedSimulationRequestV3, SetupResponseDiagnosticsV1, SetupResponseDiagnosticsVersion,
+    SimConfig, SimulationRequest, SimulationResult, SimulationSolution, TireContactParamsV3,
+    TireDegradationDiagnosticsV3, TireDegradationParamsV3, TireDiagnosticsV3, TireParams, Track,
+    Tuning, TuningResponseV1, TuningResponseVersion, VehicleParams, VehicleState,
+    apply_driver_to_tire, apply_tuning, apply_tuning_with_response, best_power_at_speed,
+    curvature_aero_blend, derating_factor, describe_circuit, diagnose_setup_response,
+    driver_effects, effective_mu, power_kw_from_rpm, resample_telemetry as resample_solution,
+    rpm_from_speed_gear, run_resolved_simulation_v3 as solve_resolved_v3, run_simulation as solve,
     run_simulation_with_model_response as solve_with_model_response,
     run_simulation_with_tuning_response as solve_with_tuning_response,
 };
@@ -190,6 +191,11 @@ pub struct RaceOutput {
     #[serde(default, skip_serializing_if = "std::collections::BTreeMap::is_empty")]
     pub competitor_driver_control_diagnostics_v3:
         std::collections::BTreeMap<String, DriverControlDiagnosticsV3>,
+    /// Common default plus each predeclared mode transition resolved to the
+    /// exact physical controls applied for one competitor.
+    #[serde(default, skip_serializing_if = "std::collections::BTreeMap::is_empty")]
+    pub competitor_driver_instruction_schedules_v3:
+        std::collections::BTreeMap<String, ResolvedV3DriverInstructionScheduleV1>,
 }
 
 /// Exact overrides for the mechanically resolved Model V3 experiment input.
@@ -872,6 +878,36 @@ pub struct V3DriverControlExperimentV1 {
     pub competitor_modes: BTreeMap<String, RacingDrivingMode>,
 }
 
+/// Offline predeclared timeline used to exercise the future session runtime.
+///
+/// The instruction profile will ultimately be catalog-owned. Keeping it
+/// explicit here lets experiments bind the exact common default and limits
+/// without changing a published catalog or hosted-verification identity.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct V3DriverInstructionExperimentV1 {
+    pub drivers: BTreeMap<String, RacingDriverResourceV2>,
+    pub instruction_profile: RacingDriverInstructionProfileV1,
+    pub timeline: RacingDriverInstructionTimelineV1,
+}
+
+/// One mode state and its exact physical interpretation from this lap onward.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct ResolvedV3DriverInstructionTransitionV1 {
+    pub sequence: Option<u32>,
+    pub effective_at: RacingDriverInstructionBoundaryV1,
+    pub mode: RacingDrivingMode,
+    pub physical: ResolvedV3DriverControlV1,
+}
+
+/// Canonical lineage for one competitor, including the common lap-zero mode.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct ResolvedV3DriverInstructionScheduleV1 {
+    pub transitions: Vec<ResolvedV3DriverInstructionTransitionV1>,
+}
+
 /// Explainable physical controls resolved for one competitor.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(deny_unknown_fields)]
@@ -946,30 +982,103 @@ impl V3DriverControlExperimentV1 {
         competitor: &CompetitorSpec,
         profile: &RacingDriverControlProfileV1,
     ) -> Result<ResolvedV3DriverControlV1, String> {
-        let driver_id = competitor.driver_id.as_deref().ok_or_else(|| {
-            format!(
-                "V3 driver-control candidate requires driver_id for competitor {}",
-                competitor.id
-            )
-        })?;
-        let driver = self.drivers.get(driver_id).ok_or_else(|| {
-            format!(
-                "missing V2 driver resource {driver_id:?} for competitor {}",
-                competitor.id
-            )
-        })?;
-        if driver.id != driver_id {
-            return Err(format!(
-                "V2 driver resource key {driver_id:?} does not match embedded id {:?}",
-                driver.id
-            ));
-        }
+        let driver = driver_resource_for_competitor(&self.drivers, competitor)?;
         let mode = self
             .competitor_modes
             .get(&competitor.id)
             .copied()
             .ok_or_else(|| format!("missing driving mode for competitor {}", competitor.id))?;
         resolve_v3_driver_control_v1(driver, mode, profile)
+    }
+}
+
+fn driver_resource_for_competitor<'a>(
+    drivers: &'a BTreeMap<String, RacingDriverResourceV2>,
+    competitor: &CompetitorSpec,
+) -> Result<&'a RacingDriverResourceV2, String> {
+    let driver_id = competitor.driver_id.as_deref().ok_or_else(|| {
+        format!(
+            "V3 driver-control candidate requires driver_id for competitor {}",
+            competitor.id
+        )
+    })?;
+    let driver = drivers.get(driver_id).ok_or_else(|| {
+        format!(
+            "missing V2 driver resource {driver_id:?} for competitor {}",
+            competitor.id
+        )
+    })?;
+    if driver.id != driver_id {
+        return Err(format!(
+            "V2 driver resource key {driver_id:?} does not match embedded id {:?}",
+            driver.id
+        ));
+    }
+    Ok(driver)
+}
+
+impl V3DriverInstructionExperimentV1 {
+    fn validate_for_session(
+        &self,
+        race: &RaceInput,
+        lap_count: u16,
+        segment_count: usize,
+    ) -> Result<(), String> {
+        let competitor_ids = race
+            .competitors
+            .iter()
+            .map(|competitor| competitor.id.clone())
+            .collect::<BTreeSet<_>>();
+        let segment_count = u32::try_from(segment_count)
+            .map_err(|_| "resolved track has too many instruction boundaries".to_string())?;
+        self.timeline
+            .validate_for_session(
+                &self.instruction_profile,
+                &competitor_ids,
+                lap_count.max(1),
+                segment_count,
+            )
+            .map_err(|error| format!("invalid driver-instruction timeline: {error}"))?;
+        for competitor in &race.competitors {
+            driver_resource_for_competitor(&self.drivers, competitor)?;
+        }
+        Ok(())
+    }
+
+    fn resolve_competitor(
+        &self,
+        competitor: &CompetitorSpec,
+        control_profile: &RacingDriverControlProfileV1,
+    ) -> Result<ResolvedV3DriverInstructionScheduleV1, String> {
+        let driver = driver_resource_for_competitor(&self.drivers, competitor)?;
+        let baseline = resolve_v3_driver_control_v1(
+            driver,
+            self.instruction_profile.default_mode,
+            control_profile,
+        )?;
+        let mut transitions = vec![ResolvedV3DriverInstructionTransitionV1 {
+            sequence: None,
+            effective_at: RacingDriverInstructionBoundaryV1 {
+                lap_index: 0,
+                segment_index: 0,
+            },
+            mode: self.instruction_profile.default_mode,
+            physical: baseline,
+        }];
+        for event in self
+            .timeline
+            .events
+            .iter()
+            .filter(|event| event.competitor_id == competitor.id)
+        {
+            transitions.push(ResolvedV3DriverInstructionTransitionV1 {
+                sequence: Some(event.sequence),
+                effective_at: event.effective_at,
+                mode: event.mode,
+                physical: resolve_v3_driver_control_v1(driver, event.mode, control_profile)?,
+            });
+        }
+        Ok(ResolvedV3DriverInstructionScheduleV1 { transitions })
     }
 }
 
@@ -1736,7 +1845,7 @@ pub fn run_race_with_catalog_and_v3_profile(
             model: SessionPhysicalModel::V3Candidate {
                 profile,
                 power_unit_thermal_profile: None,
-                driver_control_experiment: None,
+                driver_experiment: None,
             },
         },
     )
@@ -1804,7 +1913,28 @@ pub fn run_race_with_catalog_and_v3_driver_control_profile(
         snapshot,
         profile,
         thermal_candidate,
-        Some(driver_experiment),
+        Some(V3DriverExperiment::Static(driver_experiment)),
+    )
+}
+
+/// Runs a predeclared deterministic instruction timeline through the same
+/// physical driver-control equations as the static screening candidate.
+///
+/// This remains an offline boundary. It proves schedule execution before the
+/// timeline becomes part of a published catalog and Hosted Verification.
+pub fn run_race_with_catalog_and_v3_driver_instruction_profile(
+    request: RunRaceRequest,
+    snapshot: &RacingCatalogSnapshot,
+    profile: &V3CandidateExperimentProfile,
+    thermal_candidate: &V3PowerUnitThermalProfileCandidateV2,
+    instruction_experiment: &V3DriverInstructionExperimentV1,
+) -> Result<RaceOutput, String> {
+    run_race_with_catalog_and_v3_component_profile(
+        request,
+        snapshot,
+        profile,
+        thermal_candidate,
+        Some(V3DriverExperiment::Instructions(instruction_experiment)),
     )
 }
 
@@ -1813,12 +1943,12 @@ fn run_race_with_catalog_and_v3_component_profile(
     snapshot: &RacingCatalogSnapshot,
     profile: &V3CandidateExperimentProfile,
     candidate: &V3PowerUnitThermalProfileCandidateV2,
-    driver_control_experiment: Option<&V3DriverControlExperimentV1>,
+    driver_experiment: Option<V3DriverExperiment<'_>>,
 ) -> Result<RaceOutput, String> {
     profile
         .validate()
         .map_err(|error| format!("invalid V3 component experiment profile: {error}"))?;
-    match (profile.schema_version, driver_control_experiment) {
+    match (profile.schema_version, driver_experiment) {
         (V3CandidateExperimentProfileVersion::V9, None)
         | (
             V3CandidateExperimentProfileVersion::V10 | V3CandidateExperimentProfileVersion::V11,
@@ -1884,7 +2014,7 @@ fn run_race_with_catalog_and_v3_component_profile(
             model: SessionPhysicalModel::V3Candidate {
                 profile,
                 power_unit_thermal_profile: Some(candidate),
-                driver_control_experiment,
+                driver_experiment,
             },
         },
     )
@@ -1961,6 +2091,12 @@ struct SessionExecution<'a> {
 }
 
 #[derive(Clone, Copy)]
+enum V3DriverExperiment<'a> {
+    Static(&'a V3DriverControlExperimentV1),
+    Instructions(&'a V3DriverInstructionExperimentV1),
+}
+
+#[derive(Clone, Copy)]
 enum SessionPhysicalModel<'a> {
     Historical {
         tuning_response: &'a TuningResponseV1,
@@ -1969,7 +2105,7 @@ enum SessionPhysicalModel<'a> {
     V3Candidate {
         profile: &'a V3CandidateExperimentProfile,
         power_unit_thermal_profile: Option<&'a V3PowerUnitThermalProfileCandidateV2>,
-        driver_control_experiment: Option<&'a V3DriverControlExperimentV1>,
+        driver_experiment: Option<V3DriverExperiment<'a>>,
     },
 }
 
@@ -2005,6 +2141,13 @@ fn run_single_session(
             .unwrap_or(&[]),
         laps,
     );
+    if let SessionPhysicalModel::V3Candidate {
+        driver_experiment: Some(V3DriverExperiment::Instructions(experiment)),
+        ..
+    } = model
+    {
+        experiment.validate_for_session(race, laps, track_record.track.s.len())?;
+    }
 
     let mut rows = Vec::with_capacity(race.competitors.len());
     let mut player_frames = Vec::new();
@@ -2020,6 +2163,7 @@ fn run_single_session(
     let mut competitor_vehicle_capabilities_v3 = std::collections::BTreeMap::new();
     let mut competitor_driver_control_resolutions_v3 = std::collections::BTreeMap::new();
     let mut competitor_driver_control_diagnostics_v3 = std::collections::BTreeMap::new();
+    let mut competitor_driver_instruction_schedules_v3 = std::collections::BTreeMap::new();
 
     for competitor in &race.competitors {
         let component_selection = competitor_vehicle_components.get(&competitor.id);
@@ -2035,7 +2179,7 @@ fn run_single_session(
             SessionPhysicalModel::V3Candidate {
                 profile,
                 power_unit_thermal_profile,
-                driver_control_experiment: _,
+                driver_experiment: _,
             } => {
                 let mut resolved_profile = *profile;
                 if let Some(candidate) = power_unit_thermal_profile {
@@ -2073,28 +2217,65 @@ fn run_single_session(
             }
             _ => resolved_vehicle.0.clone(),
         };
-        let driver_control_resolution = match (effective_v3_profile.as_ref(), model) {
-            (
-                Some(profile),
-                SessionPhysicalModel::V3Candidate {
-                    driver_control_experiment: Some(experiment),
-                    ..
-                },
-            ) if matches!(
-                profile.schema_version,
-                V3CandidateExperimentProfileVersion::V10 | V3CandidateExperimentProfileVersion::V11
-            ) =>
-            {
-                let control_profile = profile.driver_control_profile.as_ref().ok_or_else(|| {
-                    "V3 driver-control experiment profile has no resolved profile".to_string()
-                })?;
-                Some(experiment.resolve_competitor(competitor, control_profile)?)
-            }
-            _ => None,
-        };
+        let (driver_control_resolution, driver_instruction_schedule) =
+            match (effective_v3_profile.as_ref(), model) {
+                (
+                    Some(profile),
+                    SessionPhysicalModel::V3Candidate {
+                        driver_experiment: Some(V3DriverExperiment::Static(experiment)),
+                        ..
+                    },
+                ) if matches!(
+                    profile.schema_version,
+                    V3CandidateExperimentProfileVersion::V10
+                        | V3CandidateExperimentProfileVersion::V11
+                ) =>
+                {
+                    let control_profile =
+                        profile.driver_control_profile.as_ref().ok_or_else(|| {
+                            "V3 driver-control experiment profile has no resolved profile"
+                                .to_string()
+                        })?;
+                    (
+                        Some(experiment.resolve_competitor(competitor, control_profile)?),
+                        None,
+                    )
+                }
+                (
+                    Some(profile),
+                    SessionPhysicalModel::V3Candidate {
+                        driver_experiment: Some(V3DriverExperiment::Instructions(experiment)),
+                        ..
+                    },
+                ) if matches!(
+                    profile.schema_version,
+                    V3CandidateExperimentProfileVersion::V10
+                        | V3CandidateExperimentProfileVersion::V11
+                ) =>
+                {
+                    let control_profile =
+                        profile.driver_control_profile.as_ref().ok_or_else(|| {
+                            "V3 driver-control experiment profile has no resolved profile"
+                                .to_string()
+                        })?;
+                    let schedule = experiment.resolve_competitor(competitor, control_profile)?;
+                    let baseline = schedule
+                        .transitions
+                        .first()
+                        .expect("resolved instruction schedule always has a baseline")
+                        .physical
+                        .clone();
+                    (Some(baseline), Some(schedule))
+                }
+                _ => (None, None),
+            };
         if let Some(resolution) = driver_control_resolution.as_ref() {
             competitor_driver_control_resolutions_v3
                 .insert(competitor.id.clone(), resolution.clone());
+        }
+        if let Some(schedule) = driver_instruction_schedule.as_ref() {
+            competitor_driver_instruction_schedules_v3
+                .insert(competitor.id.clone(), schedule.clone());
         }
         let mut driver = catalog.resolve_driver(competitor.driver_id.as_deref())?;
         if driver_control_resolution.is_some() {
@@ -2185,7 +2366,23 @@ fn run_single_session(
                     driver_correction_workload_multiplier: driver_control_resolution
                         .as_ref()
                         .map(|resolution| resolution.correction_workload_multiplier),
-                    driver_control_schedule: Vec::new(),
+                    driver_control_schedule: driver_instruction_schedule
+                        .as_ref()
+                        .map(|schedule| {
+                            schedule
+                                .transitions
+                                .iter()
+                                .skip(1)
+                                .map(|transition| ResolvedDriverControlLapV3 {
+                                    lap_index: transition.effective_at.lap_index,
+                                    driver_control: transition.physical.physical_controls(),
+                                    correction_workload_multiplier: Some(
+                                        transition.physical.correction_workload_multiplier,
+                                    ),
+                                })
+                                .collect()
+                        })
+                        .unwrap_or_default(),
                     driver_correction_capacity_model: (profile.schema_version
                         == V3CandidateExperimentProfileVersion::V11)
                         .then_some(DriverCorrectionCapacityModelV3::FrictionBudgetV1),
@@ -2305,6 +2502,7 @@ fn run_single_session(
         competitor_vehicle_capabilities_v3,
         competitor_driver_control_resolutions_v3,
         competitor_driver_control_diagnostics_v3,
+        competitor_driver_instruction_schedules_v3,
     })
 }
 
@@ -4115,9 +4313,12 @@ fn json_error(message: &str) -> String {
 mod tests {
     use super::*;
     use pitgun_racing_contract::{
-        CompetitorSpec, RaceInput, RacingDriverControlProfileVersion, RacingDriverResourceVersion,
-        RacingDriverUtilizationResponseV1, RacingDrivingModeCommitmentsV1,
-        RacingModelParametersPurpose, TuningSpec, VehicleComponentSelectionVersion,
+        CompetitorSpec, RaceInput, RaceStint, RacingDriverControlProfileVersion,
+        RacingDriverInstructionBoundaryGranularityV1, RacingDriverInstructionEventV1,
+        RacingDriverInstructionProfileVersion, RacingDriverInstructionTimelineVersion,
+        RacingDriverResourceVersion, RacingDriverUtilizationResponseV1,
+        RacingDrivingModeCommitmentsV1, RacingModelParametersPurpose, TuningSpec,
+        VehicleComponentSelectionVersion,
     };
     use pitgun_runtime::LinkedWorkload;
     use serde::Deserialize;
@@ -5593,6 +5794,194 @@ mod tests {
             )
             .expect_err("missing mode must fail closed")
             .contains("missing driving mode")
+        );
+    }
+
+    #[test]
+    fn predeclared_driver_instruction_timeline_is_deterministic_and_physical() {
+        let snapshot = RacingCatalogSnapshot::embedded_model_v3_component()
+            .expect("component-composed catalog");
+        let thermal = snapshot
+            .power_unit_thermal_profile()
+            .expect("power-unit thermal profile");
+        let profile = driver_friction_profile_v11();
+        let mut request = one_lap_request();
+        request.input.race.laps = 5;
+        request.input.race.competitors[0].stint_strategy = Some(CompetitorStintStrategy {
+            stints: vec![
+                RaceStint {
+                    tire_id: "soft".to_string(),
+                    laps: 3,
+                },
+                RaceStint {
+                    tire_id: "hard".to_string(),
+                    laps: 2,
+                },
+            ],
+            pit_laps: vec![3],
+        });
+        let mut ai = request.input.race.competitors[0].clone();
+        ai.id = "ai-01".to_string();
+        ai.name = "AI 01".to_string();
+        ai.team_id = "ai-team".to_string();
+        ai.is_player = false;
+        request.input.race.competitors.push(ai);
+        let instruction_profile = RacingDriverInstructionProfileV1 {
+            schema_version: RacingDriverInstructionProfileVersion::V1,
+            default_mode: RacingDrivingMode::Balanced,
+            boundary_granularity: RacingDriverInstructionBoundaryGranularityV1::LapStart,
+            max_events_per_session: 8,
+        };
+        let experiment = V3DriverInstructionExperimentV1 {
+            drivers: BTreeMap::from([("default".to_string(), driver_resource(0.70, 0.55))]),
+            instruction_profile,
+            timeline: RacingDriverInstructionTimelineV1 {
+                schema_version: RacingDriverInstructionTimelineVersion::V1,
+                events: vec![
+                    RacingDriverInstructionEventV1 {
+                        sequence: 0,
+                        competitor_id: "ai-01".to_string(),
+                        effective_at: RacingDriverInstructionBoundaryV1 {
+                            lap_index: 1,
+                            segment_index: 0,
+                        },
+                        mode: RacingDrivingMode::Manage,
+                    },
+                    RacingDriverInstructionEventV1 {
+                        sequence: 1,
+                        competitor_id: "player".to_string(),
+                        effective_at: RacingDriverInstructionBoundaryV1 {
+                            lap_index: 1,
+                            segment_index: 0,
+                        },
+                        mode: RacingDrivingMode::Attack,
+                    },
+                    RacingDriverInstructionEventV1 {
+                        sequence: 2,
+                        competitor_id: "player".to_string(),
+                        effective_at: RacingDriverInstructionBoundaryV1 {
+                            lap_index: 3,
+                            segment_index: 0,
+                        },
+                        mode: RacingDrivingMode::Manage,
+                    },
+                ],
+            },
+        };
+
+        let first = run_race_with_catalog_and_v3_driver_instruction_profile(
+            request.clone(),
+            &snapshot,
+            &profile,
+            thermal,
+            &experiment,
+        )
+        .expect("first scheduled driver run");
+        let second = run_race_with_catalog_and_v3_driver_instruction_profile(
+            request.clone(),
+            &snapshot,
+            &profile,
+            thermal,
+            &experiment,
+        )
+        .expect("second scheduled driver run");
+        assert_eq!(
+            serde_json::to_value(&first).expect("first scheduled JSON"),
+            serde_json::to_value(&second).expect("second scheduled JSON")
+        );
+
+        let lineage = first
+            .competitor_driver_instruction_schedules_v3
+            .get("player")
+            .expect("player instruction lineage");
+        assert_eq!(lineage.transitions.len(), 3);
+        assert_eq!(lineage.transitions[0].sequence, None);
+        assert_eq!(lineage.transitions[0].mode, RacingDrivingMode::Balanced);
+        assert_eq!(lineage.transitions[1].sequence, Some(1));
+        assert_eq!(lineage.transitions[1].mode, RacingDrivingMode::Attack);
+        assert_eq!(lineage.transitions[2].sequence, Some(2));
+        assert_eq!(lineage.transitions[2].mode, RacingDrivingMode::Manage);
+        let ai_lineage = first
+            .competitor_driver_instruction_schedules_v3
+            .get("ai-01")
+            .expect("AI instruction lineage");
+        assert_eq!(ai_lineage.transitions.len(), 2);
+        assert_eq!(ai_lineage.transitions[0].mode, RacingDrivingMode::Balanced);
+        assert_eq!(ai_lineage.transitions[1].mode, RacingDrivingMode::Manage);
+
+        let empty = V3DriverInstructionExperimentV1 {
+            drivers: experiment.drivers.clone(),
+            instruction_profile,
+            timeline: RacingDriverInstructionTimelineV1 {
+                schema_version: RacingDriverInstructionTimelineVersion::V1,
+                events: Vec::new(),
+            },
+        };
+        let common_default = run_race_with_catalog_and_v3_driver_instruction_profile(
+            request.clone(),
+            &snapshot,
+            &profile,
+            thermal,
+            &empty,
+        )
+        .expect("common-default run");
+        let static_balanced = run_race_with_catalog_and_v3_driver_control_profile(
+            request,
+            &snapshot,
+            &profile,
+            thermal,
+            &V3DriverControlExperimentV1 {
+                drivers: experiment.drivers.clone(),
+                competitor_modes: BTreeMap::from([
+                    ("ai-01".to_string(), RacingDrivingMode::Balanced),
+                    ("player".to_string(), RacingDrivingMode::Balanced),
+                ]),
+            },
+        )
+        .expect("static balanced run");
+        assert_eq!(
+            serde_json::to_value(&common_default.standings).expect("default standings JSON"),
+            serde_json::to_value(&static_balanced.standings).expect("static standings JSON")
+        );
+        assert_eq!(
+            common_default.player_lap_times_ms,
+            static_balanced.player_lap_times_ms
+        );
+        assert_eq!(
+            serde_json::to_value(&common_default.player_batches).expect("default telemetry JSON"),
+            serde_json::to_value(&static_balanced.player_batches).expect("static telemetry JSON")
+        );
+        assert_ne!(
+            first.player_lap_times_ms,
+            common_default.player_lap_times_ms
+        );
+
+        let invalid = V3DriverInstructionExperimentV1 {
+            drivers: experiment.drivers,
+            instruction_profile,
+            timeline: RacingDriverInstructionTimelineV1 {
+                schema_version: RacingDriverInstructionTimelineVersion::V1,
+                events: vec![RacingDriverInstructionEventV1 {
+                    sequence: 0,
+                    competitor_id: "ghost".to_string(),
+                    effective_at: RacingDriverInstructionBoundaryV1 {
+                        lap_index: 1,
+                        segment_index: 0,
+                    },
+                    mode: RacingDrivingMode::Attack,
+                }],
+            },
+        };
+        assert!(
+            run_race_with_catalog_and_v3_driver_instruction_profile(
+                one_lap_request(),
+                &snapshot,
+                &profile,
+                thermal,
+                &invalid,
+            )
+            .expect_err("unknown instruction competitor must fail closed")
+            .contains("targets unknown competitor")
         );
     }
 
