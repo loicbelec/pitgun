@@ -9,6 +9,7 @@ mod catalog;
 mod completed_run;
 mod components;
 mod driver;
+mod instruction_authorization;
 mod model_parameters;
 mod race;
 
@@ -36,6 +37,10 @@ pub use driver::{
     RacingDriverInstructionTimelineVersion, RacingDriverResourceV2, RacingDriverResourceVersion,
     RacingDriverTraitsV1, RacingDriverUtilizationResponseV1, RacingDrivingMode,
     RacingDrivingModeCommitmentsV1,
+};
+pub use instruction_authorization::{
+    RacingDriverInstructionAuthorizationV1, RacingDriverInstructionAuthorizationVersion,
+    RacingInstructionAuthorizationError,
 };
 pub use model_parameters::{
     RacingAerodynamicStateResponseV1, RacingDevelopmentResolutionV1, RacingModelCompatibilityV1,

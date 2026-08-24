@@ -190,6 +190,20 @@ Authority authorizes an instruction envelope containing at least:
 - maximum accepted event count;
 - session and competitor scope.
 
+`RacingDriverInstructionAuthorizationV1` is the strict domain envelope for
+that scope. It binds the initially authorized input and exact profile, then
+may only narrow the catalog profile: its mode set is canonical and contains
+the common default, its boundary granularity is unchanged, and its event limit
+cannot exceed the profile limit. Exact sorted competitor IDs, lap count and
+segment count prevent a completed history from being replayed against a wider
+or different session.
+
+Before deriving or accepting the final `run_id`, verification checks the
+completed input against this envelope. A mode excluded by Authority, an event
+beyond the narrowed count or session boundary, or a different competitor set
+fails closed even when the timeline would otherwise be valid for the catalog
+profile.
+
 Authority does not sign each player click or AI decision. Final evidence binds
 the common initial mode and the canonical applied history. Verifier replays
 that history and rejects any missing, reordered, inserted, or modified event.
