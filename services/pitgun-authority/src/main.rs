@@ -47,6 +47,8 @@ const DEFAULT_LATE_SUBMISSION_GRACE_SECS: u64 = 900;
 const DEFAULT_SIGNING_KEY_ID: &str = "pitgun-authority-v1";
 const DEFAULT_AUDIENCE: &str = "pitgun.verifier";
 const DEFAULT_RACING_MODEL_VERSION: &str = "1.0.0";
+const RACING_RUN_SCENARIO_ID: &str = "racing.race";
+const RACING_ATTEMPT_SCENARIO_ID: &str = "racing.dynamic-session";
 
 #[derive(Clone)]
 struct AppState {
@@ -241,6 +243,7 @@ fn build_signed_racing_run_authorization(
         request.input,
         request.catalog_release,
         request.data_pack,
+        RACING_RUN_SCENARIO_ID,
     )?;
     let run_id = prepared.contract.run_id().map_err(|error| {
         error!(?error, "failed to derive deterministic run identity");
@@ -282,6 +285,7 @@ fn prepare_racing_run(
     input: RunRaceInput,
     requested_release: Option<CatalogReleaseIdentityV1>,
     requested_data_pack: Option<ArtifactIdentity>,
+    scenario_id: &str,
 ) -> Result<PreparedRacingRunV1, ContractError> {
     let era = u32::try_from(input.era)
         .map_err(|_| ContractError::BadRequest("input.era must be non-negative".to_string()))?;
@@ -314,7 +318,7 @@ fn prepare_racing_run(
     let contract = DeterministicRunContractV1 {
         contract_version: ContractVersion::V1,
         scenario: ScenarioIdentity {
-            id: "racing.race"
+            id: scenario_id
                 .parse()
                 .expect("static Racing scenario identifier"),
             version: "1.0.0".parse().expect("static Racing scenario version"),
@@ -364,6 +368,7 @@ fn build_signed_racing_run_attempt_authorization(
         request.input,
         Some(request.catalog_release),
         None,
+        RACING_ATTEMPT_SCENARIO_ID,
     )?;
     let catalog_release = prepared
         .catalog_release
@@ -1079,6 +1084,10 @@ mod tests {
         assert_eq!(
             authorization.initial_contract.input.digest,
             canonical_json_digest(&response.canonical_input).expect("canonical input")
+        );
+        assert_eq!(
+            authorization.initial_contract.scenario.id.as_str(),
+            RACING_ATTEMPT_SCENARIO_ID
         );
         assert_eq!(
             authorization.initial_contract.data_pack,
