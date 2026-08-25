@@ -32,6 +32,14 @@ pub enum RacingDriverInstructionTimelineVersion {
 pub const RACING_DRIVER_INSTRUCTION_PROFILE_ID: &str = "pitgun.racing-driver-instructions";
 /// Semantic version paired with the V1 driver-instruction profile schema.
 pub const RACING_DRIVER_INSTRUCTION_PROFILE_VERSION: &str = "1.0.0";
+/// Stable catalog resource identifier for the physical driver-control profile.
+pub const RACING_DRIVER_CONTROL_PROFILE_ID: &str = "pitgun.racing-driver-control";
+/// Semantic version paired with the V1 driver-control profile schema.
+pub const RACING_DRIVER_CONTROL_PROFILE_VERSION: &str = "1.0.0";
+/// Stable catalog resource identifier prefix for V2 physical driver resources.
+pub const RACING_DRIVER_RESOURCE_ID_PREFIX: &str = "pitgun.racing.driver-v2.";
+/// Semantic version paired with the V2 driver resource schema.
+pub const RACING_DRIVER_RESOURCE_VERSION: &str = "2.0.0";
 
 /// Explicit commitment requested for one competitor and session.
 #[derive(Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize)]

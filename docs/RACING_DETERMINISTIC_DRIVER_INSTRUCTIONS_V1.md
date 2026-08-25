@@ -59,6 +59,17 @@ that entry, its strict bytes resolve to the domain artifact
 resolve no instruction profile; Authority must not invent a fallback profile
 for those releases.
 
+The separate physical driver-control package is also catalog governed. Its
+coefficient resource uses `pitgun.racing.driver-control` at
+`simulation/driver-control/profile-v1.json`; each V2 driver uses
+`pitgun.racing.driver-v2.<driver-id>` at
+`simulation/drivers-v2/<driver-id>.json`. The loader accepts that package only
+when the profile and at least one strict V2 driver are present together. It
+recalculates an `ArtifactIdentity` from every exact resource, rejects ID/path
+substitutions, and never upgrades the legacy `simulation/drivers/*.json`
+resources implicitly. Catalog 1.7.0 therefore governs instruction limits but
+still resolves no physical V2 driver-control package.
+
 The authoring contract carries only requested transitions:
 
 ```json
