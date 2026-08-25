@@ -1670,6 +1670,40 @@ mod tests {
     }
 
     #[test]
+    #[cfg(not(target_arch = "wasm32"))]
+    fn model_v3_driver_instruction_release_resolves_governed_profile() {
+        let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../catalogs/racing/v1.7.0");
+        let snapshot = RacingCatalogSnapshot::from_release_dir(root)
+            .expect("driver-instruction catalog release");
+        let profile = snapshot
+            .driver_instruction_profile()
+            .expect("governed instruction profile");
+        let identity = snapshot
+            .driver_instruction_profile_identity()
+            .expect("instruction profile identity");
+
+        assert_eq!(snapshot.manifest().catalog.version.to_string(), "1.7.0");
+        assert_eq!(profile.default_mode, RacingDrivingMode::Balanced);
+        assert_eq!(
+            profile.boundary_granularity,
+            RacingDriverInstructionBoundaryGranularityV1::LapStart
+        );
+        assert_eq!(profile.max_events_per_session, 64);
+        assert_eq!(identity.id.as_str(), RACING_DRIVER_INSTRUCTION_PROFILE_ID);
+        assert_eq!(
+            identity.version.to_string(),
+            RACING_DRIVER_INSTRUCTION_PROFILE_VERSION
+        );
+        assert_eq!(
+            identity.digest,
+            Digest::from_bytes(include_bytes!(concat!(
+                env!("CARGO_MANIFEST_DIR"),
+                "/../../catalogs/racing/v1.7.0/simulation/driver-instructions/profile-v1.json"
+            )))
+        );
+    }
+
+    #[test]
     fn catalog_resolves_exact_driver_instruction_profile_bytes() {
         let bundle = bundle_with_driver_instruction_profile();
         let profile_bytes = bundle

@@ -1,0 +1,365 @@
+{
+  "schema_version": "pitgun.racing-simulation-index/v1",
+  "resources": [
+    {
+      "id": "pitgun.racing.aero.active",
+      "path": "simulation/aero/active.json",
+      "media_type": "application/json",
+      "digest": "sha256:92d44adfe851ba02fa5ee9f0d2ecbe2d6d4623c802fa675e9cbaf3f8f97f7e42"
+    },
+    {
+      "id": "pitgun.racing.aero.basic",
+      "path": "simulation/aero/basic.json",
+      "media_type": "application/json",
+      "digest": "sha256:e3c7d2d64b4b6414286a362404286e0d7a8db17bb0c8bdb98aaab5eaeb6dd94d"
+    },
+    {
+      "id": "pitgun.racing.aero.none",
+      "path": "simulation/aero/none.json",
+      "media_type": "application/json",
+      "digest": "sha256:0019272ee724d3be5ff3428f3c279533a5d645d87ebd615993aebdc20fe5d5e2"
+    },
+    {
+      "id": "pitgun.racing.chassis.default",
+      "path": "simulation/chassis/default.json",
+      "media_type": "application/json",
+      "digest": "sha256:6cdfbad46bbcd6f9ee0a979e4a1be5af671ad888a5b4540fb512fafc53381ad3"
+    },
+    {
+      "id": "pitgun.racing.chassis.f1_2026",
+      "path": "simulation/chassis/f1_2026.json",
+      "media_type": "application/json",
+      "digest": "sha256:52415f02f1029a15c51ca71c7ac27edd3ae2079c8e16c56ca52903dddba54fac"
+    },
+    {
+      "id": "pitgun.racing.circuits.austin",
+      "path": "simulation/circuits/austin.json",
+      "media_type": "application/json",
+      "digest": "sha256:098be7b3d23479921b826c444e1b5373cbdca7a35e50949590d179b3c116ca00"
+    },
+    {
+      "id": "pitgun.racing.circuits.baku",
+      "path": "simulation/circuits/baku.json",
+      "media_type": "application/json",
+      "digest": "sha256:727e89be0051e5a465cd182ce25a849e6d147997dc718403220252a7711fcc0a"
+    },
+    {
+      "id": "pitgun.racing.circuits.barcelona",
+      "path": "simulation/circuits/barcelona.json",
+      "media_type": "application/json",
+      "digest": "sha256:da1f4c2d1c3c855daadfec178011495c8a1332cb7b7b350a2b3b0378d48b9dbd"
+    },
+    {
+      "id": "pitgun.racing.circuits.budapest",
+      "path": "simulation/circuits/budapest.json",
+      "media_type": "application/json",
+      "digest": "sha256:662f8490de68a7979c8498f7b040772faa308a0859675b10a6f11236b9adc701"
+    },
+    {
+      "id": "pitgun.racing.circuits.default",
+      "path": "simulation/circuits/default.json",
+      "media_type": "application/json",
+      "digest": "sha256:e903ac78962fe095e05c5fcaa5f89d373e309457579cc4fe9b2ef8e2576ee9bb"
+    },
+    {
+      "id": "pitgun.racing.circuits.jeddah",
+      "path": "simulation/circuits/jeddah.json",
+      "media_type": "application/json",
+      "digest": "sha256:afa676d288b9d552d237d807957488e6ab213034b194596668eb2542d4f059f8"
+    },
+    {
+      "id": "pitgun.racing.circuits.las_vegas",
+      "path": "simulation/circuits/las_vegas.json",
+      "media_type": "application/json",
+      "digest": "sha256:aa72ee1f064b345bb6b0752d09cf454b30e7a60e1c5e38db35db502a5c174b54"
+    },
+    {
+      "id": "pitgun.racing.circuits.lusail",
+      "path": "simulation/circuits/lusail.json",
+      "media_type": "application/json",
+      "digest": "sha256:41e5f1f1b65ff0f1a0326ac6c201b2fe82135e2588516b7a3351f44041c7cd8c"
+    },
+    {
+      "id": "pitgun.racing.circuits.madrid",
+      "path": "simulation/circuits/madrid.json",
+      "media_type": "application/json",
+      "digest": "sha256:ee2ea9734feca9fee74800ff33110a0ebce13404463aa6e6af1c1d7b4f4d8409"
+    },
+    {
+      "id": "pitgun.racing.circuits.melbourne",
+      "path": "simulation/circuits/melbourne.json",
+      "media_type": "application/json",
+      "digest": "sha256:9e3ccb2a02bc201f3f5332cea83be1add8bea39ad59ea859ccdf1e28f800a778"
+    },
+    {
+      "id": "pitgun.racing.circuits.mexico",
+      "path": "simulation/circuits/mexico.json",
+      "media_type": "application/json",
+      "digest": "sha256:4667d2a965d4ce3d8a3a953a3dc23238903fc125a1f270366f7dac5f912a1dd3"
+    },
+    {
+      "id": "pitgun.racing.circuits.miami",
+      "path": "simulation/circuits/miami.json",
+      "media_type": "application/json",
+      "digest": "sha256:78a34ae48c7cf4b17a44647ef2f9490affc4764bfc7edd53779e3d9e930969a0"
+    },
+    {
+      "id": "pitgun.racing.circuits.monaco",
+      "path": "simulation/circuits/monaco.json",
+      "media_type": "application/json",
+      "digest": "sha256:4fd47ae683c172561eeec1fee647d0f0266c67b537709af94bb857d7032e4d8d"
+    },
+    {
+      "id": "pitgun.racing.circuits.montreal",
+      "path": "simulation/circuits/montreal.json",
+      "media_type": "application/json",
+      "digest": "sha256:40d48ffaface9d900db998824b2a88318ddb62f4dd9d419ac0d73b6d2ddeaa50"
+    },
+    {
+      "id": "pitgun.racing.circuits.monza",
+      "path": "simulation/circuits/monza.json",
+      "media_type": "application/json",
+      "digest": "sha256:936f5386e0c6180cfa095bf3def167f4395204523e23b79f1a20c78e144da337"
+    },
+    {
+      "id": "pitgun.racing.circuits.sakhir",
+      "path": "simulation/circuits/sakhir.json",
+      "media_type": "application/json",
+      "digest": "sha256:2abfbb962c910022ae52332b2d2e5e741ee9c8572fcf6b15104ad343f491438e"
+    },
+    {
+      "id": "pitgun.racing.circuits.sao_paulo",
+      "path": "simulation/circuits/sao_paulo.json",
+      "media_type": "application/json",
+      "digest": "sha256:0ba903e3a8427e069768cfc1034d51f67b1dd24a0233c478b3a4c28ef70f1938"
+    },
+    {
+      "id": "pitgun.racing.circuits.shanghai",
+      "path": "simulation/circuits/shanghai.json",
+      "media_type": "application/json",
+      "digest": "sha256:838bf4b6c7c18047d50b01cf88c83f50ab889082749dfeb7b425c534d90ea696"
+    },
+    {
+      "id": "pitgun.racing.circuits.silverstone",
+      "path": "simulation/circuits/silverstone.json",
+      "media_type": "application/json",
+      "digest": "sha256:96422533f19f93b9382b8344884102597ea2bf704e295731be5c64c8b4181f97"
+    },
+    {
+      "id": "pitgun.racing.circuits.singapore",
+      "path": "simulation/circuits/singapore.json",
+      "media_type": "application/json",
+      "digest": "sha256:0d4a1f819ea97c638645f762379eff9463a7fbfae3e94bb5b6151daa60def17a"
+    },
+    {
+      "id": "pitgun.racing.circuits.spa",
+      "path": "simulation/circuits/spa.json",
+      "media_type": "application/json",
+      "digest": "sha256:b3ad4c106f0969460aa7dade356b4e0db9a2e9207ce0eb99a63956ade1796dac"
+    },
+    {
+      "id": "pitgun.racing.circuits.spielberg",
+      "path": "simulation/circuits/spielberg.json",
+      "media_type": "application/json",
+      "digest": "sha256:0c0b690413f2051187e014a329f8f80f1164ca6266458f075ed86dcd10762968"
+    },
+    {
+      "id": "pitgun.racing.circuits.suzuka",
+      "path": "simulation/circuits/suzuka.json",
+      "media_type": "application/json",
+      "digest": "sha256:27a2359f7609f457dbde6743c908b34fdc947f75b3d321379e2754fc07e063ab"
+    },
+    {
+      "id": "pitgun.racing.circuits.yas_marina",
+      "path": "simulation/circuits/yas_marina.json",
+      "media_type": "application/json",
+      "digest": "sha256:a843c8486dc8694ac8dbacf73cda60753cc1628d64c2429ad0cc4c677be92660"
+    },
+    {
+      "id": "pitgun.racing.circuits.zandvoort",
+      "path": "simulation/circuits/zandvoort.json",
+      "media_type": "application/json",
+      "digest": "sha256:62ae57706f2f0ce2d0527a92226cf7d4b1e0d3895085d46ded2ee31ee864ca1e"
+    },
+    {
+      "id": "pitgun.racing.component-capabilities.v1",
+      "path": "simulation/component-capabilities/v1.json",
+      "media_type": "application/json",
+      "digest": "sha256:6c33287535128b1b0e0e3566405d4189a9fba53033d4a4b3d6150dc365f80347"
+    },
+    {
+      "id": "pitgun.racing.driver-instructions",
+      "path": "simulation/driver-instructions/profile-v1.json",
+      "media_type": "application/json",
+      "digest": "sha256:508bf37c0092836d18660e5aa717344b2c563d04dd29b6ca426cf8b94e175aa3"
+    },
+    {
+      "id": "pitgun.racing.drivers.aggressive",
+      "path": "simulation/drivers/aggressive.json",
+      "media_type": "application/json",
+      "digest": "sha256:7be162b55df9111ac108bb6db71774f22d6aa01f96b2bcf0e4f7ab713aaa2182"
+    },
+    {
+      "id": "pitgun.racing.drivers.balanced",
+      "path": "simulation/drivers/balanced.json",
+      "media_type": "application/json",
+      "digest": "sha256:d7eb42c29f8964f595457f67433acc6a222520f184ebfe541f3891069777d9a1"
+    },
+    {
+      "id": "pitgun.racing.drivers.battery_voltas",
+      "path": "simulation/drivers/battery_voltas.json",
+      "media_type": "application/json",
+      "digest": "sha256:eca0d9c3fd085b4139656f141e2da0f34b39a8f9eea08a3b5471b6ef023fcc38"
+    },
+    {
+      "id": "pitgun.racing.drivers.charles_leclair",
+      "path": "simulation/drivers/charles_leclair.json",
+      "media_type": "application/json",
+      "digest": "sha256:b9730f1442a12be0046b4510c6e3ec46c914855c517c60c7591103deb7c43fa8"
+    },
+    {
+      "id": "pitgun.racing.drivers.conservative",
+      "path": "simulation/drivers/conservative.json",
+      "media_type": "application/json",
+      "digest": "sha256:741ccf473c38a34a9bc6fdbd9f37128847c310bbbf1a5a70b8b67b3faa341c3a"
+    },
+    {
+      "id": "pitgun.racing.drivers.daniel_enchantier",
+      "path": "simulation/drivers/daniel_enchantier.json",
+      "media_type": "application/json",
+      "digest": "sha256:f3cf787d1d955effcb927648b56cf8e131f96c857a789117dfbdb70bacb953ad"
+    },
+    {
+      "id": "pitgun.racing.drivers.default",
+      "path": "simulation/drivers/default.json",
+      "media_type": "application/json",
+      "digest": "sha256:3ab34a10fafb4ceb09595869d97801337ab39bb4d6fdb3393ad355146b5eab01"
+    },
+    {
+      "id": "pitgun.racing.drivers.franz_hermann",
+      "path": "simulation/drivers/franz_hermann.json",
+      "media_type": "application/json",
+      "digest": "sha256:22fe2621831cb22f51e336c46e2d80a3ff90a3433e1f0b0a0405ae070f6d2876"
+    },
+    {
+      "id": "pitgun.racing.drivers.goat_tifi",
+      "path": "simulation/drivers/goat_tifi.json",
+      "media_type": "application/json",
+      "digest": "sha256:6e492b3ba66012cb92c911a7ce8595c180327a14133b130b1d758aab4963dd04"
+    },
+    {
+      "id": "pitgun.racing.drivers.isa_kadjar",
+      "path": "simulation/drivers/isa_kadjar.json",
+      "media_type": "application/json",
+      "digest": "sha256:21de1ee5201ad7d06a7ef64f489a3879964ba2240acea0eb1bd054a7fc8a5470"
+    },
+    {
+      "id": "pitgun.racing.drivers.luis_amilton",
+      "path": "simulation/drivers/luis_amilton.json",
+      "media_type": "application/json",
+      "digest": "sha256:ba6ea3e0e09b6ae569db9dbc68cfd8f89b06474149297480e5494b2b9a857dfc"
+    },
+    {
+      "id": "pitgun.racing.drivers.pedro_gaseoso",
+      "path": "simulation/drivers/pedro_gaseoso.json",
+      "media_type": "application/json",
+      "digest": "sha256:d2b3dc73cdc1f8922191e7b14fea53e0cb6c2035dc4cf32a6260681fef957320"
+    },
+    {
+      "id": "pitgun.racing.drivers.smooth_operator",
+      "path": "simulation/drivers/smooth_operator.json",
+      "media_type": "application/json",
+      "digest": "sha256:1583beccd4e8c800ecfb8b3eadea756e0ba643ef9fdbe6b9e75ca69f6e4a02bd"
+    },
+    {
+      "id": "pitgun.racing.engines.v6t",
+      "path": "simulation/engines/v6t.json",
+      "media_type": "application/json",
+      "digest": "sha256:0d42fc77c421fcab6aebe7d5e805e76562f24528c8dc94c05524d67116598d86"
+    },
+    {
+      "id": "pitgun.racing.engines.v6t_hybrid",
+      "path": "simulation/engines/v6t_hybrid.json",
+      "media_type": "application/json",
+      "digest": "sha256:541bc9522ae9ddcf7de7318bbf1a57c656318475142e475be7b6b42a7a1b5b36"
+    },
+    {
+      "id": "pitgun.racing.engines.v8_1960",
+      "path": "simulation/engines/v8_1960.json",
+      "media_type": "application/json",
+      "digest": "sha256:c6f337b740337b85c089b56c0bcca23adfb405d15a2fae38770898ebfde9e700"
+    },
+    {
+      "id": "pitgun.racing.engines.v8_1970",
+      "path": "simulation/engines/v8_1970.json",
+      "media_type": "application/json",
+      "digest": "sha256:4004500f47efb22d1117efaccde51e578cadca90cde3bb2af833f03f376a78f8"
+    },
+    {
+      "id": "pitgun.racing.policies.competitive",
+      "path": "simulation/policies/competitive.json",
+      "media_type": "application/json",
+      "digest": "sha256:3ae8204156754fcf6758bcb452e0b648582e0e8afa196365ea9167e2203a3370"
+    },
+    {
+      "id": "pitgun.racing.policies.reference",
+      "path": "simulation/policies/reference.json",
+      "media_type": "application/json",
+      "digest": "sha256:f95178f5208ea909c2950ea76abd19180fee152beb9384d8aad01cf288e5ea72"
+    },
+    {
+      "id": "pitgun.racing.thermal-profiles.family-v2",
+      "path": "simulation/thermal-profiles/family-v2.json",
+      "media_type": "application/json",
+      "digest": "sha256:47c54c5fb79327d1937c84decab79bfbd9cd72b933f15710515670dc61315c84"
+    },
+    {
+      "id": "pitgun.racing.tires.hard",
+      "path": "simulation/tires/hard.json",
+      "media_type": "application/json",
+      "digest": "sha256:829d45437aabad1b6f85208354e91ea70629bf0a1d29631b6dbfee9dfc3c83d4"
+    },
+    {
+      "id": "pitgun.racing.tires.medium",
+      "path": "simulation/tires/medium.json",
+      "media_type": "application/json",
+      "digest": "sha256:9e40cf437c96ab26ed3fd3a45a8b6ba0f4a5752cf3ea220ee25770bd7f497e90"
+    },
+    {
+      "id": "pitgun.racing.tires.soft",
+      "path": "simulation/tires/soft.json",
+      "media_type": "application/json",
+      "digest": "sha256:9e053a0d63495defea753f264e5441de8ef7c3baec95dbc77f07c31a91ee3afc"
+    },
+    {
+      "id": "pitgun.racing.vehicles.classic_v8_1960",
+      "path": "simulation/vehicles/classic_v8_1960.json",
+      "media_type": "application/json",
+      "digest": "sha256:ed525dd47e803a071b4dd7d64d061a9e8ee925bb0e3d30b370547ff0b10c6004"
+    },
+    {
+      "id": "pitgun.racing.vehicles.classic_v8_1970",
+      "path": "simulation/vehicles/classic_v8_1970.json",
+      "media_type": "application/json",
+      "digest": "sha256:5fefbde1ecfffb1bcc011edeb731c919f431a7e9da27aedd49aa4794747c2b6b"
+    },
+    {
+      "id": "pitgun.racing.vehicles.default",
+      "path": "simulation/vehicles/default.json",
+      "media_type": "application/json",
+      "digest": "sha256:5fefbde1ecfffb1bcc011edeb731c919f431a7e9da27aedd49aa4794747c2b6b"
+    },
+    {
+      "id": "pitgun.racing.vehicles.f1_2026",
+      "path": "simulation/vehicles/f1_2026.json",
+      "media_type": "application/json",
+      "digest": "sha256:06111d484ec5cca9188bde63ce2f49aaf467a6289cff5d85a7cb28bb83727722"
+    },
+    {
+      "id": "pitgun.racing.vehicles.modern_v6t",
+      "path": "simulation/vehicles/modern_v6t.json",
+      "media_type": "application/json",
+      "digest": "sha256:4aad13d55acc6a1c8716cbbd6d52003595755fa127729e0b5a197e6c91985934"
+    }
+  ]
+}
