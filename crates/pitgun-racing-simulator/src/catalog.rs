@@ -15,10 +15,12 @@ use pitgun_contract::{
     canonical_json_digest, canonicalize_json_str,
 };
 use pitgun_racing_contract::{
-    ComponentCapabilityProfileV1, RACING_DRIVER_INSTRUCTION_PROFILE_ID,
-    RACING_DRIVER_INSTRUCTION_PROFILE_VERSION, RacingDriverInstructionProfileV1,
-    RacingModelParametersV1, RacingPresentationIndexV1, RacingSimulationIndexV1,
-    VehicleComponentKind,
+    ComponentCapabilityProfileV1, RACING_DRIVER_CONTROL_PROFILE_ID,
+    RACING_DRIVER_CONTROL_PROFILE_VERSION, RACING_DRIVER_INSTRUCTION_PROFILE_ID,
+    RACING_DRIVER_INSTRUCTION_PROFILE_VERSION, RACING_DRIVER_RESOURCE_ID_PREFIX,
+    RACING_DRIVER_RESOURCE_VERSION, RacingDriverControlProfileV1, RacingDriverInstructionProfileV1,
+    RacingDriverResourceV2, RacingModelParametersV1, RacingPresentationIndexV1,
+    RacingSimulationIndexV1, VehicleComponentKind,
 };
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
@@ -46,6 +48,10 @@ const COMPONENT_CAPABILITY_RESOURCE_ID: &str = "pitgun.racing.component-capabili
 const COMPONENT_CAPABILITY_PROFILE_PATH: &str = "simulation/component-capabilities/v1.json";
 const DRIVER_INSTRUCTION_PROFILE_RESOURCE_ID: &str = "pitgun.racing.driver-instructions";
 const DRIVER_INSTRUCTION_PROFILE_PATH: &str = "simulation/driver-instructions/profile-v1.json";
+const DRIVER_CONTROL_PROFILE_RESOURCE_ID: &str = "pitgun.racing.driver-control";
+const DRIVER_CONTROL_PROFILE_PATH: &str = "simulation/driver-control/profile-v1.json";
+const DRIVER_V2_RESOURCE_ID_PREFIX: &str = "pitgun.racing.driver-v2.";
+const DRIVER_V2_PATH_PREFIX: &str = "simulation/drivers-v2/";
 
 const CATALOG_MANIFEST: &[u8] = include_bytes!(concat!(
     env!("CARGO_MANIFEST_DIR"),
@@ -155,6 +161,18 @@ pub struct RacingCatalogSnapshot {
     component_capability_profile_identity: Option<ArtifactIdentity>,
     driver_instruction_profile: Option<RacingDriverInstructionProfileV1>,
     driver_instruction_profile_identity: Option<ArtifactIdentity>,
+    driver_control_profile: Option<RacingDriverControlProfileV1>,
+    driver_control_profile_identity: Option<ArtifactIdentity>,
+    drivers_v2: BTreeMap<String, RacingDriverResourceV2>,
+    driver_v2_identities: BTreeMap<String, ArtifactIdentity>,
+}
+
+#[derive(Default)]
+struct ResolvedDriverControlPackage {
+    profile: Option<RacingDriverControlProfileV1>,
+    profile_identity: Option<ArtifactIdentity>,
+    drivers: BTreeMap<String, RacingDriverResourceV2>,
+    driver_identities: BTreeMap<String, ArtifactIdentity>,
 }
 
 /// Failure produced before a Racing Catalog may enter simulation.
@@ -389,6 +407,7 @@ impl RacingCatalogSnapshot {
             resolved_driver_instruction_profile.map_or((None, None), |(profile, identity)| {
                 (Some(profile), Some(identity))
             });
+        let driver_control_package = resolve_driver_control_package(&simulation_index, &supplied)?;
 
         let snapshot = Self {
             manifest,
@@ -406,6 +425,10 @@ impl RacingCatalogSnapshot {
             component_capability_profile_identity,
             driver_instruction_profile,
             driver_instruction_profile_identity,
+            driver_control_profile: driver_control_package.profile,
+            driver_control_profile_identity: driver_control_package.profile_identity,
+            drivers_v2: driver_control_package.drivers,
+            driver_v2_identities: driver_control_package.driver_identities,
         };
         crate::EmbeddedCatalog::from_snapshot(&snapshot)
             .map_err(RacingCatalogResolutionError::InvalidResolvedResources)?;
@@ -626,6 +649,30 @@ impl RacingCatalogSnapshot {
     #[must_use]
     pub const fn driver_instruction_profile_identity(&self) -> Option<&ArtifactIdentity> {
         self.driver_instruction_profile_identity.as_ref()
+    }
+
+    /// Returns the optional immutable coefficients translating driver traits and modes.
+    #[must_use]
+    pub const fn driver_control_profile(&self) -> Option<&RacingDriverControlProfileV1> {
+        self.driver_control_profile.as_ref()
+    }
+
+    /// Returns the exact content identity of the selected driver-control coefficients.
+    #[must_use]
+    pub const fn driver_control_profile_identity(&self) -> Option<&ArtifactIdentity> {
+        self.driver_control_profile_identity.as_ref()
+    }
+
+    /// Returns every V2 physical driver resource, keyed by its embedded driver ID.
+    #[must_use]
+    pub const fn drivers_v2(&self) -> &BTreeMap<String, RacingDriverResourceV2> {
+        &self.drivers_v2
+    }
+
+    /// Returns the exact content identity of every V2 driver resource.
+    #[must_use]
+    pub const fn driver_v2_identities(&self) -> &BTreeMap<String, ArtifactIdentity> {
+        &self.driver_v2_identities
     }
 
     /// Recreates the transport-neutral bundle for this validated snapshot.
@@ -1062,6 +1109,149 @@ fn resolve_driver_instruction_profile(
     Ok(Some((profile, identity)))
 }
 
+fn resolve_driver_control_package(
+    simulation_index: &RacingSimulationIndexV1,
+    supplied: &BTreeMap<CatalogPath, Vec<u8>>,
+) -> Result<ResolvedDriverControlPackage, RacingCatalogResolutionError> {
+    let mut profile_resources = simulation_index.resources.iter().filter(|resource| {
+        resource.id.as_str() == DRIVER_CONTROL_PROFILE_RESOURCE_ID
+            || resource.path.as_str() == DRIVER_CONTROL_PROFILE_PATH
+    });
+    let profile_resource = profile_resources.next();
+    if profile_resources.next().is_some() {
+        return Err(RacingCatalogResolutionError::InvalidResolvedResources(
+            "Racing catalog must select at most one driver-control profile".to_string(),
+        ));
+    }
+
+    let driver_resources = simulation_index
+        .resources
+        .iter()
+        .filter(|resource| {
+            resource
+                .id
+                .as_str()
+                .starts_with(DRIVER_V2_RESOURCE_ID_PREFIX)
+                || resource.path.as_str().starts_with(DRIVER_V2_PATH_PREFIX)
+        })
+        .collect::<Vec<_>>();
+
+    if profile_resource.is_none() && driver_resources.is_empty() {
+        return Ok(ResolvedDriverControlPackage::default());
+    }
+    let profile_resource = profile_resource.ok_or_else(|| {
+        RacingCatalogResolutionError::InvalidResolvedResources(
+            "V2 driver resources require one catalog-owned driver-control profile".to_string(),
+        )
+    })?;
+    if driver_resources.is_empty() {
+        return Err(RacingCatalogResolutionError::InvalidResolvedResources(
+            "driver-control profile requires at least one V2 driver resource".to_string(),
+        ));
+    }
+    if profile_resource.id.as_str() != DRIVER_CONTROL_PROFILE_RESOURCE_ID
+        || profile_resource.path.as_str() != DRIVER_CONTROL_PROFILE_PATH
+    {
+        return Err(RacingCatalogResolutionError::InvalidResolvedResources(
+            format!(
+                "driver-control profile must use catalog resource ID {DRIVER_CONTROL_PROFILE_RESOURCE_ID} and path {DRIVER_CONTROL_PROFILE_PATH}"
+            ),
+        ));
+    }
+
+    let profile_bytes = supplied
+        .get(&profile_resource.path)
+        .expect("indexed resources are checked before driver-control resolution");
+    let profile: RacingDriverControlProfileV1 =
+        serde_json::from_slice(profile_bytes).map_err(|error| {
+            RacingCatalogResolutionError::InvalidResource {
+                path: profile_resource.path.clone(),
+                reason: error.to_string(),
+            }
+        })?;
+    profile.validate().map_err(|error| {
+        RacingCatalogResolutionError::InvalidResolvedResources(error.to_string())
+    })?;
+    let profile_identity = ArtifactIdentity {
+        id: RACING_DRIVER_CONTROL_PROFILE_ID
+            .parse()
+            .expect("static driver-control profile identity"),
+        version: RACING_DRIVER_CONTROL_PROFILE_VERSION
+            .parse()
+            .expect("static driver-control profile version"),
+        digest: profile_resource.digest,
+    };
+
+    let mut drivers = BTreeMap::new();
+    let mut identities = BTreeMap::new();
+    for resource in driver_resources {
+        let driver_id = resource
+            .id
+            .as_str()
+            .strip_prefix(DRIVER_V2_RESOURCE_ID_PREFIX)
+            .filter(|value| !value.is_empty())
+            .ok_or_else(|| {
+                RacingCatalogResolutionError::InvalidResolvedResources(format!(
+                    "V2 driver path {} uses an incompatible resource ID {}",
+                    resource.path, resource.id
+                ))
+            })?;
+        let expected_path = format!("{DRIVER_V2_PATH_PREFIX}{driver_id}.json");
+        if resource.path.as_str() != expected_path {
+            return Err(RacingCatalogResolutionError::InvalidResolvedResources(
+                format!(
+                    "V2 driver resource {} must use path {expected_path}",
+                    resource.id
+                ),
+            ));
+        }
+        let bytes = supplied
+            .get(&resource.path)
+            .expect("indexed resources are checked before V2 driver resolution");
+        let driver: RacingDriverResourceV2 = serde_json::from_slice(bytes).map_err(|error| {
+            RacingCatalogResolutionError::InvalidResource {
+                path: resource.path.clone(),
+                reason: error.to_string(),
+            }
+        })?;
+        driver.validate().map_err(|error| {
+            RacingCatalogResolutionError::InvalidResolvedResources(error.to_string())
+        })?;
+        if driver.id != driver_id {
+            return Err(RacingCatalogResolutionError::InvalidResolvedResources(
+                format!(
+                    "V2 driver resource ID suffix {driver_id:?} does not match embedded id {:?}",
+                    driver.id
+                ),
+            ));
+        }
+        if drivers.insert(driver.id.clone(), driver).is_some() {
+            return Err(RacingCatalogResolutionError::InvalidResolvedResources(
+                format!("duplicate V2 driver id {driver_id:?}"),
+            ));
+        }
+        identities.insert(
+            driver_id.to_string(),
+            ArtifactIdentity {
+                id: format!("{RACING_DRIVER_RESOURCE_ID_PREFIX}{driver_id}")
+                    .parse()
+                    .expect("validated driver resource identifier"),
+                version: RACING_DRIVER_RESOURCE_VERSION
+                    .parse()
+                    .expect("static V2 driver resource version"),
+                digest: resource.digest,
+            },
+        );
+    }
+
+    Ok(ResolvedDriverControlPackage {
+        profile: Some(profile),
+        profile_identity: Some(profile_identity),
+        drivers,
+        driver_identities: identities,
+    })
+}
+
 fn validate_known_racing_model_compatibility(
     manifest: &ResourceCatalogManifestV1,
 ) -> Result<(), RacingCatalogResolutionError> {
@@ -1163,8 +1353,10 @@ mod tests {
         RuntimeProfile, ScenarioIdentity, Seed, StreamDerivation, canonical_json_digest,
     };
     use pitgun_racing_contract::{
+        RacingDriverControlProfileV1, RacingDriverControlProfileVersion,
         RacingDriverInstructionBoundaryGranularityV1, RacingDriverInstructionProfileVersion,
-        RacingDrivingMode,
+        RacingDriverResourceV2, RacingDriverResourceVersion, RacingDriverTraitsV1,
+        RacingDriverUtilizationResponseV1, RacingDrivingMode, RacingDrivingModeCommitmentsV1,
     };
 
     fn embedded_bundle() -> RacingCatalogBundleV1 {
@@ -1280,6 +1472,93 @@ mod tests {
             path: DRIVER_INSTRUCTION_PROFILE_PATH.to_string(),
             contents,
         });
+        resign_bundle(&mut bundle);
+        bundle
+    }
+
+    fn bundle_with_driver_control_package() -> RacingCatalogBundleV1 {
+        let mut bundle = embedded_bundle();
+        let profile = RacingDriverControlProfileV1 {
+            schema_version: RacingDriverControlProfileVersion::V1,
+            mode_commitments: RacingDrivingModeCommitmentsV1 {
+                manage: 0.6,
+                balanced: 0.8,
+                attack: 1.0,
+            },
+            cornering: RacingDriverUtilizationResponseV1 {
+                floor: 0.8,
+                span: 0.2,
+            },
+            braking: RacingDriverUtilizationResponseV1 {
+                floor: 0.78,
+                span: 0.22,
+            },
+            traction: RacingDriverUtilizationResponseV1 {
+                floor: 0.82,
+                span: 0.18,
+            },
+            base_control_error: 0.005,
+            commitment_error_gain: 0.08,
+            commitment_error_exponent: 2.0,
+            correction_workload_gain: 2.0,
+        };
+        let drivers = [
+            RacingDriverResourceV2 {
+                schema_version: RacingDriverResourceVersion::V2,
+                id: "balanced_reference".to_string(),
+                traits: RacingDriverTraitsV1 {
+                    limit_exploitation: 0.84,
+                    consistency: 0.84,
+                    tire_management: 0.84,
+                },
+            },
+            RacingDriverResourceV2 {
+                schema_version: RacingDriverResourceVersion::V2,
+                id: "tire_manager".to_string(),
+                traits: RacingDriverTraitsV1 {
+                    limit_exploitation: 0.78,
+                    consistency: 0.78,
+                    tire_management: 0.96,
+                },
+            },
+        ];
+        let mut index: RacingSimulationIndexV1 =
+            serde_json::from_str(&bundle.simulation_index).expect("simulation index JSON");
+        let profile_contents =
+            serde_json::to_string(&profile).expect("driver-control profile JSON");
+        index.resources.push(CatalogResourceV1 {
+            id: DRIVER_CONTROL_PROFILE_RESOURCE_ID
+                .parse()
+                .expect("driver-control resource id"),
+            path: DRIVER_CONTROL_PROFILE_PATH
+                .parse()
+                .expect("driver-control resource path"),
+            media_type: "application/json".parse().expect("JSON media type"),
+            digest: Digest::from_bytes(profile_contents.as_bytes()),
+        });
+        bundle.resources.push(RacingCatalogFileV1 {
+            path: DRIVER_CONTROL_PROFILE_PATH.to_string(),
+            contents: profile_contents,
+        });
+        for driver in drivers {
+            let contents = serde_json::to_string(&driver).expect("V2 driver JSON");
+            let path = format!("{DRIVER_V2_PATH_PREFIX}{}.json", driver.id);
+            index.resources.push(CatalogResourceV1 {
+                id: format!("{DRIVER_V2_RESOURCE_ID_PREFIX}{}", driver.id)
+                    .parse()
+                    .expect("V2 driver resource id"),
+                path: path.parse().expect("V2 driver resource path"),
+                media_type: "application/json".parse().expect("JSON media type"),
+                digest: Digest::from_bytes(contents.as_bytes()),
+            });
+            bundle
+                .resources
+                .push(RacingCatalogFileV1 { path, contents });
+        }
+        index
+            .resources
+            .sort_by(|left, right| left.id.cmp(&right.id));
+        bundle.simulation_index = serde_json::to_string(&index).expect("simulation index JSON");
         resign_bundle(&mut bundle);
         bundle
     }
@@ -1818,6 +2097,152 @@ mod tests {
                 ..
             })
         ));
+    }
+
+    #[test]
+    fn catalog_resolves_exact_driver_control_package_bytes() {
+        let bundle = bundle_with_driver_control_package();
+        let profile_bytes = bundle
+            .resources
+            .iter()
+            .find(|resource| resource.path == DRIVER_CONTROL_PROFILE_PATH)
+            .expect("driver-control profile bytes")
+            .contents
+            .as_bytes()
+            .to_vec();
+        let balanced_bytes = bundle
+            .resources
+            .iter()
+            .find(|resource| resource.path == "simulation/drivers-v2/balanced_reference.json")
+            .expect("balanced driver bytes")
+            .contents
+            .as_bytes()
+            .to_vec();
+        let snapshot = RacingCatalogSnapshot::from_bundle(bundle).expect("driver-control catalog");
+
+        assert_eq!(
+            snapshot
+                .driver_control_profile_identity()
+                .expect("driver-control identity")
+                .digest,
+            Digest::from_bytes(&profile_bytes)
+        );
+        assert_eq!(snapshot.drivers_v2().len(), 2);
+        assert_eq!(
+            snapshot
+                .drivers_v2()
+                .get("tire_manager")
+                .expect("tire manager")
+                .traits
+                .tire_management,
+            0.96
+        );
+        let balanced_identity = snapshot
+            .driver_v2_identities()
+            .get("balanced_reference")
+            .expect("balanced driver identity");
+        assert_eq!(
+            balanced_identity.id.as_str(),
+            "pitgun.racing.driver-v2.balanced_reference"
+        );
+        assert_eq!(balanced_identity.version.to_string(), "2.0.0");
+        assert_eq!(
+            balanced_identity.digest,
+            Digest::from_bytes(&balanced_bytes)
+        );
+
+        let browser = RacingCatalogSnapshot::from_bundle(
+            snapshot.to_bundle().expect("portable browser bundle"),
+        )
+        .expect("browser adapter resolves package");
+        assert_eq!(
+            browser.driver_control_profile(),
+            snapshot.driver_control_profile()
+        );
+        assert_eq!(browser.drivers_v2(), snapshot.drivers_v2());
+        assert_eq!(
+            browser.driver_v2_identities(),
+            snapshot.driver_v2_identities()
+        );
+    }
+
+    #[test]
+    fn driver_control_package_fails_closed_on_incomplete_or_invalid_resources() {
+        let mut invalid_trait = bundle_with_driver_control_package();
+        let file = invalid_trait
+            .resources
+            .iter_mut()
+            .find(|resource| resource.path == "simulation/drivers-v2/balanced_reference.json")
+            .expect("balanced driver");
+        file.contents = file
+            .contents
+            .replace("\"limit_exploitation\":0.84", "\"limit_exploitation\":1.1");
+        resign_bundle(&mut invalid_trait);
+        assert!(matches!(
+            RacingCatalogSnapshot::from_bundle(invalid_trait),
+            Err(RacingCatalogResolutionError::InvalidResolvedResources(reason))
+                if reason.contains("limit_exploitation")
+        ));
+
+        let mut mismatched_id = bundle_with_driver_control_package();
+        let file = mismatched_id
+            .resources
+            .iter_mut()
+            .find(|resource| resource.path == "simulation/drivers-v2/balanced_reference.json")
+            .expect("balanced driver");
+        file.contents = file
+            .contents
+            .replace("balanced_reference", "different_driver");
+        resign_bundle(&mut mismatched_id);
+        assert!(matches!(
+            RacingCatalogSnapshot::from_bundle(mismatched_id),
+            Err(RacingCatalogResolutionError::InvalidResolvedResources(reason))
+                if reason.contains("does not match embedded id")
+        ));
+
+        let mut missing_profile = bundle_with_driver_control_package();
+        let mut index: RacingSimulationIndexV1 =
+            serde_json::from_str(&missing_profile.simulation_index).expect("simulation index");
+        index
+            .resources
+            .retain(|resource| resource.path.as_str() != DRIVER_CONTROL_PROFILE_PATH);
+        missing_profile
+            .resources
+            .retain(|resource| resource.path != DRIVER_CONTROL_PROFILE_PATH);
+        missing_profile.simulation_index =
+            serde_json::to_string(&index).expect("simulation index JSON");
+        resign_bundle(&mut missing_profile);
+        assert!(matches!(
+            RacingCatalogSnapshot::from_bundle(missing_profile),
+            Err(RacingCatalogResolutionError::InvalidResolvedResources(reason))
+                if reason.contains("require one catalog-owned driver-control profile")
+        ));
+
+        let mut tampered = bundle_with_driver_control_package();
+        tampered
+            .resources
+            .iter_mut()
+            .find(|resource| resource.path == DRIVER_CONTROL_PROFILE_PATH)
+            .expect("driver-control profile")
+            .contents
+            .push(' ');
+        assert!(matches!(
+            RacingCatalogSnapshot::from_bundle(tampered),
+            Err(RacingCatalogResolutionError::ResourceDigestMismatch { path, .. })
+                if path.as_str() == DRIVER_CONTROL_PROFILE_PATH
+        ));
+    }
+
+    #[test]
+    #[cfg(not(target_arch = "wasm32"))]
+    fn catalog_1_7_keeps_physical_driver_control_resources_absent() {
+        let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../catalogs/racing/v1.7.0");
+        let snapshot = RacingCatalogSnapshot::from_release_dir(root).expect("catalog 1.7");
+
+        assert!(snapshot.driver_control_profile().is_none());
+        assert!(snapshot.driver_control_profile_identity().is_none());
+        assert!(snapshot.drivers_v2().is_empty());
+        assert!(snapshot.driver_v2_identities().is_empty());
     }
 
     #[test]

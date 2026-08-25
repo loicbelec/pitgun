@@ -3277,6 +3277,10 @@ impl EmbeddedCatalog {
                 // Parsed and identity-validated by `RacingCatalogSnapshot`.
                 // Execution receives the resolved profile explicitly.
             }
+            "driver-control" | "drivers-v2" => {
+                // Parsed and identity-validated by `RacingCatalogSnapshot`.
+                // A future timeline-enabled workload consumes this complete package.
+            }
             _ => {
                 return Err(format!(
                     "unsupported Racing simulation resource category '{category}'"
