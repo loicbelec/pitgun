@@ -68,7 +68,11 @@ when the profile and at least one strict V2 driver are present together. It
 recalculates an `ArtifactIdentity` from every exact resource, rejects ID/path
 substitutions, and never upgrades the legacy `simulation/drivers/*.json`
 resources implicitly. Catalog 1.7.0 therefore governs instruction limits but
-still resolves no physical V2 driver-control package.
+still resolves no physical V2 driver-control package. The non-production
+Catalog 1.8.0 is the first complete package: it is compatible exclusively with
+timeline candidate Model 0.14.0 and publishes the reviewed equal-budget driver
+archetypes. Neither the mutable `LATEST` pointer nor the game/staging selection
+uses this candidate.
 
 The authoring contract carries only requested transitions:
 

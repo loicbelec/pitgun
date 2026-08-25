@@ -22,6 +22,9 @@ MODEL_V3_THERMAL_EMBEDDED_RUST = (
 MODEL_V3_COMPONENT_EMBEDDED_RUST = (
     ROOT / "generated" / "racing_catalog_model_v3_component.rs"
 )
+MODEL_V3_TIMELINE_EMBEDDED_RUST = (
+    ROOT / "generated" / "racing_catalog_model_v3_timeline.rs"
+)
 
 DIGEST_PREFIX = "sha256:"
 MODEL_COMPATIBILITY_BY_RELEASE = {
@@ -33,10 +36,12 @@ MODEL_COMPATIBILITY_BY_RELEASE = {
     "1.5.0": ("pitgun.racing-v3-candidate", ["0.10.0"]),
     "1.6.0": ("pitgun.racing-v3-candidate", ["0.11.0"]),
     "1.7.0": ("pitgun.racing-v3-candidate", ["0.11.0"]),
+    "1.8.0": ("pitgun.racing-v3-candidate", ["0.14.0"]),
 }
 
 CANONICAL_RESOURCE_IDS = {
     "driver-instructions/profile-v1.json": "pitgun.racing.driver-instructions",
+    "driver-control/profile-v1.json": "pitgun.racing.driver-control",
 }
 
 
@@ -91,11 +96,14 @@ def simulation_resources(release_root: Path) -> list[dict[str, str]]:
         relative = path.relative_to(simulation_root).as_posix()
         category, filename = relative.split("/", maxsplit=1)
         stem = Path(filename).stem
+        resource_id = CANONICAL_RESOURCE_IDS.get(
+            relative, f"pitgun.racing.{category}.{stem}"
+        )
+        if category == "drivers-v2":
+            resource_id = f"pitgun.racing.driver-v2.{stem}"
         resources.append(
             {
-                "id": CANONICAL_RESOURCE_IDS.get(
-                    relative, f"pitgun.racing.{category}.{stem}"
-                ),
+                "id": resource_id,
                 "path": f"simulation/{relative}",
                 "media_type": "application/json",
                 "digest": digest_bytes(path.read_bytes()),
@@ -322,6 +330,9 @@ def generated_artifacts() -> dict[Path, bytes]:
     )
     artifacts[MODEL_V3_COMPONENT_EMBEDDED_RUST] = generated_embedded_artifact(
         CATALOG_ROOT / "v1.6.0", "MODEL_V3_COMPONENT_EMBEDDED_FILES"
+    )
+    artifacts[MODEL_V3_TIMELINE_EMBEDDED_RUST] = generated_embedded_artifact(
+        CATALOG_ROOT / "v1.8.0", "MODEL_V3_TIMELINE_EMBEDDED_FILES"
     )
     return artifacts
 

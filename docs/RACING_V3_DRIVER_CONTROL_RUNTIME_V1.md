@@ -64,3 +64,8 @@ and Databricks campaign defined in
 [`RACING_V3_DRIVER_CONTROL_CONTRACT_V1.md`](RACING_V3_DRIVER_CONTROL_CONTRACT_V1.md),
 followed by a new immutable catalog and verification package.
 
+Catalog `1.8.0` and Model `0.14.0` now satisfy the publication half of this
+gate without changing any deployed selection. They bind the reviewed
+equal-budget V2 drivers, the physical coefficient profile, and the instruction
+profile in one Simulation Pack. Authorized native/WASM execution and hosted
+Verifier replay remain separate follow-up gates.

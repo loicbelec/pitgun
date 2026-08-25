@@ -128,7 +128,7 @@ signature algorithm rather than distributing the HMAC secret.
 | `PITGUN_LATE_SUBMISSION_GRACE_SECONDS` | `900` | Additional result-submission window |
 | `PITGUN_ALLOW_CATALOG_FREE` | `false` | Permit explicitly identified non-catalog data packs |
 | `PITGUN_TUNING_POLICY_PATH` | `policies/gametuning.v1.yaml` | Exact Racing policy bytes |
-| `PITGUN_RACING_MODEL_VERSION` | `1.0.0` | Exact supported model generation (`1.0.0`, `2.0.0`, or non-production candidates `0.10.0` and `0.11.0`) |
+| `PITGUN_RACING_MODEL_VERSION` | `1.0.0` | Exact supported model generation (`1.0.0`, `2.0.0`, or non-production candidates `0.10.0`, `0.11.0`, and `0.14.0`) |
 | `PITGUN_RACING_CATALOG_RELEASE_DIR` | unset | Optional immutable Racing release directory |
 | `PITGUN_AUTHORITY_BIND` | `0.0.0.0:8080` | HTTP listener |
 
@@ -154,10 +154,10 @@ ghcr.io/loicbelec/pitgun-authority:<git-commit-sha>
 ```
 
 It contains the authority binary plus the exact checked-in policy and immutable
-Racing `v1.0.0`, `v1.2.0`, `v1.3.0`, and non-production `v1.5.0`, `v1.6.0`, and `v1.7.0` catalog
+Racing `v1.0.0`, `v1.2.0`, `v1.3.0`, and non-production `v1.5.0`, `v1.6.0`, `v1.7.0`, and `v1.8.0` catalog
 releases. The image defaults to the V1 model/catalog pair; environments must
 override both Racing variables together to select V2 or the V3 thermal
-candidate.
+and timeline candidates.
 
 ```text
 /opt/pitgun/policies/gametuning.v1.yaml
@@ -167,6 +167,7 @@ candidate.
 /opt/pitgun/catalogs/racing/v1.5.0
 /opt/pitgun/catalogs/racing/v1.6.0
 /opt/pitgun/catalogs/racing/v1.7.0
+/opt/pitgun/catalogs/racing/v1.8.0
 ```
 
 The corresponding path variables are configured as non-secret image defaults.

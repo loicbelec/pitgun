@@ -27,16 +27,18 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     EMBEDDED_FILES, MODEL_V2_EMBEDDED_FILES, MODEL_V3_COMPONENT_EMBEDDED_FILES,
-    MODEL_V3_THERMAL_EMBEDDED_FILES, PRESENTATION_INDEX, V3PowerUnitThermalProfileCandidateV2,
-    V3ThermalFamilyProfileCandidateV1, racing_model_v3_component_candidate_identity,
-    racing_model_v3_thermal_candidate_identity,
+    MODEL_V3_THERMAL_EMBEDDED_FILES, MODEL_V3_TIMELINE_EMBEDDED_FILES, PRESENTATION_INDEX,
+    V3PowerUnitThermalProfileCandidateV2, V3ThermalFamilyProfileCandidateV1,
+    racing_model_v3_component_candidate_identity, racing_model_v3_thermal_candidate_identity,
+    racing_model_v3_timeline_candidate_identity,
 };
 
-const KNOWN_RACING_MODELS: [(&str, &str); 4] = [
+const KNOWN_RACING_MODELS: [(&str, &str); 5] = [
     ("pitgun.racing", "1.0.0"),
     ("pitgun.racing", "2.0.0"),
     ("pitgun.racing-v3-candidate", "0.10.0"),
     ("pitgun.racing-v3-candidate", "0.11.0"),
+    ("pitgun.racing-v3-candidate", "0.14.0"),
 ];
 const MODEL_PARAMETERS_ID_PREFIX: &str = "pitgun.racing.model-parameters.";
 const MODEL_PARAMETERS_PATH_PREFIX: &str = "simulation/model-parameters/";
@@ -112,6 +114,22 @@ const MODEL_V3_COMPONENT_SIMULATION_INDEX: &[u8] = include_bytes!(concat!(
 const MODEL_V3_COMPONENT_PRESENTATION_INDEX: &[u8] = include_bytes!(concat!(
     env!("CARGO_MANIFEST_DIR"),
     "/../../catalogs/racing/v1.6.0/presentation/index.json"
+));
+const MODEL_V3_TIMELINE_CATALOG_MANIFEST: &[u8] = include_bytes!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../catalogs/racing/v1.8.0/catalog.json"
+));
+const MODEL_V3_TIMELINE_RELEASE_IDENTITY: &[u8] = include_bytes!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../catalogs/racing/v1.8.0/release.json"
+));
+const MODEL_V3_TIMELINE_SIMULATION_INDEX: &[u8] = include_bytes!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../catalogs/racing/v1.8.0/simulation/index.json"
+));
+const MODEL_V3_TIMELINE_PRESENTATION_INDEX: &[u8] = include_bytes!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../catalogs/racing/v1.8.0/presentation/index.json"
 ));
 
 /// One exact release-relative file supplied by a browser or another adapter.
@@ -492,6 +510,23 @@ impl RacingCatalogSnapshot {
             MODEL_V3_COMPONENT_RELEASE_IDENTITY,
             MODEL_V3_COMPONENT_SIMULATION_INDEX,
             MODEL_V3_COMPONENT_PRESENTATION_INDEX,
+            resources,
+        )
+    }
+
+    /// Resolves the immutable timeline-enabled Model V3 candidate catalog.
+    ///
+    /// This candidate is addressable explicitly but does not move the public
+    /// `LATEST` pointer or alter the game/staging selection.
+    pub fn embedded_model_v3_timeline() -> Result<Self, RacingCatalogResolutionError> {
+        let resources = MODEL_V3_TIMELINE_EMBEDDED_FILES
+            .iter()
+            .map(|(path, bytes)| (format!("simulation/{path}"), bytes.to_vec()));
+        Self::from_bytes(
+            MODEL_V3_TIMELINE_CATALOG_MANIFEST,
+            MODEL_V3_TIMELINE_RELEASE_IDENTITY,
+            MODEL_V3_TIMELINE_SIMULATION_INDEX,
+            MODEL_V3_TIMELINE_PRESENTATION_INDEX,
             resources,
         )
     }
@@ -903,11 +938,16 @@ fn resolve_power_unit_thermal_profile(
     Option<(V3PowerUnitThermalProfileCandidateV2, ArtifactIdentity)>,
     RacingCatalogResolutionError,
 > {
-    let model = racing_model_v3_component_candidate_identity();
+    let component_model = racing_model_v3_component_candidate_identity();
+    let timeline_model = racing_model_v3_timeline_candidate_identity();
     let supports_component_model = manifest
         .compatibility
-        .validate_for(&model, ContractVersion::V1)
-        .is_ok();
+        .validate_for(&component_model, ContractVersion::V1)
+        .is_ok()
+        || manifest
+            .compatibility
+            .validate_for(&timeline_model, ContractVersion::V1)
+            .is_ok();
     let mut indexed = simulation_index.resources.iter().filter(|resource| {
         resource.id.as_str() == POWER_UNIT_THERMAL_RESOURCE_ID
             || resource.path.as_str() == POWER_UNIT_THERMAL_PROFILE_PATH
@@ -972,11 +1012,16 @@ fn resolve_component_capability_profile(
     supplied: &BTreeMap<CatalogPath, Vec<u8>>,
 ) -> Result<Option<(ComponentCapabilityProfileV1, ArtifactIdentity)>, RacingCatalogResolutionError>
 {
-    let model = racing_model_v3_component_candidate_identity();
+    let component_model = racing_model_v3_component_candidate_identity();
+    let timeline_model = racing_model_v3_timeline_candidate_identity();
     let supports_component_model = manifest
         .compatibility
-        .validate_for(&model, ContractVersion::V1)
-        .is_ok();
+        .validate_for(&component_model, ContractVersion::V1)
+        .is_ok()
+        || manifest
+            .compatibility
+            .validate_for(&timeline_model, ContractVersion::V1)
+            .is_ok();
     let mut indexed = simulation_index.resources.iter().filter(|resource| {
         resource.id.as_str() == COMPONENT_CAPABILITY_RESOURCE_ID
             || resource.path.as_str() == COMPONENT_CAPABILITY_PROFILE_PATH
@@ -1911,6 +1956,68 @@ mod tests {
         );
         assert!(snapshot.component_capability_profile_identity().is_some());
         assert!(snapshot.thermal_family_profile().is_none());
+    }
+
+    #[test]
+    fn timeline_candidate_catalog_resolves_complete_physical_driver_package_portably() {
+        let native = RacingCatalogSnapshot::embedded_model_v3_timeline()
+            .expect("timeline-enabled Model V3 catalog");
+        let browser = RacingCatalogSnapshot::from_bundle(
+            native.to_bundle().expect("timeline browser bundle"),
+        )
+        .expect("browser timeline catalog bundle");
+        let model = racing_model_v3_timeline_candidate_identity();
+
+        assert_eq!(native.manifest().catalog.version.to_string(), "1.8.0");
+        assert!(
+            native
+                .manifest()
+                .compatibility
+                .validate_for(&model, ContractVersion::V1)
+                .is_ok()
+        );
+        assert!(
+            native
+                .manifest()
+                .compatibility
+                .validate_for(
+                    &racing_model_v3_component_candidate_identity(),
+                    ContractVersion::V1,
+                )
+                .is_err()
+        );
+        assert!(native.power_unit_thermal_profile().is_some());
+        assert!(native.component_capability_profile().is_some());
+        assert_eq!(
+            native
+                .driver_instruction_profile()
+                .expect("instruction profile")
+                .default_mode,
+            RacingDrivingMode::Balanced
+        );
+        assert!(native.driver_control_profile().is_some());
+        assert_eq!(
+            native.drivers_v2().keys().cloned().collect::<Vec<_>>(),
+            vec![
+                "balanced_reference".to_string(),
+                "limit_specialist".to_string(),
+                "smooth_operator".to_string(),
+                "tire_manager".to_string(),
+            ]
+        );
+        assert_eq!(native.drivers_v2(), browser.drivers_v2());
+        assert_eq!(
+            native.driver_v2_identities(),
+            browser.driver_v2_identities()
+        );
+        assert_eq!(
+            native.driver_control_profile_identity(),
+            browser.driver_control_profile_identity()
+        );
+        assert_eq!(
+            native.driver_instruction_profile_identity(),
+            browser.driver_instruction_profile_identity()
+        );
     }
 
     #[test]

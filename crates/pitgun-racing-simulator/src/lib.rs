@@ -26,7 +26,7 @@ pub use workload::{
     racing_model_v3_driver_friction_candidate_identity,
     racing_model_v3_fidelity_candidate_identity, racing_model_v3_fuel_mass_candidate_identity,
     racing_model_v3_mechanical_candidate_identity, racing_model_v3_thermal_candidate_identity,
-    racing_model_v3_transmission_candidate_identity,
+    racing_model_v3_timeline_candidate_identity, racing_model_v3_transmission_candidate_identity,
 };
 
 use std::collections::hash_map::DefaultHasher;
@@ -1301,6 +1301,10 @@ include!(concat!(
     env!("CARGO_MANIFEST_DIR"),
     "/../../generated/racing_catalog_model_v3_component.rs"
 ));
+include!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../generated/racing_catalog_model_v3_timeline.rs"
+));
 const PRESENTATION_INDEX: &[u8] = include_bytes!(concat!(
     env!("CARGO_MANIFEST_DIR"),
     "/../../catalogs/racing/v1.0.0/presentation/index.json"
@@ -1935,6 +1939,57 @@ pub fn run_race_with_catalog_and_v3_driver_instruction_profile(
         profile,
         thermal_candidate,
         Some(V3DriverExperiment::Instructions(instruction_experiment)),
+    )
+}
+
+/// Runs the catalog-governed Model V3 timeline candidate.
+///
+/// Release 1.8 owns every physical driver resource, the driver-control
+/// coefficients and the instruction profile. The caller supplies only the
+/// canonical applied timeline; an empty timeline executes the common catalog
+/// default. Selecting a missing or legacy-only driver fails before solving.
+pub fn run_race_with_catalog_and_v3_timeline_candidate(
+    request: RunRaceRequest,
+    snapshot: &RacingCatalogSnapshot,
+    timeline: RacingDriverInstructionTimelineV1,
+) -> Result<RaceOutput, String> {
+    let model = racing_model_v3_timeline_candidate_identity();
+    snapshot
+        .manifest()
+        .compatibility
+        .validate_for(&model, pitgun_contract::ContractVersion::V1)
+        .map_err(|error| format!("timeline model/catalog incompatibility: {error}"))?;
+    let thermal_candidate = snapshot.power_unit_thermal_profile().ok_or_else(|| {
+        "timeline candidate catalog has no power-unit thermal profile".to_string()
+    })?;
+    let driver_control_profile = snapshot.driver_control_profile().copied().ok_or_else(|| {
+        "timeline candidate catalog has no physical driver-control profile".to_string()
+    })?;
+    let instruction_profile = snapshot
+        .driver_instruction_profile()
+        .copied()
+        .ok_or_else(|| {
+            "timeline candidate catalog has no driver-instruction profile".to_string()
+        })?;
+    if snapshot.drivers_v2().is_empty() {
+        return Err("timeline candidate catalog has no V2 driver resources".to_string());
+    }
+    let profile = V3CandidateExperimentProfile {
+        schema_version: V3CandidateExperimentProfileVersion::V11,
+        driver_control_profile: Some(driver_control_profile),
+        ..V3CandidateExperimentProfile::default()
+    };
+    let experiment = V3DriverInstructionExperimentV1 {
+        drivers: snapshot.drivers_v2().clone(),
+        instruction_profile,
+        timeline,
+    };
+    run_race_with_catalog_and_v3_driver_instruction_profile(
+        request,
+        snapshot,
+        &profile,
+        thermal_candidate,
+        &experiment,
     )
 }
 
@@ -4341,6 +4396,8 @@ mod tests {
             RacingCatalogSnapshot::embedded_model_v3_thermal().expect("model V3 thermal catalog");
         let component_model_catalog = RacingCatalogSnapshot::embedded_model_v3_component()
             .expect("component-composed Model V3 catalog");
+        let timeline_model_catalog = RacingCatalogSnapshot::embedded_model_v3_timeline()
+            .expect("timeline-enabled Model V3 catalog");
 
         let selected = racing_workload_for(&racing_model_v2_identity(), &model_v2_catalog)
             .expect("exact model V2 selection");
@@ -4378,6 +4435,31 @@ mod tests {
         assert_eq!(
             selected_component.model_identity(),
             &racing_model_v3_component_candidate_identity()
+        );
+        let selected_timeline = racing_workload_for(
+            &racing_model_v3_timeline_candidate_identity(),
+            &timeline_model_catalog,
+        )
+        .expect("exact timeline Model V3 selection");
+        assert_eq!(
+            selected_timeline.model_identity(),
+            &racing_model_v3_timeline_candidate_identity()
+        );
+        assert!(
+            racing_workload_for(
+                &racing_model_v3_component_candidate_identity(),
+                &timeline_model_catalog,
+            )
+            .is_err(),
+            "component Model 0.11 must not run against timeline Catalog 1.8"
+        );
+        assert!(
+            racing_workload_for(
+                &racing_model_v3_timeline_candidate_identity(),
+                &component_model_catalog,
+            )
+            .is_err(),
+            "timeline Model 0.14 must not run against component Catalog 1.6"
         );
 
         let mut forged = racing_model_v2_identity();
@@ -4476,6 +4558,42 @@ mod tests {
             era: Some(2026),
             hz: Some(20.0),
         }
+    }
+
+    #[test]
+    fn timeline_candidate_uses_catalog_drivers_and_common_default_fail_closed() {
+        let snapshot = RacingCatalogSnapshot::embedded_model_v3_timeline()
+            .expect("timeline candidate catalog");
+        let mut request = one_lap_request();
+        request.input.race.competitors[0].driver_id = Some("balanced_reference".to_string());
+        let empty_timeline = RacingDriverInstructionTimelineV1 {
+            schema_version: RacingDriverInstructionTimelineVersion::V1,
+            events: Vec::new(),
+        };
+
+        let output = run_race_with_catalog_and_v3_timeline_candidate(
+            request.clone(),
+            &snapshot,
+            empty_timeline.clone(),
+        )
+        .expect("catalog-governed timeline candidate");
+        let schedule = output
+            .competitor_driver_instruction_schedules_v3
+            .get("player")
+            .expect("player driver schedule");
+        assert_eq!(schedule.transitions.len(), 1);
+        assert_eq!(schedule.transitions[0].sequence, None);
+        assert_eq!(schedule.transitions[0].mode, RacingDrivingMode::Balanced);
+        assert_eq!(
+            schedule.transitions[0].physical.driver_id,
+            "balanced_reference"
+        );
+
+        request.input.race.competitors[0].driver_id = Some("default".to_string());
+        let error =
+            run_race_with_catalog_and_v3_timeline_candidate(request, &snapshot, empty_timeline)
+                .expect_err("legacy-only driver must fail closed");
+        assert!(error.contains("missing V2 driver resource \"default\""));
     }
 
     fn component_selection(

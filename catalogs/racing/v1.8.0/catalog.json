@@ -1,0 +1,45 @@
+{
+  "schema_version": "pitgun.resource-catalog/v1",
+  "catalog": {
+    "id": "pitgun.racing",
+    "version": "1.8.0"
+  },
+  "simulation_pack": {
+    "identity": {
+      "id": "pitgun.racing.simulation",
+      "version": "1.8.0",
+      "digest": "sha256:38f359e752a2436bc804246b816b8865d6988cc9583969447b3e978a06f0c409"
+    },
+    "index": {
+      "path": "simulation/index.json",
+      "media_type": "application/json",
+      "digest": "sha256:38f359e752a2436bc804246b816b8865d6988cc9583969447b3e978a06f0c409"
+    }
+  },
+  "presentation_pack": {
+    "identity": {
+      "id": "pitgun.racing.presentation",
+      "version": "1.8.0",
+      "digest": "sha256:bd291832f967f51897dbbb61b6ab717dac2062c07b9944b5f818950ccca61bde"
+    },
+    "index": {
+      "path": "presentation/index.json",
+      "media_type": "application/json",
+      "digest": "sha256:bd291832f967f51897dbbb61b6ab717dac2062c07b9944b5f818950ccca61bde"
+    }
+  },
+  "compatibility": {
+    "schema_version": "pitgun.catalog-compatibility/v1",
+    "contract_versions": [
+      "pitgun.deterministic-run/v1"
+    ],
+    "models": [
+      {
+        "id": "pitgun.racing-v3-candidate",
+        "versions": [
+          "0.14.0"
+        ]
+      }
+    ]
+  }
+}

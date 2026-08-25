@@ -1,0 +1,6 @@
+{
+  "engine": "v8_1970",
+  "aero": "basic",
+  "chassis": "default",
+  "tire": "medium"
+}
