@@ -9,6 +9,7 @@ use crate::{
     resolve_catalog_tuning_response, run_race, run_race_with_catalog_and_model_response,
     run_race_with_catalog_and_v3_power_unit_thermal_profile,
     run_race_with_catalog_and_v3_thermal_family_profile,
+    run_race_with_catalog_and_v3_timeline_candidate,
 };
 
 const RACING_MODEL_V1_MANIFEST: &[u8] = b"pitgun.racing:model:1.0.0:conformance-vector";
@@ -23,6 +24,8 @@ const RACING_MODEL_V3_DRIVER_CONTROL_CANDIDATE_MANIFEST: &[u8] =
     b"pitgun.racing-v3-candidate:model:0.12.0:resolved-vehicle:per-segment-v1:aggregate-contact-v2:mechanical-controls-v1:aero-efficiency-v1:development-resolution-v1:transmission-resolution-v1:zero-downforce-v1:first-stint-tire-v1:power-based-fuel-mass-v1:compound-degradation-v1:engine-thermal-resolution-v2:per-competitor-components-v1:driver-traits-v1:driving-mode-v1:correction-workload-v1";
 const RACING_MODEL_V3_DRIVER_FRICTION_CANDIDATE_MANIFEST: &[u8] =
     b"pitgun.racing-v3-candidate:model:0.13.0:resolved-vehicle:per-segment-v1:aggregate-contact-v2:mechanical-controls-v1:aero-efficiency-v1:development-resolution-v1:transmission-resolution-v1:zero-downforce-v1:first-stint-tire-v1:power-based-fuel-mass-v1:compound-degradation-v1:engine-thermal-resolution-v2:per-competitor-components-v1:driver-traits-v1:driving-mode-v1:correction-workload-v1:correction-friction-budget-v1";
+const RACING_MODEL_V3_TIMELINE_CANDIDATE_MANIFEST: &[u8] =
+    b"pitgun.racing-v3-candidate:model:0.14.0:resolved-vehicle:per-segment-v1:aggregate-contact-v2:mechanical-controls-v1:aero-efficiency-v1:development-resolution-v1:transmission-resolution-v1:zero-downforce-v1:first-stint-tire-v1:power-based-fuel-mass-v1:compound-degradation-v1:engine-thermal-resolution-v2:per-competitor-components-v1:driver-traits-v1:driving-mode-v1:correction-workload-v1:correction-friction-budget-v1:catalog-driver-control-v1:driver-instruction-timeline-v1";
 const RACING_MODEL_V3_FUEL_MASS_CANDIDATE_MANIFEST: &[u8] =
     b"pitgun.racing-v3-candidate:model:0.8.0:resolved-vehicle:per-segment-v1:aggregate-contact-v1:mechanical-controls-v1:aero-efficiency-v1:development-resolution-v1:transmission-resolution-v1:zero-downforce-v1:first-stint-tire-v1:power-based-fuel-mass-v1";
 const RACING_MODEL_V3_FIDELITY_CANDIDATE_MANIFEST: &[u8] =
@@ -150,6 +153,24 @@ pub fn racing_model_v3_driver_friction_candidate_identity() -> ArtifactIdentity 
     }
 }
 
+/// Returns the non-production identity of the catalog-governed timeline slice.
+///
+/// Candidate 0.14 preserves the complete 0.13 physics and binds the exact V2
+/// drivers, driver-control coefficients and instruction limits selected by its
+/// immutable catalog. It is not selected by the game or staging.
+#[must_use]
+pub fn racing_model_v3_timeline_candidate_identity() -> ArtifactIdentity {
+    ArtifactIdentity {
+        id: "pitgun.racing-v3-candidate"
+            .parse()
+            .expect("static Racing V3 candidate model id"),
+        version: "0.14.0"
+            .parse()
+            .expect("static Racing V3 timeline candidate model version"),
+        digest: pitgun_contract::Digest::from_bytes(RACING_MODEL_V3_TIMELINE_CANDIDATE_MANIFEST),
+    }
+}
+
 /// Returns the immutable identity of the preceding fuel and mass slice.
 #[must_use]
 pub fn racing_model_v3_fuel_mass_candidate_identity() -> ArtifactIdentity {
@@ -252,8 +273,9 @@ pub fn racing_model_identity_for_version(version: &str) -> Result<ArtifactIdenti
         "2.0.0" => Ok(racing_model_v2_identity()),
         "0.10.0" => Ok(racing_model_v3_thermal_candidate_identity()),
         "0.11.0" => Ok(racing_model_v3_component_candidate_identity()),
+        "0.14.0" => Ok(racing_model_v3_timeline_candidate_identity()),
         _ => Err(format!(
-            "unsupported Racing model version {version:?}; expected 1.0.0, 2.0.0, 0.10.0 or 0.11.0"
+            "unsupported Racing model version {version:?}; expected 1.0.0, 2.0.0, 0.10.0, 0.11.0 or 0.14.0"
         )),
     }
 }
@@ -317,6 +339,16 @@ impl RacingWorkload {
         }
     }
 
+    /// Creates the catalog-governed timeline candidate pinned to release 1.8.
+    #[must_use]
+    pub fn v3_timeline_with_catalog(catalog: RacingCatalogSnapshot) -> Self {
+        Self {
+            model: racing_model_v3_timeline_candidate_identity(),
+            catalog: Some(catalog),
+            curvature_response: CurvatureAeroResponse::ContinuousV1,
+        }
+    }
+
     /// Selects the statically linked workload for one exact model/catalog pair.
     pub fn for_model(
         model: &ArtifactIdentity,
@@ -336,6 +368,8 @@ impl RacingWorkload {
             Ok(Self::v3_thermal_with_catalog(catalog))
         } else if *model == racing_model_v3_component_candidate_identity() {
             Ok(Self::v3_component_with_catalog(catalog))
+        } else if *model == racing_model_v3_timeline_candidate_identity() {
+            Ok(Self::v3_timeline_with_catalog(catalog))
         } else {
             Err(format!(
                 "unsupported Racing model identity {}@{} {}",
@@ -411,6 +445,16 @@ impl LinkedWorkload for RacingWorkload {
                         catalog,
                         thermal_profile,
                     )
+                } else if self.model == racing_model_v3_timeline_candidate_identity() {
+                    run_race_with_catalog_and_v3_timeline_candidate(
+                        request,
+                        catalog,
+                        pitgun_racing_contract::RacingDriverInstructionTimelineV1 {
+                            schema_version:
+                                pitgun_racing_contract::RacingDriverInstructionTimelineVersion::V1,
+                            events: Vec::new(),
+                        },
+                    )
                 } else {
                     let tuning_response =
                         resolve_catalog_tuning_response(catalog, Some(&self.model))
@@ -439,8 +483,10 @@ mod tests {
         racing_model_v3_aero_candidate_identity, racing_model_v3_candidate_identity,
         racing_model_v3_component_candidate_identity,
         racing_model_v3_development_candidate_identity,
+        racing_model_v3_driver_friction_candidate_identity,
         racing_model_v3_fidelity_candidate_identity, racing_model_v3_fuel_mass_candidate_identity,
         racing_model_v3_mechanical_candidate_identity, racing_model_v3_thermal_candidate_identity,
+        racing_model_v3_timeline_candidate_identity,
         racing_model_v3_transmission_candidate_identity,
     };
     use pitgun_runtime::LinkedWorkload;
@@ -483,6 +529,10 @@ mod tests {
         assert_eq!(
             racing_model_identity_for_version("0.11.0").expect("supported V3 component candidate"),
             racing_model_v3_component_candidate_identity()
+        );
+        assert_eq!(
+            racing_model_identity_for_version("0.14.0").expect("supported V3 timeline candidate"),
+            racing_model_v3_timeline_candidate_identity()
         );
         assert!(racing_model_identity_for_version("2").is_err());
         assert!(racing_model_identity_for_version("3.0.0").is_err());
@@ -555,5 +605,13 @@ mod tests {
             "sha256:79a262d7c1625ca577627e0d134a744284f6aabd15ee683133c572dd4af4e35c"
         );
         assert_ne!(mechanical, candidate);
+
+        let timeline = racing_model_v3_timeline_candidate_identity();
+        assert_eq!(timeline.id.to_string(), "pitgun.racing-v3-candidate");
+        assert_eq!(timeline.version.to_string(), "0.14.0");
+        assert_ne!(
+            timeline,
+            racing_model_v3_driver_friction_candidate_identity()
+        );
     }
 }
