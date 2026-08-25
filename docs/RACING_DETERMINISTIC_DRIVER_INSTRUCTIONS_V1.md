@@ -51,6 +51,14 @@ accepted event envelope:
 }
 ```
 
+The Catalog Loader reserves the canonical Simulation Pack entry
+`pitgun.racing.driver-instructions` at
+`simulation/driver-instructions/profile-v1.json`. Once a release publishes
+that entry, its strict bytes resolve to the domain artifact
+`pitgun.racing-driver-instructions@1.0.0`. Historical catalogs remain valid and
+resolve no instruction profile; Authority must not invent a fallback profile
+for those releases.
+
 The authoring contract carries only requested transitions:
 
 ```json

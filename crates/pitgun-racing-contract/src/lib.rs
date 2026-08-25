@@ -30,6 +30,7 @@ pub use components::{
     VehicleComponentKind,
 };
 pub use driver::{
+    RACING_DRIVER_INSTRUCTION_PROFILE_ID, RACING_DRIVER_INSTRUCTION_PROFILE_VERSION,
     RacingDriverContractError, RacingDriverControlProfileV1, RacingDriverControlProfileVersion,
     RacingDriverInstructionBoundaryGranularityV1, RacingDriverInstructionBoundaryV1,
     RacingDriverInstructionEventV1, RacingDriverInstructionProfileV1,

@@ -28,6 +28,11 @@ pub enum RacingDriverInstructionTimelineVersion {
     V1,
 }
 
+/// Stable catalog resource identifier for the V1 driver-instruction profile.
+pub const RACING_DRIVER_INSTRUCTION_PROFILE_ID: &str = "pitgun.racing-driver-instructions";
+/// Semantic version paired with the V1 driver-instruction profile schema.
+pub const RACING_DRIVER_INSTRUCTION_PROFILE_VERSION: &str = "1.0.0";
+
 /// Explicit commitment requested for one competitor and session.
 #[derive(Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
