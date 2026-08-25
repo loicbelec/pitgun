@@ -1,0 +1,247 @@
+{
+  "schema_version": "pitgun.racing-presentation-index/v1",
+  "circuits": [
+    {
+      "source_id": "austin",
+      "id": "AUSTIN",
+      "model_id": "us-2012",
+      "display_name": "Circuit of the Americas",
+      "country_code": "US",
+      "laps": 56
+    },
+    {
+      "source_id": "baku",
+      "id": "BAKU",
+      "model_id": "az-2016",
+      "display_name": "Baku City Circuit",
+      "country_code": "AZ",
+      "laps": 51
+    },
+    {
+      "source_id": "barcelona",
+      "id": "BARCELONA",
+      "model_id": "es-1991",
+      "display_name": "Circuit de Barcelona-Catalunya",
+      "country_code": "ES",
+      "laps": 66
+    },
+    {
+      "source_id": "budapest",
+      "id": "BUDAPEST",
+      "model_id": "hu-1986",
+      "display_name": "Hungaroring",
+      "country_code": "HU",
+      "laps": 70
+    },
+    {
+      "source_id": "default",
+      "id": "DEFAULT",
+      "model_id": "default",
+      "display_name": "default",
+      "country_code": null,
+      "laps": null
+    },
+    {
+      "source_id": "jeddah",
+      "id": "JEDDAH",
+      "model_id": "sa-2021",
+      "display_name": "Jeddah Corniche Circuit",
+      "country_code": "SA",
+      "laps": 50
+    },
+    {
+      "source_id": "las_vegas",
+      "id": "LASVEGAS",
+      "model_id": "us-2023",
+      "display_name": "Las Vegas Street Circuit",
+      "country_code": "US",
+      "laps": 50
+    },
+    {
+      "source_id": "lusail",
+      "id": "LUSAIL",
+      "model_id": "qa-2004",
+      "display_name": "Losail International Circuit",
+      "country_code": "QA",
+      "laps": 57
+    },
+    {
+      "source_id": "madrid",
+      "id": "MADRID",
+      "model_id": "es-2026",
+      "display_name": "Circuito de Madring",
+      "country_code": "ES",
+      "laps": 57
+    },
+    {
+      "source_id": "melbourne",
+      "id": "MELBOURNE",
+      "model_id": "au-1953",
+      "display_name": "Albert Park Circuit",
+      "country_code": "AU",
+      "laps": 58
+    },
+    {
+      "source_id": "mexico",
+      "id": "MEXICO",
+      "model_id": "mx-1962",
+      "display_name": "Autódromo Hermanos Rodríguez",
+      "country_code": "MX",
+      "laps": 71
+    },
+    {
+      "source_id": "miami",
+      "id": "MIAMI",
+      "model_id": "us-2022",
+      "display_name": "Miami International Autodrome",
+      "country_code": "US",
+      "laps": 57
+    },
+    {
+      "source_id": "monaco",
+      "id": "MONACO",
+      "model_id": "mc-1929",
+      "display_name": "Circuit de Monaco",
+      "country_code": "MC",
+      "laps": 78
+    },
+    {
+      "source_id": "montreal",
+      "id": "MONTREAL",
+      "model_id": "ca-1978",
+      "display_name": "Circuit Gilles-Villeneuve",
+      "country_code": "CA",
+      "laps": 70
+    },
+    {
+      "source_id": "monza",
+      "id": "MONZA",
+      "model_id": "it-1922",
+      "display_name": "Autodromo Nazionale Monza",
+      "country_code": "IT",
+      "laps": 53
+    },
+    {
+      "source_id": "sakhir",
+      "id": "SAKHIR",
+      "model_id": "bh-2002",
+      "display_name": "Bahrain International Circuit",
+      "country_code": "BH",
+      "laps": 57
+    },
+    {
+      "source_id": "sao_paulo",
+      "id": "SAOPAULO",
+      "model_id": "br-1940",
+      "display_name": "Autódromo José Carlos Pace - Interlagos",
+      "country_code": "BR",
+      "laps": 71
+    },
+    {
+      "source_id": "shanghai",
+      "id": "SHANGHAI",
+      "model_id": "cn-2004",
+      "display_name": "Shanghai International Circuit",
+      "country_code": "CN",
+      "laps": 56
+    },
+    {
+      "source_id": "silverstone",
+      "id": "SILVERSTONE",
+      "model_id": "gb-1948",
+      "display_name": "Silverstone Circuit",
+      "country_code": "GB",
+      "laps": 52
+    },
+    {
+      "source_id": "singapore",
+      "id": "SINGAPORE",
+      "model_id": "sg-2008",
+      "display_name": "Marina Bay Street Circuit",
+      "country_code": "SG",
+      "laps": 62
+    },
+    {
+      "source_id": "spa",
+      "id": "SPA",
+      "model_id": "be-1925",
+      "display_name": "Circuit de Spa-Francorchamps",
+      "country_code": "BE",
+      "laps": 44
+    },
+    {
+      "source_id": "spielberg",
+      "id": "SPIELBERG",
+      "model_id": "at-1969",
+      "display_name": "Red Bull Ring",
+      "country_code": "AT",
+      "laps": 71
+    },
+    {
+      "source_id": "suzuka",
+      "id": "SUZUKA",
+      "model_id": "jp-1962",
+      "display_name": "Suzuka International Racing Course",
+      "country_code": "JP",
+      "laps": 53
+    },
+    {
+      "source_id": "yas_marina",
+      "id": "YASMARINA",
+      "model_id": "ae-2009",
+      "display_name": "Yas Marina Circuit",
+      "country_code": "AE",
+      "laps": 58
+    },
+    {
+      "source_id": "zandvoort",
+      "id": "ZANDVOORT",
+      "model_id": "nl-1948",
+      "display_name": "Circuit Zandvoort",
+      "country_code": "NL",
+      "laps": 72
+    }
+  ],
+  "drivers": [
+    {
+      "id": "battery_voltas",
+      "display_name": "Battery Voltas"
+    },
+    {
+      "id": "charles_leclair",
+      "display_name": "Charles L'Eclair"
+    },
+    {
+      "id": "daniel_enchantier",
+      "display_name": "Daniel Enchantier"
+    },
+    {
+      "id": "default",
+      "display_name": "Default Driver"
+    },
+    {
+      "id": "franz_hermann",
+      "display_name": "Franz Hermann"
+    },
+    {
+      "id": "goat_tifi",
+      "display_name": "Goat Tifi"
+    },
+    {
+      "id": "isa_kadjar",
+      "display_name": "Isa Kadjar"
+    },
+    {
+      "id": "luis_amilton",
+      "display_name": "Luis Amilton"
+    },
+    {
+      "id": "pedro_gaseoso",
+      "display_name": "Pedro Gaseoso"
+    },
+    {
+      "id": "smooth_operator",
+      "display_name": "Smooth Operator"
+    }
+  ]
+}

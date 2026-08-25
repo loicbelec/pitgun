@@ -32,6 +32,11 @@ MODEL_COMPATIBILITY_BY_RELEASE = {
     "1.4.0": ("pitgun.racing", ["2.0.0"]),
     "1.5.0": ("pitgun.racing-v3-candidate", ["0.10.0"]),
     "1.6.0": ("pitgun.racing-v3-candidate", ["0.11.0"]),
+    "1.7.0": ("pitgun.racing-v3-candidate", ["0.11.0"]),
+}
+
+CANONICAL_RESOURCE_IDS = {
+    "driver-instructions/profile-v1.json": "pitgun.racing.driver-instructions",
 }
 
 
@@ -88,7 +93,9 @@ def simulation_resources(release_root: Path) -> list[dict[str, str]]:
         stem = Path(filename).stem
         resources.append(
             {
-                "id": f"pitgun.racing.{category}.{stem}",
+                "id": CANONICAL_RESOURCE_IDS.get(
+                    relative, f"pitgun.racing.{category}.{stem}"
+                ),
                 "path": f"simulation/{relative}",
                 "media_type": "application/json",
                 "digest": digest_bytes(path.read_bytes()),
