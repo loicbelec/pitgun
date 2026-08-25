@@ -255,6 +255,10 @@ impl RacingVerifier {
         let submitted_evidence = submitted_dynamic_evidence(submission)?;
         let attempt = &submission.signed_authorization.authorization;
         let initial_contract = &attempt.initial_contract;
+        // A verdict always correlates with the completed submission stored by
+        // the caller. Even an early rejection must therefore echo the final
+        // receipt identity, not the pre-execution attempt identity.
+        let submitted_run_id = submission.receipt.receipt.run_id;
 
         if let Err(error) = self.authorization_keys.verify_attempt_submission(
             &submission.signed_authorization,
@@ -262,7 +266,7 @@ impl RacingVerifier {
             now_ms,
         ) {
             return self.attempt_verdict(
-                attempt.initial_run_id,
+                submitted_run_id,
                 attempt.execution_id,
                 submitted_evidence,
                 VerificationStatus::Rejected,
@@ -273,7 +277,7 @@ impl RacingVerifier {
         }
         if !has_supported_dynamic_contract_shape(initial_contract, &submission.input) {
             return self.rejected_attempt(
-                attempt.initial_run_id,
+                submitted_run_id,
                 attempt.execution_id,
                 submitted_evidence,
                 VerificationReasonCode::InvalidAuthorization,
@@ -282,7 +286,7 @@ impl RacingVerifier {
         }
         if initial_contract.model != self.expected_model {
             return self.rejected_attempt(
-                attempt.initial_run_id,
+                submitted_run_id,
                 attempt.execution_id,
                 submitted_evidence,
                 VerificationReasonCode::UnknownModel,
@@ -291,7 +295,7 @@ impl RacingVerifier {
         }
         if attempt.policy != self.policy {
             return self.rejected_attempt(
-                attempt.initial_run_id,
+                submitted_run_id,
                 attempt.execution_id,
                 submitted_evidence,
                 VerificationReasonCode::UnknownPolicy,
@@ -301,7 +305,7 @@ impl RacingVerifier {
 
         let Some(catalog) = &self.catalog else {
             return self.attempt_verdict(
-                attempt.initial_run_id,
+                submitted_run_id,
                 attempt.execution_id,
                 submitted_evidence,
                 VerificationStatus::Pending,
@@ -317,7 +321,7 @@ impl RacingVerifier {
                 .is_err()
         {
             return self.rejected_attempt(
-                attempt.initial_run_id,
+                submitted_run_id,
                 attempt.execution_id,
                 submitted_evidence,
                 VerificationReasonCode::UnknownDataPack,
@@ -328,7 +332,7 @@ impl RacingVerifier {
             RacingExecutionResolutionV1::from_catalog(catalog, &initial_contract.model);
         if Some(&submission.execution_resolution) != expected_resolution.as_ref() {
             return self.rejected_attempt(
-                attempt.initial_run_id,
+                submitted_run_id,
                 attempt.execution_id,
                 submitted_evidence,
                 VerificationReasonCode::ArtifactDigestMismatch,
@@ -337,7 +341,7 @@ impl RacingVerifier {
         }
         if canonical_json_digest(&submission.input)? != initial_contract.input.digest {
             return self.rejected_attempt(
-                attempt.initial_run_id,
+                submitted_run_id,
                 attempt.execution_id,
                 submitted_evidence,
                 VerificationReasonCode::ArtifactDigestMismatch,
@@ -348,7 +352,7 @@ impl RacingVerifier {
         let Some(instruction_profile_identity) = catalog.driver_instruction_profile_identity()
         else {
             return self.rejected_attempt(
-                attempt.initial_run_id,
+                submitted_run_id,
                 attempt.execution_id,
                 submitted_evidence,
                 VerificationReasonCode::UnknownDataPack,
@@ -357,7 +361,7 @@ impl RacingVerifier {
         };
         let Some(instruction_profile) = catalog.driver_instruction_profile() else {
             return self.rejected_attempt(
-                attempt.initial_run_id,
+                submitted_run_id,
                 attempt.execution_id,
                 submitted_evidence,
                 VerificationReasonCode::UnknownDataPack,
@@ -373,7 +377,7 @@ impl RacingVerifier {
             Ok(contract) => contract,
             Err(_) => {
                 return self.rejected_attempt(
-                    attempt.initial_run_id,
+                    submitted_run_id,
                     attempt.execution_id,
                     submitted_evidence,
                     VerificationReasonCode::InvalidAuthorization,
@@ -1583,12 +1587,23 @@ mod tests {
 
         let mut bad_signature = fixture.submission.clone();
         bad_signature.signed_authorization.signature = "00".to_string();
+        let bad_signature_verdict = fixture
+            .verifier
+            .verify_attempt(&bad_signature, NOW_MS)
+            .expect("rejected dynamic verdict");
         assert_eq!(
-            dynamic_reason(&fixture.verifier, &bad_signature),
+            (
+                bad_signature_verdict.status,
+                bad_signature_verdict.reason_code
+            ),
             (
                 VerificationStatus::Rejected,
                 Some(VerificationReasonCode::InvalidAuthorization)
             )
+        );
+        assert_eq!(
+            bad_signature_verdict.run_id,
+            bad_signature.receipt.receipt.run_id
         );
 
         let mut expired = fixture.submission.clone();
