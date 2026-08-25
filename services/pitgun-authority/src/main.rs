@@ -16,17 +16,23 @@ use axum::{
 use pitgun_contract::{
     ArtifactIdentity, AuthorizationSignatureAlgorithm, AuthorizationValidityV1,
     CatalogReleaseIdentityV1, ContractVersion, DeterministicRunContractV1, Digest, EventOrderingV1,
-    Identifier, InputCanonicalization, InputIdentity, InputMediaType, LogicalClockV1,
-    RandomAlgorithm, RandomContractV1, RunAuthorizationV1, RunAuthorizationVersion, RuntimeProfile,
-    ScenarioIdentity, Seed, SignedRunAuthorizationV1, StreamDerivation, canonical_json_digest,
+    ExecutionId, Identifier, InputCanonicalization, InputIdentity, InputMediaType, LogicalClockV1,
+    RandomAlgorithm, RandomContractV1, RunAttemptAuthorizationV1, RunAttemptAuthorizationVersion,
+    RunAuthorizationV1, RunAuthorizationVersion, RuntimeProfile, ScenarioIdentity, Seed,
+    SignedRunAttemptAuthorizationV1, SignedRunAuthorizationV1, StreamDerivation,
+    canonical_json_digest,
 };
 use pitgun_policy::{
     PlayerTuningRequest, TuningEvalContext, TuningPolicyV1, load_tuning_v1_from_str,
 };
-use pitgun_racing_contract::{SignedSimulationContractV1, SimulationContractV1};
+use pitgun_racing_contract::{
+    RacingDriverInstructionAuthorizationV1, RacingDriverInstructionAuthorizationVersion,
+    RacingDrivingMode, SignedSimulationContractV1, SimulationContractV1,
+};
 use pitgun_racing_policy::{default_policy_path, normalize_and_validate_race_input_with_policy};
 use pitgun_racing_simulator::{
-    RacingCatalogSnapshot, RunRaceInput, racing_model_identity_for_version,
+    RacingCatalogSnapshot, RunRaceInput, get_circuit_with_catalog,
+    racing_model_identity_for_version,
 };
 use pitgun_signing::SigningKey;
 use rand::{RngCore, rngs::OsRng};
@@ -93,6 +99,30 @@ struct RacingRunAuthorizationResponseV1 {
     signed: SignedRunAuthorizationV1,
     canonical_input: RunRaceInput,
     #[serde(skip_serializing_if = "Option::is_none")]
+    catalog_release: Option<CatalogReleaseIdentityV1>,
+}
+
+#[derive(Clone, serde::Deserialize)]
+#[serde(deny_unknown_fields)]
+struct RacingRunAttemptAuthorizationRequestV1 {
+    subject: Identifier,
+    execution_id: ExecutionId,
+    seed: Seed,
+    input: RunRaceInput,
+    catalog_release: CatalogReleaseIdentityV1,
+}
+
+#[derive(Debug, serde::Serialize)]
+struct RacingRunAttemptAuthorizationResponseV1 {
+    signed: SignedRunAttemptAuthorizationV1,
+    canonical_input: RunRaceInput,
+    decision_envelope: RacingDriverInstructionAuthorizationV1,
+    catalog_release: CatalogReleaseIdentityV1,
+}
+
+struct PreparedRacingRunV1 {
+    canonical_input: RunRaceInput,
+    contract: DeterministicRunContractV1,
     catalog_release: Option<CatalogReleaseIdentityV1>,
 }
 
@@ -187,6 +217,16 @@ async fn create_racing_run_authorization(
     }
 }
 
+async fn create_racing_run_attempt_authorization(
+    State(state): State<AppState>,
+    Json(request): Json<RacingRunAttemptAuthorizationRequestV1>,
+) -> Response {
+    match build_signed_racing_run_attempt_authorization(now_ms(), &state, request) {
+        Ok(response) => (StatusCode::OK, Json(response)).into_response(),
+        Err(error) => error.into_response(),
+    }
+}
+
 fn build_signed_racing_run_authorization(
     now_ms: i64,
     state: &AppState,
@@ -195,16 +235,64 @@ fn build_signed_racing_run_authorization(
     let signing_key = state.signing_key.as_ref().ok_or_else(|| {
         ContractError::Unavailable("authority signing material is unavailable".to_string())
     })?;
-    let era = u32::try_from(request.input.era)
+    let prepared = prepare_racing_run(
+        state,
+        request.seed,
+        request.input,
+        request.catalog_release,
+        request.data_pack,
+    )?;
+    let run_id = prepared.contract.run_id().map_err(|error| {
+        error!(?error, "failed to derive deterministic run identity");
+        ContractError::Internal("failed to derive deterministic run identity".to_string())
+    })?;
+    let mut nonce = [0_u8; 32];
+    OsRng.fill_bytes(&mut nonce);
+    let authorization = RunAuthorizationV1 {
+        authorization_version: RunAuthorizationVersion::V1,
+        nonce: Digest::from_bytes(&nonce),
+        subject: request.subject,
+        audience: state.config.audience.clone(),
+        contract: prepared.contract,
+        run_id,
+        policy: state.policy_identity.clone(),
+        signing_key_id: state.config.signing_key_id.clone(),
+        validity: authorization_validity(now_ms, state)?,
+    };
+    let signing_bytes = authorization.signing_bytes().map_err(|error| {
+        error!(?error, "failed to canonicalize run authorization");
+        ContractError::Internal("failed to canonicalize run authorization".to_string())
+    })?;
+    let signed = SignedRunAuthorizationV1 {
+        authorization,
+        algorithm: AuthorizationSignatureAlgorithm::HmacSha256,
+        signature: signing_key.sign(&signing_bytes),
+    };
+
+    Ok(RacingRunAuthorizationResponseV1 {
+        signed,
+        canonical_input: prepared.canonical_input,
+        catalog_release: prepared.catalog_release,
+    })
+}
+
+fn prepare_racing_run(
+    state: &AppState,
+    seed: Seed,
+    input: RunRaceInput,
+    requested_release: Option<CatalogReleaseIdentityV1>,
+    requested_data_pack: Option<ArtifactIdentity>,
+) -> Result<PreparedRacingRunV1, ContractError> {
+    let era = u32::try_from(input.era)
         .map_err(|_| ContractError::BadRequest("input.era must be non-negative".to_string()))?;
-    let hz = request.input.hz;
+    let hz = input.hz;
     if !hz.is_finite() || hz <= 0.0 || hz.fract() != 0.0 || hz > 1_000_000.0 {
         return Err(ContractError::BadRequest(
             "input.hz must be an integer in the range 1..=1000000".to_string(),
         ));
     }
 
-    let mut canonical_input = request.input;
+    let mut canonical_input = input;
     if !canonical_input.competitor_vehicle_components.is_empty() {
         return Err(ContractError::BadRequest(
             "configured Racing model does not support vehicle component selection".to_string(),
@@ -220,7 +308,7 @@ fn build_signed_racing_run_authorization(
         .map_err(|error| ContractError::BadRequest(format!("invalid canonical input: {error}")))?;
 
     let (data_pack, catalog_release) =
-        resolve_data_pack(state, request.catalog_release, request.data_pack)?;
+        resolve_data_pack(state, requested_release, requested_data_pack)?;
     let hz = hz as u64;
     let divisor = greatest_common_divisor(1_000_000, hz);
     let contract = DeterministicRunContractV1 {
@@ -235,7 +323,7 @@ fn build_signed_racing_run_authorization(
         data_pack,
         runtime_profile: RuntimeProfile::PortableExactV1,
         random: RandomContractV1 {
-            seed: request.seed,
+            seed,
             algorithm: RandomAlgorithm::PitgunSplitMix64V1,
             stream_derivation: StreamDerivation::Sha256LabelV1,
         },
@@ -255,42 +343,154 @@ fn build_signed_racing_run_authorization(
             .map_err(|error| ContractError::BadRequest(error.to_string()))?;
     }
 
-    let run_id = contract.run_id().map_err(|error| {
-        error!(?error, "failed to derive deterministic run identity");
-        ContractError::Internal("failed to derive deterministic run identity".to_string())
+    Ok(PreparedRacingRunV1 {
+        canonical_input,
+        catalog_release,
+        contract,
+    })
+}
+
+fn build_signed_racing_run_attempt_authorization(
+    now_ms: i64,
+    state: &AppState,
+    request: RacingRunAttemptAuthorizationRequestV1,
+) -> Result<RacingRunAttemptAuthorizationResponseV1, ContractError> {
+    let signing_key = state.signing_key.as_ref().ok_or_else(|| {
+        ContractError::Unavailable("authority signing material is unavailable".to_string())
     })?;
-    let validity = AuthorizationValidityV1 {
-        issued_at_ms: now_ms,
-        expires_at_ms: add_seconds(now_ms, state.config.simulation_contract_ttl_secs)?,
-        late_submission_grace_ms: milliseconds(state.config.late_submission_grace_secs)?,
+    let prepared = prepare_racing_run(
+        state,
+        request.seed,
+        request.input,
+        Some(request.catalog_release),
+        None,
+    )?;
+    let catalog_release = prepared
+        .catalog_release
+        .clone()
+        .expect("dynamic Racing issuance requires a catalog release");
+    let catalog = state.racing_catalog.as_ref().ok_or_else(|| {
+        ContractError::Unavailable(
+            "catalog-backed issuance is unavailable on this authority".to_string(),
+        )
+    })?;
+    let instruction_profile = catalog.driver_instruction_profile().ok_or_else(|| {
+        ContractError::Unavailable(
+            "configured Racing catalog does not provide a driver-instruction profile".to_string(),
+        )
+    })?;
+    let instruction_profile_identity =
+        catalog
+            .driver_instruction_profile_identity()
+            .ok_or_else(|| {
+                ContractError::Internal(
+                    "configured Racing instruction profile has no resolved identity".to_string(),
+                )
+            })?;
+    let mut competitor_ids = prepared
+        .canonical_input
+        .race
+        .competitors
+        .iter()
+        .map(|competitor| competitor.id.clone())
+        .collect::<Vec<_>>();
+    competitor_ids.sort();
+    let segment_count = resolved_segment_count(catalog, &prepared.canonical_input)?;
+    let decision_envelope = RacingDriverInstructionAuthorizationV1 {
+        schema_version: RacingDriverInstructionAuthorizationVersion::V1,
+        authorized_input: prepared.contract.input.clone(),
+        instruction_profile: instruction_profile_identity.clone(),
+        allowed_modes: vec![
+            RacingDrivingMode::Manage,
+            RacingDrivingMode::Balanced,
+            RacingDrivingMode::Attack,
+        ],
+        boundary_granularity: instruction_profile.boundary_granularity,
+        max_events_per_session: instruction_profile.max_events_per_session,
+        competitor_ids,
+        lap_count: prepared.canonical_input.race.laps,
+        segment_count,
     };
+    decision_envelope
+        .validate(
+            &prepared.contract,
+            instruction_profile_identity,
+            instruction_profile,
+        )
+        .map_err(|error| ContractError::BadRequest(error.to_string()))?;
+    let initial_run_id = prepared.contract.run_id().map_err(|error| {
+        error!(
+            ?error,
+            "failed to derive initial deterministic run identity"
+        );
+        ContractError::Internal("failed to derive initial run identity".to_string())
+    })?;
+    let decision_envelope_identity = decision_envelope.artifact_identity().map_err(|error| {
+        error!(?error, "failed to derive Racing decision-envelope identity");
+        ContractError::Internal("failed to derive Racing decision-envelope identity".to_string())
+    })?;
     let mut nonce = [0_u8; 32];
     OsRng.fill_bytes(&mut nonce);
-    let authorization = RunAuthorizationV1 {
-        authorization_version: RunAuthorizationVersion::V1,
+    let authorization = RunAttemptAuthorizationV1 {
+        authorization_version: RunAttemptAuthorizationVersion::V1,
         nonce: Digest::from_bytes(&nonce),
+        execution_id: request.execution_id,
         subject: request.subject,
         audience: state.config.audience.clone(),
-        contract,
-        run_id,
+        initial_contract: prepared.contract,
+        initial_run_id,
+        decision_envelope: decision_envelope_identity,
         policy: state.policy_identity.clone(),
         signing_key_id: state.config.signing_key_id.clone(),
-        validity,
+        validity: authorization_validity(now_ms, state)?,
     };
     let signing_bytes = authorization.signing_bytes().map_err(|error| {
-        error!(?error, "failed to canonicalize run authorization");
-        ContractError::Internal("failed to canonicalize run authorization".to_string())
+        error!(
+            ?error,
+            "failed to canonicalize dynamic attempt authorization"
+        );
+        ContractError::Internal("failed to canonicalize dynamic attempt authorization".to_string())
     })?;
-    let signed = SignedRunAuthorizationV1 {
+    let signed = SignedRunAttemptAuthorizationV1 {
         authorization,
         algorithm: AuthorizationSignatureAlgorithm::HmacSha256,
         signature: signing_key.sign(&signing_bytes),
     };
 
-    Ok(RacingRunAuthorizationResponseV1 {
+    Ok(RacingRunAttemptAuthorizationResponseV1 {
         signed,
-        canonical_input,
+        canonical_input: prepared.canonical_input,
+        decision_envelope,
         catalog_release,
+    })
+}
+
+fn resolved_segment_count(
+    catalog: &RacingCatalogSnapshot,
+    input: &RunRaceInput,
+) -> Result<u32, ContractError> {
+    let count = if let Some(track_profile) = &input.track_profile {
+        track_profile.s.len()
+    } else {
+        get_circuit_with_catalog(catalog, &input.race.track_id)
+            .map_err(ContractError::BadRequest)?
+            .s_m
+            .len()
+    };
+    u32::try_from(count)
+        .ok()
+        .filter(|count| *count > 0)
+        .ok_or_else(|| ContractError::BadRequest("resolved track has no segments".to_string()))
+}
+
+fn authorization_validity(
+    now_ms: i64,
+    state: &AppState,
+) -> Result<AuthorizationValidityV1, ContractError> {
+    Ok(AuthorizationValidityV1 {
+        issued_at_ms: now_ms,
+        expires_at_ms: add_seconds(now_ms, state.config.simulation_contract_ttl_secs)?,
+        late_submission_grace_ms: milliseconds(state.config.late_submission_grace_secs)?,
     })
 }
 
@@ -576,6 +776,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
             "/v1/authorizations/racing",
             post(create_racing_run_authorization),
         )
+        .route(
+            "/v1/authorizations/racing/attempts",
+            post(create_racing_run_attempt_authorization),
+        )
         .with_state(app_state);
 
     let bind_addr =
@@ -702,6 +906,19 @@ mod tests {
                     .clone(),
             ),
             data_pack: None,
+        }
+    }
+
+    fn racing_attempt_request(state: &AppState) -> RacingRunAttemptAuthorizationRequestV1 {
+        let request = racing_request(state);
+        RacingRunAttemptAuthorizationRequestV1 {
+            subject: request.subject,
+            execution_id: "018f3b78-7e9a-7d20-a5e1-4ed92f02a591"
+                .parse()
+                .expect("execution id"),
+            seed: request.seed,
+            input: request.input,
+            catalog_release: request.catalog_release.expect("catalog release"),
         }
     }
 
@@ -834,6 +1051,140 @@ mod tests {
         let bytes = authorization.signing_bytes().expect("signing bytes");
         let key = SigningKey::from_secret(b"unit-test-secret").expect("key");
         assert!(key.verify(&bytes, &response.signed.signature));
+    }
+
+    #[test]
+    fn dynamic_racing_attempt_is_derived_from_catalog_and_canonical_session() {
+        let state = test_state_for("0.11.0", "v1.7.0");
+        let mut request = racing_attempt_request(&state);
+        request.input.track_profile = Some(pitgun_racing_simulator::SolverTrackProfile {
+            s: vec![0.0, 100.0, 200.0, 300.0],
+            x: vec![0.0, 100.0, 200.0, 300.0],
+            y: vec![0.0, 0.0, 0.0, 0.0],
+            z: vec![0.0, 1.0, 2.0, 3.0],
+        });
+        let response =
+            build_signed_racing_run_attempt_authorization(1_710_000_000_000, &state, request)
+                .expect("dynamic Racing authorization");
+        let catalog = state.racing_catalog.as_ref().expect("catalog");
+        let instruction_profile = catalog
+            .driver_instruction_profile()
+            .expect("instruction profile");
+        let instruction_profile_identity = catalog
+            .driver_instruction_profile_identity()
+            .expect("instruction profile identity");
+        let authorization = &response.signed.authorization;
+
+        assert_eq!(response.catalog_release, *catalog.release_identity());
+        assert_eq!(
+            authorization.initial_contract.input.digest,
+            canonical_json_digest(&response.canonical_input).expect("canonical input")
+        );
+        assert_eq!(
+            authorization.initial_contract.data_pack,
+            catalog.manifest().simulation_pack.identity
+        );
+        assert_eq!(
+            authorization.initial_run_id,
+            authorization
+                .initial_contract
+                .run_id()
+                .expect("initial run id")
+        );
+        assert_eq!(response.decision_envelope.competitor_ids, ["player"]);
+        assert_eq!(response.decision_envelope.lap_count, 50);
+        assert_eq!(response.decision_envelope.segment_count, 4);
+        assert_eq!(
+            response.decision_envelope.allowed_modes,
+            [
+                RacingDrivingMode::Manage,
+                RacingDrivingMode::Balanced,
+                RacingDrivingMode::Attack,
+            ]
+        );
+        assert_eq!(
+            response.decision_envelope.max_events_per_session,
+            instruction_profile.max_events_per_session
+        );
+        assert_eq!(
+            response.decision_envelope.instruction_profile,
+            *instruction_profile_identity
+        );
+        assert_eq!(
+            authorization.decision_envelope,
+            response
+                .decision_envelope
+                .artifact_identity()
+                .expect("decision-envelope identity")
+        );
+        response
+            .decision_envelope
+            .validate_attempt_authorization(
+                authorization,
+                instruction_profile_identity,
+                instruction_profile,
+            )
+            .expect("valid Racing dynamic boundary");
+        let signing_bytes = authorization.signing_bytes().expect("signing bytes");
+        let key = SigningKey::from_secret(b"unit-test-secret").expect("key");
+        assert!(key.verify(&signing_bytes, &response.signed.signature));
+    }
+
+    #[test]
+    fn dynamic_racing_attempt_uses_catalog_track_when_input_has_no_profile() {
+        let state = test_state_for("0.11.0", "v1.7.0");
+        let response = build_signed_racing_run_attempt_authorization(
+            1_710_000_000_000,
+            &state,
+            racing_attempt_request(&state),
+        )
+        .expect("dynamic Racing authorization");
+        let expected = get_circuit_with_catalog(
+            state.racing_catalog.as_ref().expect("catalog"),
+            &response.canonical_input.race.track_id,
+        )
+        .expect("catalog circuit")
+        .s_m
+        .len();
+
+        assert_eq!(
+            usize::try_from(response.decision_envelope.segment_count)
+                .expect("portable segment count"),
+            expected
+        );
+    }
+
+    #[test]
+    fn dynamic_racing_attempt_fails_closed_without_governed_catalog_profile() {
+        let state = test_state_for("0.11.0", "v1.6.0");
+        let error = build_signed_racing_run_attempt_authorization(
+            1_710_000_000_000,
+            &state,
+            racing_attempt_request(&state),
+        )
+        .expect_err("historical catalog must not gain an implicit profile");
+
+        assert!(matches!(
+            error,
+            ContractError::Unavailable(message)
+                if message.contains("does not provide a driver-instruction profile")
+        ));
+    }
+
+    #[test]
+    fn dynamic_racing_attempt_rejects_an_empty_competitor_scope() {
+        let state = test_state_for("0.11.0", "v1.7.0");
+        let mut request = racing_attempt_request(&state);
+        request.input.race.competitors.clear();
+        let error =
+            build_signed_racing_run_attempt_authorization(1_710_000_000_000, &state, request)
+                .expect_err("dynamic attempt needs an explicit competitor scope");
+
+        assert!(matches!(
+            error,
+            ContractError::BadRequest(message)
+                if message.contains("must identify its competitors")
+        ));
     }
 
     #[test]
