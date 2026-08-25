@@ -6,7 +6,8 @@ use std::path::{Path, PathBuf};
 
 use hmac::{Hmac, Mac};
 use pitgun_contract::{
-    AuthorizationSignatureAlgorithm, Identifier, RunAuthorizationError, SignedRunAuthorizationV1,
+    AuthorizationSignatureAlgorithm, Identifier, RunAttemptAuthorizationError,
+    RunAuthorizationError, SignedRunAttemptAuthorizationV1, SignedRunAuthorizationV1,
 };
 use sha2::Sha256;
 
@@ -200,6 +201,37 @@ impl VerificationKeyring {
             .map_err(AuthorizationVerificationError::Authorization)
     }
 
+    /// Verifies a dynamic attempt authorization before execution starts.
+    pub fn verify_attempt_execution(
+        &self,
+        signed: &SignedRunAttemptAuthorizationV1,
+        expected_audience: &Identifier,
+        now_ms: i64,
+    ) -> Result<(), AuthorizationVerificationError> {
+        self.verify_attempt_signature_and_audience(signed, expected_audience)?;
+        signed
+            .authorization
+            .validate_execution_time(now_ms)
+            .map_err(AuthorizationVerificationError::AttemptAuthorization)
+    }
+
+    /// Verifies a dynamic attempt authorization before accepting its result.
+    ///
+    /// As for immutable V1 runs, persistence must atomically consume the nonce
+    /// after this cryptographic verification succeeds.
+    pub fn verify_attempt_submission(
+        &self,
+        signed: &SignedRunAttemptAuthorizationV1,
+        expected_audience: &Identifier,
+        now_ms: i64,
+    ) -> Result<(), AuthorizationVerificationError> {
+        self.verify_attempt_signature_and_audience(signed, expected_audience)?;
+        signed
+            .authorization
+            .validate_submission_time(now_ms)
+            .map_err(AuthorizationVerificationError::AttemptAuthorization)
+    }
+
     fn verify_signature_and_audience(
         &self,
         signed: &SignedRunAuthorizationV1,
@@ -224,6 +256,31 @@ impl VerificationKeyring {
         }
         Ok(())
     }
+
+    fn verify_attempt_signature_and_audience(
+        &self,
+        signed: &SignedRunAttemptAuthorizationV1,
+        expected_audience: &Identifier,
+    ) -> Result<(), AuthorizationVerificationError> {
+        if signed.algorithm != AuthorizationSignatureAlgorithm::HmacSha256 {
+            return Err(AuthorizationVerificationError::UnsupportedAlgorithm);
+        }
+        if &signed.authorization.audience != expected_audience {
+            return Err(AuthorizationVerificationError::AudienceMismatch);
+        }
+        let key = self
+            .keys
+            .get(&signed.authorization.signing_key_id)
+            .ok_or(AuthorizationVerificationError::UnknownKey)?;
+        let bytes = signed
+            .authorization
+            .signing_bytes()
+            .map_err(AuthorizationVerificationError::AttemptAuthorization)?;
+        if !key.verify(&bytes, &signed.signature) {
+            return Err(AuthorizationVerificationError::InvalidSignature);
+        }
+        Ok(())
+    }
 }
 
 /// Fail-closed errors returned while verifying authority output.
@@ -239,6 +296,8 @@ pub enum AuthorizationVerificationError {
     InvalidSignature,
     /// The authorization payload or validity window is invalid.
     Authorization(RunAuthorizationError),
+    /// The dynamic attempt payload or validity window is invalid.
+    AttemptAuthorization(RunAttemptAuthorizationError),
 }
 
 impl fmt::Display for AuthorizationVerificationError {
@@ -251,6 +310,7 @@ impl fmt::Display for AuthorizationVerificationError {
             Self::UnknownKey => formatter.write_str("unknown authorization signing key"),
             Self::InvalidSignature => formatter.write_str("invalid authorization signature"),
             Self::Authorization(error) => error.fmt(formatter),
+            Self::AttemptAuthorization(error) => error.fmt(formatter),
         }
     }
 }
@@ -259,6 +319,7 @@ impl std::error::Error for AuthorizationVerificationError {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         match self {
             Self::Authorization(error) => Some(error),
+            Self::AttemptAuthorization(error) => Some(error),
             _ => None,
         }
     }
@@ -274,7 +335,10 @@ pub fn verify(bytes: &[u8], signature: &str) -> Result<bool, SigningError> {
 
 #[cfg(test)]
 mod tests {
-    use pitgun_contract::SignedRunAuthorizationV1;
+    use pitgun_contract::{
+        ArtifactIdentity, Digest, RunAttemptAuthorizationV1, RunAttemptAuthorizationVersion,
+        SignedRunAttemptAuthorizationV1, SignedRunAuthorizationV1,
+    };
 
     use super::*;
 
@@ -349,6 +413,44 @@ mod tests {
         signed
     }
 
+    fn artifact(id: &str, bytes: &[u8]) -> ArtifactIdentity {
+        ArtifactIdentity {
+            id: id.parse().expect("artifact id"),
+            version: "1.0.0".parse().expect("artifact version"),
+            digest: Digest::from_bytes(bytes),
+        }
+    }
+
+    fn signed_attempt_fixture() -> SignedRunAttemptAuthorizationV1 {
+        let immutable = signed_fixture().authorization;
+        let authorization = RunAttemptAuthorizationV1 {
+            authorization_version: RunAttemptAuthorizationVersion::V1,
+            nonce: Digest::from_bytes(b"attempt nonce"),
+            execution_id: "018f3b78-7e9a-7d20-a5e1-4ed92f02a591"
+                .parse()
+                .expect("execution id"),
+            subject: immutable.subject,
+            audience: immutable.audience,
+            initial_contract: immutable.contract,
+            initial_run_id: immutable.run_id,
+            decision_envelope: artifact("pitgun.racing.instructions", b"envelope"),
+            policy: immutable.policy,
+            signing_key_id: immutable.signing_key_id,
+            validity: immutable.validity,
+        };
+        let key = SigningKey::from_secret(b"rotation-test-secret").expect("key");
+        let signature = key.sign(
+            &authorization
+                .signing_bytes()
+                .expect("attempt signing bytes"),
+        );
+        SignedRunAttemptAuthorizationV1 {
+            authorization,
+            algorithm: AuthorizationSignatureAlgorithm::HmacSha256,
+            signature,
+        }
+    }
+
     #[test]
     fn signing_key_debug_never_exposes_secret() {
         let key = SigningKey::from_secret(b"very-private-secret").expect("key");
@@ -407,6 +509,7 @@ mod tests {
     #[test]
     fn retained_key_verifies_execution_and_late_submission() {
         let signed = signed_fixture();
+        let signed_attempt = signed_attempt_fixture();
         let mut keyring = VerificationKeyring::new();
         keyring.insert(
             "staging-2026-07".parse().expect("key id"),
@@ -420,6 +523,67 @@ mod tests {
         keyring
             .verify_submission(&signed, &audience, 1_710_000_420_000)
             .expect("submission at grace deadline");
+        keyring
+            .verify_attempt_execution(&signed_attempt, &audience, 1_710_000_300_000)
+            .expect("attempt execution at expiry");
+        keyring
+            .verify_attempt_submission(&signed_attempt, &audience, 1_710_000_420_000)
+            .expect("attempt submission at grace deadline");
+    }
+
+    #[test]
+    fn dynamic_attempt_wrong_signature_audience_and_window_fail_closed() {
+        let signed = signed_attempt_fixture();
+        let audience = "pitgun.verifier".parse().expect("audience");
+        let mut keyring = VerificationKeyring::new();
+        assert!(matches!(
+            keyring.verify_attempt_execution(&signed, &audience, 1_710_000_100_000),
+            Err(AuthorizationVerificationError::UnknownKey)
+        ));
+        keyring.insert(
+            "staging-2026-07".parse().expect("key id"),
+            SigningKey::from_secret(b"rotation-test-secret").expect("key"),
+        );
+
+        let mut tampered = signed.clone();
+        tampered.authorization.execution_id = "018f3b78-7e9a-7d20-a5e1-4ed92f02a592"
+            .parse()
+            .expect("other execution id");
+        assert!(matches!(
+            keyring.verify_attempt_execution(&tampered, &audience, 1_710_000_100_000),
+            Err(AuthorizationVerificationError::InvalidSignature)
+        ));
+
+        let mut forged_identity = signed.clone();
+        forged_identity.authorization.initial_run_id = Digest::from_bytes(b"forged");
+        assert!(matches!(
+            keyring.verify_attempt_execution(&forged_identity, &audience, 1_710_000_100_000),
+            Err(AuthorizationVerificationError::AttemptAuthorization(
+                RunAttemptAuthorizationError::InitialRunIdMismatch { .. }
+            ))
+        ));
+        assert!(matches!(
+            keyring.verify_attempt_execution(
+                &signed,
+                &"pitgun.other".parse().expect("other audience"),
+                1_710_000_100_000,
+            ),
+            Err(AuthorizationVerificationError::AudienceMismatch)
+        ));
+        assert!(matches!(
+            keyring.verify_attempt_execution(&signed, &audience, 1_710_000_300_001),
+            Err(AuthorizationVerificationError::AttemptAuthorization(
+                RunAttemptAuthorizationError::Authorization(RunAuthorizationError::Expired)
+            ))
+        ));
+        assert!(matches!(
+            keyring.verify_attempt_submission(&signed, &audience, 1_710_000_420_001),
+            Err(AuthorizationVerificationError::AttemptAuthorization(
+                RunAttemptAuthorizationError::Authorization(
+                    RunAuthorizationError::SubmissionGraceExpired
+                )
+            ))
+        ));
     }
 
     #[test]
