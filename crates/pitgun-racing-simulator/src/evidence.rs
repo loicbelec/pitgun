@@ -49,6 +49,9 @@ pub enum RacingExecutionResolutionVersion {
     /// Lineage block supporting component-composed vehicle resources.
     #[serde(rename = "pitgun.racing-execution-resolution/v3")]
     V3,
+    /// Lineage block supporting a catalog-governed fuel contract.
+    #[serde(rename = "pitgun.racing-execution-resolution/v4")]
+    V4,
 }
 
 /// Exact immutable resources selected for one catalog-backed Racing execution.
@@ -79,6 +82,9 @@ pub struct RacingExecutionResolutionV1 {
     /// Exact component-to-capability mapping used by execution and clients.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub component_capability_profile: Option<ArtifactIdentity>,
+    /// Exact published initial-load and fuel-consumption contract.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub fuel_contract: Option<ArtifactIdentity>,
 }
 
 impl RacingExecutionResolutionV1 {
@@ -89,16 +95,19 @@ impl RacingExecutionResolutionV1 {
         let thermal_family_profile = catalog.thermal_family_profile_identity().cloned();
         let power_unit_thermal_profile = catalog.power_unit_thermal_profile_identity().cloned();
         let component_capability_profile = catalog.component_capability_profile_identity().cloned();
+        let fuel_contract = catalog.fuel_contract_identity().cloned();
         if model_parameters.is_none()
             && thermal_family_profile.is_none()
             && power_unit_thermal_profile.is_none()
             && component_capability_profile.is_none()
+            && fuel_contract.is_none()
         {
             return None;
         }
         Some(Self {
-            schema_version: if power_unit_thermal_profile.is_some()
-                || component_capability_profile.is_some()
+            schema_version: if fuel_contract.is_some() {
+                RacingExecutionResolutionVersion::V4
+            } else if power_unit_thermal_profile.is_some() || component_capability_profile.is_some()
             {
                 RacingExecutionResolutionVersion::V3
             } else if thermal_family_profile.is_some() {
@@ -113,6 +122,7 @@ impl RacingExecutionResolutionV1 {
             thermal_family_profile,
             power_unit_thermal_profile,
             component_capability_profile,
+            fuel_contract,
         })
     }
 }

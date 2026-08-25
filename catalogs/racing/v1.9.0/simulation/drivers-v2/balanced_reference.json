@@ -1,0 +1,9 @@
+{
+  "schema_version": "pitgun.racing-driver/v2",
+  "id": "balanced_reference",
+  "traits": {
+    "limit_exploitation": 0.84,
+    "consistency": 0.84,
+    "tire_management": 0.84
+  }
+}
