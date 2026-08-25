@@ -49,6 +49,27 @@ The response contains:
 The catalog release is returned as resolution metadata, outside `run_id`. The
 contract binds its Simulation Pack through `data_pack`.
 
+## Racing dynamic-attempt authorization
+
+`POST /v1/authorizations/racing/attempts` authorizes a concrete execution whose
+final driver-instruction history is not yet known. It accepts the same catalog-
+backed Racing input plus a client-generated UUIDv7 `execution_id`. Catalog-free
+requests are not accepted because Authority must resolve the exact governed
+instruction profile.
+
+Authority derives the decision envelope itself. The browser cannot select or
+widen its modes, boundary granularity, event ceiling, competitors, lap count,
+or segment count. The response returns:
+
+- the canonical initial Racing input;
+- the exact catalog release;
+- the content-addressed Racing decision envelope;
+- a signed `RunAttemptAuthorizationV1` binding that envelope and execution ID.
+
+Catalogs without a driver-instruction profile return `503`; Authority never
+invents a fallback for historical releases. Existing immutable authorization
+through `POST /v1/authorizations/racing` remains unchanged.
+
 ## Availability and delayed submission
 
 An authority outage has deliberately asymmetric behavior:
@@ -107,7 +128,7 @@ signature algorithm rather than distributing the HMAC secret.
 | `PITGUN_LATE_SUBMISSION_GRACE_SECONDS` | `900` | Additional result-submission window |
 | `PITGUN_ALLOW_CATALOG_FREE` | `false` | Permit explicitly identified non-catalog data packs |
 | `PITGUN_TUNING_POLICY_PATH` | `policies/gametuning.v1.yaml` | Exact Racing policy bytes |
-| `PITGUN_RACING_MODEL_VERSION` | `1.0.0` | Exact supported model generation (`1.0.0`, `2.0.0`, or non-production candidate `0.10.0`) |
+| `PITGUN_RACING_MODEL_VERSION` | `1.0.0` | Exact supported model generation (`1.0.0`, `2.0.0`, or non-production candidates `0.10.0` and `0.11.0`) |
 | `PITGUN_RACING_CATALOG_RELEASE_DIR` | unset | Optional immutable Racing release directory |
 | `PITGUN_AUTHORITY_BIND` | `0.0.0.0:8080` | HTTP listener |
 
@@ -133,7 +154,7 @@ ghcr.io/loicbelec/pitgun-authority:<git-commit-sha>
 ```
 
 It contains the authority binary plus the exact checked-in policy and immutable
-Racing `v1.0.0`, `v1.2.0`, `v1.3.0`, and non-production `v1.5.0` catalog
+Racing `v1.0.0`, `v1.2.0`, `v1.3.0`, and non-production `v1.5.0`, `v1.6.0`, and `v1.7.0` catalog
 releases. The image defaults to the V1 model/catalog pair; environments must
 override both Racing variables together to select V2 or the V3 thermal
 candidate.
@@ -144,6 +165,8 @@ candidate.
 /opt/pitgun/catalogs/racing/v1.2.0
 /opt/pitgun/catalogs/racing/v1.3.0
 /opt/pitgun/catalogs/racing/v1.5.0
+/opt/pitgun/catalogs/racing/v1.6.0
+/opt/pitgun/catalogs/racing/v1.7.0
 ```
 
 The corresponding path variables are configured as non-secret image defaults.

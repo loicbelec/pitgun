@@ -101,7 +101,7 @@ jobs:
             --env PITGUN_SIGNING_SECRET_FILE=/run/secrets/pitgun_authority_signing_secret \
             --env PITGUN_SIGNING_KEY_ID=ci-smoke \
             --env PITGUN_RACING_MODEL_VERSION=0.11.0 \
-            --env PITGUN_RACING_CATALOG_RELEASE_DIR=/opt/pitgun/catalogs/racing/v1.6.0 \
+            --env PITGUN_RACING_CATALOG_RELEASE_DIR=/opt/pitgun/catalogs/racing/v1.7.0 \
             "${LOCAL_IMAGE}"
 
           for attempt in $(seq 1 30); do
@@ -126,8 +126,8 @@ jobs:
               "catalog_release": {
                 "schema_version": "pitgun.catalog-release-identity/v1",
                 "id": "pitgun.racing",
-                "version": "1.6.0",
-                "manifest_digest": "sha256:5eccec6bb59baa8f1bcf1876ac087913ad393b53a2db1938532e08fb0393e20b"
+                "version": "1.7.0",
+                "manifest_digest": "sha256:bf6bd0337f04564a75893496aa87c7679966f4516938882724b5e9219897062b"
               },
               "input": {
                 "track_id": "LASVEGAS",
@@ -141,11 +141,60 @@ jobs:
             --output /tmp/authority-response.json
 
           grep --fixed-strings \
-            '"id":"pitgun.racing.simulation","version":"1.6.0","digest":"sha256:f1ef3d02473c8e67003e7c260f5bb2a1ec861a9d312f8a47bf654313e74fcc05"' \
+            '"id":"pitgun.racing.simulation","version":"1.7.0","digest":"sha256:f93d09bbb2068fbd9f2a4718a6c57746934f015381cf7af0c25f190cc08d62b6"' \
             /tmp/authority-response.json
           grep --fixed-strings \
             '"id":"pitgun.racing-v3-candidate","version":"0.11.0","digest":"sha256:299ed6723fea676f431da80d59f3633e67eed252b6d34a2c737f067529aa6892"' \
             /tmp/authority-response.json
+
+          curl --fail --silent --show-error \
+            --request POST http://127.0.0.1:18080/v1/authorizations/racing/attempts \
+            --header "content-type: application/json" \
+            --data '{
+              "subject": "ci-smoke",
+              "execution_id": "018f3b78-7e9a-7d20-a5e1-4ed92f02a591",
+              "seed": "42",
+              "catalog_release": {
+                "schema_version": "pitgun.catalog-release-identity/v1",
+                "id": "pitgun.racing",
+                "version": "1.7.0",
+                "manifest_digest": "sha256:bf6bd0337f04564a75893496aa87c7679966f4516938882724b5e9219897062b"
+              },
+              "input": {
+                "track_id": "LASVEGAS",
+                "laps": 1,
+                "competitors": [{
+                  "id": "player",
+                  "driver_id": "default",
+                  "name": "Player",
+                  "team_id": "player-team",
+                  "is_player": true,
+                  "tuning": {
+                    "engine_points": 25,
+                    "cooling_points": 25,
+                    "aero_points": 25,
+                    "chassis_points": 25,
+                    "downforce_slider": 0.5,
+                    "gear_ratio_slider": 0.5
+                  },
+                  "budget_cap": 100
+                }],
+                "vehicle_id": "f1_2026",
+                "era": 6,
+                "hz": 20
+              }
+            }' \
+            --output /tmp/authority-attempt-response.json
+
+          grep --fixed-strings \
+            '"authorization_version":"pitgun.run-attempt-authorization/v1"' \
+            /tmp/authority-attempt-response.json
+          grep --fixed-strings \
+            '"instruction_profile":{"id":"pitgun.racing-driver-instructions","version":"1.0.0","digest":"sha256:508bf37c0092836d18660e5aa717344b2c563d04dd29b6ca426cf8b94e175aa3"}' \
+            /tmp/authority-attempt-response.json
+          grep --fixed-strings \
+            '"boundary_granularity":"lap_start","max_events_per_session":64' \
+            /tmp/authority-attempt-response.json
 
       - name: Build and push authority image
         if: github.event_name != 'pull_request'
