@@ -224,10 +224,11 @@ the resolved profile fails closed.
 
 This derived identity does not alter `RunAuthorizationV1`: that deployed
 contract still authorizes an immutable run and expects its `run_id` before
-execution. A later, separately versioned bounded authorization envelope must
-link the stable `execution_id` to this completed identity. Until that envelope
-and Verifier replay exist, timeline execution remains an offline candidate and
-cannot be presented as Hosted Verification.
+execution. `RunAttemptAuthorizationV1` is the separate domain-neutral envelope
+that links the stable `execution_id`, initial contract and content-addressed
+Racing decision envelope before the completed identity exists. Until signing
+support and Verifier replay use this contract, timeline execution remains an
+offline candidate and cannot be presented as Hosted Verification.
 
 Late, duplicated, malformed, or unauthorized requests do not enter physical
 execution or final evidence. They may be retained as operational diagnostics.
