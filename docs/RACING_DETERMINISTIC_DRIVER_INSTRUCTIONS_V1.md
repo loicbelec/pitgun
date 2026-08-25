@@ -198,6 +198,13 @@ cannot exceed the profile limit. Exact sorted competitor IDs, lap count and
 segment count prevent a completed history from being replayed against a wider
 or different session.
 
+The canonical envelope is published as the content-addressed artifact
+`pitgun.racing-driver-instruction-authorization@1.0.0`. A generic
+`RunAttemptAuthorizationV1` is valid for Racing only when its opaque
+`decision_envelope` identity exactly matches those canonical bytes. This keeps
+the generic contract domain-neutral while preventing a service from validating
+one envelope and executing another.
+
 Before deriving or accepting the final `run_id`, verification checks the
 completed input against this envelope. A mode excluded by Authority, an event
 beyond the narrowed count or session boundary, or a different competitor set
@@ -234,6 +241,14 @@ Late, duplicated, malformed, or unauthorized requests do not enter physical
 execution or final evidence. They may be retained as operational diagnostics.
 The browser outbox continues to preserve completed evidence when Hosted
 Verification is temporarily unavailable.
+
+The shared native/WASM fixture
+`crates/pitgun-racing-contract/tests/fixtures/racing_dynamic_attempt_evidence_v1.json`
+publishes one complete conformance chain: resolved instruction profile,
+canonical decision envelope, signed generic attempt, applied instruction
+history, derived final contract and execution receipt. It is the service
+integration reference; changing any published byte requires an explicit
+contract-version decision rather than silently refreshing expected digests.
 
 ## Compatibility
 

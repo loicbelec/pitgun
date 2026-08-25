@@ -2,7 +2,11 @@
 
 use std::fmt;
 
-use pitgun_contract::{ArtifactIdentity, DeterministicRunContractV1, InputIdentity};
+use pitgun_contract::{
+    ArtifactIdentity, CanonicalJsonError, DeterministicRunContractV1, InputIdentity,
+    RunAttemptAuthorizationError, RunAttemptAuthorizationV1, RunContractError,
+    canonical_json_digest,
+};
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -16,6 +20,12 @@ pub enum RacingDriverInstructionAuthorizationVersion {
     #[serde(rename = "pitgun.racing-driver-instruction-authorization/v1")]
     V1,
 }
+
+/// Stable artifact identifier for canonical Racing decision-envelope bytes.
+pub const RACING_DRIVER_INSTRUCTION_AUTHORIZATION_ID: &str =
+    "pitgun.racing-driver-instruction-authorization";
+/// Semantic version paired with the V1 Racing decision-envelope schema.
+pub const RACING_DRIVER_INSTRUCTION_AUTHORIZATION_VERSION: &str = "1.0.0";
 
 /// Authority-owned limits for decisions that may be applied during one session.
 ///
@@ -37,6 +47,7 @@ pub struct RacingDriverInstructionAuthorizationV1 {
 
 #[derive(Debug)]
 pub enum RacingInstructionAuthorizationError {
+    DecisionEnvelopeIdentityMismatch,
     AuthorizedInputMismatch,
     InstructionProfileIdentityMismatch,
     EmptyAllowedModes,
@@ -63,11 +74,17 @@ pub enum RacingInstructionAuthorizationError {
     },
     Profile(RacingDriverContractError),
     CompletedInput(RacingCompletedRunError),
+    AttemptAuthorization(RunAttemptAuthorizationError),
+    Identity(RunContractError),
+    CanonicalJson(CanonicalJsonError),
 }
 
 impl fmt::Display for RacingInstructionAuthorizationError {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
+            Self::DecisionEnvelopeIdentityMismatch => formatter.write_str(
+                "dynamic attempt does not bind the canonical Racing instruction envelope",
+            ),
             Self::AuthorizedInputMismatch => formatter.write_str(
                 "Racing instruction authorization does not bind the initial input",
             ),
@@ -114,6 +131,9 @@ impl fmt::Display for RacingInstructionAuthorizationError {
             ),
             Self::Profile(error) => error.fmt(formatter),
             Self::CompletedInput(error) => error.fmt(formatter),
+            Self::AttemptAuthorization(error) => error.fmt(formatter),
+            Self::Identity(error) => error.fmt(formatter),
+            Self::CanonicalJson(error) => error.fmt(formatter),
         }
     }
 }
@@ -123,6 +143,9 @@ impl std::error::Error for RacingInstructionAuthorizationError {
         match self {
             Self::Profile(error) => Some(error),
             Self::CompletedInput(error) => Some(error),
+            Self::AttemptAuthorization(error) => Some(error),
+            Self::Identity(error) => Some(error),
+            Self::CanonicalJson(error) => Some(error),
             _ => None,
         }
     }
@@ -134,7 +157,82 @@ impl From<RacingCompletedRunError> for RacingInstructionAuthorizationError {
     }
 }
 
+impl From<RunAttemptAuthorizationError> for RacingInstructionAuthorizationError {
+    fn from(error: RunAttemptAuthorizationError) -> Self {
+        Self::AttemptAuthorization(error)
+    }
+}
+
+impl From<CanonicalJsonError> for RacingInstructionAuthorizationError {
+    fn from(error: CanonicalJsonError) -> Self {
+        Self::CanonicalJson(error)
+    }
+}
+
 impl RacingDriverInstructionAuthorizationV1 {
+    /// Returns the exact content-addressed identity embedded in a generic attempt.
+    pub fn artifact_identity(
+        &self,
+    ) -> Result<ArtifactIdentity, RacingInstructionAuthorizationError> {
+        Ok(ArtifactIdentity {
+            id: RACING_DRIVER_INSTRUCTION_AUTHORIZATION_ID
+                .parse()
+                .map_err(RacingInstructionAuthorizationError::Identity)?,
+            version: RACING_DRIVER_INSTRUCTION_AUTHORIZATION_VERSION
+                .parse()
+                .map_err(RacingInstructionAuthorizationError::Identity)?,
+            digest: canonical_json_digest(self)?,
+        })
+    }
+
+    /// Validates the generic-to-Racing boundary before execution starts.
+    pub fn validate_attempt_authorization(
+        &self,
+        attempt: &RunAttemptAuthorizationV1,
+        instruction_profile_identity: &ArtifactIdentity,
+        instruction_profile: &RacingDriverInstructionProfileV1,
+    ) -> Result<(), RacingInstructionAuthorizationError> {
+        attempt.validate_integrity()?;
+        if attempt.decision_envelope != self.artifact_identity()? {
+            return Err(RacingInstructionAuthorizationError::DecisionEnvelopeIdentityMismatch);
+        }
+        self.validate(
+            &attempt.initial_contract,
+            instruction_profile_identity,
+            instruction_profile,
+        )
+    }
+
+    /// Derives a completed contract only after both generic and Racing checks pass.
+    pub fn final_contract_for_attempt(
+        &self,
+        attempt: &RunAttemptAuthorizationV1,
+        completed: &RacingCompletedRunInputV1,
+        instruction_profile_identity: &ArtifactIdentity,
+        instruction_profile: &RacingDriverInstructionProfileV1,
+    ) -> Result<DeterministicRunContractV1, RacingInstructionAuthorizationError> {
+        self.validate_attempt_authorization(
+            attempt,
+            instruction_profile_identity,
+            instruction_profile,
+        )?;
+        self.validate_completed_input(
+            completed,
+            &attempt.initial_contract,
+            instruction_profile_identity,
+            instruction_profile,
+        )?;
+        let final_contract = completed.final_contract(
+            &attempt.initial_contract,
+            instruction_profile_identity,
+            instruction_profile,
+            self.lap_count,
+            self.segment_count,
+        )?;
+        attempt.validate_final_contract(&final_contract)?;
+        Ok(final_contract)
+    }
+
     /// Validates that this authorization only narrows the resolved profile and session.
     pub fn validate(
         &self,
