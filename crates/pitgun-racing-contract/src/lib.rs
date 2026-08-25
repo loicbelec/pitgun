@@ -39,6 +39,7 @@ pub use driver::{
     RacingDrivingModeCommitmentsV1,
 };
 pub use instruction_authorization::{
+    RACING_DRIVER_INSTRUCTION_AUTHORIZATION_ID, RACING_DRIVER_INSTRUCTION_AUTHORIZATION_VERSION,
     RacingDriverInstructionAuthorizationV1, RacingDriverInstructionAuthorizationVersion,
     RacingInstructionAuthorizationError,
 };

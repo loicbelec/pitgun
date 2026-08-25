@@ -1,0 +1,218 @@
+{
+  "fixture_version": "pitgun.racing-dynamic-attempt-evidence/v1",
+  "instruction_profile_identity": {
+    "id": "pitgun.racing-driver-instructions",
+    "version": "1.0.0",
+    "digest": "sha256:b0f1b38ae6e699e27e5f14ffa538b19cd60e7668c6b799ca9fcc50dd3e850ddd"
+  },
+  "instruction_profile": {
+    "schema_version": "pitgun.racing-driver-instruction-profile/v1",
+    "default_mode": "balanced",
+    "boundary_granularity": "lap_start",
+    "max_events_per_session": 8
+  },
+  "decision_envelope": {
+    "schema_version": "pitgun.racing-driver-instruction-authorization/v1",
+    "authorized_input": {
+      "media_type": "application/json",
+      "canonicalization": "jcs-rfc8785",
+      "digest": "sha256:9dc12b30d4d700d08ed747eedb4b1a0766ccd4d1c67915d5e627709be05c7e5b"
+    },
+    "instruction_profile": {
+      "id": "pitgun.racing-driver-instructions",
+      "version": "1.0.0",
+      "digest": "sha256:b0f1b38ae6e699e27e5f14ffa538b19cd60e7668c6b799ca9fcc50dd3e850ddd"
+    },
+    "allowed_modes": [
+      "manage",
+      "balanced",
+      "attack"
+    ],
+    "boundary_granularity": "lap_start",
+    "max_events_per_session": 4,
+    "competitor_ids": [
+      "ai-01",
+      "player"
+    ],
+    "lap_count": 5,
+    "segment_count": 20
+  },
+  "signed_attempt": {
+    "authorization": {
+      "authorization_version": "pitgun.run-attempt-authorization/v1",
+      "nonce": "sha256:e4255ef5a90615124e832157c93e8421131e02e18de32ebc29ce9620ac811cf5",
+      "execution_id": "018f3b78-7e9a-7d20-a5e1-4ed92f02a591",
+      "subject": "career.dynamic-golden",
+      "audience": "pitgun.verifier",
+      "initial_contract": {
+        "contract_version": "pitgun.deterministic-run/v1",
+        "scenario": {
+          "id": "racing.dynamic-session",
+          "version": "1.0.0"
+        },
+        "model": {
+          "id": "pitgun.racing-model-v3",
+          "version": "0.13.0",
+          "digest": "sha256:c587e0685482c5e95b541cfd9dbb91ddc91895cfe8aec4cfa29da08af6a3ef87"
+        },
+        "data_pack": {
+          "id": "pitgun.racing",
+          "version": "1.6.0",
+          "digest": "sha256:ba4784f258c0a38730f0dcc99716f7148ac23e5af6e2f1dbe3c51c5c00173bc2"
+        },
+        "runtime_profile": "portable-exact-v1",
+        "random": {
+          "seed": "363",
+          "algorithm": "pitgun-splitmix64-v1",
+          "stream_derivation": "sha256-label-v1"
+        },
+        "clock": {
+          "kind": "logical-fixed-step",
+          "epoch": 0,
+          "tick_numerator_us": 50000,
+          "tick_denominator": 1
+        },
+        "event_ordering": {
+          "keys": [
+            "logical_tick",
+            "source_id",
+            "source_sequence",
+            "insertion_ordinal"
+          ],
+          "string_order": "unicode-code-point"
+        },
+        "input": {
+          "media_type": "application/json",
+          "canonicalization": "jcs-rfc8785",
+          "digest": "sha256:9dc12b30d4d700d08ed747eedb4b1a0766ccd4d1c67915d5e627709be05c7e5b"
+        }
+      },
+      "initial_run_id": "sha256:42bae29588f621787163605fb5a569b586d0e86dfc92511acbc043a571934e87",
+      "decision_envelope": {
+        "id": "pitgun.racing-driver-instruction-authorization",
+        "version": "1.0.0",
+        "digest": "sha256:822ae0b53ec7eeb8cdbb3633589573b54ec1f9323531ae93f0053082f401a8c4"
+      },
+      "policy": {
+        "id": "pitgun.racing.dynamic-instructions",
+        "version": "1.0.0",
+        "digest": "sha256:e53cb1d97349602f1e80345e77cf579d487dd5c102b0e7ff60de579bff14e705"
+      },
+      "signing_key_id": "racing-dynamic-golden-v1",
+      "validity": {
+        "issued_at_ms": 1722345600000,
+        "expires_at_ms": 1722345900000,
+        "late_submission_grace_ms": 900000
+      }
+    },
+    "algorithm": "hmac-sha256",
+    "signature": "0c6162ddb9f136b509ee642d3792a0d7cfed5007363943d742021911a3df8035"
+  },
+  "completed_input": {
+    "schema_version": "pitgun.racing-completed-run-input/v1",
+    "authorized_input": {
+      "media_type": "application/json",
+      "canonicalization": "jcs-rfc8785",
+      "digest": "sha256:9dc12b30d4d700d08ed747eedb4b1a0766ccd4d1c67915d5e627709be05c7e5b"
+    },
+    "driver_instructions": {
+      "instruction_profile": {
+        "id": "pitgun.racing-driver-instructions",
+        "version": "1.0.0",
+        "digest": "sha256:b0f1b38ae6e699e27e5f14ffa538b19cd60e7668c6b799ca9fcc50dd3e850ddd"
+      },
+      "initial_mode": "balanced",
+      "competitor_ids": [
+        "ai-01",
+        "player"
+      ],
+      "applied_timeline": {
+        "schema_version": "pitgun.racing-driver-instruction-timeline/v1",
+        "events": [
+          {
+            "sequence": 0,
+            "competitor_id": "player",
+            "effective_at": {
+              "lap_index": 1,
+              "segment_index": 0
+            },
+            "mode": "attack"
+          },
+          {
+            "sequence": 1,
+            "competitor_id": "ai-01",
+            "effective_at": {
+              "lap_index": 2,
+              "segment_index": 0
+            },
+            "mode": "manage"
+          },
+          {
+            "sequence": 2,
+            "competitor_id": "player",
+            "effective_at": {
+              "lap_index": 3,
+              "segment_index": 0
+            },
+            "mode": "balanced"
+          }
+        ]
+      }
+    }
+  },
+  "final_contract": {
+    "contract_version": "pitgun.deterministic-run/v1",
+    "scenario": {
+      "id": "racing.dynamic-session",
+      "version": "1.0.0"
+    },
+    "model": {
+      "id": "pitgun.racing-model-v3",
+      "version": "0.13.0",
+      "digest": "sha256:c587e0685482c5e95b541cfd9dbb91ddc91895cfe8aec4cfa29da08af6a3ef87"
+    },
+    "data_pack": {
+      "id": "pitgun.racing",
+      "version": "1.6.0",
+      "digest": "sha256:ba4784f258c0a38730f0dcc99716f7148ac23e5af6e2f1dbe3c51c5c00173bc2"
+    },
+    "runtime_profile": "portable-exact-v1",
+    "random": {
+      "seed": "363",
+      "algorithm": "pitgun-splitmix64-v1",
+      "stream_derivation": "sha256-label-v1"
+    },
+    "clock": {
+      "kind": "logical-fixed-step",
+      "epoch": 0,
+      "tick_numerator_us": 50000,
+      "tick_denominator": 1
+    },
+    "event_ordering": {
+      "keys": [
+        "logical_tick",
+        "source_id",
+        "source_sequence",
+        "insertion_ordinal"
+      ],
+      "string_order": "unicode-code-point"
+    },
+    "input": {
+      "media_type": "application/json",
+      "canonicalization": "jcs-rfc8785",
+      "digest": "sha256:7915cfbd9fc58176bac22211b1a6cd8518d29830bfbf8acb8d4b7dfd32c82a97"
+    }
+  },
+  "receipt": {
+    "run_id": "sha256:c7af83bee30a7f875f35c73960cb22a49307735ee539dc42377238d3432bdd9d",
+    "execution_id": "018f3b78-7e9a-7d20-a5e1-4ed92f02a591",
+    "runtime": {
+      "engine": "pitgun-rust",
+      "engine_version": "1.0.0",
+      "target": "wasm32-unknown-unknown",
+      "artifact_digest": "sha256:84a6cbe291c906b003c46df0a84f722d93c0671b071e7524c36034e8c36b6778"
+    },
+    "output_digest": "sha256:60094aeb0bd1823df6cee1d9ec6609730ca00f5e4be9b620fd922add4c4b3471",
+    "telemetry_summary_digest": "sha256:3908391022497745c907ba83384042c057fc67f191d95ab82bca58b5401de350"
+  }
+}
