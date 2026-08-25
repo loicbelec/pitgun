@@ -9,6 +9,7 @@ license.workspace = true
 axum = "0.7"
 pitgun-contract = { path = "../../crates/pitgun-contract" }
 pitgun-racing-policy = { path = "../../crates/pitgun-racing-policy" }
+pitgun-racing-contract = { path = "../../crates/pitgun-racing-contract" }
 pitgun-racing-simulator = { path = "../../crates/pitgun-racing-simulator" }
 pitgun-runtime = { path = "../../crates/pitgun-runtime" }
 pitgun-signing = { path = "../../crates/pitgun-signing" }

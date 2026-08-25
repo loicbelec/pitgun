@@ -14,6 +14,13 @@ The verification engine:
 7. replays the exact Racing workload through `pitgun-runtime`;
 8. emits `VerificationVerdictV1`.
 
+For catalog-governed dynamic attempts, the verifier also authenticates the
+signed initial attempt and decision envelope, derives the final contract from
+the exact completed instruction timeline, binds the Authority-owned
+`execution_id`, and replays that timeline against the retained physical
+resources. The resulting verdict carries the final dynamic `run_id`, not the
+initial attempt identity.
+
 For the non-production Model V3 thermal candidate, submitted lineage also
 contains the exact catalog release, Simulation Pack, model, and reviewed
 thermal-family profile digest. The Verifier reconstructs that projection from
@@ -45,6 +52,11 @@ The `pitgun-verifier` binary exposes an internal worker API:
 - `GET /healthz`;
 - `GET /readyz`;
 - `POST /v1/verifications/racing`.
+- `POST /v1/verifications/racing/attempts`.
+
+The first endpoint preserves immutable-run compatibility. The second accepts
+`RacingDynamicVerificationSubmissionV1` and fails closed on missing, inserted,
+reordered, out-of-bounds, or physically inconsistent instruction histories.
 
 `PENDING` uses HTTP 202. Terminal `VERIFIED` and `REJECTED` decisions use HTTP
 200 because both are successfully processed, server-owned verdicts. Malformed
@@ -62,15 +74,20 @@ The worker loads:
 - its exact Racing generation from `PITGUN_RACING_MODEL_VERSION` (V1 by default,
   with `0.10.0` reserved for the non-production V3 thermal candidate);
 - the immutable Racing release from `PITGUN_RACING_CATALOG_RELEASE_DIR`;
+- its dynamic-attempt generation from `PITGUN_RACING_ATTEMPT_MODEL_VERSION`
+  (`0.14.0` by default);
+- the immutable dynamic-attempt release from
+  `PITGUN_RACING_ATTEMPT_CATALOG_RELEASE_DIR` (`v1.8.0` in the image);
 - the accepted tuning policy from `PITGUN_TUNING_POLICY_PATH`.
 
 `/readyz` fails closed when signing-key verification material or retained
 catalog bytes are unavailable.
 
 The published container retains the immutable Racing `v1.0.0`, `v1.2.0`,
-`v1.3.0`, and non-production `v1.5.0` releases. Environments select one exact
-release directory together with its compatible model generation; the image
-never follows mutable catalog discovery.
+`v1.3.0`, non-production `v1.5.0` and `v1.6.0`, and dynamic candidate `v1.8.0`
+releases. Environments select exact release directories together with their
+compatible model generations; the image never follows mutable catalog
+discovery.
 
 The HTTP endpoint is an internal boundary. It must not be routed directly to a
 browser. Durable nonce consumption and idempotent verdict persistence belong to
