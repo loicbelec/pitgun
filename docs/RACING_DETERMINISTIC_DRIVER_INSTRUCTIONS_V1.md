@@ -256,9 +256,18 @@ This derived identity does not alter `RunAuthorizationV1`: that deployed
 contract still authorizes an immutable run and expects its `run_id` before
 execution. `RunAttemptAuthorizationV1` is the separate domain-neutral envelope
 that links the stable `execution_id`, initial contract and content-addressed
-Racing decision envelope before the completed identity exists. Until signing
-support and Verifier replay use this contract, timeline execution remains an
-offline candidate and cannot be presented as Hosted Verification.
+Racing decision envelope before the completed identity exists.
+
+Native and WASM execution now accept this attempt through the strict
+`RacingDynamicExecutionRequestV1` boundary. They verify the signed structure,
+initial input, envelope, exact catalog release and completed history before
+running Model `0.14.0`, then emit compact
+`RacingDynamicVerificationSubmissionV1` evidence beside local telemetry. The
+browser intentionally cannot validate the HMAC because Authority's secret must
+never be shipped to clients. Until the trusted Verifier replay endpoint
+implements that cryptographic check and nonce consumption, the timeline model
+remains a non-production candidate and cannot be presented as Hosted
+Verification.
 
 Late, duplicated, malformed, or unauthorized requests do not enter physical
 execution or final evidence. They may be retained as operational diagnostics.
@@ -294,7 +303,8 @@ contract-version decision rather than silently refreshing expected digests.
 2. expose deterministic incremental progress through
    [`#312`](https://github.com/loicbelec/pitgun/issues/312);
 3. bind the applied history into Hosted Verification through
-   [`#350`](https://github.com/loicbelec/pitgun/issues/350);
+   [`#350`](https://github.com/loicbelec/pitgun/issues/350) (Authority issuance
+   and native/WASM execution implemented; Verifier replay remains gated);
 4. let the live Pit Wall and AI policy issue events at the same boundaries;
 5. measure race-distance mode usage and persistent costs locally and on
    Databricks;

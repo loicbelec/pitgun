@@ -5,9 +5,10 @@ use std::fmt;
 use pitgun_contract::{
     ArtifactIdentity, CanonicalJsonError, CatalogReleaseIdentityV1, DeterministicRunContractV1,
     Digest, ExecutionId, ExecutionReceiptV1, RunBundleReceiptV1, RuntimeIdentity,
-    SignedRunAuthorizationV1, TelemetrySummaryError, TelemetrySummaryV1, canonical_json_bytes,
-    canonical_json_digest,
+    SignedRunAttemptAuthorizationV1, SignedRunAuthorizationV1, TelemetrySummaryError,
+    TelemetrySummaryV1, canonical_json_bytes, canonical_json_digest,
 };
+use pitgun_racing_contract::{RacingCompletedRunInputV1, RacingDriverInstructionAuthorizationV1};
 use serde::{Deserialize, Serialize};
 
 use crate::{RaceOutput, RacingCatalogSnapshot, RunRaceInput, StandingStatus};
@@ -160,6 +161,74 @@ pub struct RacingAuthorizedApplicationResultV1 {
     /// Compact canonical evidence submitted to Verifier.
     pub evidence: RacingVerificationSubmissionV1,
     /// Complete output from the same linked execution, including telemetry.
+    pub runtime_output: RaceOutput,
+}
+
+/// Wire version of a browser request that completes one dynamic Racing attempt.
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Deserialize, Serialize)]
+pub enum RacingDynamicExecutionRequestVersion {
+    /// First catalog-governed driver-instruction execution semantics.
+    #[serde(rename = "pitgun.racing-dynamic-execution/v1")]
+    V1,
+}
+
+/// Strict request for one Authority-authorized dynamic Racing execution.
+///
+/// The initial input and decision envelope are fixed by Authority. The completed
+/// input records only the exact instruction history that was applied while the
+/// statically linked model was running.
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct RacingDynamicExecutionRequestV1 {
+    pub schema_version: RacingDynamicExecutionRequestVersion,
+    pub signed_authorization: SignedRunAttemptAuthorizationV1,
+    pub decision_envelope: RacingDriverInstructionAuthorizationV1,
+    /// Exact immutable release returned by Authority for this attempt.
+    pub catalog_release: CatalogReleaseIdentityV1,
+    pub input: RunRaceInput,
+    pub completed_input: RacingCompletedRunInputV1,
+    /// SHA-256 of the exact WASM module bytes loaded by the browser.
+    pub wasm_artifact_digest: Digest,
+}
+
+/// Wire version of compact evidence for one completed dynamic Racing attempt.
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Deserialize, Serialize)]
+pub enum RacingDynamicVerificationSubmissionVersion {
+    #[serde(rename = "pitgun.racing-dynamic-verification-submission/v1")]
+    V1,
+}
+
+/// Canonical evidence submitted to the dynamic Racing Verifier.
+///
+/// Raw telemetry deliberately remains outside this payload. Verifier can derive
+/// the final contract from these facts and replay the exact ordered timeline.
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct RacingDynamicVerificationSubmissionV1 {
+    pub schema_version: RacingDynamicVerificationSubmissionVersion,
+    pub signed_authorization: SignedRunAttemptAuthorizationV1,
+    pub decision_envelope: RacingDriverInstructionAuthorizationV1,
+    pub input: RunRaceInput,
+    pub completed_input: RacingCompletedRunInputV1,
+    pub receipt: RunBundleReceiptV1,
+    pub output: RacingOutputV1,
+    pub telemetry_summary: TelemetrySummaryV1,
+    pub execution_resolution: RacingExecutionResolutionV1,
+}
+
+/// Wire version of the application projection of a dynamic execution.
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Deserialize, Serialize)]
+pub enum RacingDynamicApplicationResultVersion {
+    #[serde(rename = "pitgun.racing-dynamic-application-result/v1")]
+    V1,
+}
+
+/// Compact verifier evidence beside full local Pit Wall telemetry.
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct RacingDynamicApplicationResultV1 {
+    pub schema_version: RacingDynamicApplicationResultVersion,
+    pub evidence: RacingDynamicVerificationSubmissionV1,
     pub runtime_output: RaceOutput,
 }
 

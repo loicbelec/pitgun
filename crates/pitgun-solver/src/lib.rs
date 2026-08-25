@@ -8,6 +8,9 @@ pub mod rng;
 pub use pitgun_racing_simulator::evidence;
 pub use pitgun_racing_simulator::evidence::{
     RacingAuthorizedApplicationResultV1, RacingAuthorizedApplicationResultVersion,
+    RacingDynamicApplicationResultV1, RacingDynamicApplicationResultVersion,
+    RacingDynamicExecutionRequestV1, RacingDynamicExecutionRequestVersion,
+    RacingDynamicVerificationSubmissionV1, RacingDynamicVerificationSubmissionVersion,
     RacingHostedExecutionRequestV1, RacingHostedExecutionRequestVersion,
     RacingVerificationSubmissionV1,
 };
@@ -25,6 +28,7 @@ pub use pitgun_racing_simulator::{
     V3ThermalFamilyProfileCandidateV1, V3ThermalFamilyResolutionV1, VehicleCatalogEntry,
     VehicleParams, VehicleState, apply_driver_to_tire, apply_tuning, best_power_at_speed,
     catalog_snapshot, catalog_snapshot_with_catalog, derating_factor, driver_effects, effective_mu,
+    execute_authorized_dynamic_race, execute_authorized_dynamic_race_application,
     execute_authorized_race, execute_authorized_race_application, get_circuit,
     get_circuit_with_catalog, get_engine, get_engine_with_catalog, list_browser_circuits,
     list_circuits, list_drivers, list_engines, list_tires, list_vehicles, power_kw_from_rpm,
@@ -69,6 +73,34 @@ export interface RacingVerificationSubmissionV1 {
 export interface RacingAuthorizedApplicationResultV1 {
   schema_version: "pitgun.racing-authorized-application-result/v1";
   evidence: RacingVerificationSubmissionV1;
+  runtime_output: unknown;
+}
+
+export interface RacingDynamicExecutionRequestV1 {
+  schema_version: "pitgun.racing-dynamic-execution/v1";
+  signed_authorization: unknown;
+  decision_envelope: unknown;
+  catalog_release: unknown;
+  input: unknown;
+  completed_input: unknown;
+  wasm_artifact_digest: PitgunSha256Digest;
+}
+
+export interface RacingDynamicVerificationSubmissionV1 {
+  schema_version: "pitgun.racing-dynamic-verification-submission/v1";
+  signed_authorization: unknown;
+  decision_envelope: unknown;
+  input: unknown;
+  completed_input: unknown;
+  receipt: unknown;
+  output: unknown;
+  telemetry_summary: unknown;
+  execution_resolution: unknown;
+}
+
+export interface RacingDynamicApplicationResultV1 {
+  schema_version: "pitgun.racing-dynamic-application-result/v1";
+  evidence: RacingDynamicVerificationSubmissionV1;
   runtime_output: unknown;
 }
 "#;
@@ -152,6 +184,38 @@ pub fn execute_authorized_race_application_with_catalog_json(
     catalog_bundle_json: String,
 ) -> String {
     pitgun_racing_simulator::execute_authorized_race_application_with_catalog_json(
+        request_json,
+        catalog_bundle_json,
+    )
+}
+
+#[wasm_bindgen]
+pub fn execute_authorized_dynamic_race_json(request_json: String) -> String {
+    pitgun_racing_simulator::execute_authorized_dynamic_race_json(request_json)
+}
+
+#[wasm_bindgen]
+pub fn execute_authorized_dynamic_race_with_catalog_json(
+    request_json: String,
+    catalog_bundle_json: String,
+) -> String {
+    pitgun_racing_simulator::execute_authorized_dynamic_race_with_catalog_json(
+        request_json,
+        catalog_bundle_json,
+    )
+}
+
+#[wasm_bindgen]
+pub fn execute_authorized_dynamic_race_application_json(request_json: String) -> String {
+    pitgun_racing_simulator::execute_authorized_dynamic_race_application_json(request_json)
+}
+
+#[wasm_bindgen]
+pub fn execute_authorized_dynamic_race_application_with_catalog_json(
+    request_json: String,
+    catalog_bundle_json: String,
+) -> String {
+    pitgun_racing_simulator::execute_authorized_dynamic_race_application_with_catalog_json(
         request_json,
         catalog_bundle_json,
     )

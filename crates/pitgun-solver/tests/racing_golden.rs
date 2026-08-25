@@ -4,9 +4,17 @@ use pitgun_contract::{
     ArtifactIdentity, AuthorizationSignatureAlgorithm, AuthorizationValidityV1, ContractVersion,
     DeterministicRunContractV1, Digest, EventOrderingV1, Identifier, InputCanonicalization,
     InputIdentity, InputMediaType, LogicalClockV1, RandomAlgorithm, RandomContractV1,
-    RunAuthorizationV1, RunAuthorizationVersion, RuntimeIdentity, RuntimeProfile, ScenarioIdentity,
-    Seed, SemanticVersion, SignedRunAuthorizationV1, StreamDerivation, canonical_json_bytes,
-    canonical_json_digest, canonicalize_json_str,
+    RunAttemptAuthorizationV1, RunAttemptAuthorizationVersion, RunAuthorizationV1,
+    RunAuthorizationVersion, RuntimeIdentity, RuntimeProfile, ScenarioIdentity, Seed,
+    SemanticVersion, SignedRunAttemptAuthorizationV1, SignedRunAuthorizationV1, StreamDerivation,
+    canonical_json_bytes, canonical_json_digest, canonicalize_json_str,
+};
+use pitgun_racing_contract::{
+    RacingCompletedDriverInstructionHistoryV1, RacingCompletedRunInputV1,
+    RacingCompletedRunInputVersion, RacingDriverInstructionAuthorizationV1,
+    RacingDriverInstructionAuthorizationVersion, RacingDriverInstructionBoundaryV1,
+    RacingDriverInstructionEventV1, RacingDriverInstructionTimelineV1,
+    RacingDriverInstructionTimelineVersion, RacingDrivingMode,
 };
 use pitgun_racing_simulator::{
     CurvatureAeroResponse, TuningResponseV1, racing_model_v3_candidate_identity,
@@ -14,13 +22,17 @@ use pitgun_racing_simulator::{
     run_race_with_catalog_and_v3_candidate,
 };
 use pitgun_solver::evidence::{
-    RacingAuthorizedApplicationResultVersion, RacingExecutionResolutionVersion,
+    RacingAuthorizedApplicationResultVersion, RacingDynamicApplicationResultVersion,
+    RacingDynamicExecutionRequestV1, RacingDynamicExecutionRequestVersion,
+    RacingDynamicVerificationSubmissionV1, RacingExecutionResolutionVersion,
     RacingHostedExecutionRequestV1, RacingHostedExecutionRequestVersion, RacingRunEvidenceV1,
     RacingVerificationSubmissionV1,
 };
 use pitgun_solver::{
     RaceOutput, RacingCatalogFileV1, RacingCatalogSnapshot, RunRaceInput, RunRaceRequest,
-    execute_authorized_race, execute_authorized_race_application, execute_authorized_race_json,
+    execute_authorized_dynamic_race, execute_authorized_dynamic_race_application,
+    execute_authorized_dynamic_race_with_catalog_json, execute_authorized_race,
+    execute_authorized_race_application, execute_authorized_race_json, get_circuit_with_catalog,
     racing_model_v1_identity, racing_model_v2_identity, run_race_json,
 };
 use serde::de::DeserializeOwned;
@@ -59,6 +71,8 @@ const EXPECTED_RECEIPT_V2: &str =
     include_str!("../../pitgun-racing-simulator/tests/golden/racing_run_v2.receipt.json");
 const EXPECTED_HOSTED_WASM_DIGESTS_V2: &str =
     include_str!("../../pitgun-racing-simulator/tests/golden/racing_hosted_wasm_v2.digests.json");
+const EXPECTED_DYNAMIC_WASM_DIGESTS: &str =
+    include_str!("../../pitgun-racing-simulator/tests/golden/racing_dynamic_wasm_v1.digests.json");
 const MODEL_PARAMETERS_V2: &str = include_str!(
     "../../../catalogs/racing/v1.4.0/simulation/model-parameters/v2-compatibility.json"
 );
@@ -147,6 +161,256 @@ struct HostedWasmGoldenDigests {
     output_digest: Digest,
     telemetry_summary_digest: Digest,
     wasm_artifact_digest: Digest,
+}
+
+fn dynamic_execution_fixture(catalog: &RacingCatalogSnapshot) -> RacingDynamicExecutionRequestV1 {
+    let mut input = serde_json::from_str::<RunRaceRequest>(INPUT_V2)
+        .expect("dynamic Racing input fixture")
+        .input;
+    input.race.laps = 3;
+    input.race.competitors[0].driver_id = Some("balanced_reference".to_string());
+    let model = pitgun_racing_simulator::racing_model_v3_timeline_candidate_identity();
+    let initial_contract = DeterministicRunContractV1 {
+        contract_version: ContractVersion::V1,
+        scenario: ScenarioIdentity {
+            id: "racing.dynamic-session".parse().expect("scenario id"),
+            version: "1.0.0".parse().expect("scenario version"),
+        },
+        model,
+        data_pack: catalog.manifest().simulation_pack.identity.clone(),
+        runtime_profile: RuntimeProfile::PortableExactV1,
+        random: RandomContractV1 {
+            seed: Seed::new(376),
+            algorithm: RandomAlgorithm::PitgunSplitMix64V1,
+            stream_derivation: StreamDerivation::Sha256LabelV1,
+        },
+        clock: LogicalClockV1::new(0, 50_000, 1).expect("logical clock"),
+        event_ordering: EventOrderingV1::v1(),
+        input: InputIdentity {
+            media_type: InputMediaType::ApplicationJson,
+            canonicalization: InputCanonicalization::JcsRfc8785,
+            digest: canonical_json_digest(&input).expect("dynamic input digest"),
+        },
+    };
+    let instruction_profile = catalog
+        .driver_instruction_profile()
+        .expect("catalog instruction profile");
+    let instruction_profile_identity = catalog
+        .driver_instruction_profile_identity()
+        .expect("catalog instruction profile identity")
+        .clone();
+    let segment_count = u32::try_from(
+        get_circuit_with_catalog(catalog, &input.race.track_id)
+            .expect("dynamic circuit")
+            .s_m
+            .len(),
+    )
+    .expect("segment count");
+    let decision_envelope = RacingDriverInstructionAuthorizationV1 {
+        schema_version: RacingDriverInstructionAuthorizationVersion::V1,
+        authorized_input: initial_contract.input.clone(),
+        instruction_profile: instruction_profile_identity.clone(),
+        allowed_modes: vec![
+            RacingDrivingMode::Manage,
+            RacingDrivingMode::Balanced,
+            RacingDrivingMode::Attack,
+        ],
+        boundary_granularity: instruction_profile.boundary_granularity,
+        max_events_per_session: instruction_profile.max_events_per_session,
+        competitor_ids: vec!["player".to_string()],
+        lap_count: input.race.laps,
+        segment_count,
+    };
+    let execution_id = "018f3b78-7e9a-7d20-a5e1-4ed92f02a597"
+        .parse()
+        .expect("execution id");
+    let authorization = RunAttemptAuthorizationV1 {
+        authorization_version: RunAttemptAuthorizationVersion::V1,
+        nonce: Digest::from_bytes(b"dynamic-wasm-golden-nonce"),
+        execution_id,
+        subject: "career.dynamic-wasm-golden".parse().expect("subject"),
+        audience: "pitgun.verifier".parse().expect("audience"),
+        initial_run_id: initial_contract.run_id().expect("initial run id"),
+        initial_contract,
+        decision_envelope: decision_envelope
+            .artifact_identity()
+            .expect("decision-envelope identity"),
+        policy: ArtifactIdentity {
+            id: "pitgun.racing.dynamic-instructions"
+                .parse()
+                .expect("policy id"),
+            version: "1.0.0".parse().expect("policy version"),
+            digest: Digest::from_bytes(b"dynamic Racing policy v1"),
+        },
+        signing_key_id: "dynamic-wasm-golden-v1".parse().expect("key id"),
+        validity: AuthorizationValidityV1 {
+            issued_at_ms: 1_722_345_600_000,
+            expires_at_ms: 1_722_345_900_000,
+            late_submission_grace_ms: 900_000,
+        },
+    };
+    let completed_input = RacingCompletedRunInputV1 {
+        schema_version: RacingCompletedRunInputVersion::V1,
+        authorized_input: authorization.initial_contract.input.clone(),
+        driver_instructions: RacingCompletedDriverInstructionHistoryV1 {
+            instruction_profile: instruction_profile_identity,
+            initial_mode: RacingDrivingMode::Balanced,
+            competitor_ids: vec!["player".to_string()],
+            applied_timeline: RacingDriverInstructionTimelineV1 {
+                schema_version: RacingDriverInstructionTimelineVersion::V1,
+                events: vec![RacingDriverInstructionEventV1 {
+                    sequence: 0,
+                    competitor_id: "player".to_string(),
+                    effective_at: RacingDriverInstructionBoundaryV1 {
+                        lap_index: 1,
+                        segment_index: 0,
+                    },
+                    mode: RacingDrivingMode::Attack,
+                }],
+            },
+        },
+    };
+
+    RacingDynamicExecutionRequestV1 {
+        schema_version: RacingDynamicExecutionRequestVersion::V1,
+        signed_authorization: SignedRunAttemptAuthorizationV1 {
+            authorization,
+            algorithm: AuthorizationSignatureAlgorithm::HmacSha256,
+            signature: "00".repeat(32),
+        },
+        decision_envelope,
+        catalog_release: catalog.release_identity().clone(),
+        input,
+        completed_input,
+        wasm_artifact_digest: Digest::from_bytes(b"dynamic golden WASM module"),
+    }
+}
+
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
+fn dynamic_racing_attempt_has_identical_native_and_wasm_evidence() {
+    let catalog =
+        RacingCatalogSnapshot::embedded_model_v3_timeline().expect("timeline-enabled catalog");
+    let request = dynamic_execution_fixture(&catalog);
+    let application = execute_authorized_dynamic_race_application(request.clone(), &catalog)
+        .expect("dynamic application execution");
+    assert_eq!(
+        application.schema_version,
+        RacingDynamicApplicationResultVersion::V1
+    );
+    assert!(!application.runtime_output.player_batches.is_empty());
+
+    let native = execute_authorized_dynamic_race(request.clone(), &catalog)
+        .expect("native dynamic evidence");
+    assert_eq!(
+        canonical_json_bytes(&application.evidence).expect("application evidence bytes"),
+        canonical_json_bytes(&native).expect("native evidence bytes"),
+    );
+
+    let browser_json = execute_authorized_dynamic_race_with_catalog_json(
+        serde_json::to_string(&request).expect("dynamic request JSON"),
+        serde_json::to_string(&catalog.to_bundle().expect("browser catalog bundle"))
+            .expect("browser catalog JSON"),
+    );
+    let browser: RacingDynamicVerificationSubmissionV1 = serde_json::from_str(&browser_json)
+        .unwrap_or_else(|error| {
+            panic!("invalid dynamic browser evidence: {error}: {browser_json}")
+        });
+    assert_eq!(
+        canonical_json_bytes(&browser).expect("browser evidence bytes"),
+        canonical_json_bytes(&native).expect("native evidence bytes"),
+    );
+
+    let actual = HostedWasmGoldenDigests {
+        run_id: native.receipt.receipt.run_id,
+        output_digest: native.receipt.receipt.output_digest,
+        telemetry_summary_digest: native.receipt.receipt.telemetry_summary_digest,
+        wasm_artifact_digest: native.receipt.receipt.runtime.artifact_digest,
+    };
+    let expected: HostedWasmGoldenDigests =
+        serde_json::from_str(EXPECTED_DYNAMIC_WASM_DIGESTS).expect("dynamic WASM digest fixture");
+    assert_eq!(
+        actual,
+        expected,
+        "dynamic native/WASM evidence changed. Actual:\n{}",
+        serde_json::to_string_pretty(&actual).expect("dynamic digests")
+    );
+    assert_eq!(
+        native.receipt.receipt.execution_id,
+        request.signed_authorization.authorization.execution_id,
+    );
+    request
+        .signed_authorization
+        .authorization
+        .validate_completed_receipt(
+            &request
+                .decision_envelope
+                .final_contract_for_attempt(
+                    &request.signed_authorization.authorization,
+                    &request.completed_input,
+                    catalog
+                        .driver_instruction_profile_identity()
+                        .expect("instruction-profile identity"),
+                    catalog
+                        .driver_instruction_profile()
+                        .expect("instruction profile"),
+                )
+                .expect("final dynamic contract"),
+            &native.receipt.receipt,
+        )
+        .expect("Authority execution id and final contract binding");
+}
+
+#[test]
+fn dynamic_execution_rejects_unbound_or_malformed_inputs_before_solving() {
+    let catalog =
+        RacingCatalogSnapshot::embedded_model_v3_timeline().expect("timeline-enabled catalog");
+    let request = dynamic_execution_fixture(&catalog);
+
+    let mut extended_wire = serde_json::to_value(&request).expect("dynamic request value");
+    extended_wire["unexpected"] = serde_json::json!(true);
+    let strict_response = execute_authorized_dynamic_race_with_catalog_json(
+        serde_json::to_string(&extended_wire).expect("extended request JSON"),
+        serde_json::to_string(&catalog.to_bundle().expect("browser catalog bundle"))
+            .expect("browser catalog JSON"),
+    );
+    assert!(
+        strict_response.contains("unknown field"),
+        "unexpected strict-schema response: {strict_response}"
+    );
+
+    let mut bad_signature = request.clone();
+    bad_signature.signed_authorization.signature = "not-a-signature".to_string();
+    assert!(
+        execute_authorized_dynamic_race(bad_signature, &catalog)
+            .expect_err("malformed signature must fail")
+            .contains("signature shape")
+    );
+
+    let mut changed_input = request.clone();
+    changed_input.input.era += 1;
+    assert!(
+        execute_authorized_dynamic_race(changed_input, &catalog)
+            .expect_err("changed initial input must fail")
+            .contains("input digest mismatch")
+    );
+
+    let mut changed_envelope = request;
+    changed_envelope.decision_envelope.max_events_per_session -= 1;
+    let envelope_error = execute_authorized_dynamic_race(changed_envelope, &catalog)
+        .expect_err("changed decision envelope must fail");
+    assert!(
+        envelope_error.contains("instruction envelope"),
+        "unexpected error: {envelope_error}"
+    );
+
+    let mut changed_catalog = dynamic_execution_fixture(&catalog);
+    changed_catalog.catalog_release.manifest_digest = Digest::from_bytes(b"other catalog");
+    assert!(
+        execute_authorized_dynamic_race(changed_catalog, &catalog)
+            .expect_err("changed catalog release must fail")
+            .contains("catalog release mismatch")
+    );
 }
 
 fn parameter_backed_v2_catalog() -> RacingCatalogSnapshot {
