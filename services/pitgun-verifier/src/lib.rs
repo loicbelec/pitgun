@@ -8,19 +8,25 @@ use std::fmt;
 
 use pitgun_contract::{
     ArtifactIdentity, CanonicalJsonError, ContractVersion, EventOrderingV1, InputCanonicalization,
-    InputMediaType, LogicalClockV1, RandomAlgorithm, RunAuthorizationError, RuntimeProfile,
-    StreamDerivation, SubmittedEvidenceV1, VerificationReasonCode, VerificationStatus,
-    VerificationVerdictError, VerificationVerdictV1, VerificationVerdictVersion,
-    VerifiedResolutionV1, canonical_json_digest,
+    InputMediaType, LogicalClockV1, RandomAlgorithm, RunAttemptAuthorizationError,
+    RunAuthorizationError, RuntimeProfile, StreamDerivation, SubmittedEvidenceV1,
+    VerificationReasonCode, VerificationStatus, VerificationVerdictError, VerificationVerdictV1,
+    VerificationVerdictVersion, VerifiedResolutionV1, canonical_json_digest,
 };
-use pitgun_racing_simulator::evidence::RacingExecutionResolutionV1;
-use pitgun_racing_simulator::{RacingCatalogSnapshot, RacingWorkload, RunRaceInput};
+use pitgun_racing_simulator::evidence::{RacingExecutionResolutionV1, RacingRunEvidenceV1};
+use pitgun_racing_simulator::{
+    RacingCatalogSnapshot, RacingWorkload, RunRaceInput, RunRaceRequest,
+    run_race_with_catalog_and_v3_timeline_candidate,
+};
 use pitgun_runtime::{LinkedWorkloadError, execute_linked};
 use pitgun_signing::{AuthorizationVerificationError, VerificationKeyring};
 
-pub use pitgun_racing_simulator::evidence::RacingVerificationSubmissionV1;
+pub use pitgun_racing_simulator::evidence::{
+    RacingDynamicVerificationSubmissionV1, RacingVerificationSubmissionV1,
+};
 
 const RACING_SCENARIO_ID: &str = "racing.race";
+const RACING_DYNAMIC_SCENARIO_ID: &str = "racing.dynamic-session";
 const RACING_SCENARIO_VERSION: &str = "1.0.0";
 
 /// Trusted dependencies and retained identities used to verify Racing V1.
@@ -240,6 +246,296 @@ impl RacingVerifier {
         )
     }
 
+    /// Independently validates and replays one catalog-governed dynamic attempt.
+    pub fn verify_attempt(
+        &self,
+        submission: &RacingDynamicVerificationSubmissionV1,
+        now_ms: i64,
+    ) -> Result<VerificationVerdictV1, RacingVerifierError> {
+        let submitted_evidence = submitted_dynamic_evidence(submission)?;
+        let attempt = &submission.signed_authorization.authorization;
+        let initial_contract = &attempt.initial_contract;
+
+        if let Err(error) = self.authorization_keys.verify_attempt_submission(
+            &submission.signed_authorization,
+            &self.expected_audience,
+            now_ms,
+        ) {
+            return self.attempt_verdict(
+                attempt.initial_run_id,
+                attempt.execution_id,
+                submitted_evidence,
+                VerificationStatus::Rejected,
+                Some(authorization_reason(&error)),
+                None,
+                now_ms,
+            );
+        }
+        if !has_supported_dynamic_contract_shape(initial_contract, &submission.input) {
+            return self.rejected_attempt(
+                attempt.initial_run_id,
+                attempt.execution_id,
+                submitted_evidence,
+                VerificationReasonCode::InvalidAuthorization,
+                now_ms,
+            );
+        }
+        if initial_contract.model != self.expected_model {
+            return self.rejected_attempt(
+                attempt.initial_run_id,
+                attempt.execution_id,
+                submitted_evidence,
+                VerificationReasonCode::UnknownModel,
+                now_ms,
+            );
+        }
+        if attempt.policy != self.policy {
+            return self.rejected_attempt(
+                attempt.initial_run_id,
+                attempt.execution_id,
+                submitted_evidence,
+                VerificationReasonCode::UnknownPolicy,
+                now_ms,
+            );
+        }
+
+        let Some(catalog) = &self.catalog else {
+            return self.attempt_verdict(
+                attempt.initial_run_id,
+                attempt.execution_id,
+                submitted_evidence,
+                VerificationStatus::Pending,
+                Some(VerificationReasonCode::CatalogUnavailable),
+                None,
+                now_ms,
+            );
+        };
+        if initial_contract.data_pack != catalog.manifest().simulation_pack.identity
+            || catalog
+                .manifest()
+                .validate_for_run(initial_contract)
+                .is_err()
+        {
+            return self.rejected_attempt(
+                attempt.initial_run_id,
+                attempt.execution_id,
+                submitted_evidence,
+                VerificationReasonCode::UnknownDataPack,
+                now_ms,
+            );
+        }
+        let expected_resolution =
+            RacingExecutionResolutionV1::from_catalog(catalog, &initial_contract.model);
+        if Some(&submission.execution_resolution) != expected_resolution.as_ref() {
+            return self.rejected_attempt(
+                attempt.initial_run_id,
+                attempt.execution_id,
+                submitted_evidence,
+                VerificationReasonCode::ArtifactDigestMismatch,
+                now_ms,
+            );
+        }
+        if canonical_json_digest(&submission.input)? != initial_contract.input.digest {
+            return self.rejected_attempt(
+                attempt.initial_run_id,
+                attempt.execution_id,
+                submitted_evidence,
+                VerificationReasonCode::ArtifactDigestMismatch,
+                now_ms,
+            );
+        }
+
+        let Some(instruction_profile_identity) = catalog.driver_instruction_profile_identity()
+        else {
+            return self.rejected_attempt(
+                attempt.initial_run_id,
+                attempt.execution_id,
+                submitted_evidence,
+                VerificationReasonCode::UnknownDataPack,
+                now_ms,
+            );
+        };
+        let Some(instruction_profile) = catalog.driver_instruction_profile() else {
+            return self.rejected_attempt(
+                attempt.initial_run_id,
+                attempt.execution_id,
+                submitted_evidence,
+                VerificationReasonCode::UnknownDataPack,
+                now_ms,
+            );
+        };
+        let final_contract = match submission.decision_envelope.final_contract_for_attempt(
+            attempt,
+            &submission.completed_input,
+            instruction_profile_identity,
+            instruction_profile,
+        ) {
+            Ok(contract) => contract,
+            Err(_) => {
+                return self.rejected_attempt(
+                    attempt.initial_run_id,
+                    attempt.execution_id,
+                    submitted_evidence,
+                    VerificationReasonCode::InvalidAuthorization,
+                    now_ms,
+                );
+            }
+        };
+        let final_run_id = canonical_json_digest(&final_contract)?;
+        if attempt
+            .validate_completed_receipt(&final_contract, &submission.receipt.receipt)
+            .is_err()
+        {
+            return self.rejected_attempt(
+                final_run_id,
+                attempt.execution_id,
+                submitted_evidence,
+                VerificationReasonCode::ReceiptMismatch,
+                now_ms,
+            );
+        }
+        if submission.receipt.receipt.output_digest != submitted_evidence.output_digest {
+            return self.rejected_attempt(
+                final_run_id,
+                attempt.execution_id,
+                submitted_evidence,
+                VerificationReasonCode::OutputMismatch,
+                now_ms,
+            );
+        }
+        if submission.receipt.receipt.telemetry_summary_digest
+            != submitted_evidence.telemetry_summary_digest
+        {
+            return self.rejected_attempt(
+                final_run_id,
+                attempt.execution_id,
+                submitted_evidence,
+                VerificationReasonCode::TelemetryMismatch,
+                now_ms,
+            );
+        }
+
+        let replay = match run_race_with_catalog_and_v3_timeline_candidate(
+            RunRaceRequest {
+                input: submission.input.clone(),
+                seed: initial_contract.random.seed.get(),
+                era: Some(submission.input.era),
+                hz: Some(submission.input.hz),
+            },
+            catalog,
+            submission
+                .completed_input
+                .driver_instructions
+                .applied_timeline
+                .clone(),
+        ) {
+            Ok(output) => output,
+            Err(_) => {
+                return self.rejected_attempt(
+                    final_run_id,
+                    attempt.execution_id,
+                    submitted_evidence,
+                    VerificationReasonCode::ReplayMismatch,
+                    now_ms,
+                );
+            }
+        };
+        let replay_evidence = match RacingRunEvidenceV1::from_race_output(&replay) {
+            Ok(evidence) => evidence,
+            Err(_) => {
+                return self.rejected_attempt(
+                    final_run_id,
+                    attempt.execution_id,
+                    submitted_evidence,
+                    VerificationReasonCode::ReplayMismatch,
+                    now_ms,
+                );
+            }
+        };
+        if replay_evidence.output != submission.output
+            || replay_evidence.output_digest()? != submitted_evidence.output_digest
+        {
+            return self.rejected_attempt(
+                final_run_id,
+                attempt.execution_id,
+                submitted_evidence,
+                VerificationReasonCode::OutputMismatch,
+                now_ms,
+            );
+        }
+        if replay_evidence.telemetry_summary != submission.telemetry_summary
+            || replay_evidence.telemetry_summary_digest()?
+                != submitted_evidence.telemetry_summary_digest
+        {
+            return self.rejected_attempt(
+                final_run_id,
+                attempt.execution_id,
+                submitted_evidence,
+                VerificationReasonCode::TelemetryMismatch,
+                now_ms,
+            );
+        }
+
+        self.attempt_verdict(
+            final_run_id,
+            attempt.execution_id,
+            submitted_evidence,
+            VerificationStatus::Verified,
+            None,
+            Some(VerifiedResolutionV1 {
+                model: initial_contract.model.clone(),
+                data_pack: initial_contract.data_pack.clone(),
+                policy: attempt.policy.clone(),
+            }),
+            now_ms,
+        )
+    }
+
+    fn rejected_attempt(
+        &self,
+        run_id: pitgun_contract::Digest,
+        execution_id: pitgun_contract::ExecutionId,
+        submitted_evidence: SubmittedEvidenceV1,
+        reason: VerificationReasonCode,
+        now_ms: i64,
+    ) -> Result<VerificationVerdictV1, RacingVerifierError> {
+        self.attempt_verdict(
+            run_id,
+            execution_id,
+            submitted_evidence,
+            VerificationStatus::Rejected,
+            Some(reason),
+            None,
+            now_ms,
+        )
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn attempt_verdict(
+        &self,
+        run_id: pitgun_contract::Digest,
+        execution_id: pitgun_contract::ExecutionId,
+        submitted_evidence: SubmittedEvidenceV1,
+        status: VerificationStatus,
+        reason_code: Option<VerificationReasonCode>,
+        verified_resolution: Option<VerifiedResolutionV1>,
+        now_ms: i64,
+    ) -> Result<VerificationVerdictV1, RacingVerifierError> {
+        let verdict = VerificationVerdictV1 {
+            schema_version: VerificationVerdictVersion::V1,
+            run_id,
+            execution_id,
+            status,
+            reason_code,
+            submitted_evidence,
+            verified_resolution,
+            verifier: self.verifier.clone(),
+            recorded_at_ms: now_ms,
+        };
+        verdict.validate()?;
+        Ok(verdict)
+    }
+
     fn rejected(
         &self,
         submission: &RacingVerificationSubmissionV1,
@@ -292,6 +588,16 @@ fn submitted_evidence(
     })
 }
 
+fn submitted_dynamic_evidence(
+    submission: &RacingDynamicVerificationSubmissionV1,
+) -> Result<SubmittedEvidenceV1, CanonicalJsonError> {
+    Ok(SubmittedEvidenceV1 {
+        receipt_digest: canonical_json_digest(&submission.receipt)?,
+        output_digest: canonical_json_digest(&submission.output)?,
+        telemetry_summary_digest: canonical_json_digest(&submission.telemetry_summary)?,
+    })
+}
+
 fn has_supported_contract_shape(
     contract: &pitgun_contract::DeterministicRunContractV1,
     input: &RunRaceInput,
@@ -309,6 +615,38 @@ fn has_supported_contract_shape(
     contract.contract_version == ContractVersion::V1
         && contract.scenario.id == scenario_id
         && contract.scenario.version == scenario_version
+        && contract.runtime_profile == RuntimeProfile::PortableExactV1
+        && contract.random.algorithm == RandomAlgorithm::PitgunSplitMix64V1
+        && contract.random.stream_derivation == StreamDerivation::Sha256LabelV1
+        && contract.clock == expected_clock
+        && contract.event_ordering == EventOrderingV1::v1()
+        && contract.input.media_type == InputMediaType::ApplicationJson
+        && contract.input.canonicalization == InputCanonicalization::JcsRfc8785
+}
+
+fn has_supported_dynamic_contract_shape(
+    contract: &pitgun_contract::DeterministicRunContractV1,
+    input: &RunRaceInput,
+) -> bool {
+    let Ok(scenario_id) = RACING_DYNAMIC_SCENARIO_ID.parse() else {
+        return false;
+    };
+    has_supported_contract_semantics(contract, input)
+        && contract.scenario.id == scenario_id
+        && contract.scenario.version
+            == RACING_SCENARIO_VERSION
+                .parse()
+                .expect("static scenario version")
+}
+
+fn has_supported_contract_semantics(
+    contract: &pitgun_contract::DeterministicRunContractV1,
+    input: &RunRaceInput,
+) -> bool {
+    let Some(expected_clock) = expected_clock(input) else {
+        return false;
+    };
+    contract.contract_version == ContractVersion::V1
         && contract.runtime_profile == RuntimeProfile::PortableExactV1
         && contract.random.algorithm == RandomAlgorithm::PitgunSplitMix64V1
         && contract.random.stream_derivation == StreamDerivation::Sha256LabelV1
@@ -347,6 +685,16 @@ fn authorization_reason(error: &AuthorizationVerificationError) -> VerificationR
             | RunAuthorizationError::SubmissionGraceExpired
             | RunAuthorizationError::NotYetValid,
         ) => VerificationReasonCode::AuthorizationExpired,
+        AuthorizationVerificationError::AttemptAuthorization(
+            RunAttemptAuthorizationError::Authorization(
+                RunAuthorizationError::Expired
+                | RunAuthorizationError::SubmissionGraceExpired
+                | RunAuthorizationError::NotYetValid,
+            ),
+        ) => VerificationReasonCode::AuthorizationExpired,
+        AuthorizationVerificationError::AttemptAuthorization(
+            RunAttemptAuthorizationError::InitialRunIdMismatch { .. },
+        ) => VerificationReasonCode::RunIdMismatch,
         _ => VerificationReasonCode::InvalidAuthorization,
     }
 }
@@ -410,22 +758,35 @@ mod tests {
         ArtifactIdentity, AuthorizationSignatureAlgorithm, AuthorizationValidityV1,
         ContractVersion, DeterministicRunContractV1, Digest, EventOrderingV1, ExecutionId,
         Identifier, InputCanonicalization, InputIdentity, InputMediaType, LogicalClockV1,
-        RandomAlgorithm, RandomContractV1, RunAuthorizationV1, RunAuthorizationVersion,
+        RandomAlgorithm, RandomContractV1, RunAttemptAuthorizationV1,
+        RunAttemptAuthorizationVersion, RunAuthorizationV1, RunAuthorizationVersion,
         RuntimeIdentity, RuntimeProfile, ScenarioIdentity, Seed, SemanticVersion,
-        SignedRunAuthorizationV1, StreamDerivation, TelemetryFrame, TelemetrySummaryV1,
-        VerificationReasonCode, VerificationStatus, canonical_json_digest,
+        SignedRunAttemptAuthorizationV1, SignedRunAuthorizationV1, StreamDerivation,
+        TelemetryFrame, TelemetrySummaryV1, VerificationReasonCode, VerificationStatus,
+        canonical_json_digest,
+    };
+    use pitgun_racing_contract::{
+        RacingCompletedDriverInstructionHistoryV1, RacingCompletedRunInputV1,
+        RacingCompletedRunInputVersion, RacingDriverInstructionAuthorizationV1,
+        RacingDriverInstructionAuthorizationVersion, RacingDriverInstructionBoundaryV1,
+        RacingDriverInstructionEventV1, RacingDriverInstructionTimelineV1,
+        RacingDriverInstructionTimelineVersion, RacingDrivingMode,
     };
     use pitgun_racing_simulator::evidence::{
+        RacingDynamicExecutionRequestV1, RacingDynamicExecutionRequestVersion,
         RacingExecutionResolutionVersion, RacingHostedExecutionRequestV1,
         RacingHostedExecutionRequestVersion,
     };
     use pitgun_racing_simulator::{
-        RacingCatalogSnapshot, RunRaceInput, execute_authorized_race,
-        racing_model_identity_for_version, racing_model_v1_identity,
+        RacingCatalogSnapshot, RunRaceInput, RunRaceRequest, execute_authorized_dynamic_race,
+        execute_authorized_race, get_circuit_with_catalog, racing_model_identity_for_version,
+        racing_model_v1_identity, racing_model_v3_timeline_candidate_identity,
     };
     use pitgun_signing::{SigningKey, VerificationKeyring};
 
-    use super::{RacingVerificationSubmissionV1, RacingVerifier};
+    use super::{
+        RacingDynamicVerificationSubmissionV1, RacingVerificationSubmissionV1, RacingVerifier,
+    };
 
     const NOW_MS: i64 = 1_722_345_678_901;
     const SECRET: &[u8] = b"pitgun-verifier-unit-test-secret";
@@ -434,6 +795,15 @@ mod tests {
     struct Fixture {
         verifier: RacingVerifier,
         submission: RacingVerificationSubmissionV1,
+        signing_key: SigningKey,
+        catalog: RacingCatalogSnapshot,
+        policy: ArtifactIdentity,
+        verifier_identity: ArtifactIdentity,
+    }
+
+    struct DynamicFixture {
+        verifier: RacingVerifier,
+        submission: RacingDynamicVerificationSubmissionV1,
         signing_key: SigningKey,
         catalog: RacingCatalogSnapshot,
         policy: ArtifactIdentity,
@@ -571,6 +941,167 @@ mod tests {
         }
     }
 
+    fn dynamic_fixture() -> DynamicFixture {
+        let mut input = serde_json::from_str::<RunRaceRequest>(include_str!(
+            "../../../crates/pitgun-racing-simulator/tests/golden/racing_run_v2.input.json"
+        ))
+        .expect("dynamic Racing input fixture")
+        .input;
+        input.race.laps = 3;
+        input.race.competitors[0].driver_id = Some("balanced_reference".to_string());
+        let catalog_path = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .join("../../catalogs/racing/v1.8.0");
+        let catalog =
+            RacingCatalogSnapshot::from_release_dir(catalog_path).expect("dynamic catalog");
+        let model = racing_model_v3_timeline_candidate_identity();
+        let policy = ArtifactIdentity {
+            id: "pitgun.racing.tuning".parse().expect("policy id"),
+            version: "1.0.0".parse().expect("policy version"),
+            digest: Digest::from_bytes(include_bytes!("../../../policies/gametuning.v1.yaml")),
+        };
+        let initial_contract = DeterministicRunContractV1 {
+            contract_version: ContractVersion::V1,
+            scenario: ScenarioIdentity {
+                id: "racing.dynamic-session".parse().expect("scenario id"),
+                version: "1.0.0".parse().expect("scenario version"),
+            },
+            model: model.clone(),
+            data_pack: catalog.manifest().simulation_pack.identity.clone(),
+            runtime_profile: RuntimeProfile::PortableExactV1,
+            random: RandomContractV1 {
+                seed: Seed::new(376),
+                algorithm: RandomAlgorithm::PitgunSplitMix64V1,
+                stream_derivation: StreamDerivation::Sha256LabelV1,
+            },
+            clock: LogicalClockV1::new(0, 50_000, 1).expect("clock"),
+            event_ordering: EventOrderingV1::v1(),
+            input: InputIdentity {
+                media_type: InputMediaType::ApplicationJson,
+                canonicalization: InputCanonicalization::JcsRfc8785,
+                digest: canonical_json_digest(&input).expect("input digest"),
+            },
+        };
+        let instruction_profile = catalog
+            .driver_instruction_profile()
+            .expect("instruction profile");
+        let instruction_profile_identity = catalog
+            .driver_instruction_profile_identity()
+            .expect("instruction profile identity")
+            .clone();
+        let segment_count = u32::try_from(
+            get_circuit_with_catalog(&catalog, &input.race.track_id)
+                .expect("circuit")
+                .s_m
+                .len(),
+        )
+        .expect("segment count");
+        let decision_envelope = RacingDriverInstructionAuthorizationV1 {
+            schema_version: RacingDriverInstructionAuthorizationVersion::V1,
+            authorized_input: initial_contract.input.clone(),
+            instruction_profile: instruction_profile_identity.clone(),
+            allowed_modes: vec![
+                RacingDrivingMode::Manage,
+                RacingDrivingMode::Balanced,
+                RacingDrivingMode::Attack,
+            ],
+            boundary_granularity: instruction_profile.boundary_granularity,
+            max_events_per_session: instruction_profile.max_events_per_session,
+            competitor_ids: vec!["player".to_string()],
+            lap_count: input.race.laps,
+            segment_count,
+        };
+        let authorization = RunAttemptAuthorizationV1 {
+            authorization_version: RunAttemptAuthorizationVersion::V1,
+            nonce: Digest::from_bytes(b"dynamic-verifier-nonce"),
+            execution_id: "018f3b78-7e9a-7d20-a5e1-4ed92f02a597"
+                .parse()
+                .expect("execution id"),
+            subject: "career.dynamic-verifier".parse().expect("subject"),
+            audience: "pitgun.verifier".parse().expect("audience"),
+            initial_run_id: initial_contract.run_id().expect("initial run id"),
+            initial_contract,
+            decision_envelope: decision_envelope
+                .artifact_identity()
+                .expect("decision envelope identity"),
+            policy: policy.clone(),
+            signing_key_id: KEY_ID.parse().expect("key id"),
+            validity: AuthorizationValidityV1 {
+                issued_at_ms: NOW_MS - 60_000,
+                expires_at_ms: NOW_MS + 60_000,
+                late_submission_grace_ms: 120_000,
+            },
+        };
+        let signing_key = SigningKey::from_secret(SECRET).expect("signing key");
+        let signature = signing_key.sign(&authorization.signing_bytes().expect("signing bytes"));
+        let completed_input = RacingCompletedRunInputV1 {
+            schema_version: RacingCompletedRunInputVersion::V1,
+            authorized_input: authorization.initial_contract.input.clone(),
+            driver_instructions: RacingCompletedDriverInstructionHistoryV1 {
+                instruction_profile: instruction_profile_identity,
+                initial_mode: RacingDrivingMode::Balanced,
+                competitor_ids: vec!["player".to_string()],
+                applied_timeline: RacingDriverInstructionTimelineV1 {
+                    schema_version: RacingDriverInstructionTimelineVersion::V1,
+                    events: vec![
+                        RacingDriverInstructionEventV1 {
+                            sequence: 0,
+                            competitor_id: "player".to_string(),
+                            effective_at: RacingDriverInstructionBoundaryV1 {
+                                lap_index: 1,
+                                segment_index: 0,
+                            },
+                            mode: RacingDrivingMode::Attack,
+                        },
+                        RacingDriverInstructionEventV1 {
+                            sequence: 1,
+                            competitor_id: "player".to_string(),
+                            effective_at: RacingDriverInstructionBoundaryV1 {
+                                lap_index: 2,
+                                segment_index: 0,
+                            },
+                            mode: RacingDrivingMode::Balanced,
+                        },
+                    ],
+                },
+            },
+        };
+        let submission = execute_authorized_dynamic_race(
+            RacingDynamicExecutionRequestV1 {
+                schema_version: RacingDynamicExecutionRequestVersion::V1,
+                signed_authorization: SignedRunAttemptAuthorizationV1 {
+                    authorization,
+                    algorithm: AuthorizationSignatureAlgorithm::HmacSha256,
+                    signature,
+                },
+                decision_envelope,
+                catalog_release: catalog.release_identity().clone(),
+                input,
+                completed_input,
+                wasm_artifact_digest: Digest::from_bytes(b"dynamic verifier wasm"),
+            },
+            &catalog,
+        )
+        .expect("dynamic execution");
+        let verifier_identity = artifact("pitgun.verifier", b"verifier-v1-test-binary");
+        let verifier = RacingVerifier::new(
+            retained_keyring(&signing_key),
+            "pitgun.verifier".parse().expect("audience"),
+            model,
+            policy.clone(),
+            Some(catalog.clone()),
+            verifier_identity.clone(),
+        );
+
+        DynamicFixture {
+            verifier,
+            submission,
+            signing_key,
+            catalog,
+            policy,
+            verifier_identity,
+        }
+    }
+
     fn resign(submission: &mut RacingVerificationSubmissionV1, key: &SigningKey) {
         submission.signed_authorization.authorization.run_id = submission
             .signed_authorization
@@ -587,6 +1118,22 @@ mod tests {
         );
     }
 
+    fn resign_dynamic(submission: &mut RacingDynamicVerificationSubmissionV1, key: &SigningKey) {
+        submission.signed_authorization.authorization.initial_run_id = submission
+            .signed_authorization
+            .authorization
+            .initial_contract
+            .run_id()
+            .expect("changed initial run id");
+        submission.signed_authorization.signature = key.sign(
+            &submission
+                .signed_authorization
+                .authorization
+                .signing_bytes()
+                .expect("changed attempt signing bytes"),
+        );
+    }
+
     fn reason(
         verifier: &RacingVerifier,
         submission: &RacingVerificationSubmissionV1,
@@ -594,6 +1141,16 @@ mod tests {
         let verdict = verifier
             .verify(submission, NOW_MS)
             .expect("verdict construction");
+        (verdict.status, verdict.reason_code)
+    }
+
+    fn dynamic_reason(
+        verifier: &RacingVerifier,
+        submission: &RacingDynamicVerificationSubmissionV1,
+    ) -> (VerificationStatus, Option<VerificationReasonCode>) {
+        let verdict = verifier
+            .verify_attempt(submission, NOW_MS)
+            .expect("dynamic verdict construction");
         (verdict.status, verdict.reason_code)
     }
 
@@ -968,5 +1525,188 @@ mod tests {
         assert_eq!(second.status, VerificationStatus::Verified);
         assert_eq!(first.run_id, second.run_id);
         assert_ne!(first.execution_id, second.execution_id);
+    }
+
+    #[test]
+    fn valid_dynamic_attempt_is_replayed_with_its_final_run_id() {
+        let fixture = dynamic_fixture();
+
+        let verdict = fixture
+            .verifier
+            .verify_attempt(&fixture.submission, NOW_MS)
+            .expect("dynamic verdict");
+
+        assert_eq!(verdict.status, VerificationStatus::Verified);
+        assert_eq!(verdict.reason_code, None);
+        assert_eq!(verdict.run_id, fixture.submission.receipt.receipt.run_id);
+        assert_ne!(
+            verdict.run_id,
+            fixture
+                .submission
+                .signed_authorization
+                .authorization
+                .initial_run_id
+        );
+        assert_eq!(
+            verdict
+                .verified_resolution
+                .expect("verified resolution")
+                .data_pack,
+            fixture.catalog.manifest().simulation_pack.identity
+        );
+    }
+
+    #[test]
+    fn dynamic_attempt_fails_closed_without_retained_catalog() {
+        let fixture = dynamic_fixture();
+        let verifier = RacingVerifier::new(
+            retained_keyring(&fixture.signing_key),
+            "pitgun.verifier".parse().expect("audience"),
+            racing_model_v3_timeline_candidate_identity(),
+            fixture.policy,
+            None,
+            fixture.verifier_identity,
+        );
+
+        assert_eq!(
+            dynamic_reason(&verifier, &fixture.submission),
+            (
+                VerificationStatus::Pending,
+                Some(VerificationReasonCode::CatalogUnavailable)
+            )
+        );
+    }
+
+    #[test]
+    fn dynamic_attempt_rejects_signature_and_timeline_mutations() {
+        let fixture = dynamic_fixture();
+
+        let mut bad_signature = fixture.submission.clone();
+        bad_signature.signed_authorization.signature = "00".to_string();
+        assert_eq!(
+            dynamic_reason(&fixture.verifier, &bad_signature),
+            (
+                VerificationStatus::Rejected,
+                Some(VerificationReasonCode::InvalidAuthorization)
+            )
+        );
+
+        let mut expired = fixture.submission.clone();
+        expired
+            .signed_authorization
+            .authorization
+            .validity
+            .issued_at_ms = NOW_MS - 120_000;
+        expired
+            .signed_authorization
+            .authorization
+            .validity
+            .expires_at_ms = NOW_MS - 60_000;
+        expired
+            .signed_authorization
+            .authorization
+            .validity
+            .late_submission_grace_ms = 0;
+        resign_dynamic(&mut expired, &fixture.signing_key);
+        assert_eq!(
+            dynamic_reason(&fixture.verifier, &expired),
+            (
+                VerificationStatus::Rejected,
+                Some(VerificationReasonCode::AuthorizationExpired)
+            )
+        );
+
+        let mut changed_envelope = fixture.submission.clone();
+        changed_envelope.decision_envelope.allowed_modes.remove(0);
+        assert_eq!(
+            dynamic_reason(&fixture.verifier, &changed_envelope),
+            (
+                VerificationStatus::Rejected,
+                Some(VerificationReasonCode::InvalidAuthorization)
+            )
+        );
+
+        let mut missing = fixture.submission.clone();
+        missing
+            .completed_input
+            .driver_instructions
+            .applied_timeline
+            .events
+            .remove(0);
+        assert_eq!(
+            dynamic_reason(&fixture.verifier, &missing),
+            (
+                VerificationStatus::Rejected,
+                Some(VerificationReasonCode::InvalidAuthorization)
+            )
+        );
+
+        let mut reordered = fixture.submission.clone();
+        reordered
+            .completed_input
+            .driver_instructions
+            .applied_timeline
+            .events
+            .swap(0, 1);
+        assert_eq!(
+            dynamic_reason(&fixture.verifier, &reordered),
+            (
+                VerificationStatus::Rejected,
+                Some(VerificationReasonCode::InvalidAuthorization)
+            )
+        );
+
+        let mut inserted = fixture.submission.clone();
+        inserted
+            .completed_input
+            .driver_instructions
+            .applied_timeline
+            .events
+            .push(RacingDriverInstructionEventV1 {
+                sequence: 2,
+                competitor_id: "player".to_string(),
+                effective_at: RacingDriverInstructionBoundaryV1 {
+                    lap_index: inserted.input.race.laps,
+                    segment_index: 0,
+                },
+                mode: RacingDrivingMode::Attack,
+            });
+        assert_eq!(
+            dynamic_reason(&fixture.verifier, &inserted),
+            (
+                VerificationStatus::Rejected,
+                Some(VerificationReasonCode::InvalidAuthorization)
+            )
+        );
+
+        let mut altered = fixture.submission.clone();
+        altered
+            .completed_input
+            .driver_instructions
+            .applied_timeline
+            .events[0]
+            .mode = RacingDrivingMode::Manage;
+        assert_eq!(
+            dynamic_reason(&fixture.verifier, &altered),
+            (
+                VerificationStatus::Rejected,
+                Some(VerificationReasonCode::ReceiptMismatch)
+            )
+        );
+    }
+
+    #[test]
+    fn dynamic_attempt_rejects_physically_altered_output() {
+        let fixture = dynamic_fixture();
+        let mut altered = fixture.submission.clone();
+        altered.output.player_lap_times_ms[0] += 1;
+
+        assert_eq!(
+            dynamic_reason(&fixture.verifier, &altered),
+            (
+                VerificationStatus::Rejected,
+                Some(VerificationReasonCode::OutputMismatch)
+            )
+        );
     }
 }

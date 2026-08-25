@@ -20,7 +20,9 @@ use pitgun_contract::{
 use pitgun_racing_policy::default_policy_path;
 use pitgun_racing_simulator::{RacingCatalogSnapshot, racing_model_identity_for_version};
 use pitgun_signing::{SigningKey, VerificationKeyring};
-use pitgun_verifier::{RacingVerificationSubmissionV1, RacingVerifier};
+use pitgun_verifier::{
+    RacingDynamicVerificationSubmissionV1, RacingVerificationSubmissionV1, RacingVerifier,
+};
 use tokio::{net::TcpListener, sync::Semaphore, task};
 use tracing::{error, info, warn};
 
@@ -29,10 +31,12 @@ const DEFAULT_AUDIENCE: &str = "pitgun.verifier";
 const DEFAULT_SIGNING_KEY_ID: &str = "pitgun-authority-v1";
 const DEFAULT_MAX_CONCURRENT_REPLAYS: usize = 2;
 const DEFAULT_RACING_MODEL_VERSION: &str = "1.0.0";
+const DEFAULT_RACING_ATTEMPT_MODEL_VERSION: &str = "0.14.0";
 
 #[derive(Clone)]
 struct AppState {
     verifier: Arc<RacingVerifier>,
+    attempt_verifier: Arc<RacingVerifier>,
     replay_slots: Arc<Semaphore>,
     ready: bool,
 }
@@ -86,6 +90,38 @@ async fn verify_racing(
     }
 }
 
+async fn verify_racing_attempt(
+    State(state): State<AppState>,
+    Json(submission): Json<RacingDynamicVerificationSubmissionV1>,
+) -> Response {
+    let permit = match state.replay_slots.clone().acquire_owned().await {
+        Ok(permit) => permit,
+        Err(error) => {
+            error!(?error, "verifier replay semaphore is closed");
+            return internal_error();
+        }
+    };
+    let verifier = Arc::clone(&state.attempt_verifier);
+    let now_ms = now_ms();
+    let result = task::spawn_blocking(move || {
+        let _permit = permit;
+        verifier.verify_attempt(&submission, now_ms)
+    })
+    .await;
+
+    match result {
+        Ok(Ok(verdict)) => verdict_response(verdict),
+        Ok(Err(error)) => {
+            error!(?error, "dynamic Racing verification failed internally");
+            internal_error()
+        }
+        Err(error) => {
+            error!(?error, "dynamic Racing verification worker terminated");
+            internal_error()
+        }
+    }
+}
+
 fn verdict_response(verdict: VerificationVerdictV1) -> Response {
     let status = match verdict.status {
         VerificationStatus::Pending => StatusCode::ACCEPTED,
@@ -109,6 +145,10 @@ fn build_router(state: AppState) -> Router {
         .route("/healthz", get(healthz))
         .route("/readyz", get(readyz))
         .route("/v1/verifications/racing", post(verify_racing))
+        .route(
+            "/v1/verifications/racing/attempts",
+            post(verify_racing_attempt),
+        )
         .with_state(state)
 }
 
@@ -151,9 +191,10 @@ fn load_policy_identity() -> Result<ArtifactIdentity, String> {
     })
 }
 
-fn load_catalog(model_version: &str) -> Option<RacingCatalogSnapshot> {
-    let loaded = match std::env::var_os("PITGUN_RACING_CATALOG_RELEASE_DIR") {
+fn load_catalog(env_var: &str, model_version: &str) -> Option<RacingCatalogSnapshot> {
+    let loaded = match std::env::var_os(env_var) {
         Some(path) => RacingCatalogSnapshot::from_release_dir(PathBuf::from(path)),
+        None if model_version == "0.14.0" => RacingCatalogSnapshot::embedded_model_v3_timeline(),
         None if model_version == "0.10.0" => RacingCatalogSnapshot::embedded_model_v3_thermal(),
         None if model_version == "2.0.0" => RacingCatalogSnapshot::embedded_model_v2(),
         None => RacingCatalogSnapshot::embedded(),
@@ -192,6 +233,9 @@ fn load_state() -> Result<AppState, String> {
     let model_version = std::env::var("PITGUN_RACING_MODEL_VERSION")
         .unwrap_or_else(|_| DEFAULT_RACING_MODEL_VERSION.to_owned());
     let expected_model = racing_model_identity_for_version(&model_version)?;
+    let attempt_model_version = std::env::var("PITGUN_RACING_ATTEMPT_MODEL_VERSION")
+        .unwrap_or_else(|_| DEFAULT_RACING_ATTEMPT_MODEL_VERSION.to_owned());
+    let expected_attempt_model = racing_model_identity_for_version(&attempt_model_version)?;
     let signing_key = match SigningKey::from_env_or_file() {
         Ok(key) => Some(key),
         Err(error) => {
@@ -204,31 +248,61 @@ fn load_state() -> Result<AppState, String> {
         keyring.insert(key_id, key);
     }
     let policy = load_policy_identity()?;
-    let catalog = load_catalog(&model_version).and_then(|catalog| {
-        match catalog
-            .manifest()
-            .compatibility
-            .validate_for(&expected_model, pitgun_contract::ContractVersion::V1)
-        {
+    let catalog =
+        load_catalog("PITGUN_RACING_CATALOG_RELEASE_DIR", &model_version).and_then(|catalog| {
+            match catalog
+                .manifest()
+                .compatibility
+                .validate_for(&expected_model, pitgun_contract::ContractVersion::V1)
+            {
+                Ok(()) => Some(catalog),
+                Err(error) => {
+                    error!(?error, "configured Racing model/catalog pair is invalid");
+                    None
+                }
+            }
+        });
+    let attempt_catalog = load_catalog(
+        "PITGUN_RACING_ATTEMPT_CATALOG_RELEASE_DIR",
+        &attempt_model_version,
+    )
+    .and_then(|catalog| {
+        match catalog.manifest().compatibility.validate_for(
+            &expected_attempt_model,
+            pitgun_contract::ContractVersion::V1,
+        ) {
             Ok(()) => Some(catalog),
             Err(error) => {
-                error!(?error, "configured Racing model/catalog pair is invalid");
+                error!(
+                    ?error,
+                    "configured dynamic Racing model/catalog pair is invalid"
+                );
                 None
             }
         }
     });
-    let ready = signing_key.is_some() && catalog.is_some();
+    let ready = signing_key.is_some() && catalog.is_some() && attempt_catalog.is_some();
+    let verifier_identity = load_verifier_identity()?;
     let verifier = RacingVerifier::new(
+        keyring.clone(),
+        expected_audience.clone(),
+        expected_model,
+        policy.clone(),
+        catalog,
+        verifier_identity.clone(),
+    );
+    let attempt_verifier = RacingVerifier::new(
         keyring,
         expected_audience,
-        expected_model,
+        expected_attempt_model,
         policy,
-        catalog,
-        load_verifier_identity()?,
+        attempt_catalog,
+        verifier_identity,
     );
 
     Ok(AppState {
         verifier: Arc::new(verifier),
+        attempt_verifier: Arc::new(attempt_verifier),
         replay_slots: Arc::new(Semaphore::new(parse_max_concurrent_replays())),
         ready,
     })
