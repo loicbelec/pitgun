@@ -60,3 +60,11 @@ Authority is required to issue a new attempt. Once signed, an already-started
 attempt may finish and be submitted within its grace window even if Authority
 is unavailable. Locally executed work outside a signed envelope remains
 unverified and cannot enter the verified leaderboard retroactively.
+
+`pitgun-signing::VerificationKeyring` verifies immutable and dynamic
+authorizations with the same active and retained HMAC keys. Dynamic execution
+and submission checks reuse the existing audience, expiry and grace semantics.
+No additional secret, environment variable, key store or rotation procedure is
+introduced. Cryptographic verification deliberately does not consume the
+nonce; the accepting persistence transaction remains the replay-protection
+boundary.
