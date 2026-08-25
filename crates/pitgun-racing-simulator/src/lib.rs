@@ -34,8 +34,8 @@ use std::collections::{BTreeMap, BTreeSet, HashMap};
 use std::hash::{Hash, Hasher};
 
 use pitgun_contract::{
-    ArtifactIdentity, RunBundleReceiptV1, RunBundleReceiptVersion, RuntimeIdentity, Sample,
-    SampleValue, SignalQuality, TelemetryFrame,
+    ArtifactIdentity, AuthorizationSignatureAlgorithm, RunBundleReceiptV1, RunBundleReceiptVersion,
+    RuntimeIdentity, Sample, SampleValue, SignalQuality, TelemetryFrame, canonical_json_digest,
 };
 use pitgun_racing_contract::{
     CircuitCatalogEntry, CompetitorSpec, CompetitorStintStrategy, ComponentCapabilityDefinitionV1,
@@ -2797,6 +2797,265 @@ pub fn execute_authorized_race_application(
         evidence,
         runtime_output: execution.output,
     })
+}
+
+/// Executes one dynamic Racing attempt through the embedded timeline catalog.
+#[cfg_attr(feature = "wasm", wasm_bindgen)]
+pub fn execute_authorized_dynamic_race_json(request_json: String) -> String {
+    let request =
+        match serde_json::from_str::<evidence::RacingDynamicExecutionRequestV1>(&request_json) {
+            Ok(request) => request,
+            Err(error) => {
+                return json_error(&format!("invalid dynamic execution request: {error}"));
+            }
+        };
+    let catalog = match RacingCatalogSnapshot::embedded_model_v3_timeline() {
+        Ok(catalog) => catalog,
+        Err(error) => {
+            return json_error(&format!(
+                "invalid embedded Racing timeline catalog: {error}"
+            ));
+        }
+    };
+
+    match execute_authorized_dynamic_race(request, &catalog) {
+        Ok(submission) => serialize_json(&submission),
+        Err(error) => json_error(&error),
+    }
+}
+
+/// Executes one dynamic attempt and retains complete local runtime telemetry.
+#[cfg_attr(feature = "wasm", wasm_bindgen)]
+pub fn execute_authorized_dynamic_race_application_json(request_json: String) -> String {
+    let request =
+        match serde_json::from_str::<evidence::RacingDynamicExecutionRequestV1>(&request_json) {
+            Ok(request) => request,
+            Err(error) => {
+                return json_error(&format!("invalid dynamic execution request: {error}"));
+            }
+        };
+    let catalog = match RacingCatalogSnapshot::embedded_model_v3_timeline() {
+        Ok(catalog) => catalog,
+        Err(error) => {
+            return json_error(&format!(
+                "invalid embedded Racing timeline catalog: {error}"
+            ));
+        }
+    };
+
+    match execute_authorized_dynamic_race_application(request, &catalog) {
+        Ok(result) => serialize_json(&result),
+        Err(error) => json_error(&error),
+    }
+}
+
+/// Executes one dynamic attempt against caller-fetched immutable catalog bytes.
+#[cfg_attr(feature = "wasm", wasm_bindgen)]
+pub fn execute_authorized_dynamic_race_with_catalog_json(
+    request_json: String,
+    catalog_bundle_json: String,
+) -> String {
+    let request =
+        match serde_json::from_str::<evidence::RacingDynamicExecutionRequestV1>(&request_json) {
+            Ok(request) => request,
+            Err(error) => {
+                return json_error(&format!("invalid dynamic execution request: {error}"));
+            }
+        };
+    let catalog = match RacingCatalogSnapshot::from_bundle_json(&catalog_bundle_json) {
+        Ok(catalog) => catalog,
+        Err(error) => return json_error(&format!("invalid Racing catalog: {error}")),
+    };
+
+    match execute_authorized_dynamic_race(request, &catalog) {
+        Ok(submission) => serialize_json(&submission),
+        Err(error) => json_error(&error),
+    }
+}
+
+/// Executes one dynamic attempt against caller-fetched catalog bytes and
+/// retains complete local runtime telemetry.
+#[cfg_attr(feature = "wasm", wasm_bindgen)]
+pub fn execute_authorized_dynamic_race_application_with_catalog_json(
+    request_json: String,
+    catalog_bundle_json: String,
+) -> String {
+    let request =
+        match serde_json::from_str::<evidence::RacingDynamicExecutionRequestV1>(&request_json) {
+            Ok(request) => request,
+            Err(error) => {
+                return json_error(&format!("invalid dynamic execution request: {error}"));
+            }
+        };
+    let catalog = match RacingCatalogSnapshot::from_bundle_json(&catalog_bundle_json) {
+        Ok(catalog) => catalog,
+        Err(error) => return json_error(&format!("invalid Racing catalog: {error}")),
+    };
+
+    match execute_authorized_dynamic_race_application(request, &catalog) {
+        Ok(result) => serialize_json(&result),
+        Err(error) => json_error(&error),
+    }
+}
+
+/// Produces compact verifier evidence for one completed dynamic Racing attempt.
+pub fn execute_authorized_dynamic_race(
+    request: evidence::RacingDynamicExecutionRequestV1,
+    catalog: &RacingCatalogSnapshot,
+) -> Result<evidence::RacingDynamicVerificationSubmissionV1, String> {
+    execute_authorized_dynamic_race_application(request, catalog).map(|result| result.evidence)
+}
+
+/// Validates and executes one predeclared driver-instruction history.
+///
+/// Cryptographic HMAC verification remains at the trusted Verifier boundary:
+/// browser runtimes receive no Authority secret. This boundary nevertheless
+/// rejects malformed signature shapes and validates every signed identity before
+/// physical execution starts.
+pub fn execute_authorized_dynamic_race_application(
+    request: evidence::RacingDynamicExecutionRequestV1,
+    catalog: &RacingCatalogSnapshot,
+) -> Result<evidence::RacingDynamicApplicationResultV1, String> {
+    let signed = &request.signed_authorization;
+    signed
+        .authorization
+        .validate_integrity()
+        .map_err(|error| format!("invalid signed attempt authorization: {error}"))?;
+    validate_attempt_signature_shape(signed.algorithm, &signed.signature)?;
+
+    let initial_contract = &signed.authorization.initial_contract;
+    if initial_contract.model != racing_model_v3_timeline_candidate_identity() {
+        return Err(format!(
+            "dynamic Racing execution requires model {}, got {}@{} {}",
+            racing_model_v3_timeline_candidate_identity().version,
+            initial_contract.model.id,
+            initial_contract.model.version,
+            initial_contract.model.digest,
+        ));
+    }
+    catalog
+        .manifest()
+        .validate_for_run(initial_contract)
+        .map_err(|error| format!("authorized dynamic catalog is unavailable: {error}"))?;
+    if catalog.release_identity() != &request.catalog_release {
+        return Err(format!(
+            "dynamic Racing catalog release mismatch: expected {}@{} {}, got {}@{} {}",
+            request.catalog_release.id,
+            request.catalog_release.version,
+            request.catalog_release.manifest_digest,
+            catalog.release_identity().id,
+            catalog.release_identity().version,
+            catalog.release_identity().manifest_digest,
+        ));
+    }
+
+    let actual_input_digest = canonical_json_digest(&request.input)
+        .map_err(|error| format!("cannot canonicalize dynamic Racing input: {error}"))?;
+    if actual_input_digest != initial_contract.input.digest {
+        return Err(format!(
+            "dynamic Racing input digest mismatch: expected {}, got {}",
+            initial_contract.input.digest, actual_input_digest,
+        ));
+    }
+
+    let instruction_profile_identity = catalog
+        .driver_instruction_profile_identity()
+        .ok_or_else(|| "dynamic Racing catalog has no instruction-profile identity".to_string())?;
+    let instruction_profile = catalog
+        .driver_instruction_profile()
+        .ok_or_else(|| "dynamic Racing catalog has no instruction profile".to_string())?;
+    let final_contract = request
+        .decision_envelope
+        .final_contract_for_attempt(
+            &signed.authorization,
+            &request.completed_input,
+            instruction_profile_identity,
+            instruction_profile,
+        )
+        .map_err(|error| format!("invalid completed dynamic Racing input: {error}"))?;
+
+    let output = run_race_with_catalog_and_v3_timeline_candidate(
+        RunRaceRequest {
+            input: request.input.clone(),
+            seed: initial_contract.random.seed.get(),
+            era: Some(request.input.era),
+            hz: Some(request.input.hz),
+        },
+        catalog,
+        request
+            .completed_input
+            .driver_instructions
+            .applied_timeline
+            .clone(),
+    )
+    .map_err(|error| format!("authorized dynamic Racing execution failed: {error}"))?;
+    let run_evidence = evidence::RacingRunEvidenceV1::from_race_output(&output)
+        .map_err(|error| format!("cannot project dynamic Racing evidence: {error}"))?;
+    let runtime = RuntimeIdentity {
+        engine: "pitgun-wasm"
+            .parse()
+            .expect("static WASM runtime engine identifier"),
+        engine_version: env!("CARGO_PKG_VERSION")
+            .parse()
+            .expect("crate version is semantic"),
+        target: "wasm32-unknown-unknown"
+            .parse()
+            .expect("static WASM target identifier"),
+        artifact_digest: request.wasm_artifact_digest,
+    };
+    let receipt = run_evidence
+        .execution_receipt(&final_contract, signed.authorization.execution_id, runtime)
+        .map_err(|error| format!("cannot create dynamic Racing receipt: {error}"))?;
+    signed
+        .authorization
+        .validate_completed_receipt(&final_contract, &receipt)
+        .map_err(|error| format!("invalid completed dynamic Racing receipt: {error}"))?;
+    let execution_resolution =
+        evidence::RacingExecutionResolutionV1::from_catalog(catalog, &initial_contract.model)
+            .ok_or_else(|| {
+                "dynamic Racing catalog has no explicit execution lineage".to_string()
+            })?;
+
+    let evidence = evidence::RacingDynamicVerificationSubmissionV1 {
+        schema_version: evidence::RacingDynamicVerificationSubmissionVersion::V1,
+        signed_authorization: request.signed_authorization,
+        decision_envelope: request.decision_envelope,
+        input: request.input,
+        completed_input: request.completed_input,
+        receipt: RunBundleReceiptV1 {
+            schema_version: RunBundleReceiptVersion::V1,
+            receipt,
+        },
+        output: run_evidence.output,
+        telemetry_summary: run_evidence.telemetry_summary,
+        execution_resolution,
+    };
+
+    Ok(evidence::RacingDynamicApplicationResultV1 {
+        schema_version: evidence::RacingDynamicApplicationResultVersion::V1,
+        evidence,
+        runtime_output: output,
+    })
+}
+
+fn validate_attempt_signature_shape(
+    algorithm: AuthorizationSignatureAlgorithm,
+    signature: &str,
+) -> Result<(), String> {
+    if algorithm != AuthorizationSignatureAlgorithm::HmacSha256 {
+        return Err("unsupported dynamic authorization signature algorithm".to_string());
+    }
+    if signature.len() != 64
+        || !signature
+            .bytes()
+            .all(|byte| byte.is_ascii_digit() || (b'a'..=b'f').contains(&byte))
+    {
+        return Err(
+            "invalid dynamic authorization signature shape: expected 64 lowercase hex characters"
+                .to_string(),
+        );
+    }
+    Ok(())
 }
 
 fn racing_workload_for(

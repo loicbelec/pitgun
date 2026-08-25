@@ -44,6 +44,28 @@ boundary.
 The existing presentation-oriented race and session functions remain
 unchanged during game migration.
 
+## Dynamic attempt execution
+
+The timeline candidate also exposes strict native and WASM-compatible dynamic
+execution boundaries:
+
+- `execute_authorized_dynamic_race_json`;
+- `execute_authorized_dynamic_race_with_catalog_json`;
+- their matching application projections, which retain local telemetry.
+
+`RacingDynamicExecutionRequestV1` binds the Authority-issued attempt, exact
+decision envelope, immutable catalog release, initial canonical input,
+completed driver-instruction history and loaded WASM digest. Execution rejects
+a malformed signature shape or any changed identity before solving, derives
+the final contract from `RacingCompletedRunInputV1`, and runs the exact ordered
+timeline through Model `0.14.0`.
+
+The compact `RacingDynamicVerificationSubmissionV1` contains everything a
+trusted Verifier needs to validate the HMAC and replay the result. Raw
+telemetry stays in `RacingDynamicApplicationResultV1` for the Pit Wall. The
+browser never receives Authority's HMAC secret; cryptographic acceptance and
+nonce consumption remain service responsibilities.
+
 ## Reviewed Model V3 thermal candidate
 
 The simulator also owns the candidate-only family resolver introduced by
