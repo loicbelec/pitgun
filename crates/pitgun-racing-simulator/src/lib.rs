@@ -3273,6 +3273,10 @@ impl EmbeddedCatalog {
             "component-capabilities" => {
                 // Parsed and coverage-validated by `RacingCatalogSnapshot`.
             }
+            "driver-instructions" => {
+                // Parsed and identity-validated by `RacingCatalogSnapshot`.
+                // Execution receives the resolved profile explicitly.
+            }
             _ => {
                 return Err(format!(
                     "unsupported Racing simulation resource category '{category}'"
@@ -4312,13 +4316,14 @@ fn json_error(message: &str) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[cfg(not(target_arch = "wasm32"))]
+    use pitgun_racing_contract::RacingModelParametersPurpose;
     use pitgun_racing_contract::{
         CompetitorSpec, RaceInput, RaceStint, RacingDriverControlProfileVersion,
         RacingDriverInstructionBoundaryGranularityV1, RacingDriverInstructionEventV1,
         RacingDriverInstructionProfileVersion, RacingDriverInstructionTimelineVersion,
         RacingDriverResourceVersion, RacingDriverUtilizationResponseV1,
-        RacingDrivingModeCommitmentsV1, RacingModelParametersPurpose, TuningSpec,
-        VehicleComponentSelectionVersion,
+        RacingDrivingModeCommitmentsV1, TuningSpec, VehicleComponentSelectionVersion,
     };
     use pitgun_runtime::LinkedWorkload;
     use serde::Deserialize;
@@ -4923,6 +4928,7 @@ mod tests {
         );
     }
 
+    #[cfg(not(target_arch = "wasm32"))]
     #[test]
     fn catalog_backed_model_parameters_preserve_model_v2_output() {
         let root =
@@ -5002,6 +5008,7 @@ mod tests {
         );
     }
 
+    #[cfg(not(target_arch = "wasm32"))]
     #[test]
     fn v3_candidate_resolves_gameplay_before_the_solver_and_is_deterministic() {
         let root =
