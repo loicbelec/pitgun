@@ -92,10 +92,16 @@ its own domain model and physical rules.
 - A versioned maximum-speed metric calculated from emitted typed telemetry
 - Portable Run Bundle V1 replay and deterministic verification in a fresh process
 - Racing physics, lap simulation, data packs, and browser-compatible WASM
+- A physically resolved Racing Model V3 candidate with segment-aware track
+  integration, explicit aero and transmission resolution, tire degradation,
+  fuel-mass evolution, thermal state, and deterministic driver controls
 - Domain-neutral telemetry envelopes, frames, and processing pipelines
 - Replay and command-line tooling for operating local data flows
 - Optional adapters for observed telemetry over UDP and WebSocket
-- Policy, signing, gateway, and authority building blocks for hosted deployments
+- Operational Authority and Verifier services for signed authorization,
+  independent replay, and server-owned verification verdicts
+- Governed offline experiment campaigns backed by immutable manifests, Delta
+  lineage, MLflow artifacts, and human-reviewed decisions
 
 The Racing fixture now produces the same `run_id`, `output_digest`, and
 `telemetry_summary_digest` in native Rust and Node/WASM. The checked-in canonical
@@ -205,11 +211,18 @@ engine without introducing Racing semantics into `pitgun-policy`;
 direction and explains why Pitgun does not claim a universal Solver before a
 second domain proves the abstraction.
 
-The Racing workload is backed by the immutable
+The stable CLI demo deliberately remains backed by the immutable
 [`pitgun.racing@1.0.0`](catalogs/racing/v1.0.0/catalog.json) reference catalog.
 Its Simulation Pack contains the physical resources used by native and WASM
 execution; its separate Presentation Pack supplies the browser-facing labels
 without affecting deterministic identity.
+
+Later immutable releases evolve the Racing proving ground without rewriting
+that public fixture. The current governed candidate is
+[`pitgun.racing@1.9.0`](catalogs/racing/v1.9.0/catalog.json), compatible with
+`pitgun.racing-v3-candidate@0.15.0`. It adds the explicit full-distance fuel
+contract and is the subject of the latest multi-circuit acceptance campaign;
+it is not a mutable alias for the V1 quickstart.
 
 ## Architecture at a Glance
 
@@ -223,7 +236,7 @@ stack:
 | **Reference workload** | Solve Racing physics, orchestrate races, and expose WASM | `pitgun-racing-solver`, `pitgun-racing-simulator` |
 | **Telemetry processing** | Transform and aggregate generated or observed channels | `crates/pitgun-core` |
 | **Replay and tooling** | Run, inspect, replay, and verify local artifacts | `apps/pitgun-cli`, `apps/pitgun-replay` |
-| **Hosted governance** | Constrain, sign, receive, and audit distributed runs | `crates/pitgun-policy`, `crates/pitgun-racing-policy`, `crates/pitgun-signing`, `services/pitgun-authority`, `services/pitgun-gateway` |
+| **Hosted governance** | Constrain, sign, independently replay, and audit distributed runs | `crates/pitgun-policy`, `crates/pitgun-racing-policy`, `crates/pitgun-signing`, `services/pitgun-authority`, `services/pitgun-verifier` |
 | **Observed-data integrations** | Capture external telemetry for comparison, calibration, processing, or later replay | `pitgun-source-udp`, `pitgun-source-ws`, `pitgun-codec-*` |
 
 ```text
@@ -253,12 +266,41 @@ belong to the operating environment. Once captured as a versioned artifact,
 however, Pitgun can process and replay that recorded data reproducibly. These
 adapters therefore sit outside the deterministic simulation kernel.
 
-## Optional Hosted Flow
+## Optional Hosted Verification
 
-The gateway and authority support distributed deployments in which contracts are
-issued centrally and simulations execute elsewhere. They are optional hosted
-components, not requirements for the local demo or the primary product entry
-point.
+Pitgun can authorize a deterministic attempt centrally, execute it in an
+untrusted browser through Rust/WASM, preserve its evidence in a local outbox,
+and independently replay it before a result becomes eligible for a trusted
+projection such as a leaderboard.
+
+```text
+Authority -> signed attempt -> browser/WASM -> evidence -> integrating backend
+     ^                                                   |
+     |                                                   v
+ policy + catalog                              Verifier replay + verdict
+```
+
+The Authority signs the exact model, Simulation Pack, policy, subject, and
+execution envelope it accepts. The Verifier trusts neither the browser result
+nor a client-provided verdict: it resolves retained immutable resources,
+recomputes identities and digests, then replays the workload. Availability is
+deliberately asymmetric: an already authorized attempt can finish and retry
+submission from the outbox, while a run invented during an Authority outage
+cannot be retroactively promoted as verified.
+
+These services are optional. The local CLI demo does not require an account,
+network service, or hosted database. See the
+[Authority](services/pitgun-authority/README.md),
+[Verifier](services/pitgun-verifier/README.md), and
+[verification verdict](docs/VERIFICATION_VERDICT_V1.md) contracts.
+
+## Optional Telemetry Ingestion
+
+The Gateway is a separate hosted boundary for authenticated, versioned
+WebSocket event ingestion into append-only PostgreSQL storage. It does not
+authorize simulations, verify results, build Racing summaries, or select
+models. This separation keeps transport and observed-data concerns out of the
+deterministic execution path.
 
 ```bash
 PITGUN_GATEWAY_API_KEY=dev-secret \
@@ -272,6 +314,29 @@ curl -fsS http://127.0.0.1:8080/health
 
 Gateway payloads and configuration are documented in
 [`services/pitgun-gateway`](services/pitgun-gateway/README.md).
+
+## Governed Experimentation
+
+Pitgun reuses the same Rust workload offline for larger parameter campaigns.
+A coarse local screen narrows the response surface; reviewed Databricks jobs
+then execute immutable matrices with resumable natural keys, normalized Delta
+evidence, MLflow artifacts, exact source and model lineage, and an explicit
+human decision. Databricks can propose evidence, but it cannot mutate a catalog,
+publish an opponent policy, or become a runtime dependency of the game.
+
+This process has already falsified an important assumption. The historical
+105-run V1 circuit sweep selected the same high-downforce, short-gearing setup
+on all five circuit archetypes. Rather than encoding cosmetic AI variety,
+Pitgun used that negative result to expose weaknesses in the old response
+surface and evolve the physical model. The latest Catalog 1.9 acceptance gate
+reconciled 135 full-distance simulations and 1,485 metrics over pinned Delta
+snapshots, then recorded a human `ACCEPT` decision while retaining Monza as an
+expected specialization and Suzuka as an explicit observation.
+
+The complete workflow, commands, limitations, and reviewed artifacts are in
+[Databricks experiments](experiments/databricks/README.md). The original
+falsification remains documented in
+[Databricks Circuit Sweep V1](docs/DATABRICKS_CIRCUIT_SWEEP_V1.md).
 
 ## Deployment Ownership
 
@@ -293,25 +358,35 @@ For a minimal local service stack:
 docker compose -f docker-compose.dev.yml up -d --build
 curl -fsS http://127.0.0.1:8080/health
 curl -fsS http://127.0.0.1:8081/readyz
+curl -fsS http://127.0.0.1:8082/readyz
 docker compose -f docker-compose.dev.yml down
 ```
 
-This starts PostgreSQL, `pitgun-gateway`, and `pitgun-authority`. Use the local
+This starts PostgreSQL, `pitgun-gateway`, `pitgun-authority`, and
+`pitgun-verifier`. Use the local
 stack in `loicbelec/infra-vps` for end-to-end platform integration with the game
 APIs and optional observability services.
 
 ## Roadmap
 
-The current sequence is intentionally proof-driven:
+The current sequence remains proof-driven:
 
-1. Stabilize deterministic contracts and randomness — implemented in v1.
-2. Produce exact native/WASM run and output digests — implemented by
-   [#55](https://github.com/loicbelec/pitgun/issues/55).
-3. Package the proof as an under-five-minute Racing demo —
-   [#49](https://github.com/loicbelec/pitgun/issues/49).
-4. Extract the domain-neutral compute kernel while keeping Racing as the
-   reference implementation.
-5. Apply the same loop to a second domain before claiming generality.
+1. Preserve the stable V1 CLI and native/WASM verification boundary while the
+   Racing application evolves through immutable catalogs.
+2. Expose deterministic incremental session execution and telemetry streaming
+   without weakening replay or Hosted Verification —
+   [#312](https://github.com/loicbelec/pitgun/issues/312).
+3. Complete Model V3 component composition and retire transitional Racing
+   compatibility crates when downstream consumers have migrated —
+   [#313](https://github.com/loicbelec/pitgun/issues/313) and
+   [#117](https://github.com/loicbelec/pitgun/issues/117).
+4. Introduce staged combustion and hybrid-energy accounting through versioned
+   model capabilities — [#246](https://github.com/loicbelec/pitgun/issues/246).
+5. Reuse the proven fixed-path energy concepts for the Era 7 Pod/Drone bridge,
+   then validate the framework with a genuinely distinct simulation domain —
+   [#247](https://github.com/loicbelec/pitgun/issues/247).
+6. Measure native, WASM, browser, and hosted replay costs after the physical
+   model work stabilizes — [#279](https://github.com/loicbelec/pitgun/issues/279).
 
 ## Documentation
 
@@ -322,6 +397,8 @@ The current sequence is intentionally proof-driven:
 - [Racing Era Capability Matrix V1](docs/RACING_ERA_CAPABILITY_MATRIX_V1.md) — implemented and target capabilities across the seven game eras
 - [Racing Parameter Inventory V1](docs/RACING_PARAMETER_INVENTORY_V1.md) — coefficients, defaults, dead inputs, ownership, and evidence status
 - [Racing Model Approximation Audit V1](docs/RACING_MODEL_APPROXIMATION_AUDIT_V1.md) — equation review, validity domains, Game/Reference fidelity, and Model V3 direction
+- [Racing Model V3 fuel contract V1](docs/RACING_V3_FUEL_CONTRACT_V1.md) — explicit full-distance mass and consumption boundary in Catalog 1.9
+- [Deterministic driver instructions V1](docs/RACING_DETERMINISTIC_DRIVER_INSTRUCTIONS_V1.md) — replayable mode timelines and future live-control boundary
 - [Racing Model V3 tire degradation](experiments/racing_v3_tire_degradation/README.md) — compound wear law, diagnostics, local evidence, and governed Databricks replay
 - [Racing Model V3 Unified Decision Screen V1](docs/RACING_V3_UNIFIED_DECISION_SCREEN_V1.md) — exact 0.9 mechanical activation, setup diversity, development trade-offs, and linked long-run evidence
 - [Racing Game Vehicle Contract V1](docs/RACING_GAME_VEHICLE_CONTRACT_V1.md) — governed vehicle unlocks across enabled game eras and Catalog 1.3.0
@@ -331,6 +408,7 @@ The current sequence is intentionally proof-driven:
 - [Release process](docs/RELEASING.md) — immutable tags, binary targets, and publication checks
 - [Catalog publication](docs/CATALOG_PUBLISHING.md) — immutable Resource Catalog deployment and rollback
 - [Catalog resolution](docs/CATALOG_RESOLUTION.md) — native and browser byte validation before execution
+- [Databricks experiments](experiments/databricks/README.md) — governed sweeps, Delta/MLflow lineage, review gates, and non-runtime boundaries
 - [ADR 0001](docs/adr/0001-runtime-and-domain-workloads.md) — generic runtime and domain Solver/Simulator ownership
 - [ADR 0002](docs/adr/0002-optional-versioned-catalogs.md) — optional versioned Resource Catalogs and resolved scenarios
 - [Deterministic Run Bundle V1](docs/RUN_BUNDLE_V1.md) — portable artifacts, identities, persistence, and validation
