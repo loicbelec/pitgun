@@ -15,6 +15,7 @@ from pitgun_databricks_adapter import (
     load_early_allocation_effect_campaign,
     load_opponent_audit_campaign,
     load_opponent_acceptance_campaign,
+    load_opponent_acceptance_review,
     load_reference_campaign,
     load_tire_degradation_campaign,
     load_driver_control_campaign,
@@ -94,6 +95,13 @@ acceptance_manifest, acceptance_manifest_digest = (
 acceptance_plan = materialize_opponent_acceptance_plan(acceptance_manifest)
 assert acceptance_manifest_digest.startswith("sha256:")
 assert len(acceptance_plan) == acceptance_manifest["planned_run_count"] == 135
+acceptance_review, acceptance_review_digest = load_opponent_acceptance_review()
+assert acceptance_review_digest.startswith("sha256:")
+assert acceptance_review["manifest_digest"] == acceptance_manifest_digest
+assert acceptance_review["human_decision"]["verdict"] == "REFINE"
+assert acceptance_review["automatic_policy_mutation"] is False
+assert acceptance_review["automatic_catalog_promotion"] is False
+assert acceptance_review["automatic_game_promotion"] is False
 first_acceptance = acceptance_plan[0]
 acceptance_smoke = execute_packaged_racing_catalog_scenario(
     int(first_acceptance["seed"]),

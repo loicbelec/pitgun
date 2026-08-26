@@ -316,6 +316,24 @@ class BundleContractTest(unittest.TestCase):
         for forbidden in ("DeltaTable", "MERGE INTO", "UPDATE ", "DELETE "):
             self.assertNotIn(forbidden, notebook)
 
+    def test_opponent_acceptance_review_is_pinned_visual_and_non_promoting(self):
+        job = (ROOT / "resources" / "jobs.yml").read_text()
+        notebook = (ROOT / "src" / "review_opponent_acceptance.py").read_text()
+        builder = (ROOT / "adapter" / "build_wheel.py").read_text()
+
+        self.assertIn("opponent_acceptance_review_job:", job)
+        self.assertIn('campaigns_table_version: "67"', job)
+        self.assertIn('runs_table_version: "23"', job)
+        self.assertIn('metrics_table_version: "17"', job)
+        self.assertIn('.option("versionAsOf", requested_versions["campaigns"])', notebook)
+        self.assertIn('.option("versionAsOf", requested_versions["runs"])', notebook)
+        self.assertIn('.option("versionAsOf", requested_versions["metrics"])', notebook)
+        self.assertIn("px.imshow", notebook)
+        self.assertIn("load_opponent_acceptance_review", notebook)
+        self.assertIn('f"{PACKAGE}/reviews/{review.name}"', builder)
+        for forbidden in ("DeltaTable", "MERGE INTO", "UPDATE ", "DELETE "):
+            self.assertNotIn(forbidden, notebook)
+
     def test_strategy_effect_job_is_resumable_causal_and_non_promoting(self):
         job = (ROOT / "resources" / "jobs.yml").read_text()
         notebook = (ROOT / "src" / "execute_strategy_effect.py").read_text()

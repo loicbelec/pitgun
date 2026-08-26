@@ -12,8 +12,10 @@ from typing import Any
 
 
 CAMPAIGN_NAME = "racing-opponent-acceptance-v1"
+REVIEW_NAME = "racing-opponent-acceptance-review-v1"
 SCHEMA_VERSION = "pitgun.opponent-acceptance-campaign/v1"
 REPORT_VERSION = "pitgun.opponent-acceptance-report/v1"
+REVIEW_VERSION = "pitgun.opponent-acceptance-human-review/v1"
 CATALOG_RESOURCE = "racing-v1-9-0"
 SCENARIO_ID = "racing.opponent-acceptance-matrix"
 SCENARIO_VERSION = "1.0.0"
@@ -154,6 +156,79 @@ def load_opponent_acceptance_campaign() -> tuple[dict[str, Any], str]:
     }
     _validate_manifest(manifest, resource_digests)
     return manifest, "sha256:" + digest
+
+
+def _validate_review(review: dict[str, Any]) -> None:
+    if review.get("schema_version") != REVIEW_VERSION:
+        raise OpponentAcceptanceError("unsupported opponent acceptance review")
+    if review.get("id") != REVIEW_NAME:
+        raise OpponentAcceptanceError("opponent acceptance review identity changed")
+    if review.get("campaign_id") != "racing-opponent-acceptance-2026-v1":
+        raise OpponentAcceptanceError("opponent acceptance review campaign changed")
+    if review.get("catalog") != {
+        "id": EXPECTED_CATALOG["id"],
+        "version": EXPECTED_CATALOG["version"],
+        "model_id": EXPECTED_CATALOG["model_id"],
+        "model_version": EXPECTED_CATALOG["model_version"],
+        "opponent_policy_id": EXPECTED_CATALOG["opponent_policy_id"],
+        "opponent_policy_version": EXPECTED_CATALOG["opponent_policy_version"],
+    }:
+        raise OpponentAcceptanceError("opponent acceptance review target changed")
+    versions = review.get("evidence_versions", {})
+    if set(versions) != {"campaigns", "runs", "metrics"} or any(
+        not isinstance(value, int) or value < 0 for value in versions.values()
+    ):
+        raise OpponentAcceptanceError("opponent acceptance review is not Delta-pinned")
+    observed = review.get("observed_evidence", {})
+    if (
+        observed.get("planned_run_count") != 135
+        or observed.get("successful_run_count") != 135
+        or observed.get("metric_row_count") != 1485
+        or observed.get("metric_count_per_run") != 11
+        or observed.get("paired_field_count") != 45
+    ):
+        raise OpponentAcceptanceError("opponent acceptance review evidence is incomplete")
+    retry_identity = observed.get("retry_identity", {})
+    if retry_identity.get("all_identical") is not True or len(
+        retry_identity.get("sentinels", [])
+    ) != 3:
+        raise OpponentAcceptanceError("opponent acceptance retry proof is incomplete")
+    if set(review.get("circuit_verdicts", {})) != EXPECTED_CIRCUITS:
+        raise OpponentAcceptanceError("opponent acceptance circuit verdicts are incomplete")
+    if review.get("human_decision", {}).get("verdict") not in {
+        "ACCEPT",
+        "REFINE",
+        "REJECT",
+    }:
+        raise OpponentAcceptanceError("opponent acceptance human verdict is invalid")
+    for forbidden in (
+        "automatic_policy_mutation",
+        "automatic_catalog_promotion",
+        "automatic_game_promotion",
+    ):
+        if review.get(forbidden) is not False:
+            raise OpponentAcceptanceError("opponent acceptance review can promote state")
+        if review.get("next_gate", {}).get(forbidden) is not False:
+            raise OpponentAcceptanceError("opponent acceptance next gate can promote state")
+
+
+def load_opponent_acceptance_review() -> tuple[dict[str, Any], str]:
+    """Return the checksummed human verdict over pinned Delta evidence."""
+
+    package = importlib.resources.files("pitgun_databricks_adapter")
+    review_root = package.joinpath("reviews")
+    review_name = REVIEW_NAME + ".json"
+    review_bytes = review_root.joinpath(review_name).read_bytes()
+    checksum = review_root.joinpath(REVIEW_NAME + ".sha256").read_text().split()
+    if len(checksum) != 2 or checksum[1] != review_name:
+        raise OpponentAcceptanceError("opponent acceptance review checksum is invalid")
+    digest = hashlib.sha256(review_bytes).hexdigest()
+    if checksum[0] != digest:
+        raise OpponentAcceptanceError("opponent acceptance review checksum mismatch")
+
+    review = json.loads(review_bytes)
+    _validate_review(review)
+    return review, "sha256:" + digest
 
 
 def materialize_opponent_acceptance_plan(

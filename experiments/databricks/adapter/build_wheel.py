@@ -163,7 +163,9 @@ def wheel_entries(version: str) -> dict[str, bytes]:
         entries[f"{PACKAGE}/campaigns/{campaign.name}"] = campaign.read_bytes()
     for response in sorted(responses.glob("racing-*.json")):
         entries[f"{PACKAGE}/responses/{response.name}"] = response.read_bytes()
-    for review in sorted(reviews.glob("racing-*.json")):
+    for review in sorted(reviews.glob("racing-*")):
+        if review.suffix not in {".json", ".sha256"}:
+            continue
         entries[f"{PACKAGE}/reviews/{review.name}"] = review.read_bytes()
     return entries
 

@@ -39,6 +39,7 @@ from .opponent_acceptance import (
     CATALOG_RESOURCE as OPPONENT_ACCEPTANCE_CATALOG_RESOURCE,
     extract_opponent_acceptance_evidence,
     load_opponent_acceptance_campaign,
+    load_opponent_acceptance_review,
     materialize_opponent_acceptance_plan,
     summarize_opponent_acceptance,
 )
@@ -129,6 +130,7 @@ __all__ = [
     "diagnose_opponent_audit",
     "OPPONENT_ACCEPTANCE_CATALOG_RESOURCE",
     "load_opponent_acceptance_campaign",
+    "load_opponent_acceptance_review",
     "materialize_opponent_acceptance_plan",
     "extract_opponent_acceptance_evidence",
     "summarize_opponent_acceptance",

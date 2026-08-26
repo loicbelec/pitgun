@@ -1,0 +1,101 @@
+{
+  "schema_version": "pitgun.opponent-acceptance-human-review/v1",
+  "id": "racing-opponent-acceptance-review-v1",
+  "campaign_id": "racing-opponent-acceptance-2026-v1",
+  "manifest_digest": "sha256:cc63422552c86caead86c361682d68094598fbd5e750c075157c8dd58915b643",
+  "source_merge_commit": "e8c1e8fbf6f69316614fa3780aca3f791146f088",
+  "catalog": {
+    "id": "pitgun.racing",
+    "version": "1.9.0",
+    "model_id": "pitgun.racing-v3-candidate",
+    "model_version": "0.15.0",
+    "opponent_policy_id": "pitgun.racing.opponents.competitive",
+    "opponent_policy_version": "2.0.0"
+  },
+  "databricks": {
+    "job_id": "603312267919576",
+    "run_id": "1036596679249007",
+    "mlflow_run_id": "5a82e4e48bd3459eaa332d43a401a79e"
+  },
+  "evidence_versions": {
+    "campaigns": 67,
+    "runs": 23,
+    "metrics": 17
+  },
+  "observed_evidence": {
+    "planned_run_count": 135,
+    "successful_run_count": 135,
+    "metric_row_count": 1485,
+    "metric_count_per_run": 11,
+    "paired_field_count": 45,
+    "retry_identity": {
+      "all_identical": true,
+      "retry_count_per_sentinel": 2,
+      "sentinels": [
+        {
+          "run_key": "monza-early-42-naive",
+          "run_id": "sha256:c481b0758f5b3b54ab9166c51a00be10efb1c3c9e32d2cc8943cff534ef8ed02",
+          "canonical_result_digest": "sha256:78550ab61efb88c21f82923de699220cdfc602f2053f254c864662089d9857e0"
+        },
+        {
+          "run_key": "budapest-mid-4242-balanced",
+          "run_id": "sha256:66fb6a7d487c850fb7c339ec89912771b4a722e8e67cecc17fc4e37b9ba52bf9",
+          "canonical_result_digest": "sha256:e24b0ac91c5d41da2806d9f049c4e91d8ee557917540663239aa57a81fabfc9c"
+        },
+        {
+          "run_key": "singapore-late-20260825-circuit-informed",
+          "run_id": "sha256:807eab8750f951bae2d82f7c1cca868f82d362ce16d40e8902f696162b5b903d",
+          "canonical_result_digest": "sha256:fcd9c574ff0089ae947d76da835b2c66a06a77d37636c1ed2ff8ac10af8950fc"
+        }
+      ]
+    },
+    "budget_parity": {
+      "maximum_absolute_player_delta_to_opponent_median": 2.0,
+      "mean_player_delta_to_opponent_median": -0.022222222222222223
+    },
+    "diagnostics": {
+      "naive_win_count": 4,
+      "paired_field_count": 45,
+      "circuit_informed_better_field_count": 30,
+      "circuit_informed_better_circuit_count": 4
+    }
+  },
+  "circuit_verdicts": {
+    "BUDAPEST": {
+      "verdict": "PASS",
+      "reason": "The circuit-informed reference improves mean position from 7.56 to 3.89 and reduces the median leader gap across the reviewed progression levels."
+    },
+    "MONACO": {
+      "verdict": "PASS_WITH_CAVEAT",
+      "reason": "The circuit-informed reference improves the aggregate position and gap, while the early-progression fields retain a small paired regression that should remain visible."
+    },
+    "MONZA": {
+      "verdict": "REFINE",
+      "reason": "The circuit-informed reference regresses from mean position 2.11 to 5.67 and from a 2.60 s to a 34.65 s median leader gap."
+    },
+    "SINGAPORE": {
+      "verdict": "PASS",
+      "reason": "The circuit-informed reference improves mean position from 8.44 to 5.78 and materially reduces the leader gap."
+    },
+    "SUZUKA": {
+      "verdict": "PASS_WITH_CAVEAT",
+      "reason": "The circuit-informed reference improves mean position from 6.00 to 5.11, but its aggregate median leader gap is slightly worse than the naive reference."
+    }
+  },
+  "human_decision": {
+    "verdict": "REFINE",
+    "reason": "Circuit-informed decisions provide deterministic value on four circuit classes at budget parity, but the Monza regression is too large to accept the policy as a complete balance release."
+  },
+  "next_gate": {
+    "objective": "Diagnose and refine the Monza circuit-informed setup and strategy without changing the accepted four-circuit evidence, then execute a new independently versioned validation matrix.",
+    "preserve_catalog_1_9_evidence": true,
+    "new_validation_required": true,
+    "automatic_policy_mutation": false,
+    "automatic_catalog_promotion": false,
+    "automatic_game_promotion": false
+  },
+  "classification_only_not_real_f1_calibration": true,
+  "automatic_policy_mutation": false,
+  "automatic_catalog_promotion": false,
+  "automatic_game_promotion": false
+}
