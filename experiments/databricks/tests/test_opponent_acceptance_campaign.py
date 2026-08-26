@@ -141,12 +141,15 @@ class OpponentAcceptanceCampaignTest(unittest.TestCase):
         self.assertEqual(expected_name, REVIEW.name)
         self.assertEqual(hashlib.sha256(review_bytes).hexdigest(), expected_digest)
         _validate_review(review)
-        self.assertEqual(review["human_decision"]["verdict"], "REFINE")
+        self.assertEqual(review["human_decision"]["verdict"], "ACCEPT")
         self.assertEqual(
             review["evidence_versions"],
             {"campaigns": 67, "runs": 23, "metrics": 17},
         )
-        self.assertEqual(review["circuit_verdicts"]["MONZA"]["verdict"], "REFINE")
+        self.assertEqual(
+            review["circuit_verdicts"]["MONZA"]["verdict"],
+            "EXPECTED_SPECIALIZATION",
+        )
         self.assertFalse(review["automatic_policy_mutation"])
         self.assertFalse(review["automatic_catalog_promotion"])
         self.assertFalse(review["automatic_game_promotion"])

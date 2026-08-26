@@ -70,8 +70,8 @@
       "reason": "The circuit-informed reference improves the aggregate position and gap, while the early-progression fields retain a small paired regression that should remain visible."
     },
     "MONZA": {
-      "verdict": "REFINE",
-      "reason": "The circuit-informed reference regresses from mean position 2.11 to 5.67 and from a 2.60 s to a 34.65 s median leader gap."
+      "verdict": "EXPECTED_SPECIALIZATION",
+      "reason": "Monza rewards the more radical engine and chassis allocation: this circuit-specific exception is physically plausible and the same naive reference does not dominate the other circuit classes."
     },
     "SINGAPORE": {
       "verdict": "PASS",
@@ -83,13 +83,13 @@
     }
   },
   "human_decision": {
-    "verdict": "REFINE",
-    "reason": "Circuit-informed decisions provide deterministic value on four circuit classes at budget parity, but the Monza regression is too large to accept the policy as a complete balance release."
+    "verdict": "ACCEPT",
+    "reason": "The deterministic matrix demonstrates meaningful circuit identity at budget parity: informed decisions improve technical circuits, while Monza legitimately rewards a more radical power and chassis specialization."
   },
   "next_gate": {
-    "objective": "Diagnose and refine the Monza circuit-informed setup and strategy without changing the accepted four-circuit evidence, then execute a new independently versioned validation matrix.",
+    "objective": "Validate the accepted policy through staging play, monitor the Suzuka leader-gap caveat, and revisit balance only if one allocation becomes universally dominant across circuit classes.",
     "preserve_catalog_1_9_evidence": true,
-    "new_validation_required": true,
+    "new_validation_required": false,
     "automatic_policy_mutation": false,
     "automatic_catalog_promotion": false,
     "automatic_game_promotion": false

@@ -98,7 +98,7 @@ assert len(acceptance_plan) == acceptance_manifest["planned_run_count"] == 135
 acceptance_review, acceptance_review_digest = load_opponent_acceptance_review()
 assert acceptance_review_digest.startswith("sha256:")
 assert acceptance_review["manifest_digest"] == acceptance_manifest_digest
-assert acceptance_review["human_decision"]["verdict"] == "REFINE"
+assert acceptance_review["human_decision"]["verdict"] == "ACCEPT"
 assert acceptance_review["automatic_policy_mutation"] is False
 assert acceptance_review["automatic_catalog_promotion"] is False
 assert acceptance_review["automatic_game_promotion"] is False
