@@ -13,6 +13,7 @@ from pitgun_databricks_adapter.opponent_acceptance import (  # noqa: E402
     EXPECTED_CATALOG,
     OpponentAcceptanceError,
     _validate_manifest,
+    _validate_review,
     extract_opponent_acceptance_evidence,
     summarize_opponent_acceptance,
 )
@@ -20,6 +21,10 @@ from pitgun_databricks_adapter.opponent_acceptance import (  # noqa: E402
 
 MANIFEST = ROOT / "campaigns" / "racing-opponent-acceptance-v1.json"
 CHECKSUM = ROOT / "campaigns" / "racing-opponent-acceptance-v1.sha256"
+REVIEW = ROOT / "reviews" / "racing-opponent-acceptance-review-v1.json"
+REVIEW_CHECKSUM = (
+    ROOT / "reviews" / "racing-opponent-acceptance-review-v1.sha256"
+)
 SCENARIOS = FRAMEWORK / "experiments" / "opponent_acceptance" / "scenarios"
 
 
@@ -127,6 +132,32 @@ class OpponentAcceptanceCampaignTest(unittest.TestCase):
         self.assertFalse(report["automatic_game_or_catalog_promotion"])
         self.assertFalse(report["automatic_policy_mutation"])
         self.assertEqual(len(report["paired_effects"]), 45)
+
+    def test_human_review_is_checksummed_pinned_and_non_promoting(self):
+        review_bytes = REVIEW.read_bytes()
+        expected_digest, expected_name = REVIEW_CHECKSUM.read_text().split()
+        review = json.loads(review_bytes)
+
+        self.assertEqual(expected_name, REVIEW.name)
+        self.assertEqual(hashlib.sha256(review_bytes).hexdigest(), expected_digest)
+        _validate_review(review)
+        self.assertEqual(review["human_decision"]["verdict"], "ACCEPT")
+        self.assertEqual(
+            review["evidence_versions"],
+            {"campaigns": 67, "runs": 23, "metrics": 17},
+        )
+        self.assertEqual(
+            review["circuit_verdicts"]["MONZA"]["verdict"],
+            "EXPECTED_SPECIALIZATION",
+        )
+        self.assertFalse(review["automatic_policy_mutation"])
+        self.assertFalse(review["automatic_catalog_promotion"])
+        self.assertFalse(review["automatic_game_promotion"])
+
+        unsafe = json.loads(json.dumps(review))
+        unsafe["automatic_catalog_promotion"] = True
+        with self.assertRaises(OpponentAcceptanceError):
+            _validate_review(unsafe)
 
 
 if __name__ == "__main__":

@@ -154,6 +154,21 @@ databricks bundle run opponent_acceptance_job -t dev -p pitgun-free
 
 The acceptance verdict itself belongs to the separate read-only parent review.
 
+The completed campaign pins `campaigns@67`, `runs@23`, and `metrics@17`.
+[`racing-opponent-acceptance-review-v1.json`](reviews/racing-opponent-acceptance-review-v1.json)
+records the explicit `ACCEPT` verdict: circuit-informed decisions improve the
+controlled player on technical circuits at budget parity, while Monza
+legitimately rewards a more radical engine and chassis specialization. The
+checksummed `opponent_acceptance_review_job` reconciles all 135 results and
+1,485 metrics before rendering the circuit-by-reference position heatmap and
+the paired progression heatmap. Suzuka remains a documented observation because
+position improves while aggregate leader gap does not. The job reads only the pinned snapshots and cannot
+mutate the policy or promote the catalog or game:
+
+```bash
+databricks bundle run opponent_acceptance_review_job -t dev -p pitgun-free
+```
+
 The follow-up strategy-effect input campaign is frozen in
 [`campaigns/racing-strategy-effect-v1.json`](campaigns/racing-strategy-effect-v1.json).
 Its 45 pairs retain the neutral player tuning and the exact balanced-source
