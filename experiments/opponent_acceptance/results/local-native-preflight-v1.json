@@ -1,0 +1,123 @@
+{
+  "schema_version": "pitgun.opponent-acceptance-local-preflight/v1",
+  "purpose": "Bounded native retry gate before governed Databricks execution.",
+  "campaign_id": "racing-opponent-acceptance-2026-v1",
+  "manifest_digest": "sha256:cc63422552c86caead86c361682d68094598fbd5e750c075157c8dd58915b643",
+  "catalog": {
+    "id": "pitgun.racing",
+    "version": "1.9.0",
+    "manifest_digest": "sha256:30621c0a2c6ff232eacecfb92737372e0f8766e121b45c8b2fb48cc762ca49ac",
+    "simulation_pack_digest": "sha256:b0341f1e867fc0217daaf83d1ffb34e807826c45cd3cf4b8a380b504f2e27d00",
+    "model_id": "pitgun.racing-v3-candidate",
+    "model_version": "0.15.0",
+    "model_digest": "sha256:3038739c9059c12cf47feb4de6a3fd791d9f94290d9e83405a61bd966eea540f",
+    "opponent_policy_id": "pitgun.racing.opponents.competitive",
+    "opponent_policy_version": "2.0.0",
+    "opponent_policy_resource_digest": "sha256:3ae8204156754fcf6758bcb452e0b648582e0e8afa196365ea9167e2203a3370"
+  },
+  "runner": {
+    "name": "pitgun-cli",
+    "artifact_digest": "sha256:3e7d44eae2981354cc7dd12ab8cbcaef05941eee54fc616334064921ab123bc2"
+  },
+  "sentinel_selection": {
+    "rule": "one authored scenario per progression and player reference across three circuit classes",
+    "run_keys": [
+      "monza-early-42-naive",
+      "budapest-mid-4242-balanced",
+      "singapore-late-20260825-circuit-informed"
+    ]
+  },
+  "deterministic_retry_count": 2,
+  "all_retries_byte_identical": true,
+  "evidence": [
+    {
+      "run_key": "monza-early-42-naive",
+      "circuit_id": "MONZA",
+      "circuit_class": "low-downforce",
+      "progression": "early",
+      "era": 1,
+      "seed": 42,
+      "player_reference": "naive",
+      "player_budget": 4,
+      "opponent_budget": {
+        "minimum": 3,
+        "median": 5,
+        "maximum": 5
+      },
+      "scenario_digest": "sha256:91b4e6df3759ade8a9a67afce6a521976b49edf78efa962f0bf939724d65bf91",
+      "configuration_id": "sha256:4023ea5b814e6c9f734eaa3578dc556842a34e1d38accf06b8b9b20961894d1a",
+      "run_id": "sha256:c481b0758f5b3b54ab9166c51a00be10efb1c3c9e32d2cc8943cff534ef8ed02",
+      "contract_digest": "sha256:c481b0758f5b3b54ab9166c51a00be10efb1c3c9e32d2cc8943cff534ef8ed02",
+      "output_digest": "sha256:a3cb70d53630aa12ac86ca71d12777e3c54b060824d03683b5aaf48e08d4fa04",
+      "telemetry_summary_digest": "sha256:2abc51cf9d64a1729ba1303297366179f38f67709972ab4c5d7ea54d68bd7790",
+      "result_digest": "sha256:78550ab61efb88c21f82923de699220cdfc602f2053f254c864662089d9857e0",
+      "player_position": 3,
+      "player_gap_to_leader_ms": 5005,
+      "leader_competitor_id": "ai_4",
+      "field_spread_ms": 47174,
+      "player_best_lap_ms": 136638,
+      "telemetry_frame_count": 37267
+    },
+    {
+      "run_key": "budapest-mid-4242-balanced",
+      "circuit_id": "BUDAPEST",
+      "circuit_class": "mechanical",
+      "progression": "mid",
+      "era": 3,
+      "seed": 4242,
+      "player_reference": "balanced",
+      "player_budget": 27,
+      "opponent_budget": {
+        "minimum": 26,
+        "median": 28,
+        "maximum": 29
+      },
+      "scenario_digest": "sha256:3ea891c7a3771c8a2d04d2194d4515f19bcfd7be130376bdeae06ea85407d256",
+      "configuration_id": "sha256:5839e3b69ee339268bb739a291104c708ed9e8ffa1bb6852a0c49adb13625e26",
+      "run_id": "sha256:66fb6a7d487c850fb7c339ec89912771b4a722e8e67cecc17fc4e37b9ba52bf9",
+      "contract_digest": "sha256:66fb6a7d487c850fb7c339ec89912771b4a722e8e67cecc17fc4e37b9ba52bf9",
+      "output_digest": "sha256:e958f1108b7bde7e8e042513c6740effcf5352084d319d0a71d730c8f842c024",
+      "telemetry_summary_digest": "sha256:f3cd4743db7868f62c850a77358c723c071af431e3e571238f52126166ea86c8",
+      "result_digest": "sha256:3a01167dde1710c99c8d6466759ddb4d0336a28bccc1f1efbe9cc118418e693c",
+      "player_position": 10,
+      "player_gap_to_leader_ms": 123268,
+      "leader_competitor_id": "ai_8",
+      "field_spread_ms": 123268,
+      "player_best_lap_ms": 98739,
+      "telemetry_frame_count": 37412
+    },
+    {
+      "run_key": "singapore-late-20260825-circuit-informed",
+      "circuit_id": "SINGAPORE",
+      "circuit_class": "street-thermal",
+      "progression": "late",
+      "era": 5,
+      "seed": 20260825,
+      "player_reference": "circuit-informed",
+      "player_budget": 37,
+      "opponent_budget": {
+        "minimum": 35,
+        "median": 37,
+        "maximum": 39
+      },
+      "scenario_digest": "sha256:056ebd62dff8793231593fd61fb90d64750f0498eb33bd6ec10b99009ba29451",
+      "configuration_id": "sha256:e0c064c0cda3f1a7b57d1295be0ed5058e0f7a85405756031e87b6d57af94a11",
+      "run_id": "sha256:807eab8750f951bae2d82f7c1cca868f82d362ce16d40e8902f696162b5b903d",
+      "contract_digest": "sha256:807eab8750f951bae2d82f7c1cca868f82d362ce16d40e8902f696162b5b903d",
+      "output_digest": "sha256:e19c9063a5ec69d9a03e43fdb6dc0460cee845917960650849603f2c6d96cbaf",
+      "telemetry_summary_digest": "sha256:9b363a76fcbe006cf999fe50eaef34ea552a05bfe9bbedcb449dc10165122ed2",
+      "result_digest": "sha256:fcd9c574ff0089ae947d76da835b2c66a06a77d37636c1ed2ff8ac10af8950fc",
+      "player_position": 8,
+      "player_gap_to_leader_ms": 71708,
+      "leader_competitor_id": "ai_5",
+      "field_spread_ms": 90947,
+      "player_best_lap_ms": 107730,
+      "telemetry_frame_count": 36206
+    }
+  ],
+  "decision": {
+    "databricks_handoff": "READY",
+    "game_or_catalog_promotion": "FORBIDDEN",
+    "policy_mutation": "FORBIDDEN"
+  }
+}
