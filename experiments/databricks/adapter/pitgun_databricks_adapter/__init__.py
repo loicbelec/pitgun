@@ -35,6 +35,13 @@ from .opponent_audit_analysis import (
     extract_opponent_audit_evidence,
     summarize_opponent_audit,
 )
+from .opponent_acceptance import (
+    CATALOG_RESOURCE as OPPONENT_ACCEPTANCE_CATALOG_RESOURCE,
+    extract_opponent_acceptance_evidence,
+    load_opponent_acceptance_campaign,
+    materialize_opponent_acceptance_plan,
+    summarize_opponent_acceptance,
+)
 from .runner import (
     execute_packaged_racing,
     execute_packaged_racing_catalog_scenario,
@@ -120,6 +127,11 @@ __all__ = [
     "extract_opponent_audit_evidence",
     "summarize_opponent_audit",
     "diagnose_opponent_audit",
+    "OPPONENT_ACCEPTANCE_CATALOG_RESOURCE",
+    "load_opponent_acceptance_campaign",
+    "materialize_opponent_acceptance_plan",
+    "extract_opponent_acceptance_evidence",
+    "summarize_opponent_acceptance",
     "load_strategy_effect_campaign",
     "materialize_strategy_effect_plan",
     "extract_strategy_effect_evidence",

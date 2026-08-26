@@ -269,6 +269,35 @@ class BundleContractTest(unittest.TestCase):
         ):
             self.assertIn(f'"{column}":', bootstrap)
 
+    def test_opponent_acceptance_job_is_bounded_resumable_and_non_promoting(self):
+        job = (ROOT / "resources" / "jobs.yml").read_text()
+        notebook = (ROOT / "src" / "execute_opponent_acceptance.py").read_text()
+        builder = (ROOT / "adapter" / "build_wheel.py").read_text()
+        analyzer = (
+            ROOT
+            / "adapter"
+            / "pitgun_databricks_adapter"
+            / "opponent_acceptance.py"
+        ).read_text()
+
+        self.assertIn("opponent_acceptance_job:", job)
+        self.assertIn("racing-opponent-acceptance-2026-v1", job)
+        self.assertIn('max_workers\n          default: "8"', job)
+        self.assertIn("timeout_seconds: 10800", job)
+        self.assertIn("load_opponent_acceptance_campaign", notebook)
+        self.assertIn("execute_packaged_racing_catalog_scenario", notebook)
+        self.assertIn("OPPONENT_ACCEPTANCE_CATALOG_RESOURCE", notebook)
+        self.assertIn("ThreadPoolExecutor", notebook)
+        self.assertIn('row["execution_status"] == "SUCCESS"', notebook)
+        self.assertIn("summarize_opponent_acceptance", notebook)
+        self.assertIn('"decision": "REVIEW_REQUIRED"', analyzer)
+        self.assertIn('"automatic_policy_mutation": False', notebook)
+        self.assertIn('"opponent_acceptance" / "scenarios"', builder)
+        self.assertIn('"racing-v1-9-0"', builder)
+        self.assertIn('f"{PACKAGE}/opponent_acceptance.py"', builder)
+        for forbidden in ("policy_releases", '"release_state": "PUBLISHED"'):
+            self.assertNotIn(forbidden, notebook)
+
     def test_opponent_diagnosis_is_pinned_read_only_and_non_promoting(self):
         job = (ROOT / "resources" / "jobs.yml").read_text()
         notebook = (ROOT / "src" / "diagnose_opponent_audit.py").read_text()
