@@ -19,6 +19,9 @@ model candidate and adds the first governed driver-instruction profile used to
 bound deterministic live decisions. `v1.8.0` is the first complete timeline
 candidate: it binds Model `0.14.0` to the instruction profile, the reviewed
 driver-control coefficients, and four equal-budget V2 driver resources.
+`v1.9.0` adds the first published-shaped fuel contract for Model `0.15.0`:
+the initial load, finish reserve, and power-based consumption coefficients are
+now immutable Simulation Pack resources rather than compiled defaults.
 `LATEST` remains on `v1.0.0` until a
 coordinated game, Authority, and Verifier rollout is explicitly approved. Each
 version directory is immutable:
@@ -56,6 +59,9 @@ v1.8.0/
 ├── simulation/driver-instructions/profile-v1.json
 ├── simulation/driver-control/profile-v1.json
 └── simulation/drivers-v2/{balanced_reference,limit_specialist,smooth_operator,tire_manager}.json
+v1.9.0/
+├── model compatibility: pitgun.racing-v3-candidate@0.15.0
+└── simulation/fuel-contract/profile-v1.json
 ```
 
 The Simulation Pack contains every byte that may influence physical execution.
@@ -67,7 +73,7 @@ enters a deterministic `run_id`.
 The Rust and WASM fallback is generated from this exact release. There is no
 separate manually maintained embedded data list.
 
-The four V2 driver resources in `v1.8.0` reproduce the exact reviewed roster
+The four V2 driver resources in `v1.8.0` and `v1.9.0` reproduce the exact reviewed roster
 from
 [`experiments/racing_v3_driver_control/driver-archetypes-equal-budget-v1.json`](../../experiments/racing_v3_driver_control/driver-archetypes-equal-budget-v1.json).
 Their common trait budget is part of the candidate provenance; it is not a

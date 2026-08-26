@@ -25,6 +25,9 @@ MODEL_V3_COMPONENT_EMBEDDED_RUST = (
 MODEL_V3_TIMELINE_EMBEDDED_RUST = (
     ROOT / "generated" / "racing_catalog_model_v3_timeline.rs"
 )
+MODEL_V3_FUEL_CONTRACT_EMBEDDED_RUST = (
+    ROOT / "generated" / "racing_catalog_model_v3_fuel_contract.rs"
+)
 
 DIGEST_PREFIX = "sha256:"
 MODEL_COMPATIBILITY_BY_RELEASE = {
@@ -37,11 +40,13 @@ MODEL_COMPATIBILITY_BY_RELEASE = {
     "1.6.0": ("pitgun.racing-v3-candidate", ["0.11.0"]),
     "1.7.0": ("pitgun.racing-v3-candidate", ["0.11.0"]),
     "1.8.0": ("pitgun.racing-v3-candidate", ["0.14.0"]),
+    "1.9.0": ("pitgun.racing-v3-candidate", ["0.15.0"]),
 }
 
 CANONICAL_RESOURCE_IDS = {
     "driver-instructions/profile-v1.json": "pitgun.racing.driver-instructions",
     "driver-control/profile-v1.json": "pitgun.racing.driver-control",
+    "fuel-contract/profile-v1.json": "pitgun.racing.fuel-contract",
 }
 
 
@@ -333,6 +338,9 @@ def generated_artifacts() -> dict[Path, bytes]:
     )
     artifacts[MODEL_V3_TIMELINE_EMBEDDED_RUST] = generated_embedded_artifact(
         CATALOG_ROOT / "v1.8.0", "MODEL_V3_TIMELINE_EMBEDDED_FILES"
+    )
+    artifacts[MODEL_V3_FUEL_CONTRACT_EMBEDDED_RUST] = generated_embedded_artifact(
+        CATALOG_ROOT / "v1.9.0", "MODEL_V3_FUEL_CONTRACT_EMBEDDED_FILES"
     )
     return artifacts
 

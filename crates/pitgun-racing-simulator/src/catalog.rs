@@ -27,18 +27,20 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     EMBEDDED_FILES, MODEL_V2_EMBEDDED_FILES, MODEL_V3_COMPONENT_EMBEDDED_FILES,
-    MODEL_V3_THERMAL_EMBEDDED_FILES, MODEL_V3_TIMELINE_EMBEDDED_FILES, PRESENTATION_INDEX,
-    V3PowerUnitThermalProfileCandidateV2, V3ThermalFamilyProfileCandidateV1,
-    racing_model_v3_component_candidate_identity, racing_model_v3_thermal_candidate_identity,
-    racing_model_v3_timeline_candidate_identity,
+    MODEL_V3_FUEL_CONTRACT_EMBEDDED_FILES, MODEL_V3_THERMAL_EMBEDDED_FILES,
+    MODEL_V3_TIMELINE_EMBEDDED_FILES, PRESENTATION_INDEX, RACING_FUEL_CONTRACT_ID,
+    RacingFuelContractV1, V3PowerUnitThermalProfileCandidateV2, V3ThermalFamilyProfileCandidateV1,
+    racing_model_v3_component_candidate_identity, racing_model_v3_fuel_contract_candidate_identity,
+    racing_model_v3_thermal_candidate_identity, racing_model_v3_timeline_candidate_identity,
 };
 
-const KNOWN_RACING_MODELS: [(&str, &str); 5] = [
+const KNOWN_RACING_MODELS: [(&str, &str); 6] = [
     ("pitgun.racing", "1.0.0"),
     ("pitgun.racing", "2.0.0"),
     ("pitgun.racing-v3-candidate", "0.10.0"),
     ("pitgun.racing-v3-candidate", "0.11.0"),
     ("pitgun.racing-v3-candidate", "0.14.0"),
+    ("pitgun.racing-v3-candidate", "0.15.0"),
 ];
 const MODEL_PARAMETERS_ID_PREFIX: &str = "pitgun.racing.model-parameters.";
 const MODEL_PARAMETERS_PATH_PREFIX: &str = "simulation/model-parameters/";
@@ -54,6 +56,7 @@ const DRIVER_CONTROL_PROFILE_RESOURCE_ID: &str = "pitgun.racing.driver-control";
 const DRIVER_CONTROL_PROFILE_PATH: &str = "simulation/driver-control/profile-v1.json";
 const DRIVER_V2_RESOURCE_ID_PREFIX: &str = "pitgun.racing.driver-v2.";
 const DRIVER_V2_PATH_PREFIX: &str = "simulation/drivers-v2/";
+const FUEL_CONTRACT_PROFILE_PATH: &str = "simulation/fuel-contract/profile-v1.json";
 
 const CATALOG_MANIFEST: &[u8] = include_bytes!(concat!(
     env!("CARGO_MANIFEST_DIR"),
@@ -131,6 +134,22 @@ const MODEL_V3_TIMELINE_PRESENTATION_INDEX: &[u8] = include_bytes!(concat!(
     env!("CARGO_MANIFEST_DIR"),
     "/../../catalogs/racing/v1.8.0/presentation/index.json"
 ));
+const MODEL_V3_FUEL_CONTRACT_CATALOG_MANIFEST: &[u8] = include_bytes!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../catalogs/racing/v1.9.0/catalog.json"
+));
+const MODEL_V3_FUEL_CONTRACT_RELEASE_IDENTITY: &[u8] = include_bytes!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../catalogs/racing/v1.9.0/release.json"
+));
+const MODEL_V3_FUEL_CONTRACT_SIMULATION_INDEX: &[u8] = include_bytes!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../catalogs/racing/v1.9.0/simulation/index.json"
+));
+const MODEL_V3_FUEL_CONTRACT_PRESENTATION_INDEX: &[u8] = include_bytes!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../catalogs/racing/v1.9.0/presentation/index.json"
+));
 
 /// One exact release-relative file supplied by a browser or another adapter.
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
@@ -181,6 +200,8 @@ pub struct RacingCatalogSnapshot {
     driver_instruction_profile_identity: Option<ArtifactIdentity>,
     driver_control_profile: Option<RacingDriverControlProfileV1>,
     driver_control_profile_identity: Option<ArtifactIdentity>,
+    fuel_contract: Option<RacingFuelContractV1>,
+    fuel_contract_identity: Option<ArtifactIdentity>,
     drivers_v2: BTreeMap<String, RacingDriverResourceV2>,
     driver_v2_identities: BTreeMap<String, ArtifactIdentity>,
 }
@@ -426,6 +447,12 @@ impl RacingCatalogSnapshot {
                 (Some(profile), Some(identity))
             });
         let driver_control_package = resolve_driver_control_package(&simulation_index, &supplied)?;
+        let resolved_fuel_contract =
+            resolve_fuel_contract(&manifest, &simulation_index, &supplied)?;
+        let (fuel_contract, fuel_contract_identity) = resolved_fuel_contract
+            .map_or((None, None), |(contract, identity)| {
+                (Some(contract), Some(identity))
+            });
 
         let snapshot = Self {
             manifest,
@@ -445,6 +472,8 @@ impl RacingCatalogSnapshot {
             driver_instruction_profile_identity,
             driver_control_profile: driver_control_package.profile,
             driver_control_profile_identity: driver_control_package.profile_identity,
+            fuel_contract,
+            fuel_contract_identity,
             drivers_v2: driver_control_package.drivers,
             driver_v2_identities: driver_control_package.driver_identities,
         };
@@ -527,6 +556,20 @@ impl RacingCatalogSnapshot {
             MODEL_V3_TIMELINE_RELEASE_IDENTITY,
             MODEL_V3_TIMELINE_SIMULATION_INDEX,
             MODEL_V3_TIMELINE_PRESENTATION_INDEX,
+            resources,
+        )
+    }
+
+    /// Resolves the immutable Model V3 fuel-contract candidate catalog.
+    pub fn embedded_model_v3_fuel_contract() -> Result<Self, RacingCatalogResolutionError> {
+        let resources = MODEL_V3_FUEL_CONTRACT_EMBEDDED_FILES
+            .iter()
+            .map(|(path, bytes)| (format!("simulation/{path}"), bytes.to_vec()));
+        Self::from_bytes(
+            MODEL_V3_FUEL_CONTRACT_CATALOG_MANIFEST,
+            MODEL_V3_FUEL_CONTRACT_RELEASE_IDENTITY,
+            MODEL_V3_FUEL_CONTRACT_SIMULATION_INDEX,
+            MODEL_V3_FUEL_CONTRACT_PRESENTATION_INDEX,
             resources,
         )
     }
@@ -696,6 +739,18 @@ impl RacingCatalogSnapshot {
     #[must_use]
     pub const fn driver_control_profile_identity(&self) -> Option<&ArtifactIdentity> {
         self.driver_control_profile_identity.as_ref()
+    }
+
+    /// Returns the immutable published fuel semantics selected by this release.
+    #[must_use]
+    pub const fn fuel_contract(&self) -> Option<&RacingFuelContractV1> {
+        self.fuel_contract.as_ref()
+    }
+
+    /// Returns the exact content identity of the selected fuel contract.
+    #[must_use]
+    pub const fn fuel_contract_identity(&self) -> Option<&ArtifactIdentity> {
+        self.fuel_contract_identity.as_ref()
     }
 
     /// Returns every V2 physical driver resource, keyed by its embedded driver ID.
@@ -940,6 +995,7 @@ fn resolve_power_unit_thermal_profile(
 > {
     let component_model = racing_model_v3_component_candidate_identity();
     let timeline_model = racing_model_v3_timeline_candidate_identity();
+    let fuel_contract_model = racing_model_v3_fuel_contract_candidate_identity();
     let supports_component_model = manifest
         .compatibility
         .validate_for(&component_model, ContractVersion::V1)
@@ -947,6 +1003,10 @@ fn resolve_power_unit_thermal_profile(
         || manifest
             .compatibility
             .validate_for(&timeline_model, ContractVersion::V1)
+            .is_ok()
+        || manifest
+            .compatibility
+            .validate_for(&fuel_contract_model, ContractVersion::V1)
             .is_ok();
     let mut indexed = simulation_index.resources.iter().filter(|resource| {
         resource.id.as_str() == POWER_UNIT_THERMAL_RESOURCE_ID
@@ -1006,6 +1066,72 @@ fn resolve_power_unit_thermal_profile(
     Ok(Some((profile, identity)))
 }
 
+fn resolve_fuel_contract(
+    manifest: &ResourceCatalogManifestV1,
+    simulation_index: &RacingSimulationIndexV1,
+    supplied: &BTreeMap<CatalogPath, Vec<u8>>,
+) -> Result<Option<(RacingFuelContractV1, ArtifactIdentity)>, RacingCatalogResolutionError> {
+    let model = racing_model_v3_fuel_contract_candidate_identity();
+    let supports_fuel_contract = manifest
+        .compatibility
+        .validate_for(&model, ContractVersion::V1)
+        .is_ok();
+    let mut indexed = simulation_index.resources.iter().filter(|resource| {
+        resource.id.as_str() == RACING_FUEL_CONTRACT_ID
+            || resource.path.as_str() == FUEL_CONTRACT_PROFILE_PATH
+    });
+    let Some(resource) = indexed.next() else {
+        if supports_fuel_contract {
+            return Err(RacingCatalogResolutionError::InvalidResolvedResources(
+                "fuel-contract Model V3 catalog is missing its fuel contract".to_string(),
+            ));
+        }
+        return Ok(None);
+    };
+    if indexed.next().is_some() {
+        return Err(RacingCatalogResolutionError::InvalidResolvedResources(
+            "Racing catalog must select exactly one fuel contract".to_string(),
+        ));
+    }
+    if !supports_fuel_contract {
+        return Err(RacingCatalogResolutionError::InvalidResolvedResources(
+            "fuel contract requires exact fuel-contract Model V3 compatibility".to_string(),
+        ));
+    }
+    if resource.id.as_str() != RACING_FUEL_CONTRACT_ID
+        || resource.path.as_str() != FUEL_CONTRACT_PROFILE_PATH
+    {
+        return Err(RacingCatalogResolutionError::InvalidResolvedResources(
+            format!(
+                "fuel contract must use resource ID {RACING_FUEL_CONTRACT_ID} and path {FUEL_CONTRACT_PROFILE_PATH}"
+            ),
+        ));
+    }
+    let bytes = supplied
+        .get(&resource.path)
+        .expect("indexed resources are checked before fuel-contract resolution");
+    let text = std::str::from_utf8(bytes).map_err(|error| {
+        RacingCatalogResolutionError::InvalidResource {
+            path: resource.path.clone(),
+            reason: error.to_string(),
+        }
+    })?;
+    let contract = RacingFuelContractV1::from_json(text).map_err(|reason| {
+        RacingCatalogResolutionError::InvalidResource {
+            path: resource.path.clone(),
+            reason,
+        }
+    })?;
+    let identity = ArtifactIdentity {
+        id: resource.id.clone(),
+        version: "1.0.0"
+            .parse()
+            .expect("static Racing fuel-contract version"),
+        digest: resource.digest,
+    };
+    Ok(Some((contract, identity)))
+}
+
 fn resolve_component_capability_profile(
     manifest: &ResourceCatalogManifestV1,
     simulation_index: &RacingSimulationIndexV1,
@@ -1014,6 +1140,7 @@ fn resolve_component_capability_profile(
 {
     let component_model = racing_model_v3_component_candidate_identity();
     let timeline_model = racing_model_v3_timeline_candidate_identity();
+    let fuel_contract_model = racing_model_v3_fuel_contract_candidate_identity();
     let supports_component_model = manifest
         .compatibility
         .validate_for(&component_model, ContractVersion::V1)
@@ -1021,6 +1148,10 @@ fn resolve_component_capability_profile(
         || manifest
             .compatibility
             .validate_for(&timeline_model, ContractVersion::V1)
+            .is_ok()
+        || manifest
+            .compatibility
+            .validate_for(&fuel_contract_model, ContractVersion::V1)
             .is_ok();
     let mut indexed = simulation_index.resources.iter().filter(|resource| {
         resource.id.as_str() == COMPONENT_CAPABILITY_RESOURCE_ID
@@ -2018,6 +2149,44 @@ mod tests {
             native.driver_instruction_profile_identity(),
             browser.driver_instruction_profile_identity()
         );
+    }
+
+    #[test]
+    fn fuel_contract_catalog_resolves_portably_without_mutating_timeline_release() {
+        let timeline =
+            RacingCatalogSnapshot::embedded_model_v3_timeline().expect("timeline catalog");
+        let native = RacingCatalogSnapshot::embedded_model_v3_fuel_contract()
+            .expect("fuel-contract catalog");
+        let browser = RacingCatalogSnapshot::from_bundle(
+            native.to_bundle().expect("fuel-contract browser bundle"),
+        )
+        .expect("browser fuel-contract catalog bundle");
+        let model = racing_model_v3_fuel_contract_candidate_identity();
+
+        assert_eq!(native.manifest().catalog.version.to_string(), "1.9.0");
+        assert!(
+            native
+                .manifest()
+                .compatibility
+                .validate_for(&model, ContractVersion::V1)
+                .is_ok()
+        );
+        let contract = native.fuel_contract().expect("fuel contract");
+        assert_eq!(contract.default_initial_fuel_mass_kg, 110.0);
+        assert_eq!(contract.minimum_finish_reserve_kg, 1.0);
+        assert_eq!(
+            contract
+                .consumption
+                .brake_specific_fuel_consumption_kg_per_kwh,
+            0.19
+        );
+        assert_eq!(native.fuel_contract(), browser.fuel_contract());
+        assert_eq!(
+            native.fuel_contract_identity(),
+            browser.fuel_contract_identity()
+        );
+        assert!(timeline.fuel_contract().is_none());
+        assert!(timeline.fuel_contract_identity().is_none());
     }
 
     #[test]

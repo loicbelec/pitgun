@@ -1,10 +1,15 @@
 mod catalog;
 pub mod evidence;
+mod fuel_contract;
 mod thermal_profile;
 pub mod workload;
 
 pub use catalog::{
     RacingCatalogBundleV1, RacingCatalogFileV1, RacingCatalogResolutionError, RacingCatalogSnapshot,
+};
+pub use fuel_contract::{
+    RACING_FUEL_CONTRACT_ID, RACING_FUEL_CONTRACT_SCHEMA, RACING_FUEL_CONTRACT_VERSION,
+    RacingFuelContractV1, RacingFuelDepletionBehavior,
 };
 pub use thermal_profile::{
     ResolvedV3PowerUnitThermalProfileV2, ResolvedV3ThermalFamilyProfileV1,
@@ -24,9 +29,10 @@ pub use workload::{
     racing_model_v3_development_candidate_identity,
     racing_model_v3_driver_control_candidate_identity,
     racing_model_v3_driver_friction_candidate_identity,
-    racing_model_v3_fidelity_candidate_identity, racing_model_v3_fuel_mass_candidate_identity,
-    racing_model_v3_mechanical_candidate_identity, racing_model_v3_thermal_candidate_identity,
-    racing_model_v3_timeline_candidate_identity, racing_model_v3_transmission_candidate_identity,
+    racing_model_v3_fidelity_candidate_identity, racing_model_v3_fuel_contract_candidate_identity,
+    racing_model_v3_fuel_mass_candidate_identity, racing_model_v3_mechanical_candidate_identity,
+    racing_model_v3_thermal_candidate_identity, racing_model_v3_timeline_candidate_identity,
+    racing_model_v3_transmission_candidate_identity,
 };
 
 use std::collections::hash_map::DefaultHasher;
@@ -1305,6 +1311,10 @@ include!(concat!(
     env!("CARGO_MANIFEST_DIR"),
     "/../../generated/racing_catalog_model_v3_timeline.rs"
 ));
+include!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../generated/racing_catalog_model_v3_fuel_contract.rs"
+));
 const PRESENTATION_INDEX: &[u8] = include_bytes!(concat!(
     env!("CARGO_MANIFEST_DIR"),
     "/../../catalogs/racing/v1.0.0/presentation/index.json"
@@ -1991,6 +2001,79 @@ pub fn run_race_with_catalog_and_v3_timeline_candidate(
         thermal_candidate,
         &experiment,
     )
+}
+
+/// Runs the catalog-governed Model V3 fuel-contract candidate.
+///
+/// Unlike offline experiments, this published-shaped workload rejects a
+/// caller-provided initial load. Both load and consumption coefficients are
+/// resolved from the immutable catalog so a browser cannot silently obtain a
+/// mass or endurance advantage over hosted replay.
+pub fn run_race_with_catalog_and_v3_fuel_contract_candidate(
+    mut request: RunRaceRequest,
+    snapshot: &RacingCatalogSnapshot,
+    timeline: RacingDriverInstructionTimelineV1,
+) -> Result<RaceOutput, String> {
+    let model = racing_model_v3_fuel_contract_candidate_identity();
+    snapshot
+        .manifest()
+        .compatibility
+        .validate_for(&model, pitgun_contract::ContractVersion::V1)
+        .map_err(|error| format!("fuel-contract model/catalog incompatibility: {error}"))?;
+    if request.input.initial_fuel_mass_kg.is_some() {
+        return Err(
+            "published fuel-contract workload forbids an initial-fuel override".to_string(),
+        );
+    }
+    let fuel_contract = snapshot
+        .fuel_contract()
+        .ok_or_else(|| "fuel-contract candidate catalog has no fuel contract".to_string())?;
+    let thermal_candidate = snapshot.power_unit_thermal_profile().ok_or_else(|| {
+        "fuel-contract candidate catalog has no power-unit thermal profile".to_string()
+    })?;
+    let driver_control_profile = snapshot.driver_control_profile().copied().ok_or_else(|| {
+        "fuel-contract candidate catalog has no physical driver-control profile".to_string()
+    })?;
+    let instruction_profile = snapshot
+        .driver_instruction_profile()
+        .copied()
+        .ok_or_else(|| {
+            "fuel-contract candidate catalog has no driver-instruction profile".to_string()
+        })?;
+    if snapshot.drivers_v2().is_empty() {
+        return Err("fuel-contract candidate catalog has no V2 driver resources".to_string());
+    }
+
+    request.input.initial_fuel_mass_kg = Some(fuel_contract.default_initial_fuel_mass_kg);
+    let profile = V3CandidateExperimentProfile {
+        schema_version: V3CandidateExperimentProfileVersion::V11,
+        driver_control_profile: Some(driver_control_profile),
+        fuel_mass: Some(fuel_contract.consumption),
+        ..V3CandidateExperimentProfile::default()
+    };
+    let experiment = V3DriverInstructionExperimentV1 {
+        drivers: snapshot.drivers_v2().clone(),
+        instruction_profile,
+        timeline,
+    };
+    let output = run_race_with_catalog_and_v3_driver_instruction_profile(
+        request,
+        snapshot,
+        &profile,
+        thermal_candidate,
+        &experiment,
+    )?;
+    let diagnostics = output
+        .player_fuel_mass_diagnostics_v3
+        .as_ref()
+        .ok_or_else(|| "fuel-contract execution produced no player fuel diagnostics".to_string())?;
+    if diagnostics.final_fuel_mass_kg + 1e-9 < fuel_contract.minimum_finish_reserve_kg {
+        return Err(format!(
+            "fuel-contract finish reserve violated: required {:.6} kg, available {:.6} kg",
+            fuel_contract.minimum_finish_reserve_kg, diagnostics.final_fuel_mass_kg
+        ));
+    }
+    Ok(output)
 }
 
 fn run_race_with_catalog_and_v3_component_profile(
@@ -2924,10 +3007,13 @@ pub fn execute_authorized_dynamic_race_application(
     validate_attempt_signature_shape(signed.algorithm, &signed.signature)?;
 
     let initial_contract = &signed.authorization.initial_contract;
-    if initial_contract.model != racing_model_v3_timeline_candidate_identity() {
+    let timeline_model = racing_model_v3_timeline_candidate_identity();
+    let fuel_contract_model = racing_model_v3_fuel_contract_candidate_identity();
+    if initial_contract.model != timeline_model && initial_contract.model != fuel_contract_model {
         return Err(format!(
-            "dynamic Racing execution requires model {}, got {}@{} {}",
-            racing_model_v3_timeline_candidate_identity().version,
+            "dynamic Racing execution requires model {} or {}, got {}@{} {}",
+            timeline_model.version,
+            fuel_contract_model.version,
             initial_contract.model.id,
             initial_contract.model.version,
             initial_contract.model.digest,
@@ -2974,20 +3060,22 @@ pub fn execute_authorized_dynamic_race_application(
         )
         .map_err(|error| format!("invalid completed dynamic Racing input: {error}"))?;
 
-    let output = run_race_with_catalog_and_v3_timeline_candidate(
-        RunRaceRequest {
-            input: request.input.clone(),
-            seed: initial_contract.random.seed.get(),
-            era: Some(request.input.era),
-            hz: Some(request.input.hz),
-        },
-        catalog,
-        request
-            .completed_input
-            .driver_instructions
-            .applied_timeline
-            .clone(),
-    )
+    let run_request = RunRaceRequest {
+        input: request.input.clone(),
+        seed: initial_contract.random.seed.get(),
+        era: Some(request.input.era),
+        hz: Some(request.input.hz),
+    };
+    let timeline = request
+        .completed_input
+        .driver_instructions
+        .applied_timeline
+        .clone();
+    let output = if initial_contract.model == fuel_contract_model {
+        run_race_with_catalog_and_v3_fuel_contract_candidate(run_request, catalog, timeline)
+    } else {
+        run_race_with_catalog_and_v3_timeline_candidate(run_request, catalog, timeline)
+    }
     .map_err(|error| format!("authorized dynamic Racing execution failed: {error}"))?;
     let run_evidence = evidence::RacingRunEvidenceV1::from_race_output(&output)
         .map_err(|error| format!("cannot project dynamic Racing evidence: {error}"))?;
@@ -3594,6 +3682,10 @@ impl EmbeddedCatalog {
             "driver-control" | "drivers-v2" => {
                 // Parsed and identity-validated by `RacingCatalogSnapshot`.
                 // A future timeline-enabled workload consumes this complete package.
+            }
+            "fuel-contract" => {
+                // Parsed and identity-validated by `RacingCatalogSnapshot`.
+                // Published-shaped V3 workloads consume the resolved contract.
             }
             _ => {
                 return Err(format!(
@@ -4657,6 +4749,8 @@ mod tests {
             .expect("component-composed Model V3 catalog");
         let timeline_model_catalog = RacingCatalogSnapshot::embedded_model_v3_timeline()
             .expect("timeline-enabled Model V3 catalog");
+        let fuel_contract_model_catalog = RacingCatalogSnapshot::embedded_model_v3_fuel_contract()
+            .expect("fuel-contract Model V3 catalog");
 
         let selected = racing_workload_for(&racing_model_v2_identity(), &model_v2_catalog)
             .expect("exact model V2 selection");
@@ -4704,6 +4798,15 @@ mod tests {
             selected_timeline.model_identity(),
             &racing_model_v3_timeline_candidate_identity()
         );
+        let selected_fuel_contract = racing_workload_for(
+            &racing_model_v3_fuel_contract_candidate_identity(),
+            &fuel_contract_model_catalog,
+        )
+        .expect("exact fuel-contract Model V3 selection");
+        assert_eq!(
+            selected_fuel_contract.model_identity(),
+            &racing_model_v3_fuel_contract_candidate_identity()
+        );
         assert!(
             racing_workload_for(
                 &racing_model_v3_component_candidate_identity(),
@@ -4719,6 +4822,14 @@ mod tests {
             )
             .is_err(),
             "timeline Model 0.14 must not run against component Catalog 1.6"
+        );
+        assert!(
+            racing_workload_for(
+                &racing_model_v3_timeline_candidate_identity(),
+                &fuel_contract_model_catalog,
+            )
+            .is_err(),
+            "timeline Model 0.14 must not run against fuel-contract Catalog 1.9"
         );
 
         let mut forged = racing_model_v2_identity();
@@ -4853,6 +4964,46 @@ mod tests {
             run_race_with_catalog_and_v3_timeline_candidate(request, &snapshot, empty_timeline)
                 .expect_err("legacy-only driver must fail closed");
         assert!(error.contains("missing V2 driver resource \"default\""));
+    }
+
+    #[test]
+    fn fuel_contract_candidate_is_catalog_governed_and_deterministic() {
+        let snapshot = RacingCatalogSnapshot::embedded_model_v3_fuel_contract()
+            .expect("fuel-contract candidate catalog");
+        let mut request = one_lap_request();
+        request.input.race.competitors[0].driver_id = Some("balanced_reference".to_string());
+        let timeline = RacingDriverInstructionTimelineV1 {
+            schema_version: RacingDriverInstructionTimelineVersion::V1,
+            events: Vec::new(),
+        };
+
+        let first = run_race_with_catalog_and_v3_fuel_contract_candidate(
+            request.clone(),
+            &snapshot,
+            timeline.clone(),
+        )
+        .expect("first fuel-contract execution");
+        let second = run_race_with_catalog_and_v3_fuel_contract_candidate(
+            request.clone(),
+            &snapshot,
+            timeline.clone(),
+        )
+        .expect("second fuel-contract execution");
+        assert_eq!(
+            serde_json::to_value(&first).expect("first JSON"),
+            serde_json::to_value(&second).expect("second JSON")
+        );
+        let diagnostics = first
+            .player_fuel_mass_diagnostics_v3
+            .expect("fuel diagnostics");
+        assert_eq!(diagnostics.initial_fuel_mass_kg, 110.0);
+        assert!(diagnostics.final_fuel_mass_kg >= 1.0);
+
+        request.input.initial_fuel_mass_kg = Some(200.0);
+        let error =
+            run_race_with_catalog_and_v3_fuel_contract_candidate(request, &snapshot, timeline)
+                .expect_err("client fuel override must fail closed");
+        assert!(error.contains("forbids an initial-fuel override"));
     }
 
     fn component_selection(

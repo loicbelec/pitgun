@@ -1,0 +1,12 @@
+{
+  "schema_version": "pitgun.racing-fuel-contract/v1",
+  "id": "pitgun.racing.fuel-contract",
+  "version": "1.0.0",
+  "default_initial_fuel_mass_kg": 110.0,
+  "minimum_finish_reserve_kg": 1.0,
+  "depletion_behavior": "reject",
+  "consumption": {
+    "brake_specific_fuel_consumption_kg_per_kwh": 0.19,
+    "idle_fuel_flow_kg_per_s": 0.0004
+  }
+}

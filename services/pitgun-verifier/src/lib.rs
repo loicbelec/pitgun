@@ -16,6 +16,8 @@ use pitgun_contract::{
 use pitgun_racing_simulator::evidence::{RacingExecutionResolutionV1, RacingRunEvidenceV1};
 use pitgun_racing_simulator::{
     RacingCatalogSnapshot, RacingWorkload, RunRaceInput, RunRaceRequest,
+    racing_model_v3_fuel_contract_candidate_identity,
+    run_race_with_catalog_and_v3_fuel_contract_candidate,
     run_race_with_catalog_and_v3_timeline_candidate,
 };
 use pitgun_runtime::{LinkedWorkloadError, execute_linked};
@@ -419,31 +421,34 @@ impl RacingVerifier {
             );
         }
 
-        let replay = match run_race_with_catalog_and_v3_timeline_candidate(
-            RunRaceRequest {
-                input: submission.input.clone(),
-                seed: initial_contract.random.seed.get(),
-                era: Some(submission.input.era),
-                hz: Some(submission.input.hz),
-            },
-            catalog,
-            submission
-                .completed_input
-                .driver_instructions
-                .applied_timeline
-                .clone(),
-        ) {
-            Ok(output) => output,
-            Err(_) => {
-                return self.rejected_attempt(
-                    final_run_id,
-                    attempt.execution_id,
-                    submitted_evidence,
-                    VerificationReasonCode::ReplayMismatch,
-                    now_ms,
-                );
-            }
+        let run_request = RunRaceRequest {
+            input: submission.input.clone(),
+            seed: initial_contract.random.seed.get(),
+            era: Some(submission.input.era),
+            hz: Some(submission.input.hz),
         };
+        let timeline = submission
+            .completed_input
+            .driver_instructions
+            .applied_timeline
+            .clone();
+        let replay =
+            match if initial_contract.model == racing_model_v3_fuel_contract_candidate_identity() {
+                run_race_with_catalog_and_v3_fuel_contract_candidate(run_request, catalog, timeline)
+            } else {
+                run_race_with_catalog_and_v3_timeline_candidate(run_request, catalog, timeline)
+            } {
+                Ok(output) => output,
+                Err(_) => {
+                    return self.rejected_attempt(
+                        final_run_id,
+                        attempt.execution_id,
+                        submitted_evidence,
+                        VerificationReasonCode::ReplayMismatch,
+                        now_ms,
+                    );
+                }
+            };
         let replay_evidence = match RacingRunEvidenceV1::from_race_output(&replay) {
             Ok(evidence) => evidence,
             Err(_) => {
@@ -784,7 +789,8 @@ mod tests {
     use pitgun_racing_simulator::{
         RacingCatalogSnapshot, RunRaceInput, RunRaceRequest, execute_authorized_dynamic_race,
         execute_authorized_race, get_circuit_with_catalog, racing_model_identity_for_version,
-        racing_model_v1_identity, racing_model_v3_timeline_candidate_identity,
+        racing_model_v1_identity, racing_model_v3_fuel_contract_candidate_identity,
+        racing_model_v3_timeline_candidate_identity,
     };
     use pitgun_signing::{SigningKey, VerificationKeyring};
 
@@ -946,6 +952,10 @@ mod tests {
     }
 
     fn dynamic_fixture() -> DynamicFixture {
+        dynamic_fixture_for("v1.8.0", racing_model_v3_timeline_candidate_identity())
+    }
+
+    fn dynamic_fixture_for(catalog_version: &str, model: ArtifactIdentity) -> DynamicFixture {
         let mut input = serde_json::from_str::<RunRaceRequest>(include_str!(
             "../../../crates/pitgun-racing-simulator/tests/golden/racing_run_v2.input.json"
         ))
@@ -954,10 +964,10 @@ mod tests {
         input.race.laps = 3;
         input.race.competitors[0].driver_id = Some("balanced_reference".to_string());
         let catalog_path = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-            .join("../../catalogs/racing/v1.8.0");
+            .join("../../catalogs/racing")
+            .join(catalog_version);
         let catalog =
             RacingCatalogSnapshot::from_release_dir(catalog_path).expect("dynamic catalog");
-        let model = racing_model_v3_timeline_candidate_identity();
         let policy = ArtifactIdentity {
             id: "pitgun.racing.tuning".parse().expect("policy id"),
             version: "1.0.0".parse().expect("policy version"),
@@ -1557,6 +1567,25 @@ mod tests {
                 .expect("verified resolution")
                 .data_pack,
             fixture.catalog.manifest().simulation_pack.identity
+        );
+    }
+
+    #[test]
+    fn valid_fuel_contract_attempt_has_native_verifier_parity() {
+        let fixture =
+            dynamic_fixture_for("v1.9.0", racing_model_v3_fuel_contract_candidate_identity());
+
+        let verdict = fixture
+            .verifier
+            .verify_attempt(&fixture.submission, NOW_MS)
+            .expect("fuel-contract dynamic verdict");
+
+        assert_eq!(verdict.status, VerificationStatus::Verified);
+        assert_eq!(verdict.reason_code, None);
+        assert_eq!(verdict.run_id, fixture.submission.receipt.receipt.run_id);
+        assert_eq!(
+            fixture.submission.execution_resolution.fuel_contract,
+            fixture.catalog.fuel_contract_identity().cloned()
         );
     }
 
