@@ -14,10 +14,12 @@ from pitgun_databricks_adapter import (
     load_budget_effect_v2_campaign,
     load_early_allocation_effect_campaign,
     load_opponent_audit_campaign,
+    load_opponent_acceptance_campaign,
     load_reference_campaign,
     load_tire_degradation_campaign,
     load_driver_control_campaign,
     materialize_opponent_audit_plan,
+    materialize_opponent_acceptance_plan,
     materialize_budget_effect_v2_plan,
     materialize_early_allocation_effect_plan,
     materialize_plan,
@@ -85,6 +87,26 @@ campaign_smoke = execute_packaged_racing_catalog_scenario(
 assert campaign_smoke["model"]["version"] == "2.0.0"
 assert campaign_smoke["data_pack"]["version"] == "1.2.0"
 assert len(campaign_smoke["summary"]["standings"]) == 10
+
+acceptance_manifest, acceptance_manifest_digest = (
+    load_opponent_acceptance_campaign()
+)
+acceptance_plan = materialize_opponent_acceptance_plan(acceptance_manifest)
+assert acceptance_manifest_digest.startswith("sha256:")
+assert len(acceptance_plan) == acceptance_manifest["planned_run_count"] == 135
+first_acceptance = acceptance_plan[0]
+acceptance_smoke = execute_packaged_racing_catalog_scenario(
+    int(first_acceptance["seed"]),
+    first_acceptance["scenario_resource"],
+    "racing-v1-9-0",
+)["result"]
+assert acceptance_smoke["model"] == {
+    "id": acceptance_manifest["catalog"]["model_id"],
+    "version": acceptance_manifest["catalog"]["model_version"],
+    "digest": acceptance_manifest["catalog"]["model_digest"],
+}
+assert acceptance_smoke["data_pack"]["version"] == "1.9.0"
+assert len(acceptance_smoke["summary"]["standings"]) == 10
 
 budget_v2_manifest, budget_v2_digest = load_budget_effect_v2_campaign()
 budget_v2_plan = materialize_budget_effect_v2_plan(budget_v2_manifest)

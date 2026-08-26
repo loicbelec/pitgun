@@ -60,6 +60,7 @@ databricks bundle run candidate_validation_job -t dev -p pitgun-free
 databricks bundle run candidate_review_job -t dev -p pitgun-free
 databricks bundle run opponent_diagnosis_job -t dev -p pitgun-free \
   --params campaigns_table_version=<pinned>,runs_table_version=<pinned>,metrics_table_version=<pinned>
+databricks bundle run opponent_acceptance_job -t dev -p pitgun-free
 databricks bundle run strategy_effect_job -t dev -p pitgun-free
 databricks bundle run budget_effect_job -t dev -p pitgun-free
 databricks bundle run budget_effect_v2_job -t dev -p pitgun-free
@@ -121,6 +122,37 @@ idempotent replay. It does not rerun simulations or write a
 policy. Its MLflow JSON and Markdown artifacts distinguish exact paired setup
 effects from descriptive strategy, progression, budget, and diversity signals;
 confounded comparisons are labelled and retained as unresolved questions.
+
+## Catalog 1.9 opponent acceptance
+
+The governed release gate is frozen in
+[`racing-opponent-acceptance-v1.json`](campaigns/racing-opponent-acceptance-v1.json).
+It packages the exact 135 scenarios created from the public game corpus: five
+circuit classes, three economy-backed progression levels, three seeds, and
+naive, balanced, or circuit-informed player references. Each set of three keeps
+the same nine opponents and vehicle components so the player decision remains
+the controlled variable.
+
+`opponent_acceptance_job` embeds Catalog 1.9, Model 0.15, the Linux/ARM64 Rust
+runner, every scenario, and all checksums in one reviewed wheel. Before the
+matrix starts, three representative scenarios are replayed twice and must retain
+their exact native result identity. The remaining work runs concurrently, can
+resume from successful Delta keys, and records position, leader gap, field
+spread, and budget-parity metrics in Delta and MLflow. Failed and invalid runs
+remain visible. A completed report always ends at `REVIEW_REQUIRED`; it cannot
+change the opponent policy or promote a game/catalog release.
+
+Deploy and start this attended Free Edition campaign only from a reviewed
+revision:
+
+```bash
+cd experiments/databricks
+databricks bundle validate -t dev -p pitgun-free --strict
+databricks bundle deploy -t dev -p pitgun-free
+databricks bundle run opponent_acceptance_job -t dev -p pitgun-free
+```
+
+The acceptance verdict itself belongs to the separate read-only parent review.
 
 The follow-up strategy-effect input campaign is frozen in
 [`campaigns/racing-strategy-effect-v1.json`](campaigns/racing-strategy-effect-v1.json).
