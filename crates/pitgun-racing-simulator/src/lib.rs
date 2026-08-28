@@ -40,10 +40,10 @@ use std::collections::{BTreeMap, BTreeSet, HashMap};
 use std::hash::{Hash, Hasher};
 
 use pitgun_contract::{
-    ArtifactIdentity, AuthorizationSignatureAlgorithm, IncrementalExecutionStreamBatchV1,
-    IncrementalExecutionStreamEventV1, IncrementalExecutionStreamRecordV1, RunBundleReceiptV1,
-    RunBundleReceiptVersion, RuntimeIdentity, Sample, SampleValue, SignalQuality, TelemetryFrame,
-    canonical_json_digest,
+    ArtifactIdentity, AuthorizationSignatureAlgorithm, DeterministicRunContractV1,
+    IncrementalExecutionStreamBatchV1, IncrementalExecutionStreamEventV1,
+    IncrementalExecutionStreamRecordV1, RunBundleReceiptV1, RunBundleReceiptVersion,
+    RuntimeIdentity, Sample, SampleValue, SignalQuality, TelemetryFrame, canonical_json_digest,
 };
 use pitgun_racing_contract::{
     CircuitCatalogEntry, CompetitorSpec, CompetitorStintStrategy, ComponentCapabilityDefinitionV1,
@@ -2024,6 +2024,16 @@ pub fn run_race_with_catalog_and_v3_timeline_candidate(
     snapshot: &RacingCatalogSnapshot,
     timeline: RacingDriverInstructionTimelineV1,
 ) -> Result<RaceOutput, String> {
+    start_incremental_race_with_catalog_and_v3_timeline_candidate(request, snapshot, timeline)?
+        .collect()
+}
+
+/// Starts the timeline-governed V3 workload without computing its first lap.
+pub fn start_incremental_race_with_catalog_and_v3_timeline_candidate(
+    request: RunRaceRequest,
+    snapshot: &RacingCatalogSnapshot,
+    timeline: RacingDriverInstructionTimelineV1,
+) -> Result<IncrementalRacingSession, String> {
     let model = racing_model_v3_timeline_candidate_identity();
     snapshot
         .manifest()
@@ -2055,12 +2065,12 @@ pub fn run_race_with_catalog_and_v3_timeline_candidate(
         instruction_profile,
         timeline,
     };
-    run_race_with_catalog_and_v3_driver_instruction_profile(
+    start_incremental_race_with_catalog_and_v3_component_profile(
         request,
         snapshot,
         &profile,
         thermal_candidate,
-        &experiment,
+        Some(V3DriverExperiment::Instructions(&experiment)),
     )
 }
 
@@ -3772,16 +3782,74 @@ pub fn execute_authorized_dynamic_race(
     execute_authorized_dynamic_race_application(request, catalog).map(|result| result.evidence)
 }
 
-/// Validates and executes one predeclared driver-instruction history.
+/// One Authority-validated dynamic Racing attempt advanced by explicit pulls.
 ///
-/// Cryptographic HMAC verification remains at the trusted Verifier boundary:
-/// browser runtimes receive no Authority secret. This boundary nevertheless
-/// rejects malformed signature shapes and validates every signed identity before
-/// physical execution starts.
-pub fn execute_authorized_dynamic_race_application(
+/// The type owns the exact request facts needed to create the unchanged hosted
+/// verification evidence once the terminal model output has been reached.
+/// Transport handles and browser rendering deliberately remain outside this
+/// domain boundary.
+pub struct AuthorizedDynamicRacingSession {
+    session: IncrementalRacingSession,
+    request: evidence::RacingDynamicExecutionRequestV1,
+    final_contract: DeterministicRunContractV1,
+    execution_resolution: evidence::RacingExecutionResolutionV1,
+    application_result: Option<evidence::RacingDynamicApplicationResultV1>,
+}
+
+impl AuthorizedDynamicRacingSession {
+    /// Computes one deterministic bounded session batch.
+    pub fn advance(&mut self) -> Result<RacingSessionStreamBatchV1, String> {
+        if self.application_result.is_some() {
+            return Err(
+                "authorized dynamic Racing session completed; consume its result".to_string(),
+            );
+        }
+        let batch = self.session.advance()?;
+        let output = batch
+            .records()
+            .iter()
+            .find_map(|record| match record.event() {
+                IncrementalExecutionStreamEventV1::Complete(output) => Some(output.clone()),
+                IncrementalExecutionStreamEventV1::Progress(_) => None,
+            });
+        if let Some(output) = output {
+            self.application_result = Some(finalize_authorized_dynamic_race_application(
+                self.request.clone(),
+                &self.final_contract,
+                self.execution_resolution.clone(),
+                output,
+            )?);
+        }
+        Ok(batch)
+    }
+
+    /// Reports whether the terminal batch has been emitted.
+    #[must_use]
+    pub const fn is_complete(&self) -> bool {
+        self.application_result.is_some()
+    }
+
+    /// Consumes a terminal session and returns its unchanged application result.
+    pub fn complete(self) -> Result<evidence::RacingDynamicApplicationResultV1, String> {
+        self.application_result.ok_or_else(|| {
+            "authorized dynamic Racing session is not complete; pull another batch".to_string()
+        })
+    }
+
+    fn collect(mut self) -> Result<evidence::RacingDynamicApplicationResultV1, String> {
+        while !self.is_complete() {
+            self.advance()?;
+        }
+        self.complete()
+    }
+}
+
+/// Validates one dynamic request and starts its physical execution without
+/// computing the first lap.
+pub fn start_authorized_dynamic_racing_session(
     request: evidence::RacingDynamicExecutionRequestV1,
     catalog: &RacingCatalogSnapshot,
-) -> Result<evidence::RacingDynamicApplicationResultV1, String> {
+) -> Result<AuthorizedDynamicRacingSession, String> {
     let signed = &request.signed_authorization;
     signed
         .authorization
@@ -3854,12 +3922,55 @@ pub fn execute_authorized_dynamic_race_application(
         .driver_instructions
         .applied_timeline
         .clone();
-    let output = if initial_contract.model == fuel_contract_model {
-        run_race_with_catalog_and_v3_fuel_contract_candidate(run_request, catalog, timeline)
+    let session = if initial_contract.model == fuel_contract_model {
+        start_incremental_race_with_catalog_and_v3_fuel_contract_candidate(
+            run_request,
+            catalog,
+            timeline,
+        )
     } else {
-        run_race_with_catalog_and_v3_timeline_candidate(run_request, catalog, timeline)
+        start_incremental_race_with_catalog_and_v3_timeline_candidate(
+            run_request,
+            catalog,
+            timeline,
+        )
     }
     .map_err(|error| format!("authorized dynamic Racing execution failed: {error}"))?;
+    let execution_resolution =
+        evidence::RacingExecutionResolutionV1::from_catalog(catalog, &initial_contract.model)
+            .ok_or_else(|| {
+                "dynamic Racing catalog has no explicit execution lineage".to_string()
+            })?;
+
+    Ok(AuthorizedDynamicRacingSession {
+        session,
+        request,
+        final_contract,
+        execution_resolution,
+        application_result: None,
+    })
+}
+
+/// Validates and executes one predeclared driver-instruction history.
+///
+/// Cryptographic HMAC verification remains at the trusted Verifier boundary:
+/// browser runtimes receive no Authority secret. This boundary nevertheless
+/// rejects malformed signature shapes and validates every signed identity before
+/// physical execution starts.
+pub fn execute_authorized_dynamic_race_application(
+    request: evidence::RacingDynamicExecutionRequestV1,
+    catalog: &RacingCatalogSnapshot,
+) -> Result<evidence::RacingDynamicApplicationResultV1, String> {
+    start_authorized_dynamic_racing_session(request, catalog)?.collect()
+}
+
+fn finalize_authorized_dynamic_race_application(
+    request: evidence::RacingDynamicExecutionRequestV1,
+    final_contract: &DeterministicRunContractV1,
+    execution_resolution: evidence::RacingExecutionResolutionV1,
+    output: RaceOutput,
+) -> Result<evidence::RacingDynamicApplicationResultV1, String> {
+    let signed = &request.signed_authorization;
     let run_evidence = evidence::RacingRunEvidenceV1::from_race_output(&output)
         .map_err(|error| format!("cannot project dynamic Racing evidence: {error}"))?;
     let runtime = RuntimeIdentity {
@@ -3875,17 +3986,12 @@ pub fn execute_authorized_dynamic_race_application(
         artifact_digest: request.wasm_artifact_digest,
     };
     let receipt = run_evidence
-        .execution_receipt(&final_contract, signed.authorization.execution_id, runtime)
+        .execution_receipt(final_contract, signed.authorization.execution_id, runtime)
         .map_err(|error| format!("cannot create dynamic Racing receipt: {error}"))?;
     signed
         .authorization
-        .validate_completed_receipt(&final_contract, &receipt)
+        .validate_completed_receipt(final_contract, &receipt)
         .map_err(|error| format!("invalid completed dynamic Racing receipt: {error}"))?;
-    let execution_resolution =
-        evidence::RacingExecutionResolutionV1::from_catalog(catalog, &initial_contract.model)
-            .ok_or_else(|| {
-                "dynamic Racing catalog has no explicit execution lineage".to_string()
-            })?;
 
     let evidence = evidence::RacingDynamicVerificationSubmissionV1 {
         schema_version: evidence::RacingDynamicVerificationSubmissionVersion::V1,
