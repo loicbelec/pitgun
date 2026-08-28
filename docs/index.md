@@ -17,6 +17,7 @@
 - [Databricks Rust runner spike](DATABRICKS_RUST_RUNNER_SPIKE.md)
 - [Databricks Reference Campaign V1](DATABRICKS_REFERENCE_CAMPAIGN_V1.md)
 - [Racing Model V3 thermal Databricks plan V1](RACING_V3_THERMAL_DATABRICKS_PLAN_V1.md)
+- [Incremental Execution Stream V1](INCREMENTAL_EXECUTION_STREAM_V1.md)
 - [Racing Model V3 thermal Databricks review V1](RACING_V3_THERMAL_DATABRICKS_REVIEW_V1.md)
 - [Racing Model V3 thermal refinement Databricks review V1](RACING_V3_THERMAL_REFINEMENT_DATABRICKS_REVIEW_V1.md)
 - [Racing Model V3 thermal family profile candidate V1](RACING_V3_THERMAL_FAMILY_PROFILE_CANDIDATE_V1.md)

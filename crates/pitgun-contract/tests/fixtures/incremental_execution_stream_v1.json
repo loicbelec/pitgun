@@ -1,0 +1,61 @@
+{
+  "descriptor": {
+    "schema_version": "pitgun.incremental-execution-stream/v1",
+    "execution_id": "018f3b78-7e9a-7d20-a5e1-4ed92f02a591",
+    "model": {
+      "id": "pitgun.fixture-model",
+      "version": "1.0.0",
+      "digest": "sha256:89dc458a7460056dd519f5cda74c55c2b2b47f7091f1309ae10d11a2eb46a64a"
+    },
+    "clock": {
+      "kind": "logical-fixed-step",
+      "epoch": 0,
+      "tick_numerator_us": 50000,
+      "tick_denominator": 1
+    }
+  },
+  "batches": [
+    {
+      "schema_version": "pitgun.incremental-execution-stream/v1",
+      "records": [
+        {
+          "sequence": 0,
+          "logical_tick": 0,
+          "event": {
+            "kind": "progress",
+            "payload": {
+              "phase": "started",
+              "sample_count": 0
+            }
+          }
+        },
+        {
+          "sequence": 1,
+          "logical_tick": 4,
+          "event": {
+            "kind": "progress",
+            "payload": {
+              "phase": "running",
+              "sample_count": 64
+            }
+          }
+        }
+      ]
+    },
+    {
+      "schema_version": "pitgun.incremental-execution-stream/v1",
+      "records": [
+        {
+          "sequence": 2,
+          "logical_tick": 8,
+          "event": {
+            "kind": "complete",
+            "payload": {
+              "result_digest": "sha256:89dc458a7460056dd519f5cda74c55c2b2b47f7091f1309ae10d11a2eb46a64a"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
