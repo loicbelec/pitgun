@@ -4,6 +4,7 @@ pub mod bundle;
 pub mod catalog;
 pub mod codec;
 pub mod determinism;
+pub mod execution_stream;
 pub mod frame;
 pub mod metrics;
 pub mod registry;
@@ -39,6 +40,12 @@ pub use codec::{
 pub use determinism::{
     CanonicalJsonError, Digest, DigestParseError, canonical_json_bytes, canonical_json_digest,
     canonicalize_json_str,
+};
+pub use execution_stream::{
+    IncrementalExecutionStreamBatchV1, IncrementalExecutionStreamCursorV1,
+    IncrementalExecutionStreamDescriptorV1, IncrementalExecutionStreamError,
+    IncrementalExecutionStreamEventV1, IncrementalExecutionStreamRecordV1,
+    IncrementalExecutionStreamVersion, MAX_INCREMENTAL_STREAM_BATCH_RECORDS,
 };
 pub use frame::{
     Event, EventData, EventId, EventSeverity, ParameterId, Sample, SampleValue, SessionId,
