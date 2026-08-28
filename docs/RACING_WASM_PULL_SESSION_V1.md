@@ -1,9 +1,11 @@
 # Racing WASM pull session V1
 
-The `pitgun-solver` compatibility crate exposes the governed incremental Racing
-engine to JavaScript as a synchronous pull API. It lets a browser yield between
-deterministic lap boundaries without moving rendering, timers, callbacks, or
-networking into the simulation core.
+The domain-owned `pitgun-racing-simulator` crate exposes the governed
+incremental Racing engine to JavaScript as a synchronous pull API. The
+transitional `pitgun-solver` crate forwards the same functions for downstream
+compatibility. The API lets a browser yield between deterministic lap
+boundaries without moving rendering, timers, callbacks, or networking into the
+simulation core.
 
 ## Lifecycle
 

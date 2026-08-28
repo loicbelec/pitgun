@@ -35,6 +35,7 @@ pub use workload::{
     racing_model_v3_transmission_candidate_identity,
 };
 
+use std::cell::{Cell, RefCell};
 use std::collections::hash_map::DefaultHasher;
 use std::collections::{BTreeMap, BTreeSet, HashMap};
 use std::hash::{Hash, Hasher};
@@ -264,6 +265,61 @@ pub type RacingSessionStreamRecordV1 =
     IncrementalExecutionStreamRecordV1<RacingSessionProgressV1, RaceOutput>;
 pub type RacingSessionStreamBatchV1 =
     IncrementalExecutionStreamBatchV1<RacingSessionProgressV1, RaceOutput>;
+
+thread_local! {
+    static RACING_SESSIONS: RefCell<BTreeMap<u32, AuthorizedDynamicRacingSession>> =
+        const { RefCell::new(BTreeMap::new()) };
+    static NEXT_RACING_SESSION_HANDLE: Cell<u32> = const { Cell::new(1) };
+}
+
+#[derive(Serialize)]
+struct RacingSessionStreamStartV1 {
+    schema_version: &'static str,
+    handle: u32,
+}
+
+#[derive(Serialize)]
+struct RacingSessionStreamPullV1 {
+    schema_version: &'static str,
+    handle: u32,
+    complete: bool,
+    batch: RacingSessionStreamBatchV1,
+}
+
+#[derive(Serialize)]
+struct RacingSessionStreamCompletionV1 {
+    schema_version: &'static str,
+    handle: u32,
+    result: evidence::RacingDynamicApplicationResultV1,
+}
+
+#[derive(Serialize)]
+struct RacingSessionStreamReleaseV1 {
+    schema_version: &'static str,
+    handle: u32,
+    released: bool,
+}
+
+fn register_racing_session(session: AuthorizedDynamicRacingSession) -> Result<u32, String> {
+    RACING_SESSIONS.with(|sessions| {
+        NEXT_RACING_SESSION_HANDLE.with(|next| {
+            let mut sessions = sessions.borrow_mut();
+            let first = next.get().max(1);
+            let mut handle = first;
+            loop {
+                if let std::collections::btree_map::Entry::Vacant(entry) = sessions.entry(handle) {
+                    entry.insert(session);
+                    next.set(handle.wrapping_add(1).max(1));
+                    return Ok(handle);
+                }
+                handle = handle.wrapping_add(1).max(1);
+                if handle == first {
+                    return Err("Racing session handle space exhausted".to_string());
+                }
+            }
+        })
+    })
+}
 
 /// Exact overrides for the mechanically resolved Model V3 experiment input.
 ///
@@ -3772,6 +3828,109 @@ pub fn execute_authorized_dynamic_race_application_with_catalog_json(
         Ok(result) => serialize_json(&result),
         Err(error) => json_error(&error),
     }
+}
+
+/// Starts a pull-based Authority-authorized Racing execution.
+///
+/// The returned handle is process-local and never participates in evidence or
+/// deterministic run identity.
+#[cfg_attr(feature = "wasm", wasm_bindgen)]
+pub fn start_authorized_dynamic_racing_session_with_catalog_json(
+    request_json: String,
+    catalog_bundle_json: String,
+) -> String {
+    let request =
+        match serde_json::from_str::<evidence::RacingDynamicExecutionRequestV1>(&request_json) {
+            Ok(request) => request,
+            Err(error) => {
+                return json_error(&format!("invalid dynamic execution request: {error}"));
+            }
+        };
+    let catalog = match RacingCatalogSnapshot::from_bundle_json(&catalog_bundle_json) {
+        Ok(catalog) => catalog,
+        Err(error) => return json_error(&format!("invalid Racing catalog: {error}")),
+    };
+    let session = match start_authorized_dynamic_racing_session(request, &catalog) {
+        Ok(session) => session,
+        Err(error) => return json_error(&error),
+    };
+    let handle = match register_racing_session(session) {
+        Ok(handle) => handle,
+        Err(error) => return json_error(&error),
+    };
+    serialize_json(&RacingSessionStreamStartV1 {
+        schema_version: "pitgun.racing-session-stream-start/v1",
+        handle,
+    })
+}
+
+/// Advances one pull-based Racing execution by one deterministic lap boundary.
+#[cfg_attr(feature = "wasm", wasm_bindgen)]
+pub fn pull_authorized_dynamic_racing_session_json(handle: u32) -> String {
+    RACING_SESSIONS.with(|sessions| {
+        let mut sessions = sessions.borrow_mut();
+        let session = match sessions.get_mut(&handle) {
+            Some(session) => session,
+            None => return json_error(&format!("unknown Racing session handle {handle}")),
+        };
+        if session.is_complete() {
+            return json_error(&format!(
+                "Racing session handle {handle} completed; call complete or release"
+            ));
+        }
+        match session.advance() {
+            Ok(batch) => serialize_json(&RacingSessionStreamPullV1 {
+                schema_version: "pitgun.racing-session-stream-pull/v1",
+                handle,
+                complete: session.is_complete(),
+                batch,
+            }),
+            Err(error) => json_error(&error),
+        }
+    })
+}
+
+/// Consumes a terminal handle and returns the unchanged hosted-verification
+/// application result.
+#[cfg_attr(feature = "wasm", wasm_bindgen)]
+pub fn complete_authorized_dynamic_racing_session_json(handle: u32) -> String {
+    RACING_SESSIONS.with(|sessions| {
+        let mut sessions = sessions.borrow_mut();
+        let Some(session) = sessions.get(&handle) else {
+            return json_error(&format!("unknown Racing session handle {handle}"));
+        };
+        if !session.is_complete() {
+            return json_error(&format!(
+                "Racing session handle {handle} is not complete; pull another batch"
+            ));
+        }
+        let session = sessions
+            .remove(&handle)
+            .expect("checked Racing session handle");
+        match session.complete() {
+            Ok(result) => serialize_json(&RacingSessionStreamCompletionV1 {
+                schema_version: "pitgun.racing-session-stream-completion/v1",
+                handle,
+                result,
+            }),
+            Err(error) => json_error(&error),
+        }
+    })
+}
+
+/// Releases an active or completed browser session without producing evidence.
+#[cfg_attr(feature = "wasm", wasm_bindgen)]
+pub fn release_authorized_dynamic_racing_session_json(handle: u32) -> String {
+    RACING_SESSIONS.with(|sessions| {
+        if sessions.borrow_mut().remove(&handle).is_none() {
+            return json_error(&format!("unknown Racing session handle {handle}"));
+        }
+        serialize_json(&RacingSessionStreamReleaseV1 {
+            schema_version: "pitgun.racing-session-stream-release/v1",
+            handle,
+            released: true,
+        })
+    })
 }
 
 /// Produces compact verifier evidence for one completed dynamic Racing attempt.
