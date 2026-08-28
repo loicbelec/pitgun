@@ -40,8 +40,10 @@ use std::collections::{BTreeMap, BTreeSet, HashMap};
 use std::hash::{Hash, Hasher};
 
 use pitgun_contract::{
-    ArtifactIdentity, AuthorizationSignatureAlgorithm, RunBundleReceiptV1, RunBundleReceiptVersion,
-    RuntimeIdentity, Sample, SampleValue, SignalQuality, TelemetryFrame, canonical_json_digest,
+    ArtifactIdentity, AuthorizationSignatureAlgorithm, IncrementalExecutionStreamBatchV1,
+    IncrementalExecutionStreamEventV1, IncrementalExecutionStreamRecordV1, RunBundleReceiptV1,
+    RunBundleReceiptVersion, RuntimeIdentity, Sample, SampleValue, SignalQuality, TelemetryFrame,
+    canonical_json_digest,
 };
 use pitgun_racing_contract::{
     CircuitCatalogEntry, CompetitorSpec, CompetitorStintStrategy, ComponentCapabilityDefinitionV1,
@@ -68,7 +70,8 @@ pub use pitgun_racing_solver::{
     DriverCorrectionCapacityModelV3, DriverEffects, EngineParams, EngineThermalDeratingShapeV3,
     EngineThermalParamsV3, FuelMassDiagnosticsV3, FuelMassParamsV3, MechanicalDiagnosticsV3,
     MechanicalParamsV3, PitPlan, PitStop, ResampledTelemetry, ResolvedDriverControlLapV3,
-    ResolvedSimulationRequestV3, SetupResponseDiagnosticsV1, SetupResponseDiagnosticsVersion,
+    ResolvedSimulationLapV3, ResolvedSimulationRequestV3, ResolvedSimulationSessionV3,
+    ResolvedSimulationStepV3, SetupResponseDiagnosticsV1, SetupResponseDiagnosticsVersion,
     SimConfig, SimulationRequest, SimulationResult, SimulationSolution, TireContactParamsV3,
     TireDegradationDiagnosticsV3, TireDegradationParamsV3, TireDiagnosticsV3, TireParams, Track,
     Tuning, TuningResponseV1, TuningResponseVersion, VehicleParams, VehicleState,
@@ -133,7 +136,7 @@ enum RunRacePayload {
     Bare(RunRaceInput),
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct StandingEntry {
     pub competitor_id: String,
     pub position: u32,
@@ -144,7 +147,7 @@ pub struct StandingEntry {
     pub status: StandingStatus,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum StandingStatus {
     Finished,
@@ -203,6 +206,64 @@ pub struct RaceOutput {
     pub competitor_driver_instruction_schedules_v3:
         std::collections::BTreeMap<String, ResolvedV3DriverInstructionScheduleV1>,
 }
+
+/// Bounded progress for one competitor at a deterministic completed-lap boundary.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct RacingCompetitorProgressV1 {
+    pub competitor_id: String,
+    pub distance_m: f64,
+    pub lap: u16,
+    pub position: u32,
+    pub cumulative_time_ms: u64,
+    pub status: RacingCompetitorProgressStatusV1,
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum RacingCompetitorProgressStatusV1 {
+    Running,
+    Finished,
+}
+
+/// Domain payload emitted by the first deterministic Racing stream producer.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(
+    deny_unknown_fields,
+    tag = "type",
+    content = "payload",
+    rename_all = "snake_case"
+)]
+pub enum RacingSessionProgressV1 {
+    Grid {
+        lap: u16,
+        competitors: Vec<RacingCompetitorProgressV1>,
+    },
+    PlayerTelemetry {
+        lap: u16,
+        batch_index: u32,
+        frames: Vec<TelemetryFrame>,
+    },
+    Event(RacingSessionEventV1),
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(
+    deny_unknown_fields,
+    tag = "type",
+    content = "payload",
+    rename_all = "snake_case"
+)]
+pub enum RacingSessionEventV1 {
+    LapCompleted { competitor_id: String, lap: u16 },
+    PitStopCompleted { competitor_id: String, lap: u16 },
+    DriverInstructionApplied { competitor_id: String, lap: u16 },
+}
+
+pub type RacingSessionStreamRecordV1 =
+    IncrementalExecutionStreamRecordV1<RacingSessionProgressV1, RaceOutput>;
+pub type RacingSessionStreamBatchV1 =
+    IncrementalExecutionStreamBatchV1<RacingSessionProgressV1, RaceOutput>;
 
 /// Exact overrides for the mechanically resolved Model V3 experiment input.
 ///
@@ -2010,10 +2071,22 @@ pub fn run_race_with_catalog_and_v3_timeline_candidate(
 /// resolved from the immutable catalog so a browser cannot silently obtain a
 /// mass or endurance advantage over hosted replay.
 pub fn run_race_with_catalog_and_v3_fuel_contract_candidate(
-    mut request: RunRaceRequest,
+    request: RunRaceRequest,
     snapshot: &RacingCatalogSnapshot,
     timeline: RacingDriverInstructionTimelineV1,
 ) -> Result<RaceOutput, String> {
+    start_incremental_race_with_catalog_and_v3_fuel_contract_candidate(request, snapshot, timeline)?
+        .collect()
+}
+
+/// Starts the catalog-governed fuel-contract workload without computing its
+/// first lap. Callers pull deterministic bounded batches with
+/// [`IncrementalRacingSession::advance`].
+pub fn start_incremental_race_with_catalog_and_v3_fuel_contract_candidate(
+    mut request: RunRaceRequest,
+    snapshot: &RacingCatalogSnapshot,
+    timeline: RacingDriverInstructionTimelineV1,
+) -> Result<IncrementalRacingSession, String> {
     let model = racing_model_v3_fuel_contract_candidate_identity();
     snapshot
         .manifest()
@@ -2056,33 +2129,24 @@ pub fn run_race_with_catalog_and_v3_fuel_contract_candidate(
         instruction_profile,
         timeline,
     };
-    let output = run_race_with_catalog_and_v3_driver_instruction_profile(
+    let mut session = start_incremental_race_with_catalog_and_v3_component_profile(
         request,
         snapshot,
         &profile,
         thermal_candidate,
-        &experiment,
+        Some(V3DriverExperiment::Instructions(&experiment)),
     )?;
-    let diagnostics = output
-        .player_fuel_mass_diagnostics_v3
-        .as_ref()
-        .ok_or_else(|| "fuel-contract execution produced no player fuel diagnostics".to_string())?;
-    if diagnostics.final_fuel_mass_kg + 1e-9 < fuel_contract.minimum_finish_reserve_kg {
-        return Err(format!(
-            "fuel-contract finish reserve violated: required {:.6} kg, available {:.6} kg",
-            fuel_contract.minimum_finish_reserve_kg, diagnostics.final_fuel_mass_kg
-        ));
-    }
-    Ok(output)
+    session.minimum_finish_reserve_kg = Some(fuel_contract.minimum_finish_reserve_kg);
+    Ok(session)
 }
 
-fn run_race_with_catalog_and_v3_component_profile(
+fn start_incremental_race_with_catalog_and_v3_component_profile(
     request: RunRaceRequest,
     snapshot: &RacingCatalogSnapshot,
     profile: &V3CandidateExperimentProfile,
     candidate: &V3PowerUnitThermalProfileCandidateV2,
     driver_experiment: Option<V3DriverExperiment<'_>>,
-) -> Result<RaceOutput, String> {
+) -> Result<IncrementalRacingSession, String> {
     profile
         .validate()
         .map_err(|error| format!("invalid V3 component experiment profile: {error}"))?;
@@ -2131,14 +2195,14 @@ fn run_race_with_catalog_and_v3_component_profile(
             0
         },
     )
-    .map_err(|err| format!("invalid race input: {err}"))?;
+    .map_err(|error| format!("invalid race input: {error}"))?;
     let vehicle_id = resolve_vehicle_id(request.input.vehicle_id.as_deref())?;
     let catalog = EmbeddedCatalog::from_snapshot(snapshot)?;
     let initial_fuel_mass_kg = request.input.initial_fuel_mass_kg.unwrap_or(100.0);
     if !initial_fuel_mass_kg.is_finite() || !(1.0..=200.0).contains(&initial_fuel_mass_kg) {
         return Err("V3 initial fuel mass must be in [1, 200] kg".to_string());
     }
-    run_single_session(
+    IncrementalRacingSession::new_v3(
         &catalog,
         &normalized_race,
         vehicle_id,
@@ -2156,6 +2220,23 @@ fn run_race_with_catalog_and_v3_component_profile(
             },
         },
     )
+}
+
+fn run_race_with_catalog_and_v3_component_profile(
+    request: RunRaceRequest,
+    snapshot: &RacingCatalogSnapshot,
+    profile: &V3CandidateExperimentProfile,
+    candidate: &V3PowerUnitThermalProfileCandidateV2,
+    driver_experiment: Option<V3DriverExperiment<'_>>,
+) -> Result<RaceOutput, String> {
+    start_incremental_race_with_catalog_and_v3_component_profile(
+        request,
+        snapshot,
+        profile,
+        candidate,
+        driver_experiment,
+    )?
+    .collect()
 }
 
 pub fn run_sessions(request: SessionRunRequest) -> Result<SessionRunOutput, String> {
@@ -2219,6 +2300,7 @@ pub fn run_sessions_with_catalog(
     Ok(SessionRunOutput { sessions })
 }
 
+#[derive(Clone, Copy)]
 struct SessionExecution<'a> {
     pit_strategy: Option<&'a PitStrategyConfig>,
     track_profile: Option<&'a SolverTrackProfile>,
@@ -2247,6 +2329,697 @@ enum SessionPhysicalModel<'a> {
     },
 }
 
+struct IncrementalV3Competitor {
+    competitor_id: String,
+    is_player: bool,
+    request: SimulationRequest,
+    physical_vehicle: VehicleParams,
+    engine_thermal: Option<EngineThermalParamsV3>,
+    has_transmission_resolution: bool,
+    stint_plan: ResolvedStintPlan,
+    driver_control_resolution: Option<ResolvedV3DriverControlV1>,
+    driver_instruction_schedule: Option<ResolvedV3DriverInstructionScheduleV1>,
+    solver: ResolvedSimulationSessionV3,
+    latest_lap: Option<ResolvedSimulationLapV3>,
+    result: Option<SimulationResult>,
+}
+
+/// Stateful Racing orchestration boundary for the governed V3 model.
+///
+/// The Simulator owns all ten Solver sessions and advances them at the same
+/// deterministic lap boundary. Rendering cadence, networking and wall-clock
+/// time remain outside this type.
+pub struct IncrementalRacingSession {
+    track_id: String,
+    track: Track,
+    vehicle_id: String,
+    laps: u16,
+    seed: u64,
+    pit_loss_ms: u64,
+    player_pit_laps: Vec<u16>,
+    competitors: Vec<IncrementalV3Competitor>,
+    next_sequence: u64,
+    completed: bool,
+    minimum_finish_reserve_kg: Option<f64>,
+    player_power_unit_thermal_resolution_v3: Option<V3PowerUnitThermalResolutionV2>,
+    competitor_power_unit_thermal_resolutions_v3:
+        std::collections::BTreeMap<String, V3PowerUnitThermalResolutionV2>,
+    competitor_vehicle_capabilities_v3:
+        std::collections::BTreeMap<String, ResolvedVehicleCapabilitiesV1>,
+}
+
+impl IncrementalRacingSession {
+    fn new_v3(
+        catalog: &EmbeddedCatalog,
+        race: &RaceInput,
+        vehicle_id: &str,
+        competitor_vehicle_components: &HashMap<String, VehicleComponentSelectionV1>,
+        execution: SessionExecution<'_>,
+    ) -> Result<Self, String> {
+        let SessionExecution {
+            pit_strategy,
+            track_profile,
+            laps,
+            seed,
+            initial_fuel_mass_kg,
+            model,
+        } = execution;
+        let SessionPhysicalModel::V3Candidate {
+            profile,
+            power_unit_thermal_profile,
+            driver_experiment,
+        } = model
+        else {
+            return Err("incremental Racing session requires the V3 model".to_string());
+        };
+
+        let track_id = normalize_track_id(&race.track_id);
+        let mut track_record = catalog.get_track(&track_id)?.clone();
+        if let Some(payload) = track_profile {
+            track_record = track_from_payload(&track_id, payload, track_record.pit_loss_ms)?;
+        }
+        validate_component_selection_subjects(race, competitor_vehicle_components)?;
+        let pit_loss_ms = pit_strategy
+            .and_then(|value| value.pit_loss_ms)
+            .map(|value| value.max(1_000))
+            .unwrap_or(track_record.pit_loss_ms);
+        let player_pit_laps = sanitize_pit_laps(
+            pit_strategy
+                .map(|value| value.player_pit_laps.as_slice())
+                .unwrap_or(&[]),
+            laps,
+        );
+        if let Some(V3DriverExperiment::Instructions(experiment)) = driver_experiment {
+            experiment.validate_for_session(race, laps, track_record.track.s.len())?;
+        }
+
+        let mut competitors = Vec::with_capacity(race.competitors.len());
+        let mut player_power_unit_thermal_resolution_v3 = None;
+        let mut competitor_power_unit_thermal_resolutions_v3 = std::collections::BTreeMap::new();
+        let mut competitor_vehicle_capabilities_v3 = std::collections::BTreeMap::new();
+
+        for competitor in &race.competitors {
+            let component_selection = competitor_vehicle_components.get(&competitor.id);
+            if let Some(capabilities) =
+                catalog.resolve_vehicle_capabilities(vehicle_id, component_selection)?
+            {
+                competitor_vehicle_capabilities_v3.insert(competitor.id.clone(), capabilities);
+            }
+            let resolved_vehicle =
+                catalog.resolve_vehicle_with_components(vehicle_id, component_selection)?;
+            let mut effective_profile = *profile;
+            if let Some(candidate) = power_unit_thermal_profile {
+                let power_unit_id =
+                    catalog.resolve_engine_id_with_components(vehicle_id, component_selection)?;
+                let thermal = candidate.resolve_power_unit(power_unit_id)?;
+                effective_profile.engine_thermal_resolution =
+                    Some(thermal.engine_thermal_resolution);
+                competitor_power_unit_thermal_resolutions_v3
+                    .insert(competitor.id.clone(), thermal.evidence.clone());
+                if competitor.is_player || competitor.id == "player" {
+                    player_power_unit_thermal_resolution_v3 = Some(thermal.evidence);
+                }
+            }
+            effective_profile.validate().map_err(|error| {
+                format!(
+                    "cannot resolve V3 profile for competitor {}: {error}",
+                    competitor.id
+                )
+            })?;
+
+            let stint_plan =
+                resolve_stint_plan(competitor, laps, &resolved_vehicle.1, &player_pit_laps)?;
+            let tire_id = stint_plan
+                .tire_by_lap
+                .first()
+                .ok_or_else(|| "resolved stint plan has no initial tire".to_string())?;
+            let mut initial_vehicle = resolved_vehicle.0.clone();
+            if effective_profile.applies_first_stint_tire() {
+                initial_vehicle.tire = catalog.resolve_tire(tire_id)?;
+            }
+
+            let (driver_control_resolution, driver_instruction_schedule) = match driver_experiment {
+                Some(V3DriverExperiment::Static(experiment)) => {
+                    let control_profile = effective_profile
+                        .driver_control_profile
+                        .as_ref()
+                        .ok_or_else(|| {
+                            "V3 driver-control experiment profile has no resolved profile"
+                                .to_string()
+                        })?;
+                    (
+                        Some(experiment.resolve_competitor(competitor, control_profile)?),
+                        None,
+                    )
+                }
+                Some(V3DriverExperiment::Instructions(experiment)) => {
+                    let control_profile = effective_profile
+                        .driver_control_profile
+                        .as_ref()
+                        .ok_or_else(|| {
+                            "V3 driver-control experiment profile has no resolved profile"
+                                .to_string()
+                        })?;
+                    let schedule = experiment.resolve_competitor(competitor, control_profile)?;
+                    let baseline = schedule
+                        .transitions
+                        .first()
+                        .expect("resolved instruction schedule always has a baseline")
+                        .physical
+                        .clone();
+                    (Some(baseline), Some(schedule))
+                }
+                None => (None, None),
+            };
+
+            let mut driver = catalog.resolve_driver(competitor.driver_id.as_deref())?;
+            if driver_control_resolution.is_some() {
+                driver.id = competitor
+                    .driver_id
+                    .clone()
+                    .expect("validated driver-control candidate driver id");
+            }
+            let sim_config = SimConfig {
+                ds: track_record
+                    .track
+                    .s
+                    .windows(2)
+                    .next()
+                    .map(|window| window[1] - window[0])
+                    .unwrap_or(1.0),
+                max_speed: 400.0,
+                pit_time_penalty_s: pit_loss_ms as f64 / 1000.0,
+                pit_tire_temp: None,
+                tire_temp_amb: 35.0,
+                sim_seed: seed,
+            };
+            let pit_plan = build_pit_plan(catalog, &stint_plan)?;
+            let tuning = Tuning {
+                engine_points: competitor.tuning.engine_points.round() as i32,
+                cooling_points: competitor.tuning.cooling_points.round() as i32,
+                aero_points: competitor.tuning.aero_points.round() as i32,
+                chassis_points: competitor.tuning.chassis_points.round() as i32,
+                downforce_slider: competitor.tuning.downforce_slider,
+                gear_ratio_slider: competitor.tuning.gear_ratio_slider,
+            };
+            let request = SimulationRequest {
+                track: track_record.track.clone(),
+                vehicle: initial_vehicle.clone(),
+                state: VehicleState {
+                    fuel_mass: initial_fuel_mass_kg,
+                    tire_wear: 0.0,
+                    tire_temp: 90.0,
+                    engine_temp: initial_vehicle.engine.t_init,
+                },
+                config: sim_config,
+                lap_count: laps.max(1),
+                pit_plan,
+                driver,
+                tuning: Some(tuning.clone()),
+            };
+            let physical_vehicle = resolve_v3_physical_vehicle_with_profile(
+                &request.vehicle,
+                &tuning,
+                &effective_profile,
+            )
+            .map_err(|error| {
+                format!(
+                    "cannot resolve V3 physical vehicle for competitor {}: {error}",
+                    competitor.id
+                )
+            })?;
+            let mechanical =
+                resolve_v3_mechanical_params(&physical_vehicle, &tuning, &effective_profile)
+                    .map_err(|error| {
+                        format!(
+                            "cannot resolve V3 mechanical envelope for competitor {}: {error}",
+                            competitor.id
+                        )
+                    })?;
+            let driver_control = driver_control_resolution
+                .as_ref()
+                .map(ResolvedV3DriverControlV1::physical_controls)
+                .or(effective_profile.driver_control_override)
+                .unwrap_or_else(|| resolve_v3_driver_control(&request.driver));
+            let engine_thermal =
+                effective_profile
+                    .engine_thermal_resolution
+                    .map(|thermal| EngineThermalParamsV3 {
+                        derating_shape: thermal.derating_shape,
+                        smooth_knee_width_c: thermal.smooth_knee_width_c,
+                        minimum_power_fraction: thermal.minimum_power_fraction,
+                    });
+            let solver = ResolvedSimulationSessionV3::new(ResolvedSimulationRequestV3 {
+                track: request.track.clone(),
+                vehicle: physical_vehicle.clone(),
+                state: request.state.clone(),
+                config: request.config.clone(),
+                lap_count: request.lap_count,
+                pit_plan: request.pit_plan.clone(),
+                driver: request.driver.clone(),
+                tire_contact: effective_profile.tire_contact,
+                mechanical,
+                driver_control,
+                driver_correction_workload_multiplier: driver_control_resolution
+                    .as_ref()
+                    .map(|resolution| resolution.correction_workload_multiplier),
+                driver_control_schedule: driver_instruction_schedule
+                    .as_ref()
+                    .map(|schedule| {
+                        schedule
+                            .transitions
+                            .iter()
+                            .skip(1)
+                            .map(|transition| ResolvedDriverControlLapV3 {
+                                lap_index: transition.effective_at.lap_index,
+                                driver_control: transition.physical.physical_controls(),
+                                correction_workload_multiplier: Some(
+                                    transition.physical.correction_workload_multiplier,
+                                ),
+                            })
+                            .collect()
+                    })
+                    .unwrap_or_default(),
+                driver_correction_capacity_model: (effective_profile.schema_version
+                    == V3CandidateExperimentProfileVersion::V11)
+                    .then_some(DriverCorrectionCapacityModelV3::FrictionBudgetV1),
+                fuel_mass: effective_profile.fuel_mass,
+                tire_degradation: effective_profile.tire_degradation,
+                engine_thermal,
+            })
+            .map_err(|error| {
+                format!(
+                    "cannot start incremental simulation for competitor {}: {error}",
+                    competitor.id
+                )
+            })?;
+
+            competitors.push(IncrementalV3Competitor {
+                competitor_id: competitor.id.clone(),
+                is_player: competitor.is_player || competitor.id == "player",
+                request,
+                physical_vehicle,
+                engine_thermal,
+                has_transmission_resolution: effective_profile.transmission_resolution.is_some(),
+                stint_plan,
+                driver_control_resolution,
+                driver_instruction_schedule,
+                solver,
+                latest_lap: None,
+                result: None,
+            });
+        }
+
+        Ok(Self {
+            track_id,
+            track: track_record.track,
+            vehicle_id: vehicle_id.to_string(),
+            laps: laps.max(1),
+            seed,
+            pit_loss_ms,
+            player_pit_laps,
+            competitors,
+            next_sequence: 0,
+            completed: false,
+            minimum_finish_reserve_kg: None,
+            player_power_unit_thermal_resolution_v3,
+            competitor_power_unit_thermal_resolutions_v3,
+            competitor_vehicle_capabilities_v3,
+        })
+    }
+
+    fn progress_record(
+        &mut self,
+        logical_tick: u64,
+        progress: RacingSessionProgressV1,
+    ) -> Result<RacingSessionStreamRecordV1, String> {
+        let sequence = self.next_sequence;
+        self.next_sequence = self
+            .next_sequence
+            .checked_add(1)
+            .ok_or_else(|| "incremental Racing stream sequence exhausted".to_string())?;
+        IncrementalExecutionStreamRecordV1::new(
+            sequence,
+            logical_tick,
+            IncrementalExecutionStreamEventV1::Progress(progress),
+        )
+        .map_err(|error| format!("invalid incremental Racing progress: {error}"))
+    }
+
+    fn completion_record(
+        &mut self,
+        logical_tick: u64,
+        output: RaceOutput,
+    ) -> Result<RacingSessionStreamRecordV1, String> {
+        let sequence = self.next_sequence;
+        self.next_sequence = self
+            .next_sequence
+            .checked_add(1)
+            .ok_or_else(|| "incremental Racing stream sequence exhausted".to_string())?;
+        IncrementalExecutionStreamRecordV1::new(
+            sequence,
+            logical_tick,
+            IncrementalExecutionStreamEventV1::Complete(output),
+        )
+        .map_err(|error| format!("invalid incremental Racing completion: {error}"))
+    }
+
+    /// Computes one further lap for the complete field, or emits completion.
+    pub fn advance(&mut self) -> Result<RacingSessionStreamBatchV1, String> {
+        if self.completed {
+            return Err("incremental Racing session already completed".to_string());
+        }
+
+        let mut lap_steps = Vec::with_capacity(self.competitors.len());
+        let mut completion_count = 0_usize;
+        for competitor in &mut self.competitors {
+            match competitor.solver.advance().map_err(|error| {
+                format!(
+                    "incremental simulation failed for competitor {}: {error}",
+                    competitor.competitor_id
+                )
+            })? {
+                ResolvedSimulationStepV3::Lap(lap) => {
+                    competitor.latest_lap = Some((*lap).clone());
+                    lap_steps.push((competitor.competitor_id.clone(), *lap));
+                }
+                ResolvedSimulationStepV3::Complete(mut result) => {
+                    if competitor.has_transmission_resolution
+                        && let Some(diagnostics) = result.mechanical_diagnostics_v3.as_mut()
+                    {
+                        diagnostics.theoretical_top_speed_at_max_rpm_kph = Some(
+                            theoretical_top_speed_at_max_rpm_kph(&result.applied_vehicle)?,
+                        );
+                    }
+                    competitor.result = Some(*result);
+                    completion_count += 1;
+                }
+            }
+        }
+
+        if completion_count == self.competitors.len() {
+            let output = self.finalize_output()?;
+            let logical_tick = u64::from(self.laps);
+            let record = self.completion_record(logical_tick, output)?;
+            self.completed = true;
+            return IncrementalExecutionStreamBatchV1::new(vec![record])
+                .map_err(|error| format!("invalid incremental Racing completion batch: {error}"));
+        }
+        if completion_count != 0 || lap_steps.len() != self.competitors.len() {
+            return Err("incremental Racing competitors crossed different boundaries".to_string());
+        }
+
+        let lap = lap_steps
+            .first()
+            .map(|(_, step)| step.lap_index)
+            .ok_or_else(|| "incremental Racing session has no competitors".to_string())?;
+        if lap_steps.iter().any(|(_, step)| step.lap_index != lap) {
+            return Err("incremental Racing competitors reached different laps".to_string());
+        }
+
+        let mut ranked = lap_steps
+            .iter()
+            .map(|(competitor_id, step)| {
+                (
+                    competitor_id.clone(),
+                    (step.cumulative_time_s * 1_000.0).round().max(0.0) as u64,
+                )
+            })
+            .collect::<Vec<_>>();
+        ranked.sort_by(|left, right| left.1.cmp(&right.1).then_with(|| left.0.cmp(&right.0)));
+        let positions = ranked
+            .iter()
+            .enumerate()
+            .map(|(index, (competitor_id, _))| (competitor_id.clone(), (index + 1) as u32))
+            .collect::<HashMap<_, _>>();
+        let competitors = lap_steps
+            .iter()
+            .map(|(competitor_id, step)| RacingCompetitorProgressV1 {
+                competitor_id: competitor_id.clone(),
+                distance_m: step.cumulative_distance_m,
+                lap,
+                position: positions[competitor_id],
+                cumulative_time_ms: (step.cumulative_time_s * 1_000.0).round().max(0.0) as u64,
+                status: if lap == self.laps {
+                    RacingCompetitorProgressStatusV1::Finished
+                } else {
+                    RacingCompetitorProgressStatusV1::Running
+                },
+            })
+            .collect();
+
+        let logical_tick = u64::from(lap);
+        let mut records = vec![self.progress_record(
+            logical_tick,
+            RacingSessionProgressV1::Grid { lap, competitors },
+        )?];
+
+        if let Some(player) = self
+            .competitors
+            .iter()
+            .find(|competitor| competitor.is_player)
+        {
+            let player_lap = player
+                .latest_lap
+                .as_ref()
+                .ok_or_else(|| "incremental player has no completed lap".to_string())?;
+            let telemetry_hz = 5.0;
+            let resampled = resample_telemetry_with_engine_thermal(
+                &self.track,
+                &player_lap.solution,
+                &player.physical_vehicle,
+                telemetry_hz,
+                player.engine_thermal,
+            )
+            .map_err(|error| format!("incremental telemetry resampling failed: {error}"))?;
+            let frames = gateway_frames_from_resampled(
+                &resampled,
+                telemetry_session_id(self.seed, &self.track_id, &player.competitor_id),
+                &format!("pitwall-sim:{}", player.competitor_id),
+                &telemetry_metadata(
+                    &self.track_id,
+                    &self.vehicle_id,
+                    &player.competitor_id,
+                    &player.request.driver.id,
+                    &player.stint_plan,
+                    telemetry_hz,
+                ),
+            );
+            for (batch_index, frames) in frames.chunks(TELEMETRY_BATCH_SIZE).enumerate() {
+                records.push(self.progress_record(
+                    logical_tick,
+                    RacingSessionProgressV1::PlayerTelemetry {
+                        lap,
+                        batch_index: batch_index as u32,
+                        frames: frames.to_vec(),
+                    },
+                )?);
+            }
+        }
+
+        let mut session_events = Vec::new();
+        for competitor in &self.competitors {
+            session_events.push(RacingSessionEventV1::LapCompleted {
+                competitor_id: competitor.competitor_id.clone(),
+                lap,
+            });
+            if competitor
+                .latest_lap
+                .as_ref()
+                .is_some_and(|progress| progress.pit_stop_completed)
+            {
+                session_events.push(RacingSessionEventV1::PitStopCompleted {
+                    competitor_id: competitor.competitor_id.clone(),
+                    lap,
+                });
+            }
+            if competitor
+                .driver_instruction_schedule
+                .as_ref()
+                .is_some_and(|schedule| {
+                    schedule
+                        .transitions
+                        .iter()
+                        .skip(1)
+                        .any(|transition| transition.effective_at.lap_index + 1 == lap)
+                })
+            {
+                session_events.push(RacingSessionEventV1::DriverInstructionApplied {
+                    competitor_id: competitor.competitor_id.clone(),
+                    lap,
+                });
+            }
+        }
+        for event in session_events {
+            records
+                .push(self.progress_record(logical_tick, RacingSessionProgressV1::Event(event))?);
+        }
+
+        IncrementalExecutionStreamBatchV1::new(records)
+            .map_err(|error| format!("invalid incremental Racing progress batch: {error}"))
+    }
+
+    /// Compatibility collector used by the existing monolithic entry point.
+    pub fn collect(mut self) -> Result<RaceOutput, String> {
+        loop {
+            let batch = self.advance()?;
+            if let Some(output) = batch
+                .records()
+                .iter()
+                .find_map(|record| match record.event() {
+                    IncrementalExecutionStreamEventV1::Complete(output) => Some(output.clone()),
+                    IncrementalExecutionStreamEventV1::Progress(_) => None,
+                })
+            {
+                return Ok(output);
+            }
+        }
+    }
+
+    fn finalize_output(&mut self) -> Result<RaceOutput, String> {
+        let mut rows = Vec::with_capacity(self.competitors.len());
+        let mut player_frames = Vec::new();
+        let mut player_lap_times_ms = Vec::new();
+        let mut player_resolved_pit_laps = Vec::new();
+        let mut player_diagnostics = None;
+        let mut player_tire_diagnostics_v3 = None;
+        let mut player_mechanical_diagnostics_v3 = None;
+        let mut player_fuel_mass_diagnostics_v3 = None;
+        let mut player_tire_degradation_diagnostics_v3 = None;
+        let mut competitor_driver_control_resolutions_v3 = std::collections::BTreeMap::new();
+        let mut competitor_driver_control_diagnostics_v3 = std::collections::BTreeMap::new();
+        let mut competitor_driver_instruction_schedules_v3 = std::collections::BTreeMap::new();
+
+        for competitor in &mut self.competitors {
+            let result = competitor.result.as_mut().ok_or_else(|| {
+                format!(
+                    "incremental competitor {} has no terminal result",
+                    competitor.competitor_id
+                )
+            })?;
+            if let Some(resolution) = competitor.driver_control_resolution.as_ref() {
+                competitor_driver_control_resolutions_v3
+                    .insert(competitor.competitor_id.clone(), resolution.clone());
+            }
+            if let Some(schedule) = competitor.driver_instruction_schedule.as_ref() {
+                competitor_driver_instruction_schedules_v3
+                    .insert(competitor.competitor_id.clone(), schedule.clone());
+            }
+            if let Some(diagnostics) = result.driver_control_diagnostics_v3 {
+                competitor_driver_control_diagnostics_v3
+                    .insert(competitor.competitor_id.clone(), diagnostics);
+            }
+
+            let lap_times_ms = lap_times_ms(
+                &result.lap_times_s,
+                &competitor.stint_plan,
+                self.pit_loss_ms,
+            );
+            let total_time_ms = lap_times_ms.iter().copied().sum::<u64>();
+            let best_lap_ms = lap_times_ms.iter().copied().min().unwrap_or(0);
+
+            if competitor.is_player {
+                let telemetry_hz = 5.0;
+                let resampled = resample_telemetry_with_engine_thermal(
+                    &competitor.request.track,
+                    &result.solution,
+                    &result.applied_vehicle,
+                    telemetry_hz,
+                    competitor.engine_thermal,
+                )
+                .map_err(|error| format!("telemetry resampling failed: {error}"))?;
+                player_frames = gateway_frames_from_resampled(
+                    &resampled,
+                    telemetry_session_id(self.seed, &self.track_id, &competitor.competitor_id),
+                    &format!("pitwall-sim:{}", competitor.competitor_id),
+                    &telemetry_metadata(
+                        &self.track_id,
+                        &self.vehicle_id,
+                        &competitor.competitor_id,
+                        &competitor.request.driver.id,
+                        &competitor.stint_plan,
+                        telemetry_hz,
+                    ),
+                );
+                player_lap_times_ms = lap_times_ms.clone();
+                player_resolved_pit_laps = competitor.stint_plan.pit_laps.clone();
+                player_diagnostics = Some(result.diagnostics);
+                player_tire_diagnostics_v3 = result.tire_diagnostics_v3;
+                player_mechanical_diagnostics_v3 = result.mechanical_diagnostics_v3;
+                player_fuel_mass_diagnostics_v3 = result.fuel_mass_diagnostics_v3.clone();
+                player_tire_degradation_diagnostics_v3 =
+                    result.tire_degradation_diagnostics_v3.clone();
+            }
+
+            rows.push(SimulatedCompetitor {
+                competitor_id: competitor.competitor_id.clone(),
+                total_time_ms,
+                best_lap_ms,
+                laps_completed: self.laps,
+            });
+        }
+
+        rows.sort_by_key(|row| row.total_time_ms);
+        let leader = rows.first().map(|row| row.total_time_ms).unwrap_or(0);
+        let standings = rows
+            .iter()
+            .enumerate()
+            .map(|(index, row)| StandingEntry {
+                competitor_id: row.competitor_id.clone(),
+                position: (index + 1) as u32,
+                total_time_ms: row.total_time_ms,
+                best_lap_ms: row.best_lap_ms,
+                laps_completed: row.laps_completed,
+                gap_to_leader_ms: row.total_time_ms.saturating_sub(leader),
+                status: StandingStatus::Finished,
+            })
+            .collect();
+
+        let output = RaceOutput {
+            standings,
+            total_time_ms: leader,
+            player_pit_laps: if player_resolved_pit_laps.is_empty() {
+                self.player_pit_laps.clone()
+            } else {
+                player_resolved_pit_laps
+            },
+            player_lap_times_ms,
+            player_batches: telemetry_batches(player_frames),
+            player_diagnostics,
+            player_tire_diagnostics_v3,
+            player_mechanical_diagnostics_v3,
+            player_fuel_mass_diagnostics_v3,
+            player_tire_degradation_diagnostics_v3,
+            player_thermal_family_resolution_v3: None,
+            player_power_unit_thermal_resolution_v3: self
+                .player_power_unit_thermal_resolution_v3
+                .clone(),
+            competitor_power_unit_thermal_resolutions_v3: self
+                .competitor_power_unit_thermal_resolutions_v3
+                .clone(),
+            competitor_vehicle_capabilities_v3: self.competitor_vehicle_capabilities_v3.clone(),
+            competitor_driver_control_resolutions_v3,
+            competitor_driver_control_diagnostics_v3,
+            competitor_driver_instruction_schedules_v3,
+        };
+        if let Some(minimum_finish_reserve_kg) = self.minimum_finish_reserve_kg {
+            let diagnostics = output
+                .player_fuel_mass_diagnostics_v3
+                .as_ref()
+                .ok_or_else(|| {
+                    "fuel-contract execution produced no player fuel diagnostics".to_string()
+                })?;
+            if diagnostics.final_fuel_mass_kg + 1e-9 < minimum_finish_reserve_kg {
+                return Err(format!(
+                    "fuel-contract finish reserve violated: required {minimum_finish_reserve_kg:.6} kg, available {:.6} kg",
+                    diagnostics.final_fuel_mass_kg
+                ));
+            }
+        }
+        Ok(output)
+    }
+}
+
 fn run_single_session(
     catalog: &EmbeddedCatalog,
     race: &RaceInput,
@@ -2254,6 +3027,16 @@ fn run_single_session(
     competitor_vehicle_components: &HashMap<String, VehicleComponentSelectionV1>,
     execution: SessionExecution<'_>,
 ) -> Result<RaceOutput, String> {
+    if matches!(execution.model, SessionPhysicalModel::V3Candidate { .. }) {
+        return IncrementalRacingSession::new_v3(
+            catalog,
+            race,
+            vehicle_id,
+            competitor_vehicle_components,
+            execution,
+        )?
+        .collect();
+    }
     let SessionExecution {
         pit_strategy,
         track_profile,
@@ -5004,6 +5787,96 @@ mod tests {
             run_race_with_catalog_and_v3_fuel_contract_candidate(request, &snapshot, timeline)
                 .expect_err("client fuel override must fail closed");
         assert!(error.contains("forbids an initial-fuel override"));
+    }
+
+    #[test]
+    fn incremental_racing_session_streams_all_competitors_before_exact_completion() {
+        fn ten_competitor_request() -> RunRaceRequest {
+            let mut request = one_lap_request();
+            request.input.race.laps = 2;
+            let player = request.input.race.competitors[0].clone();
+            request.input.race.competitors = (0..10)
+                .map(|index| CompetitorSpec {
+                    id: if index == 0 {
+                        "player".to_string()
+                    } else {
+                        format!("opponent-{index:02}")
+                    },
+                    name: format!("Competitor {index}"),
+                    is_player: index == 0,
+                    driver_id: Some("balanced_reference".to_string()),
+                    ..player.clone()
+                })
+                .collect();
+            request
+        }
+
+        fn collect_stream(mut session: IncrementalRacingSession) -> (Vec<Vec<u8>>, RaceOutput) {
+            let mut records_json = Vec::new();
+            let mut saw_progress = false;
+            loop {
+                let batch = session.advance().expect("incremental batch");
+                assert!(batch.records().len() <= 256);
+                for record in batch.records() {
+                    records_json.push(
+                        pitgun_contract::canonical_json_bytes(record)
+                            .expect("canonical record JSON"),
+                    );
+                    match record.event() {
+                        IncrementalExecutionStreamEventV1::Progress(
+                            RacingSessionProgressV1::Grid { competitors, .. },
+                        ) => {
+                            saw_progress = true;
+                            assert_eq!(competitors.len(), 10);
+                        }
+                        IncrementalExecutionStreamEventV1::Progress(
+                            RacingSessionProgressV1::PlayerTelemetry { frames, .. },
+                        ) => assert!(frames.len() <= TELEMETRY_BATCH_SIZE),
+                        IncrementalExecutionStreamEventV1::Progress(_) => {}
+                        IncrementalExecutionStreamEventV1::Complete(output) => {
+                            assert!(saw_progress);
+                            return (records_json, output.clone());
+                        }
+                    }
+                }
+            }
+        }
+
+        let snapshot = RacingCatalogSnapshot::embedded_model_v3_fuel_contract()
+            .expect("fuel-contract candidate catalog");
+        let timeline = RacingDriverInstructionTimelineV1 {
+            schema_version: RacingDriverInstructionTimelineVersion::V1,
+            events: Vec::new(),
+        };
+        let request = ten_competitor_request();
+        let expected = run_race_with_catalog_and_v3_fuel_contract_candidate(
+            request.clone(),
+            &snapshot,
+            timeline.clone(),
+        )
+        .expect("monolithic compatibility collector");
+        let first = start_incremental_race_with_catalog_and_v3_fuel_contract_candidate(
+            request.clone(),
+            &snapshot,
+            timeline.clone(),
+        )
+        .expect("first incremental session");
+        let second = start_incremental_race_with_catalog_and_v3_fuel_contract_candidate(
+            request, &snapshot, timeline,
+        )
+        .expect("second incremental session");
+
+        let (first_records, first_output) = collect_stream(first);
+        let (second_records, second_output) = collect_stream(second);
+        assert_eq!(first_records, second_records);
+        assert_eq!(
+            serde_json::to_value(&first_output).expect("incremental output JSON"),
+            serde_json::to_value(&expected).expect("compatibility output JSON")
+        );
+        assert_eq!(
+            serde_json::to_value(&second_output).expect("second output JSON"),
+            serde_json::to_value(&expected).expect("expected output JSON")
+        );
     }
 
     fn component_selection(

@@ -8,6 +8,12 @@
 use md5::{Digest, Md5};
 use rand::rngs::StdRng;
 use rand::{RngCore, SeedableRng};
+use std::cell::RefCell;
+use std::future::Future;
+use std::pin::Pin;
+use std::rc::Rc;
+use std::task::{Context, Poll, Waker};
+
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -797,6 +803,8 @@ enum SpatialIntegration {
 
 #[derive(Debug, Clone, Copy)]
 enum TireDynamics<'a> {
+    // Retained by shared diagnostic helpers used by the historical kernel.
+    #[allow(dead_code)]
     Compatibility,
     AggregateV1(&'a TireContactParamsV3, f64),
     AggregateV2(&'a TireContactParamsV3, f64, &'a TireDegradationParamsV3),
@@ -879,6 +887,48 @@ pub struct SimulationResult {
     pub applied_driver_control_schedule_v3: Vec<ResolvedDriverControlLapV3>,
 }
 
+/// One completed physical lap emitted by the stateful V3 Solver.
+///
+/// The payload deliberately exposes the continuity state needed to prove that
+/// incremental execution carries fuel, tires, thermal state, transmission and
+/// driver instructions across deterministic lap boundaries.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct ResolvedSimulationLapV3 {
+    pub lap_index: u16,
+    pub lap_time_s: f64,
+    pub cumulative_time_s: f64,
+    pub cumulative_distance_m: f64,
+    pub state_after_lap: VehicleState,
+    pub end_speed_mps: Option<f64>,
+    pub end_gear: Option<u8>,
+    pub shift_time_remaining_s: f64,
+    pub active_driver_control: DriverControlParamsV3,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub correction_workload_multiplier: Option<f64>,
+    pub pit_stop_completed: bool,
+    pub solution: SimulationSolution,
+}
+
+/// Deterministic boundary returned by [`ResolvedSimulationSessionV3::advance`].
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[serde(tag = "kind", content = "payload", rename_all = "snake_case")]
+pub enum ResolvedSimulationStepV3 {
+    Lap(Box<ResolvedSimulationLapV3>),
+    Complete(Box<SimulationResult>),
+}
+
+type ResolvedLapSlotV3 = Rc<RefCell<Option<ResolvedSimulationLapV3>>>;
+
+/// Stateful, wall-clock-independent execution of one resolved V3 competitor.
+///
+/// Each call to [`advance`](Self::advance) computes exactly one additional lap
+/// until the terminal canonical [`SimulationResult`] becomes available.
+pub struct ResolvedSimulationSessionV3 {
+    future: Pin<Box<dyn Future<Output = Result<SimulationResult, String>>>>,
+    lap_slot: ResolvedLapSlotV3,
+    complete: bool,
+}
+
 #[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq)]
 pub struct ResampledTelemetry {
     pub time_s: Vec<f64>,
@@ -930,14 +980,11 @@ pub fn run_simulation_with_model_response(
         None => input.vehicle.clone(),
     };
 
-    run_resolved_simulation_kernel(
+    run_compatibility_simulation_kernel(
         input,
         tuned_vehicle,
         curvature_response,
         SpatialIntegration::UniformGridCompatibility,
-        TireDynamics::Compatibility,
-        None,
-        None,
     )
 }
 
@@ -950,6 +997,18 @@ pub fn run_simulation_with_model_response(
 pub fn run_resolved_simulation_v3(
     input: &ResolvedSimulationRequestV3,
 ) -> Result<SimulationResult, String> {
+    let mut session = ResolvedSimulationSessionV3::new(input.clone())?;
+    loop {
+        match session.advance()? {
+            ResolvedSimulationStepV3::Lap(_) => {}
+            ResolvedSimulationStepV3::Complete(result) => return Ok(*result),
+        }
+    }
+}
+
+fn validate_resolved_simulation_request_v3(
+    input: &ResolvedSimulationRequestV3,
+) -> Result<(), String> {
     validate_track(&input.track)?;
     validate_resolved_track_v3(&input.track)?;
     validate_resolved_vehicle(&input.vehicle)?;
@@ -981,53 +1040,130 @@ pub fn run_resolved_simulation_v3(
         validate_tire_params(&stop.tire)?;
     }
 
-    let compatibility_request = SimulationRequest {
-        track: input.track.clone(),
-        vehicle: input.vehicle.clone(),
-        state: input.state.clone(),
-        config: input.config.clone(),
-        lap_count: input.lap_count,
-        pit_plan: input.pit_plan.clone(),
-        driver: input.driver.clone(),
-        tuning: None,
-    };
+    Ok(())
+}
 
-    let mut fixed_aero_vehicle = input.vehicle.clone();
-    fixed_aero_vehicle.aero = AeroParams {
-        cd_a_x: input.mechanical.fixed_drag_area_m2,
-        cd_a_z: input.mechanical.fixed_drag_area_m2,
-        cl_a_x: input.mechanical.fixed_downforce_area_m2,
-        cl_a_z: input.mechanical.fixed_downforce_area_m2,
-    };
+impl ResolvedSimulationSessionV3 {
+    /// Validates and pins all physical inputs before any lap is computed.
+    pub fn new(input: ResolvedSimulationRequestV3) -> Result<Self, String> {
+        validate_resolved_simulation_request_v3(&input)?;
 
-    let tire_dynamics = match input.tire_degradation.as_ref() {
-        Some(degradation) => TireDynamics::AggregateV2(
-            &input.tire_contact,
-            input.mechanical.chassis_force_transfer_efficiency,
-            degradation,
-        ),
-        None => TireDynamics::AggregateV1(
-            &input.tire_contact,
-            input.mechanical.chassis_force_transfer_efficiency,
-        ),
-    };
+        let lap_slot = Rc::new(RefCell::new(None));
+        let future_lap_slot = Rc::clone(&lap_slot);
+        let future = Box::pin(async move {
+            let compatibility_request = SimulationRequest {
+                track: input.track.clone(),
+                vehicle: input.vehicle.clone(),
+                state: input.state.clone(),
+                config: input.config.clone(),
+                lap_count: input.lap_count,
+                pit_plan: input.pit_plan.clone(),
+                driver: input.driver.clone(),
+                tuning: None,
+            };
 
-    run_resolved_simulation_kernel(
-        &compatibility_request,
-        fixed_aero_vehicle,
-        CurvatureAeroResponse::FixedV3,
-        SpatialIntegration::PerSegmentV1,
-        tire_dynamics,
-        Some((
-            &input.mechanical,
-            &input.driver_control,
-            input.engine_thermal.as_ref(),
-            input.driver_correction_workload_multiplier,
-            input.driver_correction_capacity_model,
-            &input.driver_control_schedule,
-        )),
-        input.fuel_mass.as_ref(),
-    )
+            let mut fixed_aero_vehicle = input.vehicle.clone();
+            fixed_aero_vehicle.aero = AeroParams {
+                cd_a_x: input.mechanical.fixed_drag_area_m2,
+                cd_a_z: input.mechanical.fixed_drag_area_m2,
+                cl_a_x: input.mechanical.fixed_downforce_area_m2,
+                cl_a_z: input.mechanical.fixed_downforce_area_m2,
+            };
+
+            let tire_dynamics = match input.tire_degradation.as_ref() {
+                Some(degradation) => TireDynamics::AggregateV2(
+                    &input.tire_contact,
+                    input.mechanical.chassis_force_transfer_efficiency,
+                    degradation,
+                ),
+                None => TireDynamics::AggregateV1(
+                    &input.tire_contact,
+                    input.mechanical.chassis_force_transfer_efficiency,
+                ),
+            };
+
+            run_resolved_simulation_kernel_incremental(
+                &compatibility_request,
+                fixed_aero_vehicle,
+                CurvatureAeroResponse::FixedV3,
+                SpatialIntegration::PerSegmentV1,
+                tire_dynamics,
+                (
+                    &input.mechanical,
+                    &input.driver_control,
+                    input.engine_thermal.as_ref(),
+                    input.driver_correction_workload_multiplier,
+                    input.driver_correction_capacity_model,
+                    &input.driver_control_schedule,
+                ),
+                input.fuel_mass.as_ref(),
+                Some(future_lap_slot),
+            )
+            .await
+        });
+
+        Ok(Self {
+            future,
+            lap_slot,
+            complete: false,
+        })
+    }
+
+    /// Advances by one deterministic lap, then returns the canonical result.
+    pub fn advance(&mut self) -> Result<ResolvedSimulationStepV3, String> {
+        if self.complete {
+            return Err("resolved V3 simulation session already completed".to_string());
+        }
+        if self.lap_slot.borrow().is_some() {
+            return Err("resolved V3 simulation session has an unconsumed lap".to_string());
+        }
+
+        let waker = Waker::noop();
+        let mut context = Context::from_waker(waker);
+        match self.future.as_mut().poll(&mut context) {
+            Poll::Pending => self
+                .lap_slot
+                .borrow_mut()
+                .take()
+                .map(|value| ResolvedSimulationStepV3::Lap(Box::new(value)))
+                .ok_or_else(|| "resolved V3 simulation suspended without a lap".to_string()),
+            Poll::Ready(result) => {
+                self.complete = true;
+                result.map(|value| ResolvedSimulationStepV3::Complete(Box::new(value)))
+            }
+        }
+    }
+}
+
+struct YieldResolvedLapV3 {
+    slot: ResolvedLapSlotV3,
+    lap: Option<ResolvedSimulationLapV3>,
+    yielded: bool,
+}
+
+impl YieldResolvedLapV3 {
+    fn new(slot: ResolvedLapSlotV3, lap: ResolvedSimulationLapV3) -> Self {
+        Self {
+            slot,
+            lap: Some(lap),
+            yielded: false,
+        }
+    }
+}
+
+impl Future for YieldResolvedLapV3 {
+    type Output = ();
+
+    fn poll(mut self: Pin<&mut Self>, _context: &mut Context<'_>) -> Poll<Self::Output> {
+        if self.yielded {
+            Poll::Ready(())
+        } else {
+            let lap = self.lap.take().expect("lap yield is polled at most twice");
+            self.slot.replace(Some(lap));
+            self.yielded = true;
+            Poll::Pending
+        }
+    }
 }
 
 fn run_compatibility_simulation_kernel(
@@ -1417,24 +1553,17 @@ fn resolve_driver_control_envelope_v3(
     })
 }
 
-fn run_resolved_simulation_kernel(
+#[allow(clippy::too_many_arguments)]
+async fn run_resolved_simulation_kernel_incremental(
     input: &SimulationRequest,
     tuned_vehicle: VehicleParams,
     curvature_response: CurvatureAeroResponse,
     spatial_integration: SpatialIntegration,
     tire_dynamics: TireDynamics<'_>,
-    v3_controls: Option<V3ResolvedControls<'_>>,
+    v3_controls: V3ResolvedControls<'_>,
     fuel_mass: Option<&FuelMassParamsV3>,
+    lap_slot: Option<ResolvedLapSlotV3>,
 ) -> Result<SimulationResult, String> {
-    if matches!(tire_dynamics, TireDynamics::Compatibility) {
-        return run_compatibility_simulation_kernel(
-            input,
-            tuned_vehicle,
-            curvature_response,
-            spatial_integration,
-        );
-    }
-
     let (
         mechanical,
         driver_control,
@@ -1442,8 +1571,7 @@ fn run_resolved_simulation_kernel(
         driver_correction_workload_multiplier,
         driver_correction_capacity_model,
         driver_control_schedule,
-    ) = v3_controls
-        .ok_or_else(|| "V3 mechanical controls are required for aggregate dynamics".to_string())?;
+    ) = v3_controls;
     let baseline_driver_control = resolve_driver_control_envelope_v3(
         *driver_control,
         driver_correction_workload_multiplier,
@@ -2142,6 +2270,45 @@ fn run_resolved_simulation_kernel(
             fuel_mass_after_lap_kg.push(state_curr.fuel_mass);
             minimum_total_vehicle_mass_kg = minimum_total_vehicle_mass_kg
                 .min(vehicle.chassis.mass_empty + state_curr.fuel_mass);
+
+            if let Some(slot) = lap_slot.as_ref() {
+                let lap_solution = SimulationSolution {
+                    s: input.track.s.clone(),
+                    t: t.clone(),
+                    v: v_final,
+                    power,
+                    temp,
+                    gear,
+                    lap_index: vec![lap_idx; n],
+                    tire_temp,
+                    tire_wear,
+                    tire_force_utilization: tire_utilization,
+                    tire_normal_load_n: tire_normal_load,
+                    tire_available_force_n: tire_available_force,
+                    brake_force_budget_n: brake_force,
+                    driver_cornering_utilization: cornering_utilization.clone(),
+                    driver_braking_utilization: braking_utilization.clone(),
+                    driver_traction_utilization: traction_utilization.clone(),
+                    engine_derating_factor: engine_derating,
+                    shift_power_fraction,
+                };
+                let progress = ResolvedSimulationLapV3 {
+                    lap_index: lap_idx,
+                    lap_time_s: lap_time_adj,
+                    cumulative_time_s: t_offset,
+                    cumulative_distance_m: s_offset,
+                    state_after_lap: state_curr.clone(),
+                    end_speed_mps: prev_end_speed,
+                    end_gear: prev_end_gear,
+                    shift_time_remaining_s: prev_shift_time_remaining_s,
+                    active_driver_control: active_driver_control.driver_control,
+                    correction_workload_multiplier: active_driver_control
+                        .correction_workload_multiplier,
+                    pit_stop_completed: pit_stops.iter().any(|stop| stop.lap == lap_idx),
+                    solution: lap_solution,
+                };
+                YieldResolvedLapV3::new(Rc::clone(slot), progress).await;
+            }
         }
     }
 

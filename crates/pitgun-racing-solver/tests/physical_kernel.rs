@@ -3,12 +3,12 @@ use pitgun_racing_solver::{
     ChassisParams, CurvatureAeroResponse, Driver, DriverControlParamsV3,
     DriverCorrectionCapacityModelV3, EngineParams, EngineThermalDeratingShapeV3,
     EngineThermalParamsV3, MechanicalParamsV3, PitPlan, ResolvedDriverControlLapV3,
-    ResolvedSimulationRequestV3, SimConfig, SimulationRequest, TireContactParamsV3,
-    TireDegradationParamsV3, TireParams, Track, Tuning, TuningResponseV1, VehicleParams,
-    VehicleState, aggregate_tire_force_capacity_v3, apply_tuning, apply_tuning_with_response,
-    combined_force_utilization, curvature_aero_blend, derating_factor_v3, describe_circuit,
-    remaining_longitudinal_force, run_resolved_simulation_v3, run_simulation,
-    run_simulation_with_model_response, run_simulation_with_tuning_response,
+    ResolvedSimulationRequestV3, ResolvedSimulationSessionV3, ResolvedSimulationStepV3, SimConfig,
+    SimulationRequest, TireContactParamsV3, TireDegradationParamsV3, TireParams, Track, Tuning,
+    TuningResponseV1, VehicleParams, VehicleState, aggregate_tire_force_capacity_v3, apply_tuning,
+    apply_tuning_with_response, combined_force_utilization, curvature_aero_blend,
+    derating_factor_v3, describe_circuit, remaining_longitudinal_force, run_resolved_simulation_v3,
+    run_simulation, run_simulation_with_model_response, run_simulation_with_tuning_response,
 };
 
 fn synthetic_request() -> SimulationRequest {
@@ -117,6 +117,29 @@ fn resolved_v3_request(request: &SimulationRequest) -> ResolvedSimulationRequest
         tire_degradation: None,
         engine_thermal: None,
     }
+}
+
+#[test]
+fn incremental_v3_session_preserves_the_monolithic_result() {
+    let request = resolved_v3_request(&synthetic_request());
+    let expected = run_resolved_simulation_v3(&request).expect("monolithic V3 solve");
+    let mut session = ResolvedSimulationSessionV3::new(request).expect("incremental V3 session");
+    let mut laps = Vec::new();
+
+    let actual = loop {
+        match session.advance().expect("incremental V3 step") {
+            ResolvedSimulationStepV3::Lap(lap) => laps.push(lap),
+            ResolvedSimulationStepV3::Complete(result) => break *result,
+        }
+    };
+
+    assert_eq!(laps.len(), 2);
+    assert_eq!(laps[0].lap_index, 1);
+    assert_eq!(laps[1].lap_index, 2);
+    assert_eq!(laps[1].state_after_lap, actual.final_state);
+    assert_eq!(laps[1].cumulative_time_s, actual.total_time_s);
+    assert_eq!(actual, expected);
+    assert!(session.advance().is_err());
 }
 
 #[test]
