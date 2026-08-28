@@ -1,0 +1,170 @@
+{
+  "schema_version": "pitgun.racing-incremental-stream-parity/v1",
+  "descriptor": {
+    "schema_version": "pitgun.incremental-execution-stream/v1",
+    "execution_id": "018f3b78-7e9a-7d20-a5e1-4ed92f02a591",
+    "model": {
+      "id": "pitgun.racing-v3-candidate",
+      "version": "0.15.0",
+      "digest": "sha256:3038739c9059c12cf47feb4de6a3fd791d9f94290d9e83405a61bd966eea540f"
+    },
+    "clock": {
+      "kind": "logical-fixed-step",
+      "epoch": 0,
+      "tick_numerator_us": 1000000,
+      "tick_denominator": 1
+    }
+  },
+  "batches": [
+    {
+      "index": 0,
+      "kind": "progress",
+      "first_sequence": 0,
+      "last_sequence": 18,
+      "logical_tick": 1,
+      "record_count": 19,
+      "canonical_bytes": 894256,
+      "digest": "sha256:d4143235927e6c93c28ce42f076c883c3a5d55ed2592021235ebf2f9a6866927"
+    },
+    {
+      "index": 1,
+      "kind": "progress",
+      "first_sequence": 19,
+      "last_sequence": 37,
+      "logical_tick": 2,
+      "record_count": 19,
+      "canonical_bytes": 879340,
+      "digest": "sha256:818c6a8cc1fe3e186ea29b73f93abe1cf53c7b77fa24dbc3c00dcebd3b343417"
+    },
+    {
+      "index": 2,
+      "kind": "completion",
+      "first_sequence": 38,
+      "last_sequence": 38,
+      "logical_tick": 2,
+      "record_count": 1,
+      "canonical_bytes": 1797796,
+      "digest": "sha256:4b009b6554ac6eea38159ed5a5adad27867042012555cfea48b014f5605d9c55"
+    }
+  ],
+  "records": [
+    {
+      "index": 0,
+      "kind": "grid",
+      "first_sequence": 0,
+      "last_sequence": 0,
+      "logical_tick": 1,
+      "record_count": 1,
+      "canonical_bytes": 1287,
+      "digest": "sha256:9542ac3ffbed338a1738f52ef09a89994b5f17b0c9d5803e389e6de367ad9563"
+    },
+    {
+      "index": 1,
+      "kind": "player_telemetry",
+      "first_sequence": 1,
+      "last_sequence": 1,
+      "logical_tick": 1,
+      "record_count": 1,
+      "canonical_bytes": 116761,
+      "digest": "sha256:a62a2dd94dac00c9c03807c4161ee631547c7460f559fd9bdc6b9667a4baa400"
+    },
+    {
+      "index": 2,
+      "kind": "player_telemetry",
+      "first_sequence": 8,
+      "last_sequence": 8,
+      "logical_tick": 1,
+      "record_count": 1,
+      "canonical_bytes": 70081,
+      "digest": "sha256:795572a0560e0bdd7b2b83b4e5ebd18992ddfb70670344d96a8e9b90bdbc1314"
+    },
+    {
+      "index": 3,
+      "kind": "lap_completed",
+      "first_sequence": 9,
+      "last_sequence": 9,
+      "logical_tick": 1,
+      "record_count": 1,
+      "canonical_bytes": 166,
+      "digest": "sha256:f416ccba5c6d5293d9c7d40ea8aa5bd5e886bf30566cbe648c998e42c40e752c"
+    },
+    {
+      "index": 4,
+      "kind": "lap_completed",
+      "first_sequence": 18,
+      "last_sequence": 18,
+      "logical_tick": 1,
+      "record_count": 1,
+      "canonical_bytes": 172,
+      "digest": "sha256:441d941206fde2b7644fe6ce3c1a3fb6fe556d03176e8305d8aa0fc9b204a199"
+    },
+    {
+      "index": 5,
+      "kind": "grid",
+      "first_sequence": 19,
+      "last_sequence": 19,
+      "logical_tick": 2,
+      "record_count": 1,
+      "canonical_bytes": 1318,
+      "digest": "sha256:fcff7fa0078d7418cb410b8c8cc50e7f057d1369ba0b65a817458a7500fd468c"
+    },
+    {
+      "index": 6,
+      "kind": "player_telemetry",
+      "first_sequence": 20,
+      "last_sequence": 20,
+      "logical_tick": 2,
+      "record_count": 1,
+      "canonical_bytes": 116526,
+      "digest": "sha256:a8a9518ae72b7720b3363076bb57f996b7053fc6659ffc0e64a2bb064e22e863"
+    },
+    {
+      "index": 7,
+      "kind": "player_telemetry",
+      "first_sequence": 27,
+      "last_sequence": 27,
+      "logical_tick": 2,
+      "record_count": 1,
+      "canonical_bytes": 55362,
+      "digest": "sha256:acad743aace4364f6dba9b395914ff129f1c7ce1d2993a4b3b66631f6a0589f3"
+    },
+    {
+      "index": 8,
+      "kind": "lap_completed",
+      "first_sequence": 28,
+      "last_sequence": 28,
+      "logical_tick": 2,
+      "record_count": 1,
+      "canonical_bytes": 167,
+      "digest": "sha256:1080f25dd1f72daabe30e1879a2d90a5a02d9dea16495906acf8887dc31a33fa"
+    },
+    {
+      "index": 9,
+      "kind": "lap_completed",
+      "first_sequence": 37,
+      "last_sequence": 37,
+      "logical_tick": 2,
+      "record_count": 1,
+      "canonical_bytes": 172,
+      "digest": "sha256:0c61932ffe1ee6bbfd6a89eb3452b8904524661a4b67b75303499bac9481add8"
+    },
+    {
+      "index": 10,
+      "kind": "completion",
+      "first_sequence": 38,
+      "last_sequence": 38,
+      "logical_tick": 2,
+      "record_count": 1,
+      "canonical_bytes": 1797724,
+      "digest": "sha256:a5d1a38fabc223950a75b548e62e362878ce454253882d7a4932089af2a763ea"
+    }
+  ],
+  "stream": {
+    "canonical_bytes": 3571778,
+    "digest": "sha256:7909b8d9761257f8785fa0c3303057522bd9ba3ea131d955cb3f40a8c9143c95"
+  },
+  "completion": {
+    "canonical_bytes": 1797653,
+    "digest": "sha256:c33d0bcdeccd1661f8cf1177489c8bd88ea165d2e4bf80d047583aa1284d7a3d"
+  }
+}

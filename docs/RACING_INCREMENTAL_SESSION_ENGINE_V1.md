@@ -45,6 +45,30 @@ Tests prove that:
 - the Solver's incremental terminal result equals its previous monolithic
   result while carrying state across lap boundaries.
 
+## Published parity vector
+
+`crates/pitgun-racing-simulator/tests/fixtures/incremental_racing_stream_parity_v1.json`
+is the reusable V1 conformance vector for the native engine and the future
+WASM pull adapter. Its fixed two-lap scenario contains ten competitors and
+publishes:
+
+- the canonical stream descriptor and exact Model V3 identity;
+- the size, sequence range and SHA-256 digest of every ordered batch;
+- representative grid, telemetry, lap-event and completion record digests;
+- the canonical whole-stream and terminal-output digests.
+
+The descriptor uses one nominal fixed logical second per completed-lap tick.
+This clock orders pull boundaries only; simulated lap and telemetry time remain
+in the Racing payload and are not replaced by wall-clock time.
+
+The test compares readable artifacts in order before comparing the aggregate
+stream digest, so an intentional change identifies its first affected batch or
+record. It also rejects reordered, missing, duplicated and post-completion
+records. The terminal bytes must remain equal to the synchronous compatibility
+collector. Do not refresh this fixture only to make a failure pass: an
+intentional observable change must explain its determinism and compatibility
+impact first.
+
 ## Deliberate limits
 
 - V1 yields at completed-lap boundaries. Segment-level or fixed-duration

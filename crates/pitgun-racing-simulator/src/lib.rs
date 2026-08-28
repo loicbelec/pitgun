@@ -5519,7 +5519,47 @@ mod tests {
         RacingDrivingModeCommitmentsV1, TuningSpec, VehicleComponentSelectionVersion,
     };
     use pitgun_runtime::LinkedWorkload;
-    use serde::Deserialize;
+    use serde::{Deserialize, Serialize};
+
+    const INCREMENTAL_STREAM_PARITY_FIXTURE_JSON: &str =
+        include_str!("../tests/fixtures/incremental_racing_stream_parity_v1.json");
+
+    #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
+    #[serde(deny_unknown_fields)]
+    struct IncrementalStreamParityArtifact {
+        index: u32,
+        kind: String,
+        first_sequence: u64,
+        last_sequence: u64,
+        logical_tick: u64,
+        record_count: u32,
+        canonical_bytes: u64,
+        digest: pitgun_contract::Digest,
+    }
+
+    #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
+    #[serde(deny_unknown_fields)]
+    struct IncrementalStreamParitySummary {
+        canonical_bytes: u64,
+        digest: pitgun_contract::Digest,
+    }
+
+    #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
+    #[serde(deny_unknown_fields)]
+    struct IncrementalStreamParityFixture {
+        schema_version: String,
+        descriptor: pitgun_contract::IncrementalExecutionStreamDescriptorV1,
+        batches: Vec<IncrementalStreamParityArtifact>,
+        records: Vec<IncrementalStreamParityArtifact>,
+        stream: IncrementalStreamParitySummary,
+        completion: IncrementalStreamParitySummary,
+    }
+
+    #[derive(Serialize)]
+    struct CanonicalIncrementalStream<'a> {
+        descriptor: &'a pitgun_contract::IncrementalExecutionStreamDescriptorV1,
+        batches: &'a [RacingSessionStreamBatchV1],
+    }
 
     #[test]
     fn hosted_workload_selection_requires_exact_model_and_catalog_identities() {
@@ -5713,6 +5753,191 @@ mod tests {
         }
     }
 
+    fn ten_competitor_incremental_request() -> RunRaceRequest {
+        let mut request = one_lap_request();
+        request.input.race.laps = 2;
+        let player = request.input.race.competitors[0].clone();
+        request.input.race.competitors = (0..10)
+            .map(|index| CompetitorSpec {
+                id: if index == 0 {
+                    "player".to_string()
+                } else {
+                    format!("opponent-{index:02}")
+                },
+                name: format!("Competitor {index}"),
+                is_player: index == 0,
+                driver_id: Some("balanced_reference".to_string()),
+                ..player.clone()
+            })
+            .collect();
+        request
+    }
+
+    fn incremental_stream_descriptor() -> pitgun_contract::IncrementalExecutionStreamDescriptorV1 {
+        pitgun_contract::IncrementalExecutionStreamDescriptorV1::new(
+            "018f3b78-7e9a-7d20-a5e1-4ed92f02a591"
+                .parse()
+                .expect("fixed UUIDv7 execution id"),
+            racing_model_v3_fuel_contract_candidate_identity(),
+            pitgun_contract::LogicalClockV1::new(0, 1_000_000, 1)
+                .expect("one-second logical lap clock"),
+        )
+    }
+
+    fn collect_incremental_stream(
+        mut session: IncrementalRacingSession,
+    ) -> (Vec<RacingSessionStreamBatchV1>, RaceOutput) {
+        let mut batches = Vec::new();
+        loop {
+            let batch = session.advance().expect("incremental batch");
+            let completion = batch
+                .records()
+                .iter()
+                .find_map(|record| match record.event() {
+                    IncrementalExecutionStreamEventV1::Complete(output) => Some(output.clone()),
+                    IncrementalExecutionStreamEventV1::Progress(_) => None,
+                });
+            batches.push(batch);
+            if let Some(output) = completion {
+                return (batches, output);
+            }
+        }
+    }
+
+    fn incremental_record_kind(record: &RacingSessionStreamRecordV1) -> &'static str {
+        match record.event() {
+            IncrementalExecutionStreamEventV1::Progress(RacingSessionProgressV1::Grid {
+                ..
+            }) => "grid",
+            IncrementalExecutionStreamEventV1::Progress(
+                RacingSessionProgressV1::PlayerTelemetry { .. },
+            ) => "player_telemetry",
+            IncrementalExecutionStreamEventV1::Progress(RacingSessionProgressV1::Event(
+                RacingSessionEventV1::LapCompleted { .. },
+            )) => "lap_completed",
+            IncrementalExecutionStreamEventV1::Progress(RacingSessionProgressV1::Event(
+                RacingSessionEventV1::PitStopCompleted { .. },
+            )) => "pit_stop_completed",
+            IncrementalExecutionStreamEventV1::Progress(RacingSessionProgressV1::Event(
+                RacingSessionEventV1::DriverInstructionApplied { .. },
+            )) => "driver_instruction_applied",
+            IncrementalExecutionStreamEventV1::Complete(_) => "completion",
+        }
+    }
+
+    fn parity_artifact(
+        index: usize,
+        kind: &str,
+        first_sequence: u64,
+        last_sequence: u64,
+        logical_tick: u64,
+        record_count: usize,
+        bytes: &[u8],
+    ) -> IncrementalStreamParityArtifact {
+        IncrementalStreamParityArtifact {
+            index: index as u32,
+            kind: kind.to_string(),
+            first_sequence,
+            last_sequence,
+            logical_tick,
+            record_count: record_count as u32,
+            canonical_bytes: bytes.len() as u64,
+            digest: pitgun_contract::Digest::from_bytes(bytes),
+        }
+    }
+
+    fn observe_incremental_stream(
+        descriptor: pitgun_contract::IncrementalExecutionStreamDescriptorV1,
+        batches: &[RacingSessionStreamBatchV1],
+        output: &RaceOutput,
+    ) -> IncrementalStreamParityFixture {
+        let batch_artifacts = batches
+            .iter()
+            .enumerate()
+            .map(|(index, batch)| {
+                let records = batch.records();
+                let first = records.first().expect("non-empty stream batch");
+                let last = records.last().expect("non-empty stream batch");
+                let bytes = pitgun_contract::canonical_json_bytes(batch)
+                    .expect("canonical incremental batch");
+                parity_artifact(
+                    index,
+                    if last.event().is_complete() {
+                        "completion"
+                    } else {
+                        "progress"
+                    },
+                    first.sequence(),
+                    last.sequence(),
+                    last.logical_tick(),
+                    records.len(),
+                    &bytes,
+                )
+            })
+            .collect();
+        let record_artifacts = batches
+            .iter()
+            .flat_map(|batch| {
+                let records = batch.records();
+                let mut indexes = BTreeSet::from([0, records.len() - 1]);
+                for kind in ["player_telemetry", "lap_completed"] {
+                    if let Some(first) = records
+                        .iter()
+                        .position(|record| incremental_record_kind(record) == kind)
+                    {
+                        indexes.insert(first);
+                    }
+                    if let Some(last) = records
+                        .iter()
+                        .rposition(|record| incremental_record_kind(record) == kind)
+                    {
+                        indexes.insert(last);
+                    }
+                }
+                indexes
+                    .into_iter()
+                    .map(|index| &records[index])
+                    .collect::<Vec<_>>()
+            })
+            .enumerate()
+            .map(|(index, record)| {
+                let bytes = pitgun_contract::canonical_json_bytes(record)
+                    .expect("canonical incremental record");
+                parity_artifact(
+                    index,
+                    incremental_record_kind(record),
+                    record.sequence(),
+                    record.sequence(),
+                    record.logical_tick(),
+                    1,
+                    &bytes,
+                )
+            })
+            .collect();
+        let stream_bytes = pitgun_contract::canonical_json_bytes(&CanonicalIncrementalStream {
+            descriptor: &descriptor,
+            batches,
+        })
+        .expect("canonical incremental stream");
+        let completion_bytes =
+            pitgun_contract::canonical_json_bytes(output).expect("canonical completion output");
+
+        IncrementalStreamParityFixture {
+            schema_version: "pitgun.racing-incremental-stream-parity/v1".to_string(),
+            descriptor,
+            batches: batch_artifacts,
+            records: record_artifacts,
+            stream: IncrementalStreamParitySummary {
+                canonical_bytes: stream_bytes.len() as u64,
+                digest: pitgun_contract::Digest::from_bytes(&stream_bytes),
+            },
+            completion: IncrementalStreamParitySummary {
+                canonical_bytes: completion_bytes.len() as u64,
+                digest: pitgun_contract::Digest::from_bytes(&completion_bytes),
+            },
+        }
+    }
+
     #[test]
     fn timeline_candidate_uses_catalog_drivers_and_common_default_fail_closed() {
         let snapshot = RacingCatalogSnapshot::embedded_model_v3_timeline()
@@ -5791,64 +6016,13 @@ mod tests {
 
     #[test]
     fn incremental_racing_session_streams_all_competitors_before_exact_completion() {
-        fn ten_competitor_request() -> RunRaceRequest {
-            let mut request = one_lap_request();
-            request.input.race.laps = 2;
-            let player = request.input.race.competitors[0].clone();
-            request.input.race.competitors = (0..10)
-                .map(|index| CompetitorSpec {
-                    id: if index == 0 {
-                        "player".to_string()
-                    } else {
-                        format!("opponent-{index:02}")
-                    },
-                    name: format!("Competitor {index}"),
-                    is_player: index == 0,
-                    driver_id: Some("balanced_reference".to_string()),
-                    ..player.clone()
-                })
-                .collect();
-            request
-        }
-
-        fn collect_stream(mut session: IncrementalRacingSession) -> (Vec<Vec<u8>>, RaceOutput) {
-            let mut records_json = Vec::new();
-            let mut saw_progress = false;
-            loop {
-                let batch = session.advance().expect("incremental batch");
-                assert!(batch.records().len() <= 256);
-                for record in batch.records() {
-                    records_json.push(
-                        pitgun_contract::canonical_json_bytes(record)
-                            .expect("canonical record JSON"),
-                    );
-                    match record.event() {
-                        IncrementalExecutionStreamEventV1::Progress(
-                            RacingSessionProgressV1::Grid { competitors, .. },
-                        ) => {
-                            saw_progress = true;
-                            assert_eq!(competitors.len(), 10);
-                        }
-                        IncrementalExecutionStreamEventV1::Progress(
-                            RacingSessionProgressV1::PlayerTelemetry { frames, .. },
-                        ) => assert!(frames.len() <= TELEMETRY_BATCH_SIZE),
-                        IncrementalExecutionStreamEventV1::Progress(_) => {}
-                        IncrementalExecutionStreamEventV1::Complete(output) => {
-                            assert!(saw_progress);
-                            return (records_json, output.clone());
-                        }
-                    }
-                }
-            }
-        }
-
         let snapshot = RacingCatalogSnapshot::embedded_model_v3_fuel_contract()
             .expect("fuel-contract candidate catalog");
         let timeline = RacingDriverInstructionTimelineV1 {
             schema_version: RacingDriverInstructionTimelineVersion::V1,
             events: Vec::new(),
         };
-        let request = ten_competitor_request();
+        let request = ten_competitor_incremental_request();
         let expected = run_race_with_catalog_and_v3_fuel_contract_candidate(
             request.clone(),
             &snapshot,
@@ -5866,9 +6040,43 @@ mod tests {
         )
         .expect("second incremental session");
 
-        let (first_records, first_output) = collect_stream(first);
-        let (second_records, second_output) = collect_stream(second);
-        assert_eq!(first_records, second_records);
+        let (first_batches, first_output) = collect_incremental_stream(first);
+        let (second_batches, second_output) = collect_incremental_stream(second);
+        assert_eq!(
+            pitgun_contract::canonical_json_bytes(&first_batches)
+                .expect("first canonical stream batches"),
+            pitgun_contract::canonical_json_bytes(&second_batches)
+                .expect("second canonical stream batches"),
+            "identical inputs must reproduce identical stream bytes"
+        );
+        let mut cursor = pitgun_contract::IncrementalExecutionStreamCursorV1::new();
+        let mut saw_progress = false;
+        for batch in &first_batches {
+            assert!(batch.records().len() <= 256);
+            cursor.validate_next(batch).expect("ordered stream batch");
+            for record in batch.records() {
+                match record.event() {
+                    IncrementalExecutionStreamEventV1::Progress(
+                        RacingSessionProgressV1::Grid { competitors, .. },
+                    ) => {
+                        saw_progress = true;
+                        assert_eq!(competitors.len(), 10);
+                        let mut positions = competitors
+                            .iter()
+                            .map(|competitor| competitor.position)
+                            .collect::<Vec<_>>();
+                        positions.sort_unstable();
+                        assert_eq!(positions, (1..=10).collect::<Vec<_>>());
+                    }
+                    IncrementalExecutionStreamEventV1::Progress(
+                        RacingSessionProgressV1::PlayerTelemetry { frames, .. },
+                    ) => assert!(frames.len() <= TELEMETRY_BATCH_SIZE),
+                    IncrementalExecutionStreamEventV1::Progress(_) => {}
+                    IncrementalExecutionStreamEventV1::Complete(_) => assert!(saw_progress),
+                }
+            }
+        }
+        assert!(cursor.is_completed());
         assert_eq!(
             serde_json::to_value(&first_output).expect("incremental output JSON"),
             serde_json::to_value(&expected).expect("compatibility output JSON")
@@ -5876,6 +6084,145 @@ mod tests {
         assert_eq!(
             serde_json::to_value(&second_output).expect("second output JSON"),
             serde_json::to_value(&expected).expect("expected output JSON")
+        );
+    }
+
+    #[test]
+    fn incremental_racing_stream_matches_published_parity_vectors() {
+        let fixture: IncrementalStreamParityFixture =
+            serde_json::from_str(INCREMENTAL_STREAM_PARITY_FIXTURE_JSON)
+                .expect("published incremental Racing parity fixture");
+        let snapshot = RacingCatalogSnapshot::embedded_model_v3_fuel_contract()
+            .expect("fuel-contract candidate catalog");
+        let timeline = RacingDriverInstructionTimelineV1 {
+            schema_version: RacingDriverInstructionTimelineVersion::V1,
+            events: Vec::new(),
+        };
+        let request = ten_competitor_incremental_request();
+        let monolithic = run_race_with_catalog_and_v3_fuel_contract_candidate(
+            request.clone(),
+            &snapshot,
+            timeline.clone(),
+        )
+        .expect("monolithic compatibility output");
+        let session = start_incremental_race_with_catalog_and_v3_fuel_contract_candidate(
+            request, &snapshot, timeline,
+        )
+        .expect("incremental parity session");
+        let (batches, completion) = collect_incremental_stream(session);
+        let actual =
+            observe_incremental_stream(incremental_stream_descriptor(), &batches, &completion);
+
+        assert_eq!(
+            actual.schema_version, fixture.schema_version,
+            "fixture schema"
+        );
+        assert_eq!(actual.descriptor, fixture.descriptor, "stream descriptor");
+        assert_eq!(
+            actual.batches.len(),
+            fixture.batches.len(),
+            "published batch count"
+        );
+        for (index, (actual, expected)) in actual
+            .batches
+            .iter()
+            .zip(fixture.batches.iter())
+            .enumerate()
+        {
+            assert_eq!(actual, expected, "first changed batch artifact: {index}");
+        }
+        assert_eq!(
+            actual.records.len(),
+            fixture.records.len(),
+            "published record count"
+        );
+        for (index, (actual, expected)) in actual
+            .records
+            .iter()
+            .zip(fixture.records.iter())
+            .enumerate()
+        {
+            assert_eq!(actual, expected, "first changed record artifact: {index}");
+        }
+        assert_eq!(actual.stream, fixture.stream, "complete stream artifact");
+        assert_eq!(
+            actual.completion, fixture.completion,
+            "terminal completion artifact"
+        );
+        assert_eq!(
+            pitgun_contract::canonical_json_bytes(&completion)
+                .expect("incremental completion bytes"),
+            pitgun_contract::canonical_json_bytes(&monolithic)
+                .expect("monolithic completion bytes"),
+            "incremental collection must reconstruct the exact monolithic result"
+        );
+    }
+
+    #[test]
+    fn incremental_racing_stream_rejects_order_and_completion_corruption() {
+        fn batch_from_value(value: serde_json::Value) -> RacingSessionStreamBatchV1 {
+            serde_json::from_value(value).expect("structurally valid stream batch")
+        }
+
+        let snapshot = RacingCatalogSnapshot::embedded_model_v3_fuel_contract()
+            .expect("fuel-contract candidate catalog");
+        let timeline = RacingDriverInstructionTimelineV1 {
+            schema_version: RacingDriverInstructionTimelineVersion::V1,
+            events: Vec::new(),
+        };
+        let session = start_incremental_race_with_catalog_and_v3_fuel_contract_candidate(
+            ten_competitor_incremental_request(),
+            &snapshot,
+            timeline,
+        )
+        .expect("incremental corruption fixture session");
+        let (batches, _) = collect_incremental_stream(session);
+
+        let mut reordered = serde_json::to_value(&batches[0]).expect("first batch JSON");
+        reordered["records"]
+            .as_array_mut()
+            .expect("record array")
+            .swap(0, 1);
+        assert!(
+            serde_json::from_value::<RacingSessionStreamBatchV1>(reordered).is_err(),
+            "reordered records must fail locally"
+        );
+
+        let mut missing = serde_json::to_value(&batches[0]).expect("first batch JSON");
+        missing["records"]
+            .as_array_mut()
+            .expect("record array")
+            .pop();
+        let missing = batch_from_value(missing);
+        let mut cursor = pitgun_contract::IncrementalExecutionStreamCursorV1::new();
+        cursor
+            .validate_next(&missing)
+            .expect("truncated first batch");
+        assert!(
+            cursor.validate_next(&batches[1]).is_err(),
+            "missing record must fail at the first following artifact"
+        );
+
+        let mut duplicated = serde_json::to_value(&batches[0]).expect("first batch JSON");
+        let duplicate = duplicated["records"][0].clone();
+        duplicated["records"]
+            .as_array_mut()
+            .expect("record array")
+            .insert(1, duplicate);
+        assert!(
+            serde_json::from_value::<RacingSessionStreamBatchV1>(duplicated).is_err(),
+            "duplicated record must fail locally"
+        );
+
+        let mut cursor = pitgun_contract::IncrementalExecutionStreamCursorV1::new();
+        for batch in &batches {
+            cursor.validate_next(batch).expect("valid complete stream");
+        }
+        assert!(
+            cursor
+                .validate_next(batches.last().expect("completion batch"))
+                .is_err(),
+            "a record batch after completion must fail"
         );
     }
 
