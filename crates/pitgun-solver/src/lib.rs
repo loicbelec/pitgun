@@ -5,6 +5,9 @@
 
 pub mod rng;
 
+use std::cell::{Cell, RefCell};
+use std::collections::BTreeMap;
+
 pub use pitgun_racing_simulator::evidence;
 pub use pitgun_racing_simulator::evidence::{
     RacingAuthorizedApplicationResultV1, RacingAuthorizedApplicationResultVersion,
@@ -15,10 +18,11 @@ pub use pitgun_racing_simulator::evidence::{
     RacingVerificationSubmissionV1,
 };
 pub use pitgun_racing_simulator::{
-    AeroParams, BrowserCircuitCatalogEntry, CatalogSnapshot, ChassisParams, CircuitDetail, Driver,
-    DriverCatalogEntry, DriverEffects, EngineDetail, EngineParams, PitPlan, PitStop,
-    PitStrategyConfig, RaceOutput, RacingCatalogBundleV1, RacingCatalogFileV1,
-    RacingCatalogResolutionError, RacingCatalogSnapshot, RacingWorkload, RacingWorkloadError,
+    AeroParams, AuthorizedDynamicRacingSession, BrowserCircuitCatalogEntry, CatalogSnapshot,
+    ChassisParams, CircuitDetail, Driver, DriverCatalogEntry, DriverEffects, EngineDetail,
+    EngineParams, PitPlan, PitStop, PitStrategyConfig, RaceOutput, RacingCatalogBundleV1,
+    RacingCatalogFileV1, RacingCatalogResolutionError, RacingCatalogSnapshot,
+    RacingSessionProgressV1, RacingSessionStreamBatchV1, RacingWorkload, RacingWorkloadError,
     ResampledTelemetry, ResolveVehicleCapabilitiesRequestV1, RunRaceInput, RunRaceRequest,
     RunSimulationRequest, SessionConfig, SessionRunOutput, SessionRunRequest, SessionRunResult,
     SimConfig, SimulationRequest, SimulationResult, SimulationSolution, SolverTrackProfile,
@@ -36,9 +40,16 @@ pub use pitgun_racing_simulator::{
     resolve_vehicle_capabilities_with_catalog, rpm_from_speed_gear, run_race,
     run_race_with_catalog, run_race_with_catalog_and_v3_power_unit_thermal_profile,
     run_race_with_catalog_and_v3_thermal_family_profile, run_sessions, run_sessions_with_catalog,
-    solve,
+    solve, start_authorized_dynamic_racing_session,
 };
+use serde::Serialize;
 use wasm_bindgen::prelude::*;
+
+thread_local! {
+    static RACING_SESSIONS: RefCell<BTreeMap<u32, AuthorizedDynamicRacingSession>> =
+        const { RefCell::new(BTreeMap::new()) };
+    static NEXT_RACING_SESSION_HANDLE: Cell<u32> = const { Cell::new(1) };
+}
 
 #[wasm_bindgen(typescript_custom_section)]
 const HOSTED_RACING_TYPES: &'static str = r#"
@@ -59,7 +70,7 @@ export interface RacingVerificationSubmissionV1 {
   output: unknown;
   telemetry_summary: unknown;
   execution_resolution?: {
-    schema_version: "pitgun.racing-execution-resolution/v1" | "pitgun.racing-execution-resolution/v2" | "pitgun.racing-execution-resolution/v3";
+    schema_version: "pitgun.racing-execution-resolution/v1" | "pitgun.racing-execution-resolution/v2" | "pitgun.racing-execution-resolution/v3" | "pitgun.racing-execution-resolution/v4";
     catalog_release: unknown;
     simulation_pack: unknown;
     model: unknown;
@@ -67,6 +78,7 @@ export interface RacingVerificationSubmissionV1 {
     thermal_family_profile?: unknown;
     power_unit_thermal_profile?: unknown;
     component_capability_profile?: unknown;
+    fuel_contract?: unknown;
   };
 }
 
@@ -103,7 +115,90 @@ export interface RacingDynamicApplicationResultV1 {
   evidence: RacingDynamicVerificationSubmissionV1;
   runtime_output: unknown;
 }
+
+export interface RacingSessionStreamStartV1 {
+  schema_version: "pitgun.racing-session-stream-start/v1";
+  handle: number;
+}
+
+export interface RacingSessionStreamPullV1 {
+  schema_version: "pitgun.racing-session-stream-pull/v1";
+  handle: number;
+  complete: boolean;
+  batch: unknown;
+}
+
+export interface RacingSessionStreamCompletionV1 {
+  schema_version: "pitgun.racing-session-stream-completion/v1";
+  handle: number;
+  result: RacingDynamicApplicationResultV1;
+}
+
+export interface RacingSessionStreamReleaseV1 {
+  schema_version: "pitgun.racing-session-stream-release/v1";
+  handle: number;
+  released: true;
+}
 "#;
+
+#[derive(Serialize)]
+struct RacingSessionStreamStartV1 {
+    schema_version: &'static str,
+    handle: u32,
+}
+
+#[derive(Serialize)]
+struct RacingSessionStreamPullV1 {
+    schema_version: &'static str,
+    handle: u32,
+    complete: bool,
+    batch: RacingSessionStreamBatchV1,
+}
+
+#[derive(Serialize)]
+struct RacingSessionStreamCompletionV1 {
+    schema_version: &'static str,
+    handle: u32,
+    result: RacingDynamicApplicationResultV1,
+}
+
+#[derive(Serialize)]
+struct RacingSessionStreamReleaseV1 {
+    schema_version: &'static str,
+    handle: u32,
+    released: bool,
+}
+
+fn session_json<T: Serialize>(value: &T) -> String {
+    serde_json::to_string(value).unwrap_or_else(|error| {
+        serde_json::json!({ "error": format!("serialization failed: {error}") }).to_string()
+    })
+}
+
+fn session_error(message: impl AsRef<str>) -> String {
+    serde_json::json!({ "error": message.as_ref() }).to_string()
+}
+
+fn register_racing_session(session: AuthorizedDynamicRacingSession) -> Result<u32, String> {
+    RACING_SESSIONS.with(|sessions| {
+        NEXT_RACING_SESSION_HANDLE.with(|next| {
+            let mut sessions = sessions.borrow_mut();
+            let first = next.get().max(1);
+            let mut handle = first;
+            loop {
+                if let std::collections::btree_map::Entry::Vacant(entry) = sessions.entry(handle) {
+                    entry.insert(session);
+                    next.set(handle.wrapping_add(1).max(1));
+                    return Ok(handle);
+                }
+                handle = handle.wrapping_add(1).max(1);
+                if handle == first {
+                    return Err("Racing session handle space exhausted".to_string());
+                }
+            }
+        })
+    })
+}
 
 #[wasm_bindgen]
 pub fn run_simulation_json(input_json: String) -> String {
@@ -219,6 +314,108 @@ pub fn execute_authorized_dynamic_race_application_with_catalog_json(
         request_json,
         catalog_bundle_json,
     )
+}
+
+/// Starts a pull-based Authority-authorized Racing execution.
+///
+/// The returned handle is process-local and never participates in evidence or
+/// deterministic run identity.
+#[wasm_bindgen]
+pub fn start_authorized_dynamic_racing_session_with_catalog_json(
+    request_json: String,
+    catalog_bundle_json: String,
+) -> String {
+    let request = match serde_json::from_str::<RacingDynamicExecutionRequestV1>(&request_json) {
+        Ok(request) => request,
+        Err(error) => {
+            return session_error(format!("invalid dynamic execution request: {error}"));
+        }
+    };
+    let catalog = match RacingCatalogSnapshot::from_bundle_json(&catalog_bundle_json) {
+        Ok(catalog) => catalog,
+        Err(error) => return session_error(format!("invalid Racing catalog: {error}")),
+    };
+    let session = match start_authorized_dynamic_racing_session(request, &catalog) {
+        Ok(session) => session,
+        Err(error) => return session_error(error),
+    };
+    let handle = match register_racing_session(session) {
+        Ok(handle) => handle,
+        Err(error) => return session_error(error),
+    };
+    session_json(&RacingSessionStreamStartV1 {
+        schema_version: "pitgun.racing-session-stream-start/v1",
+        handle,
+    })
+}
+
+/// Advances one pull-based Racing execution by one deterministic lap boundary.
+#[wasm_bindgen]
+pub fn pull_authorized_dynamic_racing_session_json(handle: u32) -> String {
+    RACING_SESSIONS.with(|sessions| {
+        let mut sessions = sessions.borrow_mut();
+        let session = match sessions.get_mut(&handle) {
+            Some(session) => session,
+            None => return session_error(format!("unknown Racing session handle {handle}")),
+        };
+        if session.is_complete() {
+            return session_error(format!(
+                "Racing session handle {handle} completed; call complete or release"
+            ));
+        }
+        match session.advance() {
+            Ok(batch) => session_json(&RacingSessionStreamPullV1 {
+                schema_version: "pitgun.racing-session-stream-pull/v1",
+                handle,
+                complete: session.is_complete(),
+                batch,
+            }),
+            Err(error) => session_error(error),
+        }
+    })
+}
+
+/// Consumes a terminal handle and returns the unchanged hosted-verification
+/// application result.
+#[wasm_bindgen]
+pub fn complete_authorized_dynamic_racing_session_json(handle: u32) -> String {
+    RACING_SESSIONS.with(|sessions| {
+        let mut sessions = sessions.borrow_mut();
+        let Some(session) = sessions.get(&handle) else {
+            return session_error(format!("unknown Racing session handle {handle}"));
+        };
+        if !session.is_complete() {
+            return session_error(format!(
+                "Racing session handle {handle} is not complete; pull another batch"
+            ));
+        }
+        let session = sessions
+            .remove(&handle)
+            .expect("checked Racing session handle");
+        match session.complete() {
+            Ok(result) => session_json(&RacingSessionStreamCompletionV1 {
+                schema_version: "pitgun.racing-session-stream-completion/v1",
+                handle,
+                result,
+            }),
+            Err(error) => session_error(error),
+        }
+    })
+}
+
+/// Releases an active or completed browser session without producing evidence.
+#[wasm_bindgen]
+pub fn release_authorized_dynamic_racing_session_json(handle: u32) -> String {
+    RACING_SESSIONS.with(|sessions| {
+        if sessions.borrow_mut().remove(&handle).is_none() {
+            return session_error(format!("unknown Racing session handle {handle}"));
+        }
+        session_json(&RacingSessionStreamReleaseV1 {
+            schema_version: "pitgun.racing-session-stream-release/v1",
+            handle,
+            released: true,
+        })
+    })
 }
 
 #[wasm_bindgen]

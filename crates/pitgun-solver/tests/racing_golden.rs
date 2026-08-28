@@ -1,20 +1,23 @@
+use std::collections::HashMap;
 use std::fmt::Debug;
 
 use pitgun_contract::{
     ArtifactIdentity, AuthorizationSignatureAlgorithm, AuthorizationValidityV1, ContractVersion,
-    DeterministicRunContractV1, Digest, EventOrderingV1, Identifier, InputCanonicalization,
-    InputIdentity, InputMediaType, LogicalClockV1, RandomAlgorithm, RandomContractV1,
-    RunAttemptAuthorizationV1, RunAttemptAuthorizationVersion, RunAuthorizationV1,
-    RunAuthorizationVersion, RuntimeIdentity, RuntimeProfile, ScenarioIdentity, Seed,
-    SemanticVersion, SignedRunAttemptAuthorizationV1, SignedRunAuthorizationV1, StreamDerivation,
-    canonical_json_bytes, canonical_json_digest, canonicalize_json_str,
+    DeterministicRunContractV1, Digest, EventOrderingV1, Identifier,
+    IncrementalExecutionStreamEventV1, InputCanonicalization, InputIdentity, InputMediaType,
+    LogicalClockV1, RandomAlgorithm, RandomContractV1, RunAttemptAuthorizationV1,
+    RunAttemptAuthorizationVersion, RunAuthorizationV1, RunAuthorizationVersion, RuntimeIdentity,
+    RuntimeProfile, ScenarioIdentity, Seed, SemanticVersion, SignedRunAttemptAuthorizationV1,
+    SignedRunAuthorizationV1, StreamDerivation, canonical_json_bytes, canonical_json_digest,
+    canonicalize_json_str,
 };
 use pitgun_racing_contract::{
-    RacingCompletedDriverInstructionHistoryV1, RacingCompletedRunInputV1,
-    RacingCompletedRunInputVersion, RacingDriverInstructionAuthorizationV1,
-    RacingDriverInstructionAuthorizationVersion, RacingDriverInstructionBoundaryV1,
-    RacingDriverInstructionEventV1, RacingDriverInstructionTimelineV1,
-    RacingDriverInstructionTimelineVersion, RacingDrivingMode,
+    CompetitorSpec, RaceInput, RacingCompletedDriverInstructionHistoryV1,
+    RacingCompletedRunInputV1, RacingCompletedRunInputVersion,
+    RacingDriverInstructionAuthorizationV1, RacingDriverInstructionAuthorizationVersion,
+    RacingDriverInstructionBoundaryV1, RacingDriverInstructionEventV1,
+    RacingDriverInstructionTimelineV1, RacingDriverInstructionTimelineVersion, RacingDrivingMode,
+    TuningSpec,
 };
 use pitgun_racing_simulator::{
     CurvatureAeroResponse, TuningResponseV1, racing_model_v3_candidate_identity,
@@ -29,11 +32,16 @@ use pitgun_solver::evidence::{
     RacingVerificationSubmissionV1,
 };
 use pitgun_solver::{
-    RaceOutput, RacingCatalogFileV1, RacingCatalogSnapshot, RunRaceInput, RunRaceRequest,
-    execute_authorized_dynamic_race, execute_authorized_dynamic_race_application,
+    RaceOutput, RacingCatalogFileV1, RacingCatalogSnapshot, RacingSessionProgressV1,
+    RacingSessionStreamBatchV1, RunRaceInput, RunRaceRequest,
+    complete_authorized_dynamic_racing_session_json, execute_authorized_dynamic_race,
+    execute_authorized_dynamic_race_application,
+    execute_authorized_dynamic_race_application_with_catalog_json,
     execute_authorized_dynamic_race_with_catalog_json, execute_authorized_race,
     execute_authorized_race_application, execute_authorized_race_json, get_circuit_with_catalog,
-    racing_model_v1_identity, racing_model_v2_identity, run_race_json,
+    pull_authorized_dynamic_racing_session_json, racing_model_v1_identity,
+    racing_model_v2_identity, release_authorized_dynamic_racing_session_json, run_race_json,
+    start_authorized_dynamic_racing_session_with_catalog_json,
 };
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
@@ -163,6 +171,73 @@ struct HostedWasmGoldenDigests {
     wasm_artifact_digest: Digest,
 }
 
+#[derive(Debug, Deserialize)]
+struct IncrementalParityFixture {
+    batches: Vec<IncrementalParityArtifact>,
+}
+
+#[derive(Debug, Deserialize)]
+struct IncrementalParityArtifact {
+    index: u32,
+    kind: String,
+    first_sequence: u64,
+    last_sequence: u64,
+    logical_tick: u64,
+    record_count: u32,
+    item_count: u32,
+    digest: Digest,
+}
+
+#[derive(Serialize)]
+struct IncrementalRecordProjection {
+    sequence: u64,
+    logical_tick: u64,
+    kind: String,
+    item_count: u32,
+}
+
+fn incremental_dynamic_input() -> RunRaceInput {
+    let tuning = TuningSpec {
+        engine_points: 25.0,
+        cooling_points: 25.0,
+        aero_points: 25.0,
+        chassis_points: 25.0,
+        downforce_slider: 0.5,
+        gear_ratio_slider: 0.5,
+    };
+    let competitors = (0..10)
+        .map(|index| CompetitorSpec {
+            id: if index == 0 {
+                "player".to_string()
+            } else {
+                format!("opponent-{index:02}")
+            },
+            driver_id: Some("balanced_reference".to_string()),
+            name: format!("Competitor {index}"),
+            team_id: "team".to_string(),
+            is_player: index == 0,
+            tuning: tuning.clone(),
+            budget_cap: 100.0,
+            stint_strategy: None,
+        })
+        .collect();
+    RunRaceInput {
+        race: RaceInput {
+            track_id: "it-1922".to_string(),
+            laps: 2,
+            competitors,
+        },
+        vehicle_id: Some("f1_2026".to_string()),
+        competitor_vehicle_components: HashMap::new(),
+        pit_strategy: None,
+        track_profile: None,
+        competitor_profiles: HashMap::new(),
+        era: 2026,
+        hz: 20.0,
+        initial_fuel_mass_kg: None,
+    }
+}
+
 fn dynamic_execution_fixture(catalog: &RacingCatalogSnapshot) -> RacingDynamicExecutionRequestV1 {
     let mut input = serde_json::from_str::<RunRaceRequest>(INPUT_V2)
         .expect("dynamic Racing input fixture")
@@ -170,6 +245,14 @@ fn dynamic_execution_fixture(catalog: &RacingCatalogSnapshot) -> RacingDynamicEx
     input.race.laps = 3;
     input.race.competitors[0].driver_id = Some("balanced_reference".to_string());
     let model = pitgun_racing_simulator::racing_model_v3_timeline_candidate_identity();
+    dynamic_execution_fixture_for_input(catalog, input, model)
+}
+
+fn dynamic_execution_fixture_for_input(
+    catalog: &RacingCatalogSnapshot,
+    input: RunRaceInput,
+    model: ArtifactIdentity,
+) -> RacingDynamicExecutionRequestV1 {
     let initial_contract = DeterministicRunContractV1 {
         contract_version: ContractVersion::V1,
         scenario: ScenarioIdentity {
@@ -359,6 +442,187 @@ fn dynamic_racing_attempt_has_identical_native_and_wasm_evidence() {
             &native.receipt.receipt,
         )
         .expect("Authority execution id and final contract binding");
+}
+
+fn session_response(response: String) -> serde_json::Value {
+    let value: serde_json::Value = serde_json::from_str(&response)
+        .unwrap_or_else(|error| panic!("invalid session response: {error}: {response}"));
+    assert!(
+        value.get("error").is_none(),
+        "unexpected session error: {value}"
+    );
+    value
+}
+
+fn start_session_handle(request_json: &str, catalog_bundle_json: &str) -> u32 {
+    let value = session_response(start_authorized_dynamic_racing_session_with_catalog_json(
+        request_json.to_string(),
+        catalog_bundle_json.to_string(),
+    ));
+    value["handle"].as_u64().expect("numeric session handle") as u32
+}
+
+fn pull_session_to_completion(handle: u32) -> Vec<RacingSessionStreamBatchV1> {
+    let mut batches = Vec::new();
+    loop {
+        let value = session_response(pull_authorized_dynamic_racing_session_json(handle));
+        let complete = value["complete"].as_bool().expect("completion flag");
+        batches.push(
+            serde_json::from_value(value["batch"].clone()).expect("typed Racing stream batch"),
+        );
+        if complete {
+            return batches;
+        }
+    }
+}
+
+fn stream_record_projection(
+    record: &pitgun_contract::IncrementalExecutionStreamRecordV1<
+        RacingSessionProgressV1,
+        RaceOutput,
+    >,
+) -> IncrementalRecordProjection {
+    let (kind, item_count) = match record.event() {
+        IncrementalExecutionStreamEventV1::Progress(RacingSessionProgressV1::Grid {
+            competitors,
+            ..
+        }) => ("grid", competitors.len()),
+        IncrementalExecutionStreamEventV1::Progress(RacingSessionProgressV1::PlayerTelemetry {
+            frames,
+            ..
+        }) => ("player_telemetry", frames.len()),
+        IncrementalExecutionStreamEventV1::Progress(RacingSessionProgressV1::Event(event)) => {
+            let kind = match event {
+                pitgun_racing_simulator::RacingSessionEventV1::LapCompleted { .. } => {
+                    "lap_completed"
+                }
+                pitgun_racing_simulator::RacingSessionEventV1::PitStopCompleted { .. } => {
+                    "pit_stop_completed"
+                }
+                pitgun_racing_simulator::RacingSessionEventV1::DriverInstructionApplied {
+                    ..
+                } => "driver_instruction_applied",
+            };
+            (kind, 1)
+        }
+        IncrementalExecutionStreamEventV1::Complete(output) => {
+            ("completion", output.standings.len())
+        }
+    };
+    IncrementalRecordProjection {
+        sequence: record.sequence(),
+        logical_tick: record.logical_tick(),
+        kind: kind.to_string(),
+        item_count: item_count as u32,
+    }
+}
+
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
+fn pull_based_wasm_session_matches_native_fixture_and_monolithic_evidence() {
+    let catalog =
+        RacingCatalogSnapshot::embedded_model_v3_fuel_contract().expect("fuel-contract catalog");
+    let mut request = dynamic_execution_fixture_for_input(
+        &catalog,
+        incremental_dynamic_input(),
+        pitgun_racing_simulator::racing_model_v3_fuel_contract_candidate_identity(),
+    );
+    request
+        .completed_input
+        .driver_instructions
+        .applied_timeline
+        .events
+        .clear();
+    let request_json = serde_json::to_string(&request).expect("dynamic stream request JSON");
+    let catalog_bundle_json =
+        serde_json::to_string(&catalog.to_bundle().expect("browser catalog bundle"))
+            .expect("browser catalog JSON");
+
+    let first_handle = start_session_handle(&request_json, &catalog_bundle_json);
+    let second_handle = start_session_handle(&request_json, &catalog_bundle_json);
+    let first_batches = pull_session_to_completion(first_handle);
+    let second_batches = pull_session_to_completion(second_handle);
+    assert_eq!(
+        canonical_json_bytes(&first_batches).expect("first stream bytes"),
+        canonical_json_bytes(&second_batches).expect("second stream bytes"),
+        "host scheduling and pull timing must not affect emitted bytes"
+    );
+
+    let fixture: IncrementalParityFixture = serde_json::from_str(include_str!(
+        "../../pitgun-racing-simulator/tests/fixtures/incremental_racing_stream_parity_v1.json"
+    ))
+    .expect("incremental parity fixture");
+    assert_eq!(first_batches.len(), fixture.batches.len());
+    for (index, (batch, expected)) in first_batches.iter().zip(&fixture.batches).enumerate() {
+        let records = batch.records();
+        let projection = records
+            .iter()
+            .map(stream_record_projection)
+            .collect::<Vec<_>>();
+        let first = records.first().expect("non-empty batch");
+        let last = records.last().expect("non-empty batch");
+        assert_eq!(expected.index, index as u32);
+        assert_eq!(expected.first_sequence, first.sequence());
+        assert_eq!(expected.last_sequence, last.sequence());
+        assert_eq!(expected.logical_tick, last.logical_tick());
+        assert_eq!(expected.record_count, records.len() as u32);
+        assert_eq!(
+            expected.item_count,
+            projection
+                .iter()
+                .map(|record| record.item_count)
+                .sum::<u32>()
+        );
+        assert_eq!(
+            expected.kind,
+            if matches!(last.event(), IncrementalExecutionStreamEventV1::Complete(_)) {
+                "completion"
+            } else {
+                "progress"
+            }
+        );
+        assert_eq!(
+            expected.digest,
+            Digest::from_bytes(&canonical_json_bytes(&projection).expect("projection bytes"))
+        );
+    }
+
+    let post_completion = pull_authorized_dynamic_racing_session_json(first_handle);
+    assert!(post_completion.contains("completed; call complete or release"));
+    let first_completion = session_response(complete_authorized_dynamic_racing_session_json(
+        first_handle,
+    ));
+    let second_completion = session_response(complete_authorized_dynamic_racing_session_json(
+        second_handle,
+    ));
+    let first_result: pitgun_solver::RacingDynamicApplicationResultV1 =
+        serde_json::from_value(first_completion["result"].clone()).expect("first result");
+    let second_result: pitgun_solver::RacingDynamicApplicationResultV1 =
+        serde_json::from_value(second_completion["result"].clone()).expect("second result");
+    let monolithic_json = execute_authorized_dynamic_race_application_with_catalog_json(
+        request_json.clone(),
+        catalog_bundle_json.clone(),
+    );
+    let monolithic: pitgun_solver::RacingDynamicApplicationResultV1 =
+        serde_json::from_str(&monolithic_json).expect("monolithic application result");
+    assert_eq!(
+        canonical_json_bytes(&first_result).expect("first result bytes"),
+        canonical_json_bytes(&second_result).expect("second result bytes")
+    );
+    assert_eq!(
+        canonical_json_bytes(&first_result).expect("incremental result bytes"),
+        canonical_json_bytes(&monolithic).expect("monolithic result bytes"),
+        "the compatibility collector and pull API must preserve exact evidence"
+    );
+
+    let abandoned = start_session_handle(&request_json, &catalog_bundle_json);
+    let release = session_response(release_authorized_dynamic_racing_session_json(abandoned));
+    assert_eq!(release["released"], true);
+    assert!(pull_authorized_dynamic_racing_session_json(abandoned).contains("unknown"));
+
+    let incomplete = start_session_handle(&request_json, &catalog_bundle_json);
+    assert!(complete_authorized_dynamic_racing_session_json(incomplete).contains("not complete"));
+    session_response(release_authorized_dynamic_racing_session_json(incomplete));
 }
 
 #[test]

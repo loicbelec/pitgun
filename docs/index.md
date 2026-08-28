@@ -19,6 +19,7 @@
 - [Racing Model V3 thermal Databricks plan V1](RACING_V3_THERMAL_DATABRICKS_PLAN_V1.md)
 - [Incremental Execution Stream V1](INCREMENTAL_EXECUTION_STREAM_V1.md)
 - [Racing Incremental Session Engine V1](RACING_INCREMENTAL_SESSION_ENGINE_V1.md)
+- [Racing WASM Pull Session V1](RACING_WASM_PULL_SESSION_V1.md)
 - [Racing Model V3 thermal Databricks review V1](RACING_V3_THERMAL_DATABRICKS_REVIEW_V1.md)
 - [Racing Model V3 thermal refinement Databricks review V1](RACING_V3_THERMAL_REFINEMENT_DATABRICKS_REVIEW_V1.md)
 - [Racing Model V3 thermal family profile candidate V1](RACING_V3_THERMAL_FAMILY_PROFILE_CANDIDATE_V1.md)
