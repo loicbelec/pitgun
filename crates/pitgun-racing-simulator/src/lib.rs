@@ -5533,14 +5533,14 @@ mod tests {
         last_sequence: u64,
         logical_tick: u64,
         record_count: u32,
-        canonical_bytes: u64,
+        item_count: u32,
         digest: pitgun_contract::Digest,
     }
 
     #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
     #[serde(deny_unknown_fields)]
     struct IncrementalStreamParitySummary {
-        canonical_bytes: u64,
+        item_count: u32,
         digest: pitgun_contract::Digest,
     }
 
@@ -5555,10 +5555,31 @@ mod tests {
         completion: IncrementalStreamParitySummary,
     }
 
+    #[derive(Clone, Serialize)]
+    struct IncrementalRecordParityProjection {
+        sequence: u64,
+        logical_tick: u64,
+        kind: String,
+        item_count: u32,
+    }
+
     #[derive(Serialize)]
-    struct CanonicalIncrementalStream<'a> {
+    struct IncrementalStreamParityProjection<'a> {
         descriptor: &'a pitgun_contract::IncrementalExecutionStreamDescriptorV1,
-        batches: &'a [RacingSessionStreamBatchV1],
+        records: &'a [IncrementalRecordParityProjection],
+    }
+
+    #[derive(Serialize)]
+    struct IncrementalCompletionParityProjection {
+        standings: Vec<(String, u32, u16, String)>,
+        player_pit_laps: Vec<u16>,
+        player_lap_count: u32,
+        player_telemetry_batch_frame_counts: Vec<u32>,
+        has_setup_diagnostics: bool,
+        has_tire_diagnostics: bool,
+        has_mechanical_diagnostics: bool,
+        has_fuel_diagnostics: bool,
+        has_tire_degradation_diagnostics: bool,
     }
 
     #[test]
@@ -5825,6 +5846,28 @@ mod tests {
         }
     }
 
+    fn incremental_record_parity_projection(
+        record: &RacingSessionStreamRecordV1,
+    ) -> IncrementalRecordParityProjection {
+        let item_count = match record.event() {
+            IncrementalExecutionStreamEventV1::Progress(RacingSessionProgressV1::Grid {
+                competitors,
+                ..
+            }) => competitors.len(),
+            IncrementalExecutionStreamEventV1::Progress(
+                RacingSessionProgressV1::PlayerTelemetry { frames, .. },
+            ) => frames.len(),
+            IncrementalExecutionStreamEventV1::Progress(RacingSessionProgressV1::Event(_)) => 1,
+            IncrementalExecutionStreamEventV1::Complete(output) => output.standings.len(),
+        };
+        IncrementalRecordParityProjection {
+            sequence: record.sequence(),
+            logical_tick: record.logical_tick(),
+            kind: incremental_record_kind(record).to_string(),
+            item_count: item_count as u32,
+        }
+    }
+
     fn parity_artifact(
         index: usize,
         kind: &str,
@@ -5832,6 +5875,7 @@ mod tests {
         last_sequence: u64,
         logical_tick: u64,
         record_count: usize,
+        item_count: usize,
         bytes: &[u8],
     ) -> IncrementalStreamParityArtifact {
         IncrementalStreamParityArtifact {
@@ -5841,7 +5885,7 @@ mod tests {
             last_sequence,
             logical_tick,
             record_count: record_count as u32,
-            canonical_bytes: bytes.len() as u64,
+            item_count: item_count as u32,
             digest: pitgun_contract::Digest::from_bytes(bytes),
         }
     }
@@ -5858,8 +5902,12 @@ mod tests {
                 let records = batch.records();
                 let first = records.first().expect("non-empty stream batch");
                 let last = records.last().expect("non-empty stream batch");
-                let bytes = pitgun_contract::canonical_json_bytes(batch)
-                    .expect("canonical incremental batch");
+                let projection = records
+                    .iter()
+                    .map(incremental_record_parity_projection)
+                    .collect::<Vec<_>>();
+                let bytes = pitgun_contract::canonical_json_bytes(&projection)
+                    .expect("canonical incremental batch projection");
                 parity_artifact(
                     index,
                     if last.event().is_complete() {
@@ -5871,6 +5919,10 @@ mod tests {
                     last.sequence(),
                     last.logical_tick(),
                     records.len(),
+                    projection
+                        .iter()
+                        .map(|record| record.item_count as usize)
+                        .sum(),
                     &bytes,
                 )
             })
@@ -5901,8 +5953,9 @@ mod tests {
             })
             .enumerate()
             .map(|(index, record)| {
-                let bytes = pitgun_contract::canonical_json_bytes(record)
-                    .expect("canonical incremental record");
+                let projection = incremental_record_parity_projection(record);
+                let bytes = pitgun_contract::canonical_json_bytes(&projection)
+                    .expect("canonical incremental record projection");
                 parity_artifact(
                     index,
                     incremental_record_kind(record),
@@ -5910,17 +5963,57 @@ mod tests {
                     record.sequence(),
                     record.logical_tick(),
                     1,
+                    projection.item_count as usize,
                     &bytes,
                 )
             })
             .collect();
-        let stream_bytes = pitgun_contract::canonical_json_bytes(&CanonicalIncrementalStream {
-            descriptor: &descriptor,
-            batches,
-        })
-        .expect("canonical incremental stream");
-        let completion_bytes =
-            pitgun_contract::canonical_json_bytes(output).expect("canonical completion output");
+        let record_projections = batches
+            .iter()
+            .flat_map(RacingSessionStreamBatchV1::records)
+            .map(incremental_record_parity_projection)
+            .collect::<Vec<_>>();
+        let stream_bytes =
+            pitgun_contract::canonical_json_bytes(&IncrementalStreamParityProjection {
+                descriptor: &descriptor,
+                records: &record_projections,
+            })
+            .expect("canonical incremental stream projection");
+        let completion_projection = IncrementalCompletionParityProjection {
+            standings: output
+                .standings
+                .iter()
+                .map(|standing| {
+                    let status = match &standing.status {
+                        StandingStatus::Finished => "finished".to_string(),
+                        StandingStatus::Dnf { reason } => format!("dnf:{reason}"),
+                        StandingStatus::Dsq { reason } => format!("dsq:{reason}"),
+                    };
+                    (
+                        standing.competitor_id.clone(),
+                        standing.position,
+                        standing.laps_completed,
+                        status,
+                    )
+                })
+                .collect(),
+            player_pit_laps: output.player_pit_laps.clone(),
+            player_lap_count: output.player_lap_times_ms.len() as u32,
+            player_telemetry_batch_frame_counts: output
+                .player_batches
+                .iter()
+                .map(|batch| batch.frames.len() as u32)
+                .collect(),
+            has_setup_diagnostics: output.player_diagnostics.is_some(),
+            has_tire_diagnostics: output.player_tire_diagnostics_v3.is_some(),
+            has_mechanical_diagnostics: output.player_mechanical_diagnostics_v3.is_some(),
+            has_fuel_diagnostics: output.player_fuel_mass_diagnostics_v3.is_some(),
+            has_tire_degradation_diagnostics: output
+                .player_tire_degradation_diagnostics_v3
+                .is_some(),
+        };
+        let completion_bytes = pitgun_contract::canonical_json_bytes(&completion_projection)
+            .expect("canonical completion projection");
 
         IncrementalStreamParityFixture {
             schema_version: "pitgun.racing-incremental-stream-parity/v1".to_string(),
@@ -5928,11 +6021,11 @@ mod tests {
             batches: batch_artifacts,
             records: record_artifacts,
             stream: IncrementalStreamParitySummary {
-                canonical_bytes: stream_bytes.len() as u64,
+                item_count: record_projections.len() as u32,
                 digest: pitgun_contract::Digest::from_bytes(&stream_bytes),
             },
             completion: IncrementalStreamParitySummary {
-                canonical_bytes: completion_bytes.len() as u64,
+                item_count: completion_projection.standings.len() as u32,
                 digest: pitgun_contract::Digest::from_bytes(&completion_bytes),
             },
         }
