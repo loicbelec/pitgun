@@ -27,7 +27,8 @@ use pitgun_policy::{
 };
 use pitgun_racing_contract::{
     RacingDriverInstructionAuthorizationV1, RacingDriverInstructionAuthorizationVersion,
-    RacingDrivingMode, SignedSimulationContractV1, SimulationContractV1,
+    RacingDrivingMode, SignedSimulationContractV1, SimulationContractV1, VehicleComponentKind,
+    VehicleComponentSelectionV1,
 };
 use pitgun_racing_policy::{default_policy_path, normalize_and_validate_race_input_with_policy};
 use pitgun_racing_simulator::{
@@ -297,17 +298,13 @@ fn prepare_racing_run(
     }
 
     let mut canonical_input = input;
-    if !canonical_input.competitor_vehicle_components.is_empty() {
-        return Err(ContractError::BadRequest(
-            "configured Racing model does not support vehicle component selection".to_string(),
-        ));
-    }
     canonical_input.race = normalize_and_validate_race_input_with_policy(
         &canonical_input.race,
         era,
         &state.tuning_policy,
     )
     .map_err(|error| ContractError::BadRequest(error.to_string()))?;
+    validate_governed_component_selections(state.racing_catalog.as_ref(), &canonical_input)?;
     let input_digest = canonical_json_digest(&canonical_input)
         .map_err(|error| ContractError::BadRequest(format!("invalid canonical input: {error}")))?;
 
@@ -352,6 +349,91 @@ fn prepare_racing_run(
         catalog_release,
         contract,
     })
+}
+
+fn validate_governed_component_selections(
+    catalog: Option<&RacingCatalogSnapshot>,
+    input: &RunRaceInput,
+) -> Result<(), ContractError> {
+    if input.competitor_vehicle_components.is_empty() {
+        return Ok(());
+    }
+    let profile = catalog
+        .and_then(RacingCatalogSnapshot::component_capability_profile)
+        .ok_or_else(|| {
+            ContractError::BadRequest(
+                "configured Racing model does not support vehicle component selection".to_string(),
+            )
+        })?;
+
+    for (competitor_id, selection) in &input.competitor_vehicle_components {
+        if !input
+            .race
+            .competitors
+            .iter()
+            .any(|competitor| competitor.id == *competitor_id)
+        {
+            return Err(ContractError::BadRequest(format!(
+                "vehicle component selection references unknown competitor '{competitor_id}'"
+            )));
+        }
+        validate_governed_component_selection(profile, competitor_id, selection)?;
+    }
+    Ok(())
+}
+
+fn validate_governed_component_selection(
+    profile: &pitgun_racing_contract::ComponentCapabilityProfileV1,
+    competitor_id: &str,
+    selection: &VehicleComponentSelectionV1,
+) -> Result<(), ContractError> {
+    let components = [
+        (
+            VehicleComponentKind::AerodynamicPackage,
+            "aero",
+            selection.aero_id.as_deref(),
+        ),
+        (
+            VehicleComponentKind::Chassis,
+            "chassis",
+            selection.chassis_id.as_deref(),
+        ),
+        (
+            VehicleComponentKind::PowerUnit,
+            "engine",
+            selection.engine_id.as_deref(),
+        ),
+        (
+            VehicleComponentKind::TireSpecification,
+            "tire",
+            selection.tire_id.as_deref(),
+        ),
+    ];
+    if components.iter().all(|(_, _, value)| value.is_none()) {
+        return Err(ContractError::BadRequest(format!(
+            "vehicle component selection for competitor '{competitor_id}' must override at least one component"
+        )));
+    }
+    for (kind, label, component_id) in components {
+        let Some(component_id) = component_id else {
+            continue;
+        };
+        if component_id.is_empty() || component_id != component_id.trim() {
+            return Err(ContractError::BadRequest(format!(
+                "vehicle component selection for competitor '{competitor_id}' has non-canonical {label} id '{component_id}'"
+            )));
+        }
+        if !profile
+            .components
+            .iter()
+            .any(|component| component.kind == kind && component.component_id == component_id)
+        {
+            return Err(ContractError::BadRequest(format!(
+                "vehicle component selection for competitor '{competitor_id}' references unknown {label} component '{component_id}'"
+            )));
+        }
+    }
+    Ok(())
 }
 
 fn build_signed_racing_run_attempt_authorization(
@@ -948,6 +1030,90 @@ mod tests {
             error,
             ContractError::BadRequest(message)
                 if message.contains("does not support vehicle component selection")
+        ));
+    }
+
+    #[test]
+    fn component_aware_racing_attempt_authorizes_governed_vehicle_composition() {
+        let state = test_state_for("0.14.0", "v1.8.0");
+        let mut request = racing_attempt_request(&state);
+        request.input.race.competitors[0].driver_id = Some("balanced_reference".to_string());
+        request.input.competitor_vehicle_components.insert(
+            "player".to_string(),
+            VehicleComponentSelectionV1 {
+                schema_version: VehicleComponentSelectionVersion::V1,
+                aero_id: Some("basic".to_string()),
+                chassis_id: Some("default".to_string()),
+                engine_id: Some("v8_1970".to_string()),
+                tire_id: Some("medium".to_string()),
+            },
+        );
+
+        let response =
+            build_signed_racing_run_attempt_authorization(1_710_000_000_000, &state, request)
+                .expect("component-aware catalog must govern the requested composition");
+
+        assert_eq!(
+            response
+                .canonical_input
+                .competitor_vehicle_components
+                .get("player")
+                .and_then(|selection| selection.aero_id.as_deref()),
+            Some("basic")
+        );
+    }
+
+    #[test]
+    fn component_aware_racing_attempt_rejects_unknown_catalog_component() {
+        let state = test_state_for("0.14.0", "v1.8.0");
+        let mut request = racing_attempt_request(&state);
+        request.input.competitor_vehicle_components.insert(
+            "player".to_string(),
+            VehicleComponentSelectionV1 {
+                schema_version: VehicleComponentSelectionVersion::V1,
+                aero_id: Some("unpublished-aero".to_string()),
+                chassis_id: None,
+                engine_id: None,
+                tire_id: None,
+            },
+        );
+
+        let error =
+            build_signed_racing_run_attempt_authorization(1_710_000_000_000, &state, request)
+                .expect_err("Authority must not sign an unknown catalog component");
+
+        assert!(matches!(
+            error,
+            ContractError::BadRequest(message)
+                if message.contains("unknown aero component 'unpublished-aero'")
+        ));
+    }
+
+    #[test]
+    fn component_aware_racing_attempt_rejects_unknown_competitor_subject() {
+        let state = test_state_for("0.14.0", "v1.8.0");
+        let mut request = racing_attempt_request(&state);
+        request.input.competitor_vehicle_components.insert(
+            "ghost".to_string(),
+            VehicleComponentSelectionV1 {
+                schema_version: VehicleComponentSelectionVersion::V1,
+                aero_id: Some("basic".to_string()),
+                chassis_id: None,
+                engine_id: None,
+                tire_id: None,
+            },
+        );
+
+        let error =
+            build_signed_racing_run_attempt_authorization(1_710_000_000_000, &state, request)
+                .expect_err(
+                    "Authority must not sign a component selection for an unknown competitor",
+                );
+
+        assert!(matches!(
+            error,
+            ContractError::BadRequest(message)
+                if message.contains("unknown competitor 'ghost'")
         ));
     }
 
