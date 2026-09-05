@@ -1,8 +1,15 @@
 mod catalog;
 pub mod evidence;
 mod fuel_contract;
+mod local_stream;
 mod thermal_profile;
 pub mod workload;
+
+pub use local_stream::{
+    complete_local_racing_session_json, pull_local_racing_session_json,
+    release_local_racing_session_json,
+    start_local_racing_session_with_catalog_and_v3_power_unit_thermal_profile_json,
+};
 
 pub use catalog::{
     RacingCatalogBundleV1, RacingCatalogFileV1, RacingCatalogResolutionError, RacingCatalogSnapshot,
@@ -6037,6 +6044,83 @@ mod tests {
             era: Some(2026),
             hz: Some(20.0),
         }
+    }
+
+    #[test]
+    fn local_stream_preserves_output_and_handle_lifecycle() {
+        let snapshot = RacingCatalogSnapshot::embedded_model_v3_component().unwrap();
+        let bundle = snapshot.to_bundle().unwrap();
+        let profile = bundle
+            .resources
+            .iter()
+            .find(|file| file.path.ends_with("family-v2.json"))
+            .unwrap()
+            .contents
+            .clone();
+        let bundle_json = serde_json::to_string(&bundle).unwrap();
+        for laps in [1, 3, 8] {
+            let mut request = ten_competitor_incremental_request();
+            request.input.race.laps = laps;
+            let input = serde_json::to_string(&request).unwrap();
+            let expected: serde_json::Value = serde_json::from_str(
+                &run_race_with_catalog_and_v3_power_unit_thermal_profile_json(
+                    input.clone(),
+                    bundle_json.clone(),
+                    profile.clone(),
+                ),
+            )
+            .unwrap();
+            assert!(expected.get("error").is_none(), "{expected}");
+            let start: serde_json::Value = serde_json::from_str(
+                &start_local_racing_session_with_catalog_and_v3_power_unit_thermal_profile_json(
+                    input,
+                    bundle_json.clone(),
+                    profile.clone(),
+                ),
+            )
+            .unwrap();
+            let handle = start["handle"].as_u64().unwrap() as u32;
+            assert!(complete_local_racing_session_json(handle).contains("not complete"));
+            let mut progress_batches = 0;
+            loop {
+                let pulled: serde_json::Value =
+                    serde_json::from_str(&pull_local_racing_session_json(handle)).unwrap();
+                assert!(pulled.get("error").is_none(), "{pulled}");
+                if pulled["complete"] == true {
+                    break;
+                }
+                progress_batches += 1;
+                assert!(progress_batches <= laps + 1);
+            }
+            assert!(progress_batches >= laps);
+            let completed: serde_json::Value =
+                serde_json::from_str(&complete_local_racing_session_json(handle)).unwrap();
+            assert_eq!(completed["result"], expected);
+            assert_eq!(
+                completed["schema_version"],
+                "pitgun.racing-local-session-completion/v1"
+            );
+            assert!(pull_local_racing_session_json(handle).contains("unknown local"));
+        }
+        let start: serde_json::Value = serde_json::from_str(
+            &start_local_racing_session_with_catalog_and_v3_power_unit_thermal_profile_json(
+                serde_json::to_string(&one_lap_request()).unwrap(),
+                bundle_json,
+                profile,
+            ),
+        )
+        .unwrap();
+        let handle = start["handle"].as_u64().unwrap() as u32;
+        assert!(release_local_racing_session_json(handle).contains("true"));
+        assert!(release_local_racing_session_json(handle).contains("unknown local"));
+        assert!(
+            start_local_racing_session_with_catalog_and_v3_power_unit_thermal_profile_json(
+                "invalid".into(),
+                "{}".into(),
+                "{}".into()
+            )
+            .contains("error")
+        );
     }
 
     fn ten_competitor_incremental_request() -> RunRaceRequest {
