@@ -2432,6 +2432,7 @@ pub struct IncrementalRacingSession {
     player_pit_laps: Vec<u16>,
     competitors: Vec<IncrementalV3Competitor>,
     next_sequence: u64,
+    next_player_frame_sequence: u64,
     completed: bool,
     minimum_finish_reserve_kg: Option<f64>,
     player_power_unit_thermal_resolution_v3: Option<V3PowerUnitThermalResolutionV2>,
@@ -2713,6 +2714,7 @@ impl IncrementalRacingSession {
             player_pit_laps,
             competitors,
             next_sequence: 0,
+            next_player_frame_sequence: 0,
             completed: false,
             minimum_finish_reserve_kg: None,
             player_power_unit_thermal_resolution_v3,
@@ -2763,6 +2765,15 @@ impl IncrementalRacingSession {
             return Err("incremental Racing session already completed".to_string());
         }
 
+        // Solver lap solutions use lap-local coordinates. Preserve the exact
+        // previous physical boundary (including pit time) before advancing.
+        let (player_time_offset, player_distance_offset) = self
+            .competitors
+            .iter()
+            .find(|competitor| competitor.is_player)
+            .and_then(|competitor| competitor.latest_lap.as_ref())
+            .map(|lap| (lap.cumulative_time_s, lap.cumulative_distance_m))
+            .unwrap_or((0.0, 0.0));
         let mut lap_steps = Vec::with_capacity(self.competitors.len());
         let mut completion_count = 0_usize;
         for competitor in &mut self.competitors {
@@ -2857,7 +2868,7 @@ impl IncrementalRacingSession {
                 .as_ref()
                 .ok_or_else(|| "incremental player has no completed lap".to_string())?;
             let telemetry_hz = 5.0;
-            let resampled = resample_telemetry_with_engine_thermal(
+            let mut resampled = resample_telemetry_with_engine_thermal(
                 &self.track,
                 &player_lap.solution,
                 &player.physical_vehicle,
@@ -2865,7 +2876,13 @@ impl IncrementalRacingSession {
                 player.engine_thermal,
             )
             .map_err(|error| format!("incremental telemetry resampling failed: {error}"))?;
-            let frames = gateway_frames_from_resampled(
+            for time in &mut resampled.time_s {
+                *time += player_time_offset;
+            }
+            for distance in &mut resampled.s_m {
+                *distance += player_distance_offset;
+            }
+            let mut frames = gateway_frames_from_resampled(
                 &resampled,
                 telemetry_session_id(self.seed, &self.track_id, &player.competitor_id),
                 &format!("pitwall-sim:{}", player.competitor_id),
@@ -2878,6 +2895,10 @@ impl IncrementalRacingSession {
                     telemetry_hz,
                 ),
             );
+            for (index, frame) in frames.iter_mut().enumerate() {
+                frame.sequence = self.next_player_frame_sequence + index as u64;
+            }
+            self.next_player_frame_sequence += frames.len() as u64;
             for (batch_index, frames) in frames.chunks(TELEMETRY_BATCH_SIZE).enumerate() {
                 records.push(self.progress_record(
                     logical_tick,
@@ -6082,12 +6103,30 @@ mod tests {
             let handle = start["handle"].as_u64().unwrap() as u32;
             assert!(complete_local_racing_session_json(handle).contains("not complete"));
             let mut progress_batches = 0;
+            let mut last_timestamp = -1_i64;
+            let mut next_frame_sequence = 0_u64;
             loop {
                 let pulled: serde_json::Value =
                     serde_json::from_str(&pull_local_racing_session_json(handle)).unwrap();
                 assert!(pulled.get("error").is_none(), "{pulled}");
                 if pulled["complete"] == true {
                     break;
+                }
+                for record in pulled["batch"]["records"].as_array().unwrap() {
+                    let progress = &record["event"]["payload"];
+                    if progress["type"] != "player_telemetry" {
+                        continue;
+                    }
+                    for frame in progress["payload"]["frames"].as_array().unwrap() {
+                        let timestamp = frame["timestamp_us"].as_i64().unwrap();
+                        assert!(
+                            timestamp > last_timestamp,
+                            "stream time must advance between laps: {timestamp} after {last_timestamp}"
+                        );
+                        assert_eq!(frame["sequence"].as_u64().unwrap(), next_frame_sequence);
+                        last_timestamp = timestamp;
+                        next_frame_sequence += 1;
+                    }
                 }
                 progress_batches += 1;
                 assert!(progress_batches <= laps + 1);

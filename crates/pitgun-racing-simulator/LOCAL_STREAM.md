@@ -32,3 +32,9 @@ for 1, 3 and 8 laps with ten competitors, checks intermediate batches, early
 completion, consumed handles, cancellation and malformed input. The frontend
 also compares the generated WASM with its previously shipped binary on four
 session configurations, including a pit stop.
+
+The shared incremental adapter places every lap's telemetry on the cumulative
+session clock/distance, using the Solver's exact previous lap boundary (including
+pit time). Frame sequences increase across laps. These offsets change only the
+progress stream; the terminal `RaceOutput` remains identical to the synchronous
+API. The same correction applies to authorized incremental sessions.
