@@ -44,10 +44,13 @@ pub fn start_local_racing_session_with_catalog_and_v3_power_unit_thermal_profile
             request, &catalog, &profile, &candidate, None,
         )
     };
-    let engine = match create() {
+    let mut engine = match create() {
         Ok(engine) => engine,
         Err(error) => return json_error(&error),
     };
+    // This local presentation extension leaves published authorized stream
+    // bytes and their evidence/parity vectors unchanged.
+    engine.include_playback_trajectories = true;
     LOCAL_SESSIONS.with(|sessions| {
         NEXT_LOCAL_HANDLE.with(|next| {
             let mut sessions = sessions.borrow_mut();

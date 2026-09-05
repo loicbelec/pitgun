@@ -224,6 +224,10 @@ pub struct RacingCompetitorProgressV1 {
     pub lap: u16,
     pub position: u32,
     pub cumulative_time_ms: u64,
+    /// Optional local-playback samples [elapsed seconds, unwrapped metres].
+    /// Copied from the solved lap; never used to calculate accepted results.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub trajectory: Vec<[f64; 2]>,
     pub status: RacingCompetitorProgressStatusV1,
 }
 
@@ -2433,6 +2437,7 @@ pub struct IncrementalRacingSession {
     competitors: Vec<IncrementalV3Competitor>,
     next_sequence: u64,
     next_player_frame_sequence: u64,
+    include_playback_trajectories: bool,
     completed: bool,
     minimum_finish_reserve_kg: Option<f64>,
     player_power_unit_thermal_resolution_v3: Option<V3PowerUnitThermalResolutionV2>,
@@ -2715,6 +2720,7 @@ impl IncrementalRacingSession {
             competitors,
             next_sequence: 0,
             next_player_frame_sequence: 0,
+            include_playback_trajectories: false,
             completed: false,
             minimum_finish_reserve_kg: None,
             player_power_unit_thermal_resolution_v3,
@@ -2774,6 +2780,18 @@ impl IncrementalRacingSession {
             .and_then(|competitor| competitor.latest_lap.as_ref())
             .map(|lap| (lap.cumulative_time_s, lap.cumulative_distance_m))
             .unwrap_or((0.0, 0.0));
+        let offsets = self
+            .competitors
+            .iter()
+            .map(|competitor| {
+                let offset = competitor
+                    .latest_lap
+                    .as_ref()
+                    .map(|lap| (lap.cumulative_time_s, lap.cumulative_distance_m))
+                    .unwrap_or((0.0, 0.0));
+                (competitor.competitor_id.clone(), offset)
+            })
+            .collect::<HashMap<_, _>>();
         let mut lap_steps = Vec::with_capacity(self.competitors.len());
         let mut completion_count = 0_usize;
         for competitor in &mut self.competitors {
@@ -2844,6 +2862,21 @@ impl IncrementalRacingSession {
                 lap,
                 position: positions[competitor_id],
                 cumulative_time_ms: (step.cumulative_time_s * 1_000.0).round().max(0.0) as u64,
+                trajectory: if self.include_playback_trajectories {
+                    let (time_offset, distance_offset) = offsets[competitor_id];
+                    let mut points = step
+                        .solution
+                        .t
+                        .iter()
+                        .zip(&step.solution.s)
+                        .map(|(time, distance)| [time + time_offset, distance + distance_offset])
+                        .collect::<Vec<_>>();
+                    // Keep service time as a stationary interval at the boundary.
+                    points.push([step.cumulative_time_s, step.cumulative_distance_m]);
+                    points
+                } else {
+                    Vec::new()
+                },
                 status: if lap == self.laps {
                     RacingCompetitorProgressStatusV1::Finished
                 } else {
@@ -6566,6 +6599,52 @@ mod tests {
             serde_json::to_value(&second_output).expect("second output JSON"),
             serde_json::to_value(&expected).expect("expected output JSON")
         );
+    }
+
+    #[test]
+    fn local_playback_trajectories_preserve_each_drivers_clock_and_distance() {
+        let snapshot = RacingCatalogSnapshot::embedded_model_v3_fuel_contract().unwrap();
+        let mut session = start_incremental_race_with_catalog_and_v3_fuel_contract_candidate(
+            ten_competitor_incremental_request(),
+            &snapshot,
+            RacingDriverInstructionTimelineV1 {
+                schema_version: RacingDriverInstructionTimelineVersion::V1,
+                events: Vec::new(),
+            },
+        )
+        .unwrap();
+        session.include_playback_trajectories = true;
+        let mut previous = HashMap::<String, [f64; 2]>::new();
+        for _ in 0..2 {
+            let batch = session.advance().unwrap();
+            for record in batch.records() {
+                if let IncrementalExecutionStreamEventV1::Progress(
+                    RacingSessionProgressV1::Grid { competitors, .. },
+                ) = record.event()
+                {
+                    assert_eq!(competitors.len(), 10);
+                    for car in competitors {
+                        assert!(car.trajectory.len() > 2);
+                        assert!(
+                            car.trajectory
+                                .windows(2)
+                                .all(|pair| pair[1][0] >= pair[0][0] && pair[1][1] >= pair[0][1])
+                        );
+                        let start = car.trajectory.first().unwrap();
+                        let expected = previous
+                            .get(&car.competitor_id)
+                            .copied()
+                            .unwrap_or([0.0, 0.0]);
+                        assert!((start[0] - expected[0]).abs() < 1e-8);
+                        assert!((start[1] - expected[1]).abs() < 1e-8);
+                        let end = *car.trajectory.last().unwrap();
+                        assert!((end[0] * 1000.0 - car.cumulative_time_ms as f64).abs() <= 0.5);
+                        assert_eq!(end[1], car.distance_m);
+                        previous.insert(car.competitor_id.clone(), end);
+                    }
+                }
+            }
+        }
     }
 
     #[test]
