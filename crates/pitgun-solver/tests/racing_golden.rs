@@ -1528,6 +1528,10 @@ fn authorized_trajectories_preserve_checkpoint_only_results_and_pit_intervals() 
         };
         let mut input = incremental_dynamic_input();
         input.race.track_id = track.to_string();
+        input.race.competitors[1].tuning.engine_points = 35.0;
+        input.race.competitors[1].tuning.cooling_points = 15.0;
+        input.race.competitors[2].tuning.engine_points = 15.0;
+        input.race.competitors[2].tuning.cooling_points = 35.0;
         input.pit_strategy = Some(pitgun_racing_simulator::PitStrategyConfig {
             player_pit_laps: vec![1],
             pit_loss_ms: Some(22000),
