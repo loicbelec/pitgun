@@ -224,7 +224,7 @@ pub struct RacingCompetitorProgressV1 {
     pub lap: u16,
     pub position: u32,
     pub cumulative_time_ms: u64,
-    /// Optional local-playback samples [elapsed seconds, unwrapped metres].
+    /// Optional playback samples [elapsed seconds, unwrapped metres].
     /// Copied from the solved lap; never used to calculate accepted results.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub trajectory: Vec<[f64; 2]>,
@@ -4142,7 +4142,7 @@ pub fn start_authorized_dynamic_racing_session(
         .driver_instructions
         .applied_timeline
         .clone();
-    let session = if initial_contract.model == fuel_contract_model {
+    let mut session = if initial_contract.model == fuel_contract_model {
         start_incremental_race_with_catalog_and_v3_fuel_contract_candidate(
             run_request,
             catalog,
@@ -4156,6 +4156,9 @@ pub fn start_authorized_dynamic_racing_session(
         )
     }
     .map_err(|error| format!("authorized dynamic Racing execution failed: {error}"))?;
+    // Presentation data copied from each solved lap. The terminal output and
+    // verification evidence do not include progress records.
+    session.include_playback_trajectories = true;
     let execution_resolution =
         evidence::RacingExecutionResolutionV1::from_catalog(catalog, &initial_contract.model)
             .ok_or_else(|| {
