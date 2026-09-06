@@ -1,8 +1,15 @@
 mod catalog;
 pub mod evidence;
 mod fuel_contract;
+mod local_stream;
 mod thermal_profile;
 pub mod workload;
+
+pub use local_stream::{
+    complete_local_racing_session_json, pull_local_racing_session_json,
+    release_local_racing_session_json,
+    start_local_racing_session_with_catalog_and_v3_power_unit_thermal_profile_json,
+};
 
 pub use catalog::{
     RacingCatalogBundleV1, RacingCatalogFileV1, RacingCatalogResolutionError, RacingCatalogSnapshot,
@@ -217,6 +224,10 @@ pub struct RacingCompetitorProgressV1 {
     pub lap: u16,
     pub position: u32,
     pub cumulative_time_ms: u64,
+    /// Optional playback samples [elapsed seconds, unwrapped metres].
+    /// Copied from the solved lap; never used to calculate accepted results.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub trajectory: Vec<[f64; 2]>,
     pub status: RacingCompetitorProgressStatusV1,
 }
 
@@ -2425,6 +2436,8 @@ pub struct IncrementalRacingSession {
     player_pit_laps: Vec<u16>,
     competitors: Vec<IncrementalV3Competitor>,
     next_sequence: u64,
+    next_player_frame_sequence: u64,
+    include_playback_trajectories: bool,
     completed: bool,
     minimum_finish_reserve_kg: Option<f64>,
     player_power_unit_thermal_resolution_v3: Option<V3PowerUnitThermalResolutionV2>,
@@ -2706,6 +2719,8 @@ impl IncrementalRacingSession {
             player_pit_laps,
             competitors,
             next_sequence: 0,
+            next_player_frame_sequence: 0,
+            include_playback_trajectories: false,
             completed: false,
             minimum_finish_reserve_kg: None,
             player_power_unit_thermal_resolution_v3,
@@ -2756,6 +2771,27 @@ impl IncrementalRacingSession {
             return Err("incremental Racing session already completed".to_string());
         }
 
+        // Solver lap solutions use lap-local coordinates. Preserve the exact
+        // previous physical boundary (including pit time) before advancing.
+        let (player_time_offset, player_distance_offset) = self
+            .competitors
+            .iter()
+            .find(|competitor| competitor.is_player)
+            .and_then(|competitor| competitor.latest_lap.as_ref())
+            .map(|lap| (lap.cumulative_time_s, lap.cumulative_distance_m))
+            .unwrap_or((0.0, 0.0));
+        let offsets = self
+            .competitors
+            .iter()
+            .map(|competitor| {
+                let offset = competitor
+                    .latest_lap
+                    .as_ref()
+                    .map(|lap| (lap.cumulative_time_s, lap.cumulative_distance_m))
+                    .unwrap_or((0.0, 0.0));
+                (competitor.competitor_id.clone(), offset)
+            })
+            .collect::<HashMap<_, _>>();
         let mut lap_steps = Vec::with_capacity(self.competitors.len());
         let mut completion_count = 0_usize;
         for competitor in &mut self.competitors {
@@ -2826,6 +2862,21 @@ impl IncrementalRacingSession {
                 lap,
                 position: positions[competitor_id],
                 cumulative_time_ms: (step.cumulative_time_s * 1_000.0).round().max(0.0) as u64,
+                trajectory: if self.include_playback_trajectories {
+                    let (time_offset, distance_offset) = offsets[competitor_id];
+                    let mut points = step
+                        .solution
+                        .t
+                        .iter()
+                        .zip(&step.solution.s)
+                        .map(|(time, distance)| [time + time_offset, distance + distance_offset])
+                        .collect::<Vec<_>>();
+                    // Keep service time as a stationary interval at the boundary.
+                    points.push([step.cumulative_time_s, step.cumulative_distance_m]);
+                    points
+                } else {
+                    Vec::new()
+                },
                 status: if lap == self.laps {
                     RacingCompetitorProgressStatusV1::Finished
                 } else {
@@ -2850,7 +2901,7 @@ impl IncrementalRacingSession {
                 .as_ref()
                 .ok_or_else(|| "incremental player has no completed lap".to_string())?;
             let telemetry_hz = 5.0;
-            let resampled = resample_telemetry_with_engine_thermal(
+            let mut resampled = resample_telemetry_with_engine_thermal(
                 &self.track,
                 &player_lap.solution,
                 &player.physical_vehicle,
@@ -2858,7 +2909,13 @@ impl IncrementalRacingSession {
                 player.engine_thermal,
             )
             .map_err(|error| format!("incremental telemetry resampling failed: {error}"))?;
-            let frames = gateway_frames_from_resampled(
+            for time in &mut resampled.time_s {
+                *time += player_time_offset;
+            }
+            for distance in &mut resampled.s_m {
+                *distance += player_distance_offset;
+            }
+            let mut frames = gateway_frames_from_resampled(
                 &resampled,
                 telemetry_session_id(self.seed, &self.track_id, &player.competitor_id),
                 &format!("pitwall-sim:{}", player.competitor_id),
@@ -2871,6 +2928,10 @@ impl IncrementalRacingSession {
                     telemetry_hz,
                 ),
             );
+            for (index, frame) in frames.iter_mut().enumerate() {
+                frame.sequence = self.next_player_frame_sequence + index as u64;
+            }
+            self.next_player_frame_sequence += frames.len() as u64;
             for (batch_index, frames) in frames.chunks(TELEMETRY_BATCH_SIZE).enumerate() {
                 records.push(self.progress_record(
                     logical_tick,
@@ -4081,7 +4142,7 @@ pub fn start_authorized_dynamic_racing_session(
         .driver_instructions
         .applied_timeline
         .clone();
-    let session = if initial_contract.model == fuel_contract_model {
+    let mut session = if initial_contract.model == fuel_contract_model {
         start_incremental_race_with_catalog_and_v3_fuel_contract_candidate(
             run_request,
             catalog,
@@ -4095,6 +4156,9 @@ pub fn start_authorized_dynamic_racing_session(
         )
     }
     .map_err(|error| format!("authorized dynamic Racing execution failed: {error}"))?;
+    // Presentation data copied from each solved lap. The terminal output and
+    // verification evidence do not include progress records.
+    session.include_playback_trajectories = true;
     let execution_resolution =
         evidence::RacingExecutionResolutionV1::from_catalog(catalog, &initial_contract.model)
             .ok_or_else(|| {
@@ -6039,6 +6103,101 @@ mod tests {
         }
     }
 
+    #[test]
+    fn local_stream_preserves_output_and_handle_lifecycle() {
+        let snapshot = RacingCatalogSnapshot::embedded_model_v3_component().unwrap();
+        let bundle = snapshot.to_bundle().unwrap();
+        let profile = bundle
+            .resources
+            .iter()
+            .find(|file| file.path.ends_with("family-v2.json"))
+            .unwrap()
+            .contents
+            .clone();
+        let bundle_json = serde_json::to_string(&bundle).unwrap();
+        for laps in [1, 3, 8] {
+            let mut request = ten_competitor_incremental_request();
+            request.input.race.laps = laps;
+            let input = serde_json::to_string(&request).unwrap();
+            let expected: serde_json::Value = serde_json::from_str(
+                &run_race_with_catalog_and_v3_power_unit_thermal_profile_json(
+                    input.clone(),
+                    bundle_json.clone(),
+                    profile.clone(),
+                ),
+            )
+            .unwrap();
+            assert!(expected.get("error").is_none(), "{expected}");
+            let start: serde_json::Value = serde_json::from_str(
+                &start_local_racing_session_with_catalog_and_v3_power_unit_thermal_profile_json(
+                    input,
+                    bundle_json.clone(),
+                    profile.clone(),
+                ),
+            )
+            .unwrap();
+            let handle = start["handle"].as_u64().unwrap() as u32;
+            assert!(complete_local_racing_session_json(handle).contains("not complete"));
+            let mut progress_batches = 0;
+            let mut last_timestamp = -1_i64;
+            let mut next_frame_sequence = 0_u64;
+            loop {
+                let pulled: serde_json::Value =
+                    serde_json::from_str(&pull_local_racing_session_json(handle)).unwrap();
+                assert!(pulled.get("error").is_none(), "{pulled}");
+                if pulled["complete"] == true {
+                    break;
+                }
+                for record in pulled["batch"]["records"].as_array().unwrap() {
+                    let progress = &record["event"]["payload"];
+                    if progress["type"] != "player_telemetry" {
+                        continue;
+                    }
+                    for frame in progress["payload"]["frames"].as_array().unwrap() {
+                        let timestamp = frame["timestamp_us"].as_i64().unwrap();
+                        assert!(
+                            timestamp > last_timestamp,
+                            "stream time must advance between laps: {timestamp} after {last_timestamp}"
+                        );
+                        assert_eq!(frame["sequence"].as_u64().unwrap(), next_frame_sequence);
+                        last_timestamp = timestamp;
+                        next_frame_sequence += 1;
+                    }
+                }
+                progress_batches += 1;
+                assert!(progress_batches <= laps + 1);
+            }
+            assert!(progress_batches >= laps);
+            let completed: serde_json::Value =
+                serde_json::from_str(&complete_local_racing_session_json(handle)).unwrap();
+            assert_eq!(completed["result"], expected);
+            assert_eq!(
+                completed["schema_version"],
+                "pitgun.racing-local-session-completion/v1"
+            );
+            assert!(pull_local_racing_session_json(handle).contains("unknown local"));
+        }
+        let start: serde_json::Value = serde_json::from_str(
+            &start_local_racing_session_with_catalog_and_v3_power_unit_thermal_profile_json(
+                serde_json::to_string(&one_lap_request()).unwrap(),
+                bundle_json,
+                profile,
+            ),
+        )
+        .unwrap();
+        let handle = start["handle"].as_u64().unwrap() as u32;
+        assert!(release_local_racing_session_json(handle).contains("true"));
+        assert!(release_local_racing_session_json(handle).contains("unknown local"));
+        assert!(
+            start_local_racing_session_with_catalog_and_v3_power_unit_thermal_profile_json(
+                "invalid".into(),
+                "{}".into(),
+                "{}".into()
+            )
+            .contains("error")
+        );
+    }
+
     fn ten_competitor_incremental_request() -> RunRaceRequest {
         let mut request = one_lap_request();
         request.input.race.laps = 2;
@@ -6443,6 +6602,52 @@ mod tests {
             serde_json::to_value(&second_output).expect("second output JSON"),
             serde_json::to_value(&expected).expect("expected output JSON")
         );
+    }
+
+    #[test]
+    fn local_playback_trajectories_preserve_each_drivers_clock_and_distance() {
+        let snapshot = RacingCatalogSnapshot::embedded_model_v3_fuel_contract().unwrap();
+        let mut session = start_incremental_race_with_catalog_and_v3_fuel_contract_candidate(
+            ten_competitor_incremental_request(),
+            &snapshot,
+            RacingDriverInstructionTimelineV1 {
+                schema_version: RacingDriverInstructionTimelineVersion::V1,
+                events: Vec::new(),
+            },
+        )
+        .unwrap();
+        session.include_playback_trajectories = true;
+        let mut previous = HashMap::<String, [f64; 2]>::new();
+        for _ in 0..2 {
+            let batch = session.advance().unwrap();
+            for record in batch.records() {
+                if let IncrementalExecutionStreamEventV1::Progress(
+                    RacingSessionProgressV1::Grid { competitors, .. },
+                ) = record.event()
+                {
+                    assert_eq!(competitors.len(), 10);
+                    for car in competitors {
+                        assert!(car.trajectory.len() > 2);
+                        assert!(
+                            car.trajectory
+                                .windows(2)
+                                .all(|pair| pair[1][0] >= pair[0][0] && pair[1][1] >= pair[0][1])
+                        );
+                        let start = car.trajectory.first().unwrap();
+                        let expected = previous
+                            .get(&car.competitor_id)
+                            .copied()
+                            .unwrap_or([0.0, 0.0]);
+                        assert!((start[0] - expected[0]).abs() < 1e-8);
+                        assert!((start[1] - expected[1]).abs() < 1e-8);
+                        let end = *car.trajectory.last().unwrap();
+                        assert!((end[0] * 1000.0 - car.cumulative_time_ms as f64).abs() <= 0.5);
+                        assert_eq!(end[1], car.distance_m);
+                        previous.insert(car.competitor_id.clone(), end);
+                    }
+                }
+            }
+        }
     }
 
     #[test]

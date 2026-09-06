@@ -548,6 +548,8 @@ fn pull_based_wasm_session_matches_native_fixture_and_monolithic_evidence() {
         "host scheduling and pull timing must not affect emitted bytes"
     );
 
+    assert_solved_trajectories(&first_batches, 10, 2, false);
+
     let fixture: IncrementalParityFixture = serde_json::from_str(include_str!(
         "../../pitgun-racing-simulator/tests/fixtures/incremental_racing_stream_parity_v1.json"
     ))
@@ -1463,4 +1465,142 @@ where
         canonical_json_bytes(&expected).expect("expected canonical artifact"),
         "{label} canonical bytes changed"
     );
+}
+
+fn assert_solved_trajectories(
+    batches: &[RacingSessionStreamBatchV1],
+    count: usize,
+    laps: usize,
+    expect_pit: bool,
+) {
+    let mut ends = HashMap::<String, [f64; 2]>::new();
+    let mut grids = 0;
+    let mut saw_pit = false;
+    for batch in batches {
+        for record in batch.records() {
+            if let IncrementalExecutionStreamEventV1::Progress(RacingSessionProgressV1::Grid {
+                competitors,
+                ..
+            }) = record.event()
+            {
+                grids += 1;
+                assert_eq!(competitors.len(), count);
+                for car in competitors {
+                    assert!(car.trajectory.len() > 2, "missing solved trajectory");
+                    let start = *car.trajectory.first().unwrap();
+                    let end = *car.trajectory.last().unwrap();
+                    let previous = ends.get(&car.competitor_id).copied().unwrap_or([0.0, 0.0]);
+                    assert!((start[0] - previous[0]).abs() < 1e-8);
+                    assert!((start[1] - previous[1]).abs() < 1e-8);
+                    assert_eq!(end[1], car.distance_m);
+                    assert!((end[0] * 1000.0 - car.cumulative_time_ms as f64).abs() <= 0.5);
+                    for pair in car.trajectory.windows(2) {
+                        assert!(pair[1][0] >= pair[0][0] && pair[1][1] >= pair[0][1]);
+                        if car.competitor_id == "player"
+                            && pair[1][1] == pair[0][1]
+                            && pair[1][0] - pair[0][0] >= 22.0 - 1e-8
+                        {
+                            saw_pit = true;
+                        }
+                    }
+                    ends.insert(car.competitor_id.clone(), end);
+                }
+            }
+        }
+    }
+    assert_eq!(grids, laps);
+    assert_eq!(saw_pit, expect_pit);
+}
+
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
+fn authorized_trajectories_preserve_checkpoint_only_results_and_pit_intervals() {
+    for (fuel_contract, track) in [(false, "SPA"), (true, "MELBOURNE")] {
+        let catalog = if fuel_contract {
+            RacingCatalogSnapshot::embedded_model_v3_fuel_contract().unwrap()
+        } else {
+            RacingCatalogSnapshot::embedded_model_v3_timeline().unwrap()
+        };
+        let model = if fuel_contract {
+            pitgun_racing_simulator::racing_model_v3_fuel_contract_candidate_identity()
+        } else {
+            pitgun_racing_simulator::racing_model_v3_timeline_candidate_identity()
+        };
+        let mut input = incremental_dynamic_input();
+        input.race.track_id = track.to_string();
+        input.race.competitors[1].tuning.engine_points = 35.0;
+        input.race.competitors[1].tuning.cooling_points = 15.0;
+        input.race.competitors[2].tuning.engine_points = 15.0;
+        input.race.competitors[2].tuning.cooling_points = 35.0;
+        input.pit_strategy = Some(pitgun_racing_simulator::PitStrategyConfig {
+            player_pit_laps: vec![1],
+            pit_loss_ms: Some(22000),
+        });
+        let request = dynamic_execution_fixture_for_input(&catalog, input, model);
+        let run = RunRaceRequest {
+            input: request.input.clone(),
+            seed: 376,
+            era: Some(2026),
+            hz: Some(20.0),
+        };
+        let timeline = request
+            .completed_input
+            .driver_instructions
+            .applied_timeline
+            .clone();
+        let mut checkpoints = if fuel_contract {
+            pitgun_racing_simulator::start_incremental_race_with_catalog_and_v3_fuel_contract_candidate(run, &catalog, timeline)
+        } else {
+            pitgun_racing_simulator::start_incremental_race_with_catalog_and_v3_timeline_candidate(run, &catalog, timeline)
+        }.unwrap();
+        let checkpoint_output = loop {
+            let batch = checkpoints.advance().unwrap();
+            if let Some(output) = batch
+                .records()
+                .iter()
+                .find_map(|record| match record.event() {
+                    IncrementalExecutionStreamEventV1::Complete(output) => Some(output.clone()),
+                    _ => None,
+                })
+            {
+                break output;
+            }
+        };
+        let request_json = serde_json::to_string(&request).unwrap();
+        let bundle_json = serde_json::to_string(&catalog.to_bundle().unwrap()).unwrap();
+        let handle = start_session_handle(&request_json, &bundle_json);
+        let batches = pull_session_to_completion(handle);
+        assert_solved_trajectories(&batches, 10, 2, true);
+        let completion = session_response(complete_authorized_dynamic_racing_session_json(handle));
+        let result: pitgun_solver::RacingDynamicApplicationResultV1 =
+            serde_json::from_value(completion["result"].clone()).unwrap();
+        assert_eq!(
+            canonical_json_bytes(&result.runtime_output).unwrap(),
+            canonical_json_bytes(&checkpoint_output).unwrap()
+        );
+        let expected_evidence = RacingRunEvidenceV1::from_race_output(&checkpoint_output).unwrap();
+        assert_eq!(
+            canonical_json_bytes(&result.evidence.output).unwrap(),
+            canonical_json_bytes(&expected_evidence.output).unwrap()
+        );
+        assert_eq!(
+            canonical_json_bytes(&result.evidence.telemetry_summary).unwrap(),
+            canonical_json_bytes(&expected_evidence.telemetry_summary).unwrap()
+        );
+
+        // Optional deterministic input export for testing the shipped browser artifact.
+        // The signature is a public dummy fixture, never an Authority credential.
+        #[cfg(not(target_arch = "wasm32"))]
+        if let Ok(directory) = std::env::var("PITGUN_EXPORT_PLAYBACK_FIXTURES") {
+            std::fs::create_dir_all(&directory).unwrap();
+            std::fs::write(
+                format!("{directory}/{track}.json"),
+                serde_json::to_vec(&serde_json::json!({
+                    "request": request, "catalog": catalog.to_bundle().unwrap(),
+                }))
+                .unwrap(),
+            )
+            .unwrap();
+        }
+    }
 }
