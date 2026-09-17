@@ -369,12 +369,19 @@ APIs and optional observability services.
 
 ## Roadmap
 
-The current sequence remains proof-driven:
+The owner accepted the game's seasonal economy and authorized local integration
+on September 17, 2026, retiring idle and play-duration targets. The next workstream is [external Engineer control](docs/EXTERNAL_CONTROLLER_DELIVERY_PLAN.md):
+deterministic pit/tyre decision boundaries, Gemini race control, a local benchmark,
+then an open polling protocol. A small synthetic battery workload will test the
+common boundary before the public contract is frozen. This is a delivery plan,
+not a claim that live actions or a second domain are implemented.
+
+Existing platform/model work retains its own acceptance and scheduling:
 
 1. Preserve the stable V1 CLI and native/WASM verification boundary while the
    Racing application evolves through immutable catalogs.
-2. Expose deterministic incremental session execution and telemetry streaming
-   without weakening replay or Hosted Verification —
+2. Preserve deterministic incremental session execution and telemetry streaming
+   while extending live control without weakening replay or Hosted Verification —
    [#312](https://github.com/loicbelec/pitgun/issues/312).
 3. Complete Model V3 component composition and retire transitional Racing
    compatibility crates when downstream consumers have migrated —
@@ -382,14 +389,15 @@ The current sequence remains proof-driven:
    [#117](https://github.com/loicbelec/pitgun/issues/117).
 4. Introduce staged combustion and hybrid-energy accounting through versioned
    model capabilities — [#246](https://github.com/loicbelec/pitgun/issues/246).
-5. Reuse the proven fixed-path energy concepts for the Era 7 Pod/Drone bridge,
-   then validate the framework with a genuinely distinct simulation domain —
+5. Reuse the proven fixed-path energy concepts for the later Era 7 Pod/Drone bridge,
+   independently of the smaller battery control proof —
    [#247](https://github.com/loicbelec/pitgun/issues/247).
 6. Measure native, WASM, browser, and hosted replay costs after the physical
    model work stabilizes — [#279](https://github.com/loicbelec/pitgun/issues/279).
 
 ## Documentation
 
+- [External controller delivery plan](docs/EXTERNAL_CONTROLLER_DELIVERY_PLAN.md) — approved next workstream, domain boundaries, replay, benchmark and BYO acceptance; not implemented
 - [Public schemas](https://schemas.pitgun.io) — versioned telemetry, manifest, and integration contracts
 - [Architecture](ARCHITECTURE.md) — components, data flow, and ownership
 - [Framework boundaries](docs/FRAMEWORK_BOUNDARIES.md) — generic and Racing separation
