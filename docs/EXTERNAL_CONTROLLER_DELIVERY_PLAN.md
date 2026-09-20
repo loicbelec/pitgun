@@ -1,5 +1,12 @@
 # Contrôleurs externes — trajectoire validée
 
+Mise à jour du 20 septembre : la validation locale est acquise. Le [plan compétitif](COMPETITIVE_RACING_AND_ENGINEER_PLAN.md)
+et le [backlog lié](COMPETITIVE_BACKLOG_2026-09.md) ajoutent les audits physiques,
+les règles de comparaison et le protocole d'évaluation avant publication. Les
+quatre livraisons Engineer ci-dessous restent valides ; les mentions historiques
+de playtest préalable ne constituent plus un blocage. Aucun contrôleur n'est
+livré par cette mise à jour documentaire.
+
 > 17 septembre 2026 : le propriétaire valide le gameplay saisonnier et autorise son intégration locale dans le jeu. La durée cible et l’idle sont retirés des critères. Les replays du navigateur restent un confort borné ; les artefacts complets du futur benchmark appartiennent à la plateforme. Cette décision ne livre aucune commande de contrôleur ni modification physique.
 
 16 septembre 2026. Décision produit validée par Loïc ; **planification, pas implémentation**. Epic transverse : [game #161](https://github.com/loicbelec/pitgun-game/issues/161). La validation de l'économie saisonnière par le propriétaire précède le démarrage du prochain chantier. Le présent document remplace l'ordre de livraison de la [proposition initiale](BRING_YOUR_OWN_ENGINEER_PROPOSAL.md), qui demeure une analyse historique utile.

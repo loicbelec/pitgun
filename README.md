@@ -447,3 +447,7 @@ the native/WASM golden boundary, and release packaging through the `build`,
 ## License
 
 Pitgun Framework is available under the [MIT License](LICENSE).
+
+## Competitive Racing and Engineer planning
+
+[Current cross-component plan](docs/COMPETITIVE_RACING_AND_ENGINEER_PLAN.md): physical decision surfaces, immutable competition rules and reproducible controller evaluation. This is planning, not a new model or deployed service.
