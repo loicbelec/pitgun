@@ -41,7 +41,7 @@ Preserve existing contracts. Specify version negotiation and initial authorizati
 
 ## Controller/evaluation protocol
 
-#415 remains the first actual intervention: frozen observation at a real simulation boundary, bounded keep/pit/compound proposal, domain validation, receipt, applied event and resume. The current dynamic completed-input API and the browser playback cursor do not supply this behavior. No future solved lap, hidden strategy or RNG state enters an observation. #177 separately owns driver/aggression commands.
+#415 remains the first actual intervention: frozen observation at a real simulation boundary, bounded keep/pit/compound proposal, domain validation, receipt, applied event and resume. The current dynamic completed-input API and the browser playback cursor do not supply this behavior. No future solved lap, hidden strategy or RNG state enters an observation. Game #177 separately owns driver/aggression commands.
 
 The host owns wall-clock deadlines and quotas, while the domain owns simulated application boundaries and legal fallback. If timeout selects fallback, record that selection. Replay consumes recorded actions without inference; rerunning a model is a new experiment. Identical seed/temperature does not guarantee identical LLM responses.
 
