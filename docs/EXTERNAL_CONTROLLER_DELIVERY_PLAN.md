@@ -1,5 +1,25 @@
 # Contrôleurs externes — trajectoire validée
 
+## Séquence prioritaire — 21 septembre 2026
+
+Le [plan détaillé en trois livraisons](https://github.com/loicbelec/pitgun-game/blob/docs/progressive-simulation-plan/docs/design/PROGRESSIVE_SIMULATION_DELIVERY_PLAN.md) est soumis à validation :
+**départ anticipé avec tampon → frontière de décision réelle → Gemini et messages contextuels**.
+Le tampon (game [#273](https://github.com/loicbelec/pitgun-game/issues/273)) et la reprise
+([#274](https://github.com/loicbelec/pitgun-game/issues/274)) précèdent désormais la
+frontière [framework #415](https://github.com/loicbelec/pitgun/issues/415).
+Puis [#253](https://github.com/loicbelec/pitgun-game/issues/253) apporte les actions et
+[#275](https://github.com/loicbelec/pitgun-game/issues/275) la cadence des conseils dans
+le même Debrief, rappelés dans le modal de résultat. Aucun badge de mode supplémentaire.
+
+Cette séquence remplace les anciennes mentions de première livraison ci-dessous ;
+les garanties des contrôleurs et les étapes benchmark/BYO restent valides ensuite.
+La préparation du tampon conserve la physique actuelle. Les audits et manifests
+conditionnent les conclusions de benchmark, pas le prototype local. La preuve
+batterie précède le gel public ; les workers hébergés ne bloquent pas un rapport local.
+La recette staging #256/#271 reste distincte. Tous ces lots sont en Backlog ; aucun
+contrôleur, migration ou déploiement n'est livré par cette mise à jour documentaire.
+
+
 Mise à jour du 20 septembre : la validation locale est acquise. Le [plan compétitif](COMPETITIVE_RACING_AND_ENGINEER_PLAN.md)
 et le [backlog lié](COMPETITIVE_BACKLOG_2026-09.md) ajoutent les audits physiques,
 les règles de comparaison et le protocole d'évaluation avant publication. Les

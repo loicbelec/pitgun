@@ -1,5 +1,13 @@
 # Competitive Racing and external-controller evaluation
 
+September 21 sequencing update: the [detailed progressive simulation plan](https://github.com/loicbelec/pitgun-game/blob/docs/progressive-simulation-plan/docs/design/PROGRESSIVE_SIMULATION_DELIVERY_PLAN.md)
+is awaiting owner approval. First deliver game #273/#274 (buffered fixed-strategy
+start and safe recovery), then #415's real reference-controlled boundary, then game
+#253/#275 (Gemini actions and contextual advice). Physics diagnostics below may run
+independently and still gate benchmark claims. Hosted deployment is not part of this
+planning pass; public BYO and the battery proof retain their later gates.
+
+
 20 September 2026. Planning scope: resume model/decision-surface audits after acceptance of the local game UI. No coefficient, published resource, execution schema or deployment changes in this delivery. This document refines #413 and the external-controller plan; accepted historical campaigns remain valid only for their pinned artifacts.
 
 ## Ownership and sequence

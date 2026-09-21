@@ -1,7 +1,7 @@
 # Competitive backlog — September 20, 2026
 
 Planning baseline, not implementation or release evidence. Project fields are authoritative;
-this table records the initial Ready/Backlog assignment. Ready means a scoped first slice,
+this table records the planning Ready/Backlog assignment, revised below on September 21. Ready means a scoped first slice,
 not that downstream integration is unblocked. Existing accepted experiments retain their
 original model/catalog scope. No new services, coefficients or DNS are activated.
 
@@ -29,13 +29,26 @@ Design: [framework plan](COMPETITIVE_RACING_AND_ENGINEER_PLAN.md).
 | game | [feat(gameplay): make Pit Wall competitors varied and less predictable](https://github.com/loicbelec/pitgun-game/issues/139) | High | Backlog | [pitgun #419](https://github.com/loicbelec/pitgun/issues/419), [pitgun #420](https://github.com/loicbelec/pitgun/issues/420), [pitgun #421](https://github.com/loicbelec/pitgun/issues/421) |
 | game | [leaderboard: isolate economy and simulation cohorts before seasonal publication](https://github.com/loicbelec/pitgun-game/issues/259) | High | Ready | [pitgun #422](https://github.com/loicbelec/pitgun/issues/422) |
 | game | [feat(challenges): share a deterministic head-to-head Pit Wall confrontation](https://github.com/loicbelec/pitgun-game/issues/183) | Medium | Backlog | [pitgun #422](https://github.com/loicbelec/pitgun/issues/422) |
-| game | [roadmap(engineer): deterministic simulation control and Bring Your Own Engineer](https://github.com/loicbelec/pitgun-game/issues/161) | High | Backlog | [pitgun #423](https://github.com/loicbelec/pitgun/issues/423), [pitgun #422](https://github.com/loicbelec/pitgun/issues/422), [infra-vps #81](https://github.com/loicbelec/infra-vps/issues/81), [infra-vps #82](https://github.com/loicbelec/infra-vps/issues/82) |
-| game | [feat(engineer): delegate in-race pit and tyre decisions to Gemini](https://github.com/loicbelec/pitgun-game/issues/253) | Medium | Backlog | [pitgun #423](https://github.com/loicbelec/pitgun/issues/423) |
-| game | [feat(lab): benchmark recorded race-engineer strategies locally](https://github.com/loicbelec/pitgun-game/issues/254) | Medium | Backlog | [pitgun #423](https://github.com/loicbelec/pitgun/issues/423), [pitgun #422](https://github.com/loicbelec/pitgun/issues/422), [infra-vps #82](https://github.com/loicbelec/infra-vps/issues/82) |
+| game | [roadmap(engineer): deterministic simulation control and Bring Your Own Engineer](https://github.com/loicbelec/pitgun-game/issues/161) | High | Backlog | Immediate sequence: game #273/#274 → framework #415 → game #253/#275. #422/#423 and hosted infrastructure gate later evaluation/publication, not buffering. |
+| game | [feat(engineer): delegate in-race pit and tyre decisions to Gemini](https://github.com/loicbelec/pitgun-game/issues/253) | Medium | Backlog | Framework #415 and game #273/#274; coordinate #275. #423 gates evaluation, not first local action. |
+| game | [feat(lab): benchmark recorded race-engineer strategies locally](https://github.com/loicbelec/pitgun-game/issues/254) | Medium | Backlog | Framework #415, game #253, framework #422/#423 and physical preflight. Infra #82 gates hosted publication, not a local report. |
 | game | [feat(engineer): prepare provider-independent gateway on pitgun.io](https://github.com/loicbelec/pitgun-game/issues/264) | Medium | Ready | [pitgun-api #1](https://github.com/loicbelec/pitgun-api/issues/1), [infra-vps #81](https://github.com/loicbelec/infra-vps/issues/81), [infra-vps #82](https://github.com/loicbelec/infra-vps/issues/82) |
-| framework | [feat(control): add deterministic Racing pit and tyre decision boundaries](https://github.com/loicbelec/pitgun/issues/415) | Medium | Backlog | [pitgun #422](https://github.com/loicbelec/pitgun/issues/422), [pitgun #423](https://github.com/loicbelec/pitgun/issues/423), [pitgun #421](https://github.com/loicbelec/pitgun/issues/421) |
-| framework | [feat(energy): validate external controller boundaries with a synthetic battery](https://github.com/loicbelec/pitgun/issues/416) | Medium | Backlog | [pitgun #423](https://github.com/loicbelec/pitgun/issues/423) |
+| framework | [feat(control): add deterministic Racing pit and tyre decision boundaries](https://github.com/loicbelec/pitgun/issues/415) | High | Backlog | Game #273/#274 integration; reference controller first. Coordinate #421/#422/#423 for later benchmark, not as implementation blockers. |
+| framework | [feat(energy): validate external controller boundaries with a synthetic battery](https://github.com/loicbelec/pitgun/issues/416) | Medium | Backlog | Working #415 control loop; before #417 public freeze. Independent synthetic dynamics; no completed Racing benchmark prerequisite. |
 | framework | [feat(engineer): expose scoped observation polling for external controllers](https://github.com/loicbelec/pitgun/issues/417) | Medium | Backlog | [pitgun #422](https://github.com/loicbelec/pitgun/issues/422), [pitgun #423](https://github.com/loicbelec/pitgun/issues/423), [infra-vps #81](https://github.com/loicbelec/infra-vps/issues/81) |
+
+## Immediate sequence — September 21 (detailed plan awaiting approval)
+
+| Delivery | Work | Priority | Status / gate |
+| --- | --- | --- | --- |
+| 1 | [game #273: buffered start](https://github.com/loicbelec/pitgun-game/issues/273) | High | Backlog; fixed-strategy incremental WASM, measured first-motion improvement |
+| 1 | [game #274: interrupted runs and once-only finalization](https://github.com/loicbelec/pitgun-game/issues/274) | High | Backlog; required before #273 default activation |
+| 2 | [framework #415: real decision boundaries](https://github.com/loicbelec/pitgun/issues/415) | High | Backlog; deterministic reference first, no compute across pending decisions |
+| 3 | [game #253: Gemini actions](https://github.com/loicbelec/pitgun-game/issues/253) and [#275: contextual advice](https://github.com/loicbelec/pitgun-game/issues/275) | Medium | Backlog; after delivery 2; shared Debrief and result recall |
+
+This immediate order supersedes earlier first-increment scheduling, not the broader
+competitive scope. Benchmark, battery and public BYO follow. No code/deployment is
+part of this update. Detailed plan: [progressive simulation](https://github.com/loicbelec/pitgun-game/blob/docs/progressive-simulation-plan/docs/design/PROGRESSIVE_SIMULATION_DELIVERY_PLAN.md).
 
 ## Delivery gates
 
@@ -54,7 +67,9 @@ Design: [framework plan](COMPETITIVE_RACING_AND_ENGINEER_PLAN.md).
 - Feedback intake is independent. Publish only moderator-approved records; keep raw
   player reports and internal technical triage private. Votes and automation come later.
 
-Hosted release acceptance remains game #256 / candidate PR #257 and infra PR #80.
+Hosted release acceptance remains game #256/#271; PR #272 is deployed to staging
+at c0d47259d8c6cfdbb9c3d33e04667fe0d96d5dd6. Owner Edge/Safari/mobile review and
+private package Actions access for future automation remain open. Production is separate.
 Monaco fuel framework #414 remains deferred and disclosed; hybrid #246 and circuit
 promotion game #229 retain their separate scope. Historical campaigns #385/#388 are
 not reopened or relabelled as validation of future model changes.
