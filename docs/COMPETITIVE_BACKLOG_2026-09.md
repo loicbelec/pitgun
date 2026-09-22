@@ -37,14 +37,18 @@ Design: [framework plan](COMPETITIVE_RACING_AND_ENGINEER_PLAN.md).
 | framework | [feat(energy): validate external controller boundaries with a synthetic battery](https://github.com/loicbelec/pitgun/issues/416) | Medium | Backlog | Working #415 control loop; before #417 public freeze. Independent synthetic dynamics; no completed Racing benchmark prerequisite. |
 | framework | [feat(engineer): expose scoped observation polling for external controllers](https://github.com/loicbelec/pitgun/issues/417) | Medium | Backlog | [pitgun #422](https://github.com/loicbelec/pitgun/issues/422), [pitgun #423](https://github.com/loicbelec/pitgun/issues/423), [infra-vps #81](https://github.com/loicbelec/infra-vps/issues/81) |
 
-## Immediate sequence — September 21 (detailed plan awaiting approval)
+## Immediate sequence — September 21; delivery 1 organized September 22
 
 | Delivery | Work | Priority | Status / gate |
 | --- | --- | --- | --- |
-| 1 | [game #273: buffered start](https://github.com/loicbelec/pitgun-game/issues/273) | High | Backlog; fixed-strategy incremental WASM, measured first-motion improvement |
-| 1 | [game #274: interrupted runs and once-only finalization](https://github.com/loicbelec/pitgun-game/issues/274) | High | Backlog; required before #273 default activation |
+| 1 | [game #273: buffered start](https://github.com/loicbelec/pitgun-game/issues/273) | High | Ready; steps A/C/D, fixed-strategy incremental WASM and measured first-motion improvement |
+| 1 | [game #274: interrupted runs and once-only finalization](https://github.com/loicbelec/pitgun-game/issues/274) | High | Ready; step B, required before #273 default activation |
 | 2 | [framework #415: real decision boundaries](https://github.com/loicbelec/pitgun/issues/415) | High | Backlog; deterministic reference first, no compute across pending decisions |
 | 3 | [game #253: Gemini actions](https://github.com/loicbelec/pitgun-game/issues/253) and [#275: contextual advice](https://github.com/loicbelec/pitgun-game/issues/275) | Medium | Backlog; after delivery 2; shared Debrief and result recall |
+
+Delivery 1 execution order: reference measurements → recovery/finalization → buffered
+start → local acceptance. [Detailed organization](https://github.com/loicbelec/pitgun-game/blob/docs/progressive-simulation-plan/docs/design/PROGRESSIVE_SIMULATION_LOT_1.md).
+No runtime implementation is claimed by Ready status.
 
 This immediate order supersedes earlier first-increment scheduling, not the broader
 competitive scope. Benchmark, battery and public BYO follow. No code/deployment is
