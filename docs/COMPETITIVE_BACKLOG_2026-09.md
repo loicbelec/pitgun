@@ -68,8 +68,10 @@ part of this update. Detailed plan: [progressive simulation](https://github.com/
   player reports and internal technical triage private. Votes and automation come later.
 
 Hosted release acceptance remains game #256/#271; PR #272 is deployed to staging
-at c0d47259d8c6cfdbb9c3d33e04667fe0d96d5dd6. Owner Edge/Safari/mobile review and
-private package Actions access for future automation remain open. Production is separate.
+at c0d47259d8c6cfdbb9c3d33e04667fe0d96d5dd6. Owner Edge/Safari/mobile review
+remains open. Private package Actions access was fixed on September 22: the
+[targeted Engineer deployment](https://github.com/loicbelec/infra-vps/actions/runs/35767864695) and authenticated readiness passed.
+Production is separate.
 Monaco fuel framework #414 remains deferred and disclosed; hybrid #246 and circuit
 promotion game #229 retain their separate scope. Historical campaigns #385/#388 are
 not reopened or relabelled as validation of future model changes.
