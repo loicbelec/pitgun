@@ -36,7 +36,8 @@ in this repository. Existing baseline/fixed files use public local-test fixtures
 
 ## Remaining production step
 
-Infra-vps#96 prepares only the Authority image pin; Compose validation passed.
+Infra-vps#96 prepares only the Authority image pin; Compose validation passed
+in workflow 36765248621. Deployment jobs were explicitly skipped on the PR.
 No SQL migration, frontend, Verifier, Engineer or database promotion is needed.
 Keep that PR unmerged until the production preflight is complete. The runbook
 requires an encrypted backup and isolated restore drill before application-image
