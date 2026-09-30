@@ -1,0 +1,256 @@
+{
+  "image": "pitgun-authority:memory-424",
+  "memoryLimitBytes": 268435456,
+  "cpus": 0.5,
+  "concurrency": 8,
+  "startupMemory": {
+    "current": 41529344,
+    "peak": 42147840
+  },
+  "authorizations": {
+    "/v1/authorizations/racing": {
+      "signed": {
+        "authorization": {
+          "authorization_version": "pitgun.run-authorization/v1",
+          "subject": "memory-test",
+          "audience": "pitgun.verifier",
+          "contract": {
+            "contract_version": "pitgun.deterministic-run/v1",
+            "scenario": {
+              "id": "racing.race",
+              "version": "1.0.0"
+            },
+            "model": {
+              "id": "pitgun.racing-v3-candidate",
+              "version": "0.14.0",
+              "digest": "sha256:c7d465905032f60f67b3c3887b186079b67cf5c0c17a7c72b9e53d2ee4308c15"
+            },
+            "data_pack": {
+              "id": "pitgun.racing.simulation",
+              "version": "1.8.0",
+              "digest": "sha256:38f359e752a2436bc804246b816b8865d6988cc9583969447b3e978a06f0c409"
+            },
+            "runtime_profile": "portable-exact-v1",
+            "random": {
+              "seed": "42",
+              "algorithm": "pitgun-splitmix64-v1",
+              "stream_derivation": "sha256-label-v1"
+            },
+            "clock": {
+              "kind": "logical-fixed-step",
+              "epoch": 0,
+              "tick_numerator_us": 50000,
+              "tick_denominator": 1
+            },
+            "event_ordering": {
+              "keys": [
+                "logical_tick",
+                "source_id",
+                "source_sequence",
+                "insertion_ordinal"
+              ],
+              "string_order": "unicode-code-point"
+            },
+            "input": {
+              "media_type": "application/json",
+              "canonicalization": "jcs-rfc8785",
+              "digest": "sha256:96738a5dcc21acaadd7a2254497d28eeb6ffaf3383360ff601f57c3ce41d6dfc"
+            }
+          },
+          "run_id": "sha256:f137e51e1241c672255569355c654bd4c83e83638c3f8da76dca8641a6d780b7",
+          "policy": {
+            "id": "pitgun.racing.tuning",
+            "version": "1.0.0",
+            "digest": "sha256:abbcfb4fd24dcd0d29c7c74775ac4f62a5b08a2fc77ff7235202116a86fc198e"
+          },
+          "signing_key_id": "memory-test"
+        },
+        "algorithm": "hmac-sha256"
+      },
+      "canonical_input": {
+        "track_id": "MONZA",
+        "laps": 53,
+        "competitors": [
+          {
+            "id": "player",
+            "driver_id": "default",
+            "name": "Player",
+            "team_id": "test",
+            "is_player": true,
+            "tuning": {
+              "engine_points": 2.0,
+              "cooling_points": 2.0,
+              "aero_points": 2.0,
+              "chassis_points": 2.0,
+              "downforce_slider": 0.5,
+              "gear_ratio_slider": 0.5
+            },
+            "budget_cap": 8.0
+          }
+        ],
+        "vehicle_id": "f1_2026",
+        "pit_strategy": null,
+        "track_profile": null,
+        "competitor_profiles": {},
+        "era": 2,
+        "hz": 20.0
+      },
+      "catalog_release": {
+        "schema_version": "pitgun.catalog-release-identity/v1",
+        "id": "pitgun.racing",
+        "version": "1.8.0",
+        "manifest_digest": "sha256:e8b9455d3fefa5a114ed08f7331141a49c95dc4f70596cd19be927a5c13f7523"
+      }
+    },
+    "/v1/authorizations/racing/attempts": {
+      "signed": {
+        "authorization": {
+          "authorization_version": "pitgun.run-attempt-authorization/v1",
+          "execution_id": "018f3b78-7e9a-7d20-a5e1-4ed92f02a591",
+          "subject": "memory-test",
+          "audience": "pitgun.verifier",
+          "initial_contract": {
+            "contract_version": "pitgun.deterministic-run/v1",
+            "scenario": {
+              "id": "racing.dynamic-session",
+              "version": "1.0.0"
+            },
+            "model": {
+              "id": "pitgun.racing-v3-candidate",
+              "version": "0.14.0",
+              "digest": "sha256:c7d465905032f60f67b3c3887b186079b67cf5c0c17a7c72b9e53d2ee4308c15"
+            },
+            "data_pack": {
+              "id": "pitgun.racing.simulation",
+              "version": "1.8.0",
+              "digest": "sha256:38f359e752a2436bc804246b816b8865d6988cc9583969447b3e978a06f0c409"
+            },
+            "runtime_profile": "portable-exact-v1",
+            "random": {
+              "seed": "42",
+              "algorithm": "pitgun-splitmix64-v1",
+              "stream_derivation": "sha256-label-v1"
+            },
+            "clock": {
+              "kind": "logical-fixed-step",
+              "epoch": 0,
+              "tick_numerator_us": 50000,
+              "tick_denominator": 1
+            },
+            "event_ordering": {
+              "keys": [
+                "logical_tick",
+                "source_id",
+                "source_sequence",
+                "insertion_ordinal"
+              ],
+              "string_order": "unicode-code-point"
+            },
+            "input": {
+              "media_type": "application/json",
+              "canonicalization": "jcs-rfc8785",
+              "digest": "sha256:96738a5dcc21acaadd7a2254497d28eeb6ffaf3383360ff601f57c3ce41d6dfc"
+            }
+          },
+          "initial_run_id": "sha256:4564b1c8db16bf193a0a5c19f1b65e88f8630c46e8d9a7aabbb360e0e8a9966c",
+          "decision_envelope": {
+            "id": "pitgun.racing-driver-instruction-authorization",
+            "version": "1.0.0",
+            "digest": "sha256:110cca3221f596f8cc6ff039d90cac7c3d2203023f9c824e22ee914bd7ff3375"
+          },
+          "policy": {
+            "id": "pitgun.racing.tuning",
+            "version": "1.0.0",
+            "digest": "sha256:abbcfb4fd24dcd0d29c7c74775ac4f62a5b08a2fc77ff7235202116a86fc198e"
+          },
+          "signing_key_id": "memory-test"
+        },
+        "algorithm": "hmac-sha256"
+      },
+      "canonical_input": {
+        "track_id": "MONZA",
+        "laps": 53,
+        "competitors": [
+          {
+            "id": "player",
+            "driver_id": "default",
+            "name": "Player",
+            "team_id": "test",
+            "is_player": true,
+            "tuning": {
+              "engine_points": 2.0,
+              "cooling_points": 2.0,
+              "aero_points": 2.0,
+              "chassis_points": 2.0,
+              "downforce_slider": 0.5,
+              "gear_ratio_slider": 0.5
+            },
+            "budget_cap": 8.0
+          }
+        ],
+        "vehicle_id": "f1_2026",
+        "pit_strategy": null,
+        "track_profile": null,
+        "competitor_profiles": {},
+        "era": 2,
+        "hz": 20.0
+      },
+      "decision_envelope": {
+        "schema_version": "pitgun.racing-driver-instruction-authorization/v1",
+        "authorized_input": {
+          "media_type": "application/json",
+          "canonicalization": "jcs-rfc8785",
+          "digest": "sha256:96738a5dcc21acaadd7a2254497d28eeb6ffaf3383360ff601f57c3ce41d6dfc"
+        },
+        "instruction_profile": {
+          "id": "pitgun.racing-driver-instructions",
+          "version": "1.0.0",
+          "digest": "sha256:508bf37c0092836d18660e5aa717344b2c563d04dd29b6ca426cf8b94e175aa3"
+        },
+        "allowed_modes": [
+          "manage",
+          "balanced",
+          "attack"
+        ],
+        "boundary_granularity": "lap_start",
+        "max_events_per_session": 64,
+        "competitor_ids": [
+          "player"
+        ],
+        "lap_count": 53,
+        "segment_count": 5787
+      },
+      "catalog_release": {
+        "schema_version": "pitgun.catalog-release-identity/v1",
+        "id": "pitgun.racing",
+        "version": "1.8.0",
+        "manifest_digest": "sha256:e8b9455d3fefa5a114ed08f7331141a49c95dc4f70596cd19be927a5c13f7523"
+      }
+    }
+  },
+  "matchesBaselineAuthorizations": true,
+  "healthResponses": {
+    "200": 128
+  },
+  "verifiedSignedResponses": 66,
+  "invalidCatalogStatus": 400,
+  "finalMemory": {
+    "current": 41340928,
+    "peak": 48435200
+  },
+  "memoryEvents": {
+    "low": "0",
+    "high": "0",
+    "max": "0",
+    "oom": "0",
+    "oom_kill": "0",
+    "oom_group_kill": "0",
+    "sock_throttled": "0"
+  },
+  "outcome": "passed",
+  "containerState": {
+    "Running": true,
+    "OOMKilled": false,
+    "ExitCode": 0
+  }
+}

@@ -17,6 +17,7 @@ on:
       - "crates/pitgun-core/**"
       - "policies/**"
       - "catalogs/racing/**"
+      - "scripts/check-authority-memory.py"
       - ".github/workflows/build-authority.yml"
   push:
     branches: ["main"]
@@ -35,6 +36,7 @@ on:
       - "crates/pitgun-core/**"
       - "policies/**"
       - "catalogs/racing/**"
+      - "scripts/check-authority-memory.py"
       - ".github/workflows/build-authority.yml"
   workflow_dispatch:
 
@@ -195,6 +197,21 @@ jobs:
           grep --fixed-strings \
             '"boundary_granularity":"lap_start","max_events_per_session":64' \
             /tmp/authority-attempt-response.json
+
+      - name: Check Authority request memory under production limits
+        if: github.event_name == 'pull_request'
+        run: |
+          python3 scripts/check-authority-memory.py \
+            --image "${LOCAL_IMAGE}" \
+            --report /tmp/authority-memory.json
+
+      - name: Upload Authority memory acceptance
+        if: always() && github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: authority-memory-acceptance
+          path: /tmp/authority-memory.json
+          if-no-files-found: ignore
 
       - name: Build and push authority image
         if: github.event_name != 'pull_request'

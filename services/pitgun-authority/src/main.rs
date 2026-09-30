@@ -3,6 +3,7 @@ use std::{
     fs,
     net::SocketAddr,
     path::PathBuf,
+    sync::Arc,
     time::{SystemTime, UNIX_EPOCH},
 };
 
@@ -51,7 +52,8 @@ const DEFAULT_RACING_MODEL_VERSION: &str = "1.0.0";
 const RACING_RUN_SCENARIO_ID: &str = "racing.race";
 const RACING_ATTEMPT_SCENARIO_ID: &str = "racing.dynamic-session";
 
-#[derive(Clone)]
+// Router clones and State extraction must share this immutable snapshot, not
+// duplicate the catalogue's owned resource bytes for each request.
 struct AppState {
     signing_key: Option<SigningKey>,
     tuning_policy: TuningPolicyV1,
@@ -180,7 +182,7 @@ async fn healthz() -> StatusCode {
     StatusCode::OK
 }
 
-async fn readyz(State(state): State<AppState>) -> StatusCode {
+async fn readyz(State(state): State<Arc<AppState>>) -> StatusCode {
     if state.signing_key.is_some() {
         StatusCode::OK
     } else {
@@ -201,7 +203,7 @@ async fn deprecated_validate_config() -> (StatusCode, Json<ErrorResponse>) {
 }
 
 async fn create_simulation_contract(
-    State(state): State<AppState>,
+    State(state): State<Arc<AppState>>,
     Json(request): Json<SimulationContractRequest>,
 ) -> Response {
     match build_signed_simulation_contract(now_ms(), &state, request) {
@@ -211,7 +213,7 @@ async fn create_simulation_contract(
 }
 
 async fn create_racing_run_authorization(
-    State(state): State<AppState>,
+    State(state): State<Arc<AppState>>,
     Json(request): Json<RacingRunAuthorizationRequestV1>,
 ) -> Response {
     match build_signed_racing_run_authorization(now_ms(), &state, request) {
@@ -221,7 +223,7 @@ async fn create_racing_run_authorization(
 }
 
 async fn create_racing_run_attempt_authorization(
-    State(state): State<AppState>,
+    State(state): State<Arc<AppState>>,
     Json(request): Json<RacingRunAttemptAuthorizationRequestV1>,
 ) -> Response {
     match build_signed_racing_run_attempt_authorization(now_ms(), &state, request) {
@@ -867,7 +869,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
             "/v1/authorizations/racing/attempts",
             post(create_racing_run_attempt_authorization),
         )
-        .with_state(app_state);
+        .with_state(Arc::new(app_state));
 
     let bind_addr =
         std::env::var("PITGUN_AUTHORITY_BIND").unwrap_or_else(|_| DEFAULT_BIND_ADDR.to_string());
