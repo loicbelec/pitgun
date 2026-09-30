@@ -1,0 +1,23 @@
+{
+  "nativeCi": {
+    "peakBytes": 33513472,
+    "healthResponses200": 128,
+    "verifiedSignatures": 66,
+    "invalidCatalogRejected": true,
+    "oomKills": 0
+  },
+  "staging": {
+    "fullWeekend": true,
+    "verifiedSessions": 4,
+    "automaticPublications": 1,
+    "interruptionRecovery": true,
+    "browserErrors": 0,
+    "geminiQuotaPreserved": true,
+    "healthResponses200": 16,
+    "restartCount": 0,
+    "peakBytes": 23916544,
+    "oomKills": 0,
+    "changedContainers": 1,
+    "unchangedContainers": 28
+  }
+}
