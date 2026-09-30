@@ -1,7 +1,6 @@
 # Authority memory correction — 30 September 2026
 
-Status: merged; native CI and staging acceptance passed. Production promotion
-awaits the owner-executed backup/isolated restore drill required by the runbook.
+Status: deployed and accepted in staging and production on 30 September 2026.
 
 Framework PR #425, merge `e70dd56d7c06c6950eb23d8aeda6aaef48d2d48d`.
 Image digest: `sha256:667e3def302e0f10ede0b32e95a6232b84e25811e762bcea01c578f4b410684a`.
@@ -34,18 +33,26 @@ signing policy are unchanged. These are bounded checks, not a capacity claim.
 booleans. Raw staging browser/session reports remain local and are not archived
 in this repository. Existing baseline/fixed files use public local-test fixtures.
 
-## Remaining production step
+## Production acceptance
 
-Infra-vps#96 prepares only the Authority image pin; Compose validation passed
-in workflow 36765248621. Deployment jobs were explicitly skipped on the PR.
-No SQL migration, frontend, Verifier, Engineer or database promotion is needed.
-Keep that PR unmerged until the production preflight is complete. The runbook
-requires an encrypted backup and isolated restore drill before application-image
-promotion; SSH sudo requires the owner's password. The owner was asked to run
-those commands. Completion must be confirmed, never inferred from elapsed time.
+The owner confirmed successful execution of a fresh production backup and the
+isolated restore drill required by the runbook. No backup filename was supplied;
+none is inferred here. Infra-vps#96 merged at
+`72d019ac8ce3d2a758ab7acf18493f30f68658d9` after Compose validation
+(workflow 36765248621). Targeted prod / pitgun-authority deployment
+36766225710 passed. The deployed image digest matches the one above.
 
-Then deploy only prod / pitgun-authority, verify the exact image, bounded health
-and normal authorization/verification, and close framework #424 on acceptance.
+Only Authority production changed; 28 other container identities/images are
+unchanged. Sixteen bounded public health/readiness requests returned HTTP 200.
+A governed 53-lap Monza execution was authorized and VERIFIED; repeated evidence
+submission returned the existing result without creating a duplicate. This
+production probe never publishes a leaderboard score.
+
+Memory peaked at 26,710,016 bytes (25.5 MiB), with zero restarts, OOM events or
+OOM kills. The 256 MiB limit is unchanged. No SQL migration, frontend, Verifier,
+Engineer, catalogue, signing-policy or database change was needed. Production
+acceptance is bounded functional evidence, not a capacity or long-term soak test.
+
 If necessary, repin the old image `16a10af37554f0a005a3f83745b7336abc07f4e2`
 and redeploy only Authority. A rollback needs no database restore but restores
 the known memory risk; it is a fallback, not a lasting solution.

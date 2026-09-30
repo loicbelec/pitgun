@@ -19,5 +19,18 @@
     "oomKills": 0,
     "changedContainers": 1,
     "unchangedContainers": 28
+  },
+  "production": {
+    "healthResponses200": 16,
+    "raceLaps": 53,
+    "verificationStatus": "VERIFIED",
+    "duplicateSubmissionIdempotent": true,
+    "changedContainers": 1,
+    "unchangedContainers": 28,
+    "ownerConfirmedBackupAndRestoreDrill": true,
+    "restartCount": 0,
+    "peakBytes": 26710016,
+    "oomKills": 0,
+    "leaderboardPublications": 0
   }
 }
