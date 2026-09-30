@@ -177,3 +177,36 @@ deployment concerns and are never baked into the image.
 Pull requests build and smoke-test the container without publishing it. A merge
 to `main` publishes only the immutable commit-SHA tag consumed by
 `infra-vps`.
+
+
+## Shared request state and memory regression
+
+The router and handlers share an immutable `Arc<AppState>`. `AppState` deliberately
+has no `Clone` implementation: its catalogue owns resource bytes, and cloning the
+entire state per request can exhaust the production 256 MiB limit. Signing and
+canonicalization still borrow the same unchanged state.
+
+PR image CI runs `scripts/check-authority-memory.py` in a disposable Docker
+container with 256 MiB, no swap, 0.5 CPU and an ephemeral localhost port. It checks
+128 concurrent health/readiness probes, 66 signed static/dynamic authorizations,
+canonical response stability, rejection of an incorrect catalogue, and cgroup OOM
+counters. The signing secret is a public fixture; no live URL or real key is used.
+
+```sh
+python3 scripts/check-authority-memory.py --image pitgun-authority:fixed \
+  --report /tmp/authority-memory.json
+```
+
+Add `--baseline-report FILE` to compare canonical authorizations to a previous
+report. `--expect-oom` is only for an isolated reproduction of the old image, never
+a release acceptance mode. Container cleanup runs even after an assertion failure.
+
+The 30 September production image `16a10af37554f0a005a3f83745b7336abc07f4e2`
+reproduced OOM/137 with eight concurrent probes. Locally, the fixed image peaked
+at 48,435,200 bytes (46.2 MiB), with every request succeeding and no OOM events.
+These measurements used Linux/AMD64 emulation on Apple Silicon and catalogue
+1.8.0/model 0.14.0; native CI and staging acceptance remain required. Evidence:
+[`docs/qa/authority-memory-2026-09-30`](../../docs/qa/authority-memory-2026-09-30/).
+
+No memory-limit increase is needed for this measured workload. This regression
+is bounded acceptance, not a claim of unlimited concurrent capacity.
