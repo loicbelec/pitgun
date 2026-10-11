@@ -1,0 +1,6 @@
+{
+  "binary_digest": "sha256:c1c30c3c20d5d3abdbac2488c71f8940e516db1b75211a741b94ffe5f5949b66",
+  "framework_commit": "5550c7963bd1b75c4c0ddfe1f573b361a033211c",
+  "rustc": "rustc 1.89.0 (29483883e 2025-08-04)\nbinary: rustc\ncommit-hash: 29483883eed69d5fb4db01964cdf2af4d86e9cb2\ncommit-date: 2025-08-04\nhost: aarch64-apple-darwin\nrelease: 1.89.0\nLLVM version: 20.1.7",
+  "report_file_digest": "sha256:fa90f855df7bd6c1009010626e9caf4bf9a61207fec7070ecc198e5a32ba13cb"
+}
