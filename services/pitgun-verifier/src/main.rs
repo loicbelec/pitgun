@@ -359,12 +359,13 @@ mod tests {
         let slots = std::sync::Arc::new(tokio::sync::Semaphore::new(1));
         let busy = slots.clone().acquire_owned().await.unwrap();
         let mut admission = Box::pin(super::admit_replay(slots));
+        let issued_at_ms = super::now_ms();
         // Poll once to enter the actual capacity queue, without granting a slot.
         let queued = std::future::poll_fn(|cx| Poll::Ready(admission.as_mut().poll(cx))).await;
         assert!(queued.is_pending());
         let deadline = super::now_ms() + 1;
         let validity = AuthorizationValidityV1 {
-            issued_at_ms: deadline - 1000,
+            issued_at_ms,
             expires_at_ms: deadline,
             late_submission_grace_ms: 0,
         };
