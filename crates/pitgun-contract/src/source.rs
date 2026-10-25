@@ -420,6 +420,9 @@ impl Default for SourceConfig {
 ///
 /// source.stop().await?;
 /// ```
+// async_trait adds #[must_use] to boxed futures, which are already must-use.
+// Keep the generated API; scope the Rust 1.99+ duplicate-attribute lint here.
+#[allow(clippy::double_must_use)]
 #[async_trait]
 pub trait TelemetrySource: Send + Sync {
     /// Returns the human-readable name of this source.

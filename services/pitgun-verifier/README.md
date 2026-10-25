@@ -65,6 +65,15 @@ transport input and internal failures are not verdicts.
 Deterministic replay runs on bounded blocking workers. Configure the limit with
 `PITGUN_VERIFIER_MAX_CONCURRENT_REPLAYS`; the VPS-oriented default is `2`.
 
+For both worker POST routes, authorization timeliness uses the server clock after
+the complete JSON evidence has been received and decoded, **before** waiting for a
+replay slot. The same captured time is passed to the pure verifier and recorded
+in its verdict. Queue congestion cannot expire evidence already received in time;
+evidence received after its signed deadline remains rejected. Concurrency limits,
+signature checks and signed validity bounds are unchanged. No client timestamp is
+accepted. A separate API storing a `PENDING` submission does not extend this window
+if it only forwards the evidence to this worker after expiry.
+
 The worker loads:
 
 - retained Authority HMAC verification material from
