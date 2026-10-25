@@ -23,7 +23,11 @@ use pitgun_signing::{SigningKey, VerificationKeyring};
 use pitgun_verifier::{
     RacingDynamicVerificationSubmissionV1, RacingVerificationSubmissionV1, RacingVerifier,
 };
-use tokio::{net::TcpListener, sync::Semaphore, task};
+use tokio::{
+    net::TcpListener,
+    sync::{AcquireError, OwnedSemaphorePermit, Semaphore},
+    task,
+};
 use tracing::{error, info, warn};
 
 const DEFAULT_BIND_ADDR: &str = "0.0.0.0:8080";
@@ -58,19 +62,27 @@ async fn readyz(State(state): State<AppState>) -> StatusCode {
     }
 }
 
+async fn admit_replay(slots: Arc<Semaphore>) -> Result<(i64, OwnedSemaphorePermit), AcquireError> {
+    // JSON extraction has completed: bind timeliness to this server's receipt
+    // of the complete evidence, not to later replay capacity. Never use a
+    // caller-provided timestamp or extend the signed deadline.
+    let received_at_ms = now_ms();
+    let permit = slots.acquire_owned().await?;
+    Ok((received_at_ms, permit))
+}
+
 async fn verify_racing(
     State(state): State<AppState>,
     Json(submission): Json<RacingVerificationSubmissionV1>,
 ) -> Response {
-    let permit = match state.replay_slots.clone().acquire_owned().await {
-        Ok(permit) => permit,
+    let (now_ms, permit) = match admit_replay(Arc::clone(&state.replay_slots)).await {
+        Ok(admitted) => admitted,
         Err(error) => {
             error!(?error, "verifier replay semaphore is closed");
             return internal_error();
         }
     };
     let verifier = Arc::clone(&state.verifier);
-    let now_ms = now_ms();
     let result = task::spawn_blocking(move || {
         let _permit = permit;
         verifier.verify(&submission, now_ms)
@@ -94,15 +106,14 @@ async fn verify_racing_attempt(
     State(state): State<AppState>,
     Json(submission): Json<RacingDynamicVerificationSubmissionV1>,
 ) -> Response {
-    let permit = match state.replay_slots.clone().acquire_owned().await {
-        Ok(permit) => permit,
+    let (now_ms, permit) = match admit_replay(Arc::clone(&state.replay_slots)).await {
+        Ok(admitted) => admitted,
         Err(error) => {
             error!(?error, "verifier replay semaphore is closed");
             return internal_error();
         }
     };
     let verifier = Arc::clone(&state.attempt_verifier);
-    let now_ms = now_ms();
     let result = task::spawn_blocking(move || {
         let _permit = permit;
         verifier.verify_attempt(&submission, now_ms)
@@ -335,11 +346,48 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
 #[cfg(test)]
 mod tests {
     use pitgun_contract::{
-        ArtifactIdentity, Digest, ExecutionId, SubmittedEvidenceV1, VerificationReasonCode,
-        VerificationStatus, VerificationVerdictV1, VerificationVerdictVersion,
+        ArtifactIdentity, AuthorizationValidityV1, Digest, ExecutionId, SubmittedEvidenceV1,
+        VerificationReasonCode, VerificationStatus, VerificationVerdictV1,
+        VerificationVerdictVersion,
     };
+    use std::{future::Future, task::Poll, time::Duration};
 
     use super::verdict_response;
+
+    #[tokio::test]
+    async fn capacity_wait_does_not_expire_evidence_received_in_time() {
+        let slots = std::sync::Arc::new(tokio::sync::Semaphore::new(1));
+        let busy = slots.clone().acquire_owned().await.unwrap();
+        let mut admission = Box::pin(super::admit_replay(slots));
+        // Poll once to enter the actual capacity queue, without granting a slot.
+        let queued = std::future::poll_fn(|cx| Poll::Ready(admission.as_mut().poll(cx))).await;
+        assert!(queued.is_pending());
+        let deadline = super::now_ms() + 1;
+        let validity = AuthorizationValidityV1 {
+            issued_at_ms: deadline - 1000,
+            expires_at_ms: deadline,
+            late_submission_grace_ms: 0,
+        };
+        std::thread::sleep(Duration::from_millis(20));
+        assert!(validity.validate_submission_time(super::now_ms()).is_err());
+        drop(busy);
+        let (received_at, _permit) = admission.await.unwrap();
+        assert!(validity.validate_submission_time(received_at).is_ok());
+    }
+
+    #[tokio::test]
+    async fn expired_at_receipt_remains_expired_without_waiting() {
+        let validity = AuthorizationValidityV1 {
+            issued_at_ms: super::now_ms() - 2000,
+            expires_at_ms: super::now_ms() - 1000,
+            late_submission_grace_ms: 0,
+        };
+        let (received_at, _permit) =
+            super::admit_replay(std::sync::Arc::new(tokio::sync::Semaphore::new(1)))
+                .await
+                .unwrap();
+        assert!(validity.validate_submission_time(received_at).is_err());
+    }
 
     fn verdict(status: VerificationStatus) -> VerificationVerdictV1 {
         VerificationVerdictV1 {
