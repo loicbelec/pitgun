@@ -5,7 +5,8 @@ Chrome/Safari interruption checks pass, but its performance, memory, mobile and
 Engineer release gates remain open. Starting this independent framework work is
 not approval to merge, activate or deploy either delivery.
 
-Tracking: [framework #415](https://github.com/loicbelec/pitgun/issues/415).
+Tracking: [framework #415](https://github.com/loicbelec/pitgun/issues/415),
+[draft PR #429](https://github.com/loicbelec/pitgun/pull/429).
 The approved [three-delivery plan](https://github.com/loicbelec/pitgun-game/blob/feat/signed-buffered-recovery/docs/design/PROGRESSIVE_SIMULATION_DELIVERY_PLAN.md)
 remains authoritative. This document describes the **first native increment**,
 not completion of #415 or a stable public Engineer Contract.
@@ -141,7 +142,8 @@ strict all-target check. No browser or WASM execution conformance is claimed her
 
 1. **Native boundary:** this prototype and executable deterministic reference;
    local review in progress. Not a new governed model release.
-2. **WASM/host transport:** explicit experimental JSON/handle boundary and Worker
+2. **WASM/host transport:** [game #316](https://github.com/loicbelec/pitgun-game/issues/316),
+   explicit experimental JSON/handle boundary and Worker
    state machine, conformance vectors, bounded messages, acknowledgement separate
    from permission, buffer stopping before open decisions, durable journal and
    reconstruction to the next unresolved window without historical controller calls.
