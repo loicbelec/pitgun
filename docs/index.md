@@ -20,6 +20,7 @@
 - [Incremental Execution Stream V1](INCREMENTAL_EXECUTION_STREAM_V1.md)
 - [Racing Incremental Session Engine V1](RACING_INCREMENTAL_SESSION_ENGINE_V1.md)
 - [Racing WASM Pull Session V1](RACING_WASM_PULL_SESSION_V1.md)
+- [Racing performance attribution](RACING_PERFORMANCE_ATTRIBUTION_2026-11-07.md) — native/JSON/WASM diagnostic and limits; not signed/browser release qualification
 - [Racing Model V3 thermal Databricks review V1](RACING_V3_THERMAL_DATABRICKS_REVIEW_V1.md)
 - [Racing Model V3 thermal refinement Databricks review V1](RACING_V3_THERMAL_REFINEMENT_DATABRICKS_REVIEW_V1.md)
 - [Racing Model V3 thermal family profile candidate V1](RACING_V3_THERMAL_FAMILY_PROFILE_CANDIDATE_V1.md)
