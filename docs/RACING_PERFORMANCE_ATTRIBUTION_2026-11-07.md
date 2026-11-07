@@ -1,5 +1,9 @@
 # Racing performance attribution — 7 November 2026
 
+Follow-up: the [signed Model 0.14 replay and terminal-retention correction](RACING_SIGNED_TERMINAL_RETENTION_2026-11-07.md)
+show a measured WASM memory gain with identical output/evidence. The V9 experiment
+below remains the historical initial screen; its scope and metrics are unchanged.
+
 The problem is mixed: the Racing domain already has a substantial memory cost
 without WASM, and WASM adds execution/binding overhead in this controlled case.
 This is evidence for improving retention and transport before contemplating a
@@ -8,7 +12,8 @@ the generic runtime, or the browser is the sole bottleneck.
 
 Tracking: [framework #430](https://github.com/loicbelec/pitgun/issues/430) for
 retention/terminal output; [game #315](https://github.com/loicbelec/pitgun-game/issues/315)
-for live browser/host/archive memory. No optimization or release waiver is delivered.
+for live browser/host/archive memory. This initial screen delivers no optimization
+or release waiver; the separate signed follow-up above contains the retained fix.
 
 ## Controlled experiment
 
@@ -117,6 +122,7 @@ are fresh but OS caches/post activity are not isolated: three samples are a loca
 diagnostic, not a p95 population or cold browser qualification. Invalid-mode,
 input and error responses fail; physical-result assertions guard all final trials.
 
-Validation: native/rebuilt-WASM release builds, nine guarded runs, shipped-artifact
-smoke, exact preparer input hash, syntax/format and strict probe Clippy pass. No
-production library, catalogue, WASM asset, UI or release flag is changed.
+Validation of this initial screen: native/rebuilt-WASM release builds, nine guarded
+runs, shipped-artifact smoke, exact preparer input hash, syntax/format and strict
+probe Clippy pass. This initial diagnostic changed no production library,
+catalogue, WASM asset, UI or release flag; the signed follow-up retains a wrapper fix.
