@@ -1,4 +1,5 @@
 mod catalog;
+pub mod control_prototype;
 pub mod evidence;
 mod fuel_contract;
 mod local_stream;

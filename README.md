@@ -399,6 +399,7 @@ The current sequence remains proof-driven:
 - [Racing Model Approximation Audit V1](docs/RACING_MODEL_APPROXIMATION_AUDIT_V1.md) — equation review, validity domains, Game/Reference fidelity, and Model V3 direction
 - [Racing Model V3 fuel contract V1](docs/RACING_V3_FUEL_CONTRACT_V1.md) — explicit full-distance mass and consumption boundary in Catalog 1.9
 - [Deterministic driver instructions V1](docs/RACING_DETERMINISTIC_DRIVER_INSTRUCTIONS_V1.md) — replayable mode timelines and future live-control boundary
+- [Racing control prototype](docs/RACING_CONTROL_PROTOTYPE_V1.md) — local experimental pit/tyre decisions and exact native replay; not a published contract
 - [Racing Model V3 tire degradation](experiments/racing_v3_tire_degradation/README.md) — compound wear law, diagnostics, local evidence, and governed Databricks replay
 - [Racing Model V3 Unified Decision Screen V1](docs/RACING_V3_UNIFIED_DECISION_SCREEN_V1.md) — exact 0.9 mechanical activation, setup diversity, development trade-offs, and linked long-run evidence
 - [Racing Game Vehicle Contract V1](docs/RACING_GAME_VEHICLE_CONTRACT_V1.md) — governed vehicle unlocks across enabled game eras and Catalog 1.3.0

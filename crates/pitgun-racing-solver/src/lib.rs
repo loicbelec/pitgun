@@ -926,6 +926,9 @@ type ResolvedLapSlotV3 = Rc<RefCell<Option<ResolvedSimulationLapV3>>>;
 pub struct ResolvedSimulationSessionV3 {
     future: Pin<Box<dyn Future<Output = Result<SimulationResult, String>>>>,
     lap_slot: ResolvedLapSlotV3,
+    pending_pit: Rc<RefCell<Option<PitStop>>>,
+    completed_laps: u16,
+    lap_count: u16,
     complete: bool,
 }
 
@@ -1050,6 +1053,9 @@ impl ResolvedSimulationSessionV3 {
 
         let lap_slot = Rc::new(RefCell::new(None));
         let future_lap_slot = Rc::clone(&lap_slot);
+        let pending_pit = Rc::new(RefCell::new(None));
+        let future_pending_pit = Rc::clone(&pending_pit);
+        let lap_count = input.lap_count.max(1);
         let future = Box::pin(async move {
             let compatibility_request = SimulationRequest {
                 track: input.track.clone(),
@@ -1098,6 +1104,7 @@ impl ResolvedSimulationSessionV3 {
                 ),
                 input.fuel_mass.as_ref(),
                 Some(future_lap_slot),
+                future_pending_pit,
             )
             .await
         });
@@ -1105,8 +1112,28 @@ impl ResolvedSimulationSessionV3 {
         Ok(Self {
             future,
             lap_slot,
+            pending_pit,
+            completed_laps: 0,
+            lap_count,
             complete: false,
         })
+    }
+
+    /// Local control primitive, not an Authority permission. Replace only the
+    /// uncomputed pit plan: service at the end of the next lap, then keep this
+    /// tire to the finish. The completed physical prefix is never rewritten.
+    /// Racing must resolve and authorize the tire before calling this method.
+    pub fn request_next_lap_pit(&mut self, tire: TireParams) -> Result<u16, String> {
+        validate_tire_params(&tire)?;
+        let lap = self.completed_laps.saturating_add(1);
+        if self.complete || lap >= self.lap_count {
+            return Err("pit requires an uncomputed lap before the final lap".to_string());
+        }
+        if self.pending_pit.borrow().is_some() {
+            return Err("a pit command is already pending at this boundary".to_string());
+        }
+        *self.pending_pit.borrow_mut() = Some(PitStop { lap, tire });
+        Ok(lap)
     }
 
     /// Advances by one deterministic lap, then returns the canonical result.
@@ -1121,12 +1148,14 @@ impl ResolvedSimulationSessionV3 {
         let waker = Waker::noop();
         let mut context = Context::from_waker(waker);
         match self.future.as_mut().poll(&mut context) {
-            Poll::Pending => self
-                .lap_slot
-                .borrow_mut()
-                .take()
-                .map(|value| ResolvedSimulationStepV3::Lap(Box::new(value)))
-                .ok_or_else(|| "resolved V3 simulation suspended without a lap".to_string()),
+            Poll::Pending => {
+                let lap =
+                    self.lap_slot.borrow_mut().take().ok_or_else(|| {
+                        "resolved V3 simulation suspended without a lap".to_string()
+                    })?;
+                self.completed_laps = lap.lap_index;
+                Ok(ResolvedSimulationStepV3::Lap(Box::new(lap)))
+            }
             Poll::Ready(result) => {
                 self.complete = true;
                 result.map(|value| ResolvedSimulationStepV3::Complete(Box::new(value)))
@@ -1563,6 +1592,7 @@ async fn run_resolved_simulation_kernel_incremental(
     v3_controls: V3ResolvedControls<'_>,
     fuel_mass: Option<&FuelMassParamsV3>,
     lap_slot: Option<ResolvedLapSlotV3>,
+    pending_pit: Rc<RefCell<Option<PitStop>>>,
 ) -> Result<SimulationResult, String> {
     let (
         mechanical,
@@ -1665,6 +1695,15 @@ async fn run_resolved_simulation_kernel_incremental(
 
     for lap_idx in 1..=lap_count {
         let zero_based_lap_index = lap_idx - 1;
+        // Read once, after the previous lap's yield and before any work on
+        // this lap. A command replaces the remaining plan, not past service.
+        if let Some(stop) = pending_pit.borrow_mut().take() {
+            if stop.lap != lap_idx {
+                return Err("pit command does not match the next physical lap".to_string());
+            }
+            pit_stops.retain(|previous| previous.lap < lap_idx);
+            pit_stops.push(stop);
+        }
         if driver_control_schedule
             .get(driver_control_schedule_cursor)
             .is_some_and(|entry| entry.lap_index == zero_based_lap_index)
