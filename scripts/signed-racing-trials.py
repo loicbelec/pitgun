@@ -27,7 +27,10 @@ def main():
     module = runtime/'pitgun_racing_simulator.js'
     binary = runtime/'pitgun_racing_simulator_bg.wasm'
     driver = root/'scripts/signed-racing-performance.mjs'
-    pins = {str(p): sha(p) for p in (source, native, module, binary, driver, Path(__file__))}
+    pins = {str(p): sha(p) for p in (source, native, module, binary, driver, Path(__file__),
+        root/'crates/pitgun-racing-simulator/src/lib.rs',
+        root/'crates/pitgun-racing-simulator/examples/signed_racing_performance_probe.rs',root/'Cargo.lock')}
+    source_commit = subprocess.check_output(['git','-C',str(root),'rev-parse','HEAD'],text=True).strip()
     rows = []
     for iteration in range(3):
         for kind in (['native','wasm'] if iteration % 2 == 0 else ['wasm','native']):
@@ -64,7 +67,7 @@ def main():
     medians = {kind:{key:statistics.median(r[key] for r in rows if r['kind'] == kind)
                      for key in keys} for kind in ('native','wasm')}
     summary = {'schema_version':'pitgun.signed-racing-memory-trials/v1','model':'0.14.0',
-        'platform':platform.platform(),'pins':pins,'trials':rows,'medians':medians,
+        'platform':platform.platform(),'source_commit':source_commit,'pins':pins,'trials':rows,'medians':medians,
         'physical_summaries_equal':True,
         'limits':['Prior real local QA authorization, offline only; no new/verifier/server action.',
                   'Declared historical artifact digest is frozen input, not runtime attestation.',
