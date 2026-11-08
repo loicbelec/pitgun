@@ -597,6 +597,8 @@ fn pull_based_wasm_session_matches_native_fixture_and_monolithic_evidence() {
     let second_completion = session_response(complete_authorized_dynamic_racing_session_json(
         second_handle,
     ));
+    assert!(complete_authorized_dynamic_racing_session_json(first_handle).contains("unknown"));
+    assert!(pull_authorized_dynamic_racing_session_json(first_handle).contains("unknown"));
     let first_result: pitgun_solver::RacingDynamicApplicationResultV1 =
         serde_json::from_value(first_completion["result"].clone()).expect("first result");
     let second_result: pitgun_solver::RacingDynamicApplicationResultV1 =
@@ -625,6 +627,20 @@ fn pull_based_wasm_session_matches_native_fixture_and_monolithic_evidence() {
     let incomplete = start_session_handle(&request_json, &catalog_bundle_json);
     assert!(complete_authorized_dynamic_racing_session_json(incomplete).contains("not complete"));
     session_response(release_authorized_dynamic_racing_session_json(incomplete));
+
+    // A host may cancel after the terminal batch without consuming the retained
+    // application result. Releasing it must remain valid after physical teardown.
+    let completed_to_release = start_session_handle(&request_json, &catalog_bundle_json);
+    pull_session_to_completion(completed_to_release);
+    assert_eq!(
+        session_response(release_authorized_dynamic_racing_session_json(
+            completed_to_release
+        ))["released"],
+        true
+    );
+    assert!(
+        complete_authorized_dynamic_racing_session_json(completed_to_release).contains("unknown")
+    );
 }
 
 #[test]

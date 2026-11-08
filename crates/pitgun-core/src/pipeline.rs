@@ -397,6 +397,9 @@ impl TelemetryPipeline {
 }
 
 /// Frame processor trait for the pipeline
+// async_trait's generated must_use future duplicates Future's own marker in
+// newer Clippy; scope the exception to the macro-generated trait methods.
+#[allow(clippy::double_must_use)]
 #[async_trait]
 pub trait FrameProcessor: Send + Sync {
     /// Process a frame and optionally transform it

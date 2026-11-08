@@ -4009,7 +4009,7 @@ pub fn execute_authorized_dynamic_race(
 /// Transport handles and browser rendering deliberately remain outside this
 /// domain boundary.
 pub struct AuthorizedDynamicRacingSession {
-    session: IncrementalRacingSession,
+    session: Option<IncrementalRacingSession>,
     request: evidence::RacingDynamicExecutionRequestV1,
     final_contract: DeterministicRunContractV1,
     execution_resolution: evidence::RacingExecutionResolutionV1,
@@ -4024,20 +4024,28 @@ impl AuthorizedDynamicRacingSession {
                 "authorized dynamic Racing session completed; consume its result".to_string(),
             );
         }
-        let batch = self.session.advance()?;
+        let batch = self
+            .session
+            .as_mut()
+            .ok_or_else(|| "authorized Racing physical session is no longer available".to_string())?
+            .advance()?;
         let output = batch
             .records()
             .iter()
             .find_map(|record| match record.event() {
-                IncrementalExecutionStreamEventV1::Complete(output) => Some(output.clone()),
+                IncrementalExecutionStreamEventV1::Complete(output) => Some(output),
                 IncrementalExecutionStreamEventV1::Progress(_) => None,
             });
         if let Some(output) = output {
+            // The terminal batch owns every required output. Raw Solver
+            // histories are no longer needed: release them before cloning the
+            // application output and materializing its verification evidence.
+            drop(self.session.take());
             self.application_result = Some(finalize_authorized_dynamic_race_application(
                 self.request.clone(),
                 &self.final_contract,
                 self.execution_resolution.clone(),
-                output,
+                output.clone(),
             )?);
         }
         Ok(batch)
@@ -4166,7 +4174,7 @@ pub fn start_authorized_dynamic_racing_session(
             })?;
 
     Ok(AuthorizedDynamicRacingSession {
-        session,
+        session: Some(session),
         request,
         final_contract,
         execution_resolution,
