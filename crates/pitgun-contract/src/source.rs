@@ -420,6 +420,10 @@ impl Default for SourceConfig {
 ///
 /// source.stop().await?;
 /// ```
+// async_trait annotates its generated futures with must_use. Newer Clippy
+// versions also infer that property from Future itself; keep the exception
+// local to this macro expansion rather than weakening workspace lint checks.
+#[allow(clippy::double_must_use)]
 #[async_trait]
 pub trait TelemetrySource: Send + Sync {
     /// Returns the human-readable name of this source.
