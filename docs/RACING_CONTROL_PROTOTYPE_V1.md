@@ -189,3 +189,24 @@ emits opaque browser inputs and the same immutable catalog bundle for executable
 cross-runtime protocol checks. Its native runtime identity must be replaced with
 the actual browser artifact digest when that browser session is started; native
 and WASM are different runtimes, never mutually attested by that fixture.
+
+
+### Executed browser proof
+
+Game#316 now carries these handles through a separate bounded module Worker.
+The [9 November report](https://github.com/loicbelec/pitgun-game/blob/feat/controlled-racing-worker/docs/qa/RACING_CONTROL_WORKER_2026-11-09.md)
+records seven rejected-command vectors, one unconsumed batch, physical service
+at lap2 instead of lap3, and exact full-result replay in a new Worker using the
+same actual WASM artifact and recorded applied proposals. Native and WASM identities
+are distinct; their integer lap/total time deltas are zero in this fixture, with
+a declared1ms tolerance, while full telemetry hashes differ across runtimes.
+127 native Racing tests pass, including the three facade tests. Strict library/
+probe Clippy and WASM release compilation pass; the earlier all-target fixture
+warning limitation remains. Game651 tests, default build and Chrome proof pass.
+These are local five-lap protocol checks, not a Grand Prix or hosted acceptance.
+
+The host waits for observation, proposal, rejection and receipt checkpoint hooks.
+The fixture stores them in memory; durable persistence and reload reconstruction
+remain next. No historical controller is called during the fresh-Worker replay.
+No Gemini, control authority, public protocol freeze, ranked result or deployment
+is enabled. The normal governed/batch APIs and generic contract crate stay unchanged.
