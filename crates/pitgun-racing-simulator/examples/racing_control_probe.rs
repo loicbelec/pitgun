@@ -95,7 +95,7 @@ fn main() -> Result<(), String> {
     if controlled != replayed {
         return Err("offline replay differs".into());
     }
-    let report = json!({
+    let mut report = json!({
         "schema_version": "pitgun.racing-control-probe-report/v1",
         "scope": "native local protocol fixture, not a Grand Prix benchmark or Hosted evidence",
         "catalog_release": snapshot.release_identity(),
@@ -104,6 +104,14 @@ fn main() -> Result<(), String> {
         "baseline": summary(&baseline)?, "controlled": controlled,
         "replayed": replayed, "exact_replay": true,
     });
+    if std::env::args().any(|arg| arg == "--browser-fixture") {
+        report["browser_fixture"] = json!({
+            "requestJson": serde_json::to_string(&request).map_err(|e|e.to_string())?,
+            "catalogBundleJson": serde_json::to_string(&snapshot.to_bundle().map_err(|e|e.to_string())?).map_err(|e|e.to_string())?,
+            "timelineJson": serde_json::to_string(&timeline).map_err(|e|e.to_string())?,
+            "configJson": serde_json::to_string(&config).map_err(|e|e.to_string())?,
+        });
+    }
     println!(
         "{}",
         serde_json::to_string_pretty(&report).map_err(|e| e.to_string())?

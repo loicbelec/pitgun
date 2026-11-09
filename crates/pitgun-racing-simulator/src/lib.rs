@@ -1,5 +1,6 @@
 mod catalog;
 pub mod control_prototype;
+mod controlled_stream;
 pub mod evidence;
 mod fuel_contract;
 mod local_stream;
@@ -10,6 +11,14 @@ pub use local_stream::{
     complete_local_racing_session_json, pull_local_racing_session_json,
     release_local_racing_session_json,
     start_local_racing_session_with_catalog_and_v3_power_unit_thermal_profile_json,
+};
+
+pub use controlled_stream::{
+    complete_experimental_controlled_racing_session_json,
+    propose_experimental_controlled_racing_session_json,
+    pull_experimental_controlled_racing_session_json,
+    release_experimental_controlled_racing_session_json,
+    start_experimental_controlled_racing_session_json,
 };
 
 pub use catalog::{

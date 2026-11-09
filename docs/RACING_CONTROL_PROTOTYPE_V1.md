@@ -157,3 +157,35 @@ Only after these steps should delivery 3 connect Gemini to actions and contextua
 messages. The shared domain-neutral contract is frozen later, after the battery
 proof. Delivery 1 remains independently gated; production and branch cleanup are
 outside this local increment.
+
+## 9 November — experimental JSON/handle transport
+
+`controlled_stream.rs` exposes a separate local-only start/pull/propose/complete/
+release facade with `pitgun.racing-control-*/v1` response envelopes. Start takes
+opaque request, exact catalog bundle, initial timeline and control configuration
+JSON. Pull returns either a canonical stream batch or a frozen player-only
+observation **with its Rust-generated digest**. Clients copy that digest rather
+than rehashing floating-point observations in JavaScript. Propose returns the
+applied receipt or an error, leaving a refused window open. Complete consumes the
+terminal handle and returns RaceOutput, the journal and the canonical result
+digest generated in this runtime. Release discards state without results/evidence.
+
+Resource limits are experimental host guards, not published physics changes:
+4 simultaneous handles per thread/Worker instance; 128 laps; 16 competitors;
+64 decision windows; 16 delegated tires; explicit 1–20 Hz; request256KiB,
+catalog16MiB, timeline64KiB, configuration16KiB and proposal4KiB.
+A session accepts at most256 submission attempts (including malformed JSON),
+which bounds its proposal/rejection/duplicate journal. Waiting pulls add no entries.
+Reaching the budget requires cancellation/reconstruction, not an implicit fallback.
+Full output telemetry still scales with session length; this is not the deferred
+memory-retention fix.
+
+Three additional native facade tests cover frozen repeated pulls, wrong bindings,
+identical retry/conflict, terminal consumption, size/handle/submission limits and
+incomplete cancellation. The browser transport is tracked in game#316 and is not
+authorised or ranked by these exports. The original signed entry points and generic
+contract crate are unchanged. `racing_control_probe --browser-fixture` additionally
+emits opaque browser inputs and the same immutable catalog bundle for executable
+cross-runtime protocol checks. Its native runtime identity must be replaced with
+the actual browser artifact digest when that browser session is started; native
+and WASM are different runtimes, never mutually attested by that fixture.
