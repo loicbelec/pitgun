@@ -397,6 +397,8 @@ impl TelemetryPipeline {
 }
 
 /// Frame processor trait for the pipeline
+// async_trait generates a redundant must-use attribute on boxed futures.
+#[allow(clippy::double_must_use)]
 #[async_trait]
 pub trait FrameProcessor: Send + Sync {
     /// Process a frame and optionally transform it
