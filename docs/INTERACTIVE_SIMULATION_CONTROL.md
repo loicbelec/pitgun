@@ -56,24 +56,35 @@ future rival plans, hidden trajectories or a final classification.
 ## Current increment versus remaining work
 
 Implemented locally: optional versioned native event timing, horizon-safe event
-release, physical chronology in the Pit Wall and native before-service stepping.
-The native primitive emits driving once, waits for resolution, commits service,
-then continues without recalculating that driving prefix. Existing default
-workloads and published parity bytes remain unchanged.
+release, physical chronology and before-service stepping through the existing
+experimental handles. Explicit `pitgun.racing-service-window/v1` configuration
+freezes the observation after lap k, emits unaffected driving k+1 once, waits for
+resolution, commits service, then continues without recalculating that prefix.
+Opening, deadline and service frontier are distinct; proposals record logical
+decision time. Expiry records Keep plan; late responses cannot retarget service.
+Existing default workloads and published parity bytes remain unchanged.
 
-Still required: domain orchestration and versioned experimental transport for the
-new primitive; opening/closing decision windows during playback; durable pending/
-proposal/receipt/deadline recovery; same observations for manual/reference/Gemini;
-precise versioned relevance policy; full-GP/failure/lifecycle acceptance; initial
-Authority capabilities and terminal ordered action-journal Verifier evidence.
+The separate game `/dev/pitwall-control-live` bank keeps cars moving during a
+manual window and durably records observations, proposals and receipts before
+affected continuation. Manual, expiry and pending-reload Chrome journeys pass.
+Reload reconstructs the same logical deadline but replays the pending presentation
+from its opening, rather than preserving an exact animation frame or wall-clock
+budget. The old `/dev/pitwall-control` bank still pauses at completed-lap windows;
+its saved binaries/journals retain their original semantics and bridge.
 
-The existing v1 development Pit Wall still pauses at configured completed-lap
-windows. Native before-service stepping is not yet exported through its handles
-or activated in that UI. Do not silently reinterpret old v1 journals.
+These are scheduled five-lap test windows, not a relevant-event or provider
+integration. Exact future service clocks are host scheduling metadata, separate
+from past physical features: an explicit provider feature projection is required
+before sending observations to a model. Host-declared logical time is not remote
+attestation. Full-GP/failure/lifecycle acceptance, a precise versioned relevance
+policy, controller adapters, initial Authority capabilities and terminal ordered
+action-journal Verifier evidence remain required before career/ranked activation.
+See the [game connection evidence](https://github.com/loicbelec/pitgun-game/blob/feat/controlled-racing-worker/docs/qa/LIVE_SERVICE_WINDOWS_2026-11-11.md).
 
 ## Acceptance for the next slice
 
-1. One known rival event opens one bounded window with a stable reason/evidence ID.
+1. One known rival event opens one bounded window with a stable reason/evidence ID
+   (the current connection uses programmed test laps).
 2. Cars continue along solved unaffected paths while a response is pending.
 3. A valid early response selects the earliest eligible service; an expired window
    records keep-plan. A late/conflicting response is rejected without retargeting.
