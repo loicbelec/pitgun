@@ -1026,3 +1026,125 @@ fn invalid_tuning_responses_fail_before_simulation() {
         "gear_ratio_slider_reduction must remain below gear_ratio_base"
     );
 }
+
+#[test]
+fn service_boundary_keep_preserves_canonical_output_and_emits_driving_once() {
+    use pitgun_racing_solver::{PitStop, ResolvedServiceStepV3};
+    let mut input = resolved_v3_request(&synthetic_request());
+    input.lap_count = 4;
+    input.pit_plan.stops = vec![PitStop {
+        lap: 2,
+        tire: input.vehicle.tire.clone(),
+    }];
+    let expected = run_resolved_simulation_v3(&input).unwrap();
+    let mut session = ResolvedSimulationSessionV3::new_with_service_boundaries(input).unwrap();
+    assert!(session.advance().is_err());
+    let mut prefixes = 0;
+    let mut commits = 0;
+    let actual = loop {
+        match session.advance_service().unwrap() {
+            ResolvedServiceStepV3::BeforeService(prefix) => {
+                prefixes += 1;
+                assert_eq!(prefix.lap_index, prefixes);
+                assert!(!prefix.solution.t.is_empty());
+                assert!(!prefix.pit_stop_completed);
+                for _ in 0..5 {
+                    assert!(
+                        session
+                            .advance_service()
+                            .unwrap_err()
+                            .contains("awaits resolution")
+                    );
+                }
+                session.resolve_service_boundary(None).unwrap();
+                assert!(session.resolve_service_boundary(None).is_err());
+            }
+            ResolvedServiceStepV3::Lap(lap) => {
+                commits += 1;
+                assert_eq!(lap.lap_index, commits);
+                assert!(lap.solution.t.is_empty());
+            }
+            ResolvedServiceStepV3::Complete(result) => break *result,
+        }
+    };
+    assert_eq!((prefixes, commits), (4, 4));
+    assert_eq!(actual, expected);
+    assert!(session.advance_service().is_err());
+}
+
+#[test]
+fn service_boundary_pit_changes_service_without_recomputing_its_driving_prefix() {
+    use pitgun_racing_solver::{PitStop, ResolvedServiceStepV3};
+    let mut input = resolved_v3_request(&synthetic_request());
+    input.lap_count = 4;
+    input.config.pit_time_penalty_s = 20.0;
+    input.pit_plan.stops = vec![PitStop {
+        lap: 2,
+        tire: input.vehicle.tire.clone(),
+    }];
+    let mut replacement = input.vehicle.tire.clone();
+    replacement.mu_scale *= 0.9;
+    let mut equivalent = input.clone();
+    equivalent.pit_plan.stops = vec![PitStop {
+        lap: 1,
+        tire: replacement.clone(),
+    }];
+    let expected = run_resolved_simulation_v3(&equivalent).unwrap();
+    let mut original =
+        ResolvedSimulationSessionV3::new_with_service_boundaries(input.clone()).unwrap();
+    let first = match original.advance_service().unwrap() {
+        ResolvedServiceStepV3::BeforeService(p) => p,
+        _ => panic!("prefix required"),
+    };
+    let mut controlled = ResolvedSimulationSessionV3::new_with_service_boundaries(input).unwrap();
+    let actual_prefix = match controlled.advance_service().unwrap() {
+        ResolvedServiceStepV3::BeforeService(p) => p,
+        _ => panic!("prefix required"),
+    };
+    assert_eq!(actual_prefix, first);
+    let saved = actual_prefix.clone();
+    let mut bad = replacement.clone();
+    bad.mu_scale = f64::NAN;
+    assert!(controlled.resolve_service_boundary(Some(bad)).is_err());
+    assert!(controlled.advance_service().is_err());
+    assert_eq!(
+        controlled.resolve_service_boundary(Some(replacement)),
+        Ok(1)
+    );
+    let committed = match controlled.advance_service().unwrap() {
+        ResolvedServiceStepV3::Lap(p) => p,
+        _ => panic!("commit required"),
+    };
+    assert_eq!(committed.cumulative_time_s, first.cumulative_time_s + 20.0);
+    assert!(committed.pit_stop_completed);
+    assert_eq!(committed.state_after_lap.tire_wear, 0.0);
+    assert_eq!(committed.end_speed_mps, None);
+    assert_eq!(actual_prefix, saved);
+    let actual = loop {
+        match controlled.advance_service().unwrap() {
+            ResolvedServiceStepV3::BeforeService(p) => {
+                if p.lap_index == 4 {
+                    assert!(
+                        controlled
+                            .resolve_service_boundary(Some(expected.applied_vehicle.tire.clone()))
+                            .is_err()
+                    );
+                }
+                controlled.resolve_service_boundary(None).unwrap();
+            }
+            ResolvedServiceStepV3::Lap(p) => assert!(
+                !p.pit_stop_completed,
+                "remaining original stop must have been replaced"
+            ),
+            ResolvedServiceStepV3::Complete(result) => break *result,
+        }
+    };
+    assert_eq!(actual, expected);
+    let mut normal = ResolvedSimulationSessionV3::new(equivalent).unwrap();
+    assert!(normal.advance_service().is_err());
+    assert!(normal.resolve_service_boundary(None).is_err());
+    assert!(matches!(
+        normal.advance().unwrap(),
+        ResolvedSimulationStepV3::Lap(_)
+    ));
+}

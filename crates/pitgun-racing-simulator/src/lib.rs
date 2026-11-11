@@ -277,9 +277,65 @@ pub enum RacingSessionProgressV1 {
     rename_all = "snake_case"
 )]
 pub enum RacingSessionEventV1 {
-    LapCompleted { competitor_id: String, lap: u16 },
-    PitStopCompleted { competitor_id: String, lap: u16 },
-    DriverInstructionApplied { competitor_id: String, lap: u16 },
+    LapCompleted {
+        competitor_id: String,
+        lap: u16,
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        timing: Option<RacingEventTimingV1>,
+    },
+    PitStopCompleted {
+        competitor_id: String,
+        lap: u16,
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        timing: Option<RacingEventTimingV1>,
+    },
+    DriverInstructionApplied {
+        competitor_id: String,
+        lap: u16,
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        timing: Option<RacingEventTimingV1>,
+    },
+}
+
+/// Optional local event timing. Omitted on historical/governed streams to
+/// preserve their published bytes. Physical time is rounded to the nearest us.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(deny_unknown_fields)]
+pub struct RacingEventTimingV1 {
+    pub schema_version: RacingEventTimingVersion,
+    /// Stable within a run; consumers must also bind the run identity.
+    pub event_id: pitgun_contract::Digest,
+    pub occurred_at_us: u64,
+    /// Player compute frontier releasing this record, never a wall clock.
+    pub released_at_us: u64,
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum RacingEventTimingVersion {
+    #[serde(rename = "pitgun.racing-event-timing/v1")]
+    V1,
+}
+
+impl RacingSessionEventV1 {
+    fn with_timing(mut self, occurred_at_us: u64, released_at_us: u64) -> Result<Self, String> {
+        let event_id = canonical_json_digest(&self).map_err(|e| e.to_string())?;
+        let timing = match &mut self {
+            Self::LapCompleted { timing, .. }
+            | Self::PitStopCompleted { timing, .. }
+            | Self::DriverInstructionApplied { timing, .. } => timing,
+        };
+        *timing = Some(RacingEventTimingV1 {
+            schema_version: RacingEventTimingVersion::V1,
+            event_id,
+            occurred_at_us,
+            released_at_us,
+        });
+        Ok(self)
+    }
+}
+
+fn physical_time_us(seconds: f64) -> u64 {
+    (seconds * 1_000_000.0).round() as u64
 }
 
 pub type RacingSessionStreamRecordV1 =
@@ -2432,6 +2488,7 @@ struct IncrementalV3Competitor {
     // solved paths live separately until their common-time prefix is emitted.
     prefetched_laps: VecDeque<ResolvedSimulationLapV3>,
     playback_tail: Vec<[f64; 2]>,
+    pending_events: VecDeque<(u64, RacingSessionEventV1)>,
     result: Option<SimulationResult>,
 }
 
@@ -2448,6 +2505,53 @@ impl IncrementalV3Competitor {
             let (time, distance) = previous
                 .map(|p| (p.cumulative_time_s, p.cumulative_distance_m))
                 .unwrap_or((0.0, 0.0));
+            let lap_index = lap.lap_index;
+            if self
+                .driver_instruction_schedule
+                .as_ref()
+                .is_some_and(|schedule| {
+                    schedule
+                        .transitions
+                        .iter()
+                        .skip(1)
+                        .any(|transition| transition.effective_at.lap_index + 1 == lap_index)
+                })
+            {
+                self.pending_events.push_back((
+                    physical_time_us(time),
+                    RacingSessionEventV1::DriverInstructionApplied {
+                        competitor_id: self.competitor_id.clone(),
+                        lap: lap_index,
+                        timing: None,
+                    },
+                ));
+            }
+            // Lap crossing precedes optional service in the current Racing model.
+            let crossing = time
+                + lap
+                    .solution
+                    .t
+                    .last()
+                    .copied()
+                    .ok_or("missing solved lap time")?;
+            self.pending_events.push_back((
+                physical_time_us(crossing),
+                RacingSessionEventV1::LapCompleted {
+                    competitor_id: self.competitor_id.clone(),
+                    lap: lap_index,
+                    timing: None,
+                },
+            ));
+            if lap.pit_stop_completed {
+                self.pending_events.push_back((
+                    physical_time_us(lap.cumulative_time_s),
+                    RacingSessionEventV1::PitStopCompleted {
+                        competitor_id: self.competitor_id.clone(),
+                        lap: lap_index,
+                        timing: None,
+                    },
+                ));
+            }
             self.playback_tail.extend(
                 lap.solution
                     .t
@@ -2780,6 +2884,7 @@ impl IncrementalRacingSession {
                 latest_lap: None,
                 prefetched_laps: VecDeque::new(),
                 playback_tail: Vec::new(),
+                pending_events: VecDeque::new(),
                 result: None,
             });
         }
@@ -3089,36 +3194,75 @@ impl IncrementalRacingSession {
         }
 
         let mut session_events = Vec::new();
-        for competitor in &self.competitors {
-            session_events.push(RacingSessionEventV1::LapCompleted {
-                competitor_id: competitor.competitor_id.clone(),
-                lap,
-            });
-            if competitor
-                .latest_lap
-                .as_ref()
-                .is_some_and(|progress| progress.pit_stop_completed)
-            {
-                session_events.push(RacingSessionEventV1::PitStopCompleted {
-                    competitor_id: competitor.competitor_id.clone(),
-                    lap,
-                });
+        if self.align_player_horizon {
+            let released_at_us = physical_time_us(
+                self.competitors
+                    .iter()
+                    .find(|c| c.is_player)
+                    .and_then(|c| c.latest_lap.as_ref())
+                    .unwrap()
+                    .cumulative_time_s,
+            );
+            let mut observed = Vec::new();
+            for car in &mut self.competitors {
+                while car
+                    .pending_events
+                    .front()
+                    .is_some_and(|(time, _)| *time <= released_at_us)
+                {
+                    let (time, event) = car.pending_events.pop_front().unwrap();
+                    observed.push((time, event.with_timing(time, released_at_us)?));
+                }
             }
-            if competitor
-                .driver_instruction_schedule
-                .as_ref()
-                .is_some_and(|schedule| {
-                    schedule
-                        .transitions
-                        .iter()
-                        .skip(1)
-                        .any(|transition| transition.effective_at.lap_index + 1 == lap)
+            // Stable physical ordering, independent of input roster or pull cadence.
+            observed.sort_by(|a, b| {
+                a.0.cmp(&b.0).then_with(|| {
+                    let id = |event: &RacingSessionEventV1| match event {
+                        RacingSessionEventV1::LapCompleted { timing, .. }
+                        | RacingSessionEventV1::PitStopCompleted { timing, .. }
+                        | RacingSessionEventV1::DriverInstructionApplied { timing, .. } => {
+                            timing.as_ref().unwrap().event_id.to_string()
+                        }
+                    };
+                    id(&a.1).cmp(&id(&b.1))
                 })
-            {
-                session_events.push(RacingSessionEventV1::DriverInstructionApplied {
+            });
+            session_events.extend(observed.into_iter().map(|(_, event)| event));
+        } else {
+            for competitor in &self.competitors {
+                session_events.push(RacingSessionEventV1::LapCompleted {
                     competitor_id: competitor.competitor_id.clone(),
                     lap,
+                    timing: None,
                 });
+                if competitor
+                    .latest_lap
+                    .as_ref()
+                    .is_some_and(|progress| progress.pit_stop_completed)
+                {
+                    session_events.push(RacingSessionEventV1::PitStopCompleted {
+                        competitor_id: competitor.competitor_id.clone(),
+                        lap,
+                        timing: None,
+                    });
+                }
+                if competitor
+                    .driver_instruction_schedule
+                    .as_ref()
+                    .is_some_and(|schedule| {
+                        schedule
+                            .transitions
+                            .iter()
+                            .skip(1)
+                            .any(|transition| transition.effective_at.lap_index + 1 == lap)
+                    })
+                {
+                    session_events.push(RacingSessionEventV1::DriverInstructionApplied {
+                        competitor_id: competitor.competitor_id.clone(),
+                        lap,
+                        timing: None,
+                    });
+                }
             }
         }
         for event in session_events {

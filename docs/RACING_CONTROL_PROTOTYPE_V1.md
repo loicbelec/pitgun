@@ -243,3 +243,51 @@ and byte-identical native results versus the unchanged batch path. Exact runtime
 hashes still distinguish old and new implementations. Hosts must resume an old
 journal with its saved binary, not substitute this implementation by version label.
 Full-GP/lifecycle qualification and Authority/Verifier delegation remain open.
+
+### Physical events and native before-service primitive (11 November)
+
+See [interactive simulation ownership and lifecycle](INTERACTIVE_SIMULATION_CONTROL.md).
+Racing semantics remain domain-owned; a second-domain example is to be selected
+with the owner before public contract freeze. Neither host wall time nor replay
+speed becomes a physics input.
+
+New local aligned streams add optional `timing` metadata to existing typed event
+payloads: schema `pitgun.racing-event-timing/v1`, run-scoped stable event digest,
+`occurred_at_us` on the actor's physical clock, and `released_at_us` on the player
+compute frontier. Times round to nearest microsecond. Default/governed streams
+omit this field, retaining their published byte vectors. Logical stream ticks
+still order batches; they are not elapsed race time.
+
+The engine captures events when a solved lap is produced, including prefetched
+rivals. It queues future facts until occurrence is within the player horizon and
+releases them in stable physical-time/digest order. An instruction applies at lap
+start; a completed lap crosses before optional service; a completed pit follows
+service time. Slow-rival events later than the player's finish remain unreleased
+in this player-horizon progress stream; terminal standings are still separate.
+No accident/VSC/weather event is invented by this increment.
+
+`ResolvedSimulationSessionV3::new_with_service_boundaries` enables a separate
+native-only experimental path:
+
+- `advance_service()` first returns `BeforeService` with the solved driving path,
+  fuel/wear/thermal state and cumulative time before any current-lap pit service.
+- Further pulls fail without polling while that boundary is unresolved.
+- `resolve_service_boundary(None)` keeps the plan; an authorized tire selected by
+  the caller replaces remaining stops with a stop at that boundary. The last-lap
+  restriction, invalid tire and closed-boundary checks precede mutation.
+- The following `Lap` step commits service/state with an empty solution: the path
+  was emitted once. Subsequent driving resumes from that state. Default `advance`
+  and service stepping reject mixed API use rather than silently bypassing a gate.
+
+Two tests preserve exact canonical native output for keep-plan, and match an
+equivalent fixed pit plan after a real service change. They check unchanged driving
+prefix, physical service time, reset state, replaced remaining stop, unresolved
+pulls, invalid/closed/final commands and mixed API rejection. A separate event test
+covers faster/slower clocks, prefetched instruction events, withheld future facts,
+unique ordering and distinct crossing/service times. All132 tests across Racing
+policy/Simulator/Solver pass, plus strict library Clippy and formatting.
+
+This primitive is not yet used by `LocalControlledRacingSession` or exported by its
+JSON handles. The v1 Pit Wall still pauses at completed-lap decisions. Domain
+orchestration, pending-window/timeout journal semantics and transport/recovery
+must be adapted explicitly before continuous-play decisions can be claimed.

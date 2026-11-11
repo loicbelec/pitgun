@@ -623,3 +623,172 @@ fn common_time_prefix_keeps_the_unemitted_bracket_and_stationary_service() {
         vec![[40.0, 200.0], [40.0, 200.0]]
     );
 }
+
+#[test]
+fn physical_events_release_only_observed_rival_facts_and_separate_crossing_from_service() {
+    use crate::{RacingSessionEventV1, RacingSessionProgressV1};
+    let mut request = request();
+    let base = request.input.race.competitors[0].clone();
+    for (id, engine, cooling) in [("fast", 55.0, 5.0), ("slow", 5.0, 55.0)] {
+        let mut rival = base.clone();
+        rival.id = id.into();
+        rival.is_player = false;
+        rival.tuning.engine_points = engine;
+        rival.tuning.cooling_points = cooling;
+        rival.tuning.aero_points = 20.0;
+        rival.tuning.chassis_points = 20.0;
+        request.input.race.competitors.push(rival);
+    }
+    let snapshot = RacingCatalogSnapshot::embedded_model_v3_fuel_contract().unwrap();
+    let event_timeline: RacingDriverInstructionTimelineV1 = serde_json::from_value(serde_json::json!({
+        "schema_version":"pitgun.racing-driver-instruction-timeline/v1",
+        "events":[{"sequence":0,"competitor_id":"fast","effective_at":{"lap_index":1,"segment_index":0},"mode":"attack"}]
+    })).unwrap();
+    let mut baseline = start_incremental_race_with_catalog_and_v3_fuel_contract_candidate(
+        request.clone(),
+        &snapshot,
+        event_timeline.clone(),
+    )
+    .unwrap();
+    let mut expected = BTreeMap::new();
+    for _ in 0..5 {
+        baseline.advance().unwrap();
+        for car in &baseline.competitors {
+            let lap = car.latest_lap.as_ref().unwrap();
+            if car.competitor_id == "fast" && lap.lap_index == 1 {
+                expected.insert(
+                    (car.competitor_id.clone(), 2, "instruction"),
+                    crate::physical_time_us(lap.cumulative_time_s),
+                );
+            }
+            let service = if lap.pit_stop_completed {
+                baseline.pit_loss_ms as f64 / 1000.0
+            } else {
+                0.0
+            };
+            expected.insert(
+                (car.competitor_id.clone(), lap.lap_index, "lap"),
+                crate::physical_time_us(lap.cumulative_time_s - service),
+            );
+            if lap.pit_stop_completed {
+                expected.insert(
+                    (car.competitor_id.clone(), lap.lap_index, "pit"),
+                    crate::physical_time_us(lap.cumulative_time_s),
+                );
+            }
+        }
+    }
+    let mut controlled =
+        LocalControlledRacingSession::start(request, &snapshot, event_timeline, config()).unwrap();
+    let mut seen = BTreeMap::new();
+    let mut ids = std::collections::BTreeSet::new();
+    let mut saw_future_pending = false;
+    let mut saw_prefetched_event = false;
+    let mut last_time = 0;
+    loop {
+        match controlled.advance().unwrap() {
+            ControlStep::AwaitingDecision(o) => {
+                controlled
+                    .propose(reference_proposal(&o, 0, "hard").unwrap())
+                    .unwrap();
+            }
+            ControlStep::Batch(batch) => {
+                let mut completed = false;
+                for record in batch.records() {
+                    match record.event() {
+                        IncrementalExecutionStreamEventV1::Complete(_) => completed = true,
+                        IncrementalExecutionStreamEventV1::Progress(
+                            RacingSessionProgressV1::Event(event),
+                        ) => {
+                            let (id, lap, kind, timing) = match event {
+                                RacingSessionEventV1::LapCompleted {
+                                    competitor_id,
+                                    lap,
+                                    timing,
+                                } => (competitor_id, *lap, "lap", timing),
+                                RacingSessionEventV1::PitStopCompleted {
+                                    competitor_id,
+                                    lap,
+                                    timing,
+                                } => (competitor_id, *lap, "pit", timing),
+                                RacingSessionEventV1::DriverInstructionApplied {
+                                    competitor_id,
+                                    lap,
+                                    timing,
+                                } => (competitor_id, *lap, "instruction", timing),
+                            };
+                            let timing = timing.as_ref().expect("native timing required");
+                            let horizon = crate::physical_time_us(
+                                controlled
+                                    .session
+                                    .competitors
+                                    .iter()
+                                    .find(|c| c.is_player)
+                                    .unwrap()
+                                    .latest_lap
+                                    .as_ref()
+                                    .unwrap()
+                                    .cumulative_time_s,
+                            );
+                            assert_eq!(timing.released_at_us, horizon);
+                            assert!(timing.occurred_at_us <= horizon);
+                            assert!(timing.occurred_at_us >= last_time);
+                            last_time = timing.occurred_at_us;
+                            assert!(ids.insert(timing.event_id.to_string()));
+                            let key = (id.clone(), lap, kind);
+                            assert_eq!(timing.occurred_at_us, expected[&key]);
+                            assert!(seen.insert(key, timing.occurred_at_us).is_none());
+                            let car = controlled
+                                .session
+                                .competitors
+                                .iter()
+                                .find(|c| c.competitor_id == *id)
+                                .unwrap();
+                            saw_prefetched_event |=
+                                car.latest_lap.as_ref().unwrap().lap_index < lap;
+                        }
+                        _ => {}
+                    }
+                }
+                if completed {
+                    break;
+                }
+                let horizon = crate::physical_time_us(
+                    controlled
+                        .session
+                        .competitors
+                        .iter()
+                        .find(|c| c.is_player)
+                        .unwrap()
+                        .latest_lap
+                        .as_ref()
+                        .unwrap()
+                        .cumulative_time_s,
+                );
+                saw_future_pending |= controlled
+                    .session
+                    .competitors
+                    .iter()
+                    .any(|c| c.pending_events.iter().any(|(t, _)| *t > horizon));
+            }
+        }
+    }
+    assert!(
+        saw_future_pending,
+        "slow rival events must wait for their physical time"
+    );
+    assert!(
+        saw_prefetched_event,
+        "fast rival facts must not wait for the same lap-number checkpoint"
+    );
+    let crossing = seen[&("player".into(), 3, "lap")];
+    let service = seen[&("player".into(), 3, "pit")];
+    assert_eq!(service - crossing, controlled.session.pit_loss_ms * 1000);
+    // A slow rival's last crossing after the player's finish is intentionally
+    // not disclosed by this player-horizon progress stream.
+    assert!(
+        expected
+            .keys()
+            .all(|key| seen.contains_key(key) || key.0 == "slow")
+    );
+}
