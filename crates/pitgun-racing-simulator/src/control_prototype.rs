@@ -4,6 +4,8 @@
 //! The host supplies pinned inputs and persists the journal. This module has
 //! no clock, provider, network, renderer or access to a competitor's future.
 
+#[cfg(test)]
+use crate::start_incremental_race_with_catalog_and_v3_fuel_contract_candidate;
 use std::collections::BTreeMap;
 
 use pitgun_contract::{Digest, canonical_json_digest};
@@ -13,8 +15,7 @@ use crate::{
     EmbeddedCatalog, IncrementalExecutionStreamEventV1, IncrementalRacingSession, PitStop,
     RaceOutput, RacingCatalogSnapshot, RacingDriverInstructionTimelineV1,
     RacingSessionStreamBatchV1, RunRaceRequest, TireParams,
-    racing_model_v3_fuel_contract_candidate_identity,
-    start_incremental_race_with_catalog_and_v3_fuel_contract_candidate,
+    racing_model_v3_fuel_contract_candidate_identity, start_fuel_contract_control_mode,
 };
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -33,6 +34,29 @@ pub struct LocalControlConfig {
     /// One-based count of completed laps. Strictly increasing, before finish.
     pub decision_laps: Vec<u16>,
     pub allowed_tire_ids: Vec<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub service_windows: Option<ServiceWindowPolicy>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum ServiceWindowVersion {
+    #[serde(rename = "pitgun.racing-service-window/v1")]
+    V1,
+}
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ServiceWindowPolicy {
+    pub schema_version: ServiceWindowVersion,
+    pub closing_margin_us: u64,
+}
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ServiceWindow {
+    pub schema_version: ServiceWindowVersion,
+    pub opened_at_us: u64,
+    pub deadline_at_us: u64,
+    pub service_at_us: u64,
+    pub service_lap: u16,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -55,6 +79,8 @@ pub struct PlayerObservation {
     pub remaining_planned_pit_laps: Vec<u16>,
     pub allowed_tire_ids: Vec<String>,
     pub can_pit_next_lap: bool,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub window: Option<Box<ServiceWindow>>,
 }
 
 impl PlayerObservation {
@@ -104,6 +130,8 @@ pub struct Proposal {
     pub idempotency_key: String,
     pub source: ProposalSource,
     pub action: Action,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub decision_at_us: Option<u64>,
 }
 
 impl Proposal {
@@ -122,6 +150,7 @@ impl Proposal {
             idempotency_key,
             source,
             action,
+            decision_at_us: observation.window.as_ref().map(|w| w.opened_at_us),
         })
     }
 }
@@ -157,6 +186,8 @@ pub struct LocalControlledRacingSession {
     tires: BTreeMap<String, TireParams>,
     next_decision: usize,
     pending: Option<PlayerObservation>,
+    opening: Option<(PlayerObservation, u64)>,
+    service_resolved: bool,
     accepted: BTreeMap<String, AppliedDecision>,
     journal: Vec<JournalEntry>,
 }
@@ -218,8 +249,18 @@ impl LocalControlledRacingSession {
             &config,
         ))
         .map_err(|error| error.to_string())?;
-        let mut session = start_incremental_race_with_catalog_and_v3_fuel_contract_candidate(
-            request, snapshot, timeline,
+        if config
+            .service_windows
+            .as_ref()
+            .is_some_and(|p| p.closing_margin_us > 30_000_000)
+        {
+            return Err("service closing margin exceeds 30 seconds".into());
+        }
+        let mut session = start_fuel_contract_control_mode(
+            request,
+            snapshot,
+            timeline,
+            config.service_windows.is_some(),
         )?;
         session.align_player_horizon = true;
         Ok(Self {
@@ -229,6 +270,8 @@ impl LocalControlledRacingSession {
             tires,
             next_decision: 0,
             pending: None,
+            opening: None,
+            service_resolved: false,
             accepted: BTreeMap::new(),
             journal: Vec::new(),
         })
@@ -242,6 +285,9 @@ impl LocalControlledRacingSession {
         if let Some(observation) = &self.pending {
             return Ok(ControlStep::AwaitingDecision(observation.clone()));
         }
+        if self.config.service_windows.is_some() {
+            return self.advance_window();
+        }
         let player = self
             .session
             .competitors
@@ -251,36 +297,115 @@ impl LocalControlledRacingSession {
         if let Some(lap) = &player.latest_lap
             && self.config.decision_laps.get(self.next_decision) == Some(&lap.lap_index)
         {
-            let completed = lap.lap_index;
-            let observation = PlayerObservation {
-                version: PrototypeVersion::V1,
-                domain: "racing".to_string(),
-                run_digest: self.run_digest,
-                decision_sequence: self.next_decision as u64,
-                completed_laps: completed,
-                total_laps: self.session.laps,
-                player_id: player.competitor_id.clone(),
-                last_lap_time_ms: (lap.lap_time_s * 1000.0).round() as u64,
-                cumulative_time_ms: (lap.cumulative_time_s * 1000.0).round() as u64,
-                fuel_mass_kg: lap.state_after_lap.fuel_mass,
-                tire_wear_fraction: lap.state_after_lap.tire_wear,
-                tire_temperature_c: lap.state_after_lap.tire_temp,
-                engine_temperature_c: lap.state_after_lap.engine_temp,
-                next_lap_tire_id: player.stint_plan.tire_by_lap[completed as usize].clone(),
-                remaining_planned_pit_laps: player
-                    .stint_plan
-                    .pit_laps
-                    .iter()
-                    .copied()
-                    .filter(|lap| *lap > completed)
-                    .collect(),
-                allowed_tire_ids: self.tires.keys().cloned().collect(),
-                can_pit_next_lap: completed + 1 < self.session.laps && !self.tires.is_empty(),
-            };
+            let observation = self.completed_observation()?;
             self.journal
                 .push(JournalEntry::Observation(observation.clone()));
             self.pending = Some(observation.clone());
             return Ok(ControlStep::AwaitingDecision(observation));
+        }
+        self.session.advance().map(ControlStep::Batch)
+    }
+
+    fn completed_observation(&self) -> Result<PlayerObservation, String> {
+        let player = self
+            .session
+            .competitors
+            .iter()
+            .find(|c| c.is_player)
+            .ok_or("missing player")?;
+        let lap = player
+            .latest_lap
+            .as_ref()
+            .ok_or("missing completed player lap")?;
+        let completed = lap.lap_index;
+        Ok(PlayerObservation {
+            version: PrototypeVersion::V1,
+            domain: "racing".to_string(),
+            run_digest: self.run_digest,
+            decision_sequence: self.next_decision as u64,
+            completed_laps: completed,
+            total_laps: self.session.laps,
+            player_id: player.competitor_id.clone(),
+            last_lap_time_ms: (lap.lap_time_s * 1000.0).round() as u64,
+            cumulative_time_ms: (lap.cumulative_time_s * 1000.0).round() as u64,
+            fuel_mass_kg: lap.state_after_lap.fuel_mass,
+            tire_wear_fraction: lap.state_after_lap.tire_wear,
+            tire_temperature_c: lap.state_after_lap.tire_temp,
+            engine_temperature_c: lap.state_after_lap.engine_temp,
+            next_lap_tire_id: player.stint_plan.tire_by_lap[completed as usize].clone(),
+            remaining_planned_pit_laps: player
+                .stint_plan
+                .pit_laps
+                .iter()
+                .copied()
+                .filter(|lap| *lap > completed)
+                .collect(),
+            allowed_tire_ids: self.tires.keys().cloned().collect(),
+            can_pit_next_lap: completed + 1 < self.session.laps && !self.tires.is_empty(),
+            window: None,
+        })
+    }
+    pub fn has_window_prefix(&self) -> bool {
+        self.opening.is_some() && self.session.service_pending
+    }
+    fn advance_window(&mut self) -> Result<ControlStep, String> {
+        if self.session.service_pending {
+            if let Some((mut observation, opened_at_us)) = self.opening.take() {
+                let player = self
+                    .session
+                    .competitors
+                    .iter()
+                    .find(|c| c.is_player)
+                    .unwrap();
+                let lap = player.latest_lap.as_ref().unwrap();
+                let service_at_us = crate::physical_time_us(lap.cumulative_time_s);
+                let deadline_at_us = service_at_us.saturating_sub(
+                    self.config
+                        .service_windows
+                        .as_ref()
+                        .unwrap()
+                        .closing_margin_us,
+                );
+                if deadline_at_us <= opened_at_us {
+                    return Err("service window has no reaction interval".into());
+                }
+                observation.window = Some(Box::new(ServiceWindow {
+                    schema_version: ServiceWindowVersion::V1,
+                    opened_at_us,
+                    deadline_at_us,
+                    service_at_us,
+                    service_lap: lap.lap_index,
+                }));
+                self.journal
+                    .push(JournalEntry::Observation(observation.clone()));
+                self.pending = Some(observation.clone());
+                return Ok(ControlStep::AwaitingDecision(observation));
+            }
+            if !self.service_resolved {
+                self.session
+                    .competitors
+                    .iter_mut()
+                    .find(|c| c.is_player)
+                    .unwrap()
+                    .solver
+                    .resolve_service_boundary(None)?;
+            }
+            self.service_resolved = false;
+            return self.session.advance().map(ControlStep::Batch);
+        }
+        let player = self
+            .session
+            .competitors
+            .iter()
+            .find(|c| c.is_player)
+            .unwrap();
+        if let Some(lap) = &player.latest_lap
+            && self.config.decision_laps.get(self.next_decision) == Some(&lap.lap_index)
+        {
+            self.opening = Some((
+                self.completed_observation()?,
+                crate::physical_time_us(lap.cumulative_time_s),
+            ));
         }
         self.session.advance().map(ControlStep::Batch)
     }
@@ -322,13 +447,42 @@ impl LocalControlledRacingSession {
         {
             return Err("proposal does not bind the open observation".to_string());
         }
+        match (&observation.window, proposal.decision_at_us) {
+            (Some(window), Some(at)) => {
+                let expiry = matches!(
+                    proposal.source,
+                    ProposalSource::Fallback {
+                        reason: FallbackReason::Timeout
+                    }
+                );
+                if at < window.opened_at_us
+                    || (expiry && at != window.deadline_at_us)
+                    || (!expiry && at >= window.deadline_at_us)
+                {
+                    return Err("proposal is outside its logical service window".into());
+                }
+            }
+            (None, None) => {}
+            _ => return Err("proposal decision clock does not match the window mode".into()),
+        }
         if matches!(proposal.source, ProposalSource::Fallback { .. })
             && proposal.action != Action::KeepPlan
         {
             return Err("the prototype fallback may only keep the plan".to_string());
         }
         let pit_after_lap = match &proposal.action {
-            Action::KeepPlan => None,
+            Action::KeepPlan => {
+                if observation.window.is_some() {
+                    self.session
+                        .competitors
+                        .iter_mut()
+                        .find(|c| c.is_player)
+                        .unwrap()
+                        .solver
+                        .resolve_service_boundary(None)?;
+                }
+                None
+            }
             Action::PitNextLap { tire_id } => {
                 if !observation.can_pit_next_lap {
                     return Err("pit is unavailable at this boundary".to_string());
@@ -344,7 +498,14 @@ impl LocalControlledRacingSession {
                     .iter_mut()
                     .find(|c| c.is_player)
                     .ok_or_else(|| "missing player".to_string())?;
-                let pit_lap = player.solver.request_next_lap_pit(tire.clone())?;
+                let pit_lap = if let Some(window) = &observation.window {
+                    if player.latest_lap.as_ref().map(|p| p.lap_index) != Some(window.service_lap) {
+                        return Err("service frontier mismatch".into());
+                    }
+                    player.solver.resolve_service_boundary(Some(tire.clone()))?
+                } else {
+                    player.solver.request_next_lap_pit(tire.clone())?
+                };
                 // Keep metadata and final lap-time service accounting aligned
                 // with the actual Solver transition, including replaced stints.
                 player
@@ -376,6 +537,7 @@ impl LocalControlledRacingSession {
         self.accepted
             .insert(proposal.idempotency_key.clone(), applied.clone());
         self.journal.push(JournalEntry::Applied(applied.clone()));
+        self.service_resolved = observation.window.is_some();
         self.pending = None;
         self.next_decision += 1;
         Ok(applied)

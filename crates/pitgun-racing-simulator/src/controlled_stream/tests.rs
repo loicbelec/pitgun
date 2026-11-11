@@ -63,6 +63,7 @@ fn proposal(r: &Value, action: Action, key: &str) -> Proposal {
         idempotency_key: key.into(),
         source: ProposalSource::ReferenceController,
         action,
+        decision_at_us: None,
     }
 }
 
@@ -173,4 +174,55 @@ fn incomplete_completion_and_release_do_not_produce_a_result() {
     assert!(pull(h).get("error").is_none());
     assert!(!release_experimental_controlled_racing_session_json(h).contains("error"));
     assert!(release_experimental_controlled_racing_session_json(h).contains("unknown"));
+}
+
+#[test]
+fn live_window_transport_marks_one_unaffected_prefix_and_accepts_only_the_bound_clock() {
+    let (a, b, c, d) = fixture();
+    let mut config: Value = serde_json::from_str(&d).unwrap();
+    config["service_windows"] =
+        json!({"schema_version":"pitgun.racing-service-window/v1","closing_margin_us":5_000_000});
+    config["decision_laps"] = json!([1]);
+    let start: Value = serde_json::from_str(&start_experimental_controlled_racing_session_json(
+        a,
+        b,
+        c,
+        config.to_string(),
+    ))
+    .unwrap();
+    let h = start["handle"].as_u64().unwrap() as u32;
+    let mut prefix_count = 0;
+    let boundary = loop {
+        let r = pull(h);
+        assert!(r.get("error").is_none(), "{r}");
+        if r["control_prefix"] == true {
+            prefix_count += 1;
+            assert_eq!(r["kind"], "batch");
+        }
+        if r["kind"] == "decision" {
+            break r;
+        }
+    };
+    assert_eq!(prefix_count, 1);
+    assert_eq!(pull(h), boundary);
+    let window = &boundary["observation"]["window"];
+    let mut late = proposal(&boundary, Action::KeepPlan, "late-clock");
+    late.decision_at_us = window["deadline_at_us"].as_u64();
+    assert!(submit(h, &late).get("error").is_some());
+    let mut keep = proposal(&boundary, Action::KeepPlan, "expiry");
+    keep.source = ProposalSource::Fallback {
+        reason: crate::control_prototype::FallbackReason::Timeout,
+    };
+    keep.decision_at_us = window["deadline_at_us"].as_u64();
+    assert!(submit(h, &keep).get("error").is_none());
+    loop {
+        let r = pull(h);
+        assert!(r.get("error").is_none(), "{r}");
+        if r["complete"] == true {
+            break;
+        }
+    }
+    let result: Value =
+        serde_json::from_str(&complete_experimental_controlled_racing_session_json(h)).unwrap();
+    assert_eq!(result["result"]["player_pit_laps"], json!([3]));
 }

@@ -19,6 +19,7 @@ fn config() -> LocalControlConfig {
         execution_id: "local-control-fixture-1".into(),
         runtime_digest: Digest::from_bytes(b"test runtime, not a distributed attestation"),
         decision_laps: vec![1, 3, 4],
+        service_windows: None,
         allowed_tire_ids: vec!["hard".into(), "soft".into()],
     }
 }
@@ -800,5 +801,108 @@ fn physical_events_release_only_observed_rival_facts_and_separate_crossing_from_
         expected
             .keys()
             .all(|key| seen.contains_key(key) || key.0 == "slow")
+    );
+}
+
+fn live_start() -> LocalControlledRacingSession {
+    let mut cfg = config();
+    cfg.service_windows = Some(ServiceWindowPolicy {
+        schema_version: ServiceWindowVersion::V1,
+        closing_margin_us: 5_000_000,
+    });
+    LocalControlledRacingSession::start(
+        request(),
+        &RacingCatalogSnapshot::embedded_model_v3_fuel_contract().unwrap(),
+        timeline(),
+        cfg,
+    )
+    .unwrap()
+}
+
+#[test]
+fn service_window_observes_the_committed_past_and_modifies_only_service_after_driving() {
+    let mut session = live_start();
+    let observation = observe(&mut session);
+    let window = observation.window.as_ref().unwrap();
+    assert_eq!(observation.completed_laps, 1);
+    assert_eq!(window.service_lap, 2);
+    assert!(window.opened_at_us < window.deadline_at_us);
+    assert_eq!(window.service_at_us - window.deadline_at_us, 5_000_000);
+    let prefix = session.session.competitors[0].latest_lap.clone().unwrap();
+    assert_eq!(prefix.lap_index, 2);
+    assert!(!prefix.pit_stop_completed);
+    assert!(
+        observation.fuel_mass_kg > prefix.state_after_lap.fuel_mass,
+        "observation must not expose the solved future state"
+    );
+    for _ in 0..3 {
+        assert_eq!(observe(&mut session), observation);
+    }
+    let mut p = reference_proposal(&observation, 1, "hard").unwrap();
+    p.decision_at_us = Some(window.opened_at_us + 1_000_000);
+    let receipt = session.propose(p.clone()).unwrap();
+    assert_eq!(receipt.pit_after_lap, Some(2));
+    assert_eq!(session.propose(p).unwrap(), receipt);
+    assert_eq!(
+        session.session.competitors[0].latest_lap.as_ref(),
+        Some(&prefix),
+        "receipt must precede future mutation"
+    );
+    let actual = finish(&mut session, false);
+    let mut old = start();
+    let expected = finish(&mut old, true);
+    assert_eq!(
+        canonical_json_bytes(&actual).unwrap(),
+        canonical_json_bytes(&expected).unwrap()
+    );
+    let replayed = replay(
+        request(),
+        &RacingCatalogSnapshot::embedded_model_v3_fuel_contract().unwrap(),
+        timeline(),
+        session.config.clone(),
+        &applied(&session),
+    )
+    .unwrap();
+    assert_eq!(
+        canonical_json_bytes(&replayed).unwrap(),
+        canonical_json_bytes(&actual).unwrap()
+    );
+}
+
+#[test]
+fn service_window_deadline_rejects_late_commands_and_records_an_explicit_keep_fallback() {
+    let mut session = live_start();
+    let observation = observe(&mut session);
+    let w = observation.window.as_ref().unwrap();
+    let mut p = reference_proposal(&observation, 1, "hard").unwrap();
+    p.decision_at_us = Some(w.deadline_at_us);
+    assert!(session.propose(p.clone()).unwrap_err().contains("outside"));
+    assert_eq!(observe(&mut session), observation);
+    p.decision_at_us = None;
+    assert!(session.propose(p.clone()).is_err());
+    p.decision_at_us = Some(w.opened_at_us - 1);
+    assert!(session.propose(p).is_err());
+    let mut fallback = Proposal::for_observation(
+        &observation,
+        "deadline-0".into(),
+        ProposalSource::Fallback {
+            reason: FallbackReason::Timeout,
+        },
+        Action::KeepPlan,
+    )
+    .unwrap();
+    fallback.decision_at_us = Some(w.deadline_at_us);
+    session.propose(fallback.clone()).unwrap();
+    let actual = finish(&mut session, false);
+    assert_eq!(session.propose(fallback).unwrap().pit_after_lap, None);
+    let expected = run_race_with_catalog_and_v3_fuel_contract_candidate(
+        request(),
+        &RacingCatalogSnapshot::embedded_model_v3_fuel_contract().unwrap(),
+        timeline(),
+    )
+    .unwrap();
+    assert_eq!(
+        canonical_json_bytes(&actual).unwrap(),
+        canonical_json_bytes(&expected).unwrap()
     );
 }

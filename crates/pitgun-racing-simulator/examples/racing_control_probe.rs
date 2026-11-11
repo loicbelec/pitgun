@@ -38,6 +38,7 @@ fn main() -> Result<(), String> {
     let config = LocalControlConfig {
         execution_id: "native-local-control-probe".into(),
         runtime_digest,
+        service_windows: None,
         decision_laps: vec![1, 3, 4],
         allowed_tire_ids: vec!["hard".into(), "soft".into()],
     };

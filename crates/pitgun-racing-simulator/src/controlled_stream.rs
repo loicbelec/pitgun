@@ -101,8 +101,10 @@ pub fn pull_experimental_controlled_racing_session_json(handle: u32) -> String {
                 session.output = batch.records().iter().find_map(|record| match record.event() {
                     IncrementalExecutionStreamEventV1::Complete(output) => Some(output.clone()), _ => None,
                 });
-                serde_json::json!({"schema_version":"pitgun.racing-control-pull/v1", "handle":handle,
-                    "kind":"batch", "complete":session.output.is_some(), "batch":batch}).to_string()
+                let mut response = serde_json::json!({"schema_version":"pitgun.racing-control-pull/v1", "handle":handle,
+                    "kind":"batch", "complete":session.output.is_some(), "batch":batch});
+                if session.engine.has_window_prefix() { response["control_prefix"] = serde_json::json!(true); }
+                response.to_string()
             }
         }
     })

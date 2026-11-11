@@ -2204,6 +2204,7 @@ pub fn start_incremental_race_with_catalog_and_v3_timeline_candidate(
         &profile,
         thermal_candidate,
         Some(V3DriverExperiment::Instructions(&experiment)),
+        false,
     )
 }
 
@@ -2226,9 +2227,18 @@ pub fn run_race_with_catalog_and_v3_fuel_contract_candidate(
 /// first lap. Callers pull deterministic bounded batches with
 /// [`IncrementalRacingSession::advance`].
 pub fn start_incremental_race_with_catalog_and_v3_fuel_contract_candidate(
+    request: RunRaceRequest,
+    snapshot: &RacingCatalogSnapshot,
+    timeline: RacingDriverInstructionTimelineV1,
+) -> Result<IncrementalRacingSession, String> {
+    start_fuel_contract_control_mode(request, snapshot, timeline, false)
+}
+
+fn start_fuel_contract_control_mode(
     mut request: RunRaceRequest,
     snapshot: &RacingCatalogSnapshot,
     timeline: RacingDriverInstructionTimelineV1,
+    service_control: bool,
 ) -> Result<IncrementalRacingSession, String> {
     let model = racing_model_v3_fuel_contract_candidate_identity();
     snapshot
@@ -2278,6 +2288,7 @@ pub fn start_incremental_race_with_catalog_and_v3_fuel_contract_candidate(
         &profile,
         thermal_candidate,
         Some(V3DriverExperiment::Instructions(&experiment)),
+        service_control,
     )?;
     session.minimum_finish_reserve_kg = Some(fuel_contract.minimum_finish_reserve_kg);
     Ok(session)
@@ -2289,6 +2300,7 @@ fn start_incremental_race_with_catalog_and_v3_component_profile(
     profile: &V3CandidateExperimentProfile,
     candidate: &V3PowerUnitThermalProfileCandidateV2,
     driver_experiment: Option<V3DriverExperiment<'_>>,
+    service_control: bool,
 ) -> Result<IncrementalRacingSession, String> {
     profile
         .validate()
@@ -2345,7 +2357,7 @@ fn start_incremental_race_with_catalog_and_v3_component_profile(
     if !initial_fuel_mass_kg.is_finite() || !(1.0..=200.0).contains(&initial_fuel_mass_kg) {
         return Err("V3 initial fuel mass must be in [1, 200] kg".to_string());
     }
-    IncrementalRacingSession::new_v3(
+    IncrementalRacingSession::new_v3_mode(
         &catalog,
         &normalized_race,
         vehicle_id,
@@ -2362,6 +2374,7 @@ fn start_incremental_race_with_catalog_and_v3_component_profile(
                 driver_experiment,
             },
         },
+        service_control,
     )
 }
 
@@ -2378,6 +2391,7 @@ fn run_race_with_catalog_and_v3_component_profile(
         profile,
         candidate,
         driver_experiment,
+        false,
     )?
     .collect()
 }
@@ -2501,72 +2515,76 @@ impl IncrementalV3Competitor {
             )
         })?;
         if playback && let ResolvedSimulationStepV3::Lap(lap) = &mut step {
-            let previous = self.prefetched_laps.back().or(self.latest_lap.as_ref());
-            let (time, distance) = previous
-                .map(|p| (p.cumulative_time_s, p.cumulative_distance_m))
-                .unwrap_or((0.0, 0.0));
-            let lap_index = lap.lap_index;
-            if self
-                .driver_instruction_schedule
-                .as_ref()
-                .is_some_and(|schedule| {
-                    schedule
-                        .transitions
-                        .iter()
-                        .skip(1)
-                        .any(|transition| transition.effective_at.lap_index + 1 == lap_index)
-                })
-            {
-                self.pending_events.push_back((
-                    physical_time_us(time),
-                    RacingSessionEventV1::DriverInstructionApplied {
-                        competitor_id: self.competitor_id.clone(),
-                        lap: lap_index,
-                        timing: None,
-                    },
-                ));
-            }
-            // Lap crossing precedes optional service in the current Racing model.
-            let crossing = time
-                + lap
-                    .solution
-                    .t
-                    .last()
-                    .copied()
-                    .ok_or("missing solved lap time")?;
-            self.pending_events.push_back((
-                physical_time_us(crossing),
-                RacingSessionEventV1::LapCompleted {
-                    competitor_id: self.competitor_id.clone(),
-                    lap: lap_index,
-                    timing: None,
-                },
-            ));
-            if lap.pit_stop_completed {
-                self.pending_events.push_back((
-                    physical_time_us(lap.cumulative_time_s),
-                    RacingSessionEventV1::PitStopCompleted {
-                        competitor_id: self.competitor_id.clone(),
-                        lap: lap_index,
-                        timing: None,
-                    },
-                ));
-            }
-            self.playback_tail.extend(
-                lap.solution
-                    .t
-                    .iter()
-                    .zip(&lap.solution.s)
-                    .map(|(t, s)| [time + t, distance + s]),
-            );
-            // Service consumes time without adding distance.
-            self.playback_tail
-                .push([lap.cumulative_time_s, lap.cumulative_distance_m]);
+            self.record_solved_lap(lap)?;
             if !self.is_player {
                 lap.solution = Default::default();
             }
         }
         Ok(step)
+    }
+    fn record_solved_lap(&mut self, lap: &ResolvedSimulationLapV3) -> Result<(), String> {
+        let previous = self.prefetched_laps.back().or(self.latest_lap.as_ref());
+        let (time, distance) = previous
+            .map(|p| (p.cumulative_time_s, p.cumulative_distance_m))
+            .unwrap_or((0.0, 0.0));
+        let lap_index = lap.lap_index;
+        if self
+            .driver_instruction_schedule
+            .as_ref()
+            .is_some_and(|schedule| {
+                schedule
+                    .transitions
+                    .iter()
+                    .skip(1)
+                    .any(|transition| transition.effective_at.lap_index + 1 == lap_index)
+            })
+        {
+            self.pending_events.push_back((
+                physical_time_us(time),
+                RacingSessionEventV1::DriverInstructionApplied {
+                    competitor_id: self.competitor_id.clone(),
+                    lap: lap_index,
+                    timing: None,
+                },
+            ));
+        }
+        // Lap crossing precedes optional service in the current Racing model.
+        let crossing = time
+            + lap
+                .solution
+                .t
+                .last()
+                .copied()
+                .ok_or("missing solved lap time")?;
+        self.pending_events.push_back((
+            physical_time_us(crossing),
+            RacingSessionEventV1::LapCompleted {
+                competitor_id: self.competitor_id.clone(),
+                lap: lap_index,
+                timing: None,
+            },
+        ));
+        if lap.pit_stop_completed {
+            self.pending_events.push_back((
+                physical_time_us(lap.cumulative_time_s),
+                RacingSessionEventV1::PitStopCompleted {
+                    competitor_id: self.competitor_id.clone(),
+                    lap: lap_index,
+                    timing: None,
+                },
+            ));
+        }
+        self.playback_tail.extend(
+            lap.solution
+                .t
+                .iter()
+                .zip(&lap.solution.s)
+                .map(|(t, s)| [time + t, distance + s]),
+        );
+        // Service consumes time without adding distance.
+        self.playback_tail
+            .push([lap.cumulative_time_s, lap.cumulative_distance_m]);
+        Ok(())
     }
 }
 
@@ -2615,6 +2633,8 @@ pub struct IncrementalRacingSession {
     next_player_frame_sequence: u64,
     include_playback_trajectories: bool,
     align_player_horizon: bool,
+    service_player: bool,
+    service_pending: bool,
     completed: bool,
     minimum_finish_reserve_kg: Option<f64>,
     player_power_unit_thermal_resolution_v3: Option<V3PowerUnitThermalResolutionV2>,
@@ -2631,6 +2651,24 @@ impl IncrementalRacingSession {
         vehicle_id: &str,
         competitor_vehicle_components: &HashMap<String, VehicleComponentSelectionV1>,
         execution: SessionExecution<'_>,
+    ) -> Result<Self, String> {
+        Self::new_v3_mode(
+            catalog,
+            race,
+            vehicle_id,
+            competitor_vehicle_components,
+            execution,
+            false,
+        )
+    }
+
+    fn new_v3_mode(
+        catalog: &EmbeddedCatalog,
+        race: &RaceInput,
+        vehicle_id: &str,
+        competitor_vehicle_components: &HashMap<String, VehicleComponentSelectionV1>,
+        execution: SessionExecution<'_>,
+        service_control: bool,
     ) -> Result<Self, String> {
         let SessionExecution {
             pit_strategy,
@@ -2825,7 +2863,7 @@ impl IncrementalRacingSession {
                         smooth_knee_width_c: thermal.smooth_knee_width_c,
                         minimum_power_fraction: thermal.minimum_power_fraction,
                     });
-            let solver = ResolvedSimulationSessionV3::new(ResolvedSimulationRequestV3 {
+            let resolved = ResolvedSimulationRequestV3 {
                 track: request.track.clone(),
                 vehicle: physical_vehicle.clone(),
                 state: request.state.clone(),
@@ -2862,13 +2900,19 @@ impl IncrementalRacingSession {
                 fuel_mass: effective_profile.fuel_mass,
                 tire_degradation: effective_profile.tire_degradation,
                 engine_thermal,
-            })
-            .map_err(|error| {
-                format!(
-                    "cannot start incremental simulation for competitor {}: {error}",
-                    competitor.id
-                )
-            })?;
+            };
+            let solver =
+                if service_control && (competitor.is_player || competitor.id == "player") {
+                    ResolvedSimulationSessionV3::new_with_service_boundaries(resolved)
+                } else {
+                    ResolvedSimulationSessionV3::new(resolved)
+                }
+                .map_err(|error| {
+                    format!(
+                        "cannot start incremental simulation for competitor {}: {error}",
+                        competitor.id
+                    )
+                })?;
 
             competitors.push(IncrementalV3Competitor {
                 competitor_id: competitor.id.clone(),
@@ -2902,6 +2946,8 @@ impl IncrementalRacingSession {
             next_player_frame_sequence: 0,
             include_playback_trajectories: false,
             align_player_horizon: false,
+            service_player: service_control,
+            service_pending: false,
             completed: false,
             minimum_finish_reserve_kg: None,
             player_power_unit_thermal_resolution_v3,
@@ -2952,6 +2998,10 @@ impl IncrementalRacingSession {
             return Err("incremental Racing session already completed".to_string());
         }
 
+        if self.service_pending {
+            return self.commit_service();
+        }
+
         // Solver lap solutions use lap-local coordinates. Preserve the exact
         // previous physical boundary (including pit time) before advancing.
         let (player_time_offset, player_distance_offset) = self
@@ -2978,6 +3028,18 @@ impl IncrementalRacingSession {
         for competitor in &mut self.competitors {
             let step = if let Some(lap) = competitor.prefetched_laps.pop_front() {
                 ResolvedSimulationStepV3::Lap(Box::new(lap))
+            } else if self.service_player && competitor.is_player {
+                match competitor.solver.advance_service()? {
+                    pitgun_racing_solver::ResolvedServiceStepV3::BeforeService(lap) => {
+                        competitor.record_solved_lap(&lap)?;
+                        self.service_pending = true;
+                        ResolvedSimulationStepV3::Lap(lap)
+                    }
+                    pitgun_racing_solver::ResolvedServiceStepV3::Complete(result) => {
+                        ResolvedSimulationStepV3::Complete(result)
+                    }
+                    _ => return Err("unexpected player service state".into()),
+                }
             } else {
                 competitor.advance_solver(self.align_player_horizon)?
             };
@@ -3067,69 +3129,7 @@ impl IncrementalRacingSession {
             .collect();
 
         let competitors = if self.align_player_horizon {
-            let horizon = self
-                .competitors
-                .iter()
-                .find(|c| c.is_player)
-                .and_then(|c| c.latest_lap.as_ref())
-                .unwrap()
-                .cumulative_time_s;
-            let mut grid = Vec::with_capacity(self.competitors.len());
-            for car in &mut self.competitors {
-                // Rivals have fixed independent inputs. Never advance the player
-                // across an unresolved control boundary, nor finalize a rival early.
-                while !car.is_player
-                    && car.playback_tail.last().is_some_and(|p| p[0] < horizon)
-                    && car
-                        .prefetched_laps
-                        .back()
-                        .or(car.latest_lap.as_ref())
-                        .is_some_and(|p| p.lap_index < self.laps)
-                {
-                    match car.advance_solver(true)? {
-                        ResolvedSimulationStepV3::Lap(lap) => car.prefetched_laps.push_back(*lap),
-                        ResolvedSimulationStepV3::Complete(_) => {
-                            return Err("unexpected rival completion during look-ahead".into());
-                        }
-                    }
-                }
-                let trajectory = take_playback_prefix(&mut car.playback_tail, horizon);
-                let end = *trajectory.last().ok_or("missing common-time trajectory")?;
-                let solved = car
-                    .prefetched_laps
-                    .back()
-                    .or(car.latest_lap.as_ref())
-                    .unwrap();
-                let finished = solved.lap_index == self.laps && solved.cumulative_time_s <= horizon;
-                grid.push(RacingCompetitorProgressV1 {
-                    competitor_id: car.competitor_id.clone(),
-                    distance_m: end[1],
-                    lap: if finished {
-                        self.laps
-                    } else {
-                        ((end[1] / self.track.s.last().copied().unwrap_or(1.0)).ceil() as u16)
-                            .clamp(1, self.laps)
-                    },
-                    position: 0,
-                    cumulative_time_ms: (end[0] * 1000.0).round() as u64,
-                    trajectory,
-                    status: if finished {
-                        RacingCompetitorProgressStatusV1::Finished
-                    } else {
-                        RacingCompetitorProgressStatusV1::Running
-                    },
-                });
-            }
-            grid.sort_by(|a, b| {
-                b.distance_m
-                    .total_cmp(&a.distance_m)
-                    .then_with(|| a.cumulative_time_ms.cmp(&b.cumulative_time_ms))
-                    .then_with(|| a.competitor_id.cmp(&b.competitor_id))
-            });
-            for (index, car) in grid.iter_mut().enumerate() {
-                car.position = (index + 1) as u32;
-            }
-            grid
+            self.aligned_grid()?
         } else {
             competitors
         };
@@ -3195,46 +3195,7 @@ impl IncrementalRacingSession {
 
         let mut session_events = Vec::new();
         if self.align_player_horizon {
-            let released_at_us = physical_time_us(
-                self.competitors
-                    .iter()
-                    .find(|c| c.is_player)
-                    .and_then(|c| c.latest_lap.as_ref())
-                    .unwrap()
-                    .cumulative_time_s,
-            );
-            let mut observed = Vec::new();
-            for car in &mut self.competitors {
-                while car
-                    .pending_events
-                    .front()
-                    .is_some_and(|(time, _)| *time <= released_at_us)
-                {
-                    let (time, event) = car.pending_events.pop_front().unwrap();
-                    observed.push((time, event.with_timing(time, released_at_us)?));
-                }
-            }
-            // Stable physical ordering, independent of input roster or pull cadence.
-            let phase = |event: &RacingSessionEventV1| match event {
-                RacingSessionEventV1::LapCompleted { .. } => 0,
-                RacingSessionEventV1::PitStopCompleted { .. } => 1,
-                RacingSessionEventV1::DriverInstructionApplied { .. } => 2,
-            };
-            observed.sort_by(|a, b| {
-                a.0.cmp(&b.0)
-                    .then_with(|| phase(&a.1).cmp(&phase(&b.1)))
-                    .then_with(|| {
-                        let id = |event: &RacingSessionEventV1| match event {
-                            RacingSessionEventV1::LapCompleted { timing, .. }
-                            | RacingSessionEventV1::PitStopCompleted { timing, .. }
-                            | RacingSessionEventV1::DriverInstructionApplied { timing, .. } => {
-                                timing.as_ref().unwrap().event_id.to_string()
-                            }
-                        };
-                        id(&a.1).cmp(&id(&b.1))
-                    })
-            });
-            session_events.extend(observed.into_iter().map(|(_, event)| event));
+            session_events.extend(self.release_observed_events()?);
         } else {
             for competitor in &self.competitors {
                 session_events.push(RacingSessionEventV1::LapCompleted {
@@ -3279,6 +3240,155 @@ impl IncrementalRacingSession {
 
         IncrementalExecutionStreamBatchV1::new(records)
             .map_err(|error| format!("invalid incremental Racing progress batch: {error}"))
+    }
+
+    fn commit_service(&mut self) -> Result<RacingSessionStreamBatchV1, String> {
+        let player = self
+            .competitors
+            .iter_mut()
+            .find(|c| c.is_player)
+            .ok_or("missing player")?;
+        let lap = match player.solver.advance_service()? {
+            pitgun_racing_solver::ResolvedServiceStepV3::Lap(lap) => lap,
+            _ => return Err("expected committed service".into()),
+        };
+        let tick = u64::from(lap.lap_index);
+        player
+            .playback_tail
+            .push([lap.cumulative_time_s, lap.cumulative_distance_m]);
+        if lap.pit_stop_completed {
+            player.pending_events.push_back((
+                physical_time_us(lap.cumulative_time_s),
+                RacingSessionEventV1::PitStopCompleted {
+                    competitor_id: player.competitor_id.clone(),
+                    lap: lap.lap_index,
+                    timing: None,
+                },
+            ));
+        }
+        player.latest_lap = Some(*lap);
+        self.service_pending = false;
+        let grid = self.aligned_grid()?;
+        let mut records = vec![self.progress_record(
+            tick,
+            RacingSessionProgressV1::Grid {
+                lap: tick as u16,
+                competitors: grid,
+            },
+        )?];
+        for event in self.release_observed_events()? {
+            records.push(self.progress_record(tick, RacingSessionProgressV1::Event(event))?);
+        }
+        IncrementalExecutionStreamBatchV1::new(records).map_err(|e| e.to_string())
+    }
+
+    fn aligned_grid(&mut self) -> Result<Vec<RacingCompetitorProgressV1>, String> {
+        let horizon = self
+            .competitors
+            .iter()
+            .find(|c| c.is_player)
+            .and_then(|c| c.latest_lap.as_ref())
+            .unwrap()
+            .cumulative_time_s;
+        let mut grid = Vec::with_capacity(self.competitors.len());
+        for car in &mut self.competitors {
+            // Rivals have fixed independent inputs. Never advance the player
+            // across an unresolved control boundary, nor finalize a rival early.
+            while !car.is_player
+                && car.playback_tail.last().is_some_and(|p| p[0] < horizon)
+                && car
+                    .prefetched_laps
+                    .back()
+                    .or(car.latest_lap.as_ref())
+                    .is_some_and(|p| p.lap_index < self.laps)
+            {
+                match car.advance_solver(true)? {
+                    ResolvedSimulationStepV3::Lap(lap) => car.prefetched_laps.push_back(*lap),
+                    ResolvedSimulationStepV3::Complete(_) => {
+                        return Err("unexpected rival completion during look-ahead".into());
+                    }
+                }
+            }
+            let trajectory = take_playback_prefix(&mut car.playback_tail, horizon);
+            let end = *trajectory.last().ok_or("missing common-time trajectory")?;
+            let solved = car
+                .prefetched_laps
+                .back()
+                .or(car.latest_lap.as_ref())
+                .unwrap();
+            let finished = solved.lap_index == self.laps && solved.cumulative_time_s <= horizon;
+            grid.push(RacingCompetitorProgressV1 {
+                competitor_id: car.competitor_id.clone(),
+                distance_m: end[1],
+                lap: if finished {
+                    self.laps
+                } else {
+                    ((end[1] / self.track.s.last().copied().unwrap_or(1.0)).ceil() as u16)
+                        .clamp(1, self.laps)
+                },
+                position: 0,
+                cumulative_time_ms: (end[0] * 1000.0).round() as u64,
+                trajectory,
+                status: if finished {
+                    RacingCompetitorProgressStatusV1::Finished
+                } else {
+                    RacingCompetitorProgressStatusV1::Running
+                },
+            });
+        }
+        grid.sort_by(|a, b| {
+            b.distance_m
+                .total_cmp(&a.distance_m)
+                .then_with(|| a.cumulative_time_ms.cmp(&b.cumulative_time_ms))
+                .then_with(|| a.competitor_id.cmp(&b.competitor_id))
+        });
+        for (index, car) in grid.iter_mut().enumerate() {
+            car.position = (index + 1) as u32;
+        }
+        Ok(grid)
+    }
+
+    fn release_observed_events(&mut self) -> Result<Vec<RacingSessionEventV1>, String> {
+        let released_at_us = physical_time_us(
+            self.competitors
+                .iter()
+                .find(|c| c.is_player)
+                .and_then(|c| c.latest_lap.as_ref())
+                .unwrap()
+                .cumulative_time_s,
+        );
+        let mut observed = Vec::new();
+        for car in &mut self.competitors {
+            while car
+                .pending_events
+                .front()
+                .is_some_and(|(time, _)| *time <= released_at_us)
+            {
+                let (time, event) = car.pending_events.pop_front().unwrap();
+                observed.push((time, event.with_timing(time, released_at_us)?));
+            }
+        }
+        // Stable physical ordering, independent of input roster or pull cadence.
+        let phase = |event: &RacingSessionEventV1| match event {
+            RacingSessionEventV1::LapCompleted { .. } => 0,
+            RacingSessionEventV1::PitStopCompleted { .. } => 1,
+            RacingSessionEventV1::DriverInstructionApplied { .. } => 2,
+        };
+        observed.sort_by(|a, b| {
+            a.0.cmp(&b.0)
+                .then_with(|| phase(&a.1).cmp(&phase(&b.1)))
+                .then_with(|| {
+                    let id = |event: &RacingSessionEventV1| match event {
+                        RacingSessionEventV1::LapCompleted { timing, .. }
+                        | RacingSessionEventV1::PitStopCompleted { timing, .. }
+                        | RacingSessionEventV1::DriverInstructionApplied { timing, .. } => {
+                            timing.as_ref().unwrap().event_id.to_string()
+                        }
+                    };
+                    id(&a.1).cmp(&id(&b.1))
+                })
+        });
+        Ok(observed.into_iter().map(|(_, event)| event).collect())
     }
 
     /// Compatibility collector used by the existing monolithic entry point.

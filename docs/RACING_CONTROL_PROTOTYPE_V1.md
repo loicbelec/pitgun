@@ -291,3 +291,39 @@ This primitive is not yet used by `LocalControlledRacingSession` or exported by 
 JSON handles. The v1 Pit Wall still pauses at completed-lap decisions. Domain
 orchestration, pending-window/timeout journal semantics and transport/recovery
 must be adapted explicitly before continuous-play decisions can be claimed.
+
+### Opt-in service-window handle extension
+
+The same experimental JSON handles now accept an explicit optional configuration:
+`service_windows: { schema_version: "pitgun.racing-service-window/v1",
+closing_margin_us: 5000000 }`. Omission preserves the original completed-lap
+protocol and serialized observation/proposal bytes. No new ABI export or generic
+Racing-independent contract is introduced.
+
+For a configured observation after completed lap k, Racing freezes the committed
+state at k, then emits the independently solved driving prefix for k+1 before
+requesting a response. `control_prefix: true` marks that single pending-window
+batch so host presentation backpressure cannot prevent delivering the window.
+It grants no permission to advance affected physics.
+
+The immutable observation's optional `window` binds its version, exact opening,
+logical deadline, pre-service physical frontier and target service lap. The next
+lap's already solved state/telemetry is not copied into the observation. Optional
+`decision_at_us` on the proposal is required in this mode: a selection must fall
+within [opening, deadline); a timeout fallback must keep the plan and carry the
+exact deadline. Source/run/observation/idempotency checks remain. This is a local
+host-declared logical decision time, not remote clock attestation or controller
+provider-budget enforcement. Authority/Verifier activation remains separate.
+
+The receipt still binds the proposal and effective pit lap. It is persisted before
+the service commit is pulled. Non-window native boundaries automatically continue
+the fixed plan without invoking a controller. Rejected/late commands do not close
+or retarget a window; exact retries return the same receipt. Applied decisions,
+including deadline fallbacks, replay without another historical controller call.
+
+135 native tests (91 Simulator,33 Solver,11 policy) pass, including early service
+with unchanged driving, prior-state observation isolation, waiting/duplicate/replay,
+late/missing/out-of-range clocks and exact timeout fallback. The real JSON facade
+marks one unaffected prefix and carries a deadline result. Strict library Clippy
+and formatting pass. Browser/host window acceptance is tracked in game#316/#320;
+these native tests alone do not establish continuous-play UI or full-GP acceptance.
