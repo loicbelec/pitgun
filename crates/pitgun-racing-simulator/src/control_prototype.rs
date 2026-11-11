@@ -218,9 +218,10 @@ impl LocalControlledRacingSession {
             &config,
         ))
         .map_err(|error| error.to_string())?;
-        let session = start_incremental_race_with_catalog_and_v3_fuel_contract_candidate(
+        let mut session = start_incremental_race_with_catalog_and_v3_fuel_contract_candidate(
             request, snapshot, timeline,
         )?;
+        session.align_player_horizon = true;
         Ok(Self {
             session,
             run_digest,

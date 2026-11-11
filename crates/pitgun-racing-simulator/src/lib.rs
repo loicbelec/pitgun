@@ -54,7 +54,7 @@ pub use workload::{
 
 use std::cell::{Cell, RefCell};
 use std::collections::hash_map::DefaultHasher;
-use std::collections::{BTreeMap, BTreeSet, HashMap};
+use std::collections::{BTreeMap, BTreeSet, HashMap, VecDeque};
 use std::hash::{Hash, Hasher};
 
 use pitgun_contract::{
@@ -2428,7 +2428,69 @@ struct IncrementalV3Competitor {
     driver_instruction_schedule: Option<ResolvedV3DriverInstructionScheduleV1>,
     solver: ResolvedSimulationSessionV3,
     latest_lap: Option<ResolvedSimulationLapV3>,
+    // Experimental rival look-ahead. Only small continuity records are queued;
+    // solved paths live separately until their common-time prefix is emitted.
+    prefetched_laps: VecDeque<ResolvedSimulationLapV3>,
+    playback_tail: Vec<[f64; 2]>,
     result: Option<SimulationResult>,
+}
+
+impl IncrementalV3Competitor {
+    fn advance_solver(&mut self, playback: bool) -> Result<ResolvedSimulationStepV3, String> {
+        let mut step = self.solver.advance().map_err(|error| {
+            format!(
+                "incremental simulation failed for competitor {}: {error}",
+                self.competitor_id
+            )
+        })?;
+        if playback && let ResolvedSimulationStepV3::Lap(lap) = &mut step {
+            let previous = self.prefetched_laps.back().or(self.latest_lap.as_ref());
+            let (time, distance) = previous
+                .map(|p| (p.cumulative_time_s, p.cumulative_distance_m))
+                .unwrap_or((0.0, 0.0));
+            self.playback_tail.extend(
+                lap.solution
+                    .t
+                    .iter()
+                    .zip(&lap.solution.s)
+                    .map(|(t, s)| [time + t, distance + s]),
+            );
+            // Service consumes time without adding distance.
+            self.playback_tail
+                .push([lap.cumulative_time_s, lap.cumulative_distance_m]);
+            if !self.is_player {
+                lap.solution = Default::default();
+            }
+        }
+        Ok(step)
+    }
+}
+
+/// Emit only the solved prefix through the player's physical frontier. Keep
+/// the remaining bracket, including service intervals, for the next batch.
+fn take_playback_prefix(points: &mut Vec<[f64; 2]>, horizon: f64) -> Vec<[f64; 2]> {
+    let split = points.partition_point(|p| p[0] <= horizon);
+    let mut prefix = points[..split].to_vec();
+    if split > 0 && split < points.len() {
+        let a = points[split - 1];
+        let b = points[split];
+        let ratio = (horizon - a[0]) / (b[0] - a[0]);
+        let edge = [horizon, a[1] + (b[1] - a[1]) * ratio];
+        if a[0] < horizon {
+            prefix.push(edge);
+        }
+        points.drain(..split);
+        points.insert(0, edge);
+    } else if split == points.len()
+        && let Some(last) = prefix.last().copied()
+    {
+        points.clear();
+        points.push(last);
+    }
+    if prefix.len() == 1 {
+        prefix.push(prefix[0]);
+    }
+    prefix
 }
 
 /// Stateful Racing orchestration boundary for the governed V3 model.
@@ -2448,6 +2510,7 @@ pub struct IncrementalRacingSession {
     next_sequence: u64,
     next_player_frame_sequence: u64,
     include_playback_trajectories: bool,
+    align_player_horizon: bool,
     completed: bool,
     minimum_finish_reserve_kg: Option<f64>,
     player_power_unit_thermal_resolution_v3: Option<V3PowerUnitThermalResolutionV2>,
@@ -2715,6 +2778,8 @@ impl IncrementalRacingSession {
                 driver_instruction_schedule,
                 solver,
                 latest_lap: None,
+                prefetched_laps: VecDeque::new(),
+                playback_tail: Vec::new(),
                 result: None,
             });
         }
@@ -2731,6 +2796,7 @@ impl IncrementalRacingSession {
             next_sequence: 0,
             next_player_frame_sequence: 0,
             include_playback_trajectories: false,
+            align_player_horizon: false,
             completed: false,
             minimum_finish_reserve_kg: None,
             player_power_unit_thermal_resolution_v3,
@@ -2805,12 +2871,12 @@ impl IncrementalRacingSession {
         let mut lap_steps = Vec::with_capacity(self.competitors.len());
         let mut completion_count = 0_usize;
         for competitor in &mut self.competitors {
-            match competitor.solver.advance().map_err(|error| {
-                format!(
-                    "incremental simulation failed for competitor {}: {error}",
-                    competitor.competitor_id
-                )
-            })? {
+            let step = if let Some(lap) = competitor.prefetched_laps.pop_front() {
+                ResolvedSimulationStepV3::Lap(Box::new(lap))
+            } else {
+                competitor.advance_solver(self.align_player_horizon)?
+            };
+            match step {
                 ResolvedSimulationStepV3::Lap(lap) => {
                     competitor.latest_lap = Some((*lap).clone());
                     lap_steps.push((competitor.competitor_id.clone(), *lap));
@@ -2894,6 +2960,74 @@ impl IncrementalRacingSession {
                 },
             })
             .collect();
+
+        let competitors = if self.align_player_horizon {
+            let horizon = self
+                .competitors
+                .iter()
+                .find(|c| c.is_player)
+                .and_then(|c| c.latest_lap.as_ref())
+                .unwrap()
+                .cumulative_time_s;
+            let mut grid = Vec::with_capacity(self.competitors.len());
+            for car in &mut self.competitors {
+                // Rivals have fixed independent inputs. Never advance the player
+                // across an unresolved control boundary, nor finalize a rival early.
+                while !car.is_player
+                    && car.playback_tail.last().is_some_and(|p| p[0] < horizon)
+                    && car
+                        .prefetched_laps
+                        .back()
+                        .or(car.latest_lap.as_ref())
+                        .is_some_and(|p| p.lap_index < self.laps)
+                {
+                    match car.advance_solver(true)? {
+                        ResolvedSimulationStepV3::Lap(lap) => car.prefetched_laps.push_back(*lap),
+                        ResolvedSimulationStepV3::Complete(_) => {
+                            return Err("unexpected rival completion during look-ahead".into());
+                        }
+                    }
+                }
+                let trajectory = take_playback_prefix(&mut car.playback_tail, horizon);
+                let end = *trajectory.last().ok_or("missing common-time trajectory")?;
+                let solved = car
+                    .prefetched_laps
+                    .back()
+                    .or(car.latest_lap.as_ref())
+                    .unwrap();
+                let finished = solved.lap_index == self.laps && solved.cumulative_time_s <= horizon;
+                grid.push(RacingCompetitorProgressV1 {
+                    competitor_id: car.competitor_id.clone(),
+                    distance_m: end[1],
+                    lap: if finished {
+                        self.laps
+                    } else {
+                        ((end[1] / self.track.s.last().copied().unwrap_or(1.0)).ceil() as u16)
+                            .clamp(1, self.laps)
+                    },
+                    position: 0,
+                    cumulative_time_ms: (end[0] * 1000.0).round() as u64,
+                    trajectory,
+                    status: if finished {
+                        RacingCompetitorProgressStatusV1::Finished
+                    } else {
+                        RacingCompetitorProgressStatusV1::Running
+                    },
+                });
+            }
+            grid.sort_by(|a, b| {
+                b.distance_m
+                    .total_cmp(&a.distance_m)
+                    .then_with(|| a.cumulative_time_ms.cmp(&b.cumulative_time_ms))
+                    .then_with(|| a.competitor_id.cmp(&b.competitor_id))
+            });
+            for (index, car) in grid.iter_mut().enumerate() {
+                car.position = (index + 1) as u32;
+            }
+            grid
+        } else {
+            competitors
+        };
 
         let logical_tick = u64::from(lap);
         let mut records = vec![self.progress_record(

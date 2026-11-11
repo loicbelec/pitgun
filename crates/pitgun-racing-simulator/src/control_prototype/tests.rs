@@ -470,3 +470,156 @@ fn ten_car_control_changes_only_the_delegated_players_physics() {
         canonical_json_bytes(&replayed).unwrap()
     );
 }
+
+#[test]
+fn common_time_grid_covers_fast_slow_pit_and_finished_rivals_without_changing_results() {
+    use crate::{RacingCompetitorProgressStatusV1, RacingSessionProgressV1};
+    let mut request = request();
+    let player = request.input.race.competitors[0].clone();
+    let mut fast = player.clone();
+    fast.id = "fast".into();
+    fast.is_player = false;
+    fast.tuning.engine_points = 55.0;
+    fast.tuning.cooling_points = 5.0;
+    fast.tuning.aero_points = 20.0;
+    fast.tuning.chassis_points = 20.0;
+    let mut slow = player.clone();
+    slow.id = "slow".into();
+    slow.is_player = false;
+    slow.tuning.engine_points = 5.0;
+    slow.tuning.cooling_points = 55.0;
+    slow.tuning.aero_points = 20.0;
+    slow.tuning.chassis_points = 20.0;
+    request.input.race.competitors = vec![player, fast, slow];
+    let snapshot = RacingCatalogSnapshot::embedded_model_v3_fuel_contract().unwrap();
+    let expected = run_race_with_catalog_and_v3_fuel_contract_candidate(
+        request.clone(),
+        &snapshot,
+        timeline(),
+    )
+    .unwrap();
+    let mut session =
+        LocalControlledRacingSession::start(request, &snapshot, timeline(), config()).unwrap();
+    let mut previous = BTreeMap::<String, [f64; 2]>::new();
+    let mut saw_lookahead = false;
+    let mut saw_finished_rival = false;
+    let mut saw_service = false;
+    let output = loop {
+        match session.advance().unwrap() {
+            ControlStep::AwaitingDecision(observation) => {
+                let player = session
+                    .session
+                    .competitors
+                    .iter()
+                    .find(|c| c.is_player)
+                    .unwrap();
+                assert!(player.prefetched_laps.is_empty());
+                assert_eq!(
+                    player.latest_lap.as_ref().unwrap().lap_index,
+                    observation.completed_laps
+                );
+                session
+                    .propose(reference_proposal(&observation, 0, "hard").unwrap())
+                    .unwrap();
+            }
+            ControlStep::Batch(batch) => {
+                let mut result = None;
+                for record in batch.records() {
+                    match record.event() {
+                        IncrementalExecutionStreamEventV1::Complete(output) => {
+                            result = Some(output.clone())
+                        }
+                        IncrementalExecutionStreamEventV1::Progress(
+                            RacingSessionProgressV1::Grid { competitors, .. },
+                        ) => {
+                            let horizon = session
+                                .session
+                                .competitors
+                                .iter()
+                                .find(|c| c.is_player)
+                                .unwrap()
+                                .latest_lap
+                                .as_ref()
+                                .unwrap()
+                                .cumulative_time_s;
+                            for car in competitors {
+                                assert!(car.trajectory.len() >= 2);
+                                assert!(car.trajectory.iter().all(|p| p[0] <= horizon));
+                                assert!(
+                                    car.trajectory
+                                        .windows(2)
+                                        .all(|w| w[0][0] <= w[1][0] && w[0][1] <= w[1][1])
+                                );
+                                let start = *car.trajectory.first().unwrap();
+                                assert_eq!(
+                                    start,
+                                    previous
+                                        .get(&car.competitor_id)
+                                        .copied()
+                                        .unwrap_or([0.0, 0.0])
+                                );
+                                let end = *car.trajectory.last().unwrap();
+                                assert_eq!(end[1], car.distance_m);
+                                if car.status == RacingCompetitorProgressStatusV1::Running {
+                                    assert_eq!(end[0], horizon);
+                                } else if car.competitor_id != "player" {
+                                    saw_finished_rival = true;
+                                }
+                                saw_service |= car
+                                    .trajectory
+                                    .windows(2)
+                                    .any(|w| w[1][0] - w[0][0] > 10.0 && w[1][1] == w[0][1]);
+                                previous.insert(car.competitor_id.clone(), end);
+                            }
+                            saw_lookahead |= session
+                                .session
+                                .competitors
+                                .iter()
+                                .any(|c| !c.prefetched_laps.is_empty());
+                            assert!(session.session.competitors.iter().all(|c| c.is_player
+                                || c.prefetched_laps.iter().all(|p| p.solution.t.is_empty())));
+                        }
+                        _ => {}
+                    }
+                }
+                if let Some(result) = result {
+                    break result;
+                }
+            }
+        }
+    };
+    assert!(saw_lookahead, "fixture must require rival look-ahead");
+    assert!(
+        saw_finished_rival,
+        "a faster rival must finish before the player"
+    );
+    assert!(
+        saw_service,
+        "native pit time must remain stationary in the solved path"
+    );
+    assert_eq!(
+        canonical_json_bytes(&output).unwrap(),
+        canonical_json_bytes(&expected).unwrap()
+    );
+}
+
+#[test]
+fn common_time_prefix_keeps_the_unemitted_bracket_and_stationary_service() {
+    let mut path = vec![[0.0, 0.0], [10.0, 100.0], [30.0, 100.0], [40.0, 200.0]];
+    assert_eq!(
+        crate::take_playback_prefix(&mut path, 20.0),
+        vec![[0.0, 0.0], [10.0, 100.0], [20.0, 100.0]]
+    );
+    assert_eq!(
+        crate::take_playback_prefix(&mut path, 35.0),
+        vec![[20.0, 100.0], [30.0, 100.0], [35.0, 150.0]]
+    );
+    assert_eq!(
+        crate::take_playback_prefix(&mut path, 50.0),
+        vec![[35.0, 150.0], [40.0, 200.0]]
+    );
+    assert_eq!(
+        crate::take_playback_prefix(&mut path, 60.0),
+        vec![[40.0, 200.0], [40.0, 200.0]]
+    );
+}

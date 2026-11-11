@@ -210,3 +210,36 @@ The fixture stores them in memory; durable persistence and reload reconstruction
 remain next. No historical controller is called during the fresh-Worker replay.
 No Gemini, control authority, public protocol freeze, ranked result or deployment
 is enabled. The normal governed/batch APIs and generic contract crate stay unchanged.
+
+### Common physical-time presentation (11 November)
+
+The local controlled session now opts into a player-horizon presentation path.
+The governed/default stream remains on its original completed-lap scheduler and
+published parity vectors. No generic contract, physical coefficients, exports or
+control configuration fields change.
+
+At each emitted player lap, rivals with fixed independent inputs are advanced
+only until their solved path brackets that player's cumulative time, or their
+own finish. The player is never prefetched: a pending observation still freezes
+all affected player physics. Rival continuity records are queued for the usual
+lap-by-lap collection; their heavy solution arrays are discarded after copying
+the time/distance path. Unemitted path tails retain the exact boundary bracket.
+The terminal canonical result is still collected from the same Solver sessions.
+This assumes the current independent competitors: it must be revisited before
+adding rival reactions, coupled traffic or shared mutable race conditions.
+
+Grid trajectories contain only prefixes through the player horizon. Boundary
+interpolation is presentation data derived from native solved brackets, not new
+physics. Running rows end at the common time; a finished rival retains its actual
+finish time and distance. Service time stays stationary. A future segment used
+to bracket the cursor is never delivered past that cursor. Rows may therefore
+represent different laps; their live positions sort unwrapped solved distances,
+while terminal standings still belong to RaceOutput. Existing lap events retain
+their completed-lap delivery semantics; they are not new real-time rival alerts.
+
+Focused tests cover faster/slower/finished rivals, stationary service, contiguous
+prefixes, no leaked future points, compact queued continuity, no player look-ahead,
+and byte-identical native results versus the unchanged batch path. Exact runtime
+hashes still distinguish old and new implementations. Hosts must resume an old
+journal with its saved binary, not substitute this implementation by version label.
+Full-GP/lifecycle qualification and Authority/Verifier delegation remain open.
