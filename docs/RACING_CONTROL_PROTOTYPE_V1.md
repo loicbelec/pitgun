@@ -260,7 +260,7 @@ still order batches; they are not elapsed race time.
 
 The engine captures events when a solved lap is produced, including prefetched
 rivals. It queues future facts until occurrence is within the player horizon and
-releases them in stable physical-time/digest order. An instruction applies at lap
+releases them in stable physical-time/phase/digest order. An instruction applies at lap
 start; a completed lap crosses before optional service; a completed pit follows
 service time. Slow-rival events later than the player's finish remain unreleased
 in this player-horizon progress stream; terminal standings are still separate.

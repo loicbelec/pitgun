@@ -1032,6 +1032,8 @@ fn service_boundary_keep_preserves_canonical_output_and_emits_driving_once() {
     use pitgun_racing_solver::{PitStop, ResolvedServiceStepV3};
     let mut input = resolved_v3_request(&synthetic_request());
     input.lap_count = 4;
+    input.fuel_mass = Some(pitgun_racing_solver::FuelMassParamsV3::default());
+    input.tire_degradation = Some(TireDegradationParamsV3::default());
     input.pit_plan.stops = vec![PitStop {
         lap: 2,
         tire: input.vehicle.tire.clone(),
@@ -1077,6 +1079,8 @@ fn service_boundary_pit_changes_service_without_recomputing_its_driving_prefix()
     use pitgun_racing_solver::{PitStop, ResolvedServiceStepV3};
     let mut input = resolved_v3_request(&synthetic_request());
     input.lap_count = 4;
+    input.fuel_mass = Some(pitgun_racing_solver::FuelMassParamsV3::default());
+    input.tire_degradation = Some(TireDegradationParamsV3::default());
     input.config.pit_time_penalty_s = 20.0;
     input.pit_plan.stops = vec![PitStop {
         lap: 2,

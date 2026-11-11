@@ -3215,17 +3215,24 @@ impl IncrementalRacingSession {
                 }
             }
             // Stable physical ordering, independent of input roster or pull cadence.
+            let phase = |event: &RacingSessionEventV1| match event {
+                RacingSessionEventV1::LapCompleted { .. } => 0,
+                RacingSessionEventV1::PitStopCompleted { .. } => 1,
+                RacingSessionEventV1::DriverInstructionApplied { .. } => 2,
+            };
             observed.sort_by(|a, b| {
-                a.0.cmp(&b.0).then_with(|| {
-                    let id = |event: &RacingSessionEventV1| match event {
-                        RacingSessionEventV1::LapCompleted { timing, .. }
-                        | RacingSessionEventV1::PitStopCompleted { timing, .. }
-                        | RacingSessionEventV1::DriverInstructionApplied { timing, .. } => {
-                            timing.as_ref().unwrap().event_id.to_string()
-                        }
-                    };
-                    id(&a.1).cmp(&id(&b.1))
-                })
+                a.0.cmp(&b.0)
+                    .then_with(|| phase(&a.1).cmp(&phase(&b.1)))
+                    .then_with(|| {
+                        let id = |event: &RacingSessionEventV1| match event {
+                            RacingSessionEventV1::LapCompleted { timing, .. }
+                            | RacingSessionEventV1::PitStopCompleted { timing, .. }
+                            | RacingSessionEventV1::DriverInstructionApplied { timing, .. } => {
+                                timing.as_ref().unwrap().event_id.to_string()
+                            }
+                        };
+                        id(&a.1).cmp(&id(&b.1))
+                    })
             });
             session_events.extend(observed.into_iter().map(|(_, event)| event));
         } else {

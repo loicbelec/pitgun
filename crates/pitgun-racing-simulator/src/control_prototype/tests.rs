@@ -685,6 +685,7 @@ fn physical_events_release_only_observed_rival_facts_and_separate_crossing_from_
     let mut saw_future_pending = false;
     let mut saw_prefetched_event = false;
     let mut last_time = 0;
+    let mut last_phase = 0;
     loop {
         match controlled.advance().unwrap() {
             ControlStep::AwaitingDecision(o) => {
@@ -733,6 +734,15 @@ fn physical_events_release_only_observed_rival_facts_and_separate_crossing_from_
                             assert_eq!(timing.released_at_us, horizon);
                             assert!(timing.occurred_at_us <= horizon);
                             assert!(timing.occurred_at_us >= last_time);
+                            let phase = match kind {
+                                "lap" => 0,
+                                "pit" => 1,
+                                _ => 2,
+                            };
+                            if timing.occurred_at_us == last_time {
+                                assert!(phase >= last_phase);
+                            }
+                            last_phase = phase;
                             last_time = timing.occurred_at_us;
                             assert!(ids.insert(timing.event_id.to_string()));
                             let key = (id.clone(), lap, kind);
