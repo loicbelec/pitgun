@@ -72,19 +72,23 @@ from its opening, rather than preserving an exact animation frame or wall-clock
 budget. The old `/dev/pitwall-control` bank still pauses at completed-lap windows;
 its saved binaries/journals retain their original semantics and bridge.
 
-These are scheduled five-lap test windows, not a relevant-event or provider
-integration. Exact future service clocks are host scheduling metadata, separate
+A separate `/dev/pitwall-control-events` bank now opts into a versioned Racing
+rival-pit policy. Released nearby service completions are grouped at committed
+player-lap checkpoints, with own-plan eligibility, deduplication, cooldown and a
+window budget. The frozen trigger carries exact evidence IDs and policy identity;
+it is not inferred by React. Existing scheduled five-lap banks remain regression
+fixtures. The event fixture is seven laps, without provider integration. Exact future service clocks are host scheduling metadata, separate
 from past physical features: an explicit provider feature projection is required
 before sending observations to a model. Host-declared logical time is not remote
-attestation. Full-GP/failure/lifecycle acceptance, a precise versioned relevance
-policy, controller adapters, initial Authority capabilities and terminal ordered
+attestation. Full-GP/failure/lifecycle acceptance, relevance-threshold calibration,
+controller adapters, initial Authority capabilities and terminal ordered
 action-journal Verifier evidence remain required before career/ranked activation.
 See the [game connection evidence](https://github.com/loicbelec/pitgun-game/blob/feat/controlled-racing-worker/docs/qa/LIVE_SERVICE_WINDOWS_2026-11-11.md).
 
 ## Acceptance for the next slice
 
 1. One known rival event opens one bounded window with a stable reason/evidence ID
-   (the current connection uses programmed test laps).
+   (implemented in the separate local event-policy bank; thresholds remain experimental).
 2. Cars continue along solved unaffected paths while a response is pending.
 3. A valid early response selects the earliest eligible service; an expired window
    records keep-plan. A late/conflicting response is rejected without retargeting.

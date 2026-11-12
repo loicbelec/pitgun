@@ -20,6 +20,7 @@ fn config() -> LocalControlConfig {
         runtime_digest: Digest::from_bytes(b"test runtime, not a distributed attestation"),
         decision_laps: vec![1, 3, 4],
         service_windows: None,
+        event_policy: None,
         allowed_tire_ids: vec!["hard".into(), "soft".into()],
     }
 }
@@ -37,7 +38,7 @@ fn start() -> LocalControlledRacingSession {
 fn observe(session: &mut LocalControlledRacingSession) -> PlayerObservation {
     loop {
         match session.advance().unwrap() {
-            ControlStep::AwaitingDecision(observation) => return observation,
+            ControlStep::AwaitingDecision(observation) => return *observation,
             ControlStep::Batch(batch) => assert!(batch.records().iter().all(|record| !matches!(
                 record.event(),
                 IncrementalExecutionStreamEventV1::Complete(_)
@@ -281,7 +282,7 @@ fn repeated_waits_and_transport_roundtrips_preserve_the_entire_stream_and_journa
             match session.advance().unwrap() {
                 ControlStep::AwaitingDecision(observation) => {
                     for _ in 0..extra_pulls {
-                        assert_eq!(observe(&mut session), observation);
+                        assert_eq!(observe(&mut session), *observation);
                     }
                     let proposal = reference_proposal(&observation, 1, "hard").unwrap();
                     let proposal =
@@ -904,5 +905,125 @@ fn service_window_deadline_rejects_late_commands_and_records_an_explicit_keep_fa
     assert_eq!(
         canonical_json_bytes(&actual).unwrap(),
         canonical_json_bytes(&expected).unwrap()
+    );
+}
+
+fn rival_policy() -> RivalPitPolicy {
+    RivalPitPolicy {
+        schema_version: RivalPitPolicyVersion::V1,
+        max_pre_stop_gap_us: 8_000_000,
+        max_event_age_us: 120_000_000,
+        planned_stop_within_laps: 2,
+        cooldown_laps: 2,
+        max_windows: 3,
+    }
+}
+fn event_config() -> LocalControlConfig {
+    let mut c = config();
+    c.decision_laps.clear();
+    c.event_policy = Some(rival_policy());
+    c.service_windows = Some(ServiceWindowPolicy {
+        schema_version: ServiceWindowVersion::V1,
+        closing_margin_us: 5_000_000,
+    });
+    c
+}
+fn event_request() -> RunRaceRequest {
+    let mut v: serde_json::Value =
+        serde_json::from_str(include_str!("../../fixtures/control/monza-five-laps.json")).unwrap();
+    v["input"]["laps"] = serde_json::json!(7);
+    v["input"]["competitors"][0]["stint_strategy"] = serde_json::json!({"stints":[{"tire_id":"soft","laps":4},{"tire_id":"medium","laps":3}],"pit_laps":[4]});
+    let mut cars = vec![v["input"]["competitors"][0].clone()];
+    for i in 0..9 {
+        let mut car = cars[0].clone();
+        car["id"] = serde_json::json!(format!("rival-{i}"));
+        car["is_player"] = serde_json::json!(false);
+        car["stint_strategy"] = serde_json::json!({"stints":[{"tire_id":"soft","laps":1},{"tire_id":"hard","laps":6}],"pit_laps":[1]});
+        cars.push(car);
+    }
+    v["input"]["competitors"] = serde_json::json!(cars);
+    serde_json::from_value(v).unwrap()
+}
+#[test]
+fn released_nearby_stops_group_once_and_keep_replays_without_changing_result() {
+    let snapshot = RacingCatalogSnapshot::embedded_model_v3_fuel_contract().unwrap();
+    let request = event_request();
+    let config = event_config();
+    let expected = run_race_with_catalog_and_v3_fuel_contract_candidate(
+        request.clone(),
+        &snapshot,
+        timeline(),
+    )
+    .unwrap();
+    let mut session =
+        LocalControlledRacingSession::start(request.clone(), &snapshot, timeline(), config.clone())
+            .unwrap();
+    let observation = observe(&mut session);
+    assert_eq!(observation.completed_laps, 2);
+    let trigger = observation.trigger.as_ref().unwrap();
+    assert_eq!(trigger.evidence.len(), 9);
+    assert_eq!(trigger.next_planned_pit_lap, 4);
+    assert_eq!(
+        trigger.observed_at_us,
+        observation.window.as_ref().unwrap().opened_at_us
+    );
+    assert!(trigger.evidence.iter().all(|e| e.lap == 1
+        && e.pre_stop_gap_us == 0
+        && e.occurred_at_us <= trigger.observed_at_us));
+    for _ in 0..5 {
+        assert_eq!(observe(&mut session), observation);
+    }
+    let actual = finish(&mut session, false);
+    let decisions = applied(&session);
+    assert_eq!(decisions.len(), 1);
+    assert_eq!(
+        canonical_json_bytes(&actual).unwrap(),
+        canonical_json_bytes(&expected).unwrap()
+    );
+    assert_eq!(
+        canonical_json_bytes(&replay(request, &snapshot, timeline(), config, &decisions).unwrap())
+            .unwrap(),
+        canonical_json_bytes(&actual).unwrap()
+    );
+}
+#[test]
+fn event_policy_changes_actual_service_and_binds_the_frozen_episode() {
+    let snapshot = RacingCatalogSnapshot::embedded_model_v3_fuel_contract().unwrap();
+    let mut session =
+        LocalControlledRacingSession::start(event_request(), &snapshot, timeline(), event_config())
+            .unwrap();
+    let o = observe(&mut session);
+    let p = reference_proposal(&o, 2, "hard").unwrap();
+    let mut forged = p.clone();
+    let mut changed = o.clone();
+    changed.trigger.as_mut().unwrap().evidence.clear();
+    forged.observation_digest = changed.digest().unwrap();
+    assert!(session.propose(forged).is_err());
+    assert_eq!(observe(&mut session), o);
+    assert_eq!(session.propose(p).unwrap().pit_after_lap, Some(3));
+    let out = finish(&mut session, false);
+    assert_eq!(applied(&session).len(), 1);
+    assert_eq!(out.player_pit_laps, vec![3]);
+}
+#[test]
+fn event_policy_rejects_ambiguous_or_unbounded_config_and_omits_default_fields() {
+    let snapshot = RacingCatalogSnapshot::embedded_model_v3_fuel_contract().unwrap();
+    let mut c = event_config();
+    c.decision_laps.push(1);
+    assert!(
+        LocalControlledRacingSession::start(event_request(), &snapshot, timeline(), c).is_err()
+    );
+    let mut c = event_config();
+    c.service_windows = None;
+    assert!(
+        LocalControlledRacingSession::start(event_request(), &snapshot, timeline(), c).is_err()
+    );
+    let mut p = rival_policy();
+    p.max_windows = 65;
+    assert!(p.validate().is_err());
+    assert!(
+        !serde_json::to_string(&config())
+            .unwrap()
+            .contains("event_policy")
     );
 }

@@ -39,6 +39,7 @@ fn main() -> Result<(), String> {
         execution_id: "native-local-control-probe".into(),
         runtime_digest,
         service_windows: None,
+        event_policy: None,
         decision_laps: vec![1, 3, 4],
         allowed_tire_ids: vec!["hard".into(), "soft".into()],
     };

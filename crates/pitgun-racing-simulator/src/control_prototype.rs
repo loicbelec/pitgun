@@ -4,6 +4,10 @@
 //! The host supplies pinned inputs and persists the journal. This module has
 //! no clock, provider, network, renderer or access to a competitor's future.
 
+mod relevance;
+use relevance::RivalPitFilter;
+pub use relevance::{RivalPitEpisode, RivalPitEvidence, RivalPitPolicy, RivalPitPolicyVersion};
+
 #[cfg(test)]
 use crate::start_incremental_race_with_catalog_and_v3_fuel_contract_candidate;
 use std::collections::BTreeMap;
@@ -36,6 +40,8 @@ pub struct LocalControlConfig {
     pub allowed_tire_ids: Vec<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub service_windows: Option<ServiceWindowPolicy>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub event_policy: Option<RivalPitPolicy>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -81,6 +87,8 @@ pub struct PlayerObservation {
     pub can_pit_next_lap: bool,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub window: Option<Box<ServiceWindow>>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub trigger: Option<Box<RivalPitEpisode>>,
 }
 
 impl PlayerObservation {
@@ -176,7 +184,7 @@ pub enum JournalEntry {
 pub enum ControlStep {
     Batch(RacingSessionStreamBatchV1),
     /// Repeated pulls return the same frozen observation without computing.
-    AwaitingDecision(PlayerObservation),
+    AwaitingDecision(Box<PlayerObservation>),
 }
 
 pub struct LocalControlledRacingSession {
@@ -185,6 +193,7 @@ pub struct LocalControlledRacingSession {
     config: LocalControlConfig,
     tires: BTreeMap<String, TireParams>,
     next_decision: usize,
+    event_filter: RivalPitFilter,
     pending: Option<PlayerObservation>,
     opening: Option<(PlayerObservation, u64)>,
     service_resolved: bool,
@@ -203,6 +212,14 @@ impl LocalControlledRacingSession {
     ) -> Result<Self, String> {
         if config.execution_id.trim().is_empty() || config.execution_id.len() > 128 {
             return Err("execution_id must contain 1..128 bytes".to_string());
+        }
+        if let Some(policy) = &config.event_policy {
+            policy.validate()?;
+            if config.service_windows.is_none() || !config.decision_laps.is_empty() {
+                return Err(
+                    "event policy requires service windows and no scheduled decision laps".into(),
+                );
+            }
         }
         let laps = request.input.race.laps;
         if config
@@ -269,6 +286,7 @@ impl LocalControlledRacingSession {
             config,
             tires,
             next_decision: 0,
+            event_filter: RivalPitFilter::default(),
             pending: None,
             opening: None,
             service_resolved: false,
@@ -283,7 +301,7 @@ impl LocalControlledRacingSession {
 
     pub fn advance(&mut self) -> Result<ControlStep, String> {
         if let Some(observation) = &self.pending {
-            return Ok(ControlStep::AwaitingDecision(observation.clone()));
+            return Ok(ControlStep::AwaitingDecision(Box::new(observation.clone())));
         }
         if self.config.service_windows.is_some() {
             return self.advance_window();
@@ -301,7 +319,7 @@ impl LocalControlledRacingSession {
             self.journal
                 .push(JournalEntry::Observation(observation.clone()));
             self.pending = Some(observation.clone());
-            return Ok(ControlStep::AwaitingDecision(observation));
+            return Ok(ControlStep::AwaitingDecision(Box::new(observation)));
         }
         self.session.advance().map(ControlStep::Batch)
     }
@@ -343,6 +361,7 @@ impl LocalControlledRacingSession {
             allowed_tire_ids: self.tires.keys().cloned().collect(),
             can_pit_next_lap: completed + 1 < self.session.laps && !self.tires.is_empty(),
             window: None,
+            trigger: None,
         })
     }
     pub fn has_window_prefix(&self) -> bool {
@@ -350,7 +369,7 @@ impl LocalControlledRacingSession {
     }
     fn advance_window(&mut self) -> Result<ControlStep, String> {
         if self.session.service_pending {
-            if let Some((mut observation, opened_at_us)) = self.opening.take() {
+            if let Some((mut observation, opened_at_us)) = self.opening.clone() {
                 let player = self
                     .session
                     .competitors
@@ -369,6 +388,7 @@ impl LocalControlledRacingSession {
                 if deadline_at_us <= opened_at_us {
                     return Err("service window has no reaction interval".into());
                 }
+                self.opening = None;
                 observation.window = Some(Box::new(ServiceWindow {
                     schema_version: ServiceWindowVersion::V1,
                     opened_at_us,
@@ -379,7 +399,7 @@ impl LocalControlledRacingSession {
                 self.journal
                     .push(JournalEntry::Observation(observation.clone()));
                 self.pending = Some(observation.clone());
-                return Ok(ControlStep::AwaitingDecision(observation));
+                return Ok(ControlStep::AwaitingDecision(Box::new(observation)));
             }
             if !self.service_resolved {
                 self.session
@@ -391,7 +411,7 @@ impl LocalControlledRacingSession {
                     .resolve_service_boundary(None)?;
             }
             self.service_resolved = false;
-            return self.session.advance().map(ControlStep::Batch);
+            return self.advance_window_batch();
         }
         let player = self
             .session
@@ -400,14 +420,39 @@ impl LocalControlledRacingSession {
             .find(|c| c.is_player)
             .unwrap();
         if let Some(lap) = &player.latest_lap
-            && self.config.decision_laps.get(self.next_decision) == Some(&lap.lap_index)
+            && lap.lap_index < self.session.laps
         {
-            self.opening = Some((
-                self.completed_observation()?,
-                crate::physical_time_us(lap.cumulative_time_s),
-            ));
+            let horizon = crate::physical_time_us(lap.cumulative_time_s);
+            let mut observation = self.completed_observation()?;
+            let selected = if let Some(policy) = &self.config.event_policy {
+                observation.trigger = self
+                    .event_filter
+                    .review(policy, &observation, horizon)?
+                    .map(Box::new);
+                observation.trigger.is_some()
+            } else {
+                self.config.decision_laps.get(self.next_decision) == Some(&lap.lap_index)
+            };
+            if selected {
+                self.opening = Some((observation, horizon));
+            }
         }
-        self.session.advance().map(ControlStep::Batch)
+        self.advance_window_batch()
+    }
+
+    fn advance_window_batch(&mut self) -> Result<ControlStep, String> {
+        let batch = self.session.advance()?;
+        if self.config.event_policy.is_some() {
+            for record in batch.records() {
+                if let IncrementalExecutionStreamEventV1::Progress(
+                    crate::RacingSessionProgressV1::Event(event),
+                ) = record.event()
+                {
+                    self.event_filter.ingest(event);
+                }
+            }
+        }
+        Ok(ControlStep::Batch(batch))
     }
 
     /// Validation failure leaves the boundary open. An identical retry returns

@@ -327,3 +327,45 @@ late/missing/out-of-range clocks and exact timeout fallback. The real JSON facad
 marks one unaffected prefix and carries a deadline result. Strict library Clippy
 and formatting pass. Browser/host window acceptance is tracked in game#316/#320;
 these native tests alone do not establish continuous-play UI or full-GP acceptance.
+
+## Opt-in observed-rival policy (12 November 2026)
+
+`event_policy` selects `pitgun.racing-rival-pit-policy/v1` and requires
+`service_windows` with an empty `decision_laps`. Omission preserves the scheduled
+modes and their wire bytes. The complete policy is part of the pinned config/run
+identity; each selected observation adds a frozen `trigger` with policy digest,
+episode ID, observation horizon, own planned stop and exact source event IDs.
+
+The filter consumes only released native event records, not rival plans, hidden
+prefetched telemetry or final rankings. At each committed player-lap checkpoint:
+
+- Consider newly observed rival service completions once. Compare that rival's
+  same-lap crossing before service to the player's observed crossing of that lap.
+  Missing crossings never imply proximity. This is a checkpoint gap, not an
+  instantaneous gap, undercut predictor or optimal strategy recommendation.
+- Require an eligible future service and an own stop that can be advanced by at
+  least one lap, within the configured planning lookahead. No arbitrary wear or
+  temperature alert thresholds are introduced.
+- Group all eligible stops released since the previous review into one immutable
+  episode. Sort by absolute pre-service crossing gap, occurrence time and fact ID.
+  Deduplicate by fact ID. Input roster/pull/callback order does not change selection.
+- Apply a completed-lap cooldown and run-wide window budget. Stops suppressed by
+  stale/irrelevant/cooldown checks are consumed, not queued into a later stale
+  notification. Events released during an active window do not amend its digest.
+
+The game test fixture uses 8 s maximum pre-service crossing gap, 120 s maximum
+observed-event age, own stop within 2 laps, at least 2 completed laps between
+windows, and at most 3 windows per run. Configured closing margin remains 5 s.
+These are explicit prototype thresholds, not calibrated GP/competitive defaults.
+Polling remains at committed laps: the first relevant alert can therefore lag the
+physical event by a lap. Episode grouping is checkpoint-based, not wall-time based.
+This first case only offers an **earlier planned stop**, not reactive pit requests
+for every possible race situation or a claim that stopping is beneficial.
+
+The generic contract crate and published workloads are unchanged. Native tests
+exercise grouped nine-rival events, silence, missing/far/future/old facts,
+deduplication, cooldown, budget, frozen bindings, actual service changes, exact
+Keep-plan output and recorded-action replay. Rejected/silent candidates are not
+extra host decision checkpoints: they can be reconstructed from pinned runtime,
+inputs, policy and the released event stream. Only selected episodes are carried
+in the durable observation/proposal/receipt journal.
