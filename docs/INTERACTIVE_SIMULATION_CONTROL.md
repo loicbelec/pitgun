@@ -98,3 +98,27 @@ See the [game connection evidence](https://github.com/loicbelec/pitgun-game/blob
    and memory measurements are scoped separately from short deterministic fixtures.
 6. Existing v1 saved binaries, governed default streams and normal careers retain
    their contracts; new local mode and compatibility are explicit.
+
+## Full-distance local qualification — 12 November 2026
+
+The separate game `/dev/pitwall-control-gp` bank exercises Monza 53 laps with ten
+fixed independent cars, varied pit plans and enough pace difference for lapped
+relative progress. A native probe accepts the same versioned game fixture path;
+Keep/Timeout preserve fixed-plan output, the first pit request matches an equivalent
+predeclared plan, and applied-action replay reproduces each native result.
+
+Direct WASM and durable Worker paths qualify the same GP, including late refusals,
+pending document reload, receipt-write failure, cancellation and deterministic
+fuel-exhaustion failure. Actual desktop/mobile Pit Wall journeys cover two live
+windows, pending/completed reload and expiration. Source facts and paths remain
+bounded by their released player horizon. The existing published/runtime artifacts
+are unchanged; this adds qualification inputs and adapters, not physics changes.
+
+These are local control/recovery gates, not competitive threshold calibration,
+provider attestation or hosted career/ranked admission. Extreme admitted setup
+inputs can exhaust fixed fuel before the finish: this remains an explicit failed
+session, linked to #414, not a published result. Memory remains high even without
+the UI and is tracked in #430 / game #315. Exact provider feature/clock projection,
+full rival-lap Compare, initial Authority capabilities and terminal ordered-journal
+Verifier evidence remain separate gates. Gemini can be connected experimentally
+after its observation/budget contract is specified, before ranked activation.
