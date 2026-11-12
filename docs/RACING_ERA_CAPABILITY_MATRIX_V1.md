@@ -137,8 +137,8 @@ authored controller; it receives no private pace control.
 
 ## Era 7 — Pod Racing domain bridge
 
-Physical intent: use the game's seventh era as the transition into a real
-second simulation domain, **Pod Racing**. It preserves the racing loop and its
+Physical intent: use the game's seventh era as the transition into a distinct
+simulation domain, **Pod Racing**. It preserves the racing loop and its
 approachable decisions while introducing drone-equivalent propulsion, lift,
 storage, thermal, and reserve concepts. Pod Racing owns a dedicated domain
 contract and model identity; it is not another Formula vehicle or a universal
@@ -166,11 +166,13 @@ domains demonstrate a stable abstraction.
 
 The game may use a versioned transition adapter to carry player progression
 into a Pod Racing contract, but the resulting execution, evidence, and catalog
-resources remain domain-owned. This is also the intended framework validation
-sequence: Racing first, Pod Racing/Drone energy second, then separate
-applications for domains such as energy grids, trading, or broader drone
-workloads. Those future domains do not belong in the racing game UI merely to
-demonstrate generality.
+resources remain domain-owned. The September 16 owner-approved
+[external-controller plan](EXTERNAL_CONTROLLER_DELIVERY_PLAN.md) changes the
+validation order: a small synthetic battery workload tests the common control
+boundary before its public contract is frozen. It does not simulate a power
+network or replace the future Pod/Drone model. Pod Racing is therefore no longer
+a prerequisite for a second-domain proof. Energy, trading and broader drone
+workloads remain separate applications, not racing game UI features.
 
 ## Cross-era acceptance gates
 

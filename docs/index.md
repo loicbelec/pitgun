@@ -8,6 +8,7 @@
 - [Racing Catalog resolution](CATALOG_RESOLUTION.md)
 - [Architecture](../ARCHITECTURE.md)
 - [Framework boundaries](FRAMEWORK_BOUNDARIES.md)
+- [External controller delivery plan](EXTERNAL_CONTROLLER_DELIVERY_PLAN.md) — approved planning for Racing decisions, Gemini, benchmarks, BYO and a battery-domain proof
 - [Racing demo CLI contract](RACING_DEMO_CLI_V1.md)
 - [Racing batch runner V1](RACING_BATCH_RUNNER_V1.md)
 - [Under-five-minute Racing quickstart](QUICKSTART.md)
