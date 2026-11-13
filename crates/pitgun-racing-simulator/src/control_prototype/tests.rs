@@ -16,6 +16,7 @@ fn timeline() -> RacingDriverInstructionTimelineV1 {
 
 fn config() -> LocalControlConfig {
     LocalControlConfig {
+        physics: None,
         execution_id: "local-control-fixture-1".into(),
         runtime_digest: Digest::from_bytes(b"test runtime, not a distributed attestation"),
         decision_laps: vec![1, 3, 4],
@@ -90,6 +91,65 @@ fn keep_preserves_the_existing_canonical_output() {
         canonical_json_bytes(&expected).unwrap()
     );
     assert_eq!(applied(&session).len(), 3);
+}
+
+#[test]
+fn career_thermal_keep_and_pit_use_the_ordinary_workload_and_replay_exactly() {
+    let snapshot = RacingCatalogSnapshot::embedded_model_v3_timeline().unwrap();
+    let thermal = snapshot.power_unit_thermal_profile().unwrap();
+    let mut cfg = config();
+    cfg.physics = Some(CareerControlPhysics::PowerUnitThermalV1);
+    cfg.service_windows = Some(ServiceWindowPolicy {
+        schema_version: ServiceWindowVersion::V1,
+        closing_margin_us: 5_000_000,
+    });
+    let mut classic = request();
+    classic.input.vehicle_id = Some("classic_v8_1960".into());
+    classic.input.era = 1;
+    classic.era = Some(1);
+    let expected_classic = crate::run_race_with_catalog_and_v3_power_unit_thermal_profile(
+        classic.clone(),
+        &snapshot,
+        thermal,
+    )
+    .unwrap();
+    let mut classic_session =
+        LocalControlledRacingSession::start(classic, &snapshot, timeline(), cfg.clone()).unwrap();
+    assert_eq!(
+        canonical_json_bytes(&finish(&mut classic_session, false)).unwrap(),
+        canonical_json_bytes(&expected_classic).unwrap()
+    );
+    let expected = crate::run_race_with_catalog_and_v3_power_unit_thermal_profile(
+        request(),
+        &snapshot,
+        thermal,
+    )
+    .unwrap();
+    let mut keep =
+        LocalControlledRacingSession::start(request(), &snapshot, timeline(), cfg.clone()).unwrap();
+    let actual = finish(&mut keep, false);
+    assert_eq!(
+        canonical_json_bytes(&actual).unwrap(),
+        canonical_json_bytes(&expected).unwrap()
+    );
+
+    let mut changed =
+        LocalControlledRacingSession::start(request(), &snapshot, timeline(), cfg.clone()).unwrap();
+    let boundary = observe(&mut changed);
+    let mut proposal = reference_proposal(&boundary, 1, "hard").unwrap();
+    proposal.decision_at_us = Some(boundary.window.as_ref().unwrap().opened_at_us);
+    changed.propose(proposal).unwrap();
+    let output = finish(&mut changed, false);
+    assert_ne!(
+        canonical_json_bytes(&output).unwrap(),
+        canonical_json_bytes(&actual).unwrap()
+    );
+    let reproduced = replay(request(), &snapshot, timeline(), cfg, &applied(&changed)).unwrap();
+    assert_eq!(
+        canonical_json_bytes(&output).unwrap(),
+        canonical_json_bytes(&reproduced).unwrap()
+    );
+    assert_eq!(output.player_pit_laps, vec![2]);
 }
 
 #[test]

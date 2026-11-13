@@ -35,6 +35,9 @@ pub struct LocalControlConfig {
     /// Hash of the exact runtime artifact; supplied by the local runner, not
     /// remotely attested. Replay requires this same runtime, not just a label.
     pub runtime_digest: Digest,
+    /// Opt-in local career bridge; omitted journals keep the fuel-contract workload.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub physics: Option<CareerControlPhysics>,
     /// One-based count of completed laps. Strictly increasing, before finish.
     pub decision_laps: Vec<u16>,
     pub allowed_tire_ids: Vec<String>,
@@ -42,6 +45,12 @@ pub struct LocalControlConfig {
     pub service_windows: Option<ServiceWindowPolicy>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub event_policy: Option<RivalPitPolicy>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum CareerControlPhysics {
+    #[serde(rename = "pitgun.local-career-power-unit-thermal/v1")]
+    PowerUnitThermalV1,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -259,7 +268,11 @@ impl LocalControlledRacingSession {
         }
         let run_digest = canonical_json_digest(&(
             PrototypeVersion::V1,
-            racing_model_v3_fuel_contract_candidate_identity(),
+            if config.physics.is_some() {
+                crate::workload::racing_model_v3_component_candidate_identity()
+            } else {
+                racing_model_v3_fuel_contract_candidate_identity()
+            },
             snapshot.release_identity(),
             &request,
             &timeline,
@@ -273,12 +286,35 @@ impl LocalControlledRacingSession {
         {
             return Err("service closing margin exceeds 30 seconds".into());
         }
-        let mut session = start_fuel_contract_control_mode(
-            request,
-            snapshot,
-            timeline,
-            config.service_windows.is_some(),
-        )?;
+        let mut session = if config.physics.is_some() {
+            if !timeline.events.is_empty() {
+                return Err("career thermal control does not accept driver instructions".into());
+            }
+            let thermal = snapshot
+                .power_unit_thermal_profile()
+                .ok_or("career control requires the exact power-unit thermal profile")?;
+            thermal.validate()?;
+            let profile = crate::V3CandidateExperimentProfile {
+                schema_version: crate::V3CandidateExperimentProfileVersion::V9,
+                engine_thermal_resolution: None,
+                ..crate::V3CandidateExperimentProfile::default()
+            };
+            crate::start_incremental_race_with_catalog_and_v3_component_profile(
+                request,
+                snapshot,
+                &profile,
+                thermal,
+                None,
+                config.service_windows.is_some(),
+            )?
+        } else {
+            start_fuel_contract_control_mode(
+                request,
+                snapshot,
+                timeline,
+                config.service_windows.is_some(),
+            )?
+        };
         session.align_player_horizon = true;
         Ok(Self {
             session,

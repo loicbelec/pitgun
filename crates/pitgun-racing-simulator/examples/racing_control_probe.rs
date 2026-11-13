@@ -36,6 +36,7 @@ fn main() -> Result<(), String> {
     let executable = std::env::current_exe().map_err(|e| e.to_string())?;
     let runtime_digest = Digest::from_bytes(&std::fs::read(executable).map_err(|e| e.to_string())?);
     let config = LocalControlConfig {
+        physics: None,
         execution_id: "native-local-control-probe".into(),
         runtime_digest,
         service_windows: None,
