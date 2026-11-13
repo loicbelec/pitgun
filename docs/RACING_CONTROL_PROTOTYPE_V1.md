@@ -418,3 +418,14 @@ Native tests cover a silent-rival Keep/fixed/replay case, coincident evidence an
 a later reserved review despite exhausted rival quota/cooldown, real pit service
 and exact replay, and absent/unactionable stops. Generic framework types and
 physical coefficients remain unchanged.
+
+### Full-resolution request budget — 13 November 2026
+
+The experimental handle transport accepts up to1 MiB of request JSON. The old
+256 KiB cap rejected legitimate full-resolution track overrides (Silverstone),
+even though request structure and simulation work remained within the declared
+lap/driver/rate budgets. Catalogue16 MiB, timeline64 KiB, config16 KiB and
+proposal4 KiB bounds are unchanged. No sampling or geometry/physics coefficient
+changes. A native test admits exactly1 MiB and rejects the next byte before
+creating a handle. The JavaScript bridge ABI remains unchanged. Old binaries
+retain their old cap; an admitted journal must never be silently upgraded.

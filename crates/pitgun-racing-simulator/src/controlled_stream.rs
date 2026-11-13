@@ -8,6 +8,9 @@ use crate::control_prototype::{
 
 const MAX_SESSIONS: usize = 4;
 const MAX_SUBMISSIONS: usize = 256;
+// The request includes the full-resolution circuit profile; 256 KiB excluded
+// legitimate tracks such as Silverstone. Keep a bounded, explicit transport cap.
+pub(crate) const MAX_CONTROL_REQUEST_BYTES: usize = 1024 * 1024;
 
 struct Session {
     engine: LocalControlledRacingSession,
@@ -36,7 +39,7 @@ pub fn start_experimental_controlled_racing_session_json(
     config_json: String,
 ) -> String {
     let create = || -> Result<LocalControlledRacingSession, String> {
-        let request: RunRaceRequest = bounded(&request_json, 256 * 1024)?;
+        let request: RunRaceRequest = bounded(&request_json, MAX_CONTROL_REQUEST_BYTES)?;
         let config: LocalControlConfig = bounded(&config_json, 16 * 1024)?;
         let timeline: RacingDriverInstructionTimelineV1 = bounded(&timeline_json, 64 * 1024)?;
         if catalog_bundle_json.len() > 16 * 1024 * 1024 {

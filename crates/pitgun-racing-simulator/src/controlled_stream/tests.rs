@@ -31,6 +31,39 @@ fn start() -> u32 {
     response["handle"].as_u64().unwrap() as u32
 }
 
+#[test]
+fn transport_accepts_full_resolution_request_budget_and_refuses_overflow() {
+    let (request, catalog, timeline, config) = fixture();
+    let padded = format!(
+        "{request}{}",
+        " ".repeat(MAX_CONTROL_REQUEST_BYTES - request.len())
+    );
+    let accepted: Value = serde_json::from_str(&start_experimental_controlled_racing_session_json(
+        padded.clone(),
+        catalog.clone(),
+        timeline.clone(),
+        config.clone(),
+    ))
+    .unwrap();
+    let handle = accepted["handle"]
+        .as_u64()
+        .expect("1 MiB request should be admitted") as u32;
+    assert!(!release_experimental_controlled_racing_session_json(handle).contains("error"));
+    let rejected: Value = serde_json::from_str(&start_experimental_controlled_racing_session_json(
+        padded + " ",
+        catalog,
+        timeline,
+        config,
+    ))
+    .unwrap();
+    assert!(
+        rejected["error"]
+            .as_str()
+            .unwrap()
+            .contains("1048576 bytes")
+    );
+}
+
 fn pull(h: u32) -> Value {
     serde_json::from_str(&pull_experimental_controlled_racing_session_json(h)).unwrap()
 }
