@@ -394,3 +394,27 @@ before opening a new interactive weekend; an older catalogue is not silently
 upgraded or interpreted through different physics. Authority initial permissions
 and final applied-journal verification remain prerequisites for hosted/ranked
 activation. The generic framework contract remains independent of Racing.
+
+## Planned stop reviews — local opt-in
+
+`planned_stop_reviews: {"schema_version":"pitgun.racing-planned-stop-review/v1"}`
+adds one review after completed lap N−2 for an actionable remaining stop on N.
+It requires service windows and no fixed decision laps, and reserves capacity
+independently of the rival episode budget/cooldown. At most32 declared stops are
+supported. Stops in the opening two laps have no completed-lap observation early
+enough to advance them and create no review. No declared stop creates no review.
+
+The frozen observation's optional `planned_review` carries the policy/episode
+identities, observation clock and target stop. It may coexist with rival evidence
+in a single window. Once a target stop was reviewed, it is not solicited again;
+accepted plan replacement can remove future targets. Keep preserves the original
+plan; the existing pit action replaces remaining stops/tyres to the finish.
+The opening, deadline and next-lap service semantics do not change.
+
+Both new config/observation fields are omitted when disabled, preserving historical
+journals. The native probe reports the new capability; the game artifact manifest
+and runtime pin advertise it, so older saved weekends do not acquire new rules.
+Native tests cover a silent-rival Keep/fixed/replay case, coincident evidence and
+a later reserved review despite exhausted rival quota/cooldown, real pit service
+and exact replay, and absent/unactionable stops. Generic framework types and
+physical coefficients remain unchanged.

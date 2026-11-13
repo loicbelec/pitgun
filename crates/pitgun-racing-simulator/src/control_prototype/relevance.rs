@@ -85,6 +85,9 @@ impl RivalPitFilter {
             _ => {}
         }
     }
+    pub fn discard_pending_stops(&mut self) {
+        self.stops.clear();
+    }
     pub fn review(
         &mut self,
         policy: &RivalPitPolicy,
@@ -196,6 +199,7 @@ mod tests {
             can_pit_next_lap: true,
             window: None,
             trigger: None,
+            planned_review: None,
         }
     }
     fn stop(filter: &mut RivalPitFilter, id: &str, lap: u16, gap: u64, at: u64) {

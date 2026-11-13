@@ -37,6 +37,7 @@ fn main() -> Result<(), String> {
     let runtime_digest = Digest::from_bytes(&std::fs::read(executable).map_err(|e| e.to_string())?);
     let config = LocalControlConfig {
         physics: None,
+        planned_stop_reviews: None,
         execution_id: "native-local-control-probe".into(),
         runtime_digest,
         service_windows: None,
@@ -100,6 +101,7 @@ fn main() -> Result<(), String> {
     }
     let mut report = json!({
         "schema_version": "pitgun.racing-control-probe-report/v1",
+        "planned_stop_review_policy": {"schema_version":"pitgun.racing-planned-stop-review/v1"},
         "scope": "native local protocol fixture, not a Grand Prix benchmark or Hosted evidence",
         "catalog_release": snapshot.release_identity(),
         "request": request, "timeline": timeline, "config": config,

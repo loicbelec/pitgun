@@ -17,6 +17,7 @@ fn timeline() -> RacingDriverInstructionTimelineV1 {
 fn config() -> LocalControlConfig {
     LocalControlConfig {
         physics: None,
+        planned_stop_reviews: None,
         execution_id: "local-control-fixture-1".into(),
         runtime_digest: Digest::from_bytes(b"test runtime, not a distributed attestation"),
         decision_laps: vec![1, 3, 4],
@@ -1117,4 +1118,96 @@ fn career_thermal_rival_stop_windows_change_service_and_keep_their_replay_identi
         canonical_json_bytes(&actual).unwrap(),
         canonical_json_bytes(&reproduced).unwrap()
     );
+}
+
+fn planned_config() -> LocalControlConfig {
+    let mut cfg = event_config();
+    cfg.physics = Some(CareerControlPhysics::PowerUnitThermalV1);
+    cfg.planned_stop_reviews = Some(PlannedStopReviewPolicy {
+        schema_version: PlannedStopReviewVersion::V1,
+    });
+    cfg
+}
+#[test]
+fn planned_review_without_a_rival_opens_two_laps_before_and_keep_replays_the_fixed_result() {
+    let snapshot = RacingCatalogSnapshot::embedded_model_v3_timeline().unwrap();
+    let cfg = planned_config();
+    let mut session =
+        LocalControlledRacingSession::start(request(), &snapshot, timeline(), cfg.clone()).unwrap();
+    let o = observe(&mut session);
+    assert_eq!(o.completed_laps, 1);
+    assert_eq!(o.planned_review.as_ref().unwrap().planned_pit_lap, 3);
+    assert!(o.trigger.is_none());
+    assert_eq!(o.window.as_ref().unwrap().service_lap, 2);
+    let actual = finish(&mut session, false);
+    assert_eq!(applied(&session).len(), 1);
+    let fixed = crate::run_race_with_catalog_and_v3_power_unit_thermal_profile(
+        request(),
+        &snapshot,
+        snapshot.power_unit_thermal_profile().unwrap(),
+    )
+    .unwrap();
+    assert_eq!(
+        canonical_json_bytes(&actual).unwrap(),
+        canonical_json_bytes(&fixed).unwrap()
+    );
+    assert_eq!(
+        canonical_json_bytes(&actual).unwrap(),
+        canonical_json_bytes(
+            &replay(request(), &snapshot, timeline(), cfg, &applied(&session)).unwrap()
+        )
+        .unwrap()
+    );
+}
+#[test]
+fn planned_reviews_merge_rival_evidence_and_reserve_later_stops_despite_rival_cooldown_and_budget()
+{
+    let snapshot = RacingCatalogSnapshot::embedded_model_v3_timeline().unwrap();
+    let mut r = event_request();
+    r.input.race.competitors[0].stint_strategy=Some(serde_json::from_value(serde_json::json!({"stints":[{"tire_id":"soft","laps":4},{"tire_id":"medium","laps":2},{"tire_id":"hard","laps":1}],"pit_laps":[4,6]})).unwrap());
+    let mut cfg = planned_config();
+    cfg.event_policy.as_mut().unwrap().max_windows = 1;
+    cfg.event_policy.as_mut().unwrap().cooldown_laps = 16;
+    let mut session =
+        LocalControlledRacingSession::start(r.clone(), &snapshot, timeline(), cfg.clone()).unwrap();
+    let first = observe(&mut session);
+    assert_eq!(first.completed_laps, 2);
+    assert!(first.trigger.is_some());
+    assert_eq!(first.planned_review.as_ref().unwrap().planned_pit_lap, 4);
+    session
+        .propose(reference_proposal(&first, 0, "hard").unwrap())
+        .unwrap();
+    let second = observe(&mut session);
+    assert_eq!(second.completed_laps, 4);
+    assert!(second.trigger.is_none());
+    assert_eq!(second.planned_review.as_ref().unwrap().planned_pit_lap, 6);
+    let mut pit = reference_proposal(&second, 4, "hard").unwrap();
+    pit.decision_at_us = Some(second.window.as_ref().unwrap().opened_at_us);
+    assert_eq!(session.propose(pit).unwrap().pit_after_lap, Some(5));
+    let actual = finish(&mut session, false);
+    assert_eq!(actual.player_pit_laps, vec![4, 5]);
+    assert_eq!(applied(&session).len(), 2);
+    assert_eq!(
+        canonical_json_bytes(&actual).unwrap(),
+        canonical_json_bytes(&replay(r, &snapshot, timeline(), cfg, &applied(&session)).unwrap())
+            .unwrap()
+    );
+}
+
+#[test]
+fn planned_reviews_do_not_invent_a_stop_or_an_unactionable_opening_lap() {
+    let snapshot = RacingCatalogSnapshot::embedded_model_v3_timeline().unwrap();
+    for stop in [None, Some(2)] {
+        let mut request = request();
+        request.input.race.competitors[0].stint_strategy = Some(serde_json::from_value(match stop {
+            None => serde_json::json!({"stints":[{"tire_id":"soft","laps":5}],"pit_laps":[]}),
+            Some(lap) => serde_json::json!({"stints":[{"tire_id":"soft","laps":lap},{"tire_id":"medium","laps":5-lap}],"pit_laps":[lap]}),
+        }).unwrap());
+        let mut session =
+            LocalControlledRacingSession::start(request, &snapshot, timeline(), planned_config())
+                .unwrap();
+        let result = finish(&mut session, false);
+        assert!(applied(&session).is_empty());
+        assert_eq!(result.player_pit_laps, stop.into_iter().collect::<Vec<_>>());
+    }
 }

@@ -45,6 +45,28 @@ pub struct LocalControlConfig {
     pub service_windows: Option<ServiceWindowPolicy>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub event_policy: Option<RivalPitPolicy>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub planned_stop_reviews: Option<PlannedStopReviewPolicy>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum PlannedStopReviewVersion {
+    #[serde(rename = "pitgun.racing-planned-stop-review/v1")]
+    V1,
+}
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct PlannedStopReviewPolicy {
+    pub schema_version: PlannedStopReviewVersion,
+}
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct PlannedStopReview {
+    pub schema_version: PlannedStopReviewVersion,
+    pub policy_digest: Digest,
+    pub episode_id: Digest,
+    pub observed_at_us: u64,
+    pub planned_pit_lap: u16,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -98,6 +120,8 @@ pub struct PlayerObservation {
     pub window: Option<Box<ServiceWindow>>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub trigger: Option<Box<RivalPitEpisode>>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub planned_review: Option<Box<PlannedStopReview>>,
 }
 
 impl PlayerObservation {
@@ -203,6 +227,7 @@ pub struct LocalControlledRacingSession {
     tires: BTreeMap<String, TireParams>,
     next_decision: usize,
     event_filter: RivalPitFilter,
+    reviewed_stops: std::collections::BTreeSet<u16>,
     pending: Option<PlayerObservation>,
     opening: Option<(PlayerObservation, u64)>,
     service_resolved: bool,
@@ -211,7 +236,7 @@ pub struct LocalControlledRacingSession {
 }
 
 impl LocalControlledRacingSession {
-    /// Pins a fuel-contract candidate, catalogue, initial timeline, runtime
+    /// Pins a local workload, catalogue, initial timeline, runtime
     /// digest and delegated capabilities before computing anything.
     pub fn start(
         request: RunRaceRequest,
@@ -229,6 +254,13 @@ impl LocalControlledRacingSession {
                     "event policy requires service windows and no scheduled decision laps".into(),
                 );
             }
+        }
+        if config.planned_stop_reviews.is_some()
+            && (config.service_windows.is_none() || !config.decision_laps.is_empty())
+        {
+            return Err(
+                "planned reviews require service windows and no fixed decision laps".into(),
+            );
         }
         let laps = request.input.race.laps;
         if config
@@ -315,6 +347,19 @@ impl LocalControlledRacingSession {
                 config.service_windows.is_some(),
             )?
         };
+        if config.planned_stop_reviews.is_some()
+            && session
+                .competitors
+                .iter()
+                .find(|c| c.is_player)
+                .unwrap()
+                .stint_plan
+                .pit_laps
+                .len()
+                > 32
+        {
+            return Err("planned reviews support at most 32 declared stops".into());
+        }
         session.align_player_horizon = true;
         Ok(Self {
             session,
@@ -323,6 +368,7 @@ impl LocalControlledRacingSession {
             tires,
             next_decision: 0,
             event_filter: RivalPitFilter::default(),
+            reviewed_stops: Default::default(),
             pending: None,
             opening: None,
             service_resolved: false,
@@ -398,6 +444,7 @@ impl LocalControlledRacingSession {
             can_pit_next_lap: completed + 1 < self.session.laps && !self.tires.is_empty(),
             window: None,
             trigger: None,
+            planned_review: None,
         })
     }
     pub fn has_window_prefix(&self) -> bool {
@@ -460,16 +507,53 @@ impl LocalControlledRacingSession {
         {
             let horizon = crate::physical_time_us(lap.cumulative_time_s);
             let mut observation = self.completed_observation()?;
-            let selected = if let Some(policy) = &self.config.event_policy {
-                observation.trigger = self
-                    .event_filter
-                    .review(policy, &observation, horizon)?
-                    .map(Box::new);
-                observation.trigger.is_some()
+            let next_stop = observation.remaining_planned_pit_laps.first().copied();
+            let already_reviewed = self.config.planned_stop_reviews.is_some()
+                && next_stop.is_some_and(|stop| self.reviewed_stops.contains(&stop));
+            let selected = if already_reviewed {
+                self.event_filter.discard_pending_stops();
+                false
             } else {
-                self.config.decision_laps.get(self.next_decision) == Some(&lap.lap_index)
+                if let Some(policy) = &self.config.event_policy {
+                    observation.trigger = self
+                        .event_filter
+                        .review(policy, &observation, horizon)?
+                        .map(Box::new);
+                }
+                if let Some(policy) = &self.config.planned_stop_reviews
+                    && let Some(stop) = next_stop
+                    && observation.can_pit_next_lap
+                    && stop == observation.completed_laps + 2
+                {
+                    let policy_digest =
+                        canonical_json_digest(policy).map_err(|error| error.to_string())?;
+                    observation.planned_review = Some(Box::new(PlannedStopReview {
+                        schema_version: policy.schema_version,
+                        policy_digest,
+                        episode_id: canonical_json_digest(&(
+                            observation.run_digest,
+                            policy_digest,
+                            horizon,
+                            stop,
+                        ))
+                        .map_err(|error| error.to_string())?,
+                        observed_at_us: horizon,
+                        planned_pit_lap: stop,
+                    }));
+                }
+                if self.config.event_policy.is_some() || self.config.planned_stop_reviews.is_some()
+                {
+                    observation.trigger.is_some() || observation.planned_review.is_some()
+                } else {
+                    self.config.decision_laps.get(self.next_decision) == Some(&lap.lap_index)
+                }
             };
             if selected {
+                if self.config.planned_stop_reviews.is_some()
+                    && let Some(stop) = next_stop
+                {
+                    self.reviewed_stops.insert(stop);
+                }
                 self.opening = Some((observation, horizon));
             }
         }
