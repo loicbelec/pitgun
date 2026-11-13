@@ -369,3 +369,28 @@ Keep-plan output and recorded-action replay. Rejected/silent candidates are not
 extra host decision checkpoints: they can be reconstructed from pinned runtime,
 inputs, policy and the released event stream. Only selected episodes are carried
 in the durable observation/proposal/receipt journal.
+
+## Local seasonal-career bridge — 13 November 2026
+
+The optional `physics: "pitgun.local-career-power-unit-thermal/v1"` config marker
+runs the same V9 component/power-unit thermal solver used by the game's ordinary
+local incremental path, with service control enabled. It requires the exact
+catalogue's thermal profile and an empty driver-instruction timeline. It does not
+impose the fuel-contract candidate's initial fuel or driving profile. The marker,
+config, request, catalogue and runtime participate in the run identity. Omitted
+markers keep the previous fuel-contract semantics and serialized config bytes.
+This is a local experimental choice, not a new governed/public model alias.
+
+The library regression compares ordinary output with Keep for classic V8 and
+modern cars, then checks a changed real service and exact applied-history replay.
+All 100 Racing library tests pass; Clippy library and fmt pass. `--all-targets -D
+warnings` also encounters the pre-existing `too_many_arguments` lint in the older
+`IncrementalStreamParityArtifact` test helper (lib.rs), outside this bridge.
+
+Game #316 / draft #320 now connects this opt-in workload to actual seasonal
+preparation/provenance/archives. Existing saved weekends retain their original
+runtime. The game must select a catalogue with the required thermal profile
+before opening a new interactive weekend; an older catalogue is not silently
+upgraded or interpreted through different physics. Authority initial permissions
+and final applied-journal verification remain prerequisites for hosted/ranked
+activation. The generic framework contract remains independent of Racing.

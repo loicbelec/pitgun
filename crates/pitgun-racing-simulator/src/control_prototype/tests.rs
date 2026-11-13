@@ -1087,3 +1087,34 @@ fn event_policy_rejects_ambiguous_or_unbounded_config_and_omits_default_fields()
             .contains("event_policy")
     );
 }
+
+#[test]
+fn career_thermal_rival_stop_windows_change_service_and_keep_their_replay_identity() {
+    let snapshot = RacingCatalogSnapshot::embedded_model_v3_timeline().unwrap();
+    let mut request = event_request();
+    request.input.vehicle_id = Some("classic_v8_1960".into());
+    request.input.era = 1;
+    request.era = Some(1);
+    let mut config = event_config();
+    config.physics = Some(CareerControlPhysics::PowerUnitThermalV1);
+    let mut session =
+        LocalControlledRacingSession::start(request.clone(), &snapshot, timeline(), config.clone())
+            .unwrap();
+    let observation = observe(&mut session);
+    assert_eq!(observation.completed_laps, 2);
+    assert_eq!(observation.trigger.as_ref().unwrap().evidence.len(), 9);
+    assert_eq!(
+        session
+            .propose(reference_proposal(&observation, 2, "hard").unwrap())
+            .unwrap()
+            .pit_after_lap,
+        Some(3)
+    );
+    let actual = finish(&mut session, false);
+    assert_eq!(actual.player_pit_laps, vec![3]);
+    let reproduced = replay(request, &snapshot, timeline(), config, &applied(&session)).unwrap();
+    assert_eq!(
+        canonical_json_bytes(&actual).unwrap(),
+        canonical_json_bytes(&reproduced).unwrap()
+    );
+}
