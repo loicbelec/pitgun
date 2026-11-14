@@ -1,0 +1,9 @@
+{
+  "schema_version": "pitgun.racing-driver/v2",
+  "id": "tire_manager",
+  "traits": {
+    "limit_exploitation": 0.78,
+    "consistency": 0.78,
+    "tire_management": 0.96
+  }
+}

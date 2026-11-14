@@ -12,6 +12,17 @@ use std::{env, fs};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args: Vec<_> = env::args().collect();
+    if args.len() == 4 && args[1] == "resolution" {
+        let catalog = RacingCatalogSnapshot::from_release_dir(&args[2])?;
+        let resolution =
+            pitgun_racing_simulator::evidence::RacingExecutionResolutionV1::from_catalog(
+                &catalog,
+                &pitgun_racing_simulator::racing_model_v3_component_candidate_identity(),
+            )
+            .ok_or("missing service resolution")?;
+        fs::write(&args[3], serde_json::to_vec_pretty(&resolution)?)?;
+        return Ok(());
+    }
     if args.len() < 5 {
         return Err(
             "Usage: probe prepare AUTH CATALOG OUTPUT | evidence AUTH CATALOG OUTPUT COMPLETION"

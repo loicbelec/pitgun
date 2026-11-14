@@ -288,3 +288,100 @@ fn service_worker_unavailability_is_pending_and_bad_authorization_never_starts_r
         .unwrap();
     assert_eq!(rejected.status, VerificationStatus::Rejected);
 }
+
+#[test]
+fn signed_wasm_transport_projects_evidence_and_refuses_sidecar_substitution() {
+    use pitgun_racing_simulator::{
+        complete_experimental_controlled_racing_session_json as complete,
+        propose_experimental_controlled_racing_session_json as propose,
+        pull_experimental_controlled_racing_session_json as pull,
+        start_experimental_controlled_racing_session_json as start,
+    };
+    let (mut state, mut request) = fixture();
+    state.service_catalog = Some(
+        RacingCatalogSnapshot::from_release_dir(
+            PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../catalogs/racing/v1.8.1"),
+        )
+        .unwrap(),
+    );
+    request.catalog_release = state
+        .service_catalog
+        .as_ref()
+        .unwrap()
+        .release_identity()
+        .clone();
+    let response = build_signed_racing_service_authorization(1000, &state, request).unwrap();
+    let input = response.canonical_input.clone();
+    let request = pitgun_racing_simulator::RunRaceRequest {
+        era: Some(input.era),
+        hz: Some(input.hz),
+        input,
+        seed: 7,
+    };
+    let catalog =
+        serde_json::to_string(&state.service_catalog.as_ref().unwrap().to_bundle().unwrap())
+            .unwrap();
+    let timeline =
+        serde_json::to_string(&pitgun_racing_simulator::service_control::empty_timeline()).unwrap();
+    let config = pitgun_racing_simulator::service_control::service_control_config(
+        &response.decision_envelope,
+        response.signed.authorization.execution_id,
+    )
+    .unwrap();
+    let mut config = serde_json::to_value(config).unwrap();
+    config["signed_service"] = json!({"signed":response.signed,"decision_envelope":response.decision_envelope,"catalog_release":response.catalog_release});
+    let mut bad = config.clone();
+    bad["service_windows"]["closing_margin_us"] = json!(1);
+    assert!(
+        start(
+            serde_json::to_string(&request).unwrap(),
+            catalog.clone(),
+            timeline.clone(),
+            bad.to_string()
+        )
+        .contains("mismatch")
+    );
+    let mut bad_request = request.clone();
+    bad_request.seed = 8;
+    assert!(
+        start(
+            serde_json::to_string(&bad_request).unwrap(),
+            catalog.clone(),
+            timeline.clone(),
+            config.to_string()
+        )
+        .contains("mismatch")
+    );
+    let created: serde_json::Value = serde_json::from_str(&start(
+        serde_json::to_string(&request).unwrap(),
+        catalog,
+        timeline,
+        config.to_string(),
+    ))
+    .unwrap();
+    let handle = created["handle"].as_u64().expect("signed transport start") as u32;
+    loop {
+        let next: serde_json::Value = serde_json::from_str(&pull(handle)).unwrap();
+        assert!(next.get("error").is_none(), "{next}");
+        if next["kind"] == "decision" {
+            let observation: pitgun_racing_simulator::control_prototype::PlayerObservation =
+                serde_json::from_value(next["observation"].clone()).unwrap();
+            let p = reference_proposal(&observation, 1, "hard").unwrap();
+            assert!(!propose(handle, serde_json::to_string(&p).unwrap()).contains("error"));
+        } else if next["complete"] == true {
+            break;
+        }
+    }
+    let completed: serde_json::Value = serde_json::from_str(&complete(handle)).unwrap();
+    let proof: RacingServiceVerificationSubmissionV1 =
+        serde_json::from_value(completed["service_evidence"].clone()).unwrap();
+    assert_eq!(proof.applied_history.len(), 1);
+    assert_eq!(proof.output.player_pit_laps, vec![2]);
+    assert_eq!(
+        verifier(&state)
+            .verify_service_native_reference(&proof, 1001)
+            .unwrap()
+            .status,
+        VerificationStatus::Verified
+    );
+}

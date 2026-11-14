@@ -32,6 +32,7 @@ COPY --from=builder /app/catalogs/racing/v1.5.0 /opt/pitgun/catalogs/racing/v1.5
 COPY --from=builder /app/catalogs/racing/v1.6.0 /opt/pitgun/catalogs/racing/v1.6.0
 COPY --from=builder /app/catalogs/racing/v1.7.0 /opt/pitgun/catalogs/racing/v1.7.0
 COPY --from=builder /app/catalogs/racing/v1.8.0 /opt/pitgun/catalogs/racing/v1.8.0
+COPY --from=builder /app/catalogs/racing/v1.8.1 /opt/pitgun/catalogs/racing/v1.8.1
 
 ENV PITGUN_VERIFIER_BIND=0.0.0.0:8080 \
     PITGUN_TUNING_POLICY_PATH=/opt/pitgun/policies/gametuning.v1.yaml \

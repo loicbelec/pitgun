@@ -1,0 +1,9 @@
+{
+  "schema_version": "pitgun.racing-driver/v2",
+  "id": "smooth_operator",
+  "traits": {
+    "limit_exploitation": 0.78,
+    "consistency": 0.96,
+    "tire_management": 0.78
+  }
+}

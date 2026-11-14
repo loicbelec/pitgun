@@ -1,5 +1,6 @@
 //! Experimental local-only handle transport. Separate from signed driver-mode
-//! execution: these handles never produce Authority/Verifier evidence.
+//! execution. An explicit signed sidecar produces service evidence; omission
+//! preserves legacy local handles and their underlying simulation identity.
 
 use super::*;
 use crate::control_prototype::{
@@ -16,6 +17,10 @@ struct Session {
     engine: LocalControlledRacingSession,
     output: Option<RaceOutput>,
     submissions: usize,
+    signed_service: Option<(
+        service_control::RacingServiceAuthorizationResponseV1,
+        RacingCatalogSnapshot,
+    )>,
 }
 
 thread_local! {
@@ -38,9 +43,15 @@ pub fn start_experimental_controlled_racing_session_json(
     timeline_json: String,
     config_json: String,
 ) -> String {
-    let create = || -> Result<LocalControlledRacingSession, String> {
+    let create = || -> Result<Session, String> {
         let request: RunRaceRequest = bounded(&request_json, MAX_CONTROL_REQUEST_BYTES)?;
-        let config: LocalControlConfig = bounded(&config_json, 16 * 1024)?;
+        let mut config_value: serde_json::Value = bounded(&config_json, 16 * 1024)?;
+        let service_metadata = config_value
+            .as_object_mut()
+            .ok_or("control config must be an object")?
+            .remove("signed_service");
+        let config: LocalControlConfig =
+            serde_json::from_value(config_value).map_err(|e| e.to_string())?;
         let timeline: RacingDriverInstructionTimelineV1 = bounded(&timeline_json, 64 * 1024)?;
         if catalog_bundle_json.len() > 16 * 1024 * 1024 {
             return Err("control catalog exceeds 16 MiB".into());
@@ -55,7 +66,48 @@ pub fn start_experimental_controlled_racing_session_json(
         }
         let snapshot = RacingCatalogSnapshot::from_bundle_json(&catalog_bundle_json)
             .map_err(|e| e.to_string())?;
-        LocalControlledRacingSession::start(request, &snapshot, timeline, config)
+        let signed_service = if let Some(mut metadata) = service_metadata {
+            if metadata.as_object().map(|v| v.len()) != Some(3)
+                || metadata.get("canonical_input").is_some()
+            {
+                return Err("invalid signed service sidecar".into());
+            }
+            metadata
+                .as_object_mut()
+                .ok_or("invalid signed service metadata")?
+                .insert(
+                    "canonical_input".into(),
+                    serde_json::to_value(&request.input).map_err(|e| e.to_string())?,
+                );
+            let response: service_control::RacingServiceAuthorizationResponseV1 =
+                serde_json::from_value(metadata).map_err(|e| e.to_string())?;
+            let expected = service_control::validate_service_start(&response, &snapshot)?;
+            if canonical_json_digest(&config).map_err(|e| e.to_string())?
+                != canonical_json_digest(&expected).map_err(|e| e.to_string())?
+                || request.seed
+                    != response
+                        .signed
+                        .authorization
+                        .initial_contract
+                        .random
+                        .seed
+                        .get()
+                || request.era != Some(request.input.era)
+                || request.hz != Some(request.input.hz)
+                || !timeline.events.is_empty()
+            {
+                return Err("signed service request/config/timeline mismatch".into());
+            }
+            Some((response, snapshot.clone()))
+        } else {
+            None
+        };
+        Ok(Session {
+            engine: LocalControlledRacingSession::start(request, &snapshot, timeline, config)?,
+            output: None,
+            submissions: 0,
+            signed_service,
+        })
     };
     SESSIONS.with(|sessions| {
         let mut sessions = sessions.borrow_mut();
@@ -71,14 +123,7 @@ pub fn start_experimental_controlled_racing_session_json(
             while sessions.contains_key(&handle) {
                 handle = handle.wrapping_add(1).max(1);
             }
-            sessions.insert(
-                handle,
-                Session {
-                    engine,
-                    output: None,
-                    submissions: 0,
-                },
-            );
+            sessions.insert(handle, engine);
             next.set(handle.wrapping_add(1).max(1));
             serde_json::json!({"schema_version":"pitgun.racing-control-start/v1", "handle":handle})
                 .to_string()
@@ -143,9 +188,21 @@ pub fn complete_experimental_controlled_racing_session_json(handle: u32) -> Stri
         let Some(output) = &session.output else { return json_error("control session is not complete"); };
         let digest = match canonical_json_digest(output) { Ok(d) => d, Err(e) => return json_error(&e.to_string()) };
         let evidence=match evidence::RacingRunEvidenceV1::from_race_output(output){Ok(v)=>v,Err(e)=>return json_error(&e.to_string())};
-        let response = serde_json::json!({"schema_version":"pitgun.racing-control-completion/v1", "handle":handle,
+        let mut response = serde_json::json!({"schema_version":"pitgun.racing-control-completion/v1", "handle":handle,
             "result":output, "canonical_result_digest":digest, "journal":session.engine.journal(),
-            "native_evidence":{"output":evidence.output,"telemetry_summary":evidence.telemetry_summary}}).to_string();
+            "native_evidence":{"output":evidence.output,"telemetry_summary":evidence.telemetry_summary}});
+        if let Some((authorization,catalog)) = &session.signed_service {
+            let history = session.engine.journal().iter().filter_map(|entry| {
+                if let control_prototype::JournalEntry::Applied(applied) = entry {
+                    Some(service_control::RacingServiceDecisionV1 {observation_digest:applied.proposal.observation_digest,applied:applied.clone()})
+                } else { None }
+            }).collect();
+            match service_control::service_control_evidence(authorization.clone(),catalog,history,output) {
+                Ok(e) => response["service_evidence"] = serde_json::json!(e),
+                Err(e) => return json_error(&e),
+            }
+        }
+        let response=response.to_string();
         sessions.remove(&handle);
         response
     })
