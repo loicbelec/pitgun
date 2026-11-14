@@ -2,7 +2,8 @@
 
 ARG RUST_VERSION=1.89
 
-FROM rust:${RUST_VERSION}-slim AS builder
+# Match the Node runtime's libc; the floating slim tag may use a newer Debian.
+FROM rust:${RUST_VERSION}-slim-bookworm AS builder
 WORKDIR /app
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
