@@ -41,10 +41,15 @@ model rationale truth or competitive strength.
    driver-instruction v1. Bind exact ordered applied history into the final run;
    replay regenerates observations/windows, validates proposals/receipts and
    rejects history omissions/substitution/reordering or effects outside permission.
-4. **Routes locally qualified; career adapters open:** Authority/Verifier routes and admission/persistence, browser/Worker
+4. **Normal manual career locally qualified:** Authority/Verifier routes and admission/persistence, browser/Worker
    receipt/evidence and outbox/publication wiring. Preserve existing signatures,
    24h attempt expiry and immutable old runtime/catalog identities. Migrate no
    admitted run. No UI flag may bypass verification for leaderboard publication.
+   Docker-backed FP/Monza53 Keep and actual service26→25, interruption/Resume,
+   completed reopening and once-only verified publication now pass. The game owns
+   SERVICE_CONTROL_V1 and its pinned interactive cohort. Explicit catalog1.8.1
+   preserves1.8.0 resource bytes and old identities; existing local5221 stays
+   unranked, and only opted-in5222 connects to the isolated signed stack.
 5. **Open:** authenticated hosted Engineer control route/relay, same-origin
    restrictions, fixed upstream/model, bounded payload/time/concurrency, durable
    cache and a deliberately shared quota budget. Existing hosted read-only
@@ -70,12 +75,21 @@ No physics tolerance/rounding or old artifact replacement. See
 [executed game QA](https://github.com/loicbelec/pitgun-game/blob/feat/controlled-racing-worker/docs/qa/SIGNED_SERVICE_CONTROL_2026-11-14.md).
 Library/binary tests, Clippy/fmt, schemas and716 game tests/lint/build pass.
 
-This is not the normal career/outbox/publication path. Catalog1.7.0 is explicitly
+The earlier seven-lap bank is not the normal career/outbox/publication path. Catalog1.7.0 is explicitly
 compatible with V9/component0.11.0; career catalog1.8.0 declares0.14.0 and must not
 be relabelled or silently used under this signature. A compatible immutable career
 release, durable admission/evidence, outer nonce/idempotent leaderboard adapters,
 hosted shared quota, Linux Node22 image and full-GP cgroup memory/time qualification
 remain open. No staging promotion until the complete candidate passes.
+
+**Subsequent local delivery:** [real Docker career qualification](https://github.com/loicbelec/pitgun-game/blob/feat/controlled-racing-worker/docs/qa/SIGNED_CAREER_DOCKER_2026-11-14.md)
+now supersedes the open catalog/career-adapter/Linux-route items above. Both full
+GPs share an initial identity and have different final decision/result identities.
+The original signed attempt survives interruption and terminal outbox pruning;
+repeated evidence/publication creates one score, and nonce/history substitutions
+are refused. Linux Node22 replay is qualified under a3GiB local cap, with measured
+peak about1.85GiB. Hosted shared quota/model campaign, retained runtime rollout and
+deployment resource acceptance still precede the one staging promotion.
 
 The exact service-control envelope and completion schemas need executable
 producers/consumers before public promotion; do not turn a source-digest label or

@@ -4,6 +4,12 @@
 Local integration; activation/publication remains part of the single staging
 candidate. No physics coefficients or legacy signed contracts are changed.
 
+The subsequent local career adapter is now qualified against real Docker services:
+three signed FP sessions and Monza53, manual Keep or actual service26→25, durable
+admission/interruption/Resume, native final evidence and unique local leaderboard
+publication. [Executed career proof](https://github.com/loicbelec/pitgun-game/blob/feat/controlled-racing-worker/docs/qa/SIGNED_CAREER_DOCKER_2026-11-14.md).
+Hosted Engineer and staging resource/rollout acceptance remain separate gates.
+
 ## Authorization and completed identity
 
 `POST /v1/authorizations/racing/services` uses the existing subject, execution ID,
@@ -51,6 +57,16 @@ without changing the underlying result or its raw canonical digest. The bridge
 ABI is unchanged. Old artifacts retain their old bytes. Older artifacts lacking
 compact evidence cannot serve as this new hosted replay runtime.
 
+An optional bounded `signed_service` transport sidecar now carries the original
+signed attempt, envelope and catalog release; the canonical input already belongs
+to the request. Before starting, Rust validates their exact seed, input, catalog,
+execution, empty driver timeline and resolved control configuration. It removes
+the sidecar before constructing the numerical session: adding provenance cannot
+change the underlying observation/run identity. Completion additionally produces
+`service_evidence` in WASM itself from its native applied journal and output.
+No new ABI exports or JavaScript floating-point canonicalizer are needed. The
+browser checks signature shape/binding; hosted Verifier authenticates the HMAC.
+
 The child has a cleared environment, read permission only for its three operator-
 owned files, no filesystem write/child-process permission, bounded stdin/stdout,
 120-second timeout and process/thread cleanup. No URL, file path, source code,
@@ -90,18 +106,28 @@ Signing bodies are capped at1 MiB, verifier bodies at2 MiB, replay input at32 Mi
 
 The physical workload is the same component/V9 model0.11.0 as the local career.
 Tests explicitly use compatible catalog1.7.0. Existing catalog1.8.0 declares only
-model0.14.0 and is rejected for this route. The career staging candidate needs an
-explicit compatible immutable catalog release, with validated resource parity;
-do not pretend the old driver signature authorizes service control or switch the
-physics to fit a signature. New schemas remain experimental and unpublished.
+model0.14.0 and is rejected for this route. New local catalog1.8.1 explicitly
+supports0.11.0 and0.14.0 for service races/existing signed practices respectively.
+Every simulation/presentation payload and index is byte-identical to1.8.0;
+old identities and embedded defaults are unchanged. Do not pretend the old driver
+signature authorizes service control or switch physics to fit a signature. New
+schemas remain experimental; catalog1.8.1 is not deployed publicly.
 
 ## Remaining release gates
 
-The backend core is distinct from the career adapter. Persistent SIGNED admission,
-career outbox/nonce consumption, publication/leaderboard projection and the hosted
-Engineer/shared-quota route still need their normal adapters and end-to-end
-qualification. This stateless verifier route alone neither publishes scores nor
-attests offline development ownership, controller identity or response latency.
+The stateless verifier alone neither publishes scores nor attests development
+ownership, controller identity or response latency. Game's local adapter now
+qualifies persistent SIGNED admission, outbox recovery, native final evidence,
+nonce consumption and publication through its leaderboard backend. The separate
+service submission kind/cohort preserves old driver-mode results. No existing
+unsigned history acquires a signature. The hosted Engineer/shared-quota route,
+model campaign and full deployment rollout remain open.
 Keep the single staging candidate open until those gates, Linux image/resource
 checks and owner acceptance pass. Fuel#414 and memory#430 remain visible failures,
 not silently changed coefficients, distances or fabricated finishes.
+
+Linux Node22 Docker replay now passes two full Monza53 careers. Peak cgroup memory
+is about1.85GiB with a3GiB local limit/one replay slot; this does not qualify the
+previous smaller staging budget. The local stack is pinned to one signed runtime
+and refuses silent upgrades. A retained hosted-runtime rollout and resource
+acceptance are required before staging; no admitted attempt may migrate.
