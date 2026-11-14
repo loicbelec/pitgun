@@ -44,3 +44,11 @@ rationale truth or strategic quality. Provider-specific metadata/prompts remain
 separate. Deployment embeds pinned schema bytes; no network schema lookup is
 required during a run. Executable structural examples live in
 `tests/fixtures/racing-engineer/cases.json` and are checked by the ordinary CI.
+
+`racing-service-authorization/v1` and `racing-completed-service-input/v1` describe
+the experimental signed permissions/final-history identity. The applied history
+uses runtime-generated observation digests and float-free receipts; full physical
+snapshots are reconstructed by exact-runtime replay. Structure is not permission:
+the signature, catalog/model/policy/runtime bindings and replay remain mandatory.
+See `docs/RACING_SERVICE_AUTHORIZATION_V1.md`; no public activation follows merely
+from adding an experimental schema.

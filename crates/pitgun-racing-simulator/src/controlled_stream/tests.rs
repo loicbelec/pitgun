@@ -143,6 +143,18 @@ fn transport_freezes_rejects_retries_and_consumes_terminal_handle() {
     let done: Value =
         serde_json::from_str(&complete_experimental_controlled_racing_session_json(h)).unwrap();
     assert_eq!(done["result"]["player_pit_laps"], json!([2]));
+    let compact: crate::evidence::RacingOutputV1 =
+        serde_json::from_value(done["native_evidence"]["output"].clone()).unwrap();
+    assert_eq!(compact.player_pit_laps, vec![2]);
+    let summary: pitgun_contract::TelemetrySummaryV1 =
+        serde_json::from_value(done["native_evidence"]["telemetry_summary"].clone()).unwrap();
+    assert!(summary.frame_count() > 0);
+    assert!(serde_json::to_vec(&done["native_evidence"]).unwrap().len() < 65536);
+    assert!(
+        done["native_evidence"]["output"]
+            .get("player_batches")
+            .is_none()
+    );
     assert_eq!(
         done["journal"]
             .as_array()

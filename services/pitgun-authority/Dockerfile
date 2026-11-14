@@ -29,6 +29,7 @@ COPY --from=builder /app/catalogs/racing/v1.3.0 /opt/pitgun/catalogs/racing/v1.3
 COPY --from=builder /app/catalogs/racing/v1.5.0 /opt/pitgun/catalogs/racing/v1.5.0
 COPY --from=builder /app/catalogs/racing/v1.6.0 /opt/pitgun/catalogs/racing/v1.6.0
 COPY --from=builder /app/catalogs/racing/v1.7.0 /opt/pitgun/catalogs/racing/v1.7.0
+COPY --from=builder /app/catalogs/racing/v1.7.0 /opt/pitgun/catalogs/racing/v1.7.0
 COPY --from=builder /app/catalogs/racing/v1.8.0 /opt/pitgun/catalogs/racing/v1.8.0
 
 ENV PITGUN_AUTHORITY_BIND=0.0.0.0:8080 \

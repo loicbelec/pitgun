@@ -4,6 +4,7 @@ mod controlled_stream;
 pub mod evidence;
 mod fuel_contract;
 mod local_stream;
+pub mod service_control;
 mod thermal_profile;
 pub mod workload;
 

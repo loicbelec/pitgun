@@ -142,8 +142,10 @@ pub fn complete_experimental_controlled_racing_session_json(handle: u32) -> Stri
         let Some(session) = sessions.get(&handle) else { return json_error("unknown control handle"); };
         let Some(output) = &session.output else { return json_error("control session is not complete"); };
         let digest = match canonical_json_digest(output) { Ok(d) => d, Err(e) => return json_error(&e.to_string()) };
+        let evidence=match evidence::RacingRunEvidenceV1::from_race_output(output){Ok(v)=>v,Err(e)=>return json_error(&e.to_string())};
         let response = serde_json::json!({"schema_version":"pitgun.racing-control-completion/v1", "handle":handle,
-            "result":output, "canonical_result_digest":digest, "journal":session.engine.journal()}).to_string();
+            "result":output, "canonical_result_digest":digest, "journal":session.engine.journal(),
+            "native_evidence":{"output":evidence.output,"telemetry_summary":evidence.telemetry_summary}}).to_string();
         sessions.remove(&handle);
         response
     })

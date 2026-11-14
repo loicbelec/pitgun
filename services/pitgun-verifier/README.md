@@ -1,5 +1,12 @@
 # pitgun-verifier
 
+Experimental service control: `POST /v1/verifications/racing/services`, with
+`GET /v1/verifications/racing/services/readyz`. The separate route replays a
+configured hash-pinned Pitgun WASM/bridge using a fixed restricted Node adapter;
+it does not fall back to cross-target native floating-point comparisons. It is
+off by default. The old routes are unchanged. See
+[configuration and proof scope](../../docs/RACING_SERVICE_AUTHORIZATION_V1.md).
+
 `pitgun-verifier` independently validates deterministic execution evidence. The
 Racing workload is its first hosted adapter.
 

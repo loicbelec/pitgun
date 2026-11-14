@@ -8,7 +8,7 @@ use std::{
 
 use axum::{
     Json, Router,
-    extract::State,
+    extract::{DefaultBodyLimit, State},
     http::StatusCode,
     response::{IntoResponse, Response},
     routing::{get, post},
@@ -21,7 +21,8 @@ use pitgun_racing_policy::default_policy_path;
 use pitgun_racing_simulator::{RacingCatalogSnapshot, racing_model_identity_for_version};
 use pitgun_signing::{SigningKey, VerificationKeyring};
 use pitgun_verifier::{
-    RacingDynamicVerificationSubmissionV1, RacingVerificationSubmissionV1, RacingVerifier,
+    RacingDynamicVerificationSubmissionV1, RacingServiceVerificationSubmissionV1,
+    RacingVerificationSubmissionV1, RacingVerifier,
 };
 use tokio::{
     net::TcpListener,
@@ -43,6 +44,12 @@ struct AppState {
     attempt_verifier: Arc<RacingVerifier>,
     replay_slots: Arc<Semaphore>,
     ready: bool,
+    service_verifier: Option<Arc<ServiceVerifier>>,
+}
+
+struct ServiceVerifier {
+    verifier: RacingVerifier,
+    replay: pitgun_verifier::wasm_service_replay::WasmServiceReplay,
 }
 
 #[derive(serde::Serialize)]
@@ -56,6 +63,14 @@ async fn healthz() -> StatusCode {
 
 async fn readyz(State(state): State<AppState>) -> StatusCode {
     if state.ready {
+        StatusCode::OK
+    } else {
+        StatusCode::SERVICE_UNAVAILABLE
+    }
+}
+
+async fn service_readyz(State(state): State<AppState>) -> StatusCode {
+    if state.ready && state.service_verifier.is_some() {
         StatusCode::OK
     } else {
         StatusCode::SERVICE_UNAVAILABLE
@@ -133,6 +148,54 @@ async fn verify_racing_attempt(
     }
 }
 
+async fn verify_racing_service(
+    State(state): State<AppState>,
+    Json(submission): Json<RacingServiceVerificationSubmissionV1>,
+) -> Response {
+    if !state.ready {
+        return (
+            StatusCode::SERVICE_UNAVAILABLE,
+            Json(ErrorResponse {
+                error: "verification unavailable",
+            }),
+        )
+            .into_response();
+    }
+    let Some(verifier) = state.service_verifier else {
+        return (
+            StatusCode::SERVICE_UNAVAILABLE,
+            Json(ErrorResponse {
+                error: "service control is not configured",
+            }),
+        )
+            .into_response();
+    };
+    let (received, permit) = match admit_replay(Arc::clone(&state.replay_slots)).await {
+        Ok(v) => v,
+        Err(_) => return internal_error(),
+    };
+    match task::spawn_blocking(move || {
+        let _permit = permit;
+        verifier.verifier.verify_service_with_replay(
+            &submission,
+            received,
+            |response, catalog, history| verifier.replay.replay(response, catalog, history),
+        )
+    })
+    .await
+    {
+        Ok(Ok(verdict)) => verdict_response(verdict),
+        Ok(Err(error)) => {
+            error!(?error, "service verification failed internally");
+            internal_error()
+        }
+        Err(error) => {
+            error!(?error, "service verification worker terminated");
+            internal_error()
+        }
+    }
+}
+
 fn verdict_response(verdict: VerificationVerdictV1) -> Response {
     let status = match verdict.status {
         VerificationStatus::Pending => StatusCode::ACCEPTED,
@@ -159,6 +222,14 @@ fn build_router(state: AppState) -> Router {
         .route(
             "/v1/verifications/racing/attempts",
             post(verify_racing_attempt),
+        )
+        .route(
+            "/v1/verifications/racing/services",
+            post(verify_racing_service).layer(DefaultBodyLimit::max(2 * 1024 * 1024)),
+        )
+        .route(
+            "/v1/verifications/racing/services/readyz",
+            get(service_readyz),
         )
         .with_state(state)
 }
@@ -297,6 +368,56 @@ fn load_state() -> Result<AppState, String> {
     });
     let ready = signing_key.is_some() && catalog.is_some() && attempt_catalog.is_some();
     let verifier_identity = load_verifier_identity()?;
+    let service_catalog_path = std::env::var_os("PITGUN_RACING_SERVICE_CATALOG_RELEASE_DIR");
+    let service_runtime = std::env::var("PITGUN_RACING_SERVICE_WASM_DIGEST").ok();
+    let service_verifier = match (service_catalog_path, service_runtime) {
+        (None, None) => None,
+        (Some(path), Some(digest)) => {
+            let service_model =
+                pitgun_racing_simulator::racing_model_v3_component_candidate_identity();
+            let service_catalog = RacingCatalogSnapshot::from_release_dir(PathBuf::from(path))
+                .map_err(|e| e.to_string())?;
+            service_catalog
+                .manifest()
+                .compatibility
+                .validate_for(&service_model, pitgun_contract::ContractVersion::V1)
+                .map_err(|e| e.to_string())?;
+            use pitgun_verifier::wasm_service_replay::WasmServiceReplay;
+            let required = |key: &str| {
+                std::env::var(key).map_err(|_| format!("missing {key} for service WASM replay"))
+            };
+            let runtime_digest = digest.parse::<Digest>().map_err(|e| e.to_string())?;
+            let replay = WasmServiceReplay {
+                node: PathBuf::from(required("PITGUN_SERVICE_NODE_BINARY")?),
+                script: PathBuf::from(required("PITGUN_SERVICE_REPLAY_SCRIPT")?),
+                wasm: PathBuf::from(required("PITGUN_SERVICE_WASM_FILE")?),
+                bridge: PathBuf::from(required("PITGUN_SERVICE_BRIDGE_FILE")?),
+                runtime_digest,
+                bridge_digest: required("PITGUN_SERVICE_BRIDGE_DIGEST")?
+                    .parse::<Digest>()
+                    .map_err(|e| e.to_string())?,
+            };
+            replay.validate()?;
+            let identity = replay.verifier_identity(&verifier_identity)?;
+            Some(Arc::new(ServiceVerifier {
+                verifier: RacingVerifier::new(
+                    keyring.clone(),
+                    expected_audience.clone(),
+                    service_model,
+                    policy.clone(),
+                    Some(service_catalog),
+                    identity,
+                )
+                .with_service_runtime(runtime_digest),
+                replay,
+            }))
+        }
+        _ => {
+            return Err(
+                "service control requires both compatible catalog and runtime digest".into(),
+            );
+        }
+    };
     let verifier = RacingVerifier::new(
         keyring.clone(),
         expected_audience.clone(),
@@ -319,6 +440,7 @@ fn load_state() -> Result<AppState, String> {
         attempt_verifier: Arc::new(attempt_verifier),
         replay_slots: Arc::new(Semaphore::new(parse_max_concurrent_replays())),
         ready,
+        service_verifier,
     })
 }
 

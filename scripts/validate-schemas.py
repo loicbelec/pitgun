@@ -228,6 +228,13 @@ def main() -> int:
     validate_racing_opponent_policies()
     validate_racing_model_parameters()
     validate_racing_engineer_examples()
+    for name,schema in [("authorization","racing-service-authorization"),("completed","racing-completed-service-input")]:
+        validator=jsonschema.Draft202012Validator(load_json(SCHEMAS_DIR / schema / "v1.json"))
+        example=load_json(ROOT / "tests/fixtures/racing-service" / f"{name}.json")
+        validator.validate(example)
+        if validator.is_valid(dict(example,arbitrary_command="execute")):
+            raise SystemExit("FAIL service schema accepts extra command")
+        print(f"OK service-control example {name}")
     return 0
 
 

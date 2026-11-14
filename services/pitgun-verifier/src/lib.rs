@@ -4,6 +4,8 @@
 //! outside this module. The engine accepts typed evidence and emits the
 //! server-owned, versioned verification verdict.
 
+pub mod wasm_service_replay;
+
 use std::fmt;
 
 use pitgun_contract::{
@@ -26,6 +28,7 @@ use pitgun_signing::{AuthorizationVerificationError, VerificationKeyring};
 pub use pitgun_racing_simulator::evidence::{
     RacingDynamicVerificationSubmissionV1, RacingVerificationSubmissionV1,
 };
+pub use pitgun_racing_simulator::service_control::RacingServiceVerificationSubmissionV1;
 
 const RACING_SCENARIO_ID: &str = "racing.race";
 const RACING_DYNAMIC_SCENARIO_ID: &str = "racing.dynamic-session";
@@ -40,6 +43,7 @@ pub struct RacingVerifier {
     policy: ArtifactIdentity,
     catalog: Option<RacingCatalogSnapshot>,
     verifier: ArtifactIdentity,
+    service_runtime: Option<pitgun_contract::Digest>,
 }
 
 impl RacingVerifier {
@@ -60,7 +64,178 @@ impl RacingVerifier {
             policy,
             catalog,
             verifier,
+            service_runtime: None,
         }
+    }
+
+    /// Explicit server-side runtime allowlist for the separate service route.
+    #[must_use]
+    pub fn with_service_runtime(mut self, runtime: pitgun_contract::Digest) -> Self {
+        self.service_runtime = Some(runtime);
+        self
+    }
+
+    /// Verifies a service attempt without trusting the browser's hash chain,
+    /// reported action effects, or a provider's claimed identity.
+    pub fn verify_service_native_reference(
+        &self,
+        s: &RacingServiceVerificationSubmissionV1,
+        now: i64,
+    ) -> Result<VerificationVerdictV1, RacingVerifierError> {
+        self.verify_service_with_replay(s, now, |response, catalog, history| {
+            let output = pitgun_racing_simulator::service_control::replay_service_control(
+                response, catalog, history,
+            )
+            .map_err(|_| wasm_service_replay::ServiceReplayError::Mismatch)?;
+            RacingRunEvidenceV1::from_race_output(&output)
+                .map_err(|_| wasm_service_replay::ServiceReplayError::Mismatch)
+        })
+    }
+
+    pub fn verify_service_with_replay<F>(
+        &self,
+        s: &RacingServiceVerificationSubmissionV1,
+        now: i64,
+        replay: F,
+    ) -> Result<VerificationVerdictV1, RacingVerifierError>
+    where
+        F: FnOnce(
+            &pitgun_racing_simulator::service_control::RacingServiceAuthorizationResponseV1,
+            &RacingCatalogSnapshot,
+            &[pitgun_racing_simulator::service_control::RacingServiceDecisionV1],
+        ) -> Result<RacingRunEvidenceV1, wasm_service_replay::ServiceReplayError>,
+    {
+        use pitgun_racing_simulator::service_control::{
+            RacingServiceAuthorizationResponseV1, service_control_policy_identity,
+        };
+        let evidence = SubmittedEvidenceV1 {
+            receipt_digest: canonical_json_digest(&s.receipt)?,
+            output_digest: canonical_json_digest(&s.output)?,
+            telemetry_summary_digest: canonical_json_digest(&s.telemetry_summary)?,
+        };
+        let attempt = &s.signed_authorization.authorization;
+        let initial = &attempt.initial_contract;
+        let run = s.receipt.receipt.run_id;
+        let reject = |reason| {
+            self.rejected_attempt(run, attempt.execution_id, evidence.clone(), reason, now)
+        };
+        if let Err(e) = self.authorization_keys.verify_attempt_submission(
+            &s.signed_authorization,
+            &self.expected_audience,
+            now,
+        ) {
+            return reject(authorization_reason(&e));
+        }
+        if !has_supported_contract_semantics(initial, &s.input)
+            || initial.scenario.id.as_str() != pitgun_racing_contract::SERVICE_CONTROL_SCENARIO
+            || initial.scenario.version != "1.0.0".parse().expect("static service version")
+        {
+            return reject(VerificationReasonCode::InvalidAuthorization);
+        }
+        if initial.model != self.expected_model
+            || initial.model
+                != pitgun_racing_simulator::racing_model_v3_component_candidate_identity()
+        {
+            return reject(VerificationReasonCode::UnknownModel);
+        }
+        if attempt.policy != self.policy {
+            return reject(VerificationReasonCode::UnknownPolicy);
+        }
+        let (Some(catalog), Some(runtime)) = (&self.catalog, self.service_runtime) else {
+            return self.attempt_verdict(
+                run,
+                attempt.execution_id,
+                evidence,
+                VerificationStatus::Pending,
+                Some(VerificationReasonCode::DependencyUnavailable),
+                None,
+                now,
+            );
+        };
+        if s.decision_envelope.runtime_digest != runtime
+            || s.receipt.receipt.runtime
+                != pitgun_racing_simulator::service_control::service_runtime_identity(runtime)
+        {
+            return reject(VerificationReasonCode::ArtifactDigestMismatch);
+        }
+        if s.catalog_release != *catalog.release_identity()
+            || catalog.manifest().validate_for_run(initial).is_err()
+        {
+            return reject(VerificationReasonCode::UnknownDataPack);
+        }
+        if Some(s.execution_resolution.clone())
+            != RacingExecutionResolutionV1::from_catalog(catalog, &initial.model)
+            || canonical_json_digest(&s.input)? != initial.input.digest
+        {
+            return reject(VerificationReasonCode::ArtifactDigestMismatch);
+        }
+        if s.applied_history.len() > usize::from(s.decision_envelope.max_decisions) {
+            return reject(VerificationReasonCode::EvidenceMalformed);
+        }
+        let history = canonical_json_digest(&s.applied_history)?;
+        let final_contract = match s.decision_envelope.final_contract(
+            attempt,
+            &s.completed_input,
+            history,
+            &service_control_policy_identity(),
+        ) {
+            Ok(c) => c,
+            Err(_) => return reject(VerificationReasonCode::InvalidAuthorization),
+        };
+        if attempt
+            .validate_completed_receipt(&final_contract, &s.receipt.receipt)
+            .is_err()
+        {
+            return reject(VerificationReasonCode::ReceiptMismatch);
+        }
+        if s.receipt.receipt.output_digest != evidence.output_digest {
+            return reject(VerificationReasonCode::OutputMismatch);
+        }
+        if s.receipt.receipt.telemetry_summary_digest != evidence.telemetry_summary_digest {
+            return reject(VerificationReasonCode::TelemetryMismatch);
+        }
+        let response = RacingServiceAuthorizationResponseV1 {
+            signed: s.signed_authorization.clone(),
+            canonical_input: s.input.clone(),
+            decision_envelope: s.decision_envelope.clone(),
+            catalog_release: s.catalog_release.clone(),
+        };
+        let replay = match replay(&response, catalog, &s.applied_history) {
+            Ok(v) => v,
+            Err(wasm_service_replay::ServiceReplayError::Mismatch) => {
+                return reject(VerificationReasonCode::ReplayMismatch);
+            }
+            Err(wasm_service_replay::ServiceReplayError::Unavailable) => {
+                return self.attempt_verdict(
+                    run,
+                    attempt.execution_id,
+                    evidence,
+                    VerificationStatus::Pending,
+                    Some(VerificationReasonCode::DependencyUnavailable),
+                    None,
+                    now,
+                );
+            }
+        };
+        if replay.output != s.output {
+            return reject(VerificationReasonCode::OutputMismatch);
+        }
+        if replay.telemetry_summary != s.telemetry_summary {
+            return reject(VerificationReasonCode::TelemetryMismatch);
+        }
+        self.attempt_verdict(
+            run,
+            attempt.execution_id,
+            evidence,
+            VerificationStatus::Verified,
+            None,
+            Some(VerifiedResolutionV1 {
+                model: initial.model.clone(),
+                data_pack: initial.data_pack.clone(),
+                policy: attempt.policy.clone(),
+            }),
+            now,
+        )
     }
 
     /// Independently validates and replays one submitted Racing execution.

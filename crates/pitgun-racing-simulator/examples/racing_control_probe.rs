@@ -104,6 +104,7 @@ fn main() -> Result<(), String> {
         "schema_version": "pitgun.racing-control-probe-report/v1",
         "planned_stop_review_policy": {"schema_version":"pitgun.racing-planned-stop-review/v1"},
         "strategy_observation_policy": {"schema_version":"pitgun.racing-strategy-observation/v1"},
+        "native_control_evidence": true,
         "scope": "native local protocol fixture, not a Grand Prix benchmark or Hosted evidence",
         "catalog_release": snapshot.release_identity(),
         "request": request, "timeline": timeline, "config": config,

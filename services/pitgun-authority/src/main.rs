@@ -9,7 +9,7 @@ use std::{
 
 use axum::{
     Json, Router,
-    extract::State,
+    extract::{DefaultBodyLimit, State},
     http::StatusCode,
     response::{IntoResponse, Response},
     routing::{get, post},
@@ -62,6 +62,8 @@ struct AppState {
     racing_model: ArtifactIdentity,
     racing_catalog: Option<RacingCatalogSnapshot>,
     config: ServiceConfig,
+    service_catalog: Option<RacingCatalogSnapshot>,
+    service_runtime: Option<Digest>,
 }
 
 #[derive(Clone)]
@@ -190,6 +192,17 @@ async fn readyz(State(state): State<Arc<AppState>>) -> StatusCode {
     }
 }
 
+async fn service_readyz(State(state): State<Arc<AppState>>) -> StatusCode {
+    if state.signing_key.is_some()
+        && state.service_catalog.is_some()
+        && state.service_runtime.is_some()
+    {
+        StatusCode::OK
+    } else {
+        StatusCode::SERVICE_UNAVAILABLE
+    }
+}
+
 async fn deprecated_validate_config() -> (StatusCode, Json<ErrorResponse>) {
     warn!("/v1/config/validate is deprecated");
     (
@@ -230,6 +243,112 @@ async fn create_racing_run_attempt_authorization(
         Ok(response) => (StatusCode::OK, Json(response)).into_response(),
         Err(error) => error.into_response(),
     }
+}
+
+async fn create_racing_service_authorization(
+    State(state): State<Arc<AppState>>,
+    Json(request): Json<RacingRunAttemptAuthorizationRequestV1>,
+) -> Response {
+    match build_signed_racing_service_authorization(now_ms(), &state, request) {
+        Ok(response) => (StatusCode::OK, Json(response)).into_response(),
+        Err(error) => error.into_response(),
+    }
+}
+
+fn build_signed_racing_service_authorization(
+    now: i64,
+    state: &AppState,
+    request: RacingRunAttemptAuthorizationRequestV1,
+) -> Result<
+    pitgun_racing_simulator::service_control::RacingServiceAuthorizationResponseV1,
+    ContractError,
+> {
+    use pitgun_racing_simulator::service_control::{
+        RacingServiceAuthorizationResponseV1, resolve_service_authorization,
+    };
+    let key = state
+        .signing_key
+        .as_ref()
+        .ok_or_else(|| ContractError::Unavailable("signing key unavailable".into()))?;
+    let catalog = state.service_catalog.as_ref().ok_or_else(|| {
+        ContractError::Unavailable("service-control catalog is not configured".into())
+    })?;
+    let runtime = state.service_runtime.ok_or_else(|| {
+        ContractError::Unavailable("service-control runtime is not configured".into())
+    })?;
+    let model = pitgun_racing_simulator::racing_model_v3_component_candidate_identity();
+    let prepared = prepare_racing_run_with(
+        RacingPreparationContext {
+            state,
+            model: &model,
+            catalog: Some(catalog),
+        },
+        request.seed,
+        request.input,
+        Some(request.catalog_release),
+        None,
+        pitgun_racing_contract::SERVICE_CONTROL_SCENARIO,
+    )?;
+    let envelope = resolve_service_authorization(
+        &prepared.contract,
+        &prepared.canonical_input,
+        catalog,
+        runtime,
+    )
+    .map_err(ContractError::BadRequest)?;
+    // Validate resolved physical setup without advancing a lap before issuing.
+    let config = pitgun_racing_simulator::service_control::service_control_config(
+        &envelope,
+        request.execution_id,
+    )
+    .map_err(ContractError::BadRequest)?;
+    pitgun_racing_simulator::control_prototype::LocalControlledRacingSession::start(
+        pitgun_racing_simulator::RunRaceRequest {
+            input: prepared.canonical_input.clone(),
+            seed: request.seed.get(),
+            era: Some(prepared.canonical_input.era),
+            hz: Some(prepared.canonical_input.hz),
+        },
+        catalog,
+        pitgun_racing_simulator::service_control::empty_timeline(),
+        config,
+    )
+    .map_err(ContractError::BadRequest)?;
+    let mut nonce = [0_u8; 32];
+    OsRng.fill_bytes(&mut nonce);
+    let authorization = RunAttemptAuthorizationV1 {
+        authorization_version: RunAttemptAuthorizationVersion::V1,
+        nonce: Digest::from_bytes(&nonce),
+        execution_id: request.execution_id,
+        subject: request.subject,
+        audience: state.config.audience.clone(),
+        initial_run_id: prepared
+            .contract
+            .run_id()
+            .map_err(|e| ContractError::BadRequest(e.to_string()))?,
+        initial_contract: prepared.contract,
+        decision_envelope: envelope
+            .artifact_identity()
+            .map_err(ContractError::BadRequest)?,
+        policy: state.policy_identity.clone(),
+        signing_key_id: state.config.signing_key_id.clone(),
+        validity: authorization_validity(now, state)?,
+    };
+    let signature = key.sign(
+        &authorization
+            .signing_bytes()
+            .map_err(|e| ContractError::BadRequest(e.to_string()))?,
+    );
+    Ok(RacingServiceAuthorizationResponseV1 {
+        signed: SignedRunAttemptAuthorizationV1 {
+            authorization,
+            signature,
+            algorithm: AuthorizationSignatureAlgorithm::HmacSha256,
+        },
+        canonical_input: prepared.canonical_input,
+        decision_envelope: envelope,
+        catalog_release: catalog.release_identity().clone(),
+    })
 }
 
 fn build_signed_racing_run_authorization(
@@ -290,6 +409,34 @@ fn prepare_racing_run(
     requested_data_pack: Option<ArtifactIdentity>,
     scenario_id: &str,
 ) -> Result<PreparedRacingRunV1, ContractError> {
+    prepare_racing_run_with(
+        RacingPreparationContext {
+            state,
+            model: &state.racing_model,
+            catalog: state.racing_catalog.as_ref(),
+        },
+        seed,
+        input,
+        requested_release,
+        requested_data_pack,
+        scenario_id,
+    )
+}
+
+struct RacingPreparationContext<'a> {
+    state: &'a AppState,
+    model: &'a ArtifactIdentity,
+    catalog: Option<&'a RacingCatalogSnapshot>,
+}
+fn prepare_racing_run_with(
+    context: RacingPreparationContext<'_>,
+    seed: Seed,
+    input: RunRaceInput,
+    requested_release: Option<CatalogReleaseIdentityV1>,
+    requested_data_pack: Option<ArtifactIdentity>,
+    scenario_id: &str,
+) -> Result<PreparedRacingRunV1, ContractError> {
+    let state = context.state;
     let era = u32::try_from(input.era)
         .map_err(|_| ContractError::BadRequest("input.era must be non-negative".to_string()))?;
     let hz = input.hz;
@@ -306,12 +453,16 @@ fn prepare_racing_run(
         &state.tuning_policy,
     )
     .map_err(|error| ContractError::BadRequest(error.to_string()))?;
-    validate_governed_component_selections(state.racing_catalog.as_ref(), &canonical_input)?;
+    validate_governed_component_selections(context.catalog, &canonical_input)?;
     let input_digest = canonical_json_digest(&canonical_input)
         .map_err(|error| ContractError::BadRequest(format!("invalid canonical input: {error}")))?;
 
-    let (data_pack, catalog_release) =
-        resolve_data_pack(state, requested_release, requested_data_pack)?;
+    let (data_pack, catalog_release) = resolve_data_pack(
+        context.catalog,
+        state.config.allow_catalog_free,
+        requested_release,
+        requested_data_pack,
+    )?;
     let hz = hz as u64;
     let divisor = greatest_common_divisor(1_000_000, hz);
     let contract = DeterministicRunContractV1 {
@@ -322,7 +473,7 @@ fn prepare_racing_run(
                 .expect("static Racing scenario identifier"),
             version: "1.0.0".parse().expect("static Racing scenario version"),
         },
-        model: state.racing_model.clone(),
+        model: context.model.clone(),
         data_pack,
         runtime_profile: RuntimeProfile::PortableExactV1,
         random: RandomContractV1 {
@@ -339,7 +490,7 @@ fn prepare_racing_run(
             digest: input_digest,
         },
     };
-    if let (Some(catalog), Some(_)) = (&state.racing_catalog, &catalog_release) {
+    if let (Some(catalog), Some(_)) = (context.catalog, &catalog_release) {
         catalog
             .manifest()
             .validate_for_run(&contract)
@@ -584,13 +735,14 @@ fn authorization_validity(
 }
 
 fn resolve_data_pack(
-    state: &AppState,
+    retained_catalog: Option<&RacingCatalogSnapshot>,
+    allow_catalog_free: bool,
     requested_release: Option<CatalogReleaseIdentityV1>,
     requested_data_pack: Option<ArtifactIdentity>,
 ) -> Result<(ArtifactIdentity, Option<CatalogReleaseIdentityV1>), ContractError> {
     match (requested_release, requested_data_pack) {
         (Some(release), None) => {
-            let catalog = state.racing_catalog.as_ref().ok_or_else(|| {
+            let catalog = retained_catalog.ok_or_else(|| {
                 ContractError::Unavailable(
                     "catalog-backed issuance is unavailable on this authority".to_string(),
                 )
@@ -604,7 +756,7 @@ fn resolve_data_pack(
                 Some(release),
             ))
         }
-        (None, Some(data_pack)) if state.config.allow_catalog_free => Ok((data_pack, None)),
+        (None, Some(data_pack)) if allow_catalog_free => Ok((data_pack, None)),
         (None, Some(_)) => Err(ContractError::Forbidden(
             "catalog-free issuance is disabled by authority policy".to_string(),
         )),
@@ -846,6 +998,22 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
             .map_err(|error| format!("configured Racing model/catalog pair is invalid: {error}"))?;
     }
 
+    let service_catalog = match std::env::var_os("PITGUN_RACING_SERVICE_CATALOG_RELEASE_DIR") {
+        Some(path) => {
+            let catalog = RacingCatalogSnapshot::from_release_dir(PathBuf::from(path))?;
+            catalog.manifest().compatibility.validate_for(
+                &pitgun_racing_simulator::racing_model_v3_component_candidate_identity(),
+                ContractVersion::V1,
+            )?;
+            Some(catalog)
+        }
+        None => None,
+    };
+    let service_runtime = std::env::var("PITGUN_RACING_SERVICE_WASM_DIGEST")
+        .ok()
+        .map(|s| s.parse::<Digest>())
+        .transpose()?;
+
     let app_state = AppState {
         signing_key,
         tuning_policy,
@@ -854,6 +1022,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         racing_model,
         racing_catalog,
         config,
+        service_catalog,
+        service_runtime,
     };
 
     let app = Router::new()
@@ -868,6 +1038,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         .route(
             "/v1/authorizations/racing/attempts",
             post(create_racing_run_attempt_authorization),
+        )
+        .route(
+            "/v1/authorizations/racing/services",
+            post(create_racing_service_authorization).layer(DefaultBodyLimit::max(1024 * 1024)),
+        )
+        .route(
+            "/v1/authorizations/racing/services/readyz",
+            get(service_readyz),
         )
         .with_state(Arc::new(app_state));
 
@@ -895,6 +1073,7 @@ mod tests {
     use pitgun_racing_simulator::PitStrategyConfig;
     use serde_json::json;
     use std::collections::HashMap;
+    mod service_control;
 
     fn test_state() -> AppState {
         test_state_for("1.0.0", "v1.0.0")
@@ -927,6 +1106,8 @@ mod tests {
                 RacingCatalogSnapshot::from_release_dir(catalog_path)
                     .expect("Racing catalog should load"),
             ),
+            service_catalog: None,
+            service_runtime: None,
             config: ServiceConfig {
                 simulation_contract_ttl_secs: 300,
                 late_submission_grace_secs: 900,

@@ -189,6 +189,30 @@
         "crates/pitgun-racing-simulator/src/control_prototype.rs",
         "tests/fixtures/racing-engineer/cases.json"
       ]
+    },
+    {
+      "id": "https://schemas.pitgun.io/racing-service-authorization/v1.json",
+      "path": "racing-service-authorization/v1.json",
+      "kind": "json-schema",
+      "lifecycle": "experimental",
+      "owner": "pitgun-racing-contract",
+      "evidence": [
+        "crates/pitgun-racing-contract/src/service_control.rs",
+        "crates/pitgun-racing-simulator/src/service_control.rs",
+        "services/pitgun-authority/src/tests/service_control.rs"
+      ]
+    },
+    {
+      "id": "https://schemas.pitgun.io/racing-completed-service-input/v1.json",
+      "path": "racing-completed-service-input/v1.json",
+      "kind": "json-schema",
+      "lifecycle": "experimental",
+      "owner": "pitgun-racing-contract",
+      "evidence": [
+        "crates/pitgun-racing-contract/src/service_control.rs",
+        "crates/pitgun-racing-simulator/src/service_control.rs",
+        "services/pitgun-authority/src/tests/service_control.rs"
+      ]
     }
   ]
 }
