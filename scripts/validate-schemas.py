@@ -195,12 +195,39 @@ def validate_racing_model_parameters() -> None:
     print(f"OK Racing model parameters {fixture_path.relative_to(ROOT)}")
 
 
+def validate_racing_engineer_examples() -> None:
+    """Structural tests only; domain eligibility and rationale truth are separate."""
+    import copy
+
+    path = ROOT / "tests/fixtures/racing-engineer/cases.json"
+    for case in load_json(path)["cases"]:
+        request = case["request"]
+        version = request["version"].split("/")[-1]
+        schema = load_json(SCHEMAS_DIR / "racing-engineer-observation" / f"{version}.json")
+        validator = jsonschema.Draft202012Validator(schema)
+        validator.validate(request)
+        leaked = copy.deepcopy(request)
+        leaked["future_result"] = "win"
+        if validator.is_valid(leaked):
+            raise SystemExit("FAIL Engineer schema permits future-result injection")
+        proposal = jsonschema.Draft202012Validator(
+            load_json(SCHEMAS_DIR / "racing-engineer-proposal/v1.json")
+        )
+        proposal.validate(case["valid_output"])
+        if proposal.is_valid(dict(case["valid_output"], code="execute")):
+            raise SystemExit("FAIL Engineer schema permits executable-field injection")
+        if proposal.is_valid({"action": "keep_plan", "tire_id": "hard", "rationale": "invalid"}):
+            raise SystemExit("FAIL Keep proposal accepts a tyre change")
+        print(f"OK Engineer example {case['id']}")
+
+
 def main() -> int:
     entries = validate_catalog()
     validate_artifacts(entries)
     validate_gateway_examples()
     validate_racing_opponent_policies()
     validate_racing_model_parameters()
+    validate_racing_engineer_examples()
     return 0
 
 

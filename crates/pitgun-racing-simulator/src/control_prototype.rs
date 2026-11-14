@@ -47,6 +47,38 @@ pub struct LocalControlConfig {
     pub event_policy: Option<RivalPitPolicy>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub planned_stop_reviews: Option<PlannedStopReviewPolicy>,
+    /// Opt-in own-plan detail only. Omission preserves historical observations/digests.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub strategy_observation: Option<StrategyObservationPolicy>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum StrategyObservationVersion {
+    #[serde(rename = "pitgun.racing-strategy-observation/v1")]
+    V1,
+}
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct StrategyObservationPolicy {
+    pub schema_version: StrategyObservationVersion,
+}
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct DeclaredRemainingStint {
+    pub from_lap: u16,
+    pub through_lap: u16,
+    pub tire_id: String,
+}
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct StrategyObservation {
+    pub schema_version: StrategyObservationVersion,
+    /// Compound used for the completed lap, not the next-lap assignment or
+    /// a claim about state after a possible end-of-lap service.
+    pub completed_lap_tire_id: String,
+    /// Declared own plan as currently modified by accepted actions. No solved
+    /// future performance, opponent plans, or host scheduling clocks.
+    pub remaining_stints: Vec<DeclaredRemainingStint>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -122,6 +154,8 @@ pub struct PlayerObservation {
     pub trigger: Option<Box<RivalPitEpisode>>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub planned_review: Option<Box<PlannedStopReview>>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub strategy: Option<Box<StrategyObservation>>,
 }
 
 impl PlayerObservation {
@@ -347,7 +381,7 @@ impl LocalControlledRacingSession {
                 config.service_windows.is_some(),
             )?
         };
-        if config.planned_stop_reviews.is_some()
+        if (config.planned_stop_reviews.is_some() || config.strategy_observation.is_some())
             && session
                 .competitors
                 .iter()
@@ -358,7 +392,10 @@ impl LocalControlledRacingSession {
                 .len()
                 > 32
         {
-            return Err("planned reviews support at most 32 declared stops".into());
+            return Err(
+                "strategy observations and planned reviews support at most 32 declared stops"
+                    .into(),
+            );
         }
         session.align_player_horizon = true;
         Ok(Self {
@@ -445,6 +482,34 @@ impl LocalControlledRacingSession {
             window: None,
             trigger: None,
             planned_review: None,
+            strategy: self.config.strategy_observation.as_ref().map(|policy| {
+                let mut from = completed + 1;
+                let mut remaining_stints = Vec::new();
+                for through in player
+                    .stint_plan
+                    .pit_laps
+                    .iter()
+                    .copied()
+                    .filter(|lap| *lap > completed)
+                    .chain(std::iter::once(self.session.laps))
+                {
+                    remaining_stints.push(DeclaredRemainingStint {
+                        from_lap: from,
+                        through_lap: through,
+                        tire_id: player.stint_plan.tire_by_lap[usize::from(from - 1)].clone(),
+                    });
+                    if through < self.session.laps {
+                        from = through + 1;
+                    }
+                }
+                Box::new(StrategyObservation {
+                    schema_version: policy.schema_version,
+                    completed_lap_tire_id: player.stint_plan.tire_by_lap
+                        [usize::from(completed - 1)]
+                    .clone(),
+                    remaining_stints,
+                })
+            }),
         })
     }
     pub fn has_window_prefix(&self) -> bool {

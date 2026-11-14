@@ -200,6 +200,7 @@ mod tests {
             window: None,
             trigger: None,
             planned_review: None,
+            strategy: None,
         }
     }
     fn stop(filter: &mut RivalPitFilter, id: &str, lap: u16, gap: u64, at: u64) {

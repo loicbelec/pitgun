@@ -38,6 +38,7 @@ fn main() -> Result<(), String> {
     let config = LocalControlConfig {
         physics: None,
         planned_stop_reviews: None,
+        strategy_observation: None,
         execution_id: "native-local-control-probe".into(),
         runtime_digest,
         service_windows: None,
@@ -102,6 +103,7 @@ fn main() -> Result<(), String> {
     let mut report = json!({
         "schema_version": "pitgun.racing-control-probe-report/v1",
         "planned_stop_review_policy": {"schema_version":"pitgun.racing-planned-stop-review/v1"},
+        "strategy_observation_policy": {"schema_version":"pitgun.racing-strategy-observation/v1"},
         "scope": "native local protocol fixture, not a Grand Prix benchmark or Hosted evidence",
         "catalog_release": snapshot.release_identity(),
         "request": request, "timeline": timeline, "config": config,

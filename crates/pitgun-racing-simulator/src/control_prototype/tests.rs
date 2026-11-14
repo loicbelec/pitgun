@@ -18,6 +18,7 @@ fn config() -> LocalControlConfig {
     LocalControlConfig {
         physics: None,
         planned_stop_reviews: None,
+        strategy_observation: None,
         execution_id: "local-control-fixture-1".into(),
         runtime_digest: Digest::from_bytes(b"test runtime, not a distributed attestation"),
         decision_laps: vec![1, 3, 4],
@@ -35,6 +36,93 @@ fn start() -> LocalControlledRacingSession {
         config(),
     )
     .unwrap()
+}
+
+#[test]
+fn strategy_details_are_opt_in_and_legacy_observation_bytes_stay_unchanged() {
+    let old = observe(&mut start());
+    assert!(
+        !serde_json::to_value(old)
+            .unwrap()
+            .as_object()
+            .unwrap()
+            .contains_key("strategy")
+    );
+    let cfg = serde_json::to_value(config()).unwrap();
+    assert!(
+        !cfg.as_object()
+            .unwrap()
+            .contains_key("strategy_observation")
+    );
+    let mut unknown = cfg;
+    unknown["strategy_observation"] = serde_json::json!({"schema_version":"unknown"});
+    assert!(serde_json::from_value::<LocalControlConfig>(unknown).is_err());
+}
+
+#[test]
+fn own_strategy_details_distinguish_completed_next_and_post_stop_compounds() {
+    let snapshot = RacingCatalogSnapshot::embedded_model_v3_fuel_contract().unwrap();
+    let mut cfg = config();
+    cfg.strategy_observation = Some(StrategyObservationPolicy {
+        schema_version: StrategyObservationVersion::V1,
+    });
+    let mut session =
+        LocalControlledRacingSession::start(request(), &snapshot, timeline(), cfg.clone()).unwrap();
+    let first = observe(&mut session);
+    let details = first.strategy.as_ref().unwrap();
+    assert_eq!(first.completed_laps, 1);
+    assert_eq!(details.completed_lap_tire_id, "soft");
+    assert_eq!(first.next_lap_tire_id, "soft");
+    assert_eq!(
+        serde_json::to_value(&details.remaining_stints).unwrap(),
+        serde_json::json!([
+            {"from_lap":2,"through_lap":3,"tire_id":"soft"},
+            {"from_lap":4,"through_lap":5,"tire_id":"medium"}
+        ])
+    );
+    session
+        .propose(reference_proposal(&first, 1, "hard").unwrap())
+        .unwrap();
+    let second = observe(&mut session);
+    let details = second.strategy.as_ref().unwrap();
+    assert_eq!(second.completed_laps, 3);
+    assert_eq!(details.completed_lap_tire_id, "hard");
+    assert_eq!(
+        serde_json::to_value(&details.remaining_stints).unwrap(),
+        serde_json::json!([
+            {"from_lap":4,"through_lap":5,"tire_id":"hard"}
+        ])
+    );
+    // An accepted change never rewrites the frozen original observation.
+    assert_eq!(
+        first.strategy.as_ref().unwrap().remaining_stints[1].tire_id,
+        "medium"
+    );
+    let actual = finish(&mut session, false);
+    assert_eq!(
+        canonical_json_bytes(&actual).unwrap(),
+        canonical_json_bytes(
+            &replay(request(), &snapshot, timeline(), cfg, &applied(&session)).unwrap()
+        )
+        .unwrap()
+    );
+}
+
+#[test]
+fn richer_observations_do_not_change_keep_plan_physics() {
+    let snapshot = RacingCatalogSnapshot::embedded_model_v3_fuel_contract().unwrap();
+    let mut old = start();
+    let expected = finish(&mut old, false);
+    let mut cfg = config();
+    cfg.strategy_observation = Some(StrategyObservationPolicy {
+        schema_version: StrategyObservationVersion::V1,
+    });
+    let mut richer =
+        LocalControlledRacingSession::start(request(), &snapshot, timeline(), cfg).unwrap();
+    assert_eq!(
+        canonical_json_bytes(&finish(&mut richer, false)).unwrap(),
+        canonical_json_bytes(&expected).unwrap()
+    );
 }
 
 fn observe(session: &mut LocalControlledRacingSession) -> PlayerObservation {

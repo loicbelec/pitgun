@@ -33,3 +33,14 @@ pass schema and example validation in CI, and are deployed from `main`.
 resource. It preserves the boundary between gameplay resolution, physical
 setup response, model coefficients, and compiled numerical details. Its
 admissibility ranges are not physical-calibration claims.
+
+`racing-engineer-observation/v1` preserves the original provider-neutral snapshot.
+`v2` adds the completed-lap compound and the remaining **declared own** stints,
+never future solved performance or an opponent's plan. `racing-engineer-proposal/v1`
+describes untrusted Keep/early-pit output. These contracts are experimental; the
+game adapter retains semantic cross-field, horizon and capability validation,
+and the engine retains the final domain verdict. JSON validity does not prove
+rationale truth or strategic quality. Provider-specific metadata/prompts remain
+separate. Deployment embeds pinned schema bytes; no network schema lookup is
+required during a run. Executable structural examples live in
+`tests/fixtures/racing-engineer/cases.json` and are checked by the ordinary CI.
