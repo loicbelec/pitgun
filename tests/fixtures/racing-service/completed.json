@@ -1,0 +1,14 @@
+{
+  "schema_version": "pitgun.racing-completed-service-input/v1",
+  "authorized_input": {
+    "media_type": "application/json",
+    "canonicalization": "jcs-rfc8785",
+    "digest": "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+  },
+  "decision_envelope": {
+    "id": "pitgun.racing-service-authorization",
+    "version": "1.0.0",
+    "digest": "sha256:4444444444444444444444444444444444444444444444444444444444444444"
+  },
+  "applied_history_digest": "sha256:5555555555555555555555555555555555555555555555555555555555555555"
+}

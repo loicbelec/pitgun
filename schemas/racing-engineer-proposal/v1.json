@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.pitgun.io/racing-engineer-proposal/v1.json",
+  "title": "Racing Engineer proposal v1",
+  "description": "Untrusted provider-neutral proposal. Host validates can_pit and enumerated tyres; engine validates observation binding, logical deadline and actual service effect. English rationale is not a verified factual claim.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "action": {
+      "enum": [
+        "keep_plan",
+        "pit_next_lap"
+      ]
+    },
+    "tire_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "rationale": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 180,
+      "pattern": "^[^\\u0000-\\u001f\\u007f]*\\S[^\\u0000-\\u001f\\u007f]*$"
+    }
+  },
+  "required": [
+    "action",
+    "tire_id",
+    "rationale"
+  ],
+  "oneOf": [
+    {
+      "properties": {
+        "action": {
+          "const": "keep_plan"
+        },
+        "tire_id": {
+          "type": "null"
+        }
+      }
+    },
+    {
+      "properties": {
+        "action": {
+          "const": "pit_next_lap"
+        },
+        "tire_id": {
+          "type": "string",
+          "pattern": "^[a-z0-9_-]{1,32}$"
+        }
+      }
+    }
+  ]
+}

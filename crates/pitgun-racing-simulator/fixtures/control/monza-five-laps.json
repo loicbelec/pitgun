@@ -1,0 +1,36 @@
+{
+  "input": {
+    "track_id": "it-1922",
+    "laps": 5,
+    "vehicle_id": "f1_2026",
+    "era": 2026,
+    "competitors": [
+      {
+        "id": "player",
+        "driver_id": "balanced_reference",
+        "name": "Player",
+        "team_id": "team",
+        "is_player": true,
+        "budget_cap": 100.0,
+        "tuning": {
+          "engine_points": 25.0,
+          "cooling_points": 25.0,
+          "aero_points": 25.0,
+          "chassis_points": 25.0,
+          "downforce_slider": 0.5,
+          "gear_ratio_slider": 0.5
+        },
+        "stint_strategy": {
+          "stints": [
+            { "tire_id": "soft", "laps": 3 },
+            { "tire_id": "medium", "laps": 2 }
+          ],
+          "pit_laps": [3]
+        }
+      }
+    ]
+  },
+  "seed": 7,
+  "era": 2026,
+  "hz": 5.0
+}

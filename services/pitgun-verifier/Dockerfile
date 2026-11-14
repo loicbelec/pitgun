@@ -2,7 +2,8 @@
 
 ARG RUST_VERSION=1.89
 
-FROM rust:${RUST_VERSION}-slim AS builder
+# Match the Node runtime's libc; the floating slim tag may use a newer Debian.
+FROM rust:${RUST_VERSION}-slim-bookworm AS builder
 WORKDIR /app
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -12,7 +13,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY . .
 RUN cargo build --release --locked -p pitgun-verifier
 
-FROM debian:bookworm-slim
+FROM node:22-bookworm-slim
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
@@ -22,12 +23,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && chown -R appuser:appuser /opt/pitgun
 
 COPY --from=builder /app/target/release/pitgun-verifier /usr/local/bin/pitgun-verifier
+COPY --from=builder /app/services/pitgun-verifier/wasm-service-replay.mjs /opt/pitgun/replay/wasm-service-replay.mjs
 COPY --from=builder /app/policies/gametuning.v1.yaml /opt/pitgun/policies/gametuning.v1.yaml
 COPY --from=builder /app/catalogs/racing/v1.0.0 /opt/pitgun/catalogs/racing/v1.0.0
 COPY --from=builder /app/catalogs/racing/v1.2.0 /opt/pitgun/catalogs/racing/v1.2.0
 COPY --from=builder /app/catalogs/racing/v1.3.0 /opt/pitgun/catalogs/racing/v1.3.0
 COPY --from=builder /app/catalogs/racing/v1.5.0 /opt/pitgun/catalogs/racing/v1.5.0
 COPY --from=builder /app/catalogs/racing/v1.6.0 /opt/pitgun/catalogs/racing/v1.6.0
+COPY --from=builder /app/catalogs/racing/v1.7.0 /opt/pitgun/catalogs/racing/v1.7.0
 COPY --from=builder /app/catalogs/racing/v1.8.0 /opt/pitgun/catalogs/racing/v1.8.0
 
 ENV PITGUN_VERIFIER_BIND=0.0.0.0:8080 \

@@ -105,7 +105,9 @@
       "kind": "json-schema",
       "lifecycle": "legacy",
       "owner": "pitgun-cli-legacy",
-      "evidence": ["apps/pitgun-cli/src/manifest.rs"]
+      "evidence": [
+        "apps/pitgun-cli/src/manifest.rs"
+      ]
     },
     {
       "id": "https://schemas.pitgun.io/metrics-dictionary/sim.v1.json",
@@ -154,6 +156,63 @@
       "lifecycle": "legacy",
       "owner": "unowned",
       "evidence": []
+    },
+    {
+      "id": "https://schemas.pitgun.io/racing-engineer-observation/v1.json",
+      "path": "racing-engineer-observation/v1.json",
+      "kind": "json-schema",
+      "lifecycle": "experimental",
+      "owner": "racing-controller-adapter",
+      "evidence": [
+        "crates/pitgun-racing-simulator/src/control_prototype.rs",
+        "tests/fixtures/racing-engineer/cases.json"
+      ]
+    },
+    {
+      "id": "https://schemas.pitgun.io/racing-engineer-observation/v2.json",
+      "path": "racing-engineer-observation/v2.json",
+      "kind": "json-schema",
+      "lifecycle": "experimental",
+      "owner": "racing-controller-adapter",
+      "evidence": [
+        "crates/pitgun-racing-simulator/src/control_prototype.rs",
+        "tests/fixtures/racing-engineer/cases.json"
+      ]
+    },
+    {
+      "id": "https://schemas.pitgun.io/racing-engineer-proposal/v1.json",
+      "path": "racing-engineer-proposal/v1.json",
+      "kind": "json-schema",
+      "lifecycle": "experimental",
+      "owner": "racing-controller-adapter",
+      "evidence": [
+        "crates/pitgun-racing-simulator/src/control_prototype.rs",
+        "tests/fixtures/racing-engineer/cases.json"
+      ]
+    },
+    {
+      "id": "https://schemas.pitgun.io/racing-service-authorization/v1.json",
+      "path": "racing-service-authorization/v1.json",
+      "kind": "json-schema",
+      "lifecycle": "experimental",
+      "owner": "pitgun-racing-contract",
+      "evidence": [
+        "crates/pitgun-racing-contract/src/service_control.rs",
+        "crates/pitgun-racing-simulator/src/service_control.rs",
+        "services/pitgun-authority/src/tests/service_control.rs"
+      ]
+    },
+    {
+      "id": "https://schemas.pitgun.io/racing-completed-service-input/v1.json",
+      "path": "racing-completed-service-input/v1.json",
+      "kind": "json-schema",
+      "lifecycle": "experimental",
+      "owner": "pitgun-racing-contract",
+      "evidence": [
+        "crates/pitgun-racing-contract/src/service_control.rs",
+        "crates/pitgun-racing-simulator/src/service_control.rs",
+        "services/pitgun-authority/src/tests/service_control.rs"
+      ]
     }
   ]
 }
