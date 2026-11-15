@@ -50,11 +50,18 @@ model rationale truth or competitive strength.
    SERVICE_CONTROL_V1 and its pinned interactive cohort. Explicit catalog1.8.1
    preserves1.8.0 resource bytes and old identities; existing local5221 stays
    unranked, and only opted-in5222 connects to the isolated signed stack.
-5. **Open:** authenticated hosted Engineer control route/relay, same-origin
+5. **Implemented/qualified offline locally; hosted activation open:** authenticated hosted Engineer control route/relay, same-origin
    restrictions, fixed upstream/model, bounded payload/time/concurrency, durable
    cache and a deliberately shared quota budget. Existing hosted read-only
    debrief and local test ledgers must not accidentally double the public quota.
    Keys remain server-side. No arbitrary URL, tools or user-code execution.
+   The 15 November game increment reuses the existing PHP relays with a fixed
+   control purpose/path, opt-in service flag and one existing durable quota/cache
+   directory for both roles (20/day total, not two allowances). HTTP/PHP negatives,
+   restart/cache, mixed concurrency/visitor limits and a no-network Docker smoke
+   pass. Infra preparation retains image pins and control=false. No real provider
+   campaign or hosted end-to-end activation is implied; see
+   [executed game QA](https://github.com/loicbelec/pitgun-game/blob/feat/controlled-racing-worker/docs/qa/HOSTED_ENGINEER_CONTROL_2026-11-15.md).
 6. **Open:** assemble matching committed native/browser/backend/infra artifacts;
    one local end-to-end rehearsal, then one staging promotion/owner recipe.
 
