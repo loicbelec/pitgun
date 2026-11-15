@@ -72,6 +72,15 @@ transport input and internal failures are not verdicts.
 Deterministic replay runs on bounded blocking workers. Configure the limit with
 `PITGUN_VERIFIER_MAX_CONCURRENT_REPLAYS`; the VPS-oriented default is `2`.
 
+The opt-in service-control WASM replay has a separate operator process budget:
+`PITGUN_SERVICE_REPLAY_TIMEOUT_SECONDS` (default `120`, integer `1..=600`).
+Choose it from a full-race measurement on the target host, and give the calling
+API a longer timeout. A timeout remains `PENDING/dependency_unavailable`, never a
+successful verification. The child is killed and reaped before its shared slot
+is released. This setting changes no signed deadline, runtime, physics, history,
+or evidence comparison. Requests cannot supply it. Process failure, timeout and
+adapter failure produce bounded operational diagnostics without proof bodies.
+
 For both worker POST routes, authorization timeliness uses the server clock after
 the complete JSON evidence has been received and decoded, **before** waiting for a
 replay slot. The same captured time is passed to the pure verifier and recorded

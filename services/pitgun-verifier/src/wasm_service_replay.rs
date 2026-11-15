@@ -30,6 +30,19 @@ pub struct WasmServiceReplay {
     pub bridge: PathBuf,
     pub runtime_digest: Digest,
     pub bridge_digest: Digest,
+    pub timeout: Duration,
+}
+
+/// Operator resource budget only; never accepted from a replay request.
+pub fn replay_timeout(value: Option<&str>) -> Result<Duration, String> {
+    let seconds = value
+        .unwrap_or("120")
+        .parse::<u64>()
+        .map_err(|_| "PITGUN_SERVICE_REPLAY_TIMEOUT_SECONDS must be an integer in 1..=600")?;
+    if !(1..=600).contains(&seconds) {
+        return Err("PITGUN_SERVICE_REPLAY_TIMEOUT_SECONDS must be in 1..=600".into());
+    }
+    Ok(Duration::from_secs(seconds))
 }
 #[derive(serde::Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -140,11 +153,20 @@ impl WasmServiceReplay {
                 {
                     Some(status) => {
                         if !status.success() {
+                            tracing::warn!(
+                                elapsed_ms = started.elapsed().as_millis() as u64,
+                                ?status,
+                                "service replay process failed"
+                            );
                             return Err(ServiceReplayError::Unavailable);
                         }
                         break;
                     }
-                    None if started.elapsed() > Duration::from_secs(120) => {
+                    None if started.elapsed() > self.timeout => {
+                        tracing::warn!(
+                            timeout_seconds = self.timeout.as_secs(),
+                            "service replay exceeded operator time budget"
+                        );
                         return Err(ServiceReplayError::Unavailable);
                     }
                     None => std::thread::sleep(Duration::from_millis(10)),
@@ -162,6 +184,7 @@ impl WasmServiceReplay {
             let reply: Reply =
                 serde_json::from_slice(&bytes).map_err(|_| ServiceReplayError::Unavailable)?;
             if !reply.ok {
+                tracing::warn!(elapsed_ms = started.elapsed().as_millis() as u64, code = ?reply.code, "service replay returned no matching evidence");
                 return Err(if reply.code.as_deref() == Some("replay_mismatch") {
                     ServiceReplayError::Mismatch
                 } else {
@@ -188,5 +211,27 @@ impl WasmServiceReplay {
             return Err(ServiceReplayError::Unavailable);
         }
         result
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::replay_timeout;
+    use std::time::Duration;
+
+    #[test]
+    fn operator_budget_is_defaulted_and_bounded() {
+        assert_eq!(replay_timeout(None).unwrap(), Duration::from_secs(120));
+        assert_eq!(
+            replay_timeout(Some("300")).unwrap(),
+            Duration::from_secs(300)
+        );
+        assert_eq!(
+            replay_timeout(Some("600")).unwrap(),
+            Duration::from_secs(600)
+        );
+        for invalid in ["0", "601", "-1", "", "unlimited", "1.5"] {
+            assert!(replay_timeout(Some(invalid)).is_err(), "{invalid}");
+        }
     }
 }

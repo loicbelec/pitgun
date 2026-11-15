@@ -455,6 +455,11 @@ fn load_state() -> Result<AppState, String> {
                 bridge_digest: required("PITGUN_SERVICE_BRIDGE_DIGEST")?
                     .parse::<Digest>()
                     .map_err(|e| e.to_string())?,
+                timeout: pitgun_verifier::wasm_service_replay::replay_timeout(
+                    std::env::var("PITGUN_SERVICE_REPLAY_TIMEOUT_SECONDS")
+                        .ok()
+                        .as_deref(),
+                )?,
             };
             replay.validate()?;
             let identity = replay.verifier_identity(&verifier_identity)?;
