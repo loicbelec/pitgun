@@ -4,6 +4,27 @@
 unranked hosted preview followed by ranked control. Physics/calibration is the
 next separate release. Local implementation increments do not deploy services.
 
+## 15 November — bounded campaign complete, release preparation open
+
+The predeclared comparison is complete: nine cases finish, reopen exactly and
+receive VERIFIED from the real Linux Node22/WASM service. Three actual Gemini
+responses are valid Keep proposals (1.034–2.029 seconds). Full Monza53 is interrupted
+after its first durable receipt, resumes the original signature without repeating
+inference and publishes once in the isolated QA leaderboard despite two claims.
+An independent early-Hard controller exercises real changed service. This qualifies
+integration, not strategic superiority; no additional calls or physical/prompt
+tuning are planned for this release.
+
+[Campaign and limitations](https://github.com/loicbelec/pitgun-game/blob/feat/controlled-racing-worker/docs/qa/ENGINEER_CAMPAIGN_2026-11-15.md).
+The [staging preparation dossier](https://github.com/loicbelec/pitgun-game/blob/feat/controlled-racing-worker/docs/releases/INTERACTIVE_STAGING_PREPARATION_2026-11-15.md)
+records the deterministic replay bundle and remaining gates. Hosted registration
+currently depends on the development runtime path; admitted1.8.0 requests must
+coexist with new1.8.1 FP/Race, rather than only placing both catalogs on disk.
+Image pins/routes and hosted PHP/TLS acceptance remain open. The cumulative local
+Verifier peak is now1.91GiB under3GiB, no OOM; the observed staging768MiB limit is
+insufficient for this path. No remote service/configuration has been changed.
+These findings supersede the earlier open model-campaign and peak figures below.
+
 ## Contract audit and first increment
 
 Existing `RacingDriverInstructionAuthorizationV1` binds a driver-mode envelope to
@@ -30,9 +51,9 @@ model rationale truth or competitive strength.
 
 ## Ordered local integration work
 
-1. **In progress:** immutable schema artifacts, semantic projection and held-out
-   observations; bounded live-provider qualification; reference/model campaign
-   on physically completing inputs. Keep negative/fallback/fuel cases.
+1. **Locally qualified:** immutable schema artifacts, semantic projection and held-out
+   observations; bounded live-provider qualification and reference/model campaign
+   on physically completing inputs. Negative/fallback/fuel cases remain recorded.
 2. **Backend implemented/locally qualified:** Racing-specific signed service-control envelope. Reuse the generic
    attempt lifecycle; bind initial input/catalog/model/runtime, exact control and
    observation policy, permitted player actions/tyres, limits and fallback rules.
@@ -59,8 +80,8 @@ model rationale truth or competitive strength.
    control purpose/path, opt-in service flag and one existing durable quota/cache
    directory for both roles (20/day total, not two allowances). HTTP/PHP negatives,
    restart/cache, mixed concurrency/visitor limits and a no-network Docker smoke
-   pass. Infra preparation retains image pins and control=false. No real provider
-   campaign or hosted end-to-end activation is implied; see
+   pass. Infra preparation retains image pins and control=false. The real provider
+   campaign above uses a protected loopback relay, not hosted end-to-end activation; see
    [executed game QA](https://github.com/loicbelec/pitgun-game/blob/feat/controlled-racing-worker/docs/qa/HOSTED_ENGINEER_CONTROL_2026-11-15.md).
 6. **Open:** assemble matching committed native/browser/backend/infra artifacts;
    one local end-to-end rehearsal, then one staging promotion/owner recipe.
