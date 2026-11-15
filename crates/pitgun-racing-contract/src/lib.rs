@@ -12,6 +12,12 @@ mod driver;
 mod instruction_authorization;
 mod model_parameters;
 mod race;
+mod service_control;
+
+pub use service_control::{
+    RacingCompletedServiceInputV1, RacingCompletedServiceInputVersion,
+    RacingServiceAuthorizationV1, RacingServiceAuthorizationVersion, SERVICE_CONTROL_SCENARIO,
+};
 
 pub use authority::{SignedSimulationContractV1, SimulationContractV1};
 pub use catalog::{

@@ -917,6 +917,16 @@ pub enum ResolvedSimulationStepV3 {
     Complete(Box<SimulationResult>),
 }
 
+/// Experimental Racing-owned service boundary. The generic framework does not
+/// depend on laps or tires. BeforeService carries the solved driving prefix;
+/// Lap carries committed state with an empty solution in this opt-in mode.
+#[derive(Debug, Clone, PartialEq)]
+pub enum ResolvedServiceStepV3 {
+    BeforeService(Box<ResolvedSimulationLapV3>),
+    Lap(Box<ResolvedSimulationLapV3>),
+    Complete(Box<SimulationResult>),
+}
+
 type ResolvedLapSlotV3 = Rc<RefCell<Option<ResolvedSimulationLapV3>>>;
 
 /// Stateful, wall-clock-independent execution of one resolved V3 competitor.
@@ -926,6 +936,11 @@ type ResolvedLapSlotV3 = Rc<RefCell<Option<ResolvedSimulationLapV3>>>;
 pub struct ResolvedSimulationSessionV3 {
     future: Pin<Box<dyn Future<Output = Result<SimulationResult, String>>>>,
     lap_slot: ResolvedLapSlotV3,
+    pre_service_slot: Option<ResolvedLapSlotV3>,
+    open_service_lap: Option<u16>,
+    pending_pit: Rc<RefCell<Option<PitStop>>>,
+    completed_laps: u16,
+    lap_count: u16,
     complete: bool,
 }
 
@@ -1046,10 +1061,28 @@ fn validate_resolved_simulation_request_v3(
 impl ResolvedSimulationSessionV3 {
     /// Validates and pins all physical inputs before any lap is computed.
     pub fn new(input: ResolvedSimulationRequestV3) -> Result<Self, String> {
+        Self::new_inner(input, false)
+    }
+
+    /// Local capability only: the host must resolve every pre-service boundary.
+    /// No Authority delegation, public controller contract or implicit deadline.
+    pub fn new_with_service_boundaries(input: ResolvedSimulationRequestV3) -> Result<Self, String> {
+        Self::new_inner(input, true)
+    }
+
+    fn new_inner(
+        input: ResolvedSimulationRequestV3,
+        service_boundaries: bool,
+    ) -> Result<Self, String> {
         validate_resolved_simulation_request_v3(&input)?;
 
         let lap_slot = Rc::new(RefCell::new(None));
         let future_lap_slot = Rc::clone(&lap_slot);
+        let pre_service_slot = service_boundaries.then(|| Rc::new(RefCell::new(None)));
+        let future_pre_service_slot = pre_service_slot.clone();
+        let pending_pit = Rc::new(RefCell::new(None));
+        let future_pending_pit = Rc::clone(&pending_pit);
+        let lap_count = input.lap_count.max(1);
         let future = Box::pin(async move {
             let compatibility_request = SimulationRequest {
                 track: input.track.clone(),
@@ -1098,6 +1131,8 @@ impl ResolvedSimulationSessionV3 {
                 ),
                 input.fuel_mass.as_ref(),
                 Some(future_lap_slot),
+                future_pre_service_slot,
+                future_pending_pit,
             )
             .await
         });
@@ -1105,12 +1140,93 @@ impl ResolvedSimulationSessionV3 {
         Ok(Self {
             future,
             lap_slot,
+            pre_service_slot,
+            open_service_lap: None,
+            pending_pit,
+            completed_laps: 0,
+            lap_count,
             complete: false,
         })
     }
 
+    /// Local control primitive, not an Authority permission. Replace only the
+    /// uncomputed pit plan: service at the end of the next lap, then keep this
+    /// tire to the finish. The completed physical prefix is never rewritten.
+    /// Racing must resolve and authorize the tire before calling this method.
+    pub fn request_next_lap_pit(&mut self, tire: TireParams) -> Result<u16, String> {
+        validate_tire_params(&tire)?;
+        if self.pre_service_slot.is_some() {
+            return Err("service-boundary sessions require resolve_service_boundary".into());
+        }
+        let lap = self.completed_laps.saturating_add(1);
+        if self.complete || lap >= self.lap_count {
+            return Err("pit requires an uncomputed lap before the final lap".to_string());
+        }
+        if self.pending_pit.borrow().is_some() {
+            return Err("a pit command is already pending at this boundary".to_string());
+        }
+        *self.pending_pit.borrow_mut() = Some(PitStop { lap, tire });
+        Ok(lap)
+    }
+
+    /// Compute driving, commit service, then continue in separate steps. Repeated
+    /// pulls while unresolved return an error before polling the physical future.
+    pub fn advance_service(&mut self) -> Result<ResolvedServiceStepV3, String> {
+        let slot = self
+            .pre_service_slot
+            .as_ref()
+            .ok_or("service boundaries are not enabled")?;
+        if self.complete {
+            return Err("resolved V3 simulation session already completed".into());
+        }
+        if self.open_service_lap.is_some() {
+            return Err("service boundary awaits resolution".into());
+        }
+        let mut context = Context::from_waker(Waker::noop());
+        match self.future.as_mut().poll(&mut context) {
+            Poll::Pending => {
+                if let Some(prefix) = slot.borrow_mut().take() {
+                    self.open_service_lap = Some(prefix.lap_index);
+                    return Ok(ResolvedServiceStepV3::BeforeService(Box::new(prefix)));
+                }
+                let lap = self
+                    .lap_slot
+                    .borrow_mut()
+                    .take()
+                    .ok_or("service session suspended without a boundary")?;
+                self.completed_laps = lap.lap_index;
+                Ok(ResolvedServiceStepV3::Lap(Box::new(lap)))
+            }
+            Poll::Ready(result) => {
+                self.complete = true;
+                result.map(|r| ResolvedServiceStepV3::Complete(Box::new(r)))
+            }
+        }
+    }
+
+    /// None preserves the remaining plan; a tire replaces it with service at
+    /// this boundary. Closed/finish requests fail before changing the future.
+    pub fn resolve_service_boundary(&mut self, tire: Option<TireParams>) -> Result<u16, String> {
+        let lap = self.open_service_lap.ok_or("no open service boundary")?;
+        if let Some(tire) = tire {
+            validate_tire_params(&tire)?;
+            if lap >= self.lap_count {
+                return Err("pit requires a boundary before the final lap".into());
+            }
+            if self.pending_pit.borrow().is_some() {
+                return Err("a pit command is already pending".into());
+            }
+            *self.pending_pit.borrow_mut() = Some(PitStop { lap, tire });
+        }
+        self.open_service_lap = None;
+        Ok(lap)
+    }
+
     /// Advances by one deterministic lap, then returns the canonical result.
     pub fn advance(&mut self) -> Result<ResolvedSimulationStepV3, String> {
+        if self.pre_service_slot.is_some() {
+            return Err("service-boundary sessions require advance_service".into());
+        }
         if self.complete {
             return Err("resolved V3 simulation session already completed".to_string());
         }
@@ -1121,12 +1237,14 @@ impl ResolvedSimulationSessionV3 {
         let waker = Waker::noop();
         let mut context = Context::from_waker(waker);
         match self.future.as_mut().poll(&mut context) {
-            Poll::Pending => self
-                .lap_slot
-                .borrow_mut()
-                .take()
-                .map(|value| ResolvedSimulationStepV3::Lap(Box::new(value)))
-                .ok_or_else(|| "resolved V3 simulation suspended without a lap".to_string()),
+            Poll::Pending => {
+                let lap =
+                    self.lap_slot.borrow_mut().take().ok_or_else(|| {
+                        "resolved V3 simulation suspended without a lap".to_string()
+                    })?;
+                self.completed_laps = lap.lap_index;
+                Ok(ResolvedSimulationStepV3::Lap(Box::new(lap)))
+            }
             Poll::Ready(result) => {
                 self.complete = true;
                 result.map(|value| ResolvedSimulationStepV3::Complete(Box::new(value)))
@@ -1563,6 +1681,8 @@ async fn run_resolved_simulation_kernel_incremental(
     v3_controls: V3ResolvedControls<'_>,
     fuel_mass: Option<&FuelMassParamsV3>,
     lap_slot: Option<ResolvedLapSlotV3>,
+    pre_service_slot: Option<ResolvedLapSlotV3>,
+    pending_pit: Rc<RefCell<Option<PitStop>>>,
 ) -> Result<SimulationResult, String> {
     let (
         mechanical,
@@ -1665,6 +1785,15 @@ async fn run_resolved_simulation_kernel_incremental(
 
     for lap_idx in 1..=lap_count {
         let zero_based_lap_index = lap_idx - 1;
+        // Read once, after the previous lap's yield and before any work on
+        // this lap. A command replaces the remaining plan, not past service.
+        if let Some(stop) = pending_pit.borrow_mut().take() {
+            if stop.lap != lap_idx {
+                return Err("pit command does not match the next physical lap".to_string());
+            }
+            pit_stops.retain(|previous| previous.lap < lap_idx);
+            pit_stops.push(stop);
+        }
         if driver_control_schedule
             .get(driver_control_schedule_cursor)
             .is_some_and(|entry| entry.lap_index == zero_based_lap_index)
@@ -2247,6 +2376,58 @@ async fn run_resolved_simulation_kernel_incremental(
                 wear_before_service_after_lap.push(wear_next);
             }
 
+            let end_engine_temp = *temp.last().unwrap_or(&state_curr.engine_temp);
+            let mut lap_solution = Some(SimulationSolution {
+                s: input.track.s.clone(),
+                t: t.clone(),
+                v: v_final,
+                power,
+                temp,
+                gear,
+                lap_index: vec![lap_idx; n],
+                tire_temp,
+                tire_wear,
+                tire_force_utilization: tire_utilization,
+                tire_normal_load_n: tire_normal_load,
+                tire_available_force_n: tire_available_force,
+                brake_force_budget_n: brake_force,
+                driver_cornering_utilization: cornering_utilization.clone(),
+                driver_braking_utilization: braking_utilization.clone(),
+                driver_traction_utilization: traction_utilization.clone(),
+                engine_derating_factor: engine_derating,
+                shift_power_fraction,
+            });
+            if let Some(slot) = pre_service_slot.as_ref() {
+                let prefix = ResolvedSimulationLapV3 {
+                    lap_index: lap_idx,
+                    lap_time_s: lap_time_adj,
+                    cumulative_time_s: t_offset,
+                    cumulative_distance_m: s_offset,
+                    state_after_lap: VehicleState {
+                        fuel_mass: fuel_left,
+                        tire_wear: wear_next,
+                        tire_temp: tire_temp_next,
+                        engine_temp: end_engine_temp,
+                    },
+                    end_speed_mps: prev_end_speed,
+                    end_gear: prev_end_gear,
+                    shift_time_remaining_s: prev_shift_time_remaining_s,
+                    active_driver_control: active_driver_control.driver_control,
+                    correction_workload_multiplier: active_driver_control
+                        .correction_workload_multiplier,
+                    pit_stop_completed: false,
+                    solution: lap_solution.take().unwrap(),
+                };
+                YieldResolvedLapV3::new(Rc::clone(slot), prefix).await;
+                if let Some(stop) = pending_pit.borrow_mut().take() {
+                    if stop.lap != lap_idx {
+                        return Err("pit command does not match the open service boundary".into());
+                    }
+                    pit_stops.retain(|previous| previous.lap < lap_idx);
+                    pit_stops.push(stop);
+                }
+            }
+
             if let Some(pit_stop) = pit_stops.iter().find(|stop| stop.lap == lap_idx) {
                 t_offset += input.config.pit_time_penalty_s.max(0.0);
                 wear_next = 0.0;
@@ -2265,33 +2446,13 @@ async fn run_resolved_simulation_kernel_incremental(
                 fuel_mass: fuel_left,
                 tire_wear: wear_next,
                 tire_temp: tire_temp_next,
-                engine_temp: *temp.last().unwrap_or(&state_curr.engine_temp),
+                engine_temp: end_engine_temp,
             };
             fuel_mass_after_lap_kg.push(state_curr.fuel_mass);
             minimum_total_vehicle_mass_kg = minimum_total_vehicle_mass_kg
                 .min(vehicle.chassis.mass_empty + state_curr.fuel_mass);
 
             if let Some(slot) = lap_slot.as_ref() {
-                let lap_solution = SimulationSolution {
-                    s: input.track.s.clone(),
-                    t: t.clone(),
-                    v: v_final,
-                    power,
-                    temp,
-                    gear,
-                    lap_index: vec![lap_idx; n],
-                    tire_temp,
-                    tire_wear,
-                    tire_force_utilization: tire_utilization,
-                    tire_normal_load_n: tire_normal_load,
-                    tire_available_force_n: tire_available_force,
-                    brake_force_budget_n: brake_force,
-                    driver_cornering_utilization: cornering_utilization.clone(),
-                    driver_braking_utilization: braking_utilization.clone(),
-                    driver_traction_utilization: traction_utilization.clone(),
-                    engine_derating_factor: engine_derating,
-                    shift_power_fraction,
-                };
                 let progress = ResolvedSimulationLapV3 {
                     lap_index: lap_idx,
                     lap_time_s: lap_time_adj,
@@ -2305,7 +2466,7 @@ async fn run_resolved_simulation_kernel_incremental(
                     correction_workload_multiplier: active_driver_control
                         .correction_workload_multiplier,
                     pit_stop_completed: pit_stops.iter().any(|stop| stop.lap == lap_idx),
-                    solution: lap_solution,
+                    solution: lap_solution.take().unwrap_or_default(),
                 };
                 YieldResolvedLapV3::new(Rc::clone(slot), progress).await;
             }

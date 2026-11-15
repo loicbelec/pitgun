@@ -8,20 +8,21 @@ use std::{
 
 use axum::{
     Json, Router,
-    extract::State,
+    extract::{DefaultBodyLimit, State},
     http::StatusCode,
     response::{IntoResponse, Response},
     routing::{get, post},
 };
 use pitgun_contract::{
-    ArtifactIdentity, Digest, Identifier, SemanticVersion, VerificationStatus,
-    VerificationVerdictV1,
+    ArtifactIdentity, CatalogReleaseIdentityV1, Digest, Identifier, SemanticVersion,
+    VerificationStatus, VerificationVerdictV1,
 };
 use pitgun_racing_policy::default_policy_path;
 use pitgun_racing_simulator::{RacingCatalogSnapshot, racing_model_identity_for_version};
 use pitgun_signing::{SigningKey, VerificationKeyring};
 use pitgun_verifier::{
-    RacingDynamicVerificationSubmissionV1, RacingVerificationSubmissionV1, RacingVerifier,
+    RacingDynamicVerificationSubmissionV1, RacingServiceVerificationSubmissionV1,
+    RacingVerificationSubmissionV1, RacingVerifier,
 };
 use tokio::{
     net::TcpListener,
@@ -41,8 +42,16 @@ const DEFAULT_RACING_ATTEMPT_MODEL_VERSION: &str = "0.14.0";
 struct AppState {
     verifier: Arc<RacingVerifier>,
     attempt_verifier: Arc<RacingVerifier>,
+    retained_verifiers: Vec<(CatalogReleaseIdentityV1, Arc<RacingVerifier>)>,
+    retained_attempt_verifiers: Vec<(CatalogReleaseIdentityV1, Arc<RacingVerifier>)>,
     replay_slots: Arc<Semaphore>,
     ready: bool,
+    service_verifier: Option<Arc<ServiceVerifier>>,
+}
+
+struct ServiceVerifier {
+    verifier: RacingVerifier,
+    replay: pitgun_verifier::wasm_service_replay::WasmServiceReplay,
 }
 
 #[derive(serde::Serialize)]
@@ -62,6 +71,14 @@ async fn readyz(State(state): State<AppState>) -> StatusCode {
     }
 }
 
+async fn service_readyz(State(state): State<AppState>) -> StatusCode {
+    if state.ready && state.service_verifier.is_some() {
+        StatusCode::OK
+    } else {
+        StatusCode::SERVICE_UNAVAILABLE
+    }
+}
+
 async fn admit_replay(slots: Arc<Semaphore>) -> Result<(i64, OwnedSemaphorePermit), AcquireError> {
     // JSON extraction has completed: bind timeliness to this server's receipt
     // of the complete evidence, not to later replay capacity. Never use a
@@ -69,6 +86,52 @@ async fn admit_replay(slots: Arc<Semaphore>) -> Result<(i64, OwnedSemaphorePermi
     let received_at_ms = now_ms();
     let permit = slots.acquire_owned().await?;
     Ok((received_at_ms, permit))
+}
+
+// The supplied release selects only among operator-owned immutable snapshots.
+// Every chosen engine still verifies the signed model/data-pack and full lineage.
+// Unknown identities fall through to the primary engine's rejection, never to
+// a fetch or a client-provided filesystem path. All engines share replay_slots.
+fn select_verifier(
+    primary: &Arc<RacingVerifier>,
+    retained: &[(CatalogReleaseIdentityV1, Arc<RacingVerifier>)],
+    release: Option<&CatalogReleaseIdentityV1>,
+) -> Arc<RacingVerifier> {
+    Arc::clone(
+        retained
+            .iter()
+            .find(|(identity, _)| Some(identity) == release)
+            .map(|(_, verifier)| verifier)
+            .unwrap_or(primary),
+    )
+}
+
+fn retained_verifiers(
+    env_var: &str,
+    primary: Option<&RacingCatalogSnapshot>,
+    model: &ArtifactIdentity,
+    template: &RacingVerifier,
+) -> Result<Vec<(CatalogReleaseIdentityV1, Arc<RacingVerifier>)>, String> {
+    let mut engines = Vec::new();
+    if let Some(paths) = std::env::var_os(env_var) {
+        for path in std::env::split_paths(&paths) {
+            let catalog =
+                RacingCatalogSnapshot::from_release_dir(path).map_err(|e| e.to_string())?;
+            catalog
+                .manifest()
+                .compatibility
+                .validate_for(model, pitgun_contract::ContractVersion::V1)
+                .map_err(|e| e.to_string())?;
+            let identity = catalog.release_identity().clone();
+            if primary.is_some_and(|c| c.release_identity() == &identity)
+                || engines.iter().any(|(id, _)| id == &identity)
+            {
+                return Err(format!("duplicate catalog identity in {env_var}"));
+            }
+            engines.push((identity, Arc::new(template.clone().with_catalog(catalog))));
+        }
+    }
+    Ok(engines)
 }
 
 async fn verify_racing(
@@ -82,7 +145,14 @@ async fn verify_racing(
             return internal_error();
         }
     };
-    let verifier = Arc::clone(&state.verifier);
+    let verifier = select_verifier(
+        &state.verifier,
+        &state.retained_verifiers,
+        submission
+            .execution_resolution
+            .as_ref()
+            .map(|r| &r.catalog_release),
+    );
     let result = task::spawn_blocking(move || {
         let _permit = permit;
         verifier.verify(&submission, now_ms)
@@ -113,7 +183,11 @@ async fn verify_racing_attempt(
             return internal_error();
         }
     };
-    let verifier = Arc::clone(&state.attempt_verifier);
+    let verifier = select_verifier(
+        &state.attempt_verifier,
+        &state.retained_attempt_verifiers,
+        Some(&submission.execution_resolution.catalog_release),
+    );
     let result = task::spawn_blocking(move || {
         let _permit = permit;
         verifier.verify_attempt(&submission, now_ms)
@@ -128,6 +202,54 @@ async fn verify_racing_attempt(
         }
         Err(error) => {
             error!(?error, "dynamic Racing verification worker terminated");
+            internal_error()
+        }
+    }
+}
+
+async fn verify_racing_service(
+    State(state): State<AppState>,
+    Json(submission): Json<RacingServiceVerificationSubmissionV1>,
+) -> Response {
+    if !state.ready {
+        return (
+            StatusCode::SERVICE_UNAVAILABLE,
+            Json(ErrorResponse {
+                error: "verification unavailable",
+            }),
+        )
+            .into_response();
+    }
+    let Some(verifier) = state.service_verifier else {
+        return (
+            StatusCode::SERVICE_UNAVAILABLE,
+            Json(ErrorResponse {
+                error: "service control is not configured",
+            }),
+        )
+            .into_response();
+    };
+    let (received, permit) = match admit_replay(Arc::clone(&state.replay_slots)).await {
+        Ok(v) => v,
+        Err(_) => return internal_error(),
+    };
+    match task::spawn_blocking(move || {
+        let _permit = permit;
+        verifier.verifier.verify_service_with_replay(
+            &submission,
+            received,
+            |response, catalog, history| verifier.replay.replay(response, catalog, history),
+        )
+    })
+    .await
+    {
+        Ok(Ok(verdict)) => verdict_response(verdict),
+        Ok(Err(error)) => {
+            error!(?error, "service verification failed internally");
+            internal_error()
+        }
+        Err(error) => {
+            error!(?error, "service verification worker terminated");
             internal_error()
         }
     }
@@ -159,6 +281,14 @@ fn build_router(state: AppState) -> Router {
         .route(
             "/v1/verifications/racing/attempts",
             post(verify_racing_attempt),
+        )
+        .route(
+            "/v1/verifications/racing/services",
+            post(verify_racing_service).layer(DefaultBodyLimit::max(2 * 1024 * 1024)),
+        )
+        .route(
+            "/v1/verifications/racing/services/readyz",
+            get(service_readyz),
         )
         .with_state(state)
 }
@@ -297,28 +427,93 @@ fn load_state() -> Result<AppState, String> {
     });
     let ready = signing_key.is_some() && catalog.is_some() && attempt_catalog.is_some();
     let verifier_identity = load_verifier_identity()?;
+    let service_catalog_path = std::env::var_os("PITGUN_RACING_SERVICE_CATALOG_RELEASE_DIR");
+    let service_runtime = std::env::var("PITGUN_RACING_SERVICE_WASM_DIGEST").ok();
+    let service_verifier = match (service_catalog_path, service_runtime) {
+        (None, None) => None,
+        (Some(path), Some(digest)) => {
+            let service_model =
+                pitgun_racing_simulator::racing_model_v3_component_candidate_identity();
+            let service_catalog = RacingCatalogSnapshot::from_release_dir(PathBuf::from(path))
+                .map_err(|e| e.to_string())?;
+            service_catalog
+                .manifest()
+                .compatibility
+                .validate_for(&service_model, pitgun_contract::ContractVersion::V1)
+                .map_err(|e| e.to_string())?;
+            use pitgun_verifier::wasm_service_replay::WasmServiceReplay;
+            let required = |key: &str| {
+                std::env::var(key).map_err(|_| format!("missing {key} for service WASM replay"))
+            };
+            let runtime_digest = digest.parse::<Digest>().map_err(|e| e.to_string())?;
+            let replay = WasmServiceReplay {
+                node: PathBuf::from(required("PITGUN_SERVICE_NODE_BINARY")?),
+                script: PathBuf::from(required("PITGUN_SERVICE_REPLAY_SCRIPT")?),
+                wasm: PathBuf::from(required("PITGUN_SERVICE_WASM_FILE")?),
+                bridge: PathBuf::from(required("PITGUN_SERVICE_BRIDGE_FILE")?),
+                runtime_digest,
+                bridge_digest: required("PITGUN_SERVICE_BRIDGE_DIGEST")?
+                    .parse::<Digest>()
+                    .map_err(|e| e.to_string())?,
+            };
+            replay.validate()?;
+            let identity = replay.verifier_identity(&verifier_identity)?;
+            Some(Arc::new(ServiceVerifier {
+                verifier: RacingVerifier::new(
+                    keyring.clone(),
+                    expected_audience.clone(),
+                    service_model,
+                    policy.clone(),
+                    Some(service_catalog),
+                    identity,
+                )
+                .with_service_runtime(runtime_digest),
+                replay,
+            }))
+        }
+        _ => {
+            return Err(
+                "service control requires both compatible catalog and runtime digest".into(),
+            );
+        }
+    };
     let verifier = RacingVerifier::new(
         keyring.clone(),
         expected_audience.clone(),
-        expected_model,
+        expected_model.clone(),
         policy.clone(),
-        catalog,
+        catalog.clone(),
         verifier_identity.clone(),
     );
     let attempt_verifier = RacingVerifier::new(
         keyring,
         expected_audience,
-        expected_attempt_model,
+        expected_attempt_model.clone(),
         policy,
-        attempt_catalog,
+        attempt_catalog.clone(),
         verifier_identity,
     );
 
+    let retained_verifiers = retained_verifiers(
+        "PITGUN_RACING_RETAINED_CATALOG_RELEASE_DIRS",
+        catalog.as_ref(),
+        &expected_model,
+        &verifier,
+    )?;
+    let retained_attempt_verifiers = self::retained_verifiers(
+        "PITGUN_RACING_ATTEMPT_RETAINED_CATALOG_RELEASE_DIRS",
+        attempt_catalog.as_ref(),
+        &expected_attempt_model,
+        &attempt_verifier,
+    )?;
     Ok(AppState {
+        retained_verifiers,
+        retained_attempt_verifiers,
         verifier: Arc::new(verifier),
         attempt_verifier: Arc::new(attempt_verifier),
         replay_slots: Arc::new(Semaphore::new(parse_max_concurrent_replays())),
         ready,
+        service_verifier,
     })
 }
 
@@ -353,6 +548,40 @@ mod tests {
     use std::{future::Future, task::Poll, time::Duration};
 
     use super::verdict_response;
+
+    #[test]
+    fn routing_uses_exact_operator_release_and_unknown_stays_on_strict_primary() {
+        use super::*;
+        let catalog = RacingCatalogSnapshot::from_release_dir(
+            PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../catalogs/racing/v1.8.1"),
+        )
+        .unwrap();
+        let identity = catalog.release_identity().clone();
+        let primary = Arc::new(RacingVerifier::new(
+            VerificationKeyring::new(),
+            "pitgun.verifier".parse().unwrap(),
+            racing_model_identity_for_version("0.11.0").unwrap(),
+            verdict(VerificationStatus::Verified).verifier,
+            None,
+            verdict(VerificationStatus::Verified).verifier,
+        ));
+        let other = Arc::new(primary.as_ref().clone().with_catalog(catalog));
+        let retained = vec![(identity.clone(), other.clone())];
+        assert!(Arc::ptr_eq(
+            &select_verifier(&primary, &retained, Some(&identity)),
+            &other
+        ));
+        let mut wrong = identity;
+        wrong.manifest_digest = Digest::from_bytes(b"unknown");
+        assert!(Arc::ptr_eq(
+            &select_verifier(&primary, &retained, Some(&wrong)),
+            &primary
+        ));
+        assert!(Arc::ptr_eq(
+            &select_verifier(&primary, &retained, None),
+            &primary
+        ));
+    }
 
     #[tokio::test]
     async fn capacity_wait_does_not_expire_evidence_received_in_time() {

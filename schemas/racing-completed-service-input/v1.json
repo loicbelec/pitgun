@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.pitgun.io/racing-completed-service-input/v1.json",
+  "description": "Experimental Racing service control. Native semantic validation, signed attempt binding and exact-runtime replay remain mandatory.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "pitgun.racing-completed-service-input/v1"
+    },
+    "authorized_input": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "media_type": {
+          "const": "application/json"
+        },
+        "canonicalization": {
+          "const": "jcs-rfc8785"
+        },
+        "digest": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        }
+      },
+      "required": [
+        "media_type",
+        "canonicalization",
+        "digest"
+      ]
+    },
+    "decision_envelope": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "digest": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        }
+      },
+      "required": [
+        "id",
+        "version",
+        "digest"
+      ]
+    },
+    "applied_history_digest": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    }
+  },
+  "required": [
+    "schema_version",
+    "authorized_input",
+    "decision_envelope",
+    "applied_history_digest"
+  ]
+}

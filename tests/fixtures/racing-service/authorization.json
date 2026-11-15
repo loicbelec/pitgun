@@ -1,0 +1,22 @@
+{
+  "schema_version": "pitgun.racing-service-authorization/v1",
+  "authorized_input": {
+    "media_type": "application/json",
+    "canonicalization": "jcs-rfc8785",
+    "digest": "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+  },
+  "control_policy": {
+    "id": "pitgun.racing-service-control-policy",
+    "version": "1.0.0",
+    "digest": "sha256:2222222222222222222222222222222222222222222222222222222222222222"
+  },
+  "runtime_digest": "sha256:3333333333333333333333333333333333333333333333333333333333333333",
+  "player_id": "player",
+  "allowed_tire_ids": [
+    "hard",
+    "medium",
+    "soft"
+  ],
+  "lap_count": 7,
+  "max_decisions": 35
+}

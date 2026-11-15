@@ -1,0 +1,179 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.pitgun.io/racing-engineer-observation/v1.json",
+  "title": "Racing Engineer observation v1",
+  "description": "Experimental provider-neutral adapter projection. Runtime semantic validation additionally checks horizons, stop ordering, authorization and matching observation identity. No physics or model quality claim.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "version": {
+      "const": "pitgun.racing-engineer/v1"
+    },
+    "observation_digest": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "decision_sequence": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 255
+    },
+    "observed_at_us": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9007199254740991,
+      "description": "Logical observation opening. No future service/deadline clock is exposed."
+    },
+    "race": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "completed_laps": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 255
+        },
+        "total_laps": {
+          "type": "integer",
+          "minimum": 2,
+          "maximum": 256
+        }
+      },
+      "required": [
+        "completed_laps",
+        "total_laps"
+      ]
+    },
+    "player": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "last_lap_time_ms": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "fuel_mass_kg": {
+          "type": "number",
+          "minimum": 0
+        },
+        "tire_wear_fraction": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Raw uncalibrated wear fraction. No usable-life threshold is promised."
+        },
+        "tire_temperature_c": {
+          "type": "number"
+        },
+        "engine_temperature_c": {
+          "type": "number"
+        },
+        "planned_next_lap_tire_id": {
+          "type": "string",
+          "pattern": "^[a-z0-9_-]{1,32}$",
+          "description": "Own declared next-lap compound, not a measured current tyre or the compound after a future stop."
+        }
+      },
+      "required": [
+        "last_lap_time_ms",
+        "fuel_mass_kg",
+        "tire_wear_fraction",
+        "tire_temperature_c",
+        "engine_temperature_c",
+        "planned_next_lap_tire_id"
+      ]
+    },
+    "plan": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "remaining_pit_laps": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 255
+          },
+          "maxItems": 256,
+          "uniqueItems": true
+        },
+        "pit_replaces_remaining_plan": {
+          "const": true
+        }
+      },
+      "required": [
+        "remaining_pit_laps",
+        "pit_replaces_remaining_plan"
+      ]
+    },
+    "allowed": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "can_pit": {
+          "type": "boolean"
+        },
+        "tire_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z0-9_-]{1,32}$"
+          },
+          "maxItems": 16,
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "can_pit",
+        "tire_ids"
+      ]
+    },
+    "rival_stops": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "competitor_id": {
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9_-]{1,64}$"
+          },
+          "lap": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 255
+          },
+          "occurred_at_us": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "absolute_pre_stop_crossing_gap_us": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991,
+            "description": "Historical absolute crossing-time gap before service. Not the current gap or an undercut estimate."
+          }
+        },
+        "required": [
+          "competitor_id",
+          "lap",
+          "occurred_at_us",
+          "absolute_pre_stop_crossing_gap_us"
+        ]
+      },
+      "maxItems": 15
+    }
+  },
+  "required": [
+    "version",
+    "observation_digest",
+    "decision_sequence",
+    "observed_at_us",
+    "race",
+    "player",
+    "plan",
+    "allowed",
+    "rival_stops"
+  ]
+}

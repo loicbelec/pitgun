@@ -41,7 +41,7 @@ pub fn start_local_racing_session_with_catalog_and_v3_power_unit_thermal_profile
             ..V3CandidateExperimentProfile::default()
         };
         start_incremental_race_with_catalog_and_v3_component_profile(
-            request, &catalog, &profile, &candidate, None,
+            request, &catalog, &profile, &candidate, None, false,
         )
     };
     let mut engine = match create() {

@@ -1,0 +1,403 @@
+{
+  "applied_decisions": [
+    {
+      "pit_after_lap": 2,
+      "proposal": {
+        "action": {
+          "kind": "pit_next_lap",
+          "tire_id": "hard"
+        },
+        "completed_laps": 1,
+        "decision_sequence": 0,
+        "idempotency_key": "reference-0",
+        "observation_digest": "sha256:c57fa2270e5f132a66cf22960affd995a053acf42255e9ad38ea3013d816341f",
+        "run_digest": "sha256:64988e5c0949ee189011021269f4e35330d82404c0a9215cd24a964629db4e52",
+        "source": {
+          "kind": "reference_controller"
+        },
+        "version": "pitgun.racing-control-prototype/v1"
+      }
+    },
+    {
+      "pit_after_lap": null,
+      "proposal": {
+        "action": {
+          "kind": "keep_plan"
+        },
+        "completed_laps": 3,
+        "decision_sequence": 1,
+        "idempotency_key": "reference-1",
+        "observation_digest": "sha256:9ef12f2f09f7e47c6bd9c74f63ac7bbab0ec187a249aeff4b5be92dd42ba3bd0",
+        "run_digest": "sha256:64988e5c0949ee189011021269f4e35330d82404c0a9215cd24a964629db4e52",
+        "source": {
+          "kind": "reference_controller"
+        },
+        "version": "pitgun.racing-control-prototype/v1"
+      }
+    },
+    {
+      "pit_after_lap": null,
+      "proposal": {
+        "action": {
+          "kind": "keep_plan"
+        },
+        "completed_laps": 4,
+        "decision_sequence": 2,
+        "idempotency_key": "reference-2",
+        "observation_digest": "sha256:75ab5fc8a563870ede292ba1bc7417f5387a8fe4019b0447f3ccd16b617b2327",
+        "run_digest": "sha256:64988e5c0949ee189011021269f4e35330d82404c0a9215cd24a964629db4e52",
+        "source": {
+          "kind": "reference_controller"
+        },
+        "version": "pitgun.racing-control-prototype/v1"
+      }
+    }
+  ],
+  "baseline": {
+    "canonical_result_digest": "sha256:40cb3934966e237555f9711c7b1c4c89e98877150df45a6644387ce7cfd99386",
+    "player_lap_times_ms": [
+      96675,
+      95292,
+      118453,
+      96861,
+      95257
+    ],
+    "player_pit_laps": [
+      3
+    ],
+    "standings": [
+      {
+        "best_lap_ms": 95257,
+        "competitor_id": "player",
+        "gap_to_leader_ms": 0,
+        "laps_completed": 5,
+        "position": 1,
+        "status": {
+          "type": "finished"
+        },
+        "total_time_ms": 502538
+      }
+    ],
+    "total_time_ms": 502538
+  },
+  "catalog_release": {
+    "id": "pitgun.racing",
+    "manifest_digest": "sha256:30621c0a2c6ff232eacecfb92737372e0f8766e121b45c8b2fb48cc762ca49ac",
+    "schema_version": "pitgun.catalog-release-identity/v1",
+    "version": "1.9.0"
+  },
+  "config": {
+    "allowed_tire_ids": [
+      "hard",
+      "soft"
+    ],
+    "decision_laps": [
+      1,
+      3,
+      4
+    ],
+    "execution_id": "native-local-control-probe",
+    "runtime_digest": "sha256:1c72ed35746a1e35cbe425a8139ec59a4de0b4e43ff2747ea45b974cd6bcfef1"
+  },
+  "controlled": {
+    "canonical_result_digest": "sha256:cf044eafcf41fec2eba2208c81546e427e369873b788e7c1e6173ef42fc2490b",
+    "player_lap_times_ms": [
+      96675,
+      117292,
+      97287,
+      95354,
+      95910
+    ],
+    "player_pit_laps": [
+      2
+    ],
+    "standings": [
+      {
+        "best_lap_ms": 95354,
+        "competitor_id": "player",
+        "gap_to_leader_ms": 0,
+        "laps_completed": 5,
+        "position": 1,
+        "status": {
+          "type": "finished"
+        },
+        "total_time_ms": 502518
+      }
+    ],
+    "total_time_ms": 502518
+  },
+  "exact_replay": true,
+  "journal": [
+    {
+      "kind": "observation",
+      "payload": {
+        "allowed_tire_ids": [
+          "hard",
+          "soft"
+        ],
+        "can_pit_next_lap": true,
+        "completed_laps": 1,
+        "cumulative_time_ms": 96675,
+        "decision_sequence": 0,
+        "domain": "racing",
+        "engine_temperature_c": 86.19881373073841,
+        "fuel_mass_kg": 107.90631339515696,
+        "last_lap_time_ms": 96675,
+        "next_lap_tire_id": "soft",
+        "player_id": "player",
+        "remaining_planned_pit_laps": [
+          3
+        ],
+        "run_digest": "sha256:64988e5c0949ee189011021269f4e35330d82404c0a9215cd24a964629db4e52",
+        "tire_temperature_c": 87.75998033749364,
+        "tire_wear_fraction": 0.011568974551353499,
+        "total_laps": 5,
+        "version": "pitgun.racing-control-prototype/v1"
+      }
+    },
+    {
+      "kind": "proposal",
+      "payload": {
+        "action": {
+          "kind": "pit_next_lap",
+          "tire_id": "hard"
+        },
+        "completed_laps": 1,
+        "decision_sequence": 0,
+        "idempotency_key": "reference-0",
+        "observation_digest": "sha256:c57fa2270e5f132a66cf22960affd995a053acf42255e9ad38ea3013d816341f",
+        "run_digest": "sha256:64988e5c0949ee189011021269f4e35330d82404c0a9215cd24a964629db4e52",
+        "source": {
+          "kind": "reference_controller"
+        },
+        "version": "pitgun.racing-control-prototype/v1"
+      }
+    },
+    {
+      "kind": "applied",
+      "payload": {
+        "pit_after_lap": 2,
+        "proposal": {
+          "action": {
+            "kind": "pit_next_lap",
+            "tire_id": "hard"
+          },
+          "completed_laps": 1,
+          "decision_sequence": 0,
+          "idempotency_key": "reference-0",
+          "observation_digest": "sha256:c57fa2270e5f132a66cf22960affd995a053acf42255e9ad38ea3013d816341f",
+          "run_digest": "sha256:64988e5c0949ee189011021269f4e35330d82404c0a9215cd24a964629db4e52",
+          "source": {
+            "kind": "reference_controller"
+          },
+          "version": "pitgun.racing-control-prototype/v1"
+        }
+      }
+    },
+    {
+      "kind": "observation",
+      "payload": {
+        "allowed_tire_ids": [
+          "hard",
+          "soft"
+        ],
+        "can_pit_next_lap": true,
+        "completed_laps": 3,
+        "cumulative_time_ms": 311254,
+        "decision_sequence": 1,
+        "domain": "racing",
+        "engine_temperature_c": 86.10304187428171,
+        "fuel_mass_kg": 103.79840493451486,
+        "last_lap_time_ms": 97287,
+        "next_lap_tire_id": "hard",
+        "player_id": "player",
+        "remaining_planned_pit_laps": [],
+        "run_digest": "sha256:64988e5c0949ee189011021269f4e35330d82404c0a9215cd24a964629db4e52",
+        "tire_temperature_c": 87.73524602186768,
+        "tire_wear_fraction": 0.003983313411714848,
+        "total_laps": 5,
+        "version": "pitgun.racing-control-prototype/v1"
+      }
+    },
+    {
+      "kind": "proposal",
+      "payload": {
+        "action": {
+          "kind": "keep_plan"
+        },
+        "completed_laps": 3,
+        "decision_sequence": 1,
+        "idempotency_key": "reference-1",
+        "observation_digest": "sha256:9ef12f2f09f7e47c6bd9c74f63ac7bbab0ec187a249aeff4b5be92dd42ba3bd0",
+        "run_digest": "sha256:64988e5c0949ee189011021269f4e35330d82404c0a9215cd24a964629db4e52",
+        "source": {
+          "kind": "reference_controller"
+        },
+        "version": "pitgun.racing-control-prototype/v1"
+      }
+    },
+    {
+      "kind": "applied",
+      "payload": {
+        "pit_after_lap": null,
+        "proposal": {
+          "action": {
+            "kind": "keep_plan"
+          },
+          "completed_laps": 3,
+          "decision_sequence": 1,
+          "idempotency_key": "reference-1",
+          "observation_digest": "sha256:9ef12f2f09f7e47c6bd9c74f63ac7bbab0ec187a249aeff4b5be92dd42ba3bd0",
+          "run_digest": "sha256:64988e5c0949ee189011021269f4e35330d82404c0a9215cd24a964629db4e52",
+          "source": {
+            "kind": "reference_controller"
+          },
+          "version": "pitgun.racing-control-prototype/v1"
+        }
+      }
+    },
+    {
+      "kind": "observation",
+      "payload": {
+        "allowed_tire_ids": [
+          "hard",
+          "soft"
+        ],
+        "can_pit_next_lap": false,
+        "completed_laps": 4,
+        "cumulative_time_ms": 406608,
+        "decision_sequence": 2,
+        "domain": "racing",
+        "engine_temperature_c": 85.96357842931407,
+        "fuel_mass_kg": 101.77979115005971,
+        "last_lap_time_ms": 95354,
+        "next_lap_tire_id": "hard",
+        "player_id": "player",
+        "remaining_planned_pit_laps": [],
+        "run_digest": "sha256:64988e5c0949ee189011021269f4e35330d82404c0a9215cd24a964629db4e52",
+        "tire_temperature_c": 85.68033252781464,
+        "tire_wear_fraction": 0.007994070842173791,
+        "total_laps": 5,
+        "version": "pitgun.racing-control-prototype/v1"
+      }
+    },
+    {
+      "kind": "proposal",
+      "payload": {
+        "action": {
+          "kind": "keep_plan"
+        },
+        "completed_laps": 4,
+        "decision_sequence": 2,
+        "idempotency_key": "reference-2",
+        "observation_digest": "sha256:75ab5fc8a563870ede292ba1bc7417f5387a8fe4019b0447f3ccd16b617b2327",
+        "run_digest": "sha256:64988e5c0949ee189011021269f4e35330d82404c0a9215cd24a964629db4e52",
+        "source": {
+          "kind": "reference_controller"
+        },
+        "version": "pitgun.racing-control-prototype/v1"
+      }
+    },
+    {
+      "kind": "applied",
+      "payload": {
+        "pit_after_lap": null,
+        "proposal": {
+          "action": {
+            "kind": "keep_plan"
+          },
+          "completed_laps": 4,
+          "decision_sequence": 2,
+          "idempotency_key": "reference-2",
+          "observation_digest": "sha256:75ab5fc8a563870ede292ba1bc7417f5387a8fe4019b0447f3ccd16b617b2327",
+          "run_digest": "sha256:64988e5c0949ee189011021269f4e35330d82404c0a9215cd24a964629db4e52",
+          "source": {
+            "kind": "reference_controller"
+          },
+          "version": "pitgun.racing-control-prototype/v1"
+        }
+      }
+    }
+  ],
+  "replayed": {
+    "canonical_result_digest": "sha256:cf044eafcf41fec2eba2208c81546e427e369873b788e7c1e6173ef42fc2490b",
+    "player_lap_times_ms": [
+      96675,
+      117292,
+      97287,
+      95354,
+      95910
+    ],
+    "player_pit_laps": [
+      2
+    ],
+    "standings": [
+      {
+        "best_lap_ms": 95354,
+        "competitor_id": "player",
+        "gap_to_leader_ms": 0,
+        "laps_completed": 5,
+        "position": 1,
+        "status": {
+          "type": "finished"
+        },
+        "total_time_ms": 502518
+      }
+    ],
+    "total_time_ms": 502518
+  },
+  "request": {
+    "era": 2026,
+    "hz": 5.0,
+    "input": {
+      "competitor_profiles": {},
+      "competitors": [
+        {
+          "budget_cap": 100.0,
+          "driver_id": "balanced_reference",
+          "id": "player",
+          "is_player": true,
+          "name": "Player",
+          "stint_strategy": {
+            "pit_laps": [
+              3
+            ],
+            "stints": [
+              {
+                "laps": 3,
+                "tire_id": "soft"
+              },
+              {
+                "laps": 2,
+                "tire_id": "medium"
+              }
+            ]
+          },
+          "team_id": "team",
+          "tuning": {
+            "aero_points": 25.0,
+            "chassis_points": 25.0,
+            "cooling_points": 25.0,
+            "downforce_slider": 0.5,
+            "engine_points": 25.0,
+            "gear_ratio_slider": 0.5
+          }
+        }
+      ],
+      "era": 2026,
+      "hz": 0.0,
+      "laps": 5,
+      "pit_strategy": null,
+      "track_id": "it-1922",
+      "track_profile": null,
+      "vehicle_id": "f1_2026"
+    },
+    "seed": 7
+  },
+  "schema_version": "pitgun.racing-control-probe-report/v1",
+  "scope": "native local protocol fixture, not a Grand Prix benchmark or Hosted evidence",
+  "timeline": {
+    "events": [],
+    "schema_version": "pitgun.racing-driver-instruction-timeline/v1"
+  }
+}

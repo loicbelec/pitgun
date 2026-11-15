@@ -40,6 +40,7 @@ MODEL_COMPATIBILITY_BY_RELEASE = {
     "1.6.0": ("pitgun.racing-v3-candidate", ["0.11.0"]),
     "1.7.0": ("pitgun.racing-v3-candidate", ["0.11.0"]),
     "1.8.0": ("pitgun.racing-v3-candidate", ["0.14.0"]),
+    "1.8.1": ("pitgun.racing-v3-candidate", ["0.11.0", "0.14.0"]),
     "1.9.0": ("pitgun.racing-v3-candidate", ["0.15.0"]),
 }
 

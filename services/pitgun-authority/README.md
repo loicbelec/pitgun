@@ -1,5 +1,11 @@
 # pitgun-authority
 
+Experimental service control: `POST /v1/authorizations/racing/services`, with
+`GET /v1/authorizations/racing/services/readyz`. This separate capability requires
+an explicitly configured compatible catalog and pinned WASM digest; it is off
+by default and does not reinterpret old driver-mode signatures. See
+[signed service control](../../docs/RACING_SERVICE_AUTHORIZATION_V1.md).
+
 `pitgun-authority` canonicalizes domain input and authorizes immutable
 deterministic runs. A signature proves which bytes the authority accepted. It
 does not prove that an untrusted client computed the submitted result

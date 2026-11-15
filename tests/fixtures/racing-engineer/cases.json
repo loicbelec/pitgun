@@ -1,0 +1,158 @@
+{
+  "scope": "Authored contract/semantic facts, not solved race outcomes or model recommendations",
+  "cases": [
+    {
+      "id": "legacy-unknown-post-stop",
+      "request": {
+        "version": "pitgun.racing-engineer/v1",
+        "observation_digest": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+        "decision_sequence": 0,
+        "observed_at_us": 100000,
+        "race": {
+          "completed_laps": 36,
+          "total_laps": 53
+        },
+        "player": {
+          "last_lap_time_ms": 92000,
+          "fuel_mass_kg": 35,
+          "tire_wear_fraction": 0.1,
+          "tire_temperature_c": 90,
+          "engine_temperature_c": 100,
+          "planned_next_lap_tire_id": "medium"
+        },
+        "plan": {
+          "remaining_pit_laps": [
+            38
+          ],
+          "pit_replaces_remaining_plan": true
+        },
+        "allowed": {
+          "can_pit": true,
+          "tire_ids": [
+            "hard",
+            "medium",
+            "soft"
+          ]
+        },
+        "rival_stops": []
+      },
+      "facts": {
+        "post_stop_38_tire_id": null
+      },
+      "valid_output": {
+        "action": "keep_plan",
+        "tire_id": null,
+        "rationale": "The declared stop is lap 38; no post-stop compound is supplied."
+      }
+    },
+    {
+      "id": "three-distinct-compounds",
+      "request": {
+        "version": "pitgun.racing-engineer/v2",
+        "observation_digest": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+        "decision_sequence": 0,
+        "observed_at_us": 100000,
+        "race": {
+          "completed_laps": 36,
+          "total_laps": 53
+        },
+        "player": {
+          "last_lap_time_ms": 92000,
+          "fuel_mass_kg": 35,
+          "tire_wear_fraction": 0.1,
+          "tire_temperature_c": 90,
+          "engine_temperature_c": 100,
+          "planned_next_lap_tire_id": "medium",
+          "completed_lap_tire_id": "soft"
+        },
+        "plan": {
+          "remaining_pit_laps": [
+            38
+          ],
+          "pit_replaces_remaining_plan": true,
+          "remaining_stints": [
+            {
+              "from_lap": 37,
+              "through_lap": 38,
+              "tire_id": "medium"
+            },
+            {
+              "from_lap": 39,
+              "through_lap": 53,
+              "tire_id": "hard"
+            }
+          ]
+        },
+        "allowed": {
+          "can_pit": true,
+          "tire_ids": [
+            "hard",
+            "medium",
+            "soft"
+          ]
+        },
+        "rival_stops": []
+      },
+      "facts": {
+        "completed_lap_tire_id": "soft",
+        "next_lap_tire_id": "medium",
+        "post_stop_38_tire_id": "hard"
+      },
+      "valid_output": {
+        "action": "keep_plan",
+        "tire_id": null,
+        "rationale": "The declared stop at lap 38 selects hard for laps 39 to 53."
+      }
+    },
+    {
+      "id": "no-remaining-stop",
+      "request": {
+        "version": "pitgun.racing-engineer/v2",
+        "observation_digest": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+        "decision_sequence": 1,
+        "observed_at_us": 100000,
+        "race": {
+          "completed_laps": 36,
+          "total_laps": 53
+        },
+        "player": {
+          "last_lap_time_ms": 92000,
+          "fuel_mass_kg": 35,
+          "tire_wear_fraction": 0.1,
+          "tire_temperature_c": 90,
+          "engine_temperature_c": 100,
+          "planned_next_lap_tire_id": "medium",
+          "completed_lap_tire_id": "soft"
+        },
+        "plan": {
+          "remaining_pit_laps": [],
+          "pit_replaces_remaining_plan": true,
+          "remaining_stints": [
+            {
+              "from_lap": 37,
+              "through_lap": 53,
+              "tire_id": "medium"
+            }
+          ]
+        },
+        "allowed": {
+          "can_pit": true,
+          "tire_ids": [
+            "hard",
+            "medium",
+            "soft"
+          ]
+        },
+        "rival_stops": []
+      },
+      "facts": {
+        "remaining_stop_count": 0
+      },
+      "valid_output": {
+        "action": "pit_next_lap",
+        "tire_id": "hard",
+        "rationale": "This is a permitted action example, not evidence it improves performance."
+      }
+    }
+  ]
+}

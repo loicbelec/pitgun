@@ -1401,6 +1401,7 @@ dependencies = [
  "pitgun-racing-policy",
  "pitgun-racing-simulator",
  "pitgun-signing",
+ "pitgun-verifier",
  "rand",
  "serde",
  "serde_json",

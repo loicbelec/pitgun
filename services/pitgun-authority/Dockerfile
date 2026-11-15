@@ -2,7 +2,7 @@
 
 ARG RUST_VERSION=1.89
 
-FROM rust:${RUST_VERSION}-slim AS builder
+FROM rust:${RUST_VERSION}-slim-bookworm AS builder
 WORKDIR /app
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -29,7 +29,9 @@ COPY --from=builder /app/catalogs/racing/v1.3.0 /opt/pitgun/catalogs/racing/v1.3
 COPY --from=builder /app/catalogs/racing/v1.5.0 /opt/pitgun/catalogs/racing/v1.5.0
 COPY --from=builder /app/catalogs/racing/v1.6.0 /opt/pitgun/catalogs/racing/v1.6.0
 COPY --from=builder /app/catalogs/racing/v1.7.0 /opt/pitgun/catalogs/racing/v1.7.0
+COPY --from=builder /app/catalogs/racing/v1.7.0 /opt/pitgun/catalogs/racing/v1.7.0
 COPY --from=builder /app/catalogs/racing/v1.8.0 /opt/pitgun/catalogs/racing/v1.8.0
+COPY --from=builder /app/catalogs/racing/v1.8.1 /opt/pitgun/catalogs/racing/v1.8.1
 
 ENV PITGUN_AUTHORITY_BIND=0.0.0.0:8080 \
     PITGUN_TUNING_POLICY_PATH=/opt/pitgun/policies/gametuning.v1.yaml \
