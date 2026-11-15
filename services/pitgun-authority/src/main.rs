@@ -61,6 +61,7 @@ struct AppState {
     policy_identity: ArtifactIdentity,
     racing_model: ArtifactIdentity,
     racing_catalog: Option<RacingCatalogSnapshot>,
+    retained_catalogs: Vec<RacingCatalogSnapshot>,
     config: ServiceConfig,
     service_catalog: Option<RacingCatalogSnapshot>,
     service_runtime: Option<Digest>,
@@ -409,11 +410,21 @@ fn prepare_racing_run(
     requested_data_pack: Option<ArtifactIdentity>,
     scenario_id: &str,
 ) -> Result<PreparedRacingRunV1, ContractError> {
+    let catalog = requested_release
+        .as_ref()
+        .and_then(|release| {
+            state
+                .racing_catalog
+                .iter()
+                .chain(&state.retained_catalogs)
+                .find(|catalog| catalog.release_identity() == release)
+        })
+        .or(state.racing_catalog.as_ref());
     prepare_racing_run_with(
         RacingPreparationContext {
             state,
             model: &state.racing_model,
-            catalog: state.racing_catalog.as_ref(),
+            catalog,
         },
         seed,
         input,
@@ -998,6 +1009,26 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
             .map_err(|error| format!("configured Racing model/catalog pair is invalid: {error}"))?;
     }
 
+    // Operator-owned paths only. Keep old defaults and identities; an unknown
+    // request still reaches strict manifest validation against the primary.
+    let mut retained_catalogs = Vec::new();
+    if let Some(paths) = std::env::var_os("PITGUN_RACING_RETAINED_CATALOG_RELEASE_DIRS") {
+        for path in std::env::split_paths(&paths) {
+            let catalog = RacingCatalogSnapshot::from_release_dir(path)?;
+            catalog
+                .manifest()
+                .compatibility
+                .validate_for(&racing_model, ContractVersion::V1)?;
+            if racing_catalog.iter().chain(&retained_catalogs).any(
+                |existing: &RacingCatalogSnapshot| {
+                    existing.release_identity() == catalog.release_identity()
+                },
+            ) {
+                return Err("duplicate configured Racing catalog identity".into());
+            }
+            retained_catalogs.push(catalog);
+        }
+    }
     let service_catalog = match std::env::var_os("PITGUN_RACING_SERVICE_CATALOG_RELEASE_DIR") {
         Some(path) => {
             let catalog = RacingCatalogSnapshot::from_release_dir(PathBuf::from(path))?;
@@ -1021,6 +1052,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         policy_identity,
         racing_model,
         racing_catalog,
+        retained_catalogs,
         config,
         service_catalog,
         service_runtime,
@@ -1106,6 +1138,7 @@ mod tests {
                 RacingCatalogSnapshot::from_release_dir(catalog_path)
                     .expect("Racing catalog should load"),
             ),
+            retained_catalogs: Vec::new(),
             service_catalog: None,
             service_runtime: None,
             config: ServiceConfig {
@@ -1190,6 +1223,54 @@ mod tests {
             input: request.input,
             catalog_release: request.catalog_release.expect("catalog release"),
         }
+    }
+
+    #[test]
+    fn retained_release_admits_new_fp_and_attempt_without_relabelling_primary() {
+        let mut state = test_state_for("0.14.0", "v1.8.0");
+        let retained = RacingCatalogSnapshot::from_release_dir(
+            PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../catalogs/racing/v1.8.1"),
+        )
+        .unwrap();
+        let identity = retained.release_identity().clone();
+        state.retained_catalogs.push(retained);
+        for release in [
+            state
+                .racing_catalog
+                .as_ref()
+                .unwrap()
+                .release_identity()
+                .clone(),
+            identity.clone(),
+        ] {
+            let mut fp = racing_request(&state);
+            fp.catalog_release = Some(release.clone());
+            let signed = build_signed_racing_run_authorization(1_000, &state, fp).unwrap();
+            assert_eq!(signed.catalog_release.as_ref(), Some(&release));
+            let mut attempt = racing_attempt_request(&state);
+            attempt.catalog_release = release.clone();
+            let signed =
+                build_signed_racing_run_attempt_authorization(1_000, &state, attempt).unwrap();
+            assert_eq!(signed.catalog_release, release);
+        }
+        let mut wrong = identity;
+        wrong.manifest_digest = Digest::from_bytes(b"unknown manifest");
+        let mut request = racing_request(&state);
+        request.catalog_release = Some(wrong);
+        assert!(matches!(
+            build_signed_racing_run_authorization(1_000, &state, request),
+            Err(ContractError::BadRequest(_))
+        ));
+        assert_eq!(
+            state
+                .racing_catalog
+                .as_ref()
+                .unwrap()
+                .release_identity()
+                .version
+                .to_string(),
+            "1.8.0"
+        );
     }
 
     #[test]

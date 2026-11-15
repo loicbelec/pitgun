@@ -68,6 +68,14 @@ impl RacingVerifier {
         }
     }
 
+    /// Uses another operator-validated immutable catalog with the same trust
+    /// material/model. Hosted capacity remains shared outside this engine.
+    #[must_use]
+    pub fn with_catalog(mut self, catalog: RacingCatalogSnapshot) -> Self {
+        self.catalog = Some(catalog);
+        self
+    }
+
     /// Explicit server-side runtime allowlist for the separate service route.
     #[must_use]
     pub fn with_service_runtime(mut self, runtime: pitgun_contract::Digest) -> Self {
@@ -1347,6 +1355,59 @@ mod tests {
         let mut keyring = VerificationKeyring::new();
         keyring.insert(KEY_ID.parse::<Identifier>().expect("key id"), key.clone());
         keyring
+    }
+
+    #[test]
+    fn immutable_catalog_variants_verify_old_and_new_evidence_without_rebinding() {
+        for version in ["v1.8.0", "v1.8.1"] {
+            let fixture =
+                dynamic_fixture_for(version, racing_model_v3_timeline_candidate_identity());
+            let original = fixture.submission.clone();
+            let selected = fixture
+                .verifier
+                .clone()
+                .with_catalog(fixture.catalog.clone());
+            assert_eq!(
+                dynamic_reason(&selected, &fixture.submission),
+                (VerificationStatus::Verified, None)
+            );
+            let mut substituted = fixture.submission.clone();
+            substituted
+                .execution_resolution
+                .catalog_release
+                .manifest_digest = Digest::from_bytes(b"unknown manifest");
+            assert_eq!(
+                dynamic_reason(&selected, &substituted).0,
+                VerificationStatus::Rejected
+            );
+            assert_eq!(
+                serde_json::to_value(&fixture.submission).unwrap(),
+                serde_json::to_value(original).unwrap()
+            );
+        }
+        // Ordinary FP uses the component model, independently of dynamic Race.
+        for version in ["v1.6.0", "v1.8.1"] {
+            let fixture = fixture_for_catalog("0.11.0", Some(version));
+            let selected = fixture
+                .verifier
+                .clone()
+                .with_catalog(fixture.catalog.clone());
+            assert_eq!(
+                reason(&selected, &fixture.submission),
+                (VerificationStatus::Verified, None)
+            );
+            let mut substituted = fixture.submission.clone();
+            substituted
+                .execution_resolution
+                .as_mut()
+                .unwrap()
+                .catalog_release
+                .manifest_digest = Digest::from_bytes(b"unknown manifest");
+            assert_eq!(
+                reason(&selected, &substituted).0,
+                VerificationStatus::Rejected
+            );
+        }
     }
 
     #[test]
