@@ -1,5 +1,5 @@
 // Experimental operator-owned adapter for NEW compact-capable runtime artifacts.
-// Not selected by the deployed Verifier. Old proofs keep the old pinned adapter.
+// Explicit operator configuration only. Old proofs keep the old pinned adapter.
 import fs from 'node:fs';
 import {createHash} from 'node:crypto';
 import {pathToFileURL} from 'node:url';

@@ -1,5 +1,10 @@
 # Replay compact — prototype local du 16 novembre 2026
 
+La [suite signée et le routage des versions](../signed-compact-replay-2026-11-16/README.md)
+qualifient désormais une admission HTTP locale jetable. Les limites et mesures
+ci-dessous décrivent l'expérience initiale, avant ce raccordement ; aucun des
+deux incréments n'est activé en staging ou production.
+
 Suite de l'[audit par phases](../service-replay-audit-2026-11-16/README.md), #434.
 **Candidat expérimental : aucun runtime distribué remplacé, aucune admission
 Authority, aucun service staging/production changé.**

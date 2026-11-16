@@ -105,6 +105,57 @@ The worker loads:
   `PITGUN_RACING_ATTEMPT_CATALOG_RELEASE_DIR` (`v1.8.0` in the image);
 - the accepted tuning policy from `PITGUN_TUNING_POLICY_PATH`.
 
+### Service-control runtime retention (opt-in)
+
+`POST /v1/verifications/racing/services` uses the operator-configured primary
+runtime and adapter. The image also contains `wasm-service-replay-compact.mjs`;
+it is usable only with a separately admitted runtime exporting the replay ABI.
+Copying the adapter into the image does not activate it. Keep the existing
+`wasm-service-replay.mjs` for older runtimes.
+
+To retain earlier service-control attempts during a runtime upgrade, set
+`PITGUN_RETAINED_SERVICE_REPLAYS_FILE` to an absolute operator-owned JSON file:
+
+```json
+{
+  "schema": "pitgun.retained-service-replays/v1",
+  "replays": [{
+    "catalog_release_dir": "/opt/pitgun/catalogs/racing/v1.8.1",
+    "node": "/usr/local/bin/node",
+    "script": "/opt/pitgun/replay/wasm-service-replay.mjs",
+    "wasm": "/retained/OLD_DIGEST/engine.wasm",
+    "bridge": "/retained/OLD_DIGEST/bridge.mjs",
+    "runtime_digest": "sha256:REPLACE_WITH_64_HEX_DIGITS",
+    "bridge_digest": "sha256:REPLACE_WITH_64_HEX_DIGITS",
+    "timeout_seconds": 120
+  }]
+}
+```
+
+This is deployment configuration, not a public run schema. The file is bounded
+to 64 KiB and eight retained entries. Unknown fields/versions, incompatible packs,
+bad paths/pins and duplicate catalog/runtime pairs fail startup. Each adapter's
+Node/script/runtime/bridge identity is bound into its verdict's verifier digest.
+Every route shares the same replay semaphore and existing signature/history
+checks. Requests select only among preloaded exact catalog/runtime pairs; unknown
+pairs reach the strict primary rejection path, with no fetch or executable load
+from request paths. Retained entries never grant Authority permission to issue
+new attempts for them.
+
+Stage the complete retained artifacts/config **before** Authority issues the new
+runtime. Keep existing immutable bytes for already signed attempts; do not retag
+or re-sign them. Rollback must retain both generations until their admitted proof
+retention requirements are met. Retaining an entry does not make expired evidence
+valid or add durable queuing. With no manifest configured, behavior is unchanged.
+
+The local qualification tool is
+`node scripts/qualify-signed-service-replay.mjs NEW_WASM NEW_BRIDGE OLD_WASM OLD_BRIDGE NEW_PRIVATE_OUTPUT_DIR`.
+Build the Authority/Verifier release binaries and the
+`racing_service_control_probe` release example first. The recipe uses ephemeral
+loopback services and a disposable key, executes actual WASM, exercises old/new
+routes and hostile histories, and writes sensitive fixtures only to the new
+private output directory. It calls no LLM and deploys nothing.
+
 `/readyz` fails closed when signing-key verification material or retained
 catalog bytes are unavailable.
 
@@ -119,3 +170,9 @@ browser. Durable nonce consumption and idempotent verdict persistence belong to
 the game/backend submission transaction. Keeping the engine separate also
 allows the worker to move from the VPS to another machine, including a future
 Mac mini, without changing the verdict contract.
+
+Moving this entire service currently moves shared HMAC material as well; it is
+a trusted-zone operation. The preferred future remote **replay-only executor**
+must receive no signing material or database credentials. Authentication,
+durable jobs and protected receipt-time forwarding are separate, not implemented
+by runtime retention. See [ADR0003](../../docs/adr/0003-distributed-execution-and-independent-replay.md).
