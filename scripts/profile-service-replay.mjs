@@ -7,9 +7,10 @@ import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
 import {pathToFileURL} from 'node:url';
 import {performance,PerformanceObserver} from 'node:perf_hooks';
-const [payloadFile,expectedFile,wasmFile,bridgeFile,wasmDigest,bridgeDigest,repetitions='1']=process.argv.slice(2);
+const [payloadFile,expectedFile,wasmFile,bridgeFile,wasmDigest,bridgeDigest,repetitions='1',transport='presentation']=process.argv.slice(2);
 assert.ok(bridgeDigest,'Pass payload expected wasm bridge wasmDigest bridgeDigest [repetitions]');
 const count=Number(repetitions);assert.ok(Number.isInteger(count)&&count>=1&&count<=3);
+assert.ok(['presentation','replay'].includes(transport));
 const hash=b=>'sha256:'+createHash('sha256').update(b).digest('hex');
 const stable=v=>JSON.stringify(sort(v));
 function sort(v){if(Array.isArray(v))return v.map(sort);if(v&&typeof v==='object')return Object.fromEntries(Object.keys(v).sort().map(k=>[k,sort(v[k])]));return v;}
@@ -34,6 +35,9 @@ const observer=new PerformanceObserver(list=>collectGc(list.getEntries()));
 observer.observe({entryTypes:['gc']});
 const parse=raw=>{const r=JSON.parse(raw);if(r.error)throw Error(r.error);return r;};
 const request=JSON.parse(input.requestJson),config=JSON.parse(input.configJson);
+const pull=transport==='replay'?api.pull_experimental_controlled_racing_replay_json:api.pull_experimental_controlled_racing_session_json;
+const complete=transport==='replay'?api.complete_experimental_controlled_racing_replay_json:api.complete_experimental_controlled_racing_session_json;
+assert.equal(typeof pull,'function');assert.equal(typeof complete,'function');
 const runs=[];
 for(let run=0;run<count;run++){
  const start=performance.now(),cpu=process.cpuUsage();
@@ -50,7 +54,7 @@ for(let run=0;run<count;run++){
   const started=call('start',()=>api.start_experimental_controlled_racing_session_json(input.requestJson,input.catalogBundleJson,input.timelineJson,input.configJson));
   handle=started.handle;sample('after-start');
   for(let pulls=0;pulls<100000;pulls++){
-   const next=call('pull',()=>api.pull_experimental_controlled_racing_session_json(handle),{pull:pulls});
+   const next=call('pull',()=>pull(handle),{pull:pulls});
    sample('pull-'+pulls+'-'+next.kind);
    if(next.kind==='decision'){
     const record=input.history[index++];assert.ok(record,'Missing recorded decision');
@@ -60,7 +64,7 @@ for(let run=0;run<count;run++){
     timed('receipt.compare',()=>assert.equal(stable(accepted.receipt),stable(record.applied),'Regenerated receipt differs'));
    }else if(next.kind==='batch'&&next.complete){
     assert.equal(index,input.history.length,'Extra recorded decisions');
-    const completed=call('complete',()=>api.complete_experimental_controlled_racing_session_json(handle));handle=undefined;
+    const completed=call('complete',()=>complete(handle));handle=undefined;
     assert.ok(completed.native_evidence,'Missing native evidence');output=completed.native_evidence;break;
    }else assert.equal(next.kind,'batch','Unexpected control response');
   }
@@ -78,4 +82,5 @@ for(let run=0;run<count;run++){
 await new Promise(resolve=>setTimeout(resolve,20));collectGc(observer.takeRecords());observer.disconnect();
 for(const run of runs){const events=gc.filter(e=>e.atMs>=run.gcWindow.fromMs&&e.atMs<run.gcWindow.toMs);run.gc={count:events.length,observerDurationMs:events.reduce((n,e)=>n+e.durationMs,0)};}
 const report={schemaVersion:'pitgun.offline-service-replay-profile/v1',passed:true,scope:'Offline exact pinned-WASM replay parity and phase timing, not a new verifier verdict or cross-architecture speed claim',environment:{node:process.version,v8:process.versions.v8,platform:process.platform,arch:process.arch,cpuModel:os.cpus()[0]?.model,cpuCount:os.cpus().length,totalMemoryBytes:os.totalmem()},identity:{wasmDigest,bridgeDigest,payloadDigest:hash(payloadBytes),inputDigest:hash(input.requestJson),expectedDigest:hash(stable(expected)),circuit:request.input.track_id,laps:request.input.laps,cars:request.input.competitors.length,hz:request.hz,physics:config.physics},initialization,runs,totalWallMs:performance.now()-began,initialResourceUsage:initialUsage,resourceUsage:process.resourceUsage(),limitations:['ABI time includes Rust advance, serialization and WASM/JS string copying; it is not pure solver time.','GC duration overlaps measured phases; do not add it to total.','Memory snapshots are not a guaranteed instantaneous peak; maxRSS is process-lifetime high-water mark.','Same-module reuse does not represent independent cold worker processes.','No API, scheduler wait, browser renderer or network time is measured.']};
+report.transport=transport;
 process.stdout.write(JSON.stringify(report,null,2)+'\n');

@@ -15,8 +15,10 @@ pub use local_stream::{
 };
 
 pub use controlled_stream::{
+    complete_experimental_controlled_racing_replay_json,
     complete_experimental_controlled_racing_session_json,
     propose_experimental_controlled_racing_session_json,
+    pull_experimental_controlled_racing_replay_json,
     pull_experimental_controlled_racing_session_json,
     release_experimental_controlled_racing_session_json,
     start_experimental_controlled_racing_session_json,

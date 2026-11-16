@@ -1,0 +1,80 @@
+{
+  "schemaVersion": "pitgun.compact-replay-experiment/v1",
+  "scope": "Local experimental new binary, no Authority admission or deployment; same candidate and physical input in both paths",
+  "date": "2026-11-16",
+  "candidate": {
+    "scope": "Offline reference-controller fixture; new runtime/context/receipts, not an Authority admission or a Gemini execution",
+    "sourcePayloadDigest": "sha256:7bb0098a99a8f5511f44348d6cccd0b6df4f2df82f2734ceecff39d2bfc50fed",
+    "sourceRuntime": "sha256:07f5bd5c16502c7b4efc77211957c99dd360e31bf481f8ed0385c6abcf86b92f",
+    "runtimeDigest": "sha256:cb24d7f0bf474cd88eb3e05e828690438972a7f40d7875e6ac3bc2bb3f103451",
+    "bridgeDigest": "sha256:8148432845163d31f23fb1c2fe15defe1f49763d9dc51f18f06122a66e4f773c",
+    "payloadDigest": "sha256:dc20bf7de89155274f951ffc870da1b8e3fa04a0c06a154a35ba79ca16c39208",
+    "evidenceDigest": "sha256:ac2ee9ed020a0a4f5595b7e4cc3ba99979a43ce50397f7af5e3b566b11696976",
+    "historyCount": 1,
+    "physicalRequestUnchanged": true,
+    "legacyCompactParity": true
+  },
+  "environment": {
+    "node": "v22.23.5",
+    "v8": "12.4.254.21-node.57",
+    "platform": "linux",
+    "arch": "arm64",
+    "cpuModel": "unknown",
+    "cpuCount": 12,
+    "totalMemoryBytes": 8319238144
+  },
+  "limits": {
+    "cpu": 1,
+    "memoryBytes": 3221225472,
+    "oldSpaceMiB": 512,
+    "network": "none",
+    "perProcessTimeoutSeconds": 240
+  },
+  "runs": [
+    {
+      "run": 0,
+      "presentationSeconds": 84.47262620500001,
+      "compactSeconds": 14.752495881000002,
+      "presentationWireBytes": 297519810,
+      "compactWireBytes": 15268,
+      "presentationMaxRssKiB": 1897784,
+      "compactMaxRssKiB": 695064,
+      "presentationGcMs": 66238.93921542168,
+      "compactGcMs": 4151.905628085136,
+      "evidenceDigest": "sha256:ac2ee9ed020a0a4f5595b7e4cc3ba99979a43ce50397f7af5e3b566b11696976"
+    },
+    {
+      "run": 1,
+      "presentationSeconds": 17.469558131999992,
+      "compactSeconds": 9.92367488,
+      "presentationWireBytes": 297519810,
+      "compactWireBytes": 15268,
+      "presentationMaxRssKiB": 2072820,
+      "compactMaxRssKiB": 732968,
+      "presentationGcMs": 719.8103346824646,
+      "compactGcMs": 1.036417007446289,
+      "evidenceDigest": "sha256:ac2ee9ed020a0a4f5595b7e4cc3ba99979a43ce50397f7af5e3b566b11696976"
+    }
+  ],
+  "coldReductionPercent": 82.5357674506315,
+  "rssPeakReductionPercent": 64.63909070734555,
+  "checks": {
+    "racingLibraryTests": 108,
+    "verifierLibraryTests": 16,
+    "adapterProtocolCases": 33,
+    "rustfmt": true,
+    "clippy": true,
+    "legacyOutputAndTelemetrySummaryParity": true,
+    "shortCircuits": [
+      "MONZA",
+      "SILVERSTONE",
+      "MONACO"
+    ],
+    "legacyUnsupportedCapabilityRefused": true,
+    "standaloneGpAdapter": {
+      "elapsedSecondsIncludingDocker": 15.08,
+      "replyBytes": 2448,
+      "compactParity": true
+    }
+  }
+}

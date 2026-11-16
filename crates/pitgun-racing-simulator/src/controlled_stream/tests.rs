@@ -31,6 +31,118 @@ fn start() -> u32 {
     response["handle"].as_u64().unwrap() as u32
 }
 
+fn run_transport(
+    compact: bool,
+    pit: bool,
+    fallback: bool,
+) -> (Vec<Value>, Vec<Value>, Value, usize) {
+    let h = start();
+    let pull = if compact {
+        pull_experimental_controlled_racing_replay_json
+    } else {
+        pull_experimental_controlled_racing_session_json
+    };
+    let complete = if compact {
+        complete_experimental_controlled_racing_replay_json
+    } else {
+        complete_experimental_controlled_racing_session_json
+    };
+    let other_pull = if compact {
+        pull_experimental_controlled_racing_session_json
+    } else {
+        pull_experimental_controlled_racing_replay_json
+    };
+    let other_complete = if compact {
+        complete_experimental_controlled_racing_session_json
+    } else {
+        complete_experimental_controlled_racing_replay_json
+    };
+    assert!(complete(h).contains("not complete"));
+    let mut observations = vec![];
+    let mut receipts = vec![];
+    let mut bytes = 0;
+    loop {
+        let raw = pull(h);
+        bytes += raw.len();
+        let r: Value = serde_json::from_str(&raw).unwrap();
+        assert!(r.get("error").is_none(), "{r}");
+        assert!(other_pull(h).contains("cannot mix"));
+        if r["kind"] == "decision" {
+            let again: Value = serde_json::from_str(&pull(h)).unwrap();
+            assert_eq!(again, r);
+            observations
+                .push(json!({"observation":r["observation"],"digest":r["observation_digest"]}));
+            let action = if pit && receipts.is_empty() {
+                Action::PitNextLap {
+                    tire_id: "hard".into(),
+                }
+            } else {
+                Action::KeepPlan
+            };
+            let mut p = proposal(&r, action, &format!("parity-{}", receipts.len()));
+            if fallback {
+                p.source = ProposalSource::Fallback {
+                    reason: crate::control_prototype::FallbackReason::Timeout,
+                };
+            }
+            let mut invalid = p.clone();
+            invalid.observation_digest = Digest::from_bytes(b"wrong observation");
+            assert!(submit(h, &invalid)["error"].is_string());
+            assert_eq!(serde_json::from_str::<Value>(&pull(h)).unwrap(), r);
+            let applied = submit(h, &p);
+            assert!(applied.get("error").is_none(), "{applied}");
+            assert_eq!(submit(h, &p), applied);
+            receipts.push(applied["receipt"].clone());
+        } else {
+            assert_eq!(r["kind"], "batch");
+            if compact {
+                assert!(r.get("batch").is_none());
+                assert!(raw.len() < 512);
+            }
+            if r["complete"] == true {
+                break;
+            }
+        }
+    }
+    assert!(pull(h).contains("already complete"));
+    assert!(other_complete(h).contains("cannot mix"));
+    let raw = complete(h);
+    bytes += raw.len();
+    let done: Value = serde_json::from_str(&raw).unwrap();
+    assert!(done.get("error").is_none(), "{done}");
+    if compact {
+        for field in ["result", "journal", "canonical_result_digest"] {
+            assert!(done.get(field).is_none());
+        }
+        assert!(raw.len() < 65536);
+    }
+    assert!(complete(h).contains("unknown"));
+    (
+        observations,
+        receipts,
+        done["native_evidence"].clone(),
+        bytes,
+    )
+}
+
+#[test]
+fn replay_transport_preserves_decisions_evidence_and_rejects_mixed_lifecycles() {
+    for (pit, fallback) in [(false, false), (true, false), (false, true)] {
+        let full = run_transport(false, pit, fallback);
+        let compact = run_transport(true, pit, fallback);
+        assert_eq!(compact.0, full.0, "observation or digest changed");
+        assert_eq!(compact.1, full.1, "applied receipt changed");
+        assert_eq!(
+            compact.2, full.2,
+            "canonical output or telemetry summary changed"
+        );
+        assert!(
+            compact.3 * 10 < full.3,
+            "presentation payload leaked into replay"
+        );
+    }
+}
+
 #[test]
 fn transport_accepts_full_resolution_request_budget_and_refuses_overflow() {
     let (request, catalog, timeline, config) = fixture();
