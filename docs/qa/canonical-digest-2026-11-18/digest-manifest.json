@@ -1,0 +1,12 @@
+{
+  "scope": "Offline reference-controller fixture; new runtime/context/receipts, not an Authority admission or a Gemini execution",
+  "sourcePayloadDigest": "sha256:aeca14f7080a9b74d62db849623056c2a7bcf34c21e2d9e430001fde8ea9fe6e",
+  "sourceRuntime": "sha256:6bb2f5bf9e2815f568c27554863951ac14be14caf65dcf1b36864e72a20721ec",
+  "runtimeDigest": "sha256:9af4de2faa031c589dea4d1e8a967a287be44ecdc411f97ea8e8c40282925fa5",
+  "bridgeDigest": "sha256:9969142578e2745140c2c01d03a6dd197aefd67f112248e20898c430b7fbce02",
+  "payloadDigest": "sha256:431bb50fdbe38174fb6d8e4597f45847561eaaa59bba5fc85e7ee0cb86e154d4",
+  "evidenceDigest": "sha256:ac2ee9ed020a0a4f5595b7e4cc3ba99979a43ce50397f7af5e3b566b11696976",
+  "historyCount": 1,
+  "physicalRequestUnchanged": true,
+  "legacyCompactParity": true
+}

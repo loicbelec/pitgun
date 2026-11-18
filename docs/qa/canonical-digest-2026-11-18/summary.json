@@ -1,0 +1,195 @@
+{
+  "host": {
+    "json": {
+      "medianElapsedMs": 398.90000009536743,
+      "medianRssPeakBytes": 1525923840,
+      "runs": [
+        {
+          "elapsedMs": 408.2000000476837,
+          "rssPeakBytes": 1494106112,
+          "projectionDigest": "sha256:618acdf3094531cf79d2702fdb4478f061cd317774b26684b0bc8599490a0d76",
+          "frames": 37857,
+          "seriesPoints": 643569,
+          "reusesNativeBatches": false
+        },
+        {
+          "elapsedMs": 398.90000009536743,
+          "rssPeakBytes": 1530085376,
+          "projectionDigest": "sha256:618acdf3094531cf79d2702fdb4478f061cd317774b26684b0bc8599490a0d76",
+          "frames": 37857,
+          "seriesPoints": 643569,
+          "reusesNativeBatches": false
+        },
+        {
+          "elapsedMs": 398.59999990463257,
+          "rssPeakBytes": 1525923840,
+          "projectionDigest": "sha256:618acdf3094531cf79d2702fdb4478f061cd317774b26684b0bc8599490a0d76",
+          "frames": 37857,
+          "seriesPoints": 643569,
+          "reusesNativeBatches": false
+        }
+      ],
+      "fixtureGzipDigest": "sha256:5563ffa841d6a9b392d44c9b5ee3892fc96cf3ef740ecc4105b37fab29f9daaa",
+      "browser": {
+        "protocolVersion": "1.3",
+        "product": "Chrome/157.0.8103.79",
+        "revision": "@6dc9bc3bdaea5c35ed6d41fceab2f7a3a2227c4f",
+        "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/157.0.0.0 Safari/537.36",
+        "jsVersion": "15.7.112.43"
+      }
+    },
+    "object": {
+      "medianElapsedMs": 49.299999952316284,
+      "medianRssPeakBytes": 1233682432,
+      "runs": [
+        {
+          "elapsedMs": 51.299999952316284,
+          "rssPeakBytes": 1231667200,
+          "projectionDigest": "sha256:618acdf3094531cf79d2702fdb4478f061cd317774b26684b0bc8599490a0d76",
+          "frames": 37857,
+          "seriesPoints": 643569,
+          "reusesNativeBatches": true
+        },
+        {
+          "elapsedMs": 49.299999952316284,
+          "rssPeakBytes": 1233682432,
+          "projectionDigest": "sha256:618acdf3094531cf79d2702fdb4478f061cd317774b26684b0bc8599490a0d76",
+          "frames": 37857,
+          "seriesPoints": 643569,
+          "reusesNativeBatches": true
+        },
+        {
+          "elapsedMs": 49.200000047683716,
+          "rssPeakBytes": 1240055808,
+          "projectionDigest": "sha256:618acdf3094531cf79d2702fdb4478f061cd317774b26684b0bc8599490a0d76",
+          "frames": 37857,
+          "seriesPoints": 643569,
+          "reusesNativeBatches": true
+        }
+      ],
+      "fixtureGzipDigest": "sha256:5563ffa841d6a9b392d44c9b5ee3892fc96cf3ef740ecc4105b37fab29f9daaa",
+      "browser": {
+        "protocolVersion": "1.3",
+        "product": "Chrome/157.0.8103.79",
+        "revision": "@6dc9bc3bdaea5c35ed6d41fceab2f7a3a2227c4f",
+        "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/157.0.0.0 Safari/537.36",
+        "jsVersion": "15.7.112.43"
+      }
+    },
+    "elapsedReductionPercent": 87.64101280006773
+  },
+  "scope": "Separate three-pair experiments: fixed-output host finalization and actual Worker canonical-digest GP. No builds/tests concurrent with either measured series. Do not add phase gains or infer whole-game/production performance.",
+  "digest": {
+    "baseline": {
+      "medianElapsedMs": 13470.799999952316,
+      "medianRssPeakBytes": 2793455616,
+      "runs": [
+        {
+          "elapsedMs": 13406.899999856949,
+          "rssPeakBytes": 2793455616,
+          "wasmLinearBytes": 1404633088,
+          "completion": {
+            "operation": "complete_experimental_controlled_racing_metadata_json",
+            "ms": 2841,
+            "jsonCodeUnits": 4830,
+            "wasmLinearBytes": 1404633088
+          },
+          "canonicalResultDigest": "sha256:6227e0350be84180410dad8a5d0ce93b49672ccbf563548eda36e23740657411"
+        },
+        {
+          "elapsedMs": 13573.900000095367,
+          "rssPeakBytes": 2684469248,
+          "wasmLinearBytes": 1404633088,
+          "completion": {
+            "operation": "complete_experimental_controlled_racing_metadata_json",
+            "ms": 2885,
+            "jsonCodeUnits": 4830,
+            "wasmLinearBytes": 1404633088
+          },
+          "canonicalResultDigest": "sha256:6227e0350be84180410dad8a5d0ce93b49672ccbf563548eda36e23740657411"
+        },
+        {
+          "elapsedMs": 13470.799999952316,
+          "rssPeakBytes": 2803007488,
+          "wasmLinearBytes": 1404633088,
+          "completion": {
+            "operation": "complete_experimental_controlled_racing_metadata_json",
+            "ms": 2891.0999999046326,
+            "jsonCodeUnits": 4830,
+            "wasmLinearBytes": 1404633088
+          },
+          "canonicalResultDigest": "sha256:6227e0350be84180410dad8a5d0ce93b49672ccbf563548eda36e23740657411"
+        }
+      ],
+      "runtimeDigest": "sha256:6bb2f5bf9e2815f568c27554863951ac14be14caf65dcf1b36864e72a20721ec",
+      "bridgeDigest": "sha256:9969142578e2745140c2c01d03a6dd197aefd67f112248e20898c430b7fbce02",
+      "browser": {
+        "protocolVersion": "1.3",
+        "product": "Chrome/157.0.8103.79",
+        "revision": "@6dc9bc3bdaea5c35ed6d41fceab2f7a3a2227c4f",
+        "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/157.0.0.0 Safari/537.36",
+        "jsVersion": "15.7.112.43"
+      }
+    },
+    "candidate": {
+      "medianElapsedMs": 13545.699999809265,
+      "medianRssPeakBytes": 2629877760,
+      "runs": [
+        {
+          "elapsedMs": 13434.399999856949,
+          "rssPeakBytes": 2611363840,
+          "wasmLinearBytes": 1163853824,
+          "completion": {
+            "operation": "complete_experimental_controlled_racing_metadata_json",
+            "ms": 2861.7000000476837,
+            "jsonCodeUnits": 4830,
+            "wasmLinearBytes": 1163853824
+          },
+          "canonicalResultDigest": "sha256:6227e0350be84180410dad8a5d0ce93b49672ccbf563548eda36e23740657411"
+        },
+        {
+          "elapsedMs": 13598.600000143051,
+          "rssPeakBytes": 2629877760,
+          "wasmLinearBytes": 1163853824,
+          "completion": {
+            "operation": "complete_experimental_controlled_racing_metadata_json",
+            "ms": 2909.2999999523163,
+            "jsonCodeUnits": 4830,
+            "wasmLinearBytes": 1163853824
+          },
+          "canonicalResultDigest": "sha256:6227e0350be84180410dad8a5d0ce93b49672ccbf563548eda36e23740657411"
+        },
+        {
+          "elapsedMs": 13545.699999809265,
+          "rssPeakBytes": 2674671616,
+          "wasmLinearBytes": 1163853824,
+          "completion": {
+            "operation": "complete_experimental_controlled_racing_metadata_json",
+            "ms": 2941.399999856949,
+            "jsonCodeUnits": 4830,
+            "wasmLinearBytes": 1163853824
+          },
+          "canonicalResultDigest": "sha256:6227e0350be84180410dad8a5d0ce93b49672ccbf563548eda36e23740657411"
+        }
+      ],
+      "runtimeDigest": "sha256:9af4de2faa031c589dea4d1e8a967a287be44ecdc411f97ea8e8c40282925fa5",
+      "bridgeDigest": "sha256:9969142578e2745140c2c01d03a6dd197aefd67f112248e20898c430b7fbce02",
+      "browser": {
+        "protocolVersion": "1.3",
+        "product": "Chrome/157.0.8103.79",
+        "revision": "@6dc9bc3bdaea5c35ed6d41fceab2f7a3a2227c4f",
+        "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/157.0.0.0 Safari/537.36",
+        "jsVersion": "15.7.112.43"
+      }
+    },
+    "note": "No latency improvement established; goal is reduced transient memory. Same result digest/evidence/observations/receipts, same API/wire schema/bridge, new WASM context and regenerated reference receipts."
+  },
+  "memoryLimits": "WASM linear capacity differs from resident RAM. Chrome RSS includes shared/GPU pages; sampled, not private footprint or guaranteed peak. Small local sample; no general memory/VPS/mobile acceptance.",
+  "environment": {
+    "platform": "darwin",
+    "arch": "arm64",
+    "release": "25.5.0",
+    "cpu": "Apple M4 Pro",
+    "node": "v23.11.0"
+  }
+}
