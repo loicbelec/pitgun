@@ -14,7 +14,8 @@ const hash=b=>'sha256:'+createHash('sha256').update(b).digest('hex');
 const parse=raw=>{const v=JSON.parse(raw);assert.equal(v.error,undefined,JSON.stringify(v));return v;};
 
 if(process.argv[2]==='--execute'){
- const [payloadFile,wasm,bridge,mode,destination]=process.argv.slice(3);
+ const [payloadFile,wasm,bridge,mode,destination,completionTransport='full']=process.argv.slice(3);
+ assert.ok(['full','metadata'].includes(completionTransport));
  const input=JSON.parse(await fs.readFile(payloadFile,'utf8'));
  const api=await import(pathToFileURL(bridge).href);
  await api.default({module_or_path:await fs.readFile(wasm)});
@@ -33,16 +34,29 @@ if(process.argv[2]==='--execute'){
     if(o.window)proposal.decision_at_us=mode==='timeout'?o.window.deadline_at_us:Math.min(o.window.opened_at_us+100000,o.window.deadline_at_us);
     parse(api.propose_experimental_controlled_racing_session_json(started.handle,JSON.stringify(proposal)));
    }else if(next.kind==='batch'&&next.complete){
-    const completion=parse(api.complete_experimental_controlled_racing_session_json(started.handle));
+    const complete=completionTransport==='metadata'?api.complete_experimental_controlled_racing_metadata_json:api.complete_experimental_controlled_racing_session_json;
+    assert.equal(typeof complete,'function','Selected completion transport must be explicit');
+    const completion=parse(complete(started.handle));
+    assert.equal(completion.schema_version,completionTransport==='metadata'?'pitgun.racing-control-metadata/v1':'pitgun.racing-control-completion/v1');
+    assert.equal(Object.hasOwn(completion,'result'),completionTransport==='full');
+    assert.match(completion.canonical_result_digest,/^sha256:[0-9a-f]{64}$/);
+    assert.ok(Array.isArray(completion.journal));
     active=false;assert.ok(completion.service_evidence,'Signed WASM completion must carry evidence');
-    await fs.writeFile(destination,JSON.stringify(completion),{mode:0o600});
+    // Normalize like the browser host for the separate forged-evidence probe.
+    // The metadata ABI itself must not contain result (asserted above).
+    const terminal=next.batch.records.at(-1)?.event;
+    assert.equal(terminal?.kind,'complete');
+    const normalized=completionTransport==='metadata'?{...completion,schema_version:'pitgun.racing-control-completion/v1',result:terminal.payload}:completion;
+    await fs.writeFile(destination,JSON.stringify(normalized),{mode:0o600});
     process.exitCode=0;break;
    }else assert.equal(next.kind,'batch');
   }
   assert.equal(active,false,'Client pull bound exceeded');
  }finally{if(active)api.release_experimental_controlled_racing_session_json(started.handle);}
 }else{
- const args=process.argv.slice(2).map(p=>path.resolve(p));
+ const args=process.argv.slice(2,7).map(p=>path.resolve(p));
+ const completionTransport=process.argv[7]??'full';
+ assert.ok(['full','metadata'].includes(completionTransport),'Optional completion transport: full|metadata');
  assert.equal(args.length,5,'Pass CANDIDATE_WASM CANDIDATE_BRIDGE LEGACY_WASM LEGACY_BRIDGE NEW_PRIVATE_OUTPUT_DIR');
  const [wasm,bridge,oldWasm,oldBridge,directory]=args;
  await fs.mkdir(directory,{mode:0o700});
@@ -113,7 +127,7 @@ if(process.argv[2]==='--execute'){
    config.signed_service={signed:auth.body.signed,decision_envelope:auth.body.decision_envelope,catalog_release:auth.body.catalog_release};
    payload.configJson=JSON.stringify(config);await write(name+'-payload.json',payload);
    const completionPath=path.join(directory,name+'-completion.json');
-   await run(process.execPath,['--max-old-space-size=512',self,'--execute',payloadPath,runtime==='legacy'?oldWasm:wasm,runtime==='legacy'?oldBridge:bridge,mode,completionPath],{timeout:120000,maxBuffer:65536,env:{PATH:process.env.PATH}});
+   await run(process.execPath,['--max-old-space-size=512',self,'--execute',payloadPath,runtime==='legacy'?oldWasm:wasm,runtime==='legacy'?oldBridge:bridge,mode,completionPath,runtime==='legacy'?'full':completionTransport],{timeout:120000,maxBuffer:65536,env:{PATH:process.env.PATH}});
    const completion=JSON.parse(await fs.readFile(completionPath,'utf8')),evidence=completion.service_evidence;
    const reply=await post(verifier,verificationRoute,evidence);
    assert.equal(reply.http,200,JSON.stringify(reply));assert.equal(reply.body.status,'VERIFIED',JSON.stringify(reply));
@@ -170,7 +184,7 @@ if(process.argv[2]==='--execute'){
    assert.ok(refusal&&refusal.code===1,'Bad operator configuration must fail startup, not start or hang');
    checks.push({case:kind,status:'startup-refused'});
   }
-  await write('report.json',{passed:true,scope:'Disposable local HTTP services; signed actual WASM executions; reference controller, no LLM; short fixtures, no career/publication or remote worker deployment',pins,checks});
+  await write('report.json',{passed:true,completionTransport,scope:'Disposable local HTTP services; signed actual WASM executions; reference controller, no LLM; short fixtures, no career/publication or remote worker deployment',pins,checks});
  }catch(e){await write('report.json',{passed:false,error:String(e),pins,checks});throw e;}
  finally{
   for(const child of children){

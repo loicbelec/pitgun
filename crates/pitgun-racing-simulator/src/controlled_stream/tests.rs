@@ -35,7 +35,8 @@ fn run_transport(
     compact: bool,
     pit: bool,
     fallback: bool,
-) -> (Vec<Value>, Vec<Value>, Value, usize) {
+    metadata: bool,
+) -> (Vec<Value>, Vec<Value>, Value, usize, Value) {
     let h = start();
     let pull = if compact {
         pull_experimental_controlled_racing_replay_json
@@ -44,6 +45,8 @@ fn run_transport(
     };
     let complete = if compact {
         complete_experimental_controlled_racing_replay_json
+    } else if metadata {
+        complete_experimental_controlled_racing_metadata_json
     } else {
         complete_experimental_controlled_racing_session_json
     };
@@ -122,14 +125,15 @@ fn run_transport(
         receipts,
         done["native_evidence"].clone(),
         bytes,
+        done,
     )
 }
 
 #[test]
 fn replay_transport_preserves_decisions_evidence_and_rejects_mixed_lifecycles() {
     for (pit, fallback) in [(false, false), (true, false), (false, true)] {
-        let full = run_transport(false, pit, fallback);
-        let compact = run_transport(true, pit, fallback);
+        let full = run_transport(false, pit, fallback, false);
+        let compact = run_transport(true, pit, fallback, false);
         assert_eq!(compact.0, full.0, "observation or digest changed");
         assert_eq!(compact.1, full.1, "applied receipt changed");
         assert_eq!(
@@ -141,6 +145,136 @@ fn replay_transport_preserves_decisions_evidence_and_rejects_mixed_lifecycles() 
             "presentation payload leaked into replay"
         );
     }
+}
+
+#[test]
+fn presentation_formatter_preserves_value_tree_f32_semantics() {
+    let values = [
+        0.3423208_f32,
+        -0.0,
+        f32::MAX,
+        f32::MIN,
+        f32::MIN_POSITIVE,
+        f32::from_bits(1),
+        f32::NAN,
+        f32::INFINITY,
+    ];
+    let actual: Value = serde_json::from_str(&serialize_presentation(&values).unwrap()).unwrap();
+    let previous = serde_json::to_value(values).unwrap();
+    let expected: Value = serde_json::from_str(&previous.to_string()).unwrap();
+    assert_eq!(actual, expected);
+}
+
+#[test]
+fn borrowed_presentation_preserves_all_wire_values_including_terminal_telemetry() {
+    fn first_difference(a: &Value, b: &Value, path: String) -> Option<String> {
+        if a == b {
+            return None;
+        }
+        match (a, b) {
+            (Value::Object(a), Value::Object(b)) if a.len() == b.len() => {
+                if a.keys().ne(b.keys()) {
+                    return Some(format!("{path}: object keys differ"));
+                }
+                a.iter()
+                    .find_map(|(k, v)| first_difference(v, &b[k], format!("{path}.{k}")))
+            }
+            (Value::Array(a), Value::Array(b)) if a.len() == b.len() => a
+                .iter()
+                .zip(b)
+                .enumerate()
+                .find_map(|(i, (a, b))| first_difference(a, b, format!("{path}[{i}]"))),
+            _ => Some(format!("{path}: {a} != {b}")),
+        }
+    }
+    let h = start();
+    let mut batches = 0;
+    loop {
+        let step = SESSIONS.with(|sessions| {
+            sessions
+                .borrow_mut()
+                .get_mut(&h)
+                .unwrap()
+                .engine
+                .advance()
+                .unwrap()
+        });
+        match step {
+            ControlStep::AwaitingDecision(observation) => {
+                let boundary = json!({"observation_digest":observation.digest().unwrap(),"observation":observation});
+                assert!(
+                    submit(
+                        h,
+                        &proposal(&boundary, Action::KeepPlan, &format!("wire-{batches}"))
+                    )["error"]
+                        .is_null()
+                );
+            }
+            ControlStep::Batch(batch) => {
+                batches += 1;
+                let complete = batch.records().iter().any(|r| r.event().is_complete());
+                for prefix in [None, Some(true)] {
+                    let direct = serialize_presentation(&PresentationBatchResponse {
+                        schema_version: "pitgun.racing-control-pull/v1",
+                        handle: h,
+                        kind: "batch",
+                        complete,
+                        batch: &batch,
+                        control_prefix: prefix,
+                    })
+                    .unwrap();
+                    let mut previous = json!({"schema_version":"pitgun.racing-control-pull/v1","handle":h,"kind":"batch","complete":complete,"batch":batch});
+                    if let Some(value) = prefix {
+                        previous["control_prefix"] = json!(value);
+                    }
+                    let actual: Value = serde_json::from_str(&direct).unwrap();
+                    let expected: Value = serde_json::from_str(&previous.to_string()).unwrap();
+                    if let Some(difference) = first_difference(&actual, &expected, String::new()) {
+                        panic!("wire difference: {difference}");
+                    }
+                }
+                if complete {
+                    break;
+                }
+            }
+        }
+    }
+    assert!(batches > 1);
+    release_experimental_controlled_racing_session_json(h);
+}
+
+#[test]
+fn presentation_metadata_preserves_recovery_digest_journal_and_evidence() {
+    for (pit, fallback) in [(false, false), (true, false), (false, true)] {
+        let full = run_transport(false, pit, fallback, false);
+        let metadata = run_transport(false, pit, fallback, true);
+        assert_eq!(metadata.0, full.0, "observation/digest changed");
+        assert_eq!(metadata.1, full.1, "applied receipt changed");
+        assert_eq!(metadata.2, full.2, "native evidence changed");
+        let mut original = full.4;
+        let mut compact = metadata.4;
+        assert_eq!(
+            compact["schema_version"],
+            "pitgun.racing-control-metadata/v1"
+        );
+        assert!(compact.get("result").is_none());
+        assert!(original.get("result").is_some());
+        for field in ["schema_version", "handle", "result"] {
+            original.as_object_mut().unwrap().remove(field);
+            compact.as_object_mut().unwrap().remove(field);
+        }
+        assert_eq!(compact, original, "completion metadata changed");
+        assert!(metadata.3 < full.3, "duplicate result still transmitted");
+    }
+    let h = start();
+    assert!(complete_experimental_controlled_racing_metadata_json(h).contains("not complete"));
+    assert!(pull(h).get("error").is_none());
+    assert!(!release_experimental_controlled_racing_session_json(h).contains("error"));
+    assert!(complete_experimental_controlled_racing_metadata_json(h).contains("unknown"));
+    let h = start();
+    pull_experimental_controlled_racing_replay_json(h);
+    assert!(complete_experimental_controlled_racing_metadata_json(h).contains("cannot mix"));
+    release_experimental_controlled_racing_session_json(h);
 }
 
 #[test]

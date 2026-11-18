@@ -150,6 +150,12 @@ impl<Progress, Completion> IncrementalExecutionStreamRecordV1<Progress, Completi
     pub const fn event(&self) -> &IncrementalExecutionStreamEventV1<Progress, Completion> {
         &self.event
     }
+
+    /// Consumes a delivered record without copying the domain payload.
+    #[must_use]
+    pub fn into_event(self) -> IncrementalExecutionStreamEventV1<Progress, Completion> {
+        self.event
+    }
 }
 
 impl<'de, Progress, Completion> Deserialize<'de>

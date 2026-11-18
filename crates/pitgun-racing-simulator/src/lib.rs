@@ -15,6 +15,7 @@ pub use local_stream::{
 };
 
 pub use controlled_stream::{
+    complete_experimental_controlled_racing_metadata_json,
     complete_experimental_controlled_racing_replay_json,
     complete_experimental_controlled_racing_session_json,
     propose_experimental_controlled_racing_session_json,

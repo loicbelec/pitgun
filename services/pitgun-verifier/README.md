@@ -156,6 +156,12 @@ loopback services and a disposable key, executes actual WASM, exercises old/new
 routes and hostile histories, and writes sensitive fixtures only to the new
 private output directory. It calls no LLM and deploys nothing.
 
+An optional final `metadata` argument qualifies the browser's metadata-only
+presentation completion on the candidate; legacy retained artifacts still use
+their full completion. This is distinct from the Verifier replay-only API.
+See the [browser transport audit](../../docs/qa/browser-completion-2026-11-18/README.md)
+for precision, recovery and release/admission limits.
+
 `/readyz` fails closed when signing-key verification material or retained
 catalog bytes are unavailable.
 
