@@ -57,7 +57,7 @@ de traiter un radiateur fermé comme un échangeur pleinement exposé. C'est une
 fermeture réduite, pas un modèle hydraulique de pompe ou de circuits eau/huile.
 L'ancienne loi `alpha_heat × Wmoteur` est remplacée uniquement dans cette branche.
 
-L'ouverture est tenue sur chaque sous-pas d'au plus250ms ; l'EDO linéaire de ce
+L'ouverture est tenue sur chaque sous-pas d'au plus 250 ms ; l'EDO linéaire de ce
 sous-pas est intégrée exponentiellement. Ce n'est pas une solution exacte de toute
 l'EDO non linéaire avec thermostat. Un test de raffinement temporel couvre cette
 approximation. Le seuil/slope de derating proviennent des ressources de chaque
@@ -74,7 +74,7 @@ CdA = CdA_hors_ancien_coût_cooling + nouveau_coût_cooling × (cooling_effectif
 
 Ce mapping reste dans le Simulator/probe et ses données, pas dans les équations
 du Solver. Les valeurs sont des hypothèses de dimensionnement : elles ne sont
-pas des mesures historiques de radiateurs. Les seuils110°C n'ont pas été abaissés
+pas des mesures historiques de radiateurs. Les seuils 110°C n'ont pas été abaissés
 pour fabriquer le derating précoce. L'opportunité de budget et la traînée pénalisent
 le surdimensionnement. Aucun malus spécial n'est appliqué au point zéro ; aucun
 minimum de points n'est décrété gagnant partout. Une masse de radiateur n'est pas
@@ -98,7 +98,7 @@ La température de piste est une condition aux limites distincte, non une mété
 dynamique ou une température inférée des voitures. Aucun flux de freins n'est
 attribué artificiellement au pneu.
 
-Le solveur1D ne résout pas les vitesses de glissement. Le candidat emploie une
+Le solveur 1 D ne résout pas les vitesses de glissement. Le candidat emploie une
 **fermeture réduite de pertes par déformation**, et ne revendique pas le modèle de
 glissement des articles :
 
@@ -130,9 +130,9 @@ une loi de matériau identifiée : pas de graining, blistering, chimie d'abrasio
 pression, humidité ou répartition roue par roue. Le cumul reste borné à1 ; le
 grip à1 dépend de la loi résiduelle de la gomme. Aucun affichage client ne gonfle
 le pourcentage. L'échelle de durée compétitive et les meilleurs arrêts doivent
-encore être validés ; une stratégie peut rationnellement s'arrêter avant100%.
+encore être validés ; une stratégie peut rationnellement s'arrêter avant 100%.
 
-Les échanges utilisent un système implicite2×2 à sous-pas≤250ms, sans allocation
+Les échanges utilisent un système implicite 2×2 à sous-pas≤250 ms, sans allocation
 par sous-pas et sans écrêtage de température. Tests : équilibre, maximum passif,
 relaxation analytique, bilan, raffinement temporel, échauffement/refroidissement,
 usure chaude et piste réchauffant un pneu froid. Les bilans ne suffisent pas à
@@ -149,7 +149,7 @@ Ces états devront entrer dans le futur contrat de checkpoint/reprise admis.
 
 Le V1 conserve ses quatre passes historiques de couplage pneu/vitesse. Le V2
 itère jusqu’à une variation relative de grip≤10⁻³ et une borne de sollicitation
-réelle du contact≤1.0002 ; il refuse le tour après24passes sans convergence. Les références sont sous-relaxées de moitié entre deux passes. Les
+réelle du contact≤1.0002 ; il refuse le tour après 24 passes sans convergence. Les références sont sous-relaxées de moitié entre deux passes. Les
 erreurs finales et le nombre de passes sont enregistrés. Le V1
 anticipe le tour suivant à grip de fin de tour tenu constant : le pilote local a
 montré que cette anticipation ne suffit pas avec des variations rapides de grip.
@@ -165,15 +165,15 @@ L'agent conserve son interface générique observations/événements/commandes ;
 règles de moteur, pneu ou tour restent dans le domaine Racing.
 
 La grille physique et la fréquence des observations ne changent pas. Réduire un
-export de5à2Hz ne simplifie aucune de ces équations. Le coût natif, puis WASM et
+export de 5 à2 Hz ne simplifie aucune de ces équations. Le coût natif, puis WASM et
 mémoire du Worker restent des mesures distinctes. L'historique complet utilisé
 dans ce banc n'est pas un nouveau format de replay du jeu.
 
 ## Références et suite
 
-Les sections2.1–2.1.1 de [Choi et al., Energies2020](https://www.mdpi.com/1996-1073/13/20/5301)
+Les sections 2.1–2.1.1 de [Choi et al., Energies 2020](https://www.mdpi.com/1996-1073/13/20/5301)
 documentent la séparation énergie carburant/travail/chaleur et les circuits
-thermiques. Les sections1–2 de [Schabauer et al., IAVSD2023, publié2024](https://link.springer.com/chapter/10.1007/978-3-031-66968-2_29)
+thermiques. Les sections 1–2 de [Schabauer et al., IAVSD2023, publié 2024](https://link.springer.com/chapter/10.1007/978-3-031-66968-2_29)
 documentent capacités par couche, déformation/glissement, échanges piste/air. Nous
 retenons les principes et choisissons ici une réduction à deux états ; nous ne
 reprenons ni leur modèle complet ni leurs paramètres expérimentaux. La nouvelle
