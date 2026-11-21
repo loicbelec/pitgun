@@ -164,3 +164,10 @@ ensuite des suppressions de travail répété à sorties physiques strictement �
 sans changer les équations, la grille ou les quatre passes de couplage. Il distingue
 le coût du cœur de celui d’observations à 1/2/5 Hz. Ces observations d’audit ne sont
 pas encore un export admis dans le jeu ni un contrat d’observation d’agent.
+
+Le [nouvel audit de gameplay thermique/pneus](../../experiments/thermal_tire_gameplay/RESULTS_V1.md)
+compare des budgets effectifs et des relais avec les deux noyaux. Il confirme les
+mécanismes mais conserve un verdict de gameplay `REFINE` : les V8 testés ne
+dératent pas, les pneus restent souvent froids et les choix doivent être calibrés.
+La loi de pneus n’a pas été remplacée par le candidat énergie. Cette validation
+locale précède désormais son raccordement Worker/WASM.

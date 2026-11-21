@@ -80,3 +80,23 @@ weak setup/strategy consequences is a calibration/model-structure concern.
 
 Future fixes should target measured mechanisms and have independently selected
 validation cases; this audit does not fit new coefficients or promote gameplay.
+
+## Follow-ups kept separate
+
+The [results and interpretation](RESULTS_V1.md) retain the primary audit. The
+subsequent `grid-plan-v1.json` preregisters187 allocations at fixed sliders;
+`response_grid.py` runs both kernels and repeats the16 selected minima exactly.
+`refinement-plan-v1.json` then preregisters36 finer cooling allocations around
+observed zero-cooling minima; `refine_grid.py` runs72 cases and repeats both
+reference and selected minima for each model/group. Full grid rechecks are
+available with `--check`, but only their selected minima were replayed here.
+
+`driver_followup.py` uses separately pinned valid physical driver resources after
+the primary policy-label cases fell back to the default V9 driver. Four follow-up
+outcomes repeat exactly. Different physical driver IDs also change their seeded
+noise streams, so this is not an isolated derivative of aggressiveness.
+
+The archived primary/supplement hashes, not this Mac's timing or current source
+bytes, are checked in CI. Four cheap integrity tests do not rerun this campaign
+on Linux or claim cross-platform physical digest parity. `plot_report.py` (optional
+Matplotlib) renders only checksum-checked archives. See [next steps](NEXT_STEPS.md).
