@@ -99,7 +99,7 @@ outcomes and8cases under2modes. It checks unchanged frozen physics and unchanged
 old lap/pit/derating journal after removing the new tire facts. Detector/queue/
 journal restore is covered; the Solver still stays in memory.
 
-The medium Barcelona case includes an explicitly separate unranked preview:
+The cold-start Barcelona and early Monza cases include separate unranked previews:
 every second accepted native point in the first600s for five existing numeric
 channels. It computes no new physics and supplies no interpolated service values.
 It is a deterministic visual fixture, **not** an admitted exporter, complete saved

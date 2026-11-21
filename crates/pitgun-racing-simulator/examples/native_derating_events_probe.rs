@@ -357,7 +357,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         if lap_count != usize::from(input.lap_count) || pit_count != input.pit_plan.stops.len() {
             return Err("lost lap/pit events".into());
         }
-        let preview = if enable_tires && id == "tires-medium" {
+        let preview = if enable_tires && ["tire-start-35", "budget-early8-monza-c0"].contains(&id) {
             let s = &result.solution;
             let mut channels = serde_json::Map::new();
             for (name, values, scale) in [
@@ -378,7 +378,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             }
             json!({"policy":"pitgun.native-thermal-events-preview/every-second-native-point-first-600s/v1",
                 "scope":"Unranked native presentation sample, not an admitted graphical exporter or WASM execution.",
-                "track_id":"BARCELONA","series":channels})
+                "track_id":case["request"]["input"]["track_id"],"track_length_m":input.track.s.last(),"series":channels})
         } else {
             Value::Null
         };
