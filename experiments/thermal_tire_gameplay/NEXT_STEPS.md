@@ -5,6 +5,11 @@ la pertinence des réglages et des pneus ; le raccordement WASM du nouveau noyau
 vient après ce travail. Les optimisations de coût déjà qualifiées sont conservées.
 Aucune nouvelle équation ou calibration n’a été intégrée par cet audit.
 
+Clarification du propriétaire après l'audit : **le derating et l'arbitrage de
+cooling doivent être significatifs dès l'ère I**, et la prochaine livraison doit
+réellement reprendre les lois thermiques moteur/pneus. Le socle mécanique déjà
+refait et l'intégration stable de l'ancienne loi ne remplissent pas ce critère.
+
 ## 1. Fixer des critères de gameplay vérifiables
 
 Le joueur doit arbitrer suivant le moteur, le circuit, les conditions et son
@@ -39,9 +44,24 @@ explicite ; l’ancien `alpha_heat × shaft_work` ne ferme pas un bilan chimique
 pouvoir être davantage refroidi sans transformer systématiquement le maximum de
 cooling en meilleur choix. Les références et données doivent justifier les plages.
 
-Conserver des V8 robustes si c’est physiquement cohérent ; si le gameplay exige un
-compromis plus tôt, corriger le dimensionnement ou le domaine de charge, sans
-inventer une pénalité cachée au réglage zéro.
+Le constat « les V8 actuels ne dératent pas » est une lacune à traiter suivant la
+nouvelle exigence, pas un critère d'acceptation pour les premières ères. Reprendre
+le bilan de chaleur et le dimensionnement du refroidissement des moteurs 1960 et
+1970, avec des conditions et budgets réellement accessibles dès l'ère I.
+
+La validation doit montrer, sur plusieurs situations précoces jouables :
+
+- une production de chaleur liée à la puissance sollicitée ;
+- une montée de température et un derating perceptible si le refroidissement est
+  insuffisant, avec une perte de performance mesurée ;
+- la récupération de puissance quand un investissement raisonnable en cooling
+  restaure la marge thermique, au même budget total ;
+- une contrepartie physique et d'opportunité au surdimensionnement ;
+- la distinction entre points alloués, bonus HQ et équipement de base.
+
+Ces comportements doivent provenir des équations et paramètres versionnés, avec
+des traces explicatives. Ils ne seront pas obtenus par un malus caché à zéro point
+ni seulement par une baisse du seuil destinée à faire réussir les cas de l'audit.
 
 ## 3. Reprendre l’équilibre et la réponse des pneus — #421
 
@@ -58,6 +78,12 @@ bon sous-modèle et pouvoir différer entre gommes si la physique le justifie.
 
 Les coefficients actuels produisent souvent des pneus froids avec un facteur de
 grip thermique saturé ; modifier seulement ce plancher déplacerait le problème.
+La prochaine implémentation doit reprendre la génération et les échanges de
+chaleur ainsi que leur couplage au grip et à l'usure ; un nouvel audit de la loi
+inchangée ne constituera pas cette refonte. Il faut rendre observables des phases
+d'échauffement sous charge et de refroidissement, une fenêtre thermique exploitable
+et des réponses distinctes aux gommes/réglages. La température ne doit pas être
+forcée à augmenter : son évolution doit résulter de ces flux.
 Éprouver échauffement et refroidissement sous des charges différentes, températures
 initiales/ambiantes différentes, pression de conduite et évolution d’usure. La
 littérature NASCAR et les autres références de la fondation restent à lire au

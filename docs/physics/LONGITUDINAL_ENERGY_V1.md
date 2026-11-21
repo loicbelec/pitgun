@@ -6,6 +6,27 @@ par `ResolvedSimulationRequestV3.longitudinal_energy`. Le marqueur sérialisé e
 sélectionner `None` : le jeu, les anciennes preuves et les catalogues ne changent
 pas. Ce candidat n'est pas un runtime admis par Authority ou Verifier.
 
+## Portée de la refonte déjà réalisée
+
+Le terme « thermique » décrit ici une intégration numérique plus cohérente de la
+loi moteur existante, avec la même horloge que le mouvement. Il ne désigne pas une
+nouvelle loi de production de chaleur, un nouveau radiateur ou une nouvelle
+calibration des familles moteur. Les seuils de derating et leur paramétrage ont
+été conservés. La loi thermique/usure/adhérence des pneus est également conservée.
+
+| Partie | Changement dans ce candidat |
+| --- | --- |
+| Mécanique longitudinale et transmission | Nouveau bilan travail-énergie et démarrage à couple fini |
+| Intégration thermique moteur | Pas exponentiel stable et horloge commune sur la loi existante |
+| Lois de chaleur/refroidissement et pertinence du cooling dès l'ère I | Refonte physique et calibration encore à réaliser |
+| Lois thermiques/usure/adhérence des pneus | Inchangées ; refonte encore à réaliser |
+
+L'audit suivant mesure ces limites ; il ne les corrige pas par lui-même. Le
+propriétaire demande désormais un derating significatif dès l'ère I dans les
+conditions chargées jouables, et une vraie reprise des échanges thermiques des
+pneus avant le raccordement WASM. Voir les critères dans
+[NEXT_STEPS.md](../../experiments/thermal_tire_gameplay/NEXT_STEPS.md).
+
 ## Problèmes ciblés
 
 Le chemin historique peut attribuer une propulsion nulle à un segment parcouru à
