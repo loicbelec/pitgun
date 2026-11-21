@@ -4,6 +4,7 @@ mod controlled_stream;
 pub mod evidence;
 mod fuel_contract;
 mod local_stream;
+pub mod physical_events;
 mod power_stream;
 pub use power_stream::{POWER_CHANNELS, power_telemetry_policy_identity};
 pub mod service_control;
@@ -284,6 +285,12 @@ pub enum RacingSessionProgressV1 {
     rename_all = "snake_case"
 )]
 pub enum RacingSessionEventV1 {
+    /// Opt-in native physical-fact policy; absent from historical/default streams.
+    Physical {
+        event: physical_events::RacingPhysicsEventV1,
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        timing: Option<RacingEventTimingV1>,
+    },
     LapCompleted {
         competitor_id: String,
         lap: u16,
@@ -324,12 +331,31 @@ pub enum RacingEventTimingVersion {
 }
 
 impl RacingSessionEventV1 {
+    /// Native experimental release primitive. Does not grant observation rights.
+    /// The host must persist the ordered queue and apply its visibility policy.
+    pub fn release_at_horizon(
+        self,
+        occurred_at_us: u64,
+        released_at_us: u64,
+    ) -> Result<Self, String> {
+        let timing = match &self {
+            Self::LapCompleted { timing, .. }
+            | Self::PitStopCompleted { timing, .. }
+            | Self::DriverInstructionApplied { timing, .. }
+            | Self::Physical { timing, .. } => timing,
+        };
+        if timing.is_some() || occurred_at_us > released_at_us {
+            return Err("event is already released or beyond the observation horizon".into());
+        }
+        self.with_timing(occurred_at_us, released_at_us)
+    }
     fn with_timing(mut self, occurred_at_us: u64, released_at_us: u64) -> Result<Self, String> {
         let event_id = canonical_json_digest(&self).map_err(|e| e.to_string())?;
         let timing = match &mut self {
             Self::LapCompleted { timing, .. }
             | Self::PitStopCompleted { timing, .. }
-            | Self::DriverInstructionApplied { timing, .. } => timing,
+            | Self::DriverInstructionApplied { timing, .. }
+            | Self::Physical { timing, .. } => timing,
         };
         *timing = Some(RacingEventTimingV1 {
             schema_version: RacingEventTimingVersion::V1,
@@ -2538,6 +2564,7 @@ struct IncrementalV3Competitor {
     prefetched_laps: VecDeque<ResolvedSimulationLapV3>,
     playback_tail: Vec<[f64; 2]>,
     pending_events: VecDeque<(u64, RacingSessionEventV1)>,
+    physical_event_detector: Option<physical_events::NativeDeratingEventDetector>,
     result: Option<SimulationResult>,
 }
 
@@ -2550,14 +2577,18 @@ impl IncrementalV3Competitor {
             )
         })?;
         if playback && let ResolvedSimulationStepV3::Lap(lap) = &mut step {
-            self.record_solved_lap(lap)?;
+            self.record_solved_lap(lap, true)?;
             if !self.is_player {
                 lap.solution = Default::default();
             }
         }
         Ok(step)
     }
-    fn record_solved_lap(&mut self, lap: &ResolvedSimulationLapV3) -> Result<(), String> {
+    fn record_solved_lap(
+        &mut self,
+        lap: &ResolvedSimulationLapV3,
+        commit_boundary: bool,
+    ) -> Result<(), String> {
         let previous = self.prefetched_laps.back().or(self.latest_lap.as_ref());
         let (time, distance) = previous
             .map(|p| (p.cumulative_time_s, p.cumulative_distance_m))
@@ -2582,6 +2613,15 @@ impl IncrementalV3Competitor {
                     timing: None,
                 },
             ));
+        }
+        if let Some(detector) = &mut self.physical_event_detector {
+            let facts = detector.observe_driving_lap(
+                lap,
+                &self.physical_vehicle.engine,
+                self.engine_thermal.unwrap_or_default(),
+            )?;
+            self.pending_events
+                .extend(facts.into_iter().map(|f| f.into_unreleased()));
         }
         // Lap crossing precedes optional service in the current Racing model.
         let crossing = time
@@ -2608,6 +2648,15 @@ impl IncrementalV3Competitor {
                     timing: None,
                 },
             ));
+        }
+        if commit_boundary && let Some(detector) = &mut self.physical_event_detector {
+            let facts = detector.observe_lap_boundary(
+                lap,
+                &self.physical_vehicle.engine,
+                self.engine_thermal.unwrap_or_default(),
+            )?;
+            self.pending_events
+                .extend(facts.into_iter().map(|f| f.into_unreleased()));
         }
         self.playback_tail.extend(
             lap.solution
@@ -2656,6 +2705,7 @@ fn take_playback_prefix(points: &mut Vec<[f64; 2]>, horizon: f64) -> Vec<[f64; 2
 /// deterministic lap boundary. Rendering cadence, networking and wall-clock
 /// time remain outside this type.
 pub struct IncrementalRacingSession {
+    physical_event_failure: Option<String>,
     power_telemetry_v1: bool,
     power_caches: Vec<power_stream::PowerLapCache>,
     track_id: String,
@@ -2682,6 +2732,40 @@ pub struct IncrementalRacingSession {
 }
 
 impl IncrementalRacingSession {
+    /// Explicit native-only physical-event policy. Also selects the existing
+    /// player-aligned release mode so rival prefetch never publishes future facts.
+    /// Internal field events are not a provider-visible observation projection.
+    /// No browser facade, normal workload or Authority admission selects this.
+    pub fn enable_player_aligned_physical_events_v1(
+        &mut self,
+        policy: physical_events::DeratingEventPolicyV1,
+    ) -> Result<(), String> {
+        if self.next_sequence != 0
+            || self.completed
+            || self
+                .competitors
+                .iter()
+                .any(|c| c.physical_event_detector.is_some())
+        {
+            return Err("physical event policy must be pinned once before advance".into());
+        }
+        policy.validate()?;
+        let detectors = self
+            .competitors
+            .iter()
+            .map(|c| {
+                physical_events::NativeDeratingEventDetector::new(
+                    c.competitor_id.clone(),
+                    policy.clone(),
+                )
+            })
+            .collect::<Result<Vec<_>, _>>()?;
+        for (car, detector) in self.competitors.iter_mut().zip(detectors) {
+            car.physical_event_detector = Some(detector);
+        }
+        self.align_player_horizon = true;
+        Ok(())
+    }
     /// Freeze the separate power-channel policy before the first physical step.
     /// Physical equations and the legacy default remain unchanged.
     pub fn enable_power_telemetry_v1(&mut self) -> Result<(), String> {
@@ -3056,11 +3140,13 @@ impl IncrementalRacingSession {
                 prefetched_laps: VecDeque::new(),
                 playback_tail: Vec::new(),
                 pending_events: VecDeque::new(),
+                physical_event_detector: None,
                 result: None,
             });
         }
 
         Ok(Self {
+            physical_event_failure: None,
             track_id,
             power_telemetry_v1: false,
             power_caches: Vec::new(),
@@ -3123,6 +3209,23 @@ impl IncrementalRacingSession {
 
     /// Computes one further lap for the complete field, or emits completion.
     pub fn advance(&mut self) -> Result<RacingSessionStreamBatchV1, String> {
+        if let Some(error) = &self.physical_event_failure {
+            return Err(error.clone());
+        }
+        let physical_events = self
+            .competitors
+            .iter()
+            .any(|c| c.physical_event_detector.is_some());
+        let result = self.advance_inner();
+        // Once the physical future advanced but its event journal could not be
+        // committed, a retry must never silently skip facts and publish completion.
+        if physical_events && let Err(error) = &result {
+            self.physical_event_failure = Some(error.clone());
+        }
+        result
+    }
+
+    fn advance_inner(&mut self) -> Result<RacingSessionStreamBatchV1, String> {
         if self.completed {
             return Err("incremental Racing session already completed".to_string());
         }
@@ -3160,7 +3263,7 @@ impl IncrementalRacingSession {
             } else if self.service_player && competitor.is_player {
                 match competitor.solver.advance_service()? {
                     pitgun_racing_solver::ResolvedServiceStepV3::BeforeService(lap) => {
-                        competitor.record_solved_lap(&lap)?;
+                        competitor.record_solved_lap(&lap, false)?;
                         self.service_pending = true;
                         ResolvedSimulationStepV3::Lap(lap)
                     }
@@ -3411,6 +3514,16 @@ impl IncrementalRacingSession {
                 },
             ));
         }
+        if let Some(detector) = &mut player.physical_event_detector {
+            let facts = detector.observe_lap_boundary(
+                &lap,
+                &player.physical_vehicle.engine,
+                player.engine_thermal.unwrap_or_default(),
+            )?;
+            player
+                .pending_events
+                .extend(facts.into_iter().map(|f| f.into_unreleased()));
+        }
         player.latest_lap = Some(*lap);
         self.service_pending = false;
         let grid = self.aligned_grid()?;
@@ -3518,15 +3631,33 @@ impl IncrementalRacingSession {
             RacingSessionEventV1::LapCompleted { .. } => 0,
             RacingSessionEventV1::PitStopCompleted { .. } => 1,
             RacingSessionEventV1::DriverInstructionApplied { .. } => 2,
+            RacingSessionEventV1::Physical { .. } => 3,
         };
         observed.sort_by(|a, b| {
             a.0.cmp(&b.0)
                 .then_with(|| phase(&a.1).cmp(&phase(&b.1)))
                 .then_with(|| {
+                    if let (
+                        RacingSessionEventV1::Physical {
+                            event: physical_events::RacingPhysicsEventV1::EngineDerating(a),
+                            ..
+                        },
+                        RacingSessionEventV1::Physical {
+                            event: physical_events::RacingPhysicsEventV1::EngineDerating(b),
+                            ..
+                        },
+                    ) = (&a.1, &b.1)
+                    {
+                        return a
+                            .competitor_id
+                            .cmp(&b.competitor_id)
+                            .then_with(|| a.sequence.cmp(&b.sequence));
+                    }
                     let id = |event: &RacingSessionEventV1| match event {
                         RacingSessionEventV1::LapCompleted { timing, .. }
                         | RacingSessionEventV1::PitStopCompleted { timing, .. }
-                        | RacingSessionEventV1::DriverInstructionApplied { timing, .. } => {
+                        | RacingSessionEventV1::DriverInstructionApplied { timing, .. }
+                        | RacingSessionEventV1::Physical { timing, .. } => {
                             timing.as_ref().unwrap().event_id.to_string()
                         }
                     };
@@ -6890,6 +7021,118 @@ mod tests {
         );
     }
 
+    #[test]
+    fn physical_event_policy_is_explicit_horizon_safe_and_observation_only() {
+        // Manufactured warm-guard field, not a new calibrated/catalog profile.
+        let snapshot = RacingCatalogSnapshot::embedded_model_v3_timeline().unwrap();
+        let catalog = EmbeddedCatalog::from_snapshot(&snapshot).unwrap();
+        let request = ten_competitor_incremental_request();
+        let profile = V3CandidateExperimentProfile {
+            schema_version: V3CandidateExperimentProfileVersion::V9,
+            engine_thermal_resolution: Some(V3EngineThermalResolutionParams {
+                soft_limit_offset_c: -40.0,
+                ..Default::default()
+            }),
+            ..Default::default()
+        };
+        let make = || {
+            IncrementalRacingSession::new_v3(
+                &catalog,
+                &request.input.race,
+                "f1_2026",
+                &HashMap::new(),
+                SessionExecution {
+                    pit_strategy: None,
+                    track_profile: None,
+                    laps: 2,
+                    seed: request.seed,
+                    initial_fuel_mass_kg: 100.0,
+                    model: SessionPhysicalModel::V3Candidate {
+                        profile: &profile,
+                        power_unit_thermal_profile: None,
+                        driver_experiment: None,
+                    },
+                },
+            )
+            .unwrap()
+        };
+        let mut old = make();
+        old.align_player_horizon = true;
+        let (old_batches, old_output) = collect_incremental_stream(old);
+        let mut new = make();
+        new.enable_player_aligned_physical_events_v1(Default::default())
+            .unwrap();
+        assert!(
+            new.enable_player_aligned_physical_events_v1(Default::default())
+                .is_err()
+        );
+        let (new_batches, new_output) = collect_incremental_stream(new);
+        assert_eq!(
+            serde_json::to_value(old_output).unwrap(),
+            serde_json::to_value(new_output).unwrap()
+        );
+        let flatten = |batches: &[RacingSessionStreamBatchV1]| {
+            batches
+                .iter()
+                .flat_map(|b| b.records())
+                .filter_map(|r| {
+                    if matches!(
+                        r.event(),
+                        IncrementalExecutionStreamEventV1::Progress(
+                            RacingSessionProgressV1::Event(RacingSessionEventV1::Physical { .. })
+                        )
+                    ) {
+                        None
+                    } else {
+                        Some((r.logical_tick(), serde_json::to_value(r.event()).unwrap()))
+                    }
+                })
+                .collect::<Vec<_>>()
+        };
+        assert_eq!(flatten(&old_batches), flatten(&new_batches));
+        let mut physical = 0;
+        let mut ids = BTreeSet::new();
+        for event in new_batches
+            .iter()
+            .flat_map(|b| b.records())
+            .filter_map(|r| match r.event() {
+                IncrementalExecutionStreamEventV1::Progress(RacingSessionProgressV1::Event(e)) => {
+                    Some(e)
+                }
+                _ => None,
+            })
+        {
+            if let RacingSessionEventV1::Physical {
+                timing: Some(timing),
+                ..
+            } = event
+            {
+                physical += 1;
+                assert!(timing.occurred_at_us <= timing.released_at_us);
+                assert!(ids.insert(timing.event_id.to_string()));
+            }
+        }
+        assert!(physical >= 10);
+        let mut late = make();
+        late.advance().unwrap();
+        assert!(
+            late.enable_player_aligned_physical_events_v1(Default::default())
+                .is_err()
+        );
+        let mut invalid = make();
+        invalid
+            .enable_player_aligned_physical_events_v1(Default::default())
+            .unwrap();
+        // Mismatched detector context must fail, then remain failed even though
+        // its Solver future has already yielded a lap. No lost-event completion.
+        invalid.competitors[0].physical_vehicle.engine.t_soft += 5.0;
+        let first_error = invalid.advance().unwrap_err();
+        assert!(first_error.contains("native derating disagrees"));
+        for _ in 0..4 {
+            assert_eq!(invalid.advance().unwrap_err(), first_error);
+        }
+    }
+
     fn ten_competitor_incremental_request() -> RunRaceRequest {
         let mut request = one_lap_request();
         request.input.race.laps = 2;
@@ -6958,6 +7201,9 @@ mod tests {
             IncrementalExecutionStreamEventV1::Progress(RacingSessionProgressV1::Event(
                 RacingSessionEventV1::DriverInstructionApplied { .. },
             )) => "driver_instruction_applied",
+            IncrementalExecutionStreamEventV1::Progress(RacingSessionProgressV1::Event(
+                RacingSessionEventV1::Physical { .. },
+            )) => "physical",
             IncrementalExecutionStreamEventV1::Complete(_) => "completion",
         }
     }

@@ -130,6 +130,15 @@ controllers, alongside future incidents caused by aggressive driving. This secti
 specifies the proposed extension; it does **not** add event variants, thresholds,
 an incident model, a new wire/runtime identity or UI behavior.
 
+**Implementation update, same day:** the first native opt-in increment now adds
+derating entry/recovery facts in `physical_events.rs` and the existing session
+journal. The design discussion below records the starting point. See
+[the native event qualification](../experiments/racing_physical_events/README.md)
+for exact semantics, repeat procedure and limitations. Physics/default stream
+outputs remain unchanged; no current browser workload selects this mode.
+The new payload is versioned, but this is not a new admitted wire/runtime identity.
+Existing decoders require an explicit updated contract before consuming it.
+
 ### Reuse and ownership
 
 `RacingSessionEventV1` currently carries `LapCompleted`, `PitStopCompleted` and
