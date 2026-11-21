@@ -1,3 +1,4 @@
 experiments/thermal_tire_gameplay/results/*.json linguist-generated=true
 experiments/thermal_physics_v2/results/*.json linguist-generated=true
 experiments/racing_physical_events/results/*.json linguist-generated=true
+experiments/opponent_physics_v2/results/*.json linguist-generated=true

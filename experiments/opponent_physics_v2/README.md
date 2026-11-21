@@ -5,6 +5,11 @@ The event journal/axis is instrumentation. No event/display work changes an AI
 allocation, setup, driver, strategy or physical result. Further UI/runtime work
 is secondary to the driver/physics and competition work specified here.
 
+Measured resolution findings: [DRIVER_AUDIT_V1.md](DRIVER_AUDIT_V1.md).
+Implementation sequence: [drivers#455](https://github.com/loicbelec/pitgun/issues/455),
+[incidents#456](https://github.com/loicbelec/pitgun/issues/456), then
+[opponent fitting#457](https://github.com/loicbelec/pitgun/issues/457).
+
 ## What the code actually does
 
 There are three independent concerns: the physical driver, the opponent policy
