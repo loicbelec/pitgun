@@ -973,6 +973,65 @@ fn live_start() -> LocalControlledRacingSession {
 }
 
 #[test]
+fn tire_facts_follow_the_actual_dynamic_service_without_changing_control_results() {
+    let mut session = live_start();
+    session
+        .session
+        .enable_player_aligned_tire_events_v1(Default::default())
+        .unwrap();
+    let observation = observe(&mut session);
+    let mut proposal = reference_proposal(&observation, 1, "hard").unwrap();
+    proposal.decision_at_us = Some(observation.window.as_ref().unwrap().opened_at_us + 1_000_000);
+    session.propose(proposal).unwrap();
+    let mut replacements = Vec::new();
+    let actual = loop {
+        match session.advance().unwrap() {
+            ControlStep::AwaitingDecision(o) => {
+                session
+                    .propose(reference_proposal(&o, 0, "hard").unwrap())
+                    .unwrap();
+            }
+            ControlStep::Batch(batch) => {
+                let mut output = None;
+                for record in batch.records() {
+                    match record.event() {
+                        IncrementalExecutionStreamEventV1::Complete(result) => {
+                            output = Some(result.clone())
+                        }
+                        IncrementalExecutionStreamEventV1::Progress(
+                            crate::RacingSessionProgressV1::Event(
+                                crate::RacingSessionEventV1::Physical {
+                                    event:
+                                        crate::physical_events::RacingPhysicsEventV1::TireWindow(e),
+                                    timing: Some(t),
+                                },
+                            ),
+                        ) if e.competitor_id == "player" && e.tire_replaced => {
+                            assert!(t.occurred_at_us <= t.released_at_us);
+                            replacements.push(e.clone());
+                        }
+                        _ => {}
+                    }
+                }
+                if let Some(output) = output {
+                    break output;
+                }
+            }
+        }
+    };
+    assert_eq!(replacements.len(), 1);
+    assert_eq!(replacements[0].lap, 2);
+    assert_eq!(replacements[0].tire_id, "hard");
+    assert_eq!(replacements[0].stint, 1);
+    assert_eq!(replacements[0].previous_band, None);
+    let mut reference = start();
+    assert_eq!(
+        canonical_json_bytes(&actual).unwrap(),
+        canonical_json_bytes(&finish(&mut reference, true)).unwrap()
+    );
+}
+
+#[test]
 fn service_window_observes_the_committed_past_and_modifies_only_service_after_driving() {
     let mut session = live_start();
     let observation = observe(&mut session);
