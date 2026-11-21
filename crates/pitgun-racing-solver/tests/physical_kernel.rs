@@ -122,6 +122,20 @@ fn power_v1_export_frequency_does_not_change_native_ledger_or_invent_shift_loads
 }
 
 #[test]
+fn power_v1_export_times_are_causal_and_cannot_extend_the_computed_prefix() {
+    let (s, v, m) = manufactured_power_lap();
+    let p = project_lap_power_v1(&s, &v, m, None).unwrap();
+    let rows = p.sample_at_times(&[0.0, 0.9, 1.0, 2.5]).unwrap();
+    assert_eq!(rows[1].engine_delivered_w, rows[0].engine_delivered_w);
+    assert_eq!(rows[2].engine_delivered_w, p.points[1].engine_delivered_w);
+    assert_eq!(rows[3].engine_delivered_w, p.points[2].engine_delivered_w);
+    for times in [&[-0.1][..], &[3.1], &[0.0, 0.0], &[1.0, 0.0], &[f64::NAN]] {
+        assert!(p.sample_at_times(times).is_err());
+    }
+    assert!(p.sample_at_times(&[]).unwrap().is_empty());
+}
+
+#[test]
 fn power_v1_rejects_capacity_mismatch_instead_of_hiding_it_with_a_clamp() {
     let (mut s, v, m) = manufactured_power_lap();
     s.power[0] = 1_000.;

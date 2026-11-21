@@ -4,6 +4,8 @@ mod controlled_stream;
 pub mod evidence;
 mod fuel_contract;
 mod local_stream;
+mod power_stream;
+pub use power_stream::{POWER_CHANNELS, power_telemetry_policy_identity};
 pub mod service_control;
 mod thermal_profile;
 pub mod workload;
@@ -11,6 +13,7 @@ pub mod workload;
 pub use local_stream::{
     complete_local_racing_session_json, pull_local_racing_session_json,
     release_local_racing_session_json,
+    start_local_racing_session_with_catalog_and_v3_power_unit_thermal_and_power_v1_json,
     start_local_racing_session_with_catalog_and_v3_power_unit_thermal_profile_json,
 };
 
@@ -2628,6 +2631,8 @@ fn take_playback_prefix(points: &mut Vec<[f64; 2]>, horizon: f64) -> Vec<[f64; 2
 /// deterministic lap boundary. Rendering cadence, networking and wall-clock
 /// time remain outside this type.
 pub struct IncrementalRacingSession {
+    power_telemetry_v1: bool,
+    power_caches: Vec<power_stream::PowerLapCache>,
     track_id: String,
     track: Track,
     vehicle_id: String,
@@ -2652,6 +2657,15 @@ pub struct IncrementalRacingSession {
 }
 
 impl IncrementalRacingSession {
+    /// Freeze the separate power-channel policy before the first physical step.
+    /// Physical equations and the legacy default remain unchanged.
+    pub fn enable_power_telemetry_v1(&mut self) -> Result<(), String> {
+        if self.next_sequence != 0 || self.completed {
+            return Err("power telemetry policy must be pinned before advance".into());
+        }
+        self.power_telemetry_v1 = true;
+        Ok(())
+    }
     /// Opt-in local diagnostic of the latest native player lap. No stream,
     /// journal, channel or canonical result is changed. Empty committed-service
     /// records return None; callers audit the driving prefix before service.
@@ -2970,6 +2984,8 @@ impl IncrementalRacingSession {
 
         Ok(Self {
             track_id,
+            power_telemetry_v1: false,
+            power_caches: Vec::new(),
             track: track_record.track,
             vehicle_id: vehicle_id.to_string(),
             laps: laps.max(1),
@@ -3193,6 +3209,18 @@ impl IncrementalRacingSession {
                 player.engine_thermal,
             )
             .map_err(|error| format!("incremental telemetry resampling failed: {error}"))?;
+            let power_cache = if self.power_telemetry_v1 {
+                Some(power_stream::PowerLapCache::from_lap(
+                    player_lap,
+                    &player.physical_vehicle,
+                    player.power_projection_mechanical,
+                    player.power_projection_fuel,
+                    &resampled.time_s,
+                    player_time_offset,
+                )?)
+            } else {
+                None
+            };
             for time in &mut resampled.time_s {
                 *time += player_time_offset;
             }
@@ -3212,6 +3240,10 @@ impl IncrementalRacingSession {
                     telemetry_hz,
                 ),
             );
+            if let Some(cache) = power_cache {
+                power_stream::apply_power_frames(&mut frames, std::slice::from_ref(&cache));
+                self.power_caches.push(cache);
+            }
             for (index, frame) in frames.iter_mut().enumerate() {
                 frame.sequence = self.next_player_frame_sequence + index as u64;
             }
@@ -3508,6 +3540,9 @@ impl IncrementalRacingSession {
                         telemetry_hz,
                     ),
                 );
+                if self.power_telemetry_v1 {
+                    power_stream::apply_power_frames(&mut player_frames, &self.power_caches);
+                }
                 player_lap_times_ms = lap_times_ms.clone();
                 player_resolved_pit_laps = competitor.stint_plan.pit_laps.clone();
                 player_diagnostics = Some(result.diagnostics);
@@ -4080,6 +4115,35 @@ pub fn run_race_with_catalog_and_v3_power_unit_thermal_profile_json(
 
     match run_race_with_catalog_and_v3_power_unit_thermal_profile(request, &catalog, &candidate) {
         Ok(output) => serialize_json(&output),
+        Err(error) => json_error(&error),
+    }
+}
+
+/// Separate telemetry-policy entry point for unranked local practice execution.
+#[cfg_attr(feature = "wasm", wasm_bindgen)]
+pub fn run_race_with_catalog_and_v3_power_unit_thermal_and_power_v1_json(
+    input_json: String,
+    catalog_bundle_json: String,
+    candidate_json: String,
+) -> String {
+    let run = || -> Result<RaceOutput, String> {
+        let request = parse_run_race_request(&input_json)?;
+        let catalog = RacingCatalogSnapshot::from_bundle_json(&catalog_bundle_json)
+            .map_err(|e| e.to_string())?;
+        let candidate = V3PowerUnitThermalProfileCandidateV2::from_exact_json(&candidate_json)?;
+        let profile = V3CandidateExperimentProfile {
+            schema_version: V3CandidateExperimentProfileVersion::V9,
+            engine_thermal_resolution: None,
+            ..V3CandidateExperimentProfile::default()
+        };
+        let mut session = start_incremental_race_with_catalog_and_v3_component_profile(
+            request, &catalog, &profile, &candidate, None, false,
+        )?;
+        session.enable_power_telemetry_v1()?;
+        session.collect()
+    };
+    match run() {
+        Ok(out) => serialize_json(&out),
         Err(error) => json_error(&error),
     }
 }
@@ -6635,6 +6699,76 @@ mod tests {
                 "{}".into()
             )
             .contains("error")
+        );
+    }
+
+    #[test]
+    fn power_channel_policy_preserves_physics_and_keeps_legacy_commands_absent() {
+        let catalog = RacingCatalogSnapshot::embedded_model_v3_timeline().unwrap();
+        let mut request = one_lap_request();
+        request.input.race.laps = 3;
+        request.input.pit_strategy = Some(PitStrategyConfig {
+            player_pit_laps: vec![1],
+            pit_loss_ms: Some(22_000),
+        });
+        let profile = V3CandidateExperimentProfile {
+            schema_version: V3CandidateExperimentProfileVersion::V9,
+            engine_thermal_resolution: None,
+            ..V3CandidateExperimentProfile::default()
+        };
+        let thermal = catalog.power_unit_thermal_profile().unwrap();
+        let old = start_incremental_race_with_catalog_and_v3_component_profile(
+            request.clone(),
+            &catalog,
+            &profile,
+            thermal,
+            None,
+            false,
+        )
+        .unwrap()
+        .collect()
+        .unwrap();
+        let mut new = start_incremental_race_with_catalog_and_v3_component_profile(
+            request, &catalog, &profile, thermal, None, false,
+        )
+        .unwrap();
+        new.enable_power_telemetry_v1().unwrap();
+        new.advance().unwrap();
+        assert!(new.enable_power_telemetry_v1().is_err());
+        let output = new.collect().unwrap();
+        assert_eq!(old.standings, output.standings);
+        assert_eq!(old.player_lap_times_ms, output.player_lap_times_ms);
+        assert_eq!(
+            old.player_fuel_mass_diagnostics_v3,
+            output.player_fuel_mass_diagnostics_v3
+        );
+        assert_eq!(
+            old.player_tire_degradation_diagnostics_v3,
+            output.player_tire_degradation_diagnostics_v3
+        );
+        let mut loads = 0;
+        for frame in output.player_batches.iter().flat_map(|b| &b.frames) {
+            assert!(
+                frame
+                    .samples
+                    .iter()
+                    .all(|s| ![5008, 5009, 5014].contains(&s.parameter_id))
+            );
+            assert_eq!(
+                frame.metadata.get("power_telemetry_policy"),
+                Some(&power_telemetry_policy_identity().digest.to_string())
+            );
+            for sample in frame.samples.iter().filter(|s| s.parameter_id == 5100) {
+                loads += 1;
+                assert!((0.0..=100.0).contains(&sample.value.as_f64().unwrap()));
+            }
+        }
+        assert!(loads > 100);
+        assert!(
+            old.player_batches[0].frames[0]
+                .samples
+                .iter()
+                .any(|s| s.parameter_id == 5008)
         );
     }
 

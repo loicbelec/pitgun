@@ -9,6 +9,59 @@ use pitgun_racing_simulator::{
 };
 use pitgun_signing::VerificationKeyring;
 
+#[test]
+fn power_policy_is_operator_selected_signed_and_replayed_independently() {
+    let (mut state, request) = fixture();
+    let power_runtime = Digest::from_bytes(b"new power policy runtime unit fixture");
+    state.service_admitted_runtimes.push(power_runtime);
+    state.service_power_runtime = Some(power_runtime);
+    let old = build_signed_racing_service_authorization(1000, &state, request.clone()).unwrap();
+    let mut new_request = request;
+    new_request.runtime_digest = Some(power_runtime);
+    let new = build_signed_racing_service_authorization(1000, &state, new_request).unwrap();
+    assert_eq!(
+        old.decision_envelope.control_policy,
+        pitgun_racing_simulator::service_control::service_control_policy_identity()
+    );
+    assert_eq!(
+        new.decision_envelope.control_policy,
+        pitgun_racing_simulator::service_control::power_service_control_policy_identity()
+    );
+    let (_, old_result) = execute(&state, &old, "keep");
+    let (history, new_result) = execute(&state, &new, "keep");
+    assert_eq!(old_result.standings, new_result.standings);
+    assert_eq!(
+        old_result.player_fuel_mass_diagnostics_v3,
+        new_result.player_fuel_mass_diagnostics_v3
+    );
+    assert_ne!(
+        canonical_json_digest(&old_result).unwrap(),
+        canonical_json_digest(&new_result).unwrap()
+    );
+    let evidence = service_control_evidence(
+        new,
+        state.service_catalog.as_ref().unwrap(),
+        history,
+        &new_result,
+    )
+    .unwrap();
+    let v = verifier(&state).with_service_runtime(power_runtime);
+    assert_eq!(
+        v.verify_service_native_reference(&evidence, 1100)
+            .unwrap()
+            .status,
+        VerificationStatus::Verified
+    );
+    let mut forged = evidence;
+    forged.decision_envelope.control_policy = old.decision_envelope.control_policy;
+    assert_eq!(
+        v.verify_service_native_reference(&forged, 1100)
+            .unwrap()
+            .status,
+        VerificationStatus::Rejected
+    );
+}
+
 fn fixture() -> (AppState, RacingServiceAuthorizationRequestV1) {
     let mut state = test_state_for("0.14.0", "v1.8.0");
     state.service_catalog = Some(

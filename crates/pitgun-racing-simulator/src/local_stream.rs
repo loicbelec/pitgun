@@ -29,6 +29,25 @@ pub fn start_local_racing_session_with_catalog_and_v3_power_unit_thermal_profile
     catalog_bundle_json: String,
     candidate_json: String,
 ) -> String {
+    start_local_with_power(input_json, catalog_bundle_json, candidate_json, false)
+}
+
+/// Explicit new export policy; legacy entry point keeps its historical bytes.
+#[cfg_attr(feature = "wasm", wasm_bindgen)]
+pub fn start_local_racing_session_with_catalog_and_v3_power_unit_thermal_and_power_v1_json(
+    input_json: String,
+    catalog_bundle_json: String,
+    candidate_json: String,
+) -> String {
+    start_local_with_power(input_json, catalog_bundle_json, candidate_json, true)
+}
+
+fn start_local_with_power(
+    input_json: String,
+    catalog_bundle_json: String,
+    candidate_json: String,
+    power: bool,
+) -> String {
     let create = || -> Result<IncrementalRacingSession, String> {
         let request = parse_run_race_request(&input_json)?;
         let catalog = RacingCatalogSnapshot::from_bundle_json(&catalog_bundle_json)
@@ -48,6 +67,9 @@ pub fn start_local_racing_session_with_catalog_and_v3_power_unit_thermal_profile
         Ok(engine) => engine,
         Err(error) => return json_error(&error),
     };
+    if power && let Err(error) = engine.enable_power_telemetry_v1() {
+        return json_error(&error);
+    }
     // Emit the same solved playback samples as authorized sessions.
     engine.include_playback_trajectories = true;
     LOCAL_SESSIONS.with(|sessions| {

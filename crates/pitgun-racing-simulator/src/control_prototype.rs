@@ -105,6 +105,8 @@ pub struct PlannedStopReview {
 pub enum CareerControlPhysics {
     #[serde(rename = "pitgun.local-career-power-unit-thermal/v1")]
     PowerUnitThermalV1,
+    #[serde(rename = "pitgun.local-career-power-unit-thermal/v2")]
+    PowerUnitThermalPowerV2,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -381,6 +383,9 @@ impl LocalControlledRacingSession {
                 config.service_windows.is_some(),
             )?
         };
+        if config.physics == Some(CareerControlPhysics::PowerUnitThermalPowerV2) {
+            session.enable_power_telemetry_v1()?;
+        }
         if (config.planned_stop_reviews.is_some() || config.strategy_observation.is_some())
             && session
                 .competitors

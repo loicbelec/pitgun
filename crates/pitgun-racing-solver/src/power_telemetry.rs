@@ -68,6 +68,37 @@ pub struct PowerTelemetryV1 {
 }
 
 impl PowerTelemetryV1 {
+    /// Sample only this already computed native prefix, using common causal hold.
+    /// No extrapolation and no independent reconstruction of pedal commands.
+    pub fn sample_at_times(&self, times: &[f64]) -> Result<Vec<PowerPointV1>, String> {
+        if self.points.len() < 2
+            || times.len() > 1_000_000
+            || self.points.iter().any(|p| !p.time_s.is_finite())
+            || self.points.windows(2).any(|p| p[1].time_s <= p[0].time_s)
+            || times.iter().any(|t| {
+                !t.is_finite()
+                    || *t < self.points[0].time_s
+                    || *t > self.points.last().unwrap().time_s
+            })
+            || times.windows(2).any(|t| t[1] <= t[0])
+        {
+            return Err(
+                "power samples require bounded increasing times inside the native prefix".into(),
+            );
+        }
+        let mut out = Vec::with_capacity(times.len());
+        let mut index = 0;
+        for &time in times {
+            while index + 1 < self.points.len() && self.points[index + 1].time_s <= time {
+                index += 1;
+            }
+            let mut point = self.points[index].clone();
+            point.time_s = time;
+            out.push(point);
+        }
+        Ok(out)
+    }
+
     /// Bounded export only. Common zero-order hold preserves power-port
     /// relationships and does not interpolate percentages across gear changes.
     /// The ledger always remains the native-grid ledger, never this export.
