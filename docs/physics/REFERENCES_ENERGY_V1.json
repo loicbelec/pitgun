@@ -1,0 +1,40 @@
+{
+  "schema": "pitgun.physics-adopted-references/v1",
+  "scope": "Work-energy native candidate; extends, does not rewrite, the lot-0 review record in REFERENCES_V1.json.",
+  "references": [
+    {
+      "id": "fastsim-2015-energy",
+      "title": "FASTSim: A Model to Estimate Vehicle Efficiency, Cost and Performance",
+      "authors": [
+        "Aaron Brooker",
+        "Jeffrey Gonder",
+        "Lijuan Wang",
+        "Eric Wood",
+        "Sean Lopp",
+        "Laurie Ramroth"
+      ],
+      "year": 2015,
+      "doi": "10.4271/2015-01-0973",
+      "url": "https://docs.nlr.gov/docs/fy15osti/63623.pdf",
+      "retrieved_sha256": "ad76ae3f101933f234a7f439ffb9d52163c85c9165dec591158564e94c068a71",
+      "review_depth": "Full PDF available; abstract and Powertrain Components/Vehicle/Fuel Converter/Motor/Battery sections on PDF pages1–3 read; not a complete source-code or validation-data replication.",
+      "adoption": "Motivates reduced component energy flows, explicit losses/limits and separation of component model from calibration. No FASTSim coefficients, efficiency curve or source code copied. Newtonian work-energy equations and discretization derived in Pitgun.",
+      "limitation": "Drive-cycle fuel-economy validation of FASTSim is not validation of racing tires or Pitgun lap times.",
+      "consulted_on": "2026-11-21"
+    },
+    {
+      "id": "illinois-me420-lumped",
+      "title": "ME420 Lecture7: Conduction — 1D Fins and Lumped Capacitance",
+      "authors": [
+        "Nenad Miljkovic"
+      ],
+      "url": "https://etrl.mechanical.illinois.edu/pdf/ME420/Lecture%207%20-%20Conduction%20-%201D%20Fins%20and%20Lumped%20Capacitance.pdf",
+      "retrieved_sha256": "a68e9ac793976c5662be12d3d493fedcea313ee48a14de53a1c4fd56ba0aaf26",
+      "review_depth": "Scanned primary course PDF; rendered PDF pages7–9 (handwritten60–62) visually reviewed. Pages7–8 contain aggregate thermal balance, exponential cooling, isothermal assumption and small Biot criterion.",
+      "adoption": "C dT/dt = Q - H(T-Tamb), constant-input exact step independently derived; Q is the additional held heat source. Numerical expm1/adiabatic treatment implemented and tested locally.",
+      "limitation": "The course states a uniform-temperature/small-Biot assumption. An aggregate engine temperature is a reduced proxy; no validation of Pitgun engine heat capacity, conductance, heat fraction or multi-node engine temperature is supplied.",
+      "consulted_on": "2026-11-21"
+    }
+  ],
+  "publication_rule": "Cite primary sections actually read; distinguish adopted balance law, numerical derivation, empirical coefficients and external accuracy validation."
+}

@@ -308,6 +308,7 @@ fn resolved_v3_request(request: &SimulationRequest) -> ResolvedSimulationRequest
         fuel_mass: None,
         tire_degradation: None,
         engine_thermal: None,
+        longitudinal_energy: None,
     }
 }
 
@@ -1343,4 +1344,184 @@ fn service_boundary_pit_changes_service_without_recomputing_its_driving_prefix()
         normal.advance().unwrap(),
         ResolvedSimulationStepV3::Lap(_)
     ));
+}
+
+fn energy_analytic_request(step_m: f64) -> ResolvedSimulationRequestV3 {
+    use pitgun_racing_solver::longitudinal_energy::LongitudinalEnergyModelV1;
+    let mut r = resolved_v3_request(&synthetic_request());
+    let count = (100.0 / step_m).round() as usize + 1;
+    let s = (0..count).map(|i| i as f64 * step_m).collect::<Vec<_>>();
+    r.track = Track {
+        s: s.clone(),
+        x: s,
+        y: vec![0.; count],
+        z: vec![0.; count],
+        kappa: vec![0.; count],
+        slope: vec![0.; count],
+        heading: vec![0.; count],
+    };
+    r.config.ds = step_m;
+    r.config.max_speed = 400.;
+    r.lap_count = 1;
+    r.vehicle.chassis.mass_empty = 900.;
+    r.state.fuel_mass = 100.;
+    r.vehicle.chassis.r_wheel = 0.5;
+    r.vehicle.chassis.rho = 1.;
+    r.vehicle.chassis.c_rr = 0.;
+    r.vehicle.chassis.mu0 = 100.;
+    r.vehicle.engine.n_rpm = vec![0., 60000.];
+    r.vehicle.engine.trq = vec![0.1, 0.1];
+    r.vehicle.engine.gear_ratios = vec![10.];
+    r.vehicle.engine.n_idle = 1000.;
+    r.vehicle.engine.n_max = 60000.;
+    r.vehicle.engine.alpha_heat = 0.;
+    r.vehicle.engine.p_cool0 = 0.;
+    r.vehicle.engine.k_cool = 0.;
+    r.vehicle.engine.fuel_burn_kg_per_s = 0.;
+    r.vehicle.tire.wear_per_s = 0.;
+    r.vehicle.tire.wear_load_k = 0.;
+    r.vehicle.tire.wear_min = 1.;
+    r.vehicle.tire.temp_min_k = 1.;
+    r.mechanical.driveline_efficiency = 1.;
+    r.mechanical.chassis_force_transfer_efficiency = 1.;
+    r.mechanical.fixed_drag_area_m2 = 0.;
+    r.mechanical.fixed_downforce_area_m2 = 0.;
+    r.driver_control = DriverControlParamsV3 {
+        cornering_utilization: 1.,
+        braking_utilization: 1.,
+        traction_utilization: 1.,
+        control_error: 0.,
+    };
+    r.tire_contact.heat_generation_fraction = 0.;
+    r.tire_contact.baseline_wear_per_s = 0.;
+    r.longitudinal_energy = Some(LongitudinalEnergyModelV1::V1);
+    r
+}
+
+#[test]
+fn energy_v1_constant_torque_matches_analytic_motion_and_work_on_four_meshes() {
+    //100 Nm, total ratio10, r=0.5m, eta=1 ->2000N. m=1000kg ->a=2.
+    for step in [1., 2., 5., 10.] {
+        let r = run_resolved_simulation_v3(&energy_analytic_request(step)).unwrap();
+        assert!(
+            (r.total_time_s - 10.).abs() < 1e-7,
+            "step{step}: {}",
+            r.total_time_s
+        );
+        assert!((r.solution.v.last().unwrap() - 20.).abs() < 1e-7);
+        let e = r.longitudinal_energy_v1.unwrap();
+        assert!((e.kinetic_change_j - 200000.).abs() < 0.01);
+        let lock = 1000. * std::f64::consts::TAU * 0.5 / (60. * 10.);
+        assert!((e.clutch_slip_loss_j - 2000. * lock * lock / 4.).abs() < 0.01);
+        assert!(e.vehicle_balance_residual_j().abs() < 1e-6);
+        assert!((e.driving_time_s - r.total_time_s).abs() < 1e-10);
+    }
+}
+
+#[test]
+fn energy_v1_inclined_straight_uses_height_work_and_the_same_elapsed_time() {
+    let mut input = energy_analytic_request(2.);
+    input.track.z = input.track.s.iter().map(|s| s * 0.01).collect();
+    input.track.slope.fill(0.01);
+    let r = run_resolved_simulation_v3(&input).unwrap();
+    let e = r.longitudinal_energy_v1.unwrap();
+    let a: f64 = (2000. - 1000. * 9.81 * 0.01) / 1000.;
+    let expected = (200. / a).sqrt();
+    assert!((r.total_time_s - expected).abs() < 1e-7);
+    assert!((e.potential_change_j - 9810.).abs() < 1e-6);
+    assert!(e.vehicle_balance_residual_j().abs() < 1e-6);
+}
+
+#[test]
+fn energy_v1_incremental_continuity_fuel_and_terminal_ledger_agree() {
+    use pitgun_racing_solver::longitudinal_energy::{EnergyLedgerV1, LongitudinalEnergyModelV1};
+    let mut input = resolved_v3_request(&synthetic_request());
+    input.longitudinal_energy = Some(LongitudinalEnergyModelV1::V1);
+    input.fuel_mass = Some(Default::default());
+    let direct = run_resolved_simulation_v3(&input).unwrap();
+    let mut session = ResolvedSimulationSessionV3::new(input.clone()).unwrap();
+    let mut ledger = EnergyLedgerV1::default();
+    let mut previous_speed = None;
+    let terminal = loop {
+        match session.advance().unwrap() {
+            ResolvedSimulationStepV3::Lap(lap) => {
+                if let Some(v) = previous_speed {
+                    assert_eq!(Some(&v), lap.solution.v.first());
+                }
+                previous_speed = lap.solution.v.last().copied();
+                ledger.accumulate(&lap.longitudinal_energy_v1.unwrap());
+                assert_eq!(lap.solution.longitudinal_model, input.longitudinal_energy);
+            }
+            ResolvedSimulationStepV3::Complete(result) => break result,
+        }
+    };
+    assert_eq!(*terminal, direct);
+    assert_eq!(Some(ledger), direct.longitudinal_energy_v1);
+    let fuel = direct.fuel_mass_diagnostics_v3.unwrap();
+    assert!((fuel.engine_output_work_kj - ledger.engine_shaft_work_j / 1000.).abs() < 1e-8);
+    let expected = ledger.engine_shaft_work_j / 3600000.
+        * input
+            .fuel_mass
+            .unwrap()
+            .brake_specific_fuel_consumption_kg_per_kwh
+        + input.fuel_mass.unwrap().idle_fuel_flow_kg_per_s * ledger.driving_time_s;
+    assert!((fuel.fuel_consumed_kg - expected).abs() < 1e-10);
+    assert!(
+        project_lap_power_v1(
+            &direct.solution,
+            &direct.applied_vehicle,
+            input.mechanical,
+            input.fuel_mass
+        )
+        .is_err()
+    );
+    assert!(
+        pitgun_racing_solver::resample_telemetry(
+            &input.track,
+            &direct.solution,
+            &direct.applied_vehicle,
+            5.
+        )
+        .is_err()
+    );
+    let legacy = run_resolved_simulation_v3(&ResolvedSimulationRequestV3 {
+        longitudinal_energy: None,
+        ..input
+    })
+    .unwrap();
+    let value = serde_json::to_value(&legacy).unwrap();
+    assert!(value.get("longitudinal_energy_v1").is_none());
+    assert!(value["solution"].get("longitudinal_model").is_none());
+}
+
+#[test]
+fn energy_v1_service_has_its_own_clock_cooling_fuel_and_visible_velocity_reset() {
+    use pitgun_racing_solver::longitudinal_energy::LongitudinalEnergyModelV1;
+    let mut input = resolved_v3_request(&synthetic_request());
+    input.longitudinal_energy = Some(LongitudinalEnergyModelV1::V1);
+    input.fuel_mass = Some(Default::default());
+    input.vehicle.engine.p_cool0 = 100.;
+    input.pit_plan.stops.push(pitgun_racing_solver::PitStop {
+        lap: 1,
+        tire: input.vehicle.tire.clone(),
+    });
+    let r = run_resolved_simulation_v3(&input).unwrap();
+    let e = r.longitudinal_energy_v1.unwrap();
+    assert_eq!(e.service_time_s, input.config.pit_time_penalty_s);
+    assert!((e.driving_time_s + e.service_time_s - r.total_time_s).abs() < 1e-9);
+    assert!(e.unresolved_service_velocity_reset_j > 0.);
+    assert!(
+        e.boundary_balance_residual_j().abs() < 1e-6,
+        "{}",
+        e.boundary_balance_residual_j()
+    );
+    let f = input.fuel_mass.unwrap();
+    let expected = e.engine_shaft_work_j / 3600000. * f.brake_specific_fuel_consumption_kg_per_kwh
+        + (e.driving_time_s + e.service_time_s) * f.idle_fuel_flow_kg_per_s;
+    assert!((r.fuel_mass_diagnostics_v3.unwrap().fuel_consumed_kg - expected).abs() < 1e-10);
+    let heat_storage =
+        input.vehicle.engine.c_th * (r.final_state.engine_temp - input.state.engine_temp);
+    assert!(
+        (heat_storage - (e.generated_engine_heat_j - e.rejected_engine_heat_signed_j)).abs() < 1e-6
+    );
 }
