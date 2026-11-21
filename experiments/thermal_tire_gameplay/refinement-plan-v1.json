@@ -1,0 +1,19 @@
+{
+  "schema": "pitgun.thermal-tire-grid-refinement/v1",
+  "coarse_grid_digest": "sha256:f14faa695bac574802ece46d50e30ebd149834150dad17921e9c12d75abdcf62",
+  "cooling_points": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+  ],
+  "donor_axes": [
+    "aero_points",
+    "chassis_points",
+    "engine_points"
+  ],
+  "rule": "Start from each observed best zero-cooling setup of the coarse grid, move1..6 points from exactly one available axis to cooling. Same total budget, fixed other settings, no coefficient change. Preregistered before evaluating these finer allocations.",
+  "scope": "Local single-donor refinement only; not a continuous global optimum. Preserve coarse and primary evidence and all failures."
+}
