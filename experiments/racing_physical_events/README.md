@@ -5,6 +5,8 @@ resampling. It emits `started` / `recovered` into the existing session journal,
 alongside `LapCompleted`, `PitStopCompleted` and `DriverInstructionApplied`.
 No equation or catalog coefficient changes. No current game/runtime selects it.
 
+Measured qualification: [RESULTS_V1.md](RESULTS_V1.md).
+
 ## Reproduce
 
 Commit the source first, then build both executables from that checkout:
