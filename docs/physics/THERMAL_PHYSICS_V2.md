@@ -193,3 +193,33 @@ raccordement ; il ne fournit encore aucune récupération, batterie ni démonstr
 de réduction des émissions. La chaîne de simulation reproductible est une valeur
 industrielle potentielle ; une précision industrielle exigerait des données de
 mesure et des validations supplémentaires.
+
+## Orientation carburant validée après le premier écran
+
+Le propriétaire valide une **préparation automatique du carburant dans le jeu**.
+La masse initiale reste un paramètre physique explicite, versionné et enregistré
+pour la reproduction et les expériences du framework. Aucun curseur en kilogrammes
+n'est ajouté au Pit Wall dans ce lot. Un futur contrôle de consommation devra
+correspondre à un compromis effectif de rythme/énergie, avec l'hybridation.
+
+La préparation devra estimer le besoin depuis la distance, la configuration et le
+plan initial, puis ajouter une réserve déclarée, sans recalculer tout le Grand Prix
+avant le départ. Charge initiale, débit/énergie admissible, capacité et réserve sont
+des contraintes distinctes, propres au profil de véhicule/règles. Le plein de
+100 kg du banc n'est ni une obligation F1 universelle ni une capacité admissible
+définitive. Un besoin incompatible avec les limites doit rester explicite ; pas
+de réservoir augmenté silencieusement, de consommation annulée ou de ravitaillement
+implicite pendant la course.
+
+Prochain lot natif : qualifier l'anticipation aux frontières de tour et le coût
+isolé avant de poursuivre le choix des coefficients ; définir et éprouver cette
+préparation de carburant ; comparer les gommes/plans d'arrêt sur plusieurs circuits
+et distances complètes prises en charge. L'épuisement d'un concurrent devra avoir
+une issue déterministe propre sans faire échouer toute la session (#445).
+
+Les cas de validation doivent être réservés avant les ajustements. Le gain modeste
+de cooling au début est accepté : ne pas le renforcer pour grossir les écarts.
+L'hybridation (#246) reste le module physique suivant ; les cas exigeant une
+capacité électrique ne sont pas déclarés validés par un simple supplément de
+carburant. L'admission Worker/WASM et le raccordement au jeu viennent après la
+qualification du profil physique et de ses états/export/replay.

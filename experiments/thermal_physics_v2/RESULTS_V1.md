@@ -1,6 +1,6 @@
 # Résultats du candidat thermique V2
 
-Source physique : `dba 2888`. Profil : `profile-v1.json`, exploratoire. Catalogue
+Source physique : `dba2888`. Profil : `profile-v1.json`, exploratoire. Catalogue
 immuable 1.8.1 ; entrées de carrière V9 résolues, puis candidat natif explicitement
 sélectionné. **REFINE** : mécanismes implémentés et répétables, pas d'admission
 jeu/WASM/Verifier ni de validation expérimentale ou d'équilibrage global.
