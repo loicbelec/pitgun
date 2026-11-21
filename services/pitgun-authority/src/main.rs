@@ -66,6 +66,7 @@ struct AppState {
     service_catalog: Option<RacingCatalogSnapshot>,
     service_runtime: Option<Digest>,
     service_admitted_runtimes: Vec<Digest>,
+    service_power_runtime: Option<Digest>,
 }
 
 #[derive(Clone)]
@@ -304,7 +305,7 @@ fn build_signed_racing_service_authorization(
     ContractError,
 > {
     use pitgun_racing_simulator::service_control::{
-        RacingServiceAuthorizationResponseV1, resolve_service_authorization,
+        RacingServiceAuthorizationResponseV1, resolve_service_authorization_with_power_telemetry,
     };
     let key = state
         .signing_key
@@ -336,11 +337,12 @@ fn build_signed_racing_service_authorization(
         None,
         pitgun_racing_contract::SERVICE_CONTROL_SCENARIO,
     )?;
-    let envelope = resolve_service_authorization(
+    let envelope = resolve_service_authorization_with_power_telemetry(
         &prepared.contract,
         &prepared.canonical_input,
         catalog,
         runtime,
+        state.service_power_runtime == Some(runtime),
     )
     .map_err(ContractError::BadRequest)?;
     // Validate resolved physical setup without advancing a lap before issuing.
@@ -1097,6 +1099,18 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
             .as_deref(),
         service_runtime,
     )?;
+    let service_power_runtime = std::env::var("PITGUN_RACING_POWER_TELEMETRY_WASM_DIGEST")
+        .ok()
+        .map(|s| s.parse::<Digest>())
+        .transpose()?;
+    if let Some(digest) = service_power_runtime
+        && (service_catalog.is_none()
+            || (Some(digest) != service_runtime && !service_admitted_runtimes.contains(&digest)))
+    {
+        return Err(
+            "power telemetry runtime must be explicitly admitted with a service catalog".into(),
+        );
+    }
     let app_state = AppState {
         signing_key,
         tuning_policy,
@@ -1109,6 +1123,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         service_catalog,
         service_runtime,
         service_admitted_runtimes,
+        service_power_runtime,
     };
 
     let app = Router::new()
@@ -1195,6 +1210,7 @@ mod tests {
             service_catalog: None,
             service_runtime: None,
             service_admitted_runtimes: Vec::new(),
+            service_power_runtime: None,
             config: ServiceConfig {
                 simulation_contract_ttl_secs: 300,
                 late_submission_grace_secs: 900,

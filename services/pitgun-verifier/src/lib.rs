@@ -114,7 +114,7 @@ impl RacingVerifier {
         ) -> Result<RacingRunEvidenceV1, wasm_service_replay::ServiceReplayError>,
     {
         use pitgun_racing_simulator::service_control::{
-            RacingServiceAuthorizationResponseV1, service_control_policy_identity,
+            RacingServiceAuthorizationResponseV1, service_control_policy_for_envelope,
         };
         let evidence = SubmittedEvidenceV1 {
             receipt_digest: canonical_json_digest(&s.receipt)?,
@@ -181,11 +181,15 @@ impl RacingVerifier {
             return reject(VerificationReasonCode::EvidenceMalformed);
         }
         let history = canonical_json_digest(&s.applied_history)?;
+        let service_policy = match service_control_policy_for_envelope(&s.decision_envelope) {
+            Ok(p) => p,
+            Err(_) => return reject(VerificationReasonCode::InvalidAuthorization),
+        };
         let final_contract = match s.decision_envelope.final_contract(
             attempt,
             &s.completed_input,
             history,
-            &service_control_policy_identity(),
+            &service_policy,
         ) {
             Ok(c) => c,
             Err(_) => return reject(VerificationReasonCode::InvalidAuthorization),

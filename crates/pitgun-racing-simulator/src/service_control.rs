@@ -75,11 +75,39 @@ pub fn service_control_policy_identity() -> ArtifactIdentity {
         digest: canonical_json_digest(&policy_template()).expect("finite static policy"),
     }
 }
+
+pub fn power_service_control_policy_identity() -> ArtifactIdentity {
+    let mut control = policy_template();
+    control["physics"] = serde_json::json!("pitgun.local-career-power-unit-thermal/v2");
+    let manifest =
+        serde_json::json!({"control":control,"telemetry":crate::power_telemetry_policy_identity()});
+    ArtifactIdentity {
+        id: "pitgun.racing-service-control-policy".parse().unwrap(),
+        version: "2.0.0".parse().unwrap(),
+        digest: canonical_json_digest(&manifest).expect("finite power control policy"),
+    }
+}
+
+pub fn service_control_policy_for_envelope(
+    envelope: &RacingServiceAuthorizationV1,
+) -> Result<ArtifactIdentity, String> {
+    if envelope.control_policy == service_control_policy_identity() {
+        Ok(service_control_policy_identity())
+    } else if envelope.control_policy == power_service_control_policy_identity() {
+        Ok(power_service_control_policy_identity())
+    } else {
+        Err("unknown Racing service control policy".into())
+    }
+}
+
 pub fn service_control_config(
     envelope: &RacingServiceAuthorizationV1,
     execution: pitgun_contract::ExecutionId,
 ) -> Result<LocalControlConfig, String> {
     let mut value = policy_template();
+    if service_control_policy_for_envelope(envelope)? == power_service_control_policy_identity() {
+        value["physics"] = serde_json::json!("pitgun.local-career-power-unit-thermal/v2");
+    }
     value["execution_id"] = serde_json::json!(execution.to_string());
     value["runtime_digest"] = serde_json::json!(envelope.runtime_digest);
     value["allowed_tire_ids"] = serde_json::json!(envelope.allowed_tire_ids);
@@ -108,6 +136,23 @@ pub fn resolve_service_authorization(
     input: &RunRaceInput,
     catalog: &RacingCatalogSnapshot,
     runtime_digest: Digest,
+) -> Result<RacingServiceAuthorizationV1, String> {
+    resolve_service_authorization_with_power_telemetry(
+        initial,
+        input,
+        catalog,
+        runtime_digest,
+        false,
+    )
+}
+
+/// The Authority operator selects this capability for an exact admitted runtime.
+pub fn resolve_service_authorization_with_power_telemetry(
+    initial: &DeterministicRunContractV1,
+    input: &RunRaceInput,
+    catalog: &RacingCatalogSnapshot,
+    runtime_digest: Digest,
+    power: bool,
 ) -> Result<RacingServiceAuthorizationV1, String> {
     if initial.model != racing_model_v3_component_candidate_identity() {
         return Err("service control requires the exact component/V9 thermal model".into());
@@ -145,14 +190,18 @@ pub fn resolve_service_authorization(
     let envelope = RacingServiceAuthorizationV1 {
         schema_version: RacingServiceAuthorizationVersion::V1,
         authorized_input: initial.input.clone(),
-        control_policy: service_control_policy_identity(),
+        control_policy: if power {
+            power_service_control_policy_identity()
+        } else {
+            service_control_policy_identity()
+        },
         runtime_digest,
         player_id: players[0].id.clone(),
         allowed_tire_ids: tires,
         lap_count: input.race.laps,
         max_decisions: 35,
     };
-    envelope.validate(initial, &service_control_policy_identity())?;
+    envelope.validate(initial, &service_control_policy_for_envelope(&envelope)?)?;
     Ok(envelope)
 }
 pub fn validate_service_start(
@@ -161,17 +210,19 @@ pub fn validate_service_start(
 ) -> Result<LocalControlConfig, String> {
     let attempt = &response.signed.authorization;
     crate::validate_attempt_signature_shape(response.signed.algorithm, &response.signed.signature)?;
-    response
-        .decision_envelope
-        .validate_attempt(attempt, &service_control_policy_identity())?;
+    response.decision_envelope.validate_attempt(
+        attempt,
+        &service_control_policy_for_envelope(&response.decision_envelope)?,
+    )?;
     if response.catalog_release != *catalog.release_identity() {
         return Err("service catalog release mismatch".into());
     }
-    let expected = resolve_service_authorization(
+    let expected = resolve_service_authorization_with_power_telemetry(
         &attempt.initial_contract,
         &response.canonical_input,
         catalog,
         response.decision_envelope.runtime_digest,
+        response.decision_envelope.control_policy == power_service_control_policy_identity(),
     )?;
     if expected != response.decision_envelope {
         return Err("service envelope differs from resolved permissions".into());
@@ -257,7 +308,7 @@ pub fn service_control_evidence(
         &response.signed.authorization,
         &completed,
         history_digest,
-        &service_control_policy_identity(),
+        &service_control_policy_for_envelope(&response.decision_envelope)?,
     )?;
     let evidence = RacingRunEvidenceV1::from_race_output(output).map_err(|e| e.to_string())?;
     let runtime = service_runtime_identity(response.decision_envelope.runtime_digest);
