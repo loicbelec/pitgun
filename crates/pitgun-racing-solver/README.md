@@ -51,3 +51,17 @@ The candidate is offline-only and documented in
 
 Historical V1/V2 entry points keep their original uniform-grid and tuning
 behavior for deterministic replay.
+
+## Experimental work–energy path
+
+The native-only `longitudinal_energy` selector adds an explicit work–energy
+segment integrator, finite torque/idle-clutch launch, a shared motion/fuel/shift
+clock and a stable exact lumped thermal step. Existing career constructors keep
+this selector absent. It is not an admitted game/WASM runtime, and legacy
+telemetry exporters refuse its marked solutions rather than reuse old semantics.
+
+See [equations, units and limitations](../../docs/physics/LONGITUDINAL_ENERGY_V1.md)
+and the [frozen local qualification](../../experiments/longitudinal_energy/README.md).
+The current tire law, abstract pit boundary and empirical thermal coefficients
+remain explicit approximations. Passing energy balances does not establish
+physical accuracy or an acceptable browser compute budget.

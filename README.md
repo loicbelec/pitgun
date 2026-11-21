@@ -108,6 +108,13 @@ The Racing fixture now produces the same `run_id`, `output_digest`, and
 artifacts are compared before their hashes so a regression identifies the first
 changed result rather than only reporting a digest mismatch.
 
+Local physics research is tracked separately from admitted game runtimes: the
+[work–energy candidate](docs/physics/LONGITUDINAL_ENERGY_V1.md) changes equations
+behind an opt-in native selector and preserves historical canonical results.
+Its [paired local experiment](experiments/longitudinal_energy/README.md) records
+energy balances, sensitivity, explicit failure cases and compute cost; it does
+not claim experimental model validation or native/WASM admission.
+
 ## Try the Deterministic Boundary
 
 ### Prerequisites

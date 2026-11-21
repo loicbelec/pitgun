@@ -2301,6 +2301,26 @@ fn start_fuel_contract_control_mode(
     Ok(session)
 }
 
+/// Native-only resolution boundary for local physics comparisons. No governed
+/// runtime changes, signed permission, or inference are performed here.
+pub fn resolve_career_physics_inputs_for_audit(
+    request: RunRaceRequest,
+    snapshot: &RacingCatalogSnapshot,
+) -> Result<BTreeMap<String, ResolvedSimulationRequestV3>, String> {
+    let profile = V3CandidateExperimentProfile {
+        schema_version: V3CandidateExperimentProfileVersion::V9,
+        engine_thermal_resolution: None,
+        ..Default::default()
+    };
+    let thermal = snapshot
+        .power_unit_thermal_profile()
+        .ok_or("missing career thermal profile")?;
+    start_incremental_race_with_catalog_and_v3_component_profile(
+        request, snapshot, &profile, thermal, None, false,
+    )?
+    .physical_inputs_for_audit()
+}
+
 fn start_incremental_race_with_catalog_and_v3_component_profile(
     request: RunRaceRequest,
     snapshot: &RacingCatalogSnapshot,
@@ -2502,6 +2522,11 @@ struct IncrementalV3Competitor {
     // Read-only context for the opt-in power projection. No new solver input.
     power_projection_mechanical: MechanicalParamsV3,
     power_projection_fuel: Option<FuelMassParamsV3>,
+    physics_audit_context: Option<(
+        TireContactParamsV3,
+        Option<TireDegradationParamsV3>,
+        DriverControlParamsV3,
+    )>,
     has_transmission_resolution: bool,
     stint_plan: ResolvedStintPlan,
     driver_control_resolution: Option<ResolvedV3DriverControlV1>,
@@ -2690,6 +2715,49 @@ impl IncrementalRacingSession {
             player.power_projection_fuel,
         )?;
         Ok(Some((lap.lap_index, projection)))
+    }
+
+    /// Explicit native audit boundary before execution. It resolves catalogue
+    /// choices once; experiments can compare Solver versions on these identical
+    /// physical inputs without recreating point/slider formulas in a runner.
+    /// Not an Authority delegation and never an observation for a controller.
+    fn physical_inputs_for_audit(
+        &self,
+    ) -> Result<BTreeMap<String, ResolvedSimulationRequestV3>, String> {
+        if self.next_sequence != 0 || self.completed {
+            return Err("physics audit requires an unstarted session".into());
+        }
+        self.competitors
+            .iter()
+            .map(|car| {
+                let (contact, degradation, driver_control) = car
+                    .physics_audit_context
+                    .ok_or("physics audit currently requires the career V9 profile")?;
+                let r = &car.request;
+                Ok((
+                    car.competitor_id.clone(),
+                    ResolvedSimulationRequestV3 {
+                        track: r.track.clone(),
+                        vehicle: car.physical_vehicle.clone(),
+                        state: r.state.clone(),
+                        config: r.config.clone(),
+                        lap_count: r.lap_count,
+                        pit_plan: r.pit_plan.clone(),
+                        driver: r.driver.clone(),
+                        tire_contact: contact,
+                        mechanical: car.power_projection_mechanical,
+                        driver_control,
+                        driver_correction_workload_multiplier: None,
+                        driver_control_schedule: Vec::new(),
+                        driver_correction_capacity_model: None,
+                        fuel_mass: car.power_projection_fuel,
+                        tire_degradation: degradation,
+                        engine_thermal: car.engine_thermal,
+                        longitudinal_energy: None,
+                    },
+                ))
+            })
+            .collect()
     }
 
     fn new_v3(
@@ -2947,6 +3015,7 @@ impl IncrementalRacingSession {
                 fuel_mass: effective_profile.fuel_mass,
                 tire_degradation: effective_profile.tire_degradation,
                 engine_thermal,
+                longitudinal_energy: None,
             };
             let solver =
                 if service_control && (competitor.is_player || competitor.id == "player") {
@@ -2969,6 +3038,13 @@ impl IncrementalRacingSession {
                 engine_thermal,
                 power_projection_mechanical: mechanical,
                 power_projection_fuel: effective_profile.fuel_mass,
+                physics_audit_context: (effective_profile.schema_version
+                    == V3CandidateExperimentProfileVersion::V9)
+                    .then_some((
+                        effective_profile.tire_contact,
+                        effective_profile.tire_degradation,
+                        driver_control,
+                    )),
                 has_transmission_resolution: effective_profile.transmission_resolution.is_some(),
                 stint_plan,
                 driver_control_resolution,
@@ -3918,6 +3994,7 @@ fn run_single_session(
                             minimum_power_fraction: thermal.minimum_power_fraction,
                         }
                     }),
+                    longitudinal_energy: None,
                 })
             }
             _ => unreachable!("session model and resolved V3 profile must agree"),
@@ -6699,6 +6776,44 @@ mod tests {
                 "{}".into()
             )
             .contains("error")
+        );
+    }
+
+    #[test]
+    fn physical_audit_resolver_matches_the_career_before_a_model_is_selected() {
+        let catalog = RacingCatalogSnapshot::embedded_model_v3_timeline().unwrap();
+        let request = one_lap_request();
+        let inputs = resolve_career_physics_inputs_for_audit(request.clone(), &catalog).unwrap();
+        let input = inputs.values().next().unwrap();
+        assert!(input.longitudinal_energy.is_none());
+        let direct = solve_resolved_v3(input).unwrap();
+        let profile = V3CandidateExperimentProfile {
+            schema_version: V3CandidateExperimentProfileVersion::V9,
+            engine_thermal_resolution: None,
+            ..Default::default()
+        };
+        let original = start_incremental_race_with_catalog_and_v3_component_profile(
+            request,
+            &catalog,
+            &profile,
+            catalog.power_unit_thermal_profile().unwrap(),
+            None,
+            false,
+        )
+        .unwrap()
+        .collect()
+        .unwrap();
+        assert_eq!(
+            original.player_lap_times_ms,
+            direct
+                .lap_times_s
+                .iter()
+                .map(|s| (s * 1000.).round() as u64)
+                .collect::<Vec<_>>()
+        );
+        assert_eq!(
+            original.player_fuel_mass_diagnostics_v3,
+            direct.fuel_mass_diagnostics_v3
         );
     }
 

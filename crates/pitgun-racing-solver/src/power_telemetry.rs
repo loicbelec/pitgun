@@ -152,6 +152,9 @@ pub fn project_lap_power_v1(
     mechanical: MechanicalParamsV3,
     fuel: Option<FuelMassParamsV3>,
 ) -> Result<PowerTelemetryV1, String> {
+    if solution.longitudinal_model.is_some() {
+        return Err("power telemetry V1 cannot reinterpret the energy V1 physical model".into());
+    }
     let n = solution.t.len();
     if n < 2
         || [

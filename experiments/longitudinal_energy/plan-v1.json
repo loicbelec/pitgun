@@ -1,0 +1,174 @@
+{
+  "schema": "pitgun.longitudinal-energy-qualification-plan/v1",
+  "baseline_plan_digest": "sha256:41b5e60872404a21c840d54bd7051f0140db9b5440274cbc18fb4f7e11c53efd",
+  "catalog": "catalogs/racing/v1.8.1",
+  "reference_cases": [
+    "monza-classic-5",
+    "monza-classic-5-1hz",
+    "silverstone-classic-5",
+    "monaco-classic-5",
+    "suzuka-classic-5",
+    "monza-classic-53",
+    "monza-modern-5",
+    "monza-hybrid-resource-5",
+    "monza-classic-grid10-5",
+    "monaco-classic-78"
+  ],
+  "extra_cases": [
+    {
+      "id": "spa-classic-5-seed17",
+      "purpose": "reserved circuit/seed after exploratory pilot",
+      "required_completion": true,
+      "request": {
+        "input": {
+          "track_id": "SPA",
+          "laps": 5,
+          "competitors": [
+            {
+              "id": "player",
+              "driver_id": "default",
+              "name": "Baseline driver",
+              "team_id": "pitgun-lab",
+              "is_player": true,
+              "tuning": {
+                "engine_points": 10.0,
+                "cooling_points": 10.0,
+                "aero_points": 10.0,
+                "chassis_points": 10.0,
+                "downforce_slider": 0.5,
+                "gear_ratio_slider": 0.5
+              },
+              "budget_cap": 40.0,
+              "stint_strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 5
+                  }
+                ],
+                "pit_laps": []
+              }
+            }
+          ],
+          "vehicle_id": "classic_v8_1970",
+          "era": 2,
+          "hz": 5.0,
+          "pit_strategy": {
+            "player_pit_laps": []
+          }
+        },
+        "seed": 17,
+        "era": 2,
+        "hz": 5.0
+      }
+    },
+    {
+      "id": "barcelona-modern-66-fuel-feasibility",
+      "purpose": "related high-power full-distance fuel feasibility; not exact reproduction of issue445",
+      "required_completion": false,
+      "request": {
+        "input": {
+          "track_id": "BARCELONA",
+          "laps": 66,
+          "competitors": [
+            {
+              "id": "player",
+              "driver_id": "default",
+              "name": "Baseline driver",
+              "team_id": "pitgun-lab",
+              "is_player": true,
+              "tuning": {
+                "engine_points": 10.0,
+                "cooling_points": 10.0,
+                "aero_points": 10.0,
+                "chassis_points": 10.0,
+                "downforce_slider": 0.5,
+                "gear_ratio_slider": 0.5
+              },
+              "budget_cap": 40.0,
+              "stint_strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 22
+                  },
+                  {
+                    "tire_id": "hard",
+                    "laps": 22
+                  },
+                  {
+                    "tire_id": "hard",
+                    "laps": 22
+                  }
+                ],
+                "pit_laps": [
+                  22,
+                  44
+                ]
+              }
+            }
+          ],
+          "vehicle_id": "modern_v6t",
+          "era": 5,
+          "hz": 5.0,
+          "pit_strategy": {
+            "player_pit_laps": [
+              22,
+              44
+            ]
+          },
+          "initial_fuel_mass_kg": 110
+        },
+        "seed": 91,
+        "era": 5,
+        "hz": 5.0
+      }
+    }
+  ],
+  "repetitions": 2,
+  "order": [
+    "legacy",
+    "energy",
+    "energy",
+    "legacy"
+  ],
+  "timeout_s": 180,
+  "criteria": {
+    "global_energy_abs_j": 0.01,
+    "global_energy_rel": 1e-10,
+    "segment_work_residual_j": 1e-06,
+    "segment_thermal_residual_j": 0.01,
+    "clock_abs_s": 1e-08,
+    "fuel_abs_kg": 1e-09,
+    "raw_contact_max": 1.000001
+  },
+  "mesh_sensitivity": {
+    "base": "suzuka-classic-5",
+    "factors": [
+      1,
+      2,
+      4
+    ],
+    "smooth_driver": true,
+    "ambient_c": 35,
+    "cooling_scale": 1.0,
+    "interpretation": "Coarsening of fixed circuit geometry, not independent grid-convergence proof; analytic exact tracks test1/2/5/10m separately."
+  },
+  "cooling_sensitivity": {
+    "base": "monza-modern-5",
+    "scales": [
+      0.25,
+      0.5,
+      1.0,
+      2.0
+    ],
+    "engine_ambient_c": [
+      35,
+      55
+    ],
+    "smooth_driver": true,
+    "interpretation": "Engine-air conductance perturbation at fixed physical vehicle; not an equal-budget HQ balance or full weather scenario."
+  },
+  "performance": "Pilot-informed reporting of core and complete process CPU/RSS; no browser/VPS budget accepted from native ratios. Independent physical calibration remains required.",
+  "scope": "Native-only, unregistered candidate; exact historical canonical defaults required; not an Authority/WASM/admission or model-accuracy qualification."
+}
