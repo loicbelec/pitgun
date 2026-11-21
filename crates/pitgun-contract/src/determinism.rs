@@ -224,12 +224,18 @@ pub fn canonical_json_bytes<T>(value: &T) -> Result<Vec<u8>, CanonicalJsonError>
 where
     T: Serialize,
 {
+    validate_canonical_serializable(value)?;
+    serde_json_canonicalizer::to_vec(value).map_err(CanonicalJsonError::Serialization)
+}
+
+fn validate_canonical_serializable<T: Serialize>(value: &T) -> Result<(), CanonicalJsonError> {
     // serde_json maps non-finite floats to null, so validation must inspect the
     // typed Serde value before JSON serialization can lose that information.
     let validation_value =
         serde_value::to_value(value).map_err(CanonicalJsonError::ValueSerialization)?;
-    validate_serializable_value(&validation_value, "$")?;
-    serde_json_canonicalizer::to_vec(value).map_err(CanonicalJsonError::Serialization)
+    // Finish and drop this tree before the canonicalizer buffers object values.
+    // Keep the existing validation traversal/error semantics unchanged.
+    validate_serializable_value(&validation_value, "$")
 }
 
 /// Calculates the digest of RFC 8785 canonical bytes for a serializable value.
@@ -237,7 +243,27 @@ pub fn canonical_json_digest<T>(value: &T) -> Result<Digest, CanonicalJsonError>
 where
     T: Serialize,
 {
-    canonical_json_bytes(value).map(|bytes| Digest::from_bytes(&bytes))
+    validate_canonical_serializable(value)?;
+    let mut writer = CanonicalDigestWriter(Sha256::new());
+    serde_json_canonicalizer::to_writer(value, &mut writer)
+        .map_err(CanonicalJsonError::Serialization)?;
+    Ok(Digest(writer.0.finalize().into()))
+}
+
+/// Consume the canonical bytes without retaining another whole-document Vec.
+/// The canonicalizer still buffers/sorts object members internally; this is not
+/// a constant-memory canonical serializer and does not change its wire format.
+struct CanonicalDigestWriter(Sha256);
+
+impl std::io::Write for CanonicalDigestWriter {
+    fn write(&mut self, bytes: &[u8]) -> std::io::Result<usize> {
+        self.0.update(bytes);
+        Ok(bytes.len())
+    }
+
+    fn flush(&mut self) -> std::io::Result<()> {
+        Ok(())
+    }
 }
 
 fn canonicalize_value(value: &Value) -> Result<Vec<u8>, CanonicalJsonError> {
@@ -521,6 +547,101 @@ mod tests {
     use serde_json::json;
 
     use super::*;
+
+    fn reference_bytes<T: Serialize>(value: &T) -> Result<Vec<u8>, CanonicalJsonError> {
+        // Frozen pre-optimization path, including validation/error behavior.
+        let validation_value =
+            serde_value::to_value(value).map_err(CanonicalJsonError::ValueSerialization)?;
+        validate_serializable_value(&validation_value, "$")?;
+        serde_json_canonicalizer::to_vec(value).map_err(CanonicalJsonError::Serialization)
+    }
+
+    fn assert_streamed_digest_parity<T: Serialize>(value: &T) {
+        match reference_bytes(value) {
+            Ok(bytes) => {
+                assert_eq!(canonical_json_bytes(value).unwrap(), bytes);
+                assert_eq!(
+                    canonical_json_digest(value).unwrap(),
+                    Digest::from_bytes(&bytes)
+                );
+            }
+            Err(error) => {
+                assert_eq!(
+                    canonical_json_bytes(value).unwrap_err().to_string(),
+                    error.to_string()
+                );
+                assert_eq!(
+                    canonical_json_digest(value).unwrap_err().to_string(),
+                    error.to_string()
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn streamed_digest_matches_original_bytes_for_nested_typed_values() {
+        #[derive(Serialize)]
+        enum Payload {
+            Unit,
+            Newtype(f32),
+            Tuple(bool, i64),
+            Struct { label: String, values: Vec<f64> },
+        }
+        let payloads = vec![
+            Payload::Unit,
+            Payload::Newtype(0.3423208),
+            Payload::Tuple(true, -42),
+            Payload::Struct {
+                label: "café".into(),
+                values: vec![-0.0, 1e-27, 333333333.3333333],
+            },
+        ];
+        assert_streamed_digest_parity(&payloads);
+        assert_streamed_digest_parity(&json!({"😀":{"z":null,"a":[1,false,"é"]},"\u{e000}":3}));
+        assert_streamed_digest_parity(&vec![-(MAX_SAFE_JSON_INTEGER as i64); 1000]);
+        assert_streamed_digest_parity(&[MAX_SAFE_JSON_INTEGER]);
+        assert_streamed_digest_parity(&[f32::MIN, f32::MAX, f32::from_bits(1), -0.0]);
+        // Deliberately unordered records spanning many canonicalizer writes.
+        let records: Vec<_> = (0..10000)
+            .map(|i| json!({"z":i,"a":[i as f64*0.125,-0.0]}))
+            .collect();
+        assert_streamed_digest_parity(&records);
+    }
+
+    #[test]
+    fn streamed_digest_preserves_all_typed_validation_refusals() {
+        assert_streamed_digest_parity(&vec![Some(f64::NAN)]);
+        assert_streamed_digest_parity(&[f64::INFINITY, f64::NEG_INFINITY]);
+        assert_streamed_digest_parity(&[f32::NAN]);
+        assert_streamed_digest_parity(&json!({"outer":[{"text":"e\u{301}"}]}));
+        assert_streamed_digest_parity(&std::collections::BTreeMap::from([("e\u{301}", 1)]));
+        assert_streamed_digest_parity(&std::collections::BTreeMap::from([(7, 1)]));
+        assert_streamed_digest_parity(&[MAX_SAFE_JSON_INTEGER + 1]);
+        assert_streamed_digest_parity(&[-(MAX_SAFE_JSON_INTEGER as i64) - 1]);
+    }
+
+    #[test]
+    fn streamed_digest_never_returns_a_partial_digest_on_serializer_error() {
+        struct FailsOnSecondSerialization(Cell<u8>);
+        impl Serialize for FailsOnSecondSerialization {
+            fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+                use serde::ser::{Error, SerializeSeq};
+                let previous = self.0.replace(self.0.get() + 1);
+                let mut seq = serializer.serialize_seq(Some(2))?;
+                seq.serialize_element(&1)?;
+                if previous > 0 {
+                    return Err(S::Error::custom("deliberate serialization failure"));
+                }
+                seq.serialize_element(&2)?;
+                seq.end()
+            }
+        }
+        use std::cell::Cell;
+        let expected = reference_bytes(&FailsOnSecondSerialization(Cell::new(0))).unwrap_err();
+        let actual = canonical_json_digest(&FailsOnSecondSerialization(Cell::new(0))).unwrap_err();
+        assert!(matches!(actual, CanonicalJsonError::Serialization(_)));
+        assert_eq!(actual.to_string(), expected.to_string());
+    }
 
     #[test]
     fn canonicalizes_reordered_objects_to_published_bytes() {

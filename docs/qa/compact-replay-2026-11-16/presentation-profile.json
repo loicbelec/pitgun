@@ -1,0 +1,7747 @@
+{
+  "schemaVersion": "pitgun.offline-service-replay-profile/v1",
+  "passed": true,
+  "scope": "Offline exact pinned-WASM replay parity and phase timing, not a new verifier verdict or cross-architecture speed claim",
+  "environment": {
+    "node": "v22.23.5",
+    "v8": "12.4.254.21-node.57",
+    "platform": "linux",
+    "arch": "arm64",
+    "cpuModel": "unknown",
+    "cpuCount": 12,
+    "totalMemoryBytes": 8319238144
+  },
+  "identity": {
+    "wasmDigest": "sha256:cb24d7f0bf474cd88eb3e05e828690438972a7f40d7875e6ac3bc2bb3f103451",
+    "bridgeDigest": "sha256:8148432845163d31f23fb1c2fe15defe1f49763d9dc51f18f06122a66e4f773c",
+    "payloadDigest": "sha256:dc20bf7de89155274f951ffc870da1b8e3fa04a0c06a154a35ba79ca16c39208",
+    "inputDigest": "sha256:00f41d163e17aba5dabdc3ad7bd88059986467c3528bd52fd6546b9be336f685",
+    "expectedDigest": "sha256:ac2ee9ed020a0a4f5595b7e4cc3ba99979a43ce50397f7af5e3b566b11696976",
+    "circuit": "MONZA",
+    "laps": 53,
+    "cars": 10,
+    "hz": 5,
+    "physics": "pitgun.local-career-power-unit-thermal/v1"
+  },
+  "initialization": [
+    {
+      "name": "input.read",
+      "wallMs": 7.8366669999999985,
+      "cpuUs": {
+        "user": 0,
+        "system": 4548
+      }
+    },
+    {
+      "name": "input.parse",
+      "wallMs": 19.450625000000002,
+      "cpuUs": {
+        "user": 18412,
+        "system": 1317
+      }
+    },
+    {
+      "name": "runtime.read",
+      "wallMs": 9.310165999999995,
+      "cpuUs": {
+        "user": 0,
+        "system": 7423
+      }
+    },
+    {
+      "name": "runtime.hash",
+      "wallMs": 5.800083000000001,
+      "cpuUs": {
+        "user": 5266,
+        "system": 544
+      }
+    },
+    {
+      "name": "bridge.import",
+      "wallMs": 0.9385000000000048
+    },
+    {
+      "name": "wasm.initialize",
+      "wallMs": 28.560249999999996
+    }
+  ],
+  "runs": [
+    {
+      "run": 0,
+      "temperature": "first-session-after-module-init",
+      "wallMs": 84472.62620500001,
+      "cpuUs": {
+        "user": 79695157,
+        "system": 4385387
+      },
+      "phases": {
+        "start.abi": {
+          "calls": 1,
+          "wallMs": 650.450459,
+          "userCpuUs": 612360,
+          "systemCpuUs": 26125
+        },
+        "start.parse": {
+          "calls": 1,
+          "wallMs": 0.025500000000079126,
+          "userCpuUs": 28,
+          "systemCpuUs": 2
+        },
+        "pull.abi": {
+          "calls": 108,
+          "wallMs": 78172.250368,
+          "userCpuUs": 73590038,
+          "systemCpuUs": 4161756
+        },
+        "pull.parse": {
+          "calls": 108,
+          "wallMs": 1222.5505869999974,
+          "userCpuUs": 1179917,
+          "systemCpuUs": 118831
+        },
+        "proposal.encode": {
+          "calls": 1,
+          "wallMs": 0.02254200000061246,
+          "userCpuUs": 24,
+          "systemCpuUs": 0
+        },
+        "propose.abi": {
+          "calls": 1,
+          "wallMs": 0.8686669999997321,
+          "userCpuUs": 869,
+          "systemCpuUs": 0
+        },
+        "propose.parse": {
+          "calls": 1,
+          "wallMs": 0.0070420000001831795,
+          "userCpuUs": 7,
+          "systemCpuUs": 0
+        },
+        "receipt.compare": {
+          "calls": 1,
+          "wallMs": 0.06649999999990541,
+          "userCpuUs": 67,
+          "systemCpuUs": 0
+        },
+        "complete.abi": {
+          "calls": 1,
+          "wallMs": 3564.9152100000065,
+          "userCpuUs": 3499451,
+          "systemCpuUs": 10628
+        },
+        "complete.parse": {
+          "calls": 1,
+          "wallMs": 596.544332999998,
+          "userCpuUs": 594259,
+          "systemCpuUs": 53057
+        },
+        "evidence.compare": {
+          "calls": 1,
+          "wallMs": 0.3563750000030268,
+          "userCpuUs": 359,
+          "systemCpuUs": 0
+        },
+        "reply.encode": {
+          "calls": 1,
+          "wallMs": 0.017959000004339032,
+          "userCpuUs": 19,
+          "systemCpuUs": 0
+        }
+      },
+      "wireBytes": 297519810,
+      "replyBytes": 2448,
+      "evidenceDigest": "sha256:ac2ee9ed020a0a4f5595b7e4cc3ba99979a43ce50397f7af5e3b566b11696976",
+      "historyCount": 1,
+      "memorySamplingMs": 2.5062120000017387,
+      "memorySamples": [
+        {
+          "label": "before-start",
+          "atMs": 0.025041000000001645,
+          "rss": 152932352,
+          "heapTotal": 39608320,
+          "heapUsed": 36354264,
+          "external": 50730007,
+          "arrayBuffers": 31997934,
+          "wasmLinearBytes": 15204352
+        },
+        {
+          "label": "after-start",
+          "atMs": 650.6095,
+          "rss": 230326272,
+          "heapTotal": 29859840,
+          "heapUsed": 20808512,
+          "external": 148837403,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 113311744
+        },
+        {
+          "label": "pull-0-batch",
+          "atMs": 939.868833,
+          "rss": 252170240,
+          "heapTotal": 44875776,
+          "heapUsed": 29802432,
+          "external": 148837403,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 113311744
+        },
+        {
+          "label": "pull-1-batch",
+          "atMs": 940.1263329999999,
+          "rss": 252170240,
+          "heapTotal": 44875776,
+          "heapUsed": 29812856,
+          "external": 148837403,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 113311744
+        },
+        {
+          "label": "pull-2-batch",
+          "atMs": 1159.0115,
+          "rss": 261087232,
+          "heapTotal": 47800320,
+          "heapUsed": 35991200,
+          "external": 148837403,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 113311744
+        },
+        {
+          "label": "pull-3-batch",
+          "atMs": 1159.158667,
+          "rss": 261087232,
+          "heapTotal": 47800320,
+          "heapUsed": 36000376,
+          "external": 148837403,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 113311744
+        },
+        {
+          "label": "pull-4-batch",
+          "atMs": 1368.752709,
+          "rss": 269344768,
+          "heapTotal": 67543040,
+          "heapUsed": 39432040,
+          "external": 148837403,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 113311744
+        },
+        {
+          "label": "pull-5-batch",
+          "atMs": 1368.87925,
+          "rss": 269344768,
+          "heapTotal": 67543040,
+          "heapUsed": 39441832,
+          "external": 148837403,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 113311744
+        },
+        {
+          "label": "pull-6-batch",
+          "atMs": 1601.382417,
+          "rss": 277184512,
+          "heapTotal": 70492160,
+          "heapUsed": 49156584,
+          "external": 148837403,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 113311744
+        },
+        {
+          "label": "pull-7-batch",
+          "atMs": 1601.598959,
+          "rss": 277184512,
+          "heapTotal": 70492160,
+          "heapUsed": 49175160,
+          "external": 148837403,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 113311744
+        },
+        {
+          "label": "pull-8-batch",
+          "atMs": 1841.073,
+          "rss": 295620608,
+          "heapTotal": 57962496,
+          "heapUsed": 29169000,
+          "external": 159122151,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 123600896
+        },
+        {
+          "label": "pull-9-batch",
+          "atMs": 1841.211125,
+          "rss": 295620608,
+          "heapTotal": 57962496,
+          "heapUsed": 29181584,
+          "external": 159122151,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 123600896
+        },
+        {
+          "label": "pull-10-batch",
+          "atMs": 2047.646042,
+          "rss": 303783936,
+          "heapTotal": 60895232,
+          "heapUsed": 38904112,
+          "external": 159122151,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 123600896
+        },
+        {
+          "label": "pull-11-batch",
+          "atMs": 2047.8473339999998,
+          "rss": 303783936,
+          "heapTotal": 60895232,
+          "heapUsed": 38922008,
+          "external": 159122151,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 123600896
+        },
+        {
+          "label": "pull-12-batch",
+          "atMs": 2251.2362919999996,
+          "rss": 306728960,
+          "heapTotal": 60899328,
+          "heapUsed": 31698912,
+          "external": 159122151,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 123600896
+        },
+        {
+          "label": "pull-13-batch",
+          "atMs": 2251.3445009999996,
+          "rss": 306728960,
+          "heapTotal": 60899328,
+          "heapUsed": 31708136,
+          "external": 159122151,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 123600896
+        },
+        {
+          "label": "pull-14-batch",
+          "atMs": 2459.6712089999996,
+          "rss": 308064256,
+          "heapTotal": 64307200,
+          "heapUsed": 28264792,
+          "external": 163381991,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 127860736
+        },
+        {
+          "label": "pull-15-batch",
+          "atMs": 2459.7847509999997,
+          "rss": 308064256,
+          "heapTotal": 64307200,
+          "heapUsed": 28273992,
+          "external": 163381991,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 127860736
+        },
+        {
+          "label": "pull-16-batch",
+          "atMs": 2864.464751,
+          "rss": 347660288,
+          "heapTotal": 38608896,
+          "heapUsed": 28250776,
+          "external": 219808487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 184287232
+        },
+        {
+          "label": "pull-17-batch",
+          "atMs": 2864.596501,
+          "rss": 347660288,
+          "heapTotal": 38608896,
+          "heapUsed": 28259976,
+          "external": 219808487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 184287232
+        },
+        {
+          "label": "pull-18-batch",
+          "atMs": 3087.649293,
+          "rss": 353034240,
+          "heapTotal": 49979392,
+          "heapUsed": 37340896,
+          "external": 219808487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 184287232
+        },
+        {
+          "label": "pull-19-batch",
+          "atMs": 3087.763251,
+          "rss": 353034240,
+          "heapTotal": 49979392,
+          "heapUsed": 37350136,
+          "external": 219808487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 184287232
+        },
+        {
+          "label": "pull-20-batch",
+          "atMs": 3288.746709,
+          "rss": 358461440,
+          "heapTotal": 52965376,
+          "heapUsed": 40656032,
+          "external": 219808487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 184287232
+        },
+        {
+          "label": "pull-21-batch",
+          "atMs": 3288.8698759999997,
+          "rss": 358461440,
+          "heapTotal": 52965376,
+          "heapUsed": 40665280,
+          "external": 219808487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 184287232
+        },
+        {
+          "label": "pull-22-batch",
+          "atMs": 3492.08846,
+          "rss": 363966464,
+          "heapTotal": 72724480,
+          "heapUsed": 43676224,
+          "external": 219808487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 184287232
+        },
+        {
+          "label": "pull-23-batch",
+          "atMs": 3492.214251,
+          "rss": 363966464,
+          "heapTotal": 72724480,
+          "heapUsed": 43685432,
+          "external": 219808487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 184287232
+        },
+        {
+          "label": "pull-24-batch",
+          "atMs": 3695.45696,
+          "rss": 371568640,
+          "heapTotal": 75706368,
+          "heapUsed": 53483656,
+          "external": 219808487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 184287232
+        },
+        {
+          "label": "pull-25-batch",
+          "atMs": 3695.569835,
+          "rss": 371568640,
+          "heapTotal": 75706368,
+          "heapUsed": 53492880,
+          "external": 219808487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 184287232
+        },
+        {
+          "label": "pull-26-batch",
+          "atMs": 3900.757126,
+          "rss": 374140928,
+          "heapTotal": 75706368,
+          "heapUsed": 46521864,
+          "external": 219808487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 184287232
+        },
+        {
+          "label": "pull-27-batch",
+          "atMs": 3900.8730429999996,
+          "rss": 374140928,
+          "heapTotal": 75706368,
+          "heapUsed": 46531088,
+          "external": 219808487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 184287232
+        },
+        {
+          "label": "pull-28-batch",
+          "atMs": 4102.466585,
+          "rss": 382746624,
+          "heapTotal": 78680064,
+          "heapUsed": 56265656,
+          "external": 219808487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 184287232
+        },
+        {
+          "label": "pull-29-batch",
+          "atMs": 4102.579001,
+          "rss": 382746624,
+          "heapTotal": 78680064,
+          "heapUsed": 56274880,
+          "external": 219808487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 184287232
+        },
+        {
+          "label": "pull-30-batch",
+          "atMs": 4366.133793,
+          "rss": 382410752,
+          "heapTotal": 34406400,
+          "heapUsed": 28406256,
+          "external": 231998183,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 196476928
+        },
+        {
+          "label": "pull-31-batch",
+          "atMs": 4366.264293,
+          "rss": 382410752,
+          "heapTotal": 34406400,
+          "heapUsed": 28415464,
+          "external": 231998183,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 196476928
+        },
+        {
+          "label": "pull-32-batch",
+          "atMs": 4985.258752,
+          "rss": 413798400,
+          "heapTotal": 34926592,
+          "heapUsed": 28597104,
+          "external": 341050087,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 305528832
+        },
+        {
+          "label": "pull-33-batch",
+          "atMs": 4985.427294,
+          "rss": 413798400,
+          "heapTotal": 34926592,
+          "heapUsed": 28606328,
+          "external": 341050087,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 305528832
+        },
+        {
+          "label": "pull-34-batch",
+          "atMs": 5226.57796,
+          "rss": 424546304,
+          "heapTotal": 46325760,
+          "heapUsed": 34120600,
+          "external": 341050087,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 305528832
+        },
+        {
+          "label": "pull-35-batch",
+          "atMs": 5226.714002,
+          "rss": 424546304,
+          "heapTotal": 46325760,
+          "heapUsed": 34129864,
+          "external": 341050087,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 305528832
+        },
+        {
+          "label": "pull-36-batch",
+          "atMs": 5442.5071689999995,
+          "rss": 430133248,
+          "heapTotal": 64606208,
+          "heapUsed": 28331104,
+          "external": 341050087,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 305528832
+        },
+        {
+          "label": "pull-37-batch",
+          "atMs": 5442.646084999999,
+          "rss": 430133248,
+          "heapTotal": 64606208,
+          "heapUsed": 28340368,
+          "external": 341050087,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 305528832
+        },
+        {
+          "label": "pull-38-batch",
+          "atMs": 5651.695211,
+          "rss": 436162560,
+          "heapTotal": 67633152,
+          "heapUsed": 38255816,
+          "external": 341050087,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 305528832
+        },
+        {
+          "label": "pull-39-batch",
+          "atMs": 5652.020127,
+          "rss": 436162560,
+          "heapTotal": 67633152,
+          "heapUsed": 38300144,
+          "external": 341050087,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 305528832
+        },
+        {
+          "label": "pull-40-batch",
+          "atMs": 5860.549002,
+          "rss": 452067328,
+          "heapTotal": 70660096,
+          "heapUsed": 48108848,
+          "external": 341050087,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 305528832
+        },
+        {
+          "label": "pull-41-batch",
+          "atMs": 5860.670752,
+          "rss": 452067328,
+          "heapTotal": 70660096,
+          "heapUsed": 48118208,
+          "external": 341050087,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 305528832
+        },
+        {
+          "label": "pull-42-batch",
+          "atMs": 6063.487669,
+          "rss": 460951552,
+          "heapTotal": 67633152,
+          "heapUsed": 37800760,
+          "external": 341050087,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 305528832
+        },
+        {
+          "label": "pull-43-batch",
+          "atMs": 6063.593669,
+          "rss": 460951552,
+          "heapTotal": 67633152,
+          "heapUsed": 37810040,
+          "external": 341050087,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 305528832
+        },
+        {
+          "label": "pull-44-batch",
+          "atMs": 6270.123753,
+          "rss": 471961600,
+          "heapTotal": 70660096,
+          "heapUsed": 47617056,
+          "external": 341050087,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 305528832
+        },
+        {
+          "label": "pull-45-batch",
+          "atMs": 6270.234503,
+          "rss": 471961600,
+          "heapTotal": 70660096,
+          "heapUsed": 47626336,
+          "external": 341050087,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 305528832
+        },
+        {
+          "label": "pull-46-batch",
+          "atMs": 6476.472336,
+          "rss": 478294016,
+          "heapTotal": 70660096,
+          "heapUsed": 40666496,
+          "external": 341050087,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 305528832
+        },
+        {
+          "label": "pull-47-batch",
+          "atMs": 6476.570169,
+          "rss": 478294016,
+          "heapTotal": 70660096,
+          "heapUsed": 40675728,
+          "external": 341050087,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 305528832
+        },
+        {
+          "label": "pull-48-batch",
+          "atMs": 6679.103169,
+          "rss": 484446208,
+          "heapTotal": 73691136,
+          "heapUsed": 50531760,
+          "external": 341050087,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 305528832
+        },
+        {
+          "label": "pull-49-decision",
+          "atMs": 6679.876044,
+          "rss": 484446208,
+          "heapTotal": 73691136,
+          "heapUsed": 50546392,
+          "external": 341050087,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 305528832
+        },
+        {
+          "label": "pull-50-batch",
+          "atMs": 6680.980753,
+          "rss": 484577280,
+          "heapTotal": 73691136,
+          "heapUsed": 50578520,
+          "external": 341050087,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 305528832
+        },
+        {
+          "label": "pull-51-batch",
+          "atMs": 6886.817211,
+          "rss": 488153088,
+          "heapTotal": 73691136,
+          "heapUsed": 43691368,
+          "external": 341050087,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 305528832
+        },
+        {
+          "label": "pull-52-batch",
+          "atMs": 7045.970295,
+          "rss": 491429888,
+          "heapTotal": 73998336,
+          "heapUsed": 44878040,
+          "external": 341050087,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 305528832
+        },
+        {
+          "label": "pull-53-batch",
+          "atMs": 7251.538628,
+          "rss": 497721344,
+          "heapTotal": 77135872,
+          "heapUsed": 55016640,
+          "external": 341050087,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 305528832
+        },
+        {
+          "label": "pull-54-batch",
+          "atMs": 7251.652128,
+          "rss": 497721344,
+          "heapTotal": 77135872,
+          "heapUsed": 55025912,
+          "external": 341050087,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 305528832
+        },
+        {
+          "label": "pull-55-batch",
+          "atMs": 7456.403211,
+          "rss": 500428800,
+          "heapTotal": 76685312,
+          "heapUsed": 46811856,
+          "external": 341050087,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 305528832
+        },
+        {
+          "label": "pull-56-batch",
+          "atMs": 7456.52367,
+          "rss": 500428800,
+          "heapTotal": 76685312,
+          "heapUsed": 46821112,
+          "external": 341050087,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 305528832
+        },
+        {
+          "label": "pull-57-batch",
+          "atMs": 7641.513212,
+          "rss": 506064896,
+          "heapTotal": 79671296,
+          "heapUsed": 56512344,
+          "external": 341050087,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 305528832
+        },
+        {
+          "label": "pull-58-batch",
+          "atMs": 7641.61917,
+          "rss": 506064896,
+          "heapTotal": 79671296,
+          "heapUsed": 56521552,
+          "external": 341050087,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 305528832
+        },
+        {
+          "label": "pull-59-batch",
+          "atMs": 7847.460587,
+          "rss": 509181952,
+          "heapTotal": 79659008,
+          "heapUsed": 49649440,
+          "external": 341050087,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 305528832
+        },
+        {
+          "label": "pull-60-batch",
+          "atMs": 7847.5895869999995,
+          "rss": 509181952,
+          "heapTotal": 79659008,
+          "heapUsed": 49658688,
+          "external": 341050087,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 305528832
+        },
+        {
+          "label": "pull-61-batch",
+          "atMs": 8051.6310029999995,
+          "rss": 514932736,
+          "heapTotal": 82653184,
+          "heapUsed": 59486416,
+          "external": 341050087,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 305528832
+        },
+        {
+          "label": "pull-62-batch",
+          "atMs": 8051.752753,
+          "rss": 514932736,
+          "heapTotal": 82653184,
+          "heapUsed": 59495648,
+          "external": 341050087,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 305528832
+        },
+        {
+          "label": "pull-63-batch",
+          "atMs": 8596.837295000001,
+          "rss": 603541504,
+          "heapTotal": 45170688,
+          "heapUsed": 28404408,
+          "external": 535233255,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 499712000
+        },
+        {
+          "label": "pull-64-batch",
+          "atMs": 8596.976879,
+          "rss": 603541504,
+          "heapTotal": 45170688,
+          "heapUsed": 28413664,
+          "external": 535233255,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 499712000
+        },
+        {
+          "label": "pull-65-batch",
+          "atMs": 8922.962045,
+          "rss": 634056704,
+          "heapTotal": 34164736,
+          "heapUsed": 28458680,
+          "external": 584712935,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 549191680
+        },
+        {
+          "label": "pull-66-batch",
+          "atMs": 8923.106795000002,
+          "rss": 634056704,
+          "heapTotal": 34164736,
+          "heapUsed": 28467928,
+          "external": 584712935,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 549191680
+        },
+        {
+          "label": "pull-67-batch",
+          "atMs": 9134.471421,
+          "rss": 642576384,
+          "heapTotal": 45539328,
+          "heapUsed": 34243896,
+          "external": 584712935,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 549191680
+        },
+        {
+          "label": "pull-68-batch",
+          "atMs": 9134.592796,
+          "rss": 642576384,
+          "heapTotal": 45539328,
+          "heapUsed": 34253152,
+          "external": 584712935,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 549191680
+        },
+        {
+          "label": "pull-69-batch",
+          "atMs": 9345.575504,
+          "rss": 646201344,
+          "heapTotal": 48050176,
+          "heapUsed": 28322240,
+          "external": 584712935,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 549191680
+        },
+        {
+          "label": "pull-70-batch",
+          "atMs": 9345.700087000001,
+          "rss": 646201344,
+          "heapTotal": 48050176,
+          "heapUsed": 28331496,
+          "external": 584712935,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 549191680
+        },
+        {
+          "label": "pull-71-batch",
+          "atMs": 9562.777962,
+          "rss": 651706368,
+          "heapTotal": 51032064,
+          "heapUsed": 38190080,
+          "external": 584712935,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 549191680
+        },
+        {
+          "label": "pull-72-batch",
+          "atMs": 9562.904087,
+          "rss": 651706368,
+          "heapTotal": 51032064,
+          "heapUsed": 38199336,
+          "external": 584712935,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 549191680
+        },
+        {
+          "label": "pull-73-batch",
+          "atMs": 9768.264921,
+          "rss": 660258816,
+          "heapTotal": 67809280,
+          "heapUsed": 37935200,
+          "external": 584712935,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 549191680
+        },
+        {
+          "label": "pull-74-batch",
+          "atMs": 9768.401088,
+          "rss": 660258816,
+          "heapTotal": 67809280,
+          "heapUsed": 37944456,
+          "external": 584712935,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 549191680
+        },
+        {
+          "label": "pull-75-batch",
+          "atMs": 9963.300046,
+          "rss": 672100352,
+          "heapTotal": 70791168,
+          "heapUsed": 47658480,
+          "external": 584712935,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 549191680
+        },
+        {
+          "label": "pull-76-batch",
+          "atMs": 9963.433296000001,
+          "rss": 672100352,
+          "heapTotal": 70791168,
+          "heapUsed": 47667736,
+          "external": 584712935,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 549191680
+        },
+        {
+          "label": "pull-77-batch",
+          "atMs": 10168.964254,
+          "rss": 677982208,
+          "heapTotal": 70795264,
+          "heapUsed": 40539792,
+          "external": 584712935,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 549191680
+        },
+        {
+          "label": "pull-78-batch",
+          "atMs": 10169.091754000001,
+          "rss": 677982208,
+          "heapTotal": 70795264,
+          "heapUsed": 40549032,
+          "external": 584712935,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 549191680
+        },
+        {
+          "label": "pull-79-batch",
+          "atMs": 10356.200421000001,
+          "rss": 687730688,
+          "heapTotal": 73777152,
+          "heapUsed": 50336776,
+          "external": 584712935,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 549191680
+        },
+        {
+          "label": "pull-80-batch",
+          "atMs": 10356.322213000001,
+          "rss": 687730688,
+          "heapTotal": 73777152,
+          "heapUsed": 50347144,
+          "external": 584712935,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 549191680
+        },
+        {
+          "label": "pull-81-batch",
+          "atMs": 10545.347380000001,
+          "rss": 693669888,
+          "heapTotal": 73777152,
+          "heapUsed": 43476992,
+          "external": 584712935,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 549191680
+        },
+        {
+          "label": "pull-82-batch",
+          "atMs": 10545.464588,
+          "rss": 693669888,
+          "heapTotal": 73777152,
+          "heapUsed": 43486240,
+          "external": 584712935,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 549191680
+        },
+        {
+          "label": "pull-83-batch",
+          "atMs": 10717.03788,
+          "rss": 698781696,
+          "heapTotal": 76754944,
+          "heapUsed": 53307328,
+          "external": 584712935,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 549191680
+        },
+        {
+          "label": "pull-84-batch",
+          "atMs": 10717.127796,
+          "rss": 698781696,
+          "heapTotal": 76754944,
+          "heapUsed": 53316576,
+          "external": 584712935,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 549191680
+        },
+        {
+          "label": "pull-85-batch",
+          "atMs": 10870.330338000002,
+          "rss": 700792832,
+          "heapTotal": 76730368,
+          "heapUsed": 46332304,
+          "external": 584712935,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 549191680
+        },
+        {
+          "label": "pull-86-batch",
+          "atMs": 10870.436171000001,
+          "rss": 700792832,
+          "heapTotal": 76730368,
+          "heapUsed": 46341424,
+          "external": 584712935,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 549191680
+        },
+        {
+          "label": "pull-87-batch",
+          "atMs": 11072.036713000001,
+          "rss": 706035712,
+          "heapTotal": 79433728,
+          "heapUsed": 54961760,
+          "external": 584712935,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 549191680
+        },
+        {
+          "label": "pull-88-batch",
+          "atMs": 11072.156421000002,
+          "rss": 706035712,
+          "heapTotal": 79433728,
+          "heapUsed": 54971000,
+          "external": 584712935,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 549191680
+        },
+        {
+          "label": "pull-89-batch",
+          "atMs": 11275.88138,
+          "rss": 708919296,
+          "heapTotal": 79753216,
+          "heapUsed": 49372968,
+          "external": 584712935,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 549191680
+        },
+        {
+          "label": "pull-90-batch",
+          "atMs": 11275.994505,
+          "rss": 708919296,
+          "heapTotal": 79753216,
+          "heapUsed": 49382224,
+          "external": 584712935,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 549191680
+        },
+        {
+          "label": "pull-91-batch",
+          "atMs": 11478.793963,
+          "rss": 714424320,
+          "heapTotal": 82751488,
+          "heapUsed": 59172560,
+          "external": 584712935,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 549191680
+        },
+        {
+          "label": "pull-92-batch",
+          "atMs": 11478.911422000001,
+          "rss": 714424320,
+          "heapTotal": 82751488,
+          "heapUsed": 59181800,
+          "external": 584712935,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 549191680
+        },
+        {
+          "label": "pull-93-batch",
+          "atMs": 11686.604963000002,
+          "rss": 699101184,
+          "heapTotal": 64569344,
+          "heapUsed": 28368104,
+          "external": 584712935,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 549191680
+        },
+        {
+          "label": "pull-94-batch",
+          "atMs": 11686.71663,
+          "rss": 699101184,
+          "heapTotal": 64569344,
+          "heapUsed": 28377344,
+          "external": 584712935,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 549191680
+        },
+        {
+          "label": "pull-95-batch",
+          "atMs": 11903.545339,
+          "rss": 704483328,
+          "heapTotal": 67559424,
+          "heapUsed": 38248528,
+          "external": 584712935,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 549191680
+        },
+        {
+          "label": "pull-96-batch",
+          "atMs": 11903.66013,
+          "rss": 704483328,
+          "heapTotal": 67559424,
+          "heapUsed": 38257752,
+          "external": 584712935,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 549191680
+        },
+        {
+          "label": "pull-97-batch",
+          "atMs": 12111.50063,
+          "rss": 710119424,
+          "heapTotal": 70549504,
+          "heapUsed": 48010880,
+          "external": 584712935,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 549191680
+        },
+        {
+          "label": "pull-98-batch",
+          "atMs": 12111.599297,
+          "rss": 710119424,
+          "heapTotal": 70549504,
+          "heapUsed": 48020112,
+          "external": 584712935,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 549191680
+        },
+        {
+          "label": "pull-99-batch",
+          "atMs": 12315.748839,
+          "rss": 709623808,
+          "heapTotal": 67555328,
+          "heapUsed": 37727976,
+          "external": 584712935,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 549191680
+        },
+        {
+          "label": "pull-100-batch",
+          "atMs": 12315.873255,
+          "rss": 709623808,
+          "heapTotal": 67555328,
+          "heapUsed": 37737224,
+          "external": 584712935,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 549191680
+        },
+        {
+          "label": "pull-101-batch",
+          "atMs": 12520.596797,
+          "rss": 714997760,
+          "heapTotal": 70545408,
+          "heapUsed": 47489984,
+          "external": 584712935,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 549191680
+        },
+        {
+          "label": "pull-102-batch",
+          "atMs": 12520.705297,
+          "rss": 714997760,
+          "heapTotal": 70545408,
+          "heapUsed": 47499256,
+          "external": 584712935,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 549191680
+        },
+        {
+          "label": "pull-103-batch",
+          "atMs": 12726.882381000001,
+          "rss": 717590528,
+          "heapTotal": 70541312,
+          "heapUsed": 40543912,
+          "external": 584712935,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 549191680
+        },
+        {
+          "label": "pull-104-batch",
+          "atMs": 12726.976631000001,
+          "rss": 717590528,
+          "heapTotal": 70541312,
+          "heapUsed": 40553168,
+          "external": 584712935,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 549191680
+        },
+        {
+          "label": "pull-105-batch",
+          "atMs": 12930.938214000002,
+          "rss": 722935808,
+          "heapTotal": 73531392,
+          "heapUsed": 50397344,
+          "external": 584712935,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 549191680
+        },
+        {
+          "label": "pull-106-batch",
+          "atMs": 12931.037339,
+          "rss": 722935808,
+          "heapTotal": 73531392,
+          "heapUsed": 50406624,
+          "external": 584712935,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 549191680
+        },
+        {
+          "label": "pull-107-batch",
+          "atMs": 80077.012453,
+          "rss": 1777512448,
+          "heapTotal": 213798912,
+          "heapUsed": 176801040,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "after-completion",
+          "atMs": 84246.44666300001,
+          "rss": 1873719296,
+          "heapTotal": 303194112,
+          "heapUsed": 264709520,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "after-observer-drain",
+          "atMs": 84472.578955,
+          "rss": 1939517440,
+          "heapTotal": 360865792,
+          "heapUsed": 336021584,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        }
+      ],
+      "resourceUsage": {
+        "userCPUTime": 79778301,
+        "systemCPUTime": 4415041,
+        "maxRSS": 1897784,
+        "sharedMemorySize": 0,
+        "unsharedDataSize": 0,
+        "unsharedStackSize": 0,
+        "minorPageFault": 551660,
+        "majorPageFault": 0,
+        "swappedOut": 0,
+        "fsRead": 0,
+        "fsWrite": 0,
+        "ipcSent": 0,
+        "ipcReceived": 0,
+        "signalsCount": 0,
+        "voluntaryContextSwitches": 304488,
+        "involuntaryContextSwitches": 1587
+      },
+      "gcWindow": {
+        "fromMs": 103.332459,
+        "toMs": 84575.958664
+      },
+      "calls": [
+        {
+          "name": "start",
+          "bytes": 62
+        },
+        {
+          "name": "pull",
+          "bytes": 2949102,
+          "pull": 0
+        },
+        {
+          "name": "pull",
+          "bytes": 2436,
+          "pull": 1
+        },
+        {
+          "name": "pull",
+          "bytes": 2919688,
+          "pull": 2
+        },
+        {
+          "name": "pull",
+          "bytes": 2446,
+          "pull": 3
+        },
+        {
+          "name": "pull",
+          "bytes": 2959132,
+          "pull": 4
+        },
+        {
+          "name": "pull",
+          "bytes": 2431,
+          "pull": 5
+        },
+        {
+          "name": "pull",
+          "bytes": 2943346,
+          "pull": 6
+        },
+        {
+          "name": "pull",
+          "bytes": 2420,
+          "pull": 7
+        },
+        {
+          "name": "pull",
+          "bytes": 2930268,
+          "pull": 8
+        },
+        {
+          "name": "pull",
+          "bytes": 2423,
+          "pull": 9
+        },
+        {
+          "name": "pull",
+          "bytes": 2927843,
+          "pull": 10
+        },
+        {
+          "name": "pull",
+          "bytes": 2429,
+          "pull": 11
+        },
+        {
+          "name": "pull",
+          "bytes": 2930446,
+          "pull": 12
+        },
+        {
+          "name": "pull",
+          "bytes": 2450,
+          "pull": 13
+        },
+        {
+          "name": "pull",
+          "bytes": 2983154,
+          "pull": 14
+        },
+        {
+          "name": "pull",
+          "bytes": 2427,
+          "pull": 15
+        },
+        {
+          "name": "pull",
+          "bytes": 2974880,
+          "pull": 16
+        },
+        {
+          "name": "pull",
+          "bytes": 2431,
+          "pull": 17
+        },
+        {
+          "name": "pull",
+          "bytes": 2975668,
+          "pull": 18
+        },
+        {
+          "name": "pull",
+          "bytes": 2465,
+          "pull": 19
+        },
+        {
+          "name": "pull",
+          "bytes": 2977779,
+          "pull": 20
+        },
+        {
+          "name": "pull",
+          "bytes": 2474,
+          "pull": 21
+        },
+        {
+          "name": "pull",
+          "bytes": 2976765,
+          "pull": 22
+        },
+        {
+          "name": "pull",
+          "bytes": 2439,
+          "pull": 23
+        },
+        {
+          "name": "pull",
+          "bytes": 2977034,
+          "pull": 24
+        },
+        {
+          "name": "pull",
+          "bytes": 2456,
+          "pull": 25
+        },
+        {
+          "name": "pull",
+          "bytes": 2974065,
+          "pull": 26
+        },
+        {
+          "name": "pull",
+          "bytes": 2453,
+          "pull": 27
+        },
+        {
+          "name": "pull",
+          "bytes": 2968896,
+          "pull": 28
+        },
+        {
+          "name": "pull",
+          "bytes": 2442,
+          "pull": 29
+        },
+        {
+          "name": "pull",
+          "bytes": 2967658,
+          "pull": 30
+        },
+        {
+          "name": "pull",
+          "bytes": 2439,
+          "pull": 31
+        },
+        {
+          "name": "pull",
+          "bytes": 2962723,
+          "pull": 32
+        },
+        {
+          "name": "pull",
+          "bytes": 2453,
+          "pull": 33
+        },
+        {
+          "name": "pull",
+          "bytes": 3002955,
+          "pull": 34
+        },
+        {
+          "name": "pull",
+          "bytes": 2489,
+          "pull": 35
+        },
+        {
+          "name": "pull",
+          "bytes": 3021788,
+          "pull": 36
+        },
+        {
+          "name": "pull",
+          "bytes": 2489,
+          "pull": 37
+        },
+        {
+          "name": "pull",
+          "bytes": 3021616,
+          "pull": 38
+        },
+        {
+          "name": "pull",
+          "bytes": 2492,
+          "pull": 39
+        },
+        {
+          "name": "pull",
+          "bytes": 3021696,
+          "pull": 40
+        },
+        {
+          "name": "pull",
+          "bytes": 2489,
+          "pull": 41
+        },
+        {
+          "name": "pull",
+          "bytes": 3021999,
+          "pull": 42
+        },
+        {
+          "name": "pull",
+          "bytes": 2489,
+          "pull": 43
+        },
+        {
+          "name": "pull",
+          "bytes": 3021279,
+          "pull": 44
+        },
+        {
+          "name": "pull",
+          "bytes": 2489,
+          "pull": 45
+        },
+        {
+          "name": "pull",
+          "bytes": 3021423,
+          "pull": 46
+        },
+        {
+          "name": "pull",
+          "bytes": 2446,
+          "pull": 47
+        },
+        {
+          "name": "pull",
+          "bytes": 3023445,
+          "pull": 48
+        },
+        {
+          "name": "pull",
+          "bytes": 1447,
+          "pull": 49
+        },
+        {
+          "name": "propose",
+          "bytes": 520
+        },
+        {
+          "name": "pull",
+          "bytes": 2489,
+          "pull": 50
+        },
+        {
+          "name": "pull",
+          "bytes": 3023893,
+          "pull": 51
+        },
+        {
+          "name": "pull",
+          "bytes": 299604,
+          "pull": 52
+        },
+        {
+          "name": "pull",
+          "bytes": 3133037,
+          "pull": 53
+        },
+        {
+          "name": "pull",
+          "bytes": 2483,
+          "pull": 54
+        },
+        {
+          "name": "pull",
+          "bytes": 2986697,
+          "pull": 55
+        },
+        {
+          "name": "pull",
+          "bytes": 2466,
+          "pull": 56
+        },
+        {
+          "name": "pull",
+          "bytes": 2979037,
+          "pull": 57
+        },
+        {
+          "name": "pull",
+          "bytes": 2439,
+          "pull": 58
+        },
+        {
+          "name": "pull",
+          "bytes": 2966623,
+          "pull": 59
+        },
+        {
+          "name": "pull",
+          "bytes": 2457,
+          "pull": 60
+        },
+        {
+          "name": "pull",
+          "bytes": 2988158,
+          "pull": 61
+        },
+        {
+          "name": "pull",
+          "bytes": 2446,
+          "pull": 62
+        },
+        {
+          "name": "pull",
+          "bytes": 2984107,
+          "pull": 63
+        },
+        {
+          "name": "pull",
+          "bytes": 2466,
+          "pull": 64
+        },
+        {
+          "name": "pull",
+          "bytes": 2986446,
+          "pull": 65
+        },
+        {
+          "name": "pull",
+          "bytes": 2463,
+          "pull": 66
+        },
+        {
+          "name": "pull",
+          "bytes": 2980869,
+          "pull": 67
+        },
+        {
+          "name": "pull",
+          "bytes": 2469,
+          "pull": 68
+        },
+        {
+          "name": "pull",
+          "bytes": 2978333,
+          "pull": 69
+        },
+        {
+          "name": "pull",
+          "bytes": 2466,
+          "pull": 70
+        },
+        {
+          "name": "pull",
+          "bytes": 2974079,
+          "pull": 71
+        },
+        {
+          "name": "pull",
+          "bytes": 2466,
+          "pull": 72
+        },
+        {
+          "name": "pull",
+          "bytes": 2974678,
+          "pull": 73
+        },
+        {
+          "name": "pull",
+          "bytes": 2469,
+          "pull": 74
+        },
+        {
+          "name": "pull",
+          "bytes": 2973512,
+          "pull": 75
+        },
+        {
+          "name": "pull",
+          "bytes": 2469,
+          "pull": 76
+        },
+        {
+          "name": "pull",
+          "bytes": 2977776,
+          "pull": 77
+        },
+        {
+          "name": "pull",
+          "bytes": 2454,
+          "pull": 78
+        },
+        {
+          "name": "pull",
+          "bytes": 2975910,
+          "pull": 79
+        },
+        {
+          "name": "pull",
+          "bytes": 2448,
+          "pull": 80
+        },
+        {
+          "name": "pull",
+          "bytes": 2976297,
+          "pull": 81
+        },
+        {
+          "name": "pull",
+          "bytes": 2457,
+          "pull": 82
+        },
+        {
+          "name": "pull",
+          "bytes": 2970337,
+          "pull": 83
+        },
+        {
+          "name": "pull",
+          "bytes": 2464,
+          "pull": 84
+        },
+        {
+          "name": "pull",
+          "bytes": 2947998,
+          "pull": 85
+        },
+        {
+          "name": "pull",
+          "bytes": 2377,
+          "pull": 86
+        },
+        {
+          "name": "pull",
+          "bytes": 2694857,
+          "pull": 87
+        },
+        {
+          "name": "pull",
+          "bytes": 2455,
+          "pull": 88
+        },
+        {
+          "name": "pull",
+          "bytes": 3015238,
+          "pull": 89
+        },
+        {
+          "name": "pull",
+          "bytes": 2467,
+          "pull": 90
+        },
+        {
+          "name": "pull",
+          "bytes": 2991959,
+          "pull": 91
+        },
+        {
+          "name": "pull",
+          "bytes": 2455,
+          "pull": 92
+        },
+        {
+          "name": "pull",
+          "bytes": 2985615,
+          "pull": 93
+        },
+        {
+          "name": "pull",
+          "bytes": 2449,
+          "pull": 94
+        },
+        {
+          "name": "pull",
+          "bytes": 2984103,
+          "pull": 95
+        },
+        {
+          "name": "pull",
+          "bytes": 2438,
+          "pull": 96
+        },
+        {
+          "name": "pull",
+          "bytes": 2981643,
+          "pull": 97
+        },
+        {
+          "name": "pull",
+          "bytes": 2446,
+          "pull": 98
+        },
+        {
+          "name": "pull",
+          "bytes": 2981483,
+          "pull": 99
+        },
+        {
+          "name": "pull",
+          "bytes": 2449,
+          "pull": 100
+        },
+        {
+          "name": "pull",
+          "bytes": 2982306,
+          "pull": 101
+        },
+        {
+          "name": "pull",
+          "bytes": 2475,
+          "pull": 102
+        },
+        {
+          "name": "pull",
+          "bytes": 2979959,
+          "pull": 103
+        },
+        {
+          "name": "pull",
+          "bytes": 2461,
+          "pull": 104
+        },
+        {
+          "name": "pull",
+          "bytes": 2981930,
+          "pull": 105
+        },
+        {
+          "name": "pull",
+          "bytes": 2482,
+          "pull": 106
+        },
+        {
+          "name": "pull",
+          "bytes": 69637166,
+          "pull": 107
+        },
+        {
+          "name": "complete",
+          "bytes": 69641761
+        }
+      ],
+      "perCallTimings": [
+        {
+          "name": "start.abi",
+          "wallMs": 650.450459,
+          "cpuUs": {
+            "user": 612360,
+            "system": 26125
+          }
+        },
+        {
+          "name": "start.parse",
+          "wallMs": 0.025500000000079126,
+          "cpuUs": {
+            "user": 28,
+            "system": 2
+          }
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 267.185292,
+          "cpuUs": {
+            "user": 262776,
+            "system": 13077
+          },
+          "pull": 0
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 21.622458999999935,
+          "cpuUs": {
+            "user": 14452,
+            "system": 3255
+          },
+          "pull": 0
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.16641600000002654,
+          "cpuUs": {
+            "user": 157,
+            "system": 12
+          },
+          "pull": 1
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.01633300000003146,
+          "cpuUs": {
+            "user": 21,
+            "system": 1
+          },
+          "pull": 1
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 206.23295800000005,
+          "cpuUs": {
+            "user": 201643,
+            "system": 0
+          },
+          "pull": 2
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 12.272958000000017,
+          "cpuUs": {
+            "user": 10025,
+            "system": 3970
+          },
+          "pull": 2
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.0777090000001408,
+          "cpuUs": {
+            "user": 74,
+            "system": 5
+          },
+          "pull": 3
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.01108299999987139,
+          "cpuUs": {
+            "user": 11,
+            "system": 1
+          },
+          "pull": 3
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 198.18208400000003,
+          "cpuUs": {
+            "user": 200827,
+            "system": 906
+          },
+          "pull": 4
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 11.031833000000006,
+          "cpuUs": {
+            "user": 10644,
+            "system": 1000
+          },
+          "pull": 4
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.06183400000008987,
+          "cpuUs": {
+            "user": 60,
+            "system": 3
+          },
+          "pull": 5
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.008708999999953448,
+          "cpuUs": {
+            "user": 9,
+            "system": 0
+          },
+          "pull": 5
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 221.5403749999998,
+          "cpuUs": {
+            "user": 212108,
+            "system": 0
+          },
+          "pull": 6
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 10.584917000000132,
+          "cpuUs": {
+            "user": 9601,
+            "system": 986
+          },
+          "pull": 6
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.13212499999985994,
+          "cpuUs": {
+            "user": 134,
+            "system": 0
+          },
+          "pull": 7
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.01724999999987631,
+          "cpuUs": {
+            "user": 18,
+            "system": 0
+          },
+          "pull": 7
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 206.28079200000002,
+          "cpuUs": {
+            "user": 220688,
+            "system": 8038
+          },
+          "pull": 8
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 32.813249999999925,
+          "cpuUs": {
+            "user": 8731,
+            "system": 0
+          },
+          "pull": 8
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.06791600000019571,
+          "cpuUs": {
+            "user": 69,
+            "system": 0
+          },
+          "pull": 9
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.010457999999971435,
+          "cpuUs": {
+            "user": 11,
+            "system": 0
+          },
+          "pull": 9
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 195.47595899999988,
+          "cpuUs": {
+            "user": 195825,
+            "system": 973
+          },
+          "pull": 10
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 10.586166999999932,
+          "cpuUs": {
+            "user": 10589,
+            "system": 0
+          },
+          "pull": 10
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.1244579999997768,
+          "cpuUs": {
+            "user": 126,
+            "system": 0
+          },
+          "pull": 11
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.012000000000170985,
+          "cpuUs": {
+            "user": 18,
+            "system": 0
+          },
+          "pull": 11
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 192.75149999999985,
+          "cpuUs": {
+            "user": 190769,
+            "system": 971
+          },
+          "pull": 12
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 10.280624999999873,
+          "cpuUs": {
+            "user": 8055,
+            "system": 3007
+          },
+          "pull": 12
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.050499999999829015,
+          "cpuUs": {
+            "user": 50,
+            "system": 2
+          },
+          "pull": 13
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.008332999999765889,
+          "cpuUs": {
+            "user": 8,
+            "system": 0
+          },
+          "pull": 13
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 194.3602079999996,
+          "cpuUs": {
+            "user": 196519,
+            "system": 1973
+          },
+          "pull": 14
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 13.612708000000111,
+          "cpuUs": {
+            "user": 16611,
+            "system": 947
+          },
+          "pull": 14
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.060416999999688414,
+          "cpuUs": {
+            "user": 59,
+            "system": 2
+          },
+          "pull": 15
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.011416999999710242,
+          "cpuUs": {
+            "user": 12,
+            "system": 1
+          },
+          "pull": 15
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 385.36741699999993,
+          "cpuUs": {
+            "user": 356836,
+            "system": 20999
+          },
+          "pull": 16
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 18.7947079999999,
+          "cpuUs": {
+            "user": 24081,
+            "system": 1024
+          },
+          "pull": 16
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.06687499999998181,
+          "cpuUs": {
+            "user": 66,
+            "system": 2
+          },
+          "pull": 17
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.01766700000007404,
+          "cpuUs": {
+            "user": 17,
+            "system": 1
+          },
+          "pull": 17
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 213.37133300000005,
+          "cpuUs": {
+            "user": 203594,
+            "system": 1093
+          },
+          "pull": 18
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 9.321082999999817,
+          "cpuUs": {
+            "user": 10492,
+            "system": 18
+          },
+          "pull": 18
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.06399999999985084,
+          "cpuUs": {
+            "user": 63,
+            "system": 2
+          },
+          "pull": 19
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.009083000000373431,
+          "cpuUs": {
+            "user": 9,
+            "system": 0
+          },
+          "pull": 19
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 191.55854199999976,
+          "cpuUs": {
+            "user": 192382,
+            "system": 0
+          },
+          "pull": 20
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 9.058624999999665,
+          "cpuUs": {
+            "user": 9399,
+            "system": 0
+          },
+          "pull": 20
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.05724999999983993,
+          "cpuUs": {
+            "user": 58,
+            "system": 0
+          },
+          "pull": 21
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.009833999999955267,
+          "cpuUs": {
+            "user": 10,
+            "system": 0
+          },
+          "pull": 21
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 193.9108339999998,
+          "cpuUs": {
+            "user": 192309,
+            "system": 993
+          },
+          "pull": 22
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 8.953500000000076,
+          "cpuUs": {
+            "user": 9463,
+            "system": 16
+          },
+          "pull": 22
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.06424999999990177,
+          "cpuUs": {
+            "user": 63,
+            "system": 3
+          },
+          "pull": 23
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.008374999999887223,
+          "cpuUs": {
+            "user": 9,
+            "system": 0
+          },
+          "pull": 23
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 193.3627919999999,
+          "cpuUs": {
+            "user": 187341,
+            "system": 3973
+          },
+          "pull": 24
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 9.515583000000333,
+          "cpuUs": {
+            "user": 8499,
+            "system": 1018
+          },
+          "pull": 24
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.04912500000000364,
+          "cpuUs": {
+            "user": 51,
+            "system": 0
+          },
+          "pull": 25
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.008333000000220636,
+          "cpuUs": {
+            "user": 9,
+            "system": 0
+          },
+          "pull": 25
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 195.38266699999986,
+          "cpuUs": {
+            "user": 193396,
+            "system": 1975
+          },
+          "pull": 26
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 9.443249999999807,
+          "cpuUs": {
+            "user": 8957,
+            "system": 1000
+          },
+          "pull": 26
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.056499999999687134,
+          "cpuUs": {
+            "user": 55,
+            "system": 1
+          },
+          "pull": 27
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.008250000000316504,
+          "cpuUs": {
+            "user": 8,
+            "system": 1
+          },
+          "pull": 27
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 191.35916699999962,
+          "cpuUs": {
+            "user": 190356,
+            "system": 1001
+          },
+          "pull": 28
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 9.868542000000161,
+          "cpuUs": {
+            "user": 8893,
+            "system": 977
+          },
+          "pull": 28
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.050416000000041095,
+          "cpuUs": {
+            "user": 50,
+            "system": 1
+          },
+          "pull": 29
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.009542000000692497,
+          "cpuUs": {
+            "user": 9,
+            "system": 1
+          },
+          "pull": 29
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 252.17445899999984,
+          "cpuUs": {
+            "user": 248307,
+            "system": 6384
+          },
+          "pull": 30
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 10.974375000000691,
+          "cpuUs": {
+            "user": 11821,
+            "system": 1061
+          },
+          "pull": 30
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.06679200000053243,
+          "cpuUs": {
+            "user": 65,
+            "system": 2
+          },
+          "pull": 31
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.01008300000012241,
+          "cpuUs": {
+            "user": 11,
+            "system": 0
+          },
+          "pull": 31
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 604.5805010000004,
+          "cpuUs": {
+            "user": 582558,
+            "system": 33191
+          },
+          "pull": 32
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 13.864332999999533,
+          "cpuUs": {
+            "user": 14737,
+            "system": 994
+          },
+          "pull": 32
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.09462499999972351,
+          "cpuUs": {
+            "user": 93,
+            "system": 3
+          },
+          "pull": 33
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.014208000000508036,
+          "cpuUs": {
+            "user": 14,
+            "system": 1
+          },
+          "pull": 33
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 229.32241599999998,
+          "cpuUs": {
+            "user": 201796,
+            "system": 929
+          },
+          "pull": 34
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 11.450249999999869,
+          "cpuUs": {
+            "user": 10319,
+            "system": 1917
+          },
+          "pull": 34
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.06737499999962893,
+          "cpuUs": {
+            "user": 67,
+            "system": 2
+          },
+          "pull": 35
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.011583999999857042,
+          "cpuUs": {
+            "user": 12,
+            "system": 1
+          },
+          "pull": 35
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 193.47445900000002,
+          "cpuUs": {
+            "user": 189793,
+            "system": 2978
+          },
+          "pull": 36
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 21.94445799999994,
+          "cpuUs": {
+            "user": 22088,
+            "system": 4625
+          },
+          "pull": 36
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.0717079999994894,
+          "cpuUs": {
+            "user": 70,
+            "system": 2
+          },
+          "pull": 37
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.013249999999970896,
+          "cpuUs": {
+            "user": 14,
+            "system": 1
+          },
+          "pull": 37
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 199.832625,
+          "cpuUs": {
+            "user": 190807,
+            "system": 2987
+          },
+          "pull": 38
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 8.853041999999732,
+          "cpuUs": {
+            "user": 8854,
+            "system": 0
+          },
+          "pull": 38
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.04741600000033941,
+          "cpuUs": {
+            "user": 47,
+            "system": 2
+          },
+          "pull": 39
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.008332999999765889,
+          "cpuUs": {
+            "user": 9,
+            "system": 0
+          },
+          "pull": 39
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 197.46500000000015,
+          "cpuUs": {
+            "user": 205822,
+            "system": 2954
+          },
+          "pull": 40
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 10.688415999999961,
+          "cpuUs": {
+            "user": 6694,
+            "system": 3997
+          },
+          "pull": 40
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.06170800000018062,
+          "cpuUs": {
+            "user": 60,
+            "system": 2
+          },
+          "pull": 41
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.009166999999251857,
+          "cpuUs": {
+            "user": 10,
+            "system": 0
+          },
+          "pull": 41
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 190.23304199999984,
+          "cpuUs": {
+            "user": 176678,
+            "system": 949
+          },
+          "pull": 42
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 12.21887499999957,
+          "cpuUs": {
+            "user": 10014,
+            "system": 3004
+          },
+          "pull": 42
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.05287499999940337,
+          "cpuUs": {
+            "user": 52,
+            "system": 2
+          },
+          "pull": 43
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.009208999999827938,
+          "cpuUs": {
+            "user": 10,
+            "system": 0
+          },
+          "pull": 43
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 195.60674999999992,
+          "cpuUs": {
+            "user": 192922,
+            "system": 2023
+          },
+          "pull": 44
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 10.548499999999876,
+          "cpuUs": {
+            "user": 8551,
+            "system": 2000
+          },
+          "pull": 44
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.05245799999920564,
+          "cpuUs": {
+            "user": 52,
+            "system": 2
+          },
+          "pull": 45
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.013417000000117696,
+          "cpuUs": {
+            "user": 14,
+            "system": 0
+          },
+          "pull": 45
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 195.05320799999936,
+          "cpuUs": {
+            "user": 192021,
+            "system": 0
+          },
+          "pull": 46
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 10.812791000000288,
+          "cpuUs": {
+            "user": 11728,
+            "system": 0
+          },
+          "pull": 46
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.045625000000654836,
+          "cpuUs": {
+            "user": 47,
+            "system": 0
+          },
+          "pull": 47
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.00874999999996362,
+          "cpuUs": {
+            "user": 10,
+            "system": 0
+          },
+          "pull": 47
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 193.3082089999998,
+          "cpuUs": {
+            "user": 191616,
+            "system": 1006
+          },
+          "pull": 48
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 8.864790999999968,
+          "cpuUs": {
+            "user": 8867,
+            "system": 0
+          },
+          "pull": 48
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.6993329999995694,
+          "cpuUs": {
+            "user": 700,
+            "system": 0
+          },
+          "pull": 49
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.026542000000517874,
+          "cpuUs": {
+            "user": 27,
+            "system": 0
+          },
+          "pull": 49
+        },
+        {
+          "name": "proposal.encode",
+          "wallMs": 0.02254200000061246,
+          "cpuUs": {
+            "user": 24,
+            "system": 0
+          }
+        },
+        {
+          "name": "propose.abi",
+          "wallMs": 0.8686669999997321,
+          "cpuUs": {
+            "user": 869,
+            "system": 0
+          }
+        },
+        {
+          "name": "propose.parse",
+          "wallMs": 0.0070420000001831795,
+          "cpuUs": {
+            "user": 7,
+            "system": 0
+          }
+        },
+        {
+          "name": "receipt.compare",
+          "wallMs": 0.06649999999990541,
+          "cpuUs": {
+            "user": 67,
+            "system": 0
+          }
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.036084000000300875,
+          "cpuUs": {
+            "user": 37,
+            "system": 0
+          },
+          "pull": 50
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.009916999999404652,
+          "cpuUs": {
+            "user": 11,
+            "system": 0
+          },
+          "pull": 50
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 195.9197919999997,
+          "cpuUs": {
+            "user": 192707,
+            "system": 2978
+          },
+          "pull": 51
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 9.558416999999281,
+          "cpuUs": {
+            "user": 9538,
+            "system": 927
+          },
+          "pull": 51
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 158.12395899999956,
+          "cpuUs": {
+            "user": 154385,
+            "system": 1979
+          },
+          "pull": 52
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.955707999999504,
+          "cpuUs": {
+            "user": 957,
+            "system": 0
+          },
+          "pull": 52
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 196.08033299999988,
+          "cpuUs": {
+            "user": 194124,
+            "system": 968
+          },
+          "pull": 53
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 9.092250000000604,
+          "cpuUs": {
+            "user": 9094,
+            "system": 0
+          },
+          "pull": 53
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.06624999999985448,
+          "cpuUs": {
+            "user": 67,
+            "system": 0
+          },
+          "pull": 54
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.007875000000240107,
+          "cpuUs": {
+            "user": 8,
+            "system": 0
+          },
+          "pull": 54
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 194.87383299999965,
+          "cpuUs": {
+            "user": 189850,
+            "system": 3971
+          },
+          "pull": 55
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 9.522334000000228,
+          "cpuUs": {
+            "user": 10112,
+            "system": 31
+          },
+          "pull": 55
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.0722909999994954,
+          "cpuUs": {
+            "user": 73,
+            "system": 0
+          },
+          "pull": 56
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.00820800000019517,
+          "cpuUs": {
+            "user": 9,
+            "system": 0
+          },
+          "pull": 56
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 175.94595900000058,
+          "cpuUs": {
+            "user": 173976,
+            "system": 1971
+          },
+          "pull": 57
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 8.682000000000698,
+          "cpuUs": {
+            "user": 8683,
+            "system": 0
+          },
+          "pull": 57
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.058749999999236024,
+          "cpuUs": {
+            "user": 60,
+            "system": 0
+          },
+          "pull": 58
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.008417000000008557,
+          "cpuUs": {
+            "user": 9,
+            "system": 0
+          },
+          "pull": 58
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 196.12137499999972,
+          "cpuUs": {
+            "user": 192117,
+            "system": 3996
+          },
+          "pull": 59
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 9.362667000000329,
+          "cpuUs": {
+            "user": 10483,
+            "system": 13
+          },
+          "pull": 59
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.08687499999996362,
+          "cpuUs": {
+            "user": 86,
+            "system": 3
+          },
+          "pull": 60
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.008291999999528343,
+          "cpuUs": {
+            "user": 8,
+            "system": 0
+          },
+          "pull": 60
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 195.2072079999998,
+          "cpuUs": {
+            "user": 190162,
+            "system": 1000
+          },
+          "pull": 61
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 8.476083000000472,
+          "cpuUs": {
+            "user": 8470,
+            "system": 0
+          },
+          "pull": 61
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.06366600000001199,
+          "cpuUs": {
+            "user": 65,
+            "system": 0
+          },
+          "pull": 62
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.009041999999681138,
+          "cpuUs": {
+            "user": 10,
+            "system": 0
+          },
+          "pull": 62
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 529.6443749999999,
+          "cpuUs": {
+            "user": 508516,
+            "system": 40234
+          },
+          "pull": 63
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 15.03966600000058,
+          "cpuUs": {
+            "user": 16290,
+            "system": 2985
+          },
+          "pull": 63
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.08679200000005949,
+          "cpuUs": {
+            "user": 85,
+            "system": 3
+          },
+          "pull": 64
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.009916999999404652,
+          "cpuUs": {
+            "user": 10,
+            "system": 1
+          },
+          "pull": 64
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 312.6253749999996,
+          "cpuUs": {
+            "user": 276514,
+            "system": 11790
+          },
+          "pull": 65
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 12.981667000000016,
+          "cpuUs": {
+            "user": 12333,
+            "system": 3067
+          },
+          "pull": 65
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.09112500000082946,
+          "cpuUs": {
+            "user": 90,
+            "system": 3
+          },
+          "pull": 66
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.011709000000337255,
+          "cpuUs": {
+            "user": 12,
+            "system": 1
+          },
+          "pull": 66
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 201.15258299999914,
+          "cpuUs": {
+            "user": 193620,
+            "system": 1000
+          },
+          "pull": 67
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 9.826457999999548,
+          "cpuUs": {
+            "user": 9857,
+            "system": 0
+          },
+          "pull": 67
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.06762499999967986,
+          "cpuUs": {
+            "user": 68,
+            "system": 0
+          },
+          "pull": 68
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.015124999999898137,
+          "cpuUs": {
+            "user": 17,
+            "system": 0
+          },
+          "pull": 68
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 195.74583299999904,
+          "cpuUs": {
+            "user": 192629,
+            "system": 2009
+          },
+          "pull": 69
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 14.868375000000015,
+          "cpuUs": {
+            "user": 20315,
+            "system": 2984
+          },
+          "pull": 69
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.07675000000017462,
+          "cpuUs": {
+            "user": 75,
+            "system": 2
+          },
+          "pull": 70
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.01391700000021956,
+          "cpuUs": {
+            "user": 14,
+            "system": 1
+          },
+          "pull": 70
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 208.34999999999854,
+          "cpuUs": {
+            "user": 195612,
+            "system": 1060
+          },
+          "pull": 71
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 8.372041999999055,
+          "cpuUs": {
+            "user": 8374,
+            "system": 0
+          },
+          "pull": 71
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.07041600000047765,
+          "cpuUs": {
+            "user": 72,
+            "system": 0
+          },
+          "pull": 72
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.008582999998907326,
+          "cpuUs": {
+            "user": 9,
+            "system": 0
+          },
+          "pull": 72
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 194.38750100000107,
+          "cpuUs": {
+            "user": 191380,
+            "system": 3003
+          },
+          "pull": 73
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 10.613292000000001,
+          "cpuUs": {
+            "user": 10358,
+            "system": 1020
+          },
+          "pull": 73
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.08549999999922875,
+          "cpuUs": {
+            "user": 84,
+            "system": 2
+          },
+          "pull": 74
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.009207999999489402,
+          "cpuUs": {
+            "user": 9,
+            "system": 1
+          },
+          "pull": 74
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 183.8625830000001,
+          "cpuUs": {
+            "user": 179807,
+            "system": 1002
+          },
+          "pull": 75
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 10.674333999999362,
+          "cpuUs": {
+            "user": 6683,
+            "system": 3994
+          },
+          "pull": 75
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.07241700000122364,
+          "cpuUs": {
+            "user": 72,
+            "system": 2
+          },
+          "pull": 76
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.01445899999998801,
+          "cpuUs": {
+            "user": 14,
+            "system": 1
+          },
+          "pull": 76
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 194.93533399999978,
+          "cpuUs": {
+            "user": 192924,
+            "system": 2005
+          },
+          "pull": 77
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 10.224833999998737,
+          "cpuUs": {
+            "user": 10829,
+            "system": 6
+          },
+          "pull": 77
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.07625000000007276,
+          "cpuUs": {
+            "user": 75,
+            "system": 2
+          },
+          "pull": 78
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.00908299999900919,
+          "cpuUs": {
+            "user": 10,
+            "system": 1
+          },
+          "pull": 78
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 176.7151670000003,
+          "cpuUs": {
+            "user": 176720,
+            "system": 1
+          },
+          "pull": 79
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 10.03754200000003,
+          "cpuUs": {
+            "user": 8042,
+            "system": 1999
+          },
+          "pull": 79
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.06912499999998545,
+          "cpuUs": {
+            "user": 68,
+            "system": 2
+          },
+          "pull": 80
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.014250000000174623,
+          "cpuUs": {
+            "user": 15,
+            "system": 0
+          },
+          "pull": 80
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 178.52549999999974,
+          "cpuUs": {
+            "user": 177538,
+            "system": 994
+          },
+          "pull": 81
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 10.141209000001254,
+          "cpuUs": {
+            "user": 10037,
+            "system": 1028
+          },
+          "pull": 81
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.06374999999934516,
+          "cpuUs": {
+            "user": 63,
+            "system": 1
+          },
+          "pull": 82
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.008041999999477412,
+          "cpuUs": {
+            "user": 9,
+            "system": 0
+          },
+          "pull": 82
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 162.82637500000055,
+          "cpuUs": {
+            "user": 158794,
+            "system": 1999
+          },
+          "pull": 83
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 8.381459000000177,
+          "cpuUs": {
+            "user": 8383,
+            "system": 0
+          },
+          "pull": 83
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.04841699999997218,
+          "cpuUs": {
+            "user": 50,
+            "system": 0
+          },
+          "pull": 84
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.007874999999330612,
+          "cpuUs": {
+            "user": 8,
+            "system": 0
+          },
+          "pull": 84
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 143.74754100000064,
+          "cpuUs": {
+            "user": 140753,
+            "system": 2990
+          },
+          "pull": 85
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 9.101833999999144,
+          "cpuUs": {
+            "user": 9973,
+            "system": 28
+          },
+          "pull": 85
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.048708000000260654,
+          "cpuUs": {
+            "user": 48,
+            "system": 2
+          },
+          "pull": 86
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.008249999998952262,
+          "cpuUs": {
+            "user": 9,
+            "system": 0
+          },
+          "pull": 86
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 193.72299999999996,
+          "cpuUs": {
+            "user": 188685,
+            "system": 2995
+          },
+          "pull": 87
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 7.544917000001078,
+          "cpuUs": {
+            "user": 7547,
+            "system": 0
+          },
+          "pull": 87
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.05758299999979499,
+          "cpuUs": {
+            "user": 59,
+            "system": 0
+          },
+          "pull": 88
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.009083000000828179,
+          "cpuUs": {
+            "user": 9,
+            "system": 0
+          },
+          "pull": 88
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 193.88650099999904,
+          "cpuUs": {
+            "user": 191885,
+            "system": 2002
+          },
+          "pull": 89
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 9.475124999999025,
+          "cpuUs": {
+            "user": 10622,
+            "system": 0
+          },
+          "pull": 89
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.05616600000030303,
+          "cpuUs": {
+            "user": 57,
+            "system": 0
+          },
+          "pull": 90
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.008290999998280313,
+          "cpuUs": {
+            "user": 9,
+            "system": 0
+          },
+          "pull": 90
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 194.0610830000005,
+          "cpuUs": {
+            "user": 192123,
+            "system": 1946
+          },
+          "pull": 91
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 8.377666000000318,
+          "cpuUs": {
+            "user": 8380,
+            "system": 0
+          },
+          "pull": 91
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.053541999999652035,
+          "cpuUs": {
+            "user": 55,
+            "system": 0
+          },
+          "pull": 92
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.009207999999489402,
+          "cpuUs": {
+            "user": 10,
+            "system": 0
+          },
+          "pull": 92
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 193.51383400000122,
+          "cpuUs": {
+            "user": 191500,
+            "system": 2005
+          },
+          "pull": 93
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 13.81841600000007,
+          "cpuUs": {
+            "user": 24305,
+            "system": 1072
+          },
+          "pull": 93
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.06679199999962293,
+          "cpuUs": {
+            "user": 66,
+            "system": 2
+          },
+          "pull": 94
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.008875000001353328,
+          "cpuUs": {
+            "user": 9,
+            "system": 0
+          },
+          "pull": 94
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 208.16920799999934,
+          "cpuUs": {
+            "user": 197701,
+            "system": 25
+          },
+          "pull": 95
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 8.303332999999839,
+          "cpuUs": {
+            "user": 8305,
+            "system": 0
+          },
+          "pull": 95
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.06920799999898009,
+          "cpuUs": {
+            "user": 71,
+            "system": 0
+          },
+          "pull": 96
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.008958000000347965,
+          "cpuUs": {
+            "user": 9,
+            "system": 0
+          },
+          "pull": 96
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 199.07870899999944,
+          "cpuUs": {
+            "user": 195455,
+            "system": 0
+          },
+          "pull": 97
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 8.40741700000035,
+          "cpuUs": {
+            "user": 8410,
+            "system": 0
+          },
+          "pull": 97
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.04700000000048021,
+          "cpuUs": {
+            "user": 48,
+            "system": 0
+          },
+          "pull": 98
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.008166000001438078,
+          "cpuUs": {
+            "user": 9,
+            "system": 0
+          },
+          "pull": 98
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 194.45870800000012,
+          "cpuUs": {
+            "user": 193735,
+            "system": 0
+          },
+          "pull": 99
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 9.333624999999302,
+          "cpuUs": {
+            "user": 10184,
+            "system": 5
+          },
+          "pull": 99
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.06908300000031886,
+          "cpuUs": {
+            "user": 68,
+            "system": 2
+          },
+          "pull": 100
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.008332999999765889,
+          "cpuUs": {
+            "user": 9,
+            "system": 0
+          },
+          "pull": 100
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 196.1359169999996,
+          "cpuUs": {
+            "user": 197384,
+            "system": 0
+          },
+          "pull": 101
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 8.233667000000423,
+          "cpuUs": {
+            "user": 8235,
+            "system": 0
+          },
+          "pull": 101
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.0553330000002461,
+          "cpuUs": {
+            "user": 56,
+            "system": 0
+          },
+          "pull": 102
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.008709000001545064,
+          "cpuUs": {
+            "user": 9,
+            "system": 0
+          },
+          "pull": 102
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 196.49275000000125,
+          "cpuUs": {
+            "user": 194415,
+            "system": 0
+          },
+          "pull": 103
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 9.323458000000755,
+          "cpuUs": {
+            "user": 9830,
+            "system": 0
+          },
+          "pull": 103
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.054500000000189175,
+          "cpuUs": {
+            "user": 55,
+            "system": 0
+          },
+          "pull": 104
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.007416999998895335,
+          "cpuUs": {
+            "user": 8,
+            "system": 0
+          },
+          "pull": 104
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 195.08687499999905,
+          "cpuUs": {
+            "user": 195083,
+            "system": 0
+          },
+          "pull": 105
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 8.521833000000697,
+          "cpuUs": {
+            "user": 8524,
+            "system": 0
+          },
+          "pull": 105
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.05275000000074215,
+          "cpuUs": {
+            "user": 54,
+            "system": 0
+          },
+          "pull": 106
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.008292000000437838,
+          "cpuUs": {
+            "user": 9,
+            "system": 0
+          },
+          "pull": 106
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 66511.248114,
+          "cpuUs": {
+            "user": 62206040,
+            "system": 3958384
+          },
+          "pull": 107
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 626.760209,
+          "cpuUs": {
+            "user": 604008,
+            "system": 64841
+          },
+          "pull": 107
+        },
+        {
+          "name": "complete.abi",
+          "wallMs": 3564.9152100000065,
+          "cpuUs": {
+            "user": 3499451,
+            "system": 10628
+          }
+        },
+        {
+          "name": "complete.parse",
+          "wallMs": 596.544332999998,
+          "cpuUs": {
+            "user": 594259,
+            "system": 53057
+          }
+        },
+        {
+          "name": "evidence.compare",
+          "wallMs": 0.3563750000030268,
+          "cpuUs": {
+            "user": 359,
+            "system": 0
+          }
+        },
+        {
+          "name": "reply.encode",
+          "wallMs": 0.017959000004339032,
+          "cpuUs": {
+            "user": 19,
+            "system": 0
+          }
+        }
+      ],
+      "gc": {
+        "count": 11337,
+        "observerDurationMs": 66238.93921542168
+      }
+    },
+    {
+      "run": 1,
+      "temperature": "same-module-session-reuse",
+      "wallMs": 17469.55813199999,
+      "cpuUs": {
+        "user": 17327326,
+        "system": 107206
+      },
+      "phases": {
+        "start.abi": {
+          "calls": 1,
+          "wallMs": 572.3582920000044,
+          "userCpuUs": 554716,
+          "systemCpuUs": 3562
+        },
+        "start.parse": {
+          "calls": 1,
+          "wallMs": 0.013458000001264736,
+          "userCpuUs": 13,
+          "systemCpuUs": 0
+        },
+        "pull.abi": {
+          "calls": 108,
+          "wallMs": 11341.050802999991,
+          "userCpuUs": 11207723,
+          "systemCpuUs": 24656
+        },
+        "pull.parse": {
+          "calls": 108,
+          "wallMs": 1142.8262510001077,
+          "userCpuUs": 1268519,
+          "systemCpuUs": 25556
+        },
+        "proposal.encode": {
+          "calls": 1,
+          "wallMs": 0.060582999998587184,
+          "userCpuUs": 62,
+          "systemCpuUs": 0
+        },
+        "propose.abi": {
+          "calls": 1,
+          "wallMs": 0.11699999999837019,
+          "userCpuUs": 118,
+          "systemCpuUs": 0
+        },
+        "propose.parse": {
+          "calls": 1,
+          "wallMs": 0.007083000004058704,
+          "userCpuUs": 7,
+          "systemCpuUs": 0
+        },
+        "receipt.compare": {
+          "calls": 1,
+          "wallMs": 0.028084000005037524,
+          "userCpuUs": 29,
+          "systemCpuUs": 0
+        },
+        "complete.abi": {
+          "calls": 1,
+          "wallMs": 3648.205335999999,
+          "userCpuUs": 3561495,
+          "systemCpuUs": 6640
+        },
+        "complete.parse": {
+          "calls": 1,
+          "wallMs": 642.3932919999934,
+          "userCpuUs": 661903,
+          "systemCpuUs": 46416
+        },
+        "evidence.compare": {
+          "calls": 1,
+          "wallMs": 0.24029200000222772,
+          "userCpuUs": 2699,
+          "systemCpuUs": 0
+        },
+        "reply.encode": {
+          "calls": 1,
+          "wallMs": 0.01504199999908451,
+          "userCpuUs": 16,
+          "systemCpuUs": 0
+        }
+      },
+      "wireBytes": 297519810,
+      "replyBytes": 2448,
+      "evidenceDigest": "sha256:ac2ee9ed020a0a4f5595b7e4cc3ba99979a43ce50397f7af5e3b566b11696976",
+      "historyCount": 1,
+      "memorySamplingMs": 2.2855770000460325,
+      "memorySamples": [
+        {
+          "label": "before-start",
+          "atMs": 0.0028749999910360202,
+          "rss": 1939517440,
+          "heapTotal": 360865792,
+          "heapUsed": 336082448,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "after-start",
+          "atMs": 572.4065410000039,
+          "rss": 1945284608,
+          "heapTotal": 360865792,
+          "heapUsed": 336101240,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-0-batch",
+          "atMs": 782.6201250000013,
+          "rss": 1953824768,
+          "heapTotal": 369852416,
+          "heapUsed": 341312952,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-1-batch",
+          "atMs": 782.7590829999972,
+          "rss": 1953824768,
+          "heapTotal": 369852416,
+          "heapUsed": 341322152,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-2-batch",
+          "atMs": 995.1199579999957,
+          "rss": 1960902656,
+          "heapTotal": 377233408,
+          "heapUsed": 343678208,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-3-batch",
+          "atMs": 995.231667,
+          "rss": 1960902656,
+          "heapTotal": 377233408,
+          "heapUsed": 343687416,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-4-batch",
+          "atMs": 1205.1263749999925,
+          "rss": 1963909120,
+          "heapTotal": 380198912,
+          "heapUsed": 353452872,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-5-batch",
+          "atMs": 1205.217875000002,
+          "rss": 1963909120,
+          "heapTotal": 380198912,
+          "heapUsed": 353462064,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-6-batch",
+          "atMs": 1428.7440839999908,
+          "rss": 1964056576,
+          "heapTotal": 380182528,
+          "heapUsed": 346911016,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-7-batch",
+          "atMs": 1428.8322499999922,
+          "rss": 1964056576,
+          "heapTotal": 380182528,
+          "heapUsed": 346920560,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-8-batch",
+          "atMs": 1632.1271669999987,
+          "rss": 1966858240,
+          "heapTotal": 383119360,
+          "heapUsed": 356735760,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-9-batch",
+          "atMs": 1632.211958999993,
+          "rss": 1966858240,
+          "heapTotal": 383119360,
+          "heapUsed": 356744944,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-10-batch",
+          "atMs": 1837.1594590000022,
+          "rss": 1966907392,
+          "heapTotal": 383115264,
+          "heapUsed": 349883256,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-11-batch",
+          "atMs": 1837.239333999998,
+          "rss": 1966907392,
+          "heapTotal": 383115264,
+          "heapUsed": 349892472,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-12-batch",
+          "atMs": 2038.3317919999972,
+          "rss": 1969790976,
+          "heapTotal": 386052096,
+          "heapUsed": 359664048,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-13-batch",
+          "atMs": 2038.4238760000007,
+          "rss": 1969790976,
+          "heapTotal": 386052096,
+          "heapUsed": 359673288,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-14-batch",
+          "atMs": 2242.6278759999987,
+          "rss": 1969901568,
+          "heapTotal": 386105344,
+          "heapUsed": 352913144,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-15-batch",
+          "atMs": 2242.712750999999,
+          "rss": 1969901568,
+          "heapTotal": 386105344,
+          "heapUsed": 352922360,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-16-batch",
+          "atMs": 2446.726041999995,
+          "rss": 1972785152,
+          "heapTotal": 389087232,
+          "heapUsed": 362692608,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-17-batch",
+          "atMs": 2446.8137089999946,
+          "rss": 1972785152,
+          "heapTotal": 389087232,
+          "heapUsed": 362701824,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-18-batch",
+          "atMs": 2651.9755009999935,
+          "rss": 1972887552,
+          "heapTotal": 389087232,
+          "heapUsed": 355994760,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-19-batch",
+          "atMs": 2652.073875999995,
+          "rss": 1972887552,
+          "heapTotal": 389087232,
+          "heapUsed": 356004016,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-20-batch",
+          "atMs": 2855.2212089999957,
+          "rss": 1975771136,
+          "heapTotal": 392073216,
+          "heapUsed": 365777520,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-21-batch",
+          "atMs": 2855.318042999992,
+          "rss": 1975771136,
+          "heapTotal": 392073216,
+          "heapUsed": 365786784,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-22-batch",
+          "atMs": 3057.0272509999922,
+          "rss": 1975869440,
+          "heapTotal": 392069120,
+          "heapUsed": 358874160,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-23-batch",
+          "atMs": 3057.1192089999968,
+          "rss": 1975869440,
+          "heapTotal": 392069120,
+          "heapUsed": 358883384,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-24-batch",
+          "atMs": 3259.2806259999925,
+          "rss": 1978753024,
+          "heapTotal": 395051008,
+          "heapUsed": 368657552,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-25-batch",
+          "atMs": 3259.3647930000006,
+          "rss": 1978753024,
+          "heapTotal": 395051008,
+          "heapUsed": 368666792,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-26-batch",
+          "atMs": 3461.7489179999975,
+          "rss": 1978855424,
+          "heapTotal": 395051008,
+          "heapUsed": 361840512,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-27-batch",
+          "atMs": 3461.845292999991,
+          "rss": 1978855424,
+          "heapTotal": 395051008,
+          "heapUsed": 361849752,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-28-batch",
+          "atMs": 3664.577250999995,
+          "rss": 1981743104,
+          "heapTotal": 398024704,
+          "heapUsed": 371624904,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-29-batch",
+          "atMs": 3664.6827099999937,
+          "rss": 1981743104,
+          "heapTotal": 398024704,
+          "heapUsed": 371634136,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-30-batch",
+          "atMs": 3868.259917999996,
+          "rss": 1981923328,
+          "heapTotal": 398024704,
+          "heapUsed": 364834824,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-31-batch",
+          "atMs": 3868.372292999993,
+          "rss": 1981923328,
+          "heapTotal": 398024704,
+          "heapUsed": 364844048,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-32-batch",
+          "atMs": 4073.8690849999984,
+          "rss": 1984675840,
+          "heapTotal": 400994304,
+          "heapUsed": 374592624,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-33-batch",
+          "atMs": 4073.975875999997,
+          "rss": 1984675840,
+          "heapTotal": 400994304,
+          "heapUsed": 374601864,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-34-batch",
+          "atMs": 4280.935459999993,
+          "rss": 1984847872,
+          "heapTotal": 401035264,
+          "heapUsed": 367818400,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-35-batch",
+          "atMs": 4281.035959999994,
+          "rss": 1984847872,
+          "heapTotal": 401035264,
+          "heapUsed": 367827680,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-36-batch",
+          "atMs": 4486.18441799999,
+          "rss": 1987866624,
+          "heapTotal": 404062208,
+          "heapUsed": 377643224,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-37-batch",
+          "atMs": 4486.29441799999,
+          "rss": 1987866624,
+          "heapTotal": 404062208,
+          "heapUsed": 377652504,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-38-batch",
+          "atMs": 4695.295585,
+          "rss": 1987874816,
+          "heapTotal": 404062208,
+          "heapUsed": 370945408,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-39-batch",
+          "atMs": 4695.417126999993,
+          "rss": 1987874816,
+          "heapTotal": 404062208,
+          "heapUsed": 370954688,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-40-batch",
+          "atMs": 4897.489501000004,
+          "rss": 1990893568,
+          "heapTotal": 407089152,
+          "heapUsed": 380763376,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-41-batch",
+          "atMs": 4897.604418000003,
+          "rss": 1990893568,
+          "heapTotal": 407089152,
+          "heapUsed": 380772656,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-42-batch",
+          "atMs": 5086.858959999998,
+          "rss": 1990901760,
+          "heapTotal": 407089152,
+          "heapUsed": 373864472,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-43-batch",
+          "atMs": 5086.964750999992,
+          "rss": 1990901760,
+          "heapTotal": 407089152,
+          "heapUsed": 373873752,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-44-batch",
+          "atMs": 5291.167835,
+          "rss": 1993920512,
+          "heapTotal": 410116096,
+          "heapUsed": 383692376,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-45-batch",
+          "atMs": 5291.268500999999,
+          "rss": 1993920512,
+          "heapTotal": 410116096,
+          "heapUsed": 383701656,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-46-batch",
+          "atMs": 5494.2412519999925,
+          "rss": 1993932800,
+          "heapTotal": 410116096,
+          "heapUsed": 376897496,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-47-batch",
+          "atMs": 5494.336251999994,
+          "rss": 1993932800,
+          "heapTotal": 410116096,
+          "heapUsed": 376906728,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-48-batch",
+          "atMs": 5696.050084999995,
+          "rss": 1996951552,
+          "heapTotal": 413147136,
+          "heapUsed": 386724312,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-49-decision",
+          "atMs": 5696.222668000002,
+          "rss": 1996951552,
+          "heapTotal": 413147136,
+          "heapUsed": 386730952,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-50-batch",
+          "atMs": 5696.504292999991,
+          "rss": 1996951552,
+          "heapTotal": 413147136,
+          "heapUsed": 386759720,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-51-batch",
+          "atMs": 5900.373542999994,
+          "rss": 1996972032,
+          "heapTotal": 413147136,
+          "heapUsed": 379900296,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-52-batch",
+          "atMs": 6058.937751999998,
+          "rss": 1997234176,
+          "heapTotal": 413454336,
+          "heapUsed": 381086944,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-53-batch",
+          "atMs": 6263.0672519999935,
+          "rss": 2000379904,
+          "heapTotal": 416591872,
+          "heapUsed": 391274200,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-54-batch",
+          "atMs": 6263.200127000004,
+          "rss": 2000379904,
+          "heapTotal": 416591872,
+          "heapUsed": 391283472,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-55-batch",
+          "atMs": 6467.010001999995,
+          "rss": 1999970304,
+          "heapTotal": 416141312,
+          "heapUsed": 382992608,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-56-batch",
+          "atMs": 6467.120376999999,
+          "rss": 1999970304,
+          "heapTotal": 416141312,
+          "heapUsed": 383001864,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-57-batch",
+          "atMs": 6658.600668999992,
+          "rss": 2002853888,
+          "heapTotal": 419127296,
+          "heapUsed": 392693224,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-58-batch",
+          "atMs": 6658.722959999999,
+          "rss": 2002853888,
+          "heapTotal": 419127296,
+          "heapUsed": 392702432,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-59-batch",
+          "atMs": 6862.579668999999,
+          "rss": 2002948096,
+          "heapTotal": 419115008,
+          "heapUsed": 385844536,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-60-batch",
+          "atMs": 6862.705669000003,
+          "rss": 2002948096,
+          "heapTotal": 419115008,
+          "heapUsed": 385853784,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-61-batch",
+          "atMs": 7065.857793999996,
+          "rss": 2005835776,
+          "heapTotal": 422109184,
+          "heapUsed": 395670904,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-62-batch",
+          "atMs": 7065.970627000002,
+          "rss": 2005835776,
+          "heapTotal": 422109184,
+          "heapUsed": 395680136,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-63-batch",
+          "atMs": 7280.169918999993,
+          "rss": 2027532288,
+          "heapTotal": 422105088,
+          "heapUsed": 388801984,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-64-batch",
+          "atMs": 7280.299835999991,
+          "rss": 2027532288,
+          "heapTotal": 422105088,
+          "heapUsed": 388811240,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-65-batch",
+          "atMs": 7486.796711000003,
+          "rss": 2035396608,
+          "heapTotal": 425099264,
+          "heapUsed": 398657848,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-66-batch",
+          "atMs": 7486.912419,
+          "rss": 2035396608,
+          "heapTotal": 425099264,
+          "heapUsed": 398667096,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-67-batch",
+          "atMs": 7689.823002999998,
+          "rss": 2035412992,
+          "heapTotal": 425091072,
+          "heapUsed": 391757192,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-68-batch",
+          "atMs": 7689.945210999998,
+          "rss": 2035412992,
+          "heapTotal": 425091072,
+          "heapUsed": 391766448,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-69-batch",
+          "atMs": 7891.850628,
+          "rss": 2038296576,
+          "heapTotal": 428077056,
+          "heapUsed": 401631080,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-70-batch",
+          "atMs": 7891.975003,
+          "rss": 2038296576,
+          "heapTotal": 428077056,
+          "heapUsed": 401640336,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-71-batch",
+          "atMs": 8098.957960999993,
+          "rss": 2038398976,
+          "heapTotal": 428072960,
+          "heapUsed": 394739896,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-72-batch",
+          "atMs": 8099.112836,
+          "rss": 2038398976,
+          "heapTotal": 428072960,
+          "heapUsed": 394749152,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-73-batch",
+          "atMs": 8386.076627999995,
+          "rss": 1915011072,
+          "heapTotal": 230236160,
+          "heapUsed": 177726664,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-74-batch",
+          "atMs": 8386.213919999995,
+          "rss": 1915011072,
+          "heapTotal": 230236160,
+          "heapUsed": 177735920,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-75-batch",
+          "atMs": 8600.105836000002,
+          "rss": 1917898752,
+          "heapTotal": 233218048,
+          "heapUsed": 187555160,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-76-batch",
+          "atMs": 8600.24079499999,
+          "rss": 1917898752,
+          "heapTotal": 233218048,
+          "heapUsed": 187564416,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-77-batch",
+          "atMs": 8806.564335999996,
+          "rss": 1917997056,
+          "heapTotal": 233222144,
+          "heapUsed": 180214040,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-78-batch",
+          "atMs": 8806.694128000003,
+          "rss": 1917997056,
+          "heapTotal": 233222144,
+          "heapUsed": 180223280,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-79-batch",
+          "atMs": 8999.083002999992,
+          "rss": 1921273856,
+          "heapTotal": 236204032,
+          "heapUsed": 190021824,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-80-batch",
+          "atMs": 8999.19842,
+          "rss": 1921273856,
+          "heapTotal": 236204032,
+          "heapUsed": 190032192,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-81-batch",
+          "atMs": 9186.216545000003,
+          "rss": 1921363968,
+          "heapTotal": 236204032,
+          "heapUsed": 183147320,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-82-batch",
+          "atMs": 9186.360711999994,
+          "rss": 1921363968,
+          "heapTotal": 236204032,
+          "heapUsed": 183156568,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-83-batch",
+          "atMs": 9356.311002999995,
+          "rss": 1924247552,
+          "heapTotal": 239181824,
+          "heapUsed": 192993800,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-84-batch",
+          "atMs": 9356.425002999997,
+          "rss": 1924247552,
+          "heapTotal": 239181824,
+          "heapUsed": 193002616,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-85-batch",
+          "atMs": 9509.989377999998,
+          "rss": 1924321280,
+          "heapTotal": 239157248,
+          "heapUsed": 186018776,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-86-batch",
+          "atMs": 9510.075669999991,
+          "rss": 1924321280,
+          "heapTotal": 239157248,
+          "heapUsed": 186027464,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-87-batch",
+          "atMs": 9708.56283699999,
+          "rss": 1926942720,
+          "heapTotal": 241860608,
+          "heapUsed": 194648232,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-88-batch",
+          "atMs": 9708.653504000002,
+          "rss": 1926942720,
+          "heapTotal": 241860608,
+          "heapUsed": 194657040,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-89-batch",
+          "atMs": 9912.682753999994,
+          "rss": 1927479296,
+          "heapTotal": 242180096,
+          "heapUsed": 189089600,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-90-batch",
+          "atMs": 9912.782961999997,
+          "rss": 1927479296,
+          "heapTotal": 242180096,
+          "heapUsed": 189098424,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-91-batch",
+          "atMs": 10115.466212,
+          "rss": 1930366976,
+          "heapTotal": 245178368,
+          "heapUsed": 198888360,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-92-batch",
+          "atMs": 10115.553128999993,
+          "rss": 1930366976,
+          "heapTotal": 245178368,
+          "heapUsed": 198897168,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-93-batch",
+          "atMs": 10320.636794999999,
+          "rss": 1930469376,
+          "heapTotal": 245170176,
+          "heapUsed": 192113720,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-94-batch",
+          "atMs": 10320.757587,
+          "rss": 1930469376,
+          "heapTotal": 245170176,
+          "heapUsed": 192122528,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-95-batch",
+          "atMs": 10524.315545999998,
+          "rss": 1933357056,
+          "heapTotal": 248160256,
+          "heapUsed": 201968280,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-96-batch",
+          "atMs": 10524.424711999993,
+          "rss": 1933357056,
+          "heapTotal": 248160256,
+          "heapUsed": 201977072,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-97-batch",
+          "atMs": 10731.97925399999,
+          "rss": 1933459456,
+          "heapTotal": 248160256,
+          "heapUsed": 195134592,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-98-batch",
+          "atMs": 10732.07512899999,
+          "rss": 1933459456,
+          "heapTotal": 248160256,
+          "heapUsed": 195143392,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-99-batch",
+          "atMs": 10936.38821199999,
+          "rss": 1936343040,
+          "heapTotal": 251146240,
+          "heapUsed": 204947600,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-100-batch",
+          "atMs": 10936.491295999993,
+          "rss": 1936343040,
+          "heapTotal": 251146240,
+          "heapUsed": 204956416,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-101-batch",
+          "atMs": 11142.511046,
+          "rss": 1936449536,
+          "heapTotal": 251150336,
+          "heapUsed": 198122600,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-102-batch",
+          "atMs": 11142.604838,
+          "rss": 1936449536,
+          "heapTotal": 251150336,
+          "heapUsed": 198131440,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-103-batch",
+          "atMs": 11345.617253999997,
+          "rss": 1939337216,
+          "heapTotal": 254136320,
+          "heapUsed": 207931112,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-104-batch",
+          "atMs": 11345.718213,
+          "rss": 1939337216,
+          "heapTotal": 254136320,
+          "heapUsed": 207939936,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-105-batch",
+          "atMs": 11550.308670999992,
+          "rss": 1939542016,
+          "heapTotal": 254140416,
+          "heapUsed": 201078880,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-106-batch",
+          "atMs": 11550.427213000003,
+          "rss": 1939542016,
+          "heapTotal": 254140416,
+          "heapUsed": 201087728,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "pull-107-batch",
+          "atMs": 13085.803671999995,
+          "rss": 1982447616,
+          "heapTotal": 362696704,
+          "heapUsed": 319788320,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "after-completion",
+          "atMs": 17384.398715999996,
+          "rss": 2053013504,
+          "heapTotal": 449732608,
+          "heapUsed": 407698240,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        },
+        {
+          "label": "after-observer-drain",
+          "atMs": 17469.497881999996,
+          "rss": 2053144576,
+          "heapTotal": 449732608,
+          "heapUsed": 410711056,
+          "external": 1571488487,
+          "arrayBuffers": 31997898,
+          "wasmLinearBytes": 1535967232
+        }
+      ],
+      "resourceUsage": {
+        "userCPUTime": 97109763,
+        "systemCPUTime": 4522248,
+        "maxRSS": 2072820,
+        "sharedMemorySize": 0,
+        "unsharedDataSize": 0,
+        "unsharedStackSize": 0,
+        "minorPageFault": 602560,
+        "majorPageFault": 0,
+        "swappedOut": 0,
+        "fsRead": 0,
+        "fsWrite": 0,
+        "ipcSent": 0,
+        "ipcReceived": 0,
+        "signalsCount": 0,
+        "voluntaryContextSwitches": 309123,
+        "involuntaryContextSwitches": 1786
+      },
+      "gcWindow": {
+        "fromMs": 84576.122623,
+        "toMs": 102045.680755
+      },
+      "calls": [
+        {
+          "name": "start",
+          "bytes": 62
+        },
+        {
+          "name": "pull",
+          "bytes": 2949102,
+          "pull": 0
+        },
+        {
+          "name": "pull",
+          "bytes": 2436,
+          "pull": 1
+        },
+        {
+          "name": "pull",
+          "bytes": 2919688,
+          "pull": 2
+        },
+        {
+          "name": "pull",
+          "bytes": 2446,
+          "pull": 3
+        },
+        {
+          "name": "pull",
+          "bytes": 2959132,
+          "pull": 4
+        },
+        {
+          "name": "pull",
+          "bytes": 2431,
+          "pull": 5
+        },
+        {
+          "name": "pull",
+          "bytes": 2943346,
+          "pull": 6
+        },
+        {
+          "name": "pull",
+          "bytes": 2420,
+          "pull": 7
+        },
+        {
+          "name": "pull",
+          "bytes": 2930268,
+          "pull": 8
+        },
+        {
+          "name": "pull",
+          "bytes": 2423,
+          "pull": 9
+        },
+        {
+          "name": "pull",
+          "bytes": 2927843,
+          "pull": 10
+        },
+        {
+          "name": "pull",
+          "bytes": 2429,
+          "pull": 11
+        },
+        {
+          "name": "pull",
+          "bytes": 2930446,
+          "pull": 12
+        },
+        {
+          "name": "pull",
+          "bytes": 2450,
+          "pull": 13
+        },
+        {
+          "name": "pull",
+          "bytes": 2983154,
+          "pull": 14
+        },
+        {
+          "name": "pull",
+          "bytes": 2427,
+          "pull": 15
+        },
+        {
+          "name": "pull",
+          "bytes": 2974880,
+          "pull": 16
+        },
+        {
+          "name": "pull",
+          "bytes": 2431,
+          "pull": 17
+        },
+        {
+          "name": "pull",
+          "bytes": 2975668,
+          "pull": 18
+        },
+        {
+          "name": "pull",
+          "bytes": 2465,
+          "pull": 19
+        },
+        {
+          "name": "pull",
+          "bytes": 2977779,
+          "pull": 20
+        },
+        {
+          "name": "pull",
+          "bytes": 2474,
+          "pull": 21
+        },
+        {
+          "name": "pull",
+          "bytes": 2976765,
+          "pull": 22
+        },
+        {
+          "name": "pull",
+          "bytes": 2439,
+          "pull": 23
+        },
+        {
+          "name": "pull",
+          "bytes": 2977034,
+          "pull": 24
+        },
+        {
+          "name": "pull",
+          "bytes": 2456,
+          "pull": 25
+        },
+        {
+          "name": "pull",
+          "bytes": 2974065,
+          "pull": 26
+        },
+        {
+          "name": "pull",
+          "bytes": 2453,
+          "pull": 27
+        },
+        {
+          "name": "pull",
+          "bytes": 2968896,
+          "pull": 28
+        },
+        {
+          "name": "pull",
+          "bytes": 2442,
+          "pull": 29
+        },
+        {
+          "name": "pull",
+          "bytes": 2967658,
+          "pull": 30
+        },
+        {
+          "name": "pull",
+          "bytes": 2439,
+          "pull": 31
+        },
+        {
+          "name": "pull",
+          "bytes": 2962723,
+          "pull": 32
+        },
+        {
+          "name": "pull",
+          "bytes": 2453,
+          "pull": 33
+        },
+        {
+          "name": "pull",
+          "bytes": 3002955,
+          "pull": 34
+        },
+        {
+          "name": "pull",
+          "bytes": 2489,
+          "pull": 35
+        },
+        {
+          "name": "pull",
+          "bytes": 3021788,
+          "pull": 36
+        },
+        {
+          "name": "pull",
+          "bytes": 2489,
+          "pull": 37
+        },
+        {
+          "name": "pull",
+          "bytes": 3021616,
+          "pull": 38
+        },
+        {
+          "name": "pull",
+          "bytes": 2492,
+          "pull": 39
+        },
+        {
+          "name": "pull",
+          "bytes": 3021696,
+          "pull": 40
+        },
+        {
+          "name": "pull",
+          "bytes": 2489,
+          "pull": 41
+        },
+        {
+          "name": "pull",
+          "bytes": 3021999,
+          "pull": 42
+        },
+        {
+          "name": "pull",
+          "bytes": 2489,
+          "pull": 43
+        },
+        {
+          "name": "pull",
+          "bytes": 3021279,
+          "pull": 44
+        },
+        {
+          "name": "pull",
+          "bytes": 2489,
+          "pull": 45
+        },
+        {
+          "name": "pull",
+          "bytes": 3021423,
+          "pull": 46
+        },
+        {
+          "name": "pull",
+          "bytes": 2446,
+          "pull": 47
+        },
+        {
+          "name": "pull",
+          "bytes": 3023445,
+          "pull": 48
+        },
+        {
+          "name": "pull",
+          "bytes": 1447,
+          "pull": 49
+        },
+        {
+          "name": "propose",
+          "bytes": 520
+        },
+        {
+          "name": "pull",
+          "bytes": 2489,
+          "pull": 50
+        },
+        {
+          "name": "pull",
+          "bytes": 3023893,
+          "pull": 51
+        },
+        {
+          "name": "pull",
+          "bytes": 299604,
+          "pull": 52
+        },
+        {
+          "name": "pull",
+          "bytes": 3133037,
+          "pull": 53
+        },
+        {
+          "name": "pull",
+          "bytes": 2483,
+          "pull": 54
+        },
+        {
+          "name": "pull",
+          "bytes": 2986697,
+          "pull": 55
+        },
+        {
+          "name": "pull",
+          "bytes": 2466,
+          "pull": 56
+        },
+        {
+          "name": "pull",
+          "bytes": 2979037,
+          "pull": 57
+        },
+        {
+          "name": "pull",
+          "bytes": 2439,
+          "pull": 58
+        },
+        {
+          "name": "pull",
+          "bytes": 2966623,
+          "pull": 59
+        },
+        {
+          "name": "pull",
+          "bytes": 2457,
+          "pull": 60
+        },
+        {
+          "name": "pull",
+          "bytes": 2988158,
+          "pull": 61
+        },
+        {
+          "name": "pull",
+          "bytes": 2446,
+          "pull": 62
+        },
+        {
+          "name": "pull",
+          "bytes": 2984107,
+          "pull": 63
+        },
+        {
+          "name": "pull",
+          "bytes": 2466,
+          "pull": 64
+        },
+        {
+          "name": "pull",
+          "bytes": 2986446,
+          "pull": 65
+        },
+        {
+          "name": "pull",
+          "bytes": 2463,
+          "pull": 66
+        },
+        {
+          "name": "pull",
+          "bytes": 2980869,
+          "pull": 67
+        },
+        {
+          "name": "pull",
+          "bytes": 2469,
+          "pull": 68
+        },
+        {
+          "name": "pull",
+          "bytes": 2978333,
+          "pull": 69
+        },
+        {
+          "name": "pull",
+          "bytes": 2466,
+          "pull": 70
+        },
+        {
+          "name": "pull",
+          "bytes": 2974079,
+          "pull": 71
+        },
+        {
+          "name": "pull",
+          "bytes": 2466,
+          "pull": 72
+        },
+        {
+          "name": "pull",
+          "bytes": 2974678,
+          "pull": 73
+        },
+        {
+          "name": "pull",
+          "bytes": 2469,
+          "pull": 74
+        },
+        {
+          "name": "pull",
+          "bytes": 2973512,
+          "pull": 75
+        },
+        {
+          "name": "pull",
+          "bytes": 2469,
+          "pull": 76
+        },
+        {
+          "name": "pull",
+          "bytes": 2977776,
+          "pull": 77
+        },
+        {
+          "name": "pull",
+          "bytes": 2454,
+          "pull": 78
+        },
+        {
+          "name": "pull",
+          "bytes": 2975910,
+          "pull": 79
+        },
+        {
+          "name": "pull",
+          "bytes": 2448,
+          "pull": 80
+        },
+        {
+          "name": "pull",
+          "bytes": 2976297,
+          "pull": 81
+        },
+        {
+          "name": "pull",
+          "bytes": 2457,
+          "pull": 82
+        },
+        {
+          "name": "pull",
+          "bytes": 2970337,
+          "pull": 83
+        },
+        {
+          "name": "pull",
+          "bytes": 2464,
+          "pull": 84
+        },
+        {
+          "name": "pull",
+          "bytes": 2947998,
+          "pull": 85
+        },
+        {
+          "name": "pull",
+          "bytes": 2377,
+          "pull": 86
+        },
+        {
+          "name": "pull",
+          "bytes": 2694857,
+          "pull": 87
+        },
+        {
+          "name": "pull",
+          "bytes": 2455,
+          "pull": 88
+        },
+        {
+          "name": "pull",
+          "bytes": 3015238,
+          "pull": 89
+        },
+        {
+          "name": "pull",
+          "bytes": 2467,
+          "pull": 90
+        },
+        {
+          "name": "pull",
+          "bytes": 2991959,
+          "pull": 91
+        },
+        {
+          "name": "pull",
+          "bytes": 2455,
+          "pull": 92
+        },
+        {
+          "name": "pull",
+          "bytes": 2985615,
+          "pull": 93
+        },
+        {
+          "name": "pull",
+          "bytes": 2449,
+          "pull": 94
+        },
+        {
+          "name": "pull",
+          "bytes": 2984103,
+          "pull": 95
+        },
+        {
+          "name": "pull",
+          "bytes": 2438,
+          "pull": 96
+        },
+        {
+          "name": "pull",
+          "bytes": 2981643,
+          "pull": 97
+        },
+        {
+          "name": "pull",
+          "bytes": 2446,
+          "pull": 98
+        },
+        {
+          "name": "pull",
+          "bytes": 2981483,
+          "pull": 99
+        },
+        {
+          "name": "pull",
+          "bytes": 2449,
+          "pull": 100
+        },
+        {
+          "name": "pull",
+          "bytes": 2982306,
+          "pull": 101
+        },
+        {
+          "name": "pull",
+          "bytes": 2475,
+          "pull": 102
+        },
+        {
+          "name": "pull",
+          "bytes": 2979959,
+          "pull": 103
+        },
+        {
+          "name": "pull",
+          "bytes": 2461,
+          "pull": 104
+        },
+        {
+          "name": "pull",
+          "bytes": 2981930,
+          "pull": 105
+        },
+        {
+          "name": "pull",
+          "bytes": 2482,
+          "pull": 106
+        },
+        {
+          "name": "pull",
+          "bytes": 69637166,
+          "pull": 107
+        },
+        {
+          "name": "complete",
+          "bytes": 69641761
+        }
+      ],
+      "perCallTimings": [
+        {
+          "name": "start.abi",
+          "wallMs": 572.3582920000044,
+          "cpuUs": {
+            "user": 554716,
+            "system": 3562
+          }
+        },
+        {
+          "name": "start.parse",
+          "wallMs": 0.013458000001264736,
+          "cpuUs": {
+            "user": 13,
+            "system": 0
+          }
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 198.36816699999326,
+          "cpuUs": {
+            "user": 195334,
+            "system": 0
+          },
+          "pull": 0
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 11.448124999995343,
+          "cpuUs": {
+            "user": 13845,
+            "system": 3997
+          },
+          "pull": 0
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.07120799999393057,
+          "cpuUs": {
+            "user": 72,
+            "system": 0
+          },
+          "pull": 1
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.010708000001613982,
+          "cpuUs": {
+            "user": 12,
+            "system": 0
+          },
+          "pull": 1
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 201.018167000002,
+          "cpuUs": {
+            "user": 192330,
+            "system": 803
+          },
+          "pull": 2
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 10.986084000003757,
+          "cpuUs": {
+            "user": 14851,
+            "system": 1049
+          },
+          "pull": 2
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.05349999999452848,
+          "cpuUs": {
+            "user": 52,
+            "system": 2
+          },
+          "pull": 3
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.009458000000449829,
+          "cpuUs": {
+            "user": 9,
+            "system": 0
+          },
+          "pull": 3
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 200.58491700000013,
+          "cpuUs": {
+            "user": 194672,
+            "system": 871
+          },
+          "pull": 4
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 8.955750000008265,
+          "cpuUs": {
+            "user": 8951,
+            "system": 0
+          },
+          "pull": 4
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.040457999988575466,
+          "cpuUs": {
+            "user": 42,
+            "system": 0
+          },
+          "pull": 5
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.008333000005222857,
+          "cpuUs": {
+            "user": 9,
+            "system": 0
+          },
+          "pull": 5
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 212.9751249999972,
+          "cpuUs": {
+            "user": 212088,
+            "system": 881
+          },
+          "pull": 6
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 10.197000000000116,
+          "cpuUs": {
+            "user": 10889,
+            "system": 0
+          },
+          "pull": 6
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.04745800000091549,
+          "cpuUs": {
+            "user": 48,
+            "system": 0
+          },
+          "pull": 7
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.007542000006651506,
+          "cpuUs": {
+            "user": 8,
+            "system": 0
+          },
+          "pull": 7
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 194.19754100000137,
+          "cpuUs": {
+            "user": 194194,
+            "system": 0
+          },
+          "pull": 8
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 8.75075000000652,
+          "cpuUs": {
+            "user": 8752,
+            "system": 0
+          },
+          "pull": 8
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.04137500000069849,
+          "cpuUs": {
+            "user": 42,
+            "system": 0
+          },
+          "pull": 9
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.007833000010577962,
+          "cpuUs": {
+            "user": 8,
+            "system": 0
+          },
+          "pull": 9
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 195.00983400001132,
+          "cpuUs": {
+            "user": 193967,
+            "system": 0
+          },
+          "pull": 10
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 9.592708000011044,
+          "cpuUs": {
+            "user": 10485,
+            "system": 0
+          },
+          "pull": 10
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.04491700000653509,
+          "cpuUs": {
+            "user": 45,
+            "system": 0
+          },
+          "pull": 11
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.007500000006984919,
+          "cpuUs": {
+            "user": 8,
+            "system": 0
+          },
+          "pull": 11
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 192.27037499999278,
+          "cpuUs": {
+            "user": 192275,
+            "system": 0
+          },
+          "pull": 12
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 8.469708000004175,
+          "cpuUs": {
+            "user": 8471,
+            "system": 0
+          },
+          "pull": 12
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.04237499998998828,
+          "cpuUs": {
+            "user": 43,
+            "system": 0
+          },
+          "pull": 13
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.008000000001629815,
+          "cpuUs": {
+            "user": 9,
+            "system": 0
+          },
+          "pull": 13
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 194.00170900000376,
+          "cpuUs": {
+            "user": 193378,
+            "system": 605
+          },
+          "pull": 14
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 9.842915999994148,
+          "cpuUs": {
+            "user": 10679,
+            "system": 49
+          },
+          "pull": 14
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.04520799999590963,
+          "cpuUs": {
+            "user": 46,
+            "system": 0
+          },
+          "pull": 15
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.0074579999927664176,
+          "cpuUs": {
+            "user": 8,
+            "system": 0
+          },
+          "pull": 15
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 194.69454199999745,
+          "cpuUs": {
+            "user": 192750,
+            "system": 883
+          },
+          "pull": 16
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 8.96220799999719,
+          "cpuUs": {
+            "user": 8964,
+            "system": 0
+          },
+          "pull": 16
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.04416700000001583,
+          "cpuUs": {
+            "user": 45,
+            "system": 0
+          },
+          "pull": 17
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.008042000001296401,
+          "cpuUs": {
+            "user": 8,
+            "system": 0
+          },
+          "pull": 17
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 194.6181660000002,
+          "cpuUs": {
+            "user": 194625,
+            "system": 0
+          },
+          "pull": 18
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 10.182999999989988,
+          "cpuUs": {
+            "user": 10162,
+            "system": 909
+          },
+          "pull": 18
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.05154200000106357,
+          "cpuUs": {
+            "user": 49,
+            "system": 3
+          },
+          "pull": 19
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.008000000001629815,
+          "cpuUs": {
+            "user": 9,
+            "system": 0
+          },
+          "pull": 19
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 193.94837600000028,
+          "cpuUs": {
+            "user": 192438,
+            "system": 0
+          },
+          "pull": 20
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 8.846375000008265,
+          "cpuUs": {
+            "user": 8848,
+            "system": 0
+          },
+          "pull": 20
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.04504200001247227,
+          "cpuUs": {
+            "user": 46,
+            "system": 0
+          },
+          "pull": 21
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.008584000010159798,
+          "cpuUs": {
+            "user": 10,
+            "system": 0
+          },
+          "pull": 21
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 191.2062089999963,
+          "cpuUs": {
+            "user": 191206,
+            "system": 0
+          },
+          "pull": 22
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 10.13337500000489,
+          "cpuUs": {
+            "user": 11000,
+            "system": 0
+          },
+          "pull": 22
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.051833000004990026,
+          "cpuUs": {
+            "user": 52,
+            "system": 0
+          },
+          "pull": 23
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.007582999998703599,
+          "cpuUs": {
+            "user": 8,
+            "system": 0
+          },
+          "pull": 23
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 192.93820899999992,
+          "cpuUs": {
+            "user": 190894,
+            "system": 0
+          },
+          "pull": 24
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 8.850416000001132,
+          "cpuUs": {
+            "user": 8852,
+            "system": 0
+          },
+          "pull": 24
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.041083999996772036,
+          "cpuUs": {
+            "user": 42,
+            "system": 0
+          },
+          "pull": 25
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.007625000012922101,
+          "cpuUs": {
+            "user": 8,
+            "system": 0
+          },
+          "pull": 25
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 192.11854199999652,
+          "cpuUs": {
+            "user": 192084,
+            "system": 0
+          },
+          "pull": 26
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 9.902499999996508,
+          "cpuUs": {
+            "user": 10269,
+            "system": 593
+          },
+          "pull": 26
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.05279099999461323,
+          "cpuUs": {
+            "user": 51,
+            "system": 3
+          },
+          "pull": 27
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.007334000008995645,
+          "cpuUs": {
+            "user": 8,
+            "system": 0
+          },
+          "pull": 27
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 193.4608329999901,
+          "cpuUs": {
+            "user": 191436,
+            "system": 0
+          },
+          "pull": 28
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 8.919332999998005,
+          "cpuUs": {
+            "user": 8921,
+            "system": 0
+          },
+          "pull": 28
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.05187500000465661,
+          "cpuUs": {
+            "user": 52,
+            "system": 0
+          },
+          "pull": 29
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.007875000010244548,
+          "cpuUs": {
+            "user": 9,
+            "system": 0
+          },
+          "pull": 29
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 192.7853749999922,
+          "cpuUs": {
+            "user": 192787,
+            "system": 0
+          },
+          "pull": 30
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 10.40258399999584,
+          "cpuUs": {
+            "user": 11384,
+            "system": 0
+          },
+          "pull": 30
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.05658400000538677,
+          "cpuUs": {
+            "user": 57,
+            "system": 0
+          },
+          "pull": 31
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.008959000013419427,
+          "cpuUs": {
+            "user": 10,
+            "system": 0
+          },
+          "pull": 31
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 196.18379099998856,
+          "cpuUs": {
+            "user": 194886,
+            "system": 0
+          },
+          "pull": 32
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 8.951207999998587,
+          "cpuUs": {
+            "user": 8953,
+            "system": 0
+          },
+          "pull": 32
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.04854200000409037,
+          "cpuUs": {
+            "user": 49,
+            "system": 0
+          },
+          "pull": 33
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.009290999994846061,
+          "cpuUs": {
+            "user": 9,
+            "system": 0
+          },
+          "pull": 33
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 196.29008399999293,
+          "cpuUs": {
+            "user": 191924,
+            "system": 0
+          },
+          "pull": 34
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 10.312333000008948,
+          "cpuUs": {
+            "user": 11150,
+            "system": 0
+          },
+          "pull": 34
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.05362500000046566,
+          "cpuUs": {
+            "user": 55,
+            "system": 0
+          },
+          "pull": 35
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.007666000004974194,
+          "cpuUs": {
+            "user": 8,
+            "system": 0
+          },
+          "pull": 35
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 195.797040999998,
+          "cpuUs": {
+            "user": 195811,
+            "system": 365
+          },
+          "pull": 36
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 8.990791999996873,
+          "cpuUs": {
+            "user": 8994,
+            "system": 0
+          },
+          "pull": 36
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.056375000000116415,
+          "cpuUs": {
+            "user": 57,
+            "system": 0
+          },
+          "pull": 37
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.009500000000116415,
+          "cpuUs": {
+            "user": 10,
+            "system": 1
+          },
+          "pull": 37
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 198.2793340000062,
+          "cpuUs": {
+            "user": 196284,
+            "system": 0
+          },
+          "pull": 38
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 10.34983399999328,
+          "cpuUs": {
+            "user": 10494,
+            "system": 844
+          },
+          "pull": 38
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.06912499999452848,
+          "cpuUs": {
+            "user": 67,
+            "system": 4
+          },
+          "pull": 39
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.008375000004889444,
+          "cpuUs": {
+            "user": 8,
+            "system": 0
+          },
+          "pull": 39
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 192.54962499999965,
+          "cpuUs": {
+            "user": 192556,
+            "system": 0
+          },
+          "pull": 40
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 9.159625000000233,
+          "cpuUs": {
+            "user": 9162,
+            "system": 0
+          },
+          "pull": 40
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.05470799999602605,
+          "cpuUs": {
+            "user": 56,
+            "system": 0
+          },
+          "pull": 41
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.010917000006884336,
+          "cpuUs": {
+            "user": 12,
+            "system": 0
+          },
+          "pull": 41
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 178.47820800000045,
+          "cpuUs": {
+            "user": 175647,
+            "system": 783
+          },
+          "pull": 42
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 10.414042000003974,
+          "cpuUs": {
+            "user": 11289,
+            "system": 9
+          },
+          "pull": 42
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.05129200000374112,
+          "cpuUs": {
+            "user": 50,
+            "system": 2
+          },
+          "pull": 43
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.008333000005222857,
+          "cpuUs": {
+            "user": 8,
+            "system": 1
+          },
+          "pull": 43
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 194.81708300000173,
+          "cpuUs": {
+            "user": 193757,
+            "system": 0
+          },
+          "pull": 44
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 9.026333999994677,
+          "cpuUs": {
+            "user": 9029,
+            "system": 0
+          },
+          "pull": 44
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.046958000006270595,
+          "cpuUs": {
+            "user": 48,
+            "system": 0
+          },
+          "pull": 45
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.009957999995094724,
+          "cpuUs": {
+            "user": 11,
+            "system": 0
+          },
+          "pull": 45
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 192.24779199999466,
+          "cpuUs": {
+            "user": 192240,
+            "system": 0
+          },
+          "pull": 46
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 10.358542000001762,
+          "cpuUs": {
+            "user": 11374,
+            "system": 0
+          },
+          "pull": 46
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.050791000001481734,
+          "cpuUs": {
+            "user": 52,
+            "system": 0
+          },
+          "pull": 47
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.007375000001047738,
+          "cpuUs": {
+            "user": 8,
+            "system": 0
+          },
+          "pull": 47
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 192.3404589999991,
+          "cpuUs": {
+            "user": 192348,
+            "system": 0
+          },
+          "pull": 48
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 9.008165999999619,
+          "cpuUs": {
+            "user": 9010,
+            "system": 0
+          },
+          "pull": 48
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.10650000000896398,
+          "cpuUs": {
+            "user": 108,
+            "system": 0
+          },
+          "pull": 49
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.013542000000597909,
+          "cpuUs": {
+            "user": 14,
+            "system": 0
+          },
+          "pull": 49
+        },
+        {
+          "name": "proposal.encode",
+          "wallMs": 0.060582999998587184,
+          "cpuUs": {
+            "user": 62,
+            "system": 0
+          }
+        },
+        {
+          "name": "propose.abi",
+          "wallMs": 0.11699999999837019,
+          "cpuUs": {
+            "user": 118,
+            "system": 0
+          }
+        },
+        {
+          "name": "propose.parse",
+          "wallMs": 0.007083000004058704,
+          "cpuUs": {
+            "user": 7,
+            "system": 0
+          }
+        },
+        {
+          "name": "receipt.compare",
+          "wallMs": 0.028084000005037524,
+          "cpuUs": {
+            "user": 29,
+            "system": 0
+          }
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.03625000000465661,
+          "cpuUs": {
+            "user": 37,
+            "system": 0
+          },
+          "pull": 50
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.010083000001031905,
+          "cpuUs": {
+            "user": 11,
+            "system": 0
+          },
+          "pull": 50
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 193.44704199999978,
+          "cpuUs": {
+            "user": 193031,
+            "system": 422
+          },
+          "pull": 51
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 10.05691700000898,
+          "cpuUs": {
+            "user": 10967,
+            "system": 45
+          },
+          "pull": 51
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 157.52633399999468,
+          "cpuUs": {
+            "user": 154489,
+            "system": 0
+          },
+          "pull": 52
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.9482500000012806,
+          "cpuUs": {
+            "user": 949,
+            "system": 0
+          },
+          "pull": 52
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 194.8023749999993,
+          "cpuUs": {
+            "user": 192978,
+            "system": 1799
+          },
+          "pull": 53
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 8.924457999994047,
+          "cpuUs": {
+            "user": 8927,
+            "system": 0
+          },
+          "pull": 53
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.07216599999810569,
+          "cpuUs": {
+            "user": 73,
+            "system": 0
+          },
+          "pull": 54
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.009083999990252778,
+          "cpuUs": {
+            "user": 10,
+            "system": 0
+          },
+          "pull": 54
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 193.26162499999919,
+          "cpuUs": {
+            "user": 192209,
+            "system": 0
+          },
+          "pull": 55
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 10.172583000006853,
+          "cpuUs": {
+            "user": 10772,
+            "system": 0
+          },
+          "pull": 55
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.06783400000131223,
+          "cpuUs": {
+            "user": 68,
+            "system": 0
+          },
+          "pull": 56
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.008042000001296401,
+          "cpuUs": {
+            "user": 8,
+            "system": 0
+          },
+          "pull": 56
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 182.38366700000188,
+          "cpuUs": {
+            "user": 178837,
+            "system": 0
+          },
+          "pull": 57
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 8.731791999991401,
+          "cpuUs": {
+            "user": 8734,
+            "system": 0
+          },
+          "pull": 57
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.07166699999652337,
+          "cpuUs": {
+            "user": 73,
+            "system": 0
+          },
+          "pull": 58
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.00870799999393057,
+          "cpuUs": {
+            "user": 10,
+            "system": 0
+          },
+          "pull": 58
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 193.8598750000092,
+          "cpuUs": {
+            "user": 192099,
+            "system": 716
+          },
+          "pull": 59
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 9.633499999996275,
+          "cpuUs": {
+            "user": 9579,
+            "system": 1053
+          },
+          "pull": 59
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.08229199999186676,
+          "cpuUs": {
+            "user": 84,
+            "system": 0
+          },
+          "pull": 60
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.00849999999627471,
+          "cpuUs": {
+            "user": 9,
+            "system": 0
+          },
+          "pull": 60
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 193.02962499999558,
+          "cpuUs": {
+            "user": 192040,
+            "system": 0
+          },
+          "pull": 61
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 9.764334000006784,
+          "cpuUs": {
+            "user": 8706,
+            "system": 0
+          },
+          "pull": 61
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.06379200000083074,
+          "cpuUs": {
+            "user": 65,
+            "system": 0
+          },
+          "pull": 62
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.007707999990088865,
+          "cpuUs": {
+            "user": 8,
+            "system": 0
+          },
+          "pull": 62
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 204.37220800000068,
+          "cpuUs": {
+            "user": 195482,
+            "system": 7805
+          },
+          "pull": 63
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 9.459166999993613,
+          "cpuUs": {
+            "user": 10372,
+            "system": 31
+          },
+          "pull": 63
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.07437500001105946,
+          "cpuUs": {
+            "user": 72,
+            "system": 4
+          },
+          "pull": 64
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.008541000002878718,
+          "cpuUs": {
+            "user": 8,
+            "system": 0
+          },
+          "pull": 64
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 197.56524999999965,
+          "cpuUs": {
+            "user": 194607,
+            "system": 1894
+          },
+          "pull": 65
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 8.562917000002926,
+          "cpuUs": {
+            "user": 8565,
+            "system": 0
+          },
+          "pull": 65
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.06541700000525452,
+          "cpuUs": {
+            "user": 67,
+            "system": 0
+          },
+          "pull": 66
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.007874999995692633,
+          "cpuUs": {
+            "user": 9,
+            "system": 0
+          },
+          "pull": 66
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 192.78758400000515,
+          "cpuUs": {
+            "user": 191909,
+            "system": 881
+          },
+          "pull": 67
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 9.767000000007101,
+          "cpuUs": {
+            "user": 10783,
+            "system": 0
+          },
+          "pull": 67
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.07866699999431148,
+          "cpuUs": {
+            "user": 80,
+            "system": 0
+          },
+          "pull": 68
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.010584000003291294,
+          "cpuUs": {
+            "user": 11,
+            "system": 0
+          },
+          "pull": 68
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 193.21520799999416,
+          "cpuUs": {
+            "user": 192450,
+            "system": 765
+          },
+          "pull": 69
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 8.33270800000173,
+          "cpuUs": {
+            "user": 8334,
+            "system": 0
+          },
+          "pull": 69
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.07216699999116827,
+          "cpuUs": {
+            "user": 73,
+            "system": 0
+          },
+          "pull": 70
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.007916000002296641,
+          "cpuUs": {
+            "user": 9,
+            "system": 0
+          },
+          "pull": 70
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 194.47604199999478,
+          "cpuUs": {
+            "user": 193426,
+            "system": 0
+          },
+          "pull": 71
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 12.140999999988708,
+          "cpuUs": {
+            "user": 34271,
+            "system": 3839
+          },
+          "pull": 71
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.09133299998939037,
+          "cpuUs": {
+            "user": 88,
+            "system": 5
+          },
+          "pull": 72
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.013957999995909631,
+          "cpuUs": {
+            "user": 14,
+            "system": 1
+          },
+          "pull": 72
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 277.82316700000956,
+          "cpuUs": {
+            "user": 252380,
+            "system": 1752
+          },
+          "pull": 73
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 8.735333000004175,
+          "cpuUs": {
+            "user": 26174,
+            "system": 46
+          },
+          "pull": 73
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.09158399999432731,
+          "cpuUs": {
+            "user": 88,
+            "system": 4
+          },
+          "pull": 74
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.008750000008149073,
+          "cpuUs": {
+            "user": 8,
+            "system": 1
+          },
+          "pull": 74
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 204.65541700000176,
+          "cpuUs": {
+            "user": 180625,
+            "system": 0
+          },
+          "pull": 75
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 8.877082999999402,
+          "cpuUs": {
+            "user": 8882,
+            "system": 0
+          },
+          "pull": 75
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.08087499999965075,
+          "cpuUs": {
+            "user": 83,
+            "system": 0
+          },
+          "pull": 76
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.015291999996406958,
+          "cpuUs": {
+            "user": 17,
+            "system": 0
+          },
+          "pull": 76
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 196.31279200001154,
+          "cpuUs": {
+            "user": 196321,
+            "system": 0
+          },
+          "pull": 77
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 9.642542000001413,
+          "cpuUs": {
+            "user": 10510,
+            "system": 0
+          },
+          "pull": 77
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.0765840000094613,
+          "cpuUs": {
+            "user": 78,
+            "system": 0
+          },
+          "pull": 78
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.008874999999534339,
+          "cpuUs": {
+            "user": 10,
+            "system": 0
+          },
+          "pull": 78
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 183.4071249999979,
+          "cpuUs": {
+            "user": 179627,
+            "system": 752
+          },
+          "pull": 79
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 8.625125000005937,
+          "cpuUs": {
+            "user": 7638,
+            "system": 988
+          },
+          "pull": 79
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.06212499999674037,
+          "cpuUs": {
+            "user": 60,
+            "system": 3
+          },
+          "pull": 80
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.008166999992681667,
+          "cpuUs": {
+            "user": 8,
+            "system": 0
+          },
+          "pull": 80
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 176.88712500000838,
+          "cpuUs": {
+            "user": 176884,
+            "system": 0
+          },
+          "pull": 81
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 9.77704200000153,
+          "cpuUs": {
+            "user": 10754,
+            "system": 0
+          },
+          "pull": 81
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.06920800000079907,
+          "cpuUs": {
+            "user": 70,
+            "system": 0
+          },
+          "pull": 82
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.01224999999976717,
+          "cpuUs": {
+            "user": 36,
+            "system": 0
+          },
+          "pull": 82
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 161.07758299999114,
+          "cpuUs": {
+            "user": 160469,
+            "system": 0
+          },
+          "pull": 83
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 8.511834000004455,
+          "cpuUs": {
+            "user": 8514,
+            "system": 0
+          },
+          "pull": 83
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.05574999999953434,
+          "cpuUs": {
+            "user": 56,
+            "system": 0
+          },
+          "pull": 84
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.008625000002211891,
+          "cpuUs": {
+            "user": 9,
+            "system": 0
+          },
+          "pull": 84
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 143.54349999999977,
+          "cpuUs": {
+            "user": 143535,
+            "system": 0
+          },
+          "pull": 85
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 9.675958000007086,
+          "cpuUs": {
+            "user": 10171,
+            "system": 471
+          },
+          "pull": 85
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.04674999999406282,
+          "cpuUs": {
+            "user": 45,
+            "system": 3
+          },
+          "pull": 86
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.007417000000714324,
+          "cpuUs": {
+            "user": 7,
+            "system": 0
+          },
+          "pull": 86
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 190.66645900000003,
+          "cpuUs": {
+            "user": 190662,
+            "system": 0
+          },
+          "pull": 87
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 7.498958000011044,
+          "cpuUs": {
+            "user": 7500,
+            "system": 0
+          },
+          "pull": 87
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.04620900000736583,
+          "cpuUs": {
+            "user": 47,
+            "system": 0
+          },
+          "pull": 88
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.008040999993681908,
+          "cpuUs": {
+            "user": 8,
+            "system": 0
+          },
+          "pull": 88
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 193.71720900000946,
+          "cpuUs": {
+            "user": 192892,
+            "system": 832
+          },
+          "pull": 89
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 9.938125000000582,
+          "cpuUs": {
+            "user": 11107,
+            "system": 17
+          },
+          "pull": 89
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.05254199999035336,
+          "cpuUs": {
+            "user": 51,
+            "system": 2
+          },
+          "pull": 90
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.008000000001629815,
+          "cpuUs": {
+            "user": 8,
+            "system": 0
+          },
+          "pull": 90
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 193.65737500000978,
+          "cpuUs": {
+            "user": 191303,
+            "system": 0
+          },
+          "pull": 91
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 8.653791000004276,
+          "cpuUs": {
+            "user": 8655,
+            "system": 0
+          },
+          "pull": 91
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.04674999999406282,
+          "cpuUs": {
+            "user": 48,
+            "system": 0
+          },
+          "pull": 92
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.007417000000714324,
+          "cpuUs": {
+            "user": 9,
+            "system": 0
+          },
+          "pull": 92
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 195.14674999999988,
+          "cpuUs": {
+            "user": 195131,
+            "system": 0
+          },
+          "pull": 93
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 9.578416000003926,
+          "cpuUs": {
+            "user": 10552,
+            "system": 0
+          },
+          "pull": 93
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.06287500000325963,
+          "cpuUs": {
+            "user": 0,
+            "system": 64
+          },
+          "pull": 94
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.009666999991168268,
+          "cpuUs": {
+            "user": 0,
+            "system": 11
+          },
+          "pull": 94
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 194.50920900001074,
+          "cpuUs": {
+            "user": 193879,
+            "system": 635
+          },
+          "pull": 95
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 8.694374999991851,
+          "cpuUs": {
+            "user": 8696,
+            "system": 0
+          },
+          "pull": 95
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.05045799999788869,
+          "cpuUs": {
+            "user": 51,
+            "system": 0
+          },
+          "pull": 96
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.008832999999867752,
+          "cpuUs": {
+            "user": 10,
+            "system": 0
+          },
+          "pull": 96
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 197.56383299999288,
+          "cpuUs": {
+            "user": 196506,
+            "system": 0
+          },
+          "pull": 97
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 9.635916999992332,
+          "cpuUs": {
+            "user": 10624,
+            "system": 0
+          },
+          "pull": 97
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.05654199999116827,
+          "cpuUs": {
+            "user": 57,
+            "system": 0
+          },
+          "pull": 98
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.008000000001629815,
+          "cpuUs": {
+            "user": 8,
+            "system": 0
+          },
+          "pull": 98
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 195.37854200000584,
+          "cpuUs": {
+            "user": 194261,
+            "system": 0
+          },
+          "pull": 99
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 8.57041699999536,
+          "cpuUs": {
+            "user": 8572,
+            "system": 0
+          },
+          "pull": 99
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.049624999999650754,
+          "cpuUs": {
+            "user": 51,
+            "system": 0
+          },
+          "pull": 100
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.009209000010741875,
+          "cpuUs": {
+            "user": 10,
+            "system": 0
+          },
+          "pull": 100
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 195.9469170000084,
+          "cpuUs": {
+            "user": 193895,
+            "system": 0
+          },
+          "pull": 101
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 9.715334000007715,
+          "cpuUs": {
+            "user": 10646,
+            "system": 0
+          },
+          "pull": 101
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.05016700000851415,
+          "cpuUs": {
+            "user": 51,
+            "system": 0
+          },
+          "pull": 102
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.007874999995692633,
+          "cpuUs": {
+            "user": 8,
+            "system": 0
+          },
+          "pull": 102
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 194.12229100000695,
+          "cpuUs": {
+            "user": 193457,
+            "system": 653
+          },
+          "pull": 103
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 8.537083000002895,
+          "cpuUs": {
+            "user": 8517,
+            "system": 21
+          },
+          "pull": 103
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.05166599999938626,
+          "cpuUs": {
+            "user": 52,
+            "system": 0
+          },
+          "pull": 104
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.008333999998285435,
+          "cpuUs": {
+            "user": 9,
+            "system": 0
+          },
+          "pull": 104
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 194.40429099999892,
+          "cpuUs": {
+            "user": 194392,
+            "system": 0
+          },
+          "pull": 105
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 9.82774999999674,
+          "cpuUs": {
+            "user": 10849,
+            "system": 0
+          },
+          "pull": 105
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 0.05958400000235997,
+          "cpuUs": {
+            "user": 60,
+            "system": 0
+          },
+          "pull": 106
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 0.008874999999534339,
+          "cpuUs": {
+            "user": 9,
+            "system": 0
+          },
+          "pull": 106
+        },
+        {
+          "name": "pull.abi",
+          "wallMs": 887.2202919999982,
+          "cpuUs": {
+            "user": 882982,
+            "system": 460
+          },
+          "pull": 107
+        },
+        {
+          "name": "pull.parse",
+          "wallMs": 640.3524170000019,
+          "cpuUs": {
+            "user": 703911,
+            "system": 11580
+          },
+          "pull": 107
+        },
+        {
+          "name": "complete.abi",
+          "wallMs": 3648.205335999999,
+          "cpuUs": {
+            "user": 3561495,
+            "system": 6640
+          }
+        },
+        {
+          "name": "complete.parse",
+          "wallMs": 642.3932919999934,
+          "cpuUs": {
+            "user": 661903,
+            "system": 46416
+          }
+        },
+        {
+          "name": "evidence.compare",
+          "wallMs": 0.24029200000222772,
+          "cpuUs": {
+            "user": 2699,
+            "system": 0
+          }
+        },
+        {
+          "name": "reply.encode",
+          "wallMs": 0.01504199999908451,
+          "cpuUs": {
+            "user": 16,
+            "system": 0
+          }
+        }
+      ],
+      "gc": {
+        "count": 53,
+        "observerDurationMs": 719.8103346824646
+      }
+    }
+  ],
+  "totalWallMs": 102114.243005,
+  "initialResourceUsage": {
+    "userCPUTime": 27293,
+    "systemCPUTime": 5054,
+    "maxRSS": 47028,
+    "sharedMemorySize": 0,
+    "unsharedDataSize": 0,
+    "unsharedStackSize": 0,
+    "minorPageFault": 2838,
+    "majorPageFault": 0,
+    "swappedOut": 0,
+    "fsRead": 0,
+    "fsWrite": 0,
+    "ipcSent": 0,
+    "ipcReceived": 0,
+    "signalsCount": 0,
+    "voluntaryContextSwitches": 15,
+    "involuntaryContextSwitches": 2
+  },
+  "resourceUsage": {
+    "userCPUTime": 97183135,
+    "systemCPUTime": 4527189,
+    "maxRSS": 2072820,
+    "sharedMemorySize": 0,
+    "unsharedDataSize": 0,
+    "unsharedStackSize": 0,
+    "minorPageFault": 602641,
+    "majorPageFault": 0,
+    "swappedOut": 0,
+    "fsRead": 0,
+    "fsWrite": 0,
+    "ipcSent": 0,
+    "ipcReceived": 0,
+    "signalsCount": 0,
+    "voluntaryContextSwitches": 309131,
+    "involuntaryContextSwitches": 1787
+  },
+  "limitations": [
+    "ABI time includes Rust advance, serialization and WASM/JS string copying; it is not pure solver time.",
+    "GC duration overlaps measured phases; do not add it to total.",
+    "Memory snapshots are not a guaranteed instantaneous peak; maxRSS is process-lifetime high-water mark.",
+    "Same-module reuse does not represent independent cold worker processes.",
+    "No API, scheduler wait, browser renderer or network time is measured."
+  ],
+  "transport": "presentation"
+}

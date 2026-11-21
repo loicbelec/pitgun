@@ -24,6 +24,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 COPY --from=builder /app/target/release/pitgun-verifier /usr/local/bin/pitgun-verifier
 COPY --from=builder /app/services/pitgun-verifier/wasm-service-replay.mjs /opt/pitgun/replay/wasm-service-replay.mjs
+COPY --from=builder /app/services/pitgun-verifier/wasm-service-replay-compact.mjs /opt/pitgun/replay/wasm-service-replay-compact.mjs
 COPY --from=builder /app/policies/gametuning.v1.yaml /opt/pitgun/policies/gametuning.v1.yaml
 COPY --from=builder /app/catalogs/racing/v1.0.0 /opt/pitgun/catalogs/racing/v1.0.0
 COPY --from=builder /app/catalogs/racing/v1.2.0 /opt/pitgun/catalogs/racing/v1.2.0

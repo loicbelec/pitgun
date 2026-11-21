@@ -1,0 +1,52 @@
+{
+  "passed": true,
+  "scope": "Offline experimental adapter parity and hostile-history cases; not a hosted signature/verdict test",
+  "wasmDigest": "sha256:cb24d7f0bf474cd88eb3e05e828690438972a7f40d7875e6ac3bc2bb3f103451",
+  "bridgeDigest": "sha256:8148432845163d31f23fb1c2fe15defe1f49763d9dc51f18f06122a66e4f773c",
+  "results": [
+    {
+      "case": "presentation-parity",
+      "passed": true
+    },
+    {
+      "case": "compact-parity",
+      "passed": true
+    },
+    {
+      "case": "missing-history",
+      "passed": true
+    },
+    {
+      "case": "extra-history",
+      "passed": true
+    },
+    {
+      "case": "reordered-history",
+      "passed": true
+    },
+    {
+      "case": "wrong-observation",
+      "passed": true
+    },
+    {
+      "case": "wrong-receipt",
+      "passed": true
+    },
+    {
+      "case": "wrong-run",
+      "passed": true
+    },
+    {
+      "case": "late-decision",
+      "passed": true
+    },
+    {
+      "case": "undelegated-tire",
+      "passed": true
+    },
+    {
+      "case": "wrong-runtime-pin",
+      "passed": true
+    }
+  ]
+}

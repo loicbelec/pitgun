@@ -1,0 +1,784 @@
+{
+  "advanceMs": 4399.073375000001,
+  "batchEncodeMs": 1096.0256279999999,
+  "batchWireBytes": 227877714,
+  "calls": [
+    {
+      "advanceMs": 78.998792,
+      "complete": false,
+      "encodeMs": 13.851125000000001,
+      "kind": "batch",
+      "wireBytes": 2949249
+    },
+    {
+      "advanceMs": 0.009625,
+      "complete": false,
+      "encodeMs": 0.014334,
+      "kind": "batch",
+      "wireBytes": 2445
+    },
+    {
+      "advanceMs": 79.867833,
+      "complete": false,
+      "encodeMs": 12.010208,
+      "kind": "batch",
+      "wireBytes": 2919331
+    },
+    {
+      "advanceMs": 0.01525,
+      "complete": false,
+      "encodeMs": 0.014916,
+      "kind": "batch",
+      "wireBytes": 2446
+    },
+    {
+      "advanceMs": 80.618167,
+      "complete": false,
+      "encodeMs": 11.50375,
+      "kind": "batch",
+      "wireBytes": 2958850
+    },
+    {
+      "advanceMs": 0.009583,
+      "complete": false,
+      "encodeMs": 0.031916,
+      "kind": "batch",
+      "wireBytes": 2431
+    },
+    {
+      "advanceMs": 87.1485,
+      "complete": false,
+      "encodeMs": 11.006959,
+      "kind": "batch",
+      "wireBytes": 2943450
+    },
+    {
+      "advanceMs": 0.012125,
+      "complete": false,
+      "encodeMs": 0.013417,
+      "kind": "batch",
+      "wireBytes": 2420
+    },
+    {
+      "advanceMs": 81.740541,
+      "complete": false,
+      "encodeMs": 11.353416999999999,
+      "kind": "batch",
+      "wireBytes": 2930251
+    },
+    {
+      "advanceMs": 0.012916,
+      "complete": false,
+      "encodeMs": 0.018583000000000002,
+      "kind": "batch",
+      "wireBytes": 2423
+    },
+    {
+      "advanceMs": 80.24408299999999,
+      "complete": false,
+      "encodeMs": 10.849041,
+      "kind": "batch",
+      "wireBytes": 2927906
+    },
+    {
+      "advanceMs": 0.012959,
+      "complete": false,
+      "encodeMs": 0.01325,
+      "kind": "batch",
+      "wireBytes": 2420
+    },
+    {
+      "advanceMs": 79.1455,
+      "complete": false,
+      "encodeMs": 10.588709,
+      "kind": "batch",
+      "wireBytes": 2930359
+    },
+    {
+      "advanceMs": 0.012,
+      "complete": false,
+      "encodeMs": 0.013042,
+      "kind": "batch",
+      "wireBytes": 2453
+    },
+    {
+      "advanceMs": 79.535875,
+      "complete": false,
+      "encodeMs": 10.925249999999998,
+      "kind": "batch",
+      "wireBytes": 2983004
+    },
+    {
+      "advanceMs": 0.012792000000000001,
+      "complete": false,
+      "encodeMs": 0.012875,
+      "kind": "batch",
+      "wireBytes": 2436
+    },
+    {
+      "advanceMs": 81.66037499999999,
+      "complete": false,
+      "encodeMs": 11.011125,
+      "kind": "batch",
+      "wireBytes": 2974754
+    },
+    {
+      "advanceMs": 0.013584,
+      "complete": false,
+      "encodeMs": 0.013709,
+      "kind": "batch",
+      "wireBytes": 2419
+    },
+    {
+      "advanceMs": 78.643333,
+      "complete": false,
+      "encodeMs": 10.90275,
+      "kind": "batch",
+      "wireBytes": 2975739
+    },
+    {
+      "advanceMs": 0.013125000000000001,
+      "complete": false,
+      "encodeMs": 0.013958,
+      "kind": "batch",
+      "wireBytes": 2477
+    },
+    {
+      "advanceMs": 79.812042,
+      "complete": false,
+      "encodeMs": 10.799792,
+      "kind": "batch",
+      "wireBytes": 2977613
+    },
+    {
+      "advanceMs": 0.011625,
+      "complete": false,
+      "encodeMs": 0.012167,
+      "kind": "batch",
+      "wireBytes": 2448
+    },
+    {
+      "advanceMs": 81.921917,
+      "complete": false,
+      "encodeMs": 10.745208,
+      "kind": "batch",
+      "wireBytes": 2976776
+    },
+    {
+      "advanceMs": 0.0155,
+      "complete": false,
+      "encodeMs": 0.015208000000000001,
+      "kind": "batch",
+      "wireBytes": 2456
+    },
+    {
+      "advanceMs": 82.742417,
+      "complete": false,
+      "encodeMs": 10.907583,
+      "kind": "batch",
+      "wireBytes": 2977241
+    },
+    {
+      "advanceMs": 0.018875000000000003,
+      "complete": false,
+      "encodeMs": 0.013708,
+      "kind": "batch",
+      "wireBytes": 2459
+    },
+    {
+      "advanceMs": 79.327375,
+      "complete": false,
+      "encodeMs": 10.9145,
+      "kind": "batch",
+      "wireBytes": 2973979
+    },
+    {
+      "advanceMs": 0.012833,
+      "complete": false,
+      "encodeMs": 0.012875,
+      "kind": "batch",
+      "wireBytes": 2439
+    },
+    {
+      "advanceMs": 79.211625,
+      "complete": false,
+      "encodeMs": 10.86125,
+      "kind": "batch",
+      "wireBytes": 2968753
+    },
+    {
+      "advanceMs": 0.012792000000000001,
+      "complete": false,
+      "encodeMs": 0.019417,
+      "kind": "batch",
+      "wireBytes": 2453
+    },
+    {
+      "advanceMs": 80.100583,
+      "complete": false,
+      "encodeMs": 11.350416000000001,
+      "kind": "batch",
+      "wireBytes": 2968154
+    },
+    {
+      "advanceMs": 0.014666,
+      "complete": false,
+      "encodeMs": 0.01375,
+      "kind": "batch",
+      "wireBytes": 2450
+    },
+    {
+      "advanceMs": 85.999375,
+      "complete": false,
+      "encodeMs": 11.0495,
+      "kind": "batch",
+      "wireBytes": 2962892
+    },
+    {
+      "advanceMs": 0.016583,
+      "complete": false,
+      "encodeMs": 0.013791999999999999,
+      "kind": "batch",
+      "wireBytes": 2459
+    },
+    {
+      "advanceMs": 78.714875,
+      "complete": false,
+      "encodeMs": 11.044084,
+      "kind": "batch",
+      "wireBytes": 3003435
+    },
+    {
+      "advanceMs": 0.013708,
+      "complete": false,
+      "encodeMs": 0.013334,
+      "kind": "batch",
+      "wireBytes": 2469
+    },
+    {
+      "advanceMs": 80.300792,
+      "complete": false,
+      "encodeMs": 10.933958,
+      "kind": "batch",
+      "wireBytes": 3021793
+    },
+    {
+      "advanceMs": 0.013166,
+      "complete": false,
+      "encodeMs": 0.013375,
+      "kind": "batch",
+      "wireBytes": 2492
+    },
+    {
+      "advanceMs": 78.851667,
+      "complete": false,
+      "encodeMs": 10.749042000000001,
+      "kind": "batch",
+      "wireBytes": 3021966
+    },
+    {
+      "advanceMs": 0.012458,
+      "complete": false,
+      "encodeMs": 0.011791,
+      "kind": "batch",
+      "wireBytes": 2492
+    },
+    {
+      "advanceMs": 79.105125,
+      "complete": false,
+      "encodeMs": 10.906791,
+      "kind": "batch",
+      "wireBytes": 3021965
+    },
+    {
+      "advanceMs": 0.011833,
+      "complete": false,
+      "encodeMs": 0.011541000000000001,
+      "kind": "batch",
+      "wireBytes": 2477
+    },
+    {
+      "advanceMs": 70.862459,
+      "complete": false,
+      "encodeMs": 11.006125,
+      "kind": "batch",
+      "wireBytes": 3021587
+    },
+    {
+      "advanceMs": 0.009375,
+      "complete": false,
+      "encodeMs": 0.011959000000000001,
+      "kind": "batch",
+      "wireBytes": 2486
+    },
+    {
+      "advanceMs": 78.726,
+      "complete": false,
+      "encodeMs": 10.595542,
+      "kind": "batch",
+      "wireBytes": 3021742
+    },
+    {
+      "advanceMs": 0.009292,
+      "complete": false,
+      "encodeMs": 0.012625,
+      "kind": "batch",
+      "wireBytes": 2486
+    },
+    {
+      "advanceMs": 80.16641700000001,
+      "complete": false,
+      "encodeMs": 11.013917,
+      "kind": "batch",
+      "wireBytes": 3021687
+    },
+    {
+      "advanceMs": 0.011333,
+      "complete": false,
+      "encodeMs": 0.012583,
+      "kind": "batch",
+      "wireBytes": 2463
+    },
+    {
+      "advanceMs": 78.699583,
+      "complete": false,
+      "encodeMs": 10.622542000000001,
+      "kind": "batch",
+      "wireBytes": 3023870
+    },
+    {
+      "advanceMs": 0.003167,
+      "kind": "decision"
+    },
+    {
+      "advanceMs": 0.0095,
+      "complete": false,
+      "encodeMs": 0.011542,
+      "kind": "batch",
+      "wireBytes": 2480
+    },
+    {
+      "advanceMs": 78.98912499999999,
+      "complete": false,
+      "encodeMs": 11.096,
+      "kind": "batch",
+      "wireBytes": 3023843
+    },
+    {
+      "advanceMs": 70.596667,
+      "complete": false,
+      "encodeMs": 0.811208,
+      "kind": "batch",
+      "wireBytes": 299622
+    },
+    {
+      "advanceMs": 78.52850000000001,
+      "complete": false,
+      "encodeMs": 11.370625,
+      "kind": "batch",
+      "wireBytes": 3133458
+    },
+    {
+      "advanceMs": 0.038459,
+      "complete": false,
+      "encodeMs": 0.019583,
+      "kind": "batch",
+      "wireBytes": 2486
+    },
+    {
+      "advanceMs": 80.462875,
+      "complete": false,
+      "encodeMs": 10.929167,
+      "kind": "batch",
+      "wireBytes": 2986637
+    },
+    {
+      "advanceMs": 0.033874999999999995,
+      "complete": false,
+      "encodeMs": 0.013584,
+      "kind": "batch",
+      "wireBytes": 2463
+    },
+    {
+      "advanceMs": 70.85025,
+      "complete": false,
+      "encodeMs": 10.808625000000001,
+      "kind": "batch",
+      "wireBytes": 2978570
+    },
+    {
+      "advanceMs": 0.030541,
+      "complete": false,
+      "encodeMs": 0.011792,
+      "kind": "batch",
+      "wireBytes": 2436
+    },
+    {
+      "advanceMs": 78.22708300000001,
+      "complete": false,
+      "encodeMs": 10.82975,
+      "kind": "batch",
+      "wireBytes": 2966377
+    },
+    {
+      "advanceMs": 0.033667,
+      "complete": false,
+      "encodeMs": 0.012625,
+      "kind": "batch",
+      "wireBytes": 2403
+    },
+    {
+      "advanceMs": 78.912084,
+      "complete": false,
+      "encodeMs": 10.996542,
+      "kind": "batch",
+      "wireBytes": 2987199
+    },
+    {
+      "advanceMs": 0.033083999999999995,
+      "complete": false,
+      "encodeMs": 0.013083,
+      "kind": "batch",
+      "wireBytes": 2457
+    },
+    {
+      "advanceMs": 93.81875000000001,
+      "complete": false,
+      "encodeMs": 11.34775,
+      "kind": "batch",
+      "wireBytes": 2984012
+    },
+    {
+      "advanceMs": 0.035792,
+      "complete": false,
+      "encodeMs": 0.015541,
+      "kind": "batch",
+      "wireBytes": 2466
+    },
+    {
+      "advanceMs": 83.907292,
+      "complete": false,
+      "encodeMs": 11.934959000000001,
+      "kind": "batch",
+      "wireBytes": 2986510
+    },
+    {
+      "advanceMs": 0.036083,
+      "complete": false,
+      "encodeMs": 0.014875000000000001,
+      "kind": "batch",
+      "wireBytes": 2466
+    },
+    {
+      "advanceMs": 81.13008400000001,
+      "complete": false,
+      "encodeMs": 10.807667,
+      "kind": "batch",
+      "wireBytes": 2980835
+    },
+    {
+      "advanceMs": 0.033,
+      "complete": false,
+      "encodeMs": 0.013042,
+      "kind": "batch",
+      "wireBytes": 2472
+    },
+    {
+      "advanceMs": 79.19570800000001,
+      "complete": false,
+      "encodeMs": 10.608875,
+      "kind": "batch",
+      "wireBytes": 2978216
+    },
+    {
+      "advanceMs": 0.030542,
+      "complete": false,
+      "encodeMs": 0.012041999999999999,
+      "kind": "batch",
+      "wireBytes": 2463
+    },
+    {
+      "advanceMs": 78.765541,
+      "complete": false,
+      "encodeMs": 10.664541,
+      "kind": "batch",
+      "wireBytes": 2974016
+    },
+    {
+      "advanceMs": 0.034416999999999996,
+      "complete": false,
+      "encodeMs": 0.013,
+      "kind": "batch",
+      "wireBytes": 2469
+    },
+    {
+      "advanceMs": 80.15816600000001,
+      "complete": false,
+      "encodeMs": 10.695916,
+      "kind": "batch",
+      "wireBytes": 2974693
+    },
+    {
+      "advanceMs": 0.03275,
+      "complete": false,
+      "encodeMs": 0.013167,
+      "kind": "batch",
+      "wireBytes": 2466
+    },
+    {
+      "advanceMs": 71.50595799999999,
+      "complete": false,
+      "encodeMs": 10.701,
+      "kind": "batch",
+      "wireBytes": 2973480
+    },
+    {
+      "advanceMs": 0.027250000000000003,
+      "complete": false,
+      "encodeMs": 0.012084,
+      "kind": "batch",
+      "wireBytes": 2469
+    },
+    {
+      "advanceMs": 78.40116699999999,
+      "complete": false,
+      "encodeMs": 10.956583,
+      "kind": "batch",
+      "wireBytes": 2977645
+    },
+    {
+      "advanceMs": 0.030790999999999995,
+      "complete": false,
+      "encodeMs": 0.0145,
+      "kind": "batch",
+      "wireBytes": 2469
+    },
+    {
+      "advanceMs": 71.472,
+      "complete": false,
+      "encodeMs": 10.795625,
+      "kind": "batch",
+      "wireBytes": 2976004
+    },
+    {
+      "advanceMs": 0.023584,
+      "complete": false,
+      "encodeMs": 0.018042000000000002,
+      "kind": "batch",
+      "wireBytes": 2460
+    },
+    {
+      "advanceMs": 71.213083,
+      "complete": false,
+      "encodeMs": 10.983459,
+      "kind": "batch",
+      "wireBytes": 2976139
+    },
+    {
+      "advanceMs": 0.022792,
+      "complete": false,
+      "encodeMs": 0.012833,
+      "kind": "batch",
+      "wireBytes": 2457
+    },
+    {
+      "advanceMs": 63.622042,
+      "complete": false,
+      "encodeMs": 10.765165999999999,
+      "kind": "batch",
+      "wireBytes": 2970650
+    },
+    {
+      "advanceMs": 0.017,
+      "complete": false,
+      "encodeMs": 0.012167,
+      "kind": "batch",
+      "wireBytes": 2470
+    },
+    {
+      "advanceMs": 56.795709,
+      "complete": false,
+      "encodeMs": 10.805916999999999,
+      "kind": "batch",
+      "wireBytes": 2948020
+    },
+    {
+      "advanceMs": 0.01175,
+      "complete": false,
+      "encodeMs": 0.013625000000000002,
+      "kind": "batch",
+      "wireBytes": 2374
+    },
+    {
+      "advanceMs": 78.863875,
+      "complete": false,
+      "encodeMs": 10.127209,
+      "kind": "batch",
+      "wireBytes": 2694892
+    },
+    {
+      "advanceMs": 0.017667,
+      "complete": false,
+      "encodeMs": 0.012417,
+      "kind": "batch",
+      "wireBytes": 2458
+    },
+    {
+      "advanceMs": 79.551208,
+      "complete": false,
+      "encodeMs": 11.163833,
+      "kind": "batch",
+      "wireBytes": 3015183
+    },
+    {
+      "advanceMs": 0.020375,
+      "complete": false,
+      "encodeMs": 0.013167,
+      "kind": "batch",
+      "wireBytes": 2464
+    },
+    {
+      "advanceMs": 78.987833,
+      "complete": false,
+      "encodeMs": 11.022250000000001,
+      "kind": "batch",
+      "wireBytes": 2991684
+    },
+    {
+      "advanceMs": 0.017499999999999998,
+      "complete": false,
+      "encodeMs": 0.012292,
+      "kind": "batch",
+      "wireBytes": 2458
+    },
+    {
+      "advanceMs": 80.22958299999999,
+      "complete": false,
+      "encodeMs": 11.01025,
+      "kind": "batch",
+      "wireBytes": 2985567
+    },
+    {
+      "advanceMs": 0.018625,
+      "complete": false,
+      "encodeMs": 0.013,
+      "kind": "batch",
+      "wireBytes": 2458
+    },
+    {
+      "advanceMs": 79.6785,
+      "complete": false,
+      "encodeMs": 11.053666999999999,
+      "kind": "batch",
+      "wireBytes": 2983936
+    },
+    {
+      "advanceMs": 0.018833000000000003,
+      "complete": false,
+      "encodeMs": 0.014291,
+      "kind": "batch",
+      "wireBytes": 2441
+    },
+    {
+      "advanceMs": 79.923334,
+      "complete": false,
+      "encodeMs": 10.73525,
+      "kind": "batch",
+      "wireBytes": 2981776
+    },
+    {
+      "advanceMs": 0.018000000000000002,
+      "complete": false,
+      "encodeMs": 0.012583,
+      "kind": "batch",
+      "wireBytes": 2467
+    },
+    {
+      "advanceMs": 78.739542,
+      "complete": false,
+      "encodeMs": 10.684458000000001,
+      "kind": "batch",
+      "wireBytes": 2981447
+    },
+    {
+      "advanceMs": 0.017249999999999998,
+      "complete": false,
+      "encodeMs": 0.011875,
+      "kind": "batch",
+      "wireBytes": 2458
+    },
+    {
+      "advanceMs": 78.646125,
+      "complete": false,
+      "encodeMs": 10.71375,
+      "kind": "batch",
+      "wireBytes": 2982552
+    },
+    {
+      "advanceMs": 0.021790999999999998,
+      "complete": false,
+      "encodeMs": 0.016,
+      "kind": "batch",
+      "wireBytes": 2487
+    },
+    {
+      "advanceMs": 78.70545800000001,
+      "complete": false,
+      "encodeMs": 10.699583,
+      "kind": "batch",
+      "wireBytes": 2979979
+    },
+    {
+      "advanceMs": 0.019041,
+      "complete": false,
+      "encodeMs": 0.01825,
+      "kind": "batch",
+      "wireBytes": 2458
+    },
+    {
+      "advanceMs": 79.419083,
+      "complete": false,
+      "encodeMs": 10.830124999999999,
+      "kind": "batch",
+      "wireBytes": 2981958
+    },
+    {
+      "advanceMs": 0.02225,
+      "complete": false,
+      "encodeMs": 0.01425,
+      "kind": "batch",
+      "wireBytes": 2473
+    },
+    {
+      "advanceMs": 156.614125,
+      "complete": true,
+      "encodeMs": 511.77029200000004,
+      "kind": "batch",
+      "wireBytes": 69637274
+    }
+  ],
+  "canonicalDigestMs": 2590.518416,
+  "captureMs": 12.397707,
+  "compactBytes": 2425,
+  "completeEncodeMs": 453.307083,
+  "completeWireBytes": 69641869,
+  "decisions": 1,
+  "encodeWire": true,
+  "evidenceMs": 2.141875,
+  "limitations": [
+    "advance includes orchestration, hashing and solver work, not pure physics",
+    "native uses its own artifact identity and fresh receipts; it cannot verify an existing WASM signature",
+    "wire encoding mirrors production batch/completion construction but omits start/proposal response encoding",
+    "no-wire is an offline diagnostic, not a production export or optimization"
+  ],
+  "nativeArtifactDigest": "sha256:138ab579dd3180e17edf4748280f187a8fda493cc2692cc1c7e1ec80c48fdedd",
+  "nativeCompactEqualsWasm": true,
+  "payloadDigest": "sha256:7bb0098a99a8f5511f44348d6cccd0b6df4f2df82f2734ceecff39d2bfc50fed",
+  "prepareMs": 316.231292,
+  "proposeMs": 0.040458,
+  "resultDigest": "sha256:596d433a3b8a191aec0b4be7ff2c954d2378e09bf6b1d5c6567184727e2b43ed",
+  "schemaVersion": "pitgun.native-replay-phase-profile/v1",
+  "scope": "Native diagnostic with reconstructed observations/receipts and recorded actions; not pinned-WASM replay or a verifier verdict",
+  "startMs": 41.598625,
+  "workMs": 5519.3766669999995
+}

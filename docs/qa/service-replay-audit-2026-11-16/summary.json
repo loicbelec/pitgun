@@ -1,0 +1,79 @@
+{
+  "schemaVersion": "pitgun.replay-audit-summary/v1",
+  "date": "2026-11-16",
+  "sourceBase": "7aae5fc",
+  "environment": {
+    "node": "v22.23.5",
+    "v8": "12.4.254.21-node.57",
+    "platform": "linux",
+    "arch": "arm64",
+    "cpuModel": "unknown",
+    "cpuCount": 12,
+    "totalMemoryBytes": 8319238144
+  },
+  "containerLimits": {
+    "cpu": 1,
+    "memoryBytes": 3221225472,
+    "network": "none",
+    "nodeOldSpaceMiB": 512,
+    "image": "sha256:2c1bbfa9e7dfd81dd0244c33df303df0724a8bd14f7abce38dcade0f1d4fc284"
+  },
+  "identity": {
+    "wasmDigest": "sha256:07f5bd5c16502c7b4efc77211957c99dd360e31bf481f8ed0385c6abcf86b92f",
+    "bridgeDigest": "sha256:1de24f7210a476195dd5248d8dfac55f92d6cb51237a8af5c1e8914dafa9526f",
+    "payloadDigest": "sha256:7bb0098a99a8f5511f44348d6cccd0b6df4f2df82f2734ceecff39d2bfc50fed",
+    "inputDigest": "sha256:00f41d163e17aba5dabdc3ad7bd88059986467c3528bd52fd6546b9be336f685",
+    "expectedDigest": "sha256:ac2ee9ed020a0a4f5595b7e4cc3ba99979a43ce50397f7af5e3b566b11696976",
+    "circuit": "MONZA",
+    "laps": 53,
+    "cars": 10,
+    "hz": 5,
+    "physics": "pitgun.local-career-power-unit-thermal/v1"
+  },
+  "runs": [
+    {
+      "wallMs": 82736.716663,
+      "startMs": 630.754709,
+      "terminalPullMs": 65162.788822,
+      "otherPullMs": 11439.41746199999,
+      "completeMs": 3559.4147939999966,
+      "javascriptParseMs": 1673.7956650000026,
+      "gcMs": 64793.26644265652,
+      "gcCount": 11207,
+      "wireBytes": 297519783,
+      "terminalBatchBytes": 69637166,
+      "completeBytes": 69641743,
+      "replyBytes": 2448,
+      "maxRssKiB": 1890412,
+      "wasmLinearBytes": 1535967232
+    },
+    {
+      "wallMs": 17369.696591,
+      "startMs": 566.369251000011,
+      "terminalPullMs": 891.7509589999972,
+      "otherPullMs": 10424.732838000098,
+      "completeMs": 3548.3755009999877,
+      "javascriptParseMs": 1893.0275450000481,
+      "gcMs": 671.9987028837204,
+      "gcCount": 53,
+      "wireBytes": 297519783,
+      "terminalBatchBytes": 69637166,
+      "completeBytes": 69641743,
+      "replyBytes": 2448,
+      "maxRssKiB": 2063636,
+      "wasmLinearBytes": 1535967232
+    }
+  ],
+  "stockControl": {
+    "wallSecondsIncludingDocker": 85.87,
+    "compactParity": true,
+    "replyBytes": 2448,
+    "timeoutSeconds": 180
+  },
+  "tests": {
+    "racingSimulatorLibraryPassed": 107,
+    "clippyExample": true,
+    "wrongRuntimePinRejected": true
+  },
+  "scope": "Local ARM64 offline measurements only; no new hosted verdict, deployment or general native/WASM parity claim"
+}

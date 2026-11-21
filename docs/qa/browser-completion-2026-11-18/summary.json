@@ -1,0 +1,132 @@
+{
+  "accepted": true,
+  "scope": "Three alternating cold isolated Chrome pairs; no concurrent builds/tests. Offline Monza53, ten cars, 5Hz, same physical request/seed/actions, new reference context/receipts for new runtime. No rendering/archive/career/service calls in transport timing.",
+  "host": {
+    "platform": "darwin",
+    "arch": "arm64",
+    "release": "25.5.0",
+    "cpu": "Apple M4 Pro",
+    "node": "v23.11.0"
+  },
+  "variants": {
+    "baseline": {
+      "runs": [
+        {
+          "elapsedMs": 16583,
+          "rssPeakBytes": 2901164032,
+          "wasmLinearBytes": 1535967232,
+          "jsonCodeUnits": 297519810,
+          "canonicalResultDigest": "sha256:6227e0350be84180410dad8a5d0ce93b49672ccbf563548eda36e23740657411",
+          "reusesTerminalResult": false,
+          "completion": {
+            "operation": "complete_experimental_controlled_racing_session_json",
+            "ms": 2725.7999999523163,
+            "jsonCodeUnits": 69641761,
+            "wasmLinearBytes": 1535967232
+          }
+        },
+        {
+          "elapsedMs": 16785,
+          "rssPeakBytes": 3059089408,
+          "wasmLinearBytes": 1535967232,
+          "jsonCodeUnits": 297519810,
+          "canonicalResultDigest": "sha256:6227e0350be84180410dad8a5d0ce93b49672ccbf563548eda36e23740657411",
+          "reusesTerminalResult": false,
+          "completion": {
+            "operation": "complete_experimental_controlled_racing_session_json",
+            "ms": 2735.5,
+            "jsonCodeUnits": 69641761,
+            "wasmLinearBytes": 1535967232
+          }
+        },
+        {
+          "elapsedMs": 16714.099999904633,
+          "rssPeakBytes": 2986622976,
+          "wasmLinearBytes": 1535967232,
+          "jsonCodeUnits": 297519810,
+          "canonicalResultDigest": "sha256:6227e0350be84180410dad8a5d0ce93b49672ccbf563548eda36e23740657411",
+          "reusesTerminalResult": false,
+          "completion": {
+            "operation": "complete_experimental_controlled_racing_session_json",
+            "ms": 2735.2000000476837,
+            "jsonCodeUnits": 69641761,
+            "wasmLinearBytes": 1535967232
+          }
+        }
+      ],
+      "medianElapsedMs": 16714.099999904633,
+      "medianRssPeakBytes": 2986622976,
+      "runtimeDigest": "sha256:cb24d7f0bf474cd88eb3e05e828690438972a7f40d7875e6ac3bc2bb3f103451",
+      "bridgeDigest": "sha256:8148432845163d31f23fb1c2fe15defe1f49763d9dc51f18f06122a66e4f773c",
+      "payloadDigest": "sha256:dc20bf7de89155274f951ffc870da1b8e3fa04a0c06a154a35ba79ca16c39208",
+      "browser": {
+        "protocolVersion": "1.3",
+        "product": "Chrome/157.0.8103.79",
+        "revision": "@6dc9bc3bdaea5c35ed6d41fceab2f7a3a2227c4f",
+        "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/157.0.0.0 Safari/537.36",
+        "jsVersion": "15.7.112.43"
+      }
+    },
+    "candidate": {
+      "runs": [
+        {
+          "elapsedMs": 13245.900000095367,
+          "rssPeakBytes": 2797780992,
+          "wasmLinearBytes": 1404633088,
+          "jsonCodeUnits": 227882879,
+          "canonicalResultDigest": "sha256:6227e0350be84180410dad8a5d0ce93b49672ccbf563548eda36e23740657411",
+          "reusesTerminalResult": true,
+          "completion": {
+            "operation": "complete_experimental_controlled_racing_metadata_json",
+            "ms": 2800,
+            "jsonCodeUnits": 4830,
+            "wasmLinearBytes": 1404633088
+          }
+        },
+        {
+          "elapsedMs": 13193.900000095367,
+          "rssPeakBytes": 2799566848,
+          "wasmLinearBytes": 1404633088,
+          "jsonCodeUnits": 227882879,
+          "canonicalResultDigest": "sha256:6227e0350be84180410dad8a5d0ce93b49672ccbf563548eda36e23740657411",
+          "reusesTerminalResult": true,
+          "completion": {
+            "operation": "complete_experimental_controlled_racing_metadata_json",
+            "ms": 2817,
+            "jsonCodeUnits": 4830,
+            "wasmLinearBytes": 1404633088
+          }
+        },
+        {
+          "elapsedMs": 13276.599999904633,
+          "rssPeakBytes": 2802122752,
+          "wasmLinearBytes": 1404633088,
+          "jsonCodeUnits": 227882879,
+          "canonicalResultDigest": "sha256:6227e0350be84180410dad8a5d0ce93b49672ccbf563548eda36e23740657411",
+          "reusesTerminalResult": true,
+          "completion": {
+            "operation": "complete_experimental_controlled_racing_metadata_json",
+            "ms": 2849.5,
+            "jsonCodeUnits": 4830,
+            "wasmLinearBytes": 1404633088
+          }
+        }
+      ],
+      "medianElapsedMs": 13245.900000095367,
+      "medianRssPeakBytes": 2799566848,
+      "runtimeDigest": "sha256:6bb2f5bf9e2815f568c27554863951ac14be14caf65dcf1b36864e72a20721ec",
+      "bridgeDigest": "sha256:9969142578e2745140c2c01d03a6dd197aefd67f112248e20898c430b7fbce02",
+      "payloadDigest": "sha256:aeca14f7080a9b74d62db849623056c2a7bcf34c21e2d9e430001fde8ea9fe6e",
+      "browser": {
+        "protocolVersion": "1.3",
+        "product": "Chrome/157.0.8103.79",
+        "revision": "@6dc9bc3bdaea5c35ed6d41fceab2f7a3a2227c4f",
+        "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/157.0.0.0 Safari/537.36",
+        "jsVersion": "15.7.112.43"
+      }
+    }
+  },
+  "elapsedReductionPercent": 20.7501450860594,
+  "rssLimits": "Sampled aggregate isolated Chrome RSS (shared/GPU included), no forced GC, not private footprint or guaranteed peak. Small local sample; no VPS/mobile/general memory acceptance.",
+  "provisionalRejected": "Earlier 9d078a1d serialization changed f32 wire values; its private trials are excluded."
+}
