@@ -109,7 +109,8 @@ impl ProgressAudit {
                         let timing = match event {
                             RacingSessionEventV1::LapCompleted { timing, .. }
                             | RacingSessionEventV1::PitStopCompleted { timing, .. }
-                            | RacingSessionEventV1::DriverInstructionApplied { timing, .. } => {
+                            | RacingSessionEventV1::DriverInstructionApplied { timing, .. }
+                            | RacingSessionEventV1::Physical { timing, .. } => {
                                 timing.as_ref().ok_or("missing actor clock")?
                             }
                         };

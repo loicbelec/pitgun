@@ -1,0 +1,1883 @@
+{
+  "bank": {
+    "binary_digest": "sha256:f0dd959181736bfd5dd941f096e8d9be1e59ee13fd45799b8d5922e95060f3b4",
+    "cases": [
+      {
+        "derating_recoveries": 3,
+        "derating_starts": 4,
+        "id": "budget-early8-monza-c0",
+        "input_digest": "sha256:b49cc7d542846e95c6943f8396565a919dec424ee5d5a766bca184c7362a8625",
+        "journal": [
+          {
+            "payload": {
+              "event": {
+                "payload": {
+                  "available_power_fraction_ppm": 999906,
+                  "competitor_id": "player",
+                  "engine_temperature_millicelsius": 110024,
+                  "episode_start_sequence": 0,
+                  "initial_observation": false,
+                  "lap": 1,
+                  "observation_basis": {
+                    "index": 2656,
+                    "kind": "native_point"
+                  },
+                  "policy_digest": "sha256:8710e18cf7600c811de1d85f15d08ce8420c735c0102962c85a6d48a5b37f465",
+                  "schema_version": "pitgun.racing-physics-event/v1",
+                  "sequence": 0,
+                  "transition": "started"
+                },
+                "type": "engine_derating"
+              },
+              "timing": {
+                "event_id": "sha256:e6f07660468aac371aa2b202203dc636396e390a29edb048cc41dbb692ca2872",
+                "occurred_at_us": 81739552,
+                "released_at_us": 161322350,
+                "schema_version": "pitgun.racing-event-timing/v1"
+              }
+            },
+            "type": "physical"
+          },
+          {
+            "payload": {
+              "event": {
+                "payload": {
+                  "available_power_fraction_ppm": 1000000,
+                  "competitor_id": "player",
+                  "engine_temperature_millicelsius": 109998,
+                  "episode_start_sequence": 0,
+                  "initial_observation": false,
+                  "lap": 1,
+                  "observation_basis": {
+                    "index": 3097,
+                    "kind": "native_point"
+                  },
+                  "policy_digest": "sha256:8710e18cf7600c811de1d85f15d08ce8420c735c0102962c85a6d48a5b37f465",
+                  "schema_version": "pitgun.racing-physics-event/v1",
+                  "sequence": 1,
+                  "transition": "recovered"
+                },
+                "type": "engine_derating"
+              },
+              "timing": {
+                "event_id": "sha256:3d57835dabe43c9e5617e5da238db58308374bd69d695f50b3951a94fc20a0ee",
+                "occurred_at_us": 92593260,
+                "released_at_us": 161322350,
+                "schema_version": "pitgun.racing-event-timing/v1"
+              }
+            },
+            "type": "physical"
+          },
+          {
+            "payload": {
+              "event": {
+                "payload": {
+                  "available_power_fraction_ppm": 999964,
+                  "competitor_id": "player",
+                  "engine_temperature_millicelsius": 110009,
+                  "episode_start_sequence": 2,
+                  "initial_observation": false,
+                  "lap": 1,
+                  "observation_basis": {
+                    "index": 3752,
+                    "kind": "native_point"
+                  },
+                  "policy_digest": "sha256:8710e18cf7600c811de1d85f15d08ce8420c735c0102962c85a6d48a5b37f465",
+                  "schema_version": "pitgun.racing-physics-event/v1",
+                  "sequence": 2,
+                  "transition": "started"
+                },
+                "type": "engine_derating"
+              },
+              "timing": {
+                "event_id": "sha256:56f1586b8725d36a98ab670e9983917b2f9812d30687566318c44d9eecb2bfd3",
+                "occurred_at_us": 109701520,
+                "released_at_us": 161322350,
+                "schema_version": "pitgun.racing-event-timing/v1"
+              }
+            },
+            "type": "physical"
+          },
+          {
+            "payload": {
+              "event": {
+                "payload": {
+                  "available_power_fraction_ppm": 1000000,
+                  "competitor_id": "player",
+                  "engine_temperature_millicelsius": 109998,
+                  "episode_start_sequence": 2,
+                  "initial_observation": false,
+                  "lap": 1,
+                  "observation_basis": {
+                    "index": 4753,
+                    "kind": "native_point"
+                  },
+                  "policy_digest": "sha256:8710e18cf7600c811de1d85f15d08ce8420c735c0102962c85a6d48a5b37f465",
+                  "schema_version": "pitgun.racing-physics-event/v1",
+                  "sequence": 3,
+                  "transition": "recovered"
+                },
+                "type": "engine_derating"
+              },
+              "timing": {
+                "event_id": "sha256:a604ed45467f019cd3d44e0d66e8580eba1f1e389c8125da2998de7b693b10be",
+                "occurred_at_us": 134669617,
+                "released_at_us": 161322350,
+                "schema_version": "pitgun.racing-event-timing/v1"
+              }
+            },
+            "type": "physical"
+          },
+          {
+            "payload": {
+              "event": {
+                "payload": {
+                  "available_power_fraction_ppm": 999987,
+                  "competitor_id": "player",
+                  "engine_temperature_millicelsius": 110003,
+                  "episode_start_sequence": 4,
+                  "initial_observation": false,
+                  "lap": 1,
+                  "observation_basis": {
+                    "index": 4915,
+                    "kind": "native_point"
+                  },
+                  "policy_digest": "sha256:8710e18cf7600c811de1d85f15d08ce8420c735c0102962c85a6d48a5b37f465",
+                  "schema_version": "pitgun.racing-physics-event/v1",
+                  "sequence": 4,
+                  "transition": "started"
+                },
+                "type": "engine_derating"
+              },
+              "timing": {
+                "event_id": "sha256:892f61e3263587a24161f3640d0fd4dc3611f546adc74efe0aa62d9cae14ea1b",
+                "occurred_at_us": 139527138,
+                "released_at_us": 161322350,
+                "schema_version": "pitgun.racing-event-timing/v1"
+              }
+            },
+            "type": "physical"
+          },
+          {
+            "payload": {
+              "event": {
+                "payload": {
+                  "available_power_fraction_ppm": 1000000,
+                  "competitor_id": "player",
+                  "engine_temperature_millicelsius": 109997,
+                  "episode_start_sequence": 4,
+                  "initial_observation": false,
+                  "lap": 1,
+                  "observation_basis": {
+                    "index": 5706,
+                    "kind": "native_point"
+                  },
+                  "policy_digest": "sha256:8710e18cf7600c811de1d85f15d08ce8420c735c0102962c85a6d48a5b37f465",
+                  "schema_version": "pitgun.racing-physics-event/v1",
+                  "sequence": 5,
+                  "transition": "recovered"
+                },
+                "type": "engine_derating"
+              },
+              "timing": {
+                "event_id": "sha256:d7a333f93b57d94df765c0ef9135bfff6bf6f48a69a9c6e20fd47b1a26a8c447",
+                "occurred_at_us": 159158707,
+                "released_at_us": 161322350,
+                "schema_version": "pitgun.racing-event-timing/v1"
+              }
+            },
+            "type": "physical"
+          },
+          {
+            "payload": {
+              "competitor_id": "player",
+              "lap": 1,
+              "timing": {
+                "event_id": "sha256:883b443f855fa84985dd675d187a7e7682faeb6338dd06b806a4b0450205195f",
+                "occurred_at_us": 161322350,
+                "released_at_us": 161322350,
+                "schema_version": "pitgun.racing-event-timing/v1"
+              }
+            },
+            "type": "lap_completed"
+          },
+          {
+            "payload": {
+              "event": {
+                "payload": {
+                  "available_power_fraction_ppm": 999996,
+                  "competitor_id": "player",
+                  "engine_temperature_millicelsius": 110001,
+                  "episode_start_sequence": 6,
+                  "initial_observation": false,
+                  "lap": 2,
+                  "observation_basis": {
+                    "index": 17,
+                    "kind": "native_point"
+                  },
+                  "policy_digest": "sha256:8710e18cf7600c811de1d85f15d08ce8420c735c0102962c85a6d48a5b37f465",
+                  "schema_version": "pitgun.racing-physics-event/v1",
+                  "sequence": 6,
+                  "transition": "started"
+                },
+                "type": "engine_derating"
+              },
+              "timing": {
+                "event_id": "sha256:027c3b7757d81059c486655dc6ca1eba60f4837cbe111becf1f4efa1b2067089",
+                "occurred_at_us": 161928729,
+                "released_at_us": 320114027,
+                "schema_version": "pitgun.racing-event-timing/v1"
+              }
+            },
+            "type": "physical"
+          },
+          {
+            "payload": {
+              "competitor_id": "player",
+              "lap": 2,
+              "timing": {
+                "event_id": "sha256:3c088e2f636a67b09b92ebe628253eeed12ae0cded611dc644a6881b8de486d1",
+                "occurred_at_us": 320114027,
+                "released_at_us": 320114027,
+                "schema_version": "pitgun.racing-event-timing/v1"
+              }
+            },
+            "type": "lap_completed"
+          },
+          {
+            "payload": {
+              "competitor_id": "player",
+              "lap": 3,
+              "timing": {
+                "event_id": "sha256:57bf3877f160a533090500caf048907a6909feaa1700737a05348974ffd9a49e",
+                "occurred_at_us": 480247722,
+                "released_at_us": 480247722,
+                "schema_version": "pitgun.racing-event-timing/v1"
+              }
+            },
+            "type": "lap_completed"
+          },
+          {
+            "payload": {
+              "competitor_id": "player",
+              "lap": 4,
+              "timing": {
+                "event_id": "sha256:16ee3d0467548d47259e836ae035b2f121bca19633e5e9afc652ca673c358ffe",
+                "occurred_at_us": 641562060,
+                "released_at_us": 641562060,
+                "schema_version": "pitgun.racing-event-timing/v1"
+              }
+            },
+            "type": "lap_completed"
+          },
+          {
+            "payload": {
+              "competitor_id": "player",
+              "lap": 5,
+              "timing": {
+                "event_id": "sha256:2ea2d7dee4b518c2f4efbe569d27e119679c98d53611b5fb729a34d304b446c8",
+                "occurred_at_us": 803744635,
+                "released_at_us": 803744635,
+                "schema_version": "pitgun.racing-event-timing/v1"
+              }
+            },
+            "type": "lap_completed"
+          }
+        ],
+        "journal_digest": "sha256:b630b484310f0c0c80f1cbbd6daa24baa5764a990e497609424dc6c8568757e5",
+        "lap_events": 5,
+        "physical_result_digest": "sha256:02ede4f7fcea7611cd5546f6487354f8e9f49d7a67e3cd5d472c36d5afe58a95",
+        "physical_result_matches_frozen": true,
+        "pit_events": 0,
+        "service_and_checkpoint_equal": true
+      },
+      {
+        "derating_recoveries": 6,
+        "derating_starts": 6,
+        "id": "budget-early8-monza-c2",
+        "input_digest": "sha256:ccd58832b9697a8ada87ddb8ed95713b04c8f8b8ff6d114f53565a8ebc9d3b70",
+        "journal": [
+          {
+            "payload": {
+              "competitor_id": "player",
+              "lap": 1,
+              "timing": {
+                "event_id": "sha256:883b443f855fa84985dd675d187a7e7682faeb6338dd06b806a4b0450205195f",
+                "occurred_at_us": 161389803,
+                "released_at_us": 161389803,
+                "schema_version": "pitgun.racing-event-timing/v1"
+              }
+            },
+            "type": "lap_completed"
+          },
+          {
+            "payload": {
+              "competitor_id": "player",
+              "lap": 2,
+              "timing": {
+                "event_id": "sha256:3c088e2f636a67b09b92ebe628253eeed12ae0cded611dc644a6881b8de486d1",
+                "occurred_at_us": 320073092,
+                "released_at_us": 320073092,
+                "schema_version": "pitgun.racing-event-timing/v1"
+              }
+            },
+            "type": "lap_completed"
+          },
+          {
+            "payload": {
+              "event": {
+                "payload": {
+                  "available_power_fraction_ppm": 999939,
+                  "competitor_id": "player",
+                  "engine_temperature_millicelsius": 110015,
+                  "episode_start_sequence": 0,
+                  "initial_observation": false,
+                  "lap": 3,
+                  "observation_basis": {
+                    "index": 2664,
+                    "kind": "native_point"
+                  },
+                  "policy_digest": "sha256:8710e18cf7600c811de1d85f15d08ce8420c735c0102962c85a6d48a5b37f465",
+                  "schema_version": "pitgun.racing-physics-event/v1",
+                  "sequence": 0,
+                  "transition": "started"
+                },
+                "type": "engine_derating"
+              },
+              "timing": {
+                "event_id": "sha256:ea72b46380269441b7a96ad03219e9d47908a92e82e93757f605ed29c1ef6b74",
+                "occurred_at_us": 399793868,
+                "released_at_us": 479937682,
+                "schema_version": "pitgun.racing-event-timing/v1"
+              }
+            },
+            "type": "physical"
+          },
+          {
+            "payload": {
+              "event": {
+                "payload": {
+                  "available_power_fraction_ppm": 1000000,
+                  "competitor_id": "player",
+                  "engine_temperature_millicelsius": 109998,
+                  "episode_start_sequence": 0,
+                  "initial_observation": false,
+                  "lap": 3,
+                  "observation_basis": {
+                    "index": 2918,
+                    "kind": "native_point"
+                  },
+                  "policy_digest": "sha256:8710e18cf7600c811de1d85f15d08ce8420c735c0102962c85a6d48a5b37f465",
+                  "schema_version": "pitgun.racing-physics-event/v1",
+                  "sequence": 1,
+                  "transition": "recovered"
+                },
+                "type": "engine_derating"
+              },
+              "timing": {
+                "event_id": "sha256:c6ca6fc3d299cfd48a3e9971dedbf2d0f588b4898c05cb406a97c3421c653b6a",
+                "occurred_at_us": 406096344,
+                "released_at_us": 479937682,
+                "schema_version": "pitgun.racing-event-timing/v1"
+              }
+            },
+            "type": "physical"
+          },
+          {
+            "payload": {
+              "competitor_id": "player",
+              "lap": 3,
+              "timing": {
+                "event_id": "sha256:57bf3877f160a533090500caf048907a6909feaa1700737a05348974ffd9a49e",
+                "occurred_at_us": 479937682,
+                "released_at_us": 479937682,
+                "schema_version": "pitgun.racing-event-timing/v1"
+              }
+            },
+            "type": "lap_completed"
+          },
+          {
+            "payload": {
+              "event": {
+                "payload": {
+                  "available_power_fraction_ppm": 999914,
+                  "competitor_id": "player",
+                  "engine_temperature_millicelsius": 110022,
+                  "episode_start_sequence": 2,
+                  "initial_observation": false,
+                  "lap": 4,
+                  "observation_basis": {
+                    "index": 2630,
+                    "kind": "native_point"
+                  },
+                  "policy_digest": "sha256:8710e18cf7600c811de1d85f15d08ce8420c735c0102962c85a6d48a5b37f465",
+                  "schema_version": "pitgun.racing-physics-event/v1",
+                  "sequence": 2,
+                  "transition": "started"
+                },
+                "type": "engine_derating"
+              },
+              "timing": {
+                "event_id": "sha256:f5f5e2c43b676741a620cdac5eb171cc3576ba8e301d5623f58392d38232e9a9",
+                "occurred_at_us": 559400881,
+                "released_at_us": 640883634,
+                "schema_version": "pitgun.racing-event-timing/v1"
+              }
+            },
+            "type": "physical"
+          },
+          {
+            "payload": {
+              "event": {
+                "payload": {
+                  "available_power_fraction_ppm": 1000000,
+                  "competitor_id": "player",
+                  "engine_temperature_millicelsius": 109999,
+                  "episode_start_sequence": 2,
+                  "initial_observation": false,
+                  "lap": 4,
+                  "observation_basis": {
+                    "index": 3055,
+                    "kind": "native_point"
+                  },
+                  "policy_digest": "sha256:8710e18cf7600c811de1d85f15d08ce8420c735c0102962c85a6d48a5b37f465",
+                  "schema_version": "pitgun.racing-physics-event/v1",
+                  "sequence": 3,
+                  "transition": "recovered"
+                },
+                "type": "engine_derating"
+              },
+              "timing": {
+                "event_id": "sha256:a55398f8d4ae8064bbed7c3ee4527d5ce6b25cb1fd81b03e244e33cbf544bdba",
+                "occurred_at_us": 570079897,
+                "released_at_us": 640883634,
+                "schema_version": "pitgun.racing-event-timing/v1"
+              }
+            },
+            "type": "physical"
+          },
+          {
+            "payload": {
+              "event": {
+                "payload": {
+                  "available_power_fraction_ppm": 999972,
+                  "competitor_id": "player",
+                  "engine_temperature_millicelsius": 110007,
+                  "episode_start_sequence": 4,
+                  "initial_observation": false,
+                  "lap": 4,
+                  "observation_basis": {
+                    "index": 3905,
+                    "kind": "native_point"
+                  },
+                  "policy_digest": "sha256:8710e18cf7600c811de1d85f15d08ce8420c735c0102962c85a6d48a5b37f465",
+                  "schema_version": "pitgun.racing-physics-event/v1",
+                  "sequence": 4,
+                  "transition": "started"
+                },
+                "type": "engine_derating"
+              },
+              "timing": {
+                "event_id": "sha256:0e89f96449d52be99f26102ad301c14ced7a37ba5e7d026965bac979da90920d",
+                "occurred_at_us": 593065298,
+                "released_at_us": 640883634,
+                "schema_version": "pitgun.racing-event-timing/v1"
+              }
+            },
+            "type": "physical"
+          },
+          {
+            "payload": {
+              "event": {
+                "payload": {
+                  "available_power_fraction_ppm": 1000000,
+                  "competitor_id": "player",
+                  "engine_temperature_millicelsius": 109997,
+                  "episode_start_sequence": 4,
+                  "initial_observation": false,
+                  "lap": 4,
+                  "observation_basis": {
+                    "index": 4066,
+                    "kind": "native_point"
+                  },
+                  "policy_digest": "sha256:8710e18cf7600c811de1d85f15d08ce8420c735c0102962c85a6d48a5b37f465",
+                  "schema_version": "pitgun.racing-physics-event/v1",
+                  "sequence": 5,
+                  "transition": "recovered"
+                },
+                "type": "engine_derating"
+              },
+              "timing": {
+                "event_id": "sha256:01f45b6eaeabdd7e375c3950b4d3b8a3efcb3d0fc67e7628cc517bc913475867",
+                "occurred_at_us": 597043575,
+                "released_at_us": 640883634,
+                "schema_version": "pitgun.racing-event-timing/v1"
+              }
+            },
+            "type": "physical"
+          },
+          {
+            "payload": {
+              "competitor_id": "player",
+              "lap": 4,
+              "timing": {
+                "event_id": "sha256:16ee3d0467548d47259e836ae035b2f121bca19633e5e9afc652ca673c358ffe",
+                "occurred_at_us": 640883634,
+                "released_at_us": 640883634,
+                "schema_version": "pitgun.racing-event-timing/v1"
+              }
+            },
+            "type": "lap_completed"
+          },
+          {
+            "payload": {
+              "event": {
+                "payload": {
+                  "available_power_fraction_ppm": 999942,
+                  "competitor_id": "player",
+                  "engine_temperature_millicelsius": 110015,
+                  "episode_start_sequence": 6,
+                  "initial_observation": false,
+                  "lap": 5,
+                  "observation_basis": {
+                    "index": 2360,
+                    "kind": "native_point"
+                  },
+                  "policy_digest": "sha256:8710e18cf7600c811de1d85f15d08ce8420c735c0102962c85a6d48a5b37f465",
+                  "schema_version": "pitgun.racing-physics-event/v1",
+                  "sequence": 6,
+                  "transition": "started"
+                },
+                "type": "engine_derating"
+              },
+              "timing": {
+                "event_id": "sha256:2825e7a897b1beda96a6ddd0089df4388305208f1ab59d9769b72fe66a14b434",
+                "occurred_at_us": 712818978,
+                "released_at_us": 802628691,
+                "schema_version": "pitgun.racing-event-timing/v1"
+              }
+            },
+            "type": "physical"
+          },
+          {
+            "payload": {
+              "event": {
+                "payload": {
+                  "available_power_fraction_ppm": 1000000,
+                  "competitor_id": "player",
+                  "engine_temperature_millicelsius": 109991,
+                  "episode_start_sequence": 6,
+                  "initial_observation": false,
+                  "lap": 5,
+                  "observation_basis": {
+                    "index": 2519,
+                    "kind": "native_point"
+                  },
+                  "policy_digest": "sha256:8710e18cf7600c811de1d85f15d08ce8420c735c0102962c85a6d48a5b37f465",
+                  "schema_version": "pitgun.racing-physics-event/v1",
+                  "sequence": 7,
+                  "transition": "recovered"
+                },
+                "type": "engine_derating"
+              },
+              "timing": {
+                "event_id": "sha256:84e72cac70d288d1653a934a78ac1dfdb23040b668f53ef88199f1cabf2dc9c2",
+                "occurred_at_us": 716880841,
+                "released_at_us": 802628691,
+                "schema_version": "pitgun.racing-event-timing/v1"
+              }
+            },
+            "type": "physical"
+          },
+          {
+            "payload": {
+              "event": {
+                "payload": {
+                  "available_power_fraction_ppm": 999969,
+                  "competitor_id": "player",
+                  "engine_temperature_millicelsius": 110008,
+                  "episode_start_sequence": 8,
+                  "initial_observation": false,
+                  "lap": 5,
+                  "observation_basis": {
+                    "index": 2599,
+                    "kind": "native_point"
+                  },
+                  "policy_digest": "sha256:8710e18cf7600c811de1d85f15d08ce8420c735c0102962c85a6d48a5b37f465",
+                  "schema_version": "pitgun.racing-physics-event/v1",
+                  "sequence": 8,
+                  "transition": "started"
+                },
+                "type": "engine_derating"
+              },
+              "timing": {
+                "event_id": "sha256:3bf37a47162bdea3dc92ff98d74f027aed62dd451bf6b46ddc35eca2a1df4f9b",
+                "occurred_at_us": 719990588,
+                "released_at_us": 802628691,
+                "schema_version": "pitgun.racing-event-timing/v1"
+              }
+            },
+            "type": "physical"
+          },
+          {
+            "payload": {
+              "event": {
+                "payload": {
+                  "available_power_fraction_ppm": 1000000,
+                  "competitor_id": "player",
+                  "engine_temperature_millicelsius": 109995,
+                  "episode_start_sequence": 8,
+                  "initial_observation": false,
+                  "lap": 5,
+                  "observation_basis": {
+                    "index": 3168,
+                    "kind": "native_point"
+                  },
+                  "policy_digest": "sha256:8710e18cf7600c811de1d85f15d08ce8420c735c0102962c85a6d48a5b37f465",
+                  "schema_version": "pitgun.racing-physics-event/v1",
+                  "sequence": 9,
+                  "transition": "recovered"
+                },
+                "type": "engine_derating"
+              },
+              "timing": {
+                "event_id": "sha256:55dfc5ca2900cfa4c2d87c84ef5e3372281378efe7a963487a81306a3cf0c4b6",
+                "occurred_at_us": 734525250,
+                "released_at_us": 802628691,
+                "schema_version": "pitgun.racing-event-timing/v1"
+              }
+            },
+            "type": "physical"
+          },
+          {
+            "payload": {
+              "event": {
+                "payload": {
+                  "available_power_fraction_ppm": 999974,
+                  "competitor_id": "player",
+                  "engine_temperature_millicelsius": 110007,
+                  "episode_start_sequence": 10,
+                  "initial_observation": false,
+                  "lap": 5,
+                  "observation_basis": {
+                    "index": 3884,
+                    "kind": "native_point"
+                  },
+                  "policy_digest": "sha256:8710e18cf7600c811de1d85f15d08ce8420c735c0102962c85a6d48a5b37f465",
+                  "schema_version": "pitgun.racing-physics-event/v1",
+                  "sequence": 10,
+                  "transition": "started"
+                },
+                "type": "engine_derating"
+              },
+              "timing": {
+                "event_id": "sha256:54ae8e898d2709134cd6c0f68c21d26e572ca818ac8df1689519faff93c8660c",
+                "occurred_at_us": 754324281,
+                "released_at_us": 802628691,
+                "schema_version": "pitgun.racing-event-timing/v1"
+              }
+            },
+            "type": "physical"
+          },
+          {
+            "payload": {
+              "event": {
+                "payload": {
+                  "available_power_fraction_ppm": 1000000,
+                  "competitor_id": "player",
+                  "engine_temperature_millicelsius": 109998,
+                  "episode_start_sequence": 10,
+                  "initial_observation": false,
+                  "lap": 5,
+                  "observation_basis": {
+                    "index": 4164,
+                    "kind": "native_point"
+                  },
+                  "policy_digest": "sha256:8710e18cf7600c811de1d85f15d08ce8420c735c0102962c85a6d48a5b37f465",
+                  "schema_version": "pitgun.racing-physics-event/v1",
+                  "sequence": 11,
+                  "transition": "recovered"
+                },
+                "type": "engine_derating"
+              },
+              "timing": {
+                "event_id": "sha256:9f580ad409a9e052b9959fec9cbb3854175a0b0451855acb78de5409daf0a63e",
+                "occurred_at_us": 761284855,
+                "released_at_us": 802628691,
+                "schema_version": "pitgun.racing-event-timing/v1"
+              }
+            },
+            "type": "physical"
+          },
+          {
+            "payload": {
+              "competitor_id": "player",
+              "lap": 5,
+              "timing": {
+                "event_id": "sha256:2ea2d7dee4b518c2f4efbe569d27e119679c98d53611b5fb729a34d304b446c8",
+                "occurred_at_us": 802628691,
+                "released_at_us": 802628691,
+                "schema_version": "pitgun.racing-event-timing/v1"
+              }
+            },
+            "type": "lap_completed"
+          }
+        ],
+        "journal_digest": "sha256:430da91a50c2708882a666fb6a505e82c9e9d906617af21bf2851a4ffc591de9",
+        "lap_events": 5,
+        "physical_result_digest": "sha256:a0af6b313470c22272c694fab751d4844c1b89b59c5f907f1a499b97a0a355be",
+        "physical_result_matches_frozen": true,
+        "pit_events": 0,
+        "service_and_checkpoint_equal": true
+      },
+      {
+        "derating_recoveries": 0,
+        "derating_starts": 1,
+        "id": "budget-modern20-monza-c0",
+        "input_digest": "sha256:75168618ecc99cab8da76e41af3d713710968eb1d6af3ead457995a6ee598ce2",
+        "journal": [
+          {
+            "payload": {
+              "event": {
+                "payload": {
+                  "available_power_fraction_ppm": 999882,
+                  "competitor_id": "player",
+                  "engine_temperature_millicelsius": 110012,
+                  "episode_start_sequence": 0,
+                  "initial_observation": false,
+                  "lap": 1,
+                  "observation_basis": {
+                    "index": 888,
+                    "kind": "native_point"
+                  },
+                  "policy_digest": "sha256:8710e18cf7600c811de1d85f15d08ce8420c735c0102962c85a6d48a5b37f465",
+                  "schema_version": "pitgun.racing-physics-event/v1",
+                  "sequence": 0,
+                  "transition": "started"
+                },
+                "type": "engine_derating"
+              },
+              "timing": {
+                "event_id": "sha256:15f09b6f7198f3b633ec63a4499c82dc742ce969d8df66f94c39f448dbb6360b",
+                "occurred_at_us": 24707154,
+                "released_at_us": 107393375,
+                "schema_version": "pitgun.racing-event-timing/v1"
+              }
+            },
+            "type": "physical"
+          },
+          {
+            "payload": {
+              "competitor_id": "player",
+              "lap": 1,
+              "timing": {
+                "event_id": "sha256:883b443f855fa84985dd675d187a7e7682faeb6338dd06b806a4b0450205195f",
+                "occurred_at_us": 107393375,
+                "released_at_us": 107393375,
+                "schema_version": "pitgun.racing-event-timing/v1"
+              }
+            },
+            "type": "lap_completed"
+          },
+          {
+            "payload": {
+              "competitor_id": "player",
+              "lap": 2,
+              "timing": {
+                "event_id": "sha256:3c088e2f636a67b09b92ebe628253eeed12ae0cded611dc644a6881b8de486d1",
+                "occurred_at_us": 214218710,
+                "released_at_us": 214218710,
+                "schema_version": "pitgun.racing-event-timing/v1"
+              }
+            },
+            "type": "lap_completed"
+          },
+          {
+            "payload": {
+              "competitor_id": "player",
+              "lap": 3,
+              "timing": {
+                "event_id": "sha256:57bf3877f160a533090500caf048907a6909feaa1700737a05348974ffd9a49e",
+                "occurred_at_us": 320721039,
+                "released_at_us": 320721039,
+                "schema_version": "pitgun.racing-event-timing/v1"
+              }
+            },
+            "type": "lap_completed"
+          },
+          {
+            "payload": {
+              "competitor_id": "player",
+              "lap": 4,
+              "timing": {
+                "event_id": "sha256:16ee3d0467548d47259e836ae035b2f121bca19633e5e9afc652ca673c358ffe",
+                "occurred_at_us": 427640017,
+                "released_at_us": 427640017,
+                "schema_version": "pitgun.racing-event-timing/v1"
+              }
+            },
+            "type": "lap_completed"
+          },
+          {
+            "payload": {
+              "competitor_id": "player",
+              "lap": 5,
+              "timing": {
+                "event_id": "sha256:2ea2d7dee4b518c2f4efbe569d27e119679c98d53611b5fb729a34d304b446c8",
+                "occurred_at_us": 534958098,
+                "released_at_us": 534958098,
+                "schema_version": "pitgun.racing-event-timing/v1"
+              }
+            },
+            "type": "lap_completed"
+          }
+        ],
+        "journal_digest": "sha256:efd3b84f4fd92798e91f29b88e4b7c51952b9efece0834e3b38c3261e8cec3b5",
+        "lap_events": 5,
+        "physical_result_digest": "sha256:a0a51a88e2876e5cba7c8c1bb2d62daf9156cc97888be61a82abe0f8e572d4ad",
+        "physical_result_matches_frozen": true,
+        "pit_events": 0,
+        "service_and_checkpoint_equal": true
+      },
+      {
+        "derating_recoveries": 0,
+        "derating_starts": 0,
+        "id": "budget-modern20-monza-c4",
+        "input_digest": "sha256:15f9a946feeab3e30672ea9c3359f41b3a3e370be0dd3f6c921bf4d3c03d4ee4",
+        "journal": [
+          {
+            "payload": {
+              "competitor_id": "player",
+              "lap": 1,
+              "timing": {
+                "event_id": "sha256:883b443f855fa84985dd675d187a7e7682faeb6338dd06b806a4b0450205195f",
+                "occurred_at_us": 105675864,
+                "released_at_us": 105675864,
+                "schema_version": "pitgun.racing-event-timing/v1"
+              }
+            },
+            "type": "lap_completed"
+          },
+          {
+            "payload": {
+              "competitor_id": "player",
+              "lap": 2,
+              "timing": {
+                "event_id": "sha256:3c088e2f636a67b09b92ebe628253eeed12ae0cded611dc644a6881b8de486d1",
+                "occurred_at_us": 209786340,
+                "released_at_us": 209786340,
+                "schema_version": "pitgun.racing-event-timing/v1"
+              }
+            },
+            "type": "lap_completed"
+          },
+          {
+            "payload": {
+              "competitor_id": "player",
+              "lap": 3,
+              "timing": {
+                "event_id": "sha256:57bf3877f160a533090500caf048907a6909feaa1700737a05348974ffd9a49e",
+                "occurred_at_us": 313789397,
+                "released_at_us": 313789397,
+                "schema_version": "pitgun.racing-event-timing/v1"
+              }
+            },
+            "type": "lap_completed"
+          },
+          {
+            "payload": {
+              "competitor_id": "player",
+              "lap": 4,
+              "timing": {
+                "event_id": "sha256:16ee3d0467548d47259e836ae035b2f121bca19633e5e9afc652ca673c358ffe",
+                "occurred_at_us": 418616033,
+                "released_at_us": 418616033,
+                "schema_version": "pitgun.racing-event-timing/v1"
+              }
+            },
+            "type": "lap_completed"
+          },
+          {
+            "payload": {
+              "competitor_id": "player",
+              "lap": 5,
+              "timing": {
+                "event_id": "sha256:2ea2d7dee4b518c2f4efbe569d27e119679c98d53611b5fb729a34d304b446c8",
+                "occurred_at_us": 524551339,
+                "released_at_us": 524551339,
+                "schema_version": "pitgun.racing-event-timing/v1"
+              }
+            },
+            "type": "lap_completed"
+          }
+        ],
+        "journal_digest": "sha256:afe7c49566aa03e48c0db3ef5552b21175cff7b3afea519e9c115e59a9b9f4a2",
+        "lap_events": 5,
+        "physical_result_digest": "sha256:df303ea23984f3c2787c61d0c47bef4683658ccc4306ceaf22e610a31b90881f",
+        "physical_result_matches_frozen": true,
+        "pit_events": 0,
+        "service_and_checkpoint_equal": true
+      },
+      {
+        "derating_recoveries": 1,
+        "derating_starts": 2,
+        "id": "full-classic15-c0",
+        "input_digest": "sha256:01eb2bcd87a1ac8dcb9fac86cd784a7beff1105c9f138626252bd9f1bae51483",
+        "journal": [
+          {
+            "payload": {
+              "event": {
+                "payload": {
+                  "available_power_fraction_ppm": 999988,
+                  "competitor_id": "player",
+                  "engine_temperature_millicelsius": 110002,
+                  "episode_start_sequence": 0,
+                  "initial_observation": false,
+                  "lap": 1,
+                  "observation_basis": {
+                    "index": 1364,
+                    "kind": "native_point"
+                  },
+                  "policy_digest": "sha256:8710e18cf7600c811de1d85f15d08ce8420c735c0102962c85a6d48a5b37f465",
+                  "schema_version": "pitgun.racing-physics-event/v1",
+                  "sequence": 0,
+                  "transition": "started"
+                },
+                "type": "engine_derating"
+              },
+              "timing": {
+                "event_id": "sha256:57f87aec939300ef3eafc6131fb58565630d1f466bdfed8d89b3bc85d682abef",
+                "occurred_at_us": 35849285,
+                "released_at_us": 124984877,
+                "schema_version": "pitgun.racing-event-timing/v1"
+              }
+            },
+            "type": "physical"
+          },
+          {
+            "payload": {
+              "event": {
+                "payload": {
+                  "available_power_fraction_ppm": 1000000,
+                  "competitor_id": "player",
+                  "engine_temperature_millicelsius": 109987,
+                  "episode_start_sequence": 0,
+                  "initial_observation": false,
+                  "lap": 1,
+                  "observation_basis": {
+                    "index": 1628,
+                    "kind": "native_point"
+                  },
+                  "policy_digest": "sha256:8710e18cf7600c811de1d85f15d08ce8420c735c0102962c85a6d48a5b37f465",
+                  "schema_version": "pitgun.racing-physics-event/v1",
+                  "sequence": 1,
+                  "transition": "recovered"
+                },
+                "type": "engine_derating"
+              },
+              "timing": {
+                "event_id": "sha256:905c0df4ada03de911c6cc990b221a7ac1f21eaf0aa9c76a55fc2b056c648e68",
+                "occurred_at_us": 40016428,
+                "released_at_us": 124984877,
+                "schema_version": "pitgun.racing-event-timing/v1"
+              }
+            },
+            "type": "physical"
+          },
+          {
+            "payload": {
+              "event": {
+                "payload": {
+                  "available_power_fraction_ppm": 999951,
+                  "competitor_id": "player",
+                  "engine_temperature_millicelsius": 110008,
+                  "episode_start_sequence": 2,
+                  "initial_observation": false,
+                  "lap": 1,
+                  "observation_basis": {
+                    "index": 1947,
+                    "kind": "native_point"
+                  },
+                  "policy_digest": "sha256:8710e18cf7600c811de1d85f15d08ce8420c735c0102962c85a6d48a5b37f465",
+                  "schema_version": "pitgun.racing-physics-event/v1",
+                  "sequence": 2,
+                  "transition": "started"
+                },
+                "type": "engine_derating"
+              },
+              "timing": {
+                "event_id": "sha256:ff7bfc4b46765f052808fd501aab49dbd034ad10a69fe81e0371a0346e42f2da",
+                "occurred_at_us": 48422495,
+                "released_at_us": 124984877,
+                "schema_version": "pitgun.racing-event-timing/v1"
+              }
+            },
+            "type": "physical"
+          },
+          {
+            "payload": {
+              "competitor_id": "player",
+              "lap": 1,
+              "timing": {
+                "event_id": "sha256:883b443f855fa84985dd675d187a7e7682faeb6338dd06b806a4b0450205195f",
+                "occurred_at_us": 124984877,
+                "released_at_us": 124984877,
+                "schema_version": "pitgun.racing-event-timing/v1"
+              }
+            },
+            "type": "lap_completed"
+          },
+          {
+            "payload": {
+              "competitor_id": "player",
+              "lap": 2,
+              "timing": {
+                "event_id": "sha256:3c088e2f636a67b09b92ebe628253eeed12ae0cded611dc644a6881b8de486d1",
+                "occurred_at_us": 249207173,
+                "released_at_us": 249207173,
+                "schema_version": "pitgun.racing-event-timing/v1"
+              }
+            },
+            "type": "lap_completed"
+          },
+          {
+            "payload": {
+              "competitor_id": "player",
+              "lap": 3,
+              "timing": {
+                "event_id": "sha256:57bf3877f160a533090500caf048907a6909feaa1700737a05348974ffd9a49e",
+                "occurred_at_us": 373009232,
+                "released_at_us": 373009232,
+                "schema_version": "pitgun.racing-event-timing/v1"
+              }
+            },
+            "type": "lap_completed"
+          },
+          {
+            "payload": {
+              "competitor_id": "player",
+              "lap": 4,
+              "timing": {
+                "event_id": "sha256:16ee3d0467548d47259e836ae035b2f121bca19633e5e9afc652ca673c358ffe",
+                "occurred_at_us": 496515571,
+                "released_at_us": 496515571,
+                "schema_version": "pitgun.racing-event-timing/v1"
+              }
+            },
+            "type": "lap_completed"
+          },
+          {
+            "payload": {
+              "competitor_id": "player",
+              "lap": 5,
+              "timing": {
+                "event_id": "sha256:2ea2d7dee4b518c2f4efbe569d27e119679c98d53611b5fb729a34d304b446c8",
+                "occurred_at_us": 619900721,
+                "released_at_us": 619900721,
+                "schema_version": "pitgun.racing-event-timing/v1"
+              }
+            },
+            "type": "lap_completed"
+          },
+          {
+            "payload": {
+              "competitor_id": "player",
+              "lap": 6,
+              "timing": {
+                "event_id": "sha256:ccd7426f7c8cb9907ebb82bf198c37d0380ec38da5be86a5ee47df20e3a0f14d",
+                "occurred_at_us": 743277388,
+                "released_at_us": 743277388,
+                "schema_version": "pitgun.racing-event-timing/v1"
+              }
+            },
+            "type": "lap_completed"
+          },
+          {
+            "payload": {
+              "competitor_id": "player",
+              "lap": 7,
+              "timing": {
+                "event_id": "sha256:96002831aca60070eedd2065c89344d07604f90966c1394388af288bb87d9482",
+                "occurred_at_us": 866779944,
+                "released_at_us": 866779944,
+                "schema_version": "pitgun.racing-event-timing/v1"
+              }
+            },
+            "type": "lap_completed"
+          },
+          {
+            "payload": {
+              "competitor_id": "player",
+              "lap": 8,
+              "timing": {
+                "event_id": "sha256:4c359d8f7903ca134d716b37489b1eea77f080af11671764c8505d4b581db809",
+                "occurred_at_us": 990453095,
+                "released_at_us": 990453095,
+                "schema_version": "pitgun.racing-event-timing/v1"
+              }
+            },
+            "type": "lap_completed"
+          },
+          {
+            "payload": {
+              "competitor_id": "player",
+              "lap": 9,
+              "timing": {
+                "event_id": "sha256:0d57e98bf84968942330da28df0992cea60ca55202c087ac05da98873ac0bd57",
+                "occurred_at_us": 1114392683,
+                "released_at_us": 1114392683,
+                "schema_version": "pitgun.racing-event-timing/v1"
+              }
+            },
+            "type": "lap_completed"
+          },
+          {
+            "payload": {
+              "competitor_id": "player",
+              "lap": 10,
+              "timing": {
+                "event_id": "sha256:f870815ed63e1c082b3d0935d617ec47954b43614e70362567b7a46054a47406",
+                "occurred_at_us": 1238659724,
+                "released_at_us": 1238659724,
+                "schema_version": "pitgun.racing-event-timing/v1"
+              }
+            },
+            "type": "lap_completed"
+          },
+          {
+            "payload": {
+              "competitor_id": "player",
+              "lap": 11,
+              "timing": {
+                "event_id": "sha256:8cac0cf27db077c22b030fda3c318802a1a73e5fd7fbdbf8b2945bafa3ffcafd",
+                "occurred_at_us": 1363308278,
+                "released_at_us": 1363308278,
+                "schema_version": "pitgun.racing-event-timing/v1"
+              }
+            },
+            "type": "lap_completed"
+          },
+          {
+            "payload": {
+              "competitor_id": "player",
+              "lap": 12,
+              "timing": {
+                "event_id": "sha256:b468af2d2373c98137150b8051d171480036367628ebd806f72550cf14e513da",
+                "occurred_at_us": 1487645552,
+                "released_at_us": 1487645552,
+                "schema_version": "pitgun.racing-event-timing/v1"
+              }
+            },
+            "type": "lap_completed"
+          },
+          {
+            "payload": {
+              "competitor_id": "player",
+              "lap": 13,
+              "timing": {
+                "event_id": "sha256:b040cdd9ac5b5e0e0170f3ad5cf969c6390e86e71ae4e668ae047bf98032475d",
+                "occurred_at_us": 1612430676,
+                "released_at_us": 1612430676,
+                "schema_version": "pitgun.racing-event-timing/v1"
+              }
+            },
+            "type": "lap_completed"
+          },
+          {
+            "payload": {
+              "competitor_id": "player",
+              "lap": 14,
+              "timing": {
+                "event_id": "sha256:a8eb54ac5081450692211bb961bb8137fe51fba21e16238e617db8db8ca17d35",
+                "occurred_at_us": 1737570816,
+                "released_at_us": 1737570816,
+                "schema_version": "pitgun.racing-event-timing/v1"
+              }
+            },
+            "type": "lap_completed"
+          },
+          {
+            "payload": {
+              "competitor_id": "player",
+              "lap": 15,
+              "timing": {
+                "event_id": "sha256:80c2d4ec52ce6e791f81ea97ea6ee36d2a93c21be7fd0f832f1d04bd8690635b",
+                "occurred_at_us": 1863075772,
+                "released_at_us": 1863075772,
+                "schema_version": "pitgun.racing-event-timing/v1"
+              }
+            },
+            "type": "lap_completed"
+          },
+          {
+            "payload": {
+              "competitor_id": "player",
+              "lap": 16,
+              "timing": {
+                "event_id": "sha256:a859a8faff4de90cf79e3690db397842e06d6ed7c897dfb12fb194919831d6b3",
+                "occurred_at_us": 1989033902,
+                "released_at_us": 1989033902,
+                "schema_version": "pitgun.racing-event-timing/v1"
+              }
+            },
+            "type": "lap_completed"
+          },
+          {
+            "payload": {
+              "competitor_id": "player",
+              "lap": 17,
+              "timing": {
+                "event_id": "sha256:b9a60177c57610fe8003c3ea8ec4622f09cf25ed97f2491700fa3c389ea5427a",
+                "occurred_at_us": 2115521347,
+                "released_at_us": 2115521347,
+                "schema_version": "pitgun.racing-event-timing/v1"
+              }
+            },
+            "type": "lap_completed"
+          },
+          {
+            "payload": {
+              "competitor_id": "player",
+              "lap": 18,
+              "timing": {
+                "event_id": "sha256:f986c77a127d5e7ce83536e4d8c714490f694622c07fce3ca01c8bc011434543",
+                "occurred_at_us": 2242489224,
+                "released_at_us": 2242489224,
+                "schema_version": "pitgun.racing-event-timing/v1"
+              }
+            },
+            "type": "lap_completed"
+          },
+          {
+            "payload": {
+              "competitor_id": "player",
+              "lap": 19,
+              "timing": {
+                "event_id": "sha256:dec726eb25ba7546952da288fec4a0c3e30d4b0a9d160ee91624c62d6f2dd00f",
+                "occurred_at_us": 2370001004,
+                "released_at_us": 2370001004,
+                "schema_version": "pitgun.racing-event-timing/v1"
+              }
+            },
+            "type": "lap_completed"
+          },
+          {
+            "payload": {
+              "competitor_id": "player",
+              "lap": 20,
+              "timing": {
+                "event_id": "sha256:8cb4c4a6da5442005d1e918f2a60fd228ba62963d978c350767cda99c90846cc",
+                "occurred_at_us": 2498045501,
+                "released_at_us": 2498045501,
+                "schema_version": "pitgun.racing-event-timing/v1"
+              }
+            },
+            "type": "lap_completed"
+          },
+          {
+            "payload": {
+              "competitor_id": "player",
+              "lap": 21,
+              "timing": {
+                "event_id": "sha256:d19fcc8a57616c549faef403e88ace9ff17b681e72942225293b6fed641fd440",
+                "occurred_at_us": 2626700994,
+                "released_at_us": 2626700994,
+                "schema_version": "pitgun.racing-event-timing/v1"
+              }
+            },
+            "type": "lap_completed"
+          },
+          {
+            "payload": {
+              "competitor_id": "player",
+              "lap": 22,
+              "timing": {
+                "event_id": "sha256:88878253a75e4050d4aabd841d3d76dd1caab612a83b66451423480be30765fe",
+                "occurred_at_us": 2755870051,
+                "released_at_us": 2755870051,
+                "schema_version": "pitgun.racing-event-timing/v1"
+              }
+            },
+            "type": "lap_completed"
+          },
+          {
+            "payload": {
+              "competitor_id": "player",
+              "lap": 23,
+              "timing": {
+                "event_id": "sha256:7dec681aba3bf1a15e093ec6710a4e5b0197a10c5a743b18f3cd65913e68cc8d",
+                "occurred_at_us": 2885405249,
+                "released_at_us": 2885405249,
+                "schema_version": "pitgun.racing-event-timing/v1"
+              }
+            },
+            "type": "lap_completed"
+          },
+          {
+            "payload": {
+              "competitor_id": "player",
+              "lap": 24,
+              "timing": {
+                "event_id": "sha256:c70ad3cdf0a414699a134c9e61ed20c2f35d2db2b541dc85c0174bfcd6411ae7",
+                "occurred_at_us": 3015612795,
+                "released_at_us": 3015612795,
+                "schema_version": "pitgun.racing-event-timing/v1"
+              }
+            },
+            "type": "lap_completed"
+          },
+          {
+            "payload": {
+              "competitor_id": "player",
+              "lap": 25,
+              "timing": {
+                "event_id": "sha256:e2dd1faf2d593c794592e582a8ed4ec669ca45d9177b801a1c2560ab51cfa382",
+                "occurred_at_us": 3146524651,
+                "released_at_us": 3146524651,
+                "schema_version": "pitgun.racing-event-timing/v1"
+              }
+            },
+            "type": "lap_completed"
+          },
+          {
+            "payload": {
+              "competitor_id": "player",
+              "lap": 26,
+              "timing": {
+                "event_id": "sha256:b014eceedad5ec0e5957268d00f1344720ec3dcf5b01b8e6858887fc271e210c",
+                "occurred_at_us": 3277448411,
+                "released_at_us": 3299448411,
+                "schema_version": "pitgun.racing-event-timing/v1"
+              }
+            },
+            "type": "lap_completed"
+          },
+          {
+            "payload": {
+              "competitor_id": "player",
+              "lap": 26,
+              "timing": {
+                "event_id": "sha256:5337d4b3aaa60b2856d0d0f3fe5541f087b909944aeeab7a9fb625524ac08bed",
+                "occurred_at_us": 3299448411,
+                "released_at_us": 3299448411,
+                "schema_version": "pitgun.racing-event-timing/v1"
+              }
+            },
+            "type": "pit_stop_completed"
+          },
+          {
+            "payload": {
+              "competitor_id": "player",
+              "lap": 27,
+              "timing": {
+                "event_id": "sha256:19c10afe8cb60308fb08dfe50d3fc8cafd8c848a55c5d668c56b2b35208fb0f5",
+                "occurred_at_us": 3426456866,
+                "released_at_us": 3426456866,
+                "schema_version": "pitgun.racing-event-timing/v1"
+              }
+            },
+            "type": "lap_completed"
+          },
+          {
+            "payload": {
+              "competitor_id": "player",
+              "lap": 28,
+              "timing": {
+                "event_id": "sha256:89cba6d1b393a754e10403b29e38a7203cd9b858b2ffabbc4b0e801e6f429ac2",
+                "occurred_at_us": 3551647456,
+                "released_at_us": 3551647456,
+                "schema_version": "pitgun.racing-event-timing/v1"
+              }
+            },
+            "type": "lap_completed"
+          },
+          {
+            "payload": {
+              "competitor_id": "player",
+              "lap": 29,
+              "timing": {
+                "event_id": "sha256:4787efcf3330bb1c81070ff9f81f6d8f50f9e29edd275dd68a78a3d73ab10882",
+                "occurred_at_us": 3676198409,
+                "released_at_us": 3676198409,
+                "schema_version": "pitgun.racing-event-timing/v1"
+              }
+            },
+            "type": "lap_completed"
+          },
+          {
+            "payload": {
+              "competitor_id": "player",
+              "lap": 30,
+              "timing": {
+                "event_id": "sha256:7e528da69b0fcc3a902ab8a3b1c851504388168c163f0b6b47feaf88048243bf",
+                "occurred_at_us": 3800272665,
+                "released_at_us": 3800272665,
+                "schema_version": "pitgun.racing-event-timing/v1"
+              }
+            },
+            "type": "lap_completed"
+          },
+          {
+            "payload": {
+              "competitor_id": "player",
+              "lap": 31,
+              "timing": {
+                "event_id": "sha256:629496bc71d1d8e57a2c08152748922495b91782a10e48a10647221a7ef26bc4",
+                "occurred_at_us": 3924423684,
+                "released_at_us": 3924423684,
+                "schema_version": "pitgun.racing-event-timing/v1"
+              }
+            },
+            "type": "lap_completed"
+          },
+          {
+            "payload": {
+              "competitor_id": "player",
+              "lap": 32,
+              "timing": {
+                "event_id": "sha256:1fd519082fccb0a03f80287fcc36e7d09f63cfde80e79ab652f7b6dfa0e2e7df",
+                "occurred_at_us": 4048531828,
+                "released_at_us": 4048531828,
+                "schema_version": "pitgun.racing-event-timing/v1"
+              }
+            },
+            "type": "lap_completed"
+          },
+          {
+            "payload": {
+              "competitor_id": "player",
+              "lap": 33,
+              "timing": {
+                "event_id": "sha256:6d5ab372dfeafa9319c162ff5518e26166d78c4c9068de5a7f73692021a815b3",
+                "occurred_at_us": 4172516208,
+                "released_at_us": 4172516208,
+                "schema_version": "pitgun.racing-event-timing/v1"
+              }
+            },
+            "type": "lap_completed"
+          },
+          {
+            "payload": {
+              "competitor_id": "player",
+              "lap": 34,
+              "timing": {
+                "event_id": "sha256:b6423e3a26b573575949f722226e372a461ee843205f31e921c6d0f14e618dd9",
+                "occurred_at_us": 4296402135,
+                "released_at_us": 4296402135,
+                "schema_version": "pitgun.racing-event-timing/v1"
+              }
+            },
+            "type": "lap_completed"
+          },
+          {
+            "payload": {
+              "competitor_id": "player",
+              "lap": 35,
+              "timing": {
+                "event_id": "sha256:a84a23e01c99dc3246956f0e0866edc7cd0fe6477a63218c70abcb3977d45eb3",
+                "occurred_at_us": 4420296202,
+                "released_at_us": 4420296202,
+                "schema_version": "pitgun.racing-event-timing/v1"
+              }
+            },
+            "type": "lap_completed"
+          },
+          {
+            "payload": {
+              "competitor_id": "player",
+              "lap": 36,
+              "timing": {
+                "event_id": "sha256:705dcb8bf0a754bc6fee57512812b5e1a5b025b2dbb1c62a462a8b85c93fcce9",
+                "occurred_at_us": 4544237341,
+                "released_at_us": 4544237341,
+                "schema_version": "pitgun.racing-event-timing/v1"
+              }
+            },
+            "type": "lap_completed"
+          },
+          {
+            "payload": {
+              "competitor_id": "player",
+              "lap": 37,
+              "timing": {
+                "event_id": "sha256:4b26662e57d1058b1daff4b6bfba6a3e62efe67aee4cf80c5a2f4ef8682e8b62",
+                "occurred_at_us": 4668270158,
+                "released_at_us": 4668270158,
+                "schema_version": "pitgun.racing-event-timing/v1"
+              }
+            },
+            "type": "lap_completed"
+          },
+          {
+            "payload": {
+              "competitor_id": "player",
+              "lap": 38,
+              "timing": {
+                "event_id": "sha256:fca51abab759ad97b30672782ef017d77fc787143fc8117e95b960975d01c680",
+                "occurred_at_us": 4792193438,
+                "released_at_us": 4792193438,
+                "schema_version": "pitgun.racing-event-timing/v1"
+              }
+            },
+            "type": "lap_completed"
+          },
+          {
+            "payload": {
+              "competitor_id": "player",
+              "lap": 39,
+              "timing": {
+                "event_id": "sha256:41b2bdd9758955a51a38b72ab7ba61baffa71b0f95503419a4d925d526602be2",
+                "occurred_at_us": 4916265289,
+                "released_at_us": 4916265289,
+                "schema_version": "pitgun.racing-event-timing/v1"
+              }
+            },
+            "type": "lap_completed"
+          },
+          {
+            "payload": {
+              "competitor_id": "player",
+              "lap": 40,
+              "timing": {
+                "event_id": "sha256:9916f811dc2ed3e06682b0ab7f76dc495a2ffb6d92c35712192a80df6dec9be4",
+                "occurred_at_us": 5040109997,
+                "released_at_us": 5040109997,
+                "schema_version": "pitgun.racing-event-timing/v1"
+              }
+            },
+            "type": "lap_completed"
+          },
+          {
+            "payload": {
+              "competitor_id": "player",
+              "lap": 41,
+              "timing": {
+                "event_id": "sha256:2669c1f53ec433f5eb87df926073fa84267a061a1c1e5ed80e11526fef622d98",
+                "occurred_at_us": 5164116520,
+                "released_at_us": 5164116520,
+                "schema_version": "pitgun.racing-event-timing/v1"
+              }
+            },
+            "type": "lap_completed"
+          },
+          {
+            "payload": {
+              "competitor_id": "player",
+              "lap": 42,
+              "timing": {
+                "event_id": "sha256:1e71b0e0ccd5eee56a2a849892580aaeb7d9853565f0f7eac6c1220b154c7be3",
+                "occurred_at_us": 5288355318,
+                "released_at_us": 5288355318,
+                "schema_version": "pitgun.racing-event-timing/v1"
+              }
+            },
+            "type": "lap_completed"
+          },
+          {
+            "payload": {
+              "competitor_id": "player",
+              "lap": 43,
+              "timing": {
+                "event_id": "sha256:552bd7b532944cf8fd8423408ddf9659b44b7423ed367ed0426f66719e84b550",
+                "occurred_at_us": 5412773822,
+                "released_at_us": 5412773822,
+                "schema_version": "pitgun.racing-event-timing/v1"
+              }
+            },
+            "type": "lap_completed"
+          },
+          {
+            "payload": {
+              "competitor_id": "player",
+              "lap": 44,
+              "timing": {
+                "event_id": "sha256:6f3f4514b9614b7ef534417887636f08092aad3c8354bce67adf24893c0ae4fa",
+                "occurred_at_us": 5537350230,
+                "released_at_us": 5537350230,
+                "schema_version": "pitgun.racing-event-timing/v1"
+              }
+            },
+            "type": "lap_completed"
+          },
+          {
+            "payload": {
+              "competitor_id": "player",
+              "lap": 45,
+              "timing": {
+                "event_id": "sha256:29500f7fca16f64384d92b048558b72ae566067c59e25fb752b0d0ced8dcf609",
+                "occurred_at_us": 5662084378,
+                "released_at_us": 5662084378,
+                "schema_version": "pitgun.racing-event-timing/v1"
+              }
+            },
+            "type": "lap_completed"
+          },
+          {
+            "payload": {
+              "competitor_id": "player",
+              "lap": 46,
+              "timing": {
+                "event_id": "sha256:dd1e1f36793b779475f29c37deda2a347e5e20aa1fc243ebd56d5f2c365fe07c",
+                "occurred_at_us": 5787056647,
+                "released_at_us": 5787056647,
+                "schema_version": "pitgun.racing-event-timing/v1"
+              }
+            },
+            "type": "lap_completed"
+          },
+          {
+            "payload": {
+              "competitor_id": "player",
+              "lap": 47,
+              "timing": {
+                "event_id": "sha256:2a637ff19c6ea11c8ce2f76b9d962e403a1f5bfbc297d2c38af731c11717b790",
+                "occurred_at_us": 5912299623,
+                "released_at_us": 5912299623,
+                "schema_version": "pitgun.racing-event-timing/v1"
+              }
+            },
+            "type": "lap_completed"
+          },
+          {
+            "payload": {
+              "competitor_id": "player",
+              "lap": 48,
+              "timing": {
+                "event_id": "sha256:a82545f88ecc2a539044fbf45a29a0e7a1f6d0616de95cdf543d30fddf9b89b9",
+                "occurred_at_us": 6037806016,
+                "released_at_us": 6037806016,
+                "schema_version": "pitgun.racing-event-timing/v1"
+              }
+            },
+            "type": "lap_completed"
+          },
+          {
+            "payload": {
+              "competitor_id": "player",
+              "lap": 49,
+              "timing": {
+                "event_id": "sha256:aa73ebfd4e7b4b290f135da42856741cb11497463760b4f82114e2c55b6b2960",
+                "occurred_at_us": 6163582662,
+                "released_at_us": 6163582662,
+                "schema_version": "pitgun.racing-event-timing/v1"
+              }
+            },
+            "type": "lap_completed"
+          },
+          {
+            "payload": {
+              "competitor_id": "player",
+              "lap": 50,
+              "timing": {
+                "event_id": "sha256:f60e0ef076f9038ac779c183bc3cf2cdfb043c12b2808f01eb615240ef46f860",
+                "occurred_at_us": 6289656359,
+                "released_at_us": 6289656359,
+                "schema_version": "pitgun.racing-event-timing/v1"
+              }
+            },
+            "type": "lap_completed"
+          },
+          {
+            "payload": {
+              "competitor_id": "player",
+              "lap": 51,
+              "timing": {
+                "event_id": "sha256:008b703cd3f7756ac9def6c8dee0741fcb83d4a221af3806af9d43c03a35e0ef",
+                "occurred_at_us": 6416048783,
+                "released_at_us": 6416048783,
+                "schema_version": "pitgun.racing-event-timing/v1"
+              }
+            },
+            "type": "lap_completed"
+          },
+          {
+            "payload": {
+              "competitor_id": "player",
+              "lap": 52,
+              "timing": {
+                "event_id": "sha256:5f18edc586a354ec42066e715a5d58b593f1fcbd6a32e012cd0d5e85d69162f8",
+                "occurred_at_us": 6542730749,
+                "released_at_us": 6542730749,
+                "schema_version": "pitgun.racing-event-timing/v1"
+              }
+            },
+            "type": "lap_completed"
+          },
+          {
+            "payload": {
+              "competitor_id": "player",
+              "lap": 53,
+              "timing": {
+                "event_id": "sha256:8abf01b1834e9f85e3fc20e382791391049fbf13a4a2a489f48ec63e7b679eb8",
+                "occurred_at_us": 6669291259,
+                "released_at_us": 6669291259,
+                "schema_version": "pitgun.racing-event-timing/v1"
+              }
+            },
+            "type": "lap_completed"
+          }
+        ],
+        "journal_digest": "sha256:af2038f7c6f29a48d93b4433c2d6dfd5ad5fea729d37d5bfb8b66c45ad9e6fb0",
+        "lap_events": 53,
+        "physical_result_digest": "sha256:f2013bdd176ca6988ea6a00a4987a0a2905b09fc32dfbcdea7d0efdd97a8fc58",
+        "physical_result_matches_frozen": true,
+        "pit_events": 1,
+        "service_and_checkpoint_equal": true
+      }
+    ],
+    "catalog": {
+      "id": "pitgun.racing",
+      "manifest_digest": "sha256:c7eafd00de0e1257d82687d8f640e0e435f530746f0bfa805bba662df20110cf",
+      "schema_version": "pitgun.catalog-release-identity/v1",
+      "version": "1.8.1"
+    },
+    "frozen_screen_digest": "sha256:7d5a81b1426edba316606ac33db9e9d6530753ca8e9a37316d5a01cbfb2b29ba",
+    "physical_sources_match_frozen": true,
+    "policy": {
+      "max_events_per_competitor": 8192,
+      "schema_version": "pitgun.racing-derating-event-policy/v1"
+    },
+    "schema": "pitgun.native-derating-events-qualification/v1",
+    "scope": "Native audit only, exact frozen physical inputs/results. No UI/provider/Authority admission; raw state transitions, no relevance calibration.",
+    "sources": {
+      "detector": "sha256:34b04ecd90c2ef1184a5632770d2b533562a0c0d7304e87e16566d156db0f09c",
+      "probe": "sha256:7558f789fef0e391df05f22d9eb21732ff8aaadb46cfcd673f8a73864412d188",
+      "simulator": "sha256:9e95bcdb9c991d7b486350bdd697468036c59fe923b7afd15f18a9abcfb11387"
+    }
+  },
+  "identity": {
+    "binary_digest": "sha256:f0dd959181736bfd5dd941f096e8d9be1e59ee13fd45799b8d5922e95060f3b4",
+    "legacy_binary_digest": "sha256:323b22b236404e26c51992acb0b0c6753975ec28c24c7b7eb32bcd6b460eba6d",
+    "platform": "macOS-26.5.1-arm64-arm-64bit",
+    "source_commit": "7ec598d8a8e29816033a47794f2cbf9227ea2292",
+    "source_files": {
+      "Cargo.lock": "sha256:fe9e9d1c7cda7d2f86d972ddfe13337f7dd48aca1393173852e369f26ccde372",
+      "crates/pitgun-racing-simulator/examples/native_derating_events_probe.rs": "sha256:7558f789fef0e391df05f22d9eb21732ff8aaadb46cfcd673f8a73864412d188",
+      "crates/pitgun-racing-simulator/examples/thermal_tire_gameplay_probe.rs": "sha256:fc010816f381b8c8da1389566a655a74c49ff0658d35d6d5fdf25b9f7ab1f949",
+      "crates/pitgun-racing-simulator/src/lib.rs": "sha256:9e95bcdb9c991d7b486350bdd697468036c59fe923b7afd15f18a9abcfb11387",
+      "crates/pitgun-racing-simulator/src/physical_events.rs": "sha256:34b04ecd90c2ef1184a5632770d2b533562a0c0d7304e87e16566d156db0f09c",
+      "crates/pitgun-racing-solver/src/lib.rs": "sha256:0452720478236ae312d41cb8ea21e7cad0fadadcaabe6008379fff49a37045f9",
+      "crates/pitgun-racing-solver/src/longitudinal_energy.rs": "sha256:5bb912f31f0b74fc3ba59afb11605d9f72f72b066be1ef3811ce50498115ec21",
+      "crates/pitgun-racing-solver/src/thermal_physics.rs": "sha256:95962d01e124aaceaa809215abf62850687772a3cd20996aaa54532ff6935699",
+      "experiments/longitudinal_energy/results/local-energy-v1.json": "sha256:90250b92eb801b9a5e6fc505f2b7fc0151eef82fc5e47e42cbffc450a6e894d7",
+      "experiments/racing_physical_events/run_local.py": "sha256:19b319b8ffc714d082bc0a484663e48ae0c7d23360a6995cdd19174e90a74db9",
+      "experiments/thermal_physics_v2/plan-v1.json": "sha256:ee97c3157a68433e9e8bfc588bb763c9484146d310f0de9820338ed7f4dce6a8",
+      "experiments/thermal_physics_v2/profile-v1.json": "sha256:54840473418c1d576b9e925f0d90722194b4827b58494e519bf06dbaea766b6b",
+      "experiments/thermal_physics_v2/results/screen-v1.json": "sha256:7d5a81b1426edba316606ac33db9e9d6530753ca8e9a37316d5a01cbfb2b29ba"
+    }
+  },
+  "preflight": [
+    {
+      "case": "monza-classic-5",
+      "exact_frozen_outcome": true,
+      "model": "historical"
+    },
+    {
+      "case": "monza-classic-5",
+      "exact_frozen_outcome": true,
+      "model": "energy"
+    },
+    {
+      "case": "monza-classic-5-1hz",
+      "exact_frozen_outcome": true,
+      "model": "historical"
+    },
+    {
+      "case": "monza-classic-5-1hz",
+      "exact_frozen_outcome": true,
+      "model": "energy"
+    },
+    {
+      "case": "silverstone-classic-5",
+      "exact_frozen_outcome": true,
+      "model": "historical"
+    },
+    {
+      "case": "silverstone-classic-5",
+      "exact_frozen_outcome": true,
+      "model": "energy"
+    },
+    {
+      "case": "monaco-classic-5",
+      "exact_frozen_outcome": true,
+      "model": "historical"
+    },
+    {
+      "case": "monaco-classic-5",
+      "exact_frozen_outcome": true,
+      "model": "energy"
+    },
+    {
+      "case": "suzuka-classic-5",
+      "exact_frozen_outcome": true,
+      "model": "historical"
+    },
+    {
+      "case": "suzuka-classic-5",
+      "exact_frozen_outcome": true,
+      "model": "energy"
+    },
+    {
+      "case": "monza-classic-53",
+      "exact_frozen_outcome": true,
+      "model": "historical"
+    },
+    {
+      "case": "monza-classic-53",
+      "exact_frozen_outcome": true,
+      "model": "energy"
+    },
+    {
+      "case": "monza-modern-5",
+      "exact_frozen_outcome": true,
+      "model": "historical"
+    },
+    {
+      "case": "monza-modern-5",
+      "exact_frozen_outcome": true,
+      "model": "energy"
+    },
+    {
+      "case": "monza-hybrid-resource-5",
+      "exact_frozen_outcome": true,
+      "model": "historical"
+    },
+    {
+      "case": "monza-hybrid-resource-5",
+      "exact_frozen_outcome": true,
+      "model": "energy"
+    },
+    {
+      "case": "monaco-classic-78",
+      "exact_frozen_outcome": true,
+      "model": "historical"
+    },
+    {
+      "case": "monaco-classic-78",
+      "exact_frozen_outcome": true,
+      "model": "energy"
+    },
+    {
+      "case": "spa-classic-5-seed17",
+      "exact_frozen_outcome": true,
+      "model": "historical"
+    },
+    {
+      "case": "spa-classic-5-seed17",
+      "exact_frozen_outcome": true,
+      "model": "energy"
+    },
+    {
+      "case": "barcelona-modern-66-fuel-feasibility",
+      "exact_frozen_outcome": true,
+      "model": "historical"
+    },
+    {
+      "case": "barcelona-modern-66-fuel-feasibility",
+      "exact_frozen_outcome": true,
+      "model": "energy"
+    }
+  ],
+  "schema": "pitgun.native-derating-events-receipt/v1",
+  "scope": "Native observations only; no new physics, complete process checkpoint, graphical export, provider visibility or Authority admission."
+}

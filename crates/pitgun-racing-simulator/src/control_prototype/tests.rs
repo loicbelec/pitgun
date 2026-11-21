@@ -853,6 +853,9 @@ fn physical_events_release_only_observed_rival_facts_and_separate_crossing_from_
                             RacingSessionProgressV1::Event(event),
                         ) => {
                             let (id, lap, kind, timing) = match event {
+                                RacingSessionEventV1::Physical { .. } => panic!(
+                                    "default control fixture did not opt into physical events"
+                                ),
                                 RacingSessionEventV1::LapCompleted {
                                     competitor_id,
                                     lap,
