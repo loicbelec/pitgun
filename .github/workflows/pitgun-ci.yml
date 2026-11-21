@@ -81,7 +81,9 @@ jobs:
         run: python -m unittest discover -s experiments/racing_response/tests -v
 
       - name: Validate local physics baseline tools and archived evidence
-        run: python -m unittest discover -s experiments/physics_foundation/tests -v
+        run: |
+          python -m unittest discover -s experiments/physics_foundation/tests -v
+          python -m unittest discover -s experiments/power_telemetry/tests -v
 
       - name: Validate Racing driver-control holdout evidence
         run: |

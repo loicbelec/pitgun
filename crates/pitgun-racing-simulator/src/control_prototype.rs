@@ -418,6 +418,14 @@ impl LocalControlledRacingSession {
         &self.journal
     }
 
+    /// Read-only offline power contract; not part of historical evidence/streams.
+    pub fn latest_player_power_telemetry_v1(
+        &self,
+    ) -> Result<Option<(u16, pitgun_racing_solver::power_telemetry::PowerTelemetryV1)>, String>
+    {
+        self.session.latest_player_power_telemetry_v1()
+    }
+
     pub fn advance(&mut self) -> Result<ControlStep, String> {
         if let Some(observation) = &self.pending {
             return Ok(ControlStep::AwaitingDecision(Box::new(observation.clone())));

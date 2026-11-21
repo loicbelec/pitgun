@@ -2496,6 +2496,9 @@ struct IncrementalV3Competitor {
     request: SimulationRequest,
     physical_vehicle: VehicleParams,
     engine_thermal: Option<EngineThermalParamsV3>,
+    // Read-only context for the opt-in power projection. No new solver input.
+    power_projection_mechanical: MechanicalParamsV3,
+    power_projection_fuel: Option<FuelMassParamsV3>,
     has_transmission_resolution: bool,
     stint_plan: ResolvedStintPlan,
     driver_control_resolution: Option<ResolvedV3DriverControlV1>,
@@ -2649,6 +2652,32 @@ pub struct IncrementalRacingSession {
 }
 
 impl IncrementalRacingSession {
+    /// Opt-in local diagnostic of the latest native player lap. No stream,
+    /// journal, channel or canonical result is changed. Empty committed-service
+    /// records return None; callers audit the driving prefix before service.
+    pub fn latest_player_power_telemetry_v1(
+        &self,
+    ) -> Result<Option<(u16, pitgun_racing_solver::power_telemetry::PowerTelemetryV1)>, String>
+    {
+        let Some(player) = self.competitors.iter().find(|c| c.is_player) else {
+            return Ok(None);
+        };
+        let Some(lap) = player
+            .latest_lap
+            .as_ref()
+            .filter(|l| !l.solution.t.is_empty())
+        else {
+            return Ok(None);
+        };
+        let projection = pitgun_racing_solver::power_telemetry::project_lap_power_v1(
+            &lap.solution,
+            &player.physical_vehicle,
+            player.power_projection_mechanical,
+            player.power_projection_fuel,
+        )?;
+        Ok(Some((lap.lap_index, projection)))
+    }
+
     fn new_v3(
         catalog: &EmbeddedCatalog,
         race: &RaceInput,
@@ -2924,6 +2953,8 @@ impl IncrementalRacingSession {
                 request,
                 physical_vehicle,
                 engine_thermal,
+                power_projection_mechanical: mechanical,
+                power_projection_fuel: effective_profile.fuel_mass,
                 has_transmission_resolution: effective_profile.transmission_resolution.is_some(),
                 stint_plan,
                 driver_control_resolution,

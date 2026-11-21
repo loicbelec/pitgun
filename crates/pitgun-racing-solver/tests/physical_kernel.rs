@@ -11,6 +11,184 @@ use pitgun_racing_solver::{
     run_simulation, run_simulation_with_model_response, run_simulation_with_tuning_response,
 };
 
+use pitgun_racing_solver::power_telemetry::project_lap_power_v1;
+
+fn manufactured_power_lap() -> (
+    pitgun_racing_solver::SimulationSolution,
+    VehicleParams,
+    MechanicalParamsV3,
+) {
+    let mut vehicle = synthetic_request().vehicle;
+    vehicle.engine.gear_ratios = vec![1.0];
+    vehicle.engine.n_rpm = vec![0.0, 12_000.0];
+    vehicle.engine.trq = vec![0.5, 0.5];
+    vehicle.engine.n_idle = 3_000.0;
+    let mechanical = MechanicalParamsV3 {
+        driveline_efficiency: 0.8,
+        ..MechanicalParamsV3::default()
+    };
+    let mut solution = pitgun_racing_solver::SimulationSolution {
+        s: vec![0., 10., 20., 30.],
+        t: vec![0., 1., 2., 3.],
+        v: vec![0., 5., 20., 20.],
+        power: vec![8., 16., 0., 0.],
+        temp: vec![90.; 4],
+        gear: vec![1; 4],
+        engine_derating_factor: vec![1.; 4],
+        shift_power_fraction: vec![0.5, 0.5, 1., 1.],
+        ..Default::default()
+    };
+    for i in 0..3 {
+        let dt = 10.0 / solution.v[i].max(1.0);
+        let heat =
+            vehicle.engine.alpha_heat * solution.power[i] * 1000. / mechanical.driveline_efficiency;
+        let cooling = (vehicle.engine.p_cool0 + vehicle.engine.k_cool * solution.v[i].max(1.0))
+            * (solution.temp[i] - vehicle.engine.t_amb);
+        solution.temp[i + 1] = solution.temp[i] + (heat - cooling) * dt / vehicle.engine.c_th;
+    }
+    (solution, vehicle, mechanical)
+}
+
+#[test]
+fn power_v1_separates_shaft_wheel_regularization_and_integration_clocks() {
+    let (s, v, m) = manufactured_power_lap();
+    let p = project_lap_power_v1(&s, &v, m, None).expect("power contract");
+    assert_eq!(p.points[0].engine_delivered_w, 10_000.);
+    assert_eq!(p.points[0].wheel_propulsion_w, 0.);
+    assert_eq!(p.points[1].wheel_propulsion_w, 8_000.);
+    assert_eq!(p.points[1].driveline_loss_w, 4_000.);
+    assert_eq!(p.points[1].launch_regularization_w, 8_000.);
+    assert_eq!(p.ledger.solver_engine_work_j, 140_000.);
+    assert_eq!(p.ledger.trajectory_engine_work_j, 30_000.);
+    assert_eq!(
+        p.ledger.solver_engine_work_j,
+        p.ledger.solver_wheel_work_j
+            + p.ledger.solver_driveline_loss_j
+            + p.ledger.solver_launch_regularization_j
+    );
+    assert!(p.ledger.engine_thermal_residual_j.abs() < 1e-7);
+    assert!(
+        p.points
+            .iter()
+            .all(|p| (0.0..=100.).contains(&p.equivalent_engine_load_pct))
+    );
+}
+
+#[test]
+fn power_v1_does_not_invent_pedal_or_braking_from_zero_propulsion() {
+    let (s, v, m) = manufactured_power_lap();
+    let p = project_lap_power_v1(&s, &v, m, None).unwrap();
+    assert!(p.pedal_command_pct.is_none());
+    assert!(p.brake_command_pct.is_none());
+    assert_eq!(p.points[2].equivalent_engine_load_pct, 0.);
+    assert_eq!(p.points[2].engine_delivered_w, 0.);
+}
+
+#[test]
+fn power_v1_uses_the_committed_thermal_derating_before_normalizing_load() {
+    let (mut s, v, m) = manufactured_power_lap();
+    let nominal = project_lap_power_v1(&s, &v, m, None).unwrap();
+    s.engine_derating_factor[0] = 0.5;
+    let limited = project_lap_power_v1(&s, &v, m, None).unwrap();
+    assert_eq!(
+        limited.points[0].engine_available_w,
+        nominal.points[0].engine_available_w / 2.0
+    );
+    assert_eq!(
+        limited.points[0].equivalent_engine_load_pct,
+        nominal.points[0].equivalent_engine_load_pct * 2.0
+    );
+    assert_eq!(
+        limited.points[0].engine_delivered_w,
+        nominal.points[0].engine_delivered_w
+    );
+}
+
+#[test]
+fn power_v1_export_frequency_does_not_change_native_ledger_or_invent_shift_loads() {
+    let (s, v, m) = manufactured_power_lap();
+    let p = project_lap_power_v1(&s, &v, m, None).unwrap();
+    let original = p.clone();
+    let slow = p.resample(1.).unwrap();
+    let fast = p.resample(5.).unwrap();
+    assert_eq!(slow.len(), 3);
+    assert_eq!(fast.len(), 15);
+    assert_eq!(fast[4].engine_delivered_w, 10_000.);
+    assert_eq!(fast[5].engine_delivered_w, 20_000.);
+    assert_eq!(p, original);
+    for bad in [0., -1., f64::NAN, 21.] {
+        assert!(p.resample(bad).is_err());
+    }
+}
+
+#[test]
+fn power_v1_rejects_capacity_mismatch_instead_of_hiding_it_with_a_clamp() {
+    let (mut s, v, m) = manufactured_power_lap();
+    s.power[0] = 1_000.;
+    assert!(
+        project_lap_power_v1(&s, &v, m, None)
+            .unwrap_err()
+            .contains("capacity mismatch")
+    );
+    s.power[0] = 8.;
+    s.shift_power_fraction[0] = 0.;
+    assert!(
+        project_lap_power_v1(&s, &v, m, None)
+            .unwrap_err()
+            .contains("capacity mismatch")
+    );
+}
+
+#[test]
+fn power_v1_rejects_missing_or_nonfinite_native_inputs() {
+    let (s, v, m) = manufactured_power_lap();
+    for kind in 0..6 {
+        let mut bad = s.clone();
+        match kind {
+            0 => bad.power[0] = f64::NAN,
+            1 => bad.t[1] = bad.t[0],
+            2 => bad.engine_derating_factor.clear(),
+            3 => bad.gear[0] = 0,
+            4 => bad.shift_power_fraction[0] = 1.1,
+            _ => bad.lap_index = vec![1, 1, 2, 2],
+        }
+        assert!(project_lap_power_v1(&bad, &v, m, None).is_err());
+    }
+}
+
+#[test]
+fn power_v1_audits_real_incremental_laps_without_changing_the_physical_result() {
+    let request = resolved_v3_request(&synthetic_request());
+    let expected = run_resolved_simulation_v3(&request).unwrap();
+    let mechanical = request.mechanical;
+    let vehicle = request.vehicle.clone();
+    let fuel = request.fuel_mass;
+    let mut session = ResolvedSimulationSessionV3::new(request).unwrap();
+    let mut work = 0.;
+    let mut losses = 0.;
+    let mut burned = 0.;
+    let actual = loop {
+        match session.advance().unwrap() {
+            ResolvedSimulationStepV3::Lap(lap) => {
+                let p = project_lap_power_v1(&lap.solution, &vehicle, mechanical, fuel).unwrap();
+                work += p.ledger.solver_engine_work_j;
+                losses += p.ledger.solver_driveline_loss_j;
+                burned += p.ledger.combustion_fuel_consumption_kg.unwrap_or(0.);
+                assert!(p.ledger.engine_thermal_residual_j.abs() < 1e-5);
+            }
+            ResolvedSimulationStepV3::Complete(result) => break *result,
+        }
+    };
+    assert_eq!(actual, expected);
+    assert!(
+        (losses / 1000. - actual.mechanical_diagnostics_v3.unwrap().driveline_loss_kj).abs() < 1e-7
+    );
+    if let Some(f) = actual.fuel_mass_diagnostics_v3 {
+        assert!((work / 1000. - f.engine_output_work_kj).abs() < 1e-7);
+        assert!((burned - f.fuel_consumed_kg).abs() < 1e-9);
+    }
+}
+
 fn synthetic_request() -> SimulationRequest {
     let sample_count = 21;
     let s = (0..sample_count)

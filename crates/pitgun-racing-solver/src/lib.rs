@@ -16,6 +16,8 @@ use std::task::{Context, Poll, Waker};
 
 use serde::{Deserialize, Serialize};
 
+pub mod power_telemetry;
+
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct AeroParams {
     pub cd_a_x: f64,
