@@ -139,6 +139,15 @@ outputs remain unchanged; no current browser workload selects this mode.
 The new payload is versioned, but this is not a new admitted wire/runtime identity.
 Existing decoders require an explicit updated contract before consuming it.
 
+**22 November update:** an independent native tire-window policy now records
+cold/window/hot changes and explicitly labelled initial/replacement states. A
+committed replacement starts a new stint even for the same compound. The combined
+ordered journal preserves the old physical result and lap/pit/derating records.
+[Qualification](../experiments/racing_physical_events/TIRE_RESULTS_V1.md) covers
+normal/service execution, detector+queue+journal restore and actual dynamic tire
+selection. The game decoder/event axis has an isolated native-recorded preview;
+it is not activation in a current career, admitted runtime or provider view.
+
 ### Reuse and ownership
 
 `RacingSessionEventV1` currently carries `LapCompleted`, `PitStopCompleted` and
