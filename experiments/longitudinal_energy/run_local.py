@@ -26,7 +26,7 @@ SOURCES = {
 
 def stable(value):
     """Drop measurement fields only; never normalize physical floating values."""
-    if isinstance(value, list):
+    if isinstance(value, (list, tuple)):
         return [stable(v) for v in value]
     if isinstance(value, dict):
         return {k: stable(v) for k, v in value.items()

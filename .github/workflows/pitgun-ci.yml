@@ -84,6 +84,7 @@ jobs:
         run: |
           python -m unittest discover -s experiments/physics_foundation/tests -v
           python -m unittest discover -s experiments/power_telemetry/tests -v
+          python -m unittest discover -s experiments/longitudinal_energy/tests -v
 
       - name: Validate Racing driver-control holdout evidence
         run: |
