@@ -66,3 +66,44 @@ observations, then explicit runtime/admission/checkpoint/Worker/Pit-Wall wiring.
 Raw repeated threshold crossings are deliberately not UI alert episodes. Existing
 decoders cannot consume the new variant without an updated opted-in contract.
 Battery, fuel-DNF, incidents, VSC and weather require their own physical/race laws.
+
+## Tire-window increment — 22 November 2026
+
+`tire_events.rs` adds an independently opted-in policy and payload. The diagnostic
+band is `temp_opt +/- temp_sigma * half_width_sigma_milli / 1000` (default 1000).
+Both edges belong to the window. Classification uses native surface temperature;
+this does not identify a real-world optimal operating range or change grip laws.
+Cold/window/hot changes are recorded, plus an explicitly labelled initial state.
+Every committed tire replacement opens a new stint and state, even for an
+identical compound/band. It is not recovery of the old set. New parameter digests
+and the actual accepted remaining pit plan bind the context; no hidden future
+plan is exposed to the UI or a controller.
+
+Native driving and service observations remain atomic and bounded. Selection in
+the incremental session requires resolved first-stint physics and pins its policy
+before the first advance. Derating/tire facts share the ordered player-aligned
+journal. A dynamic service regression checks an actual changed compound and
+unchanged physical result; the old derating-only selection remains separate.
+
+Rebuild both examples, then run:
+
+```sh
+python3 experiments/racing_physical_events/run_tire_local.py \
+  --probe target/release/examples/native_derating_events_probe \
+  --legacy-probe target/release/examples/thermal_tire_gameplay_probe
+```
+
+Repeat with `--check`. This bank reuses the five preceding cases and adds medium
+tires at Barcelona, a cold start, and a soft-to-medium service. Per pass:22 old
+outcomes and8cases under2modes. It checks unchanged frozen physics and unchanged
+old lap/pit/derating journal after removing the new tire facts. Detector/queue/
+journal restore is covered; the Solver still stays in memory.
+
+The medium Barcelona case includes an explicitly separate unranked preview:
+every second accepted native point in the first600s for five existing numeric
+channels. It computes no new physics and supplies no interpolated service values.
+It is a deterministic visual fixture, **not** an admitted exporter, complete saved
+run, Worker or WASM qualification. Its event IDs/occurrence/release times are the
+original native facts. The game adapter can render them in the existing Events
+axis without recomputing thermal thresholds. No current career/runtime enables
+the new thermal model or these event policies.

@@ -84,6 +84,7 @@ pub struct EngineDeratingEventV1 {
 )]
 pub enum RacingPhysicsEventV1 {
     EngineDerating(EngineDeratingEventV1),
+    TireWindow(crate::tire_events::TireWindowEventV1),
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -126,7 +127,7 @@ impl NativePhysicsEventOccurrence {
     }
 }
 
-fn checked_time(time_s: f64) -> Result<u64, String> {
+pub(crate) fn checked_time(time_s: f64) -> Result<u64, String> {
     if !time_s.is_finite() || time_s < 0.0 || time_s >= u64::MAX as f64 / 1e6 {
         return Err("physical events: invalid simulation time".into());
     }
@@ -419,7 +420,9 @@ mod tests {
         NativeDeratingEventDetector::new("player".into(), Default::default()).unwrap()
     }
     fn data(event: &NativePhysicsEventOccurrence) -> &EngineDeratingEventV1 {
-        let RacingPhysicsEventV1::EngineDerating(e) = &event.event;
+        let RacingPhysicsEventV1::EngineDerating(e) = &event.event else {
+            panic!("derating-only fixture")
+        };
         e
     }
 

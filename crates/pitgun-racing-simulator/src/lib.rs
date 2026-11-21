@@ -6,6 +6,7 @@ mod fuel_contract;
 mod local_stream;
 pub mod physical_events;
 mod power_stream;
+pub mod tire_events;
 pub use power_stream::{POWER_CHANNELS, power_telemetry_policy_identity};
 pub mod service_control;
 mod thermal_profile;
@@ -2565,10 +2566,54 @@ struct IncrementalV3Competitor {
     playback_tail: Vec<[f64; 2]>,
     pending_events: VecDeque<(u64, RacingSessionEventV1)>,
     physical_event_detector: Option<physical_events::NativeDeratingEventDetector>,
+    tire_event_detector: Option<tire_events::NativeTireWindowEventDetector>,
+    physical_tire_context_resolved: bool,
     result: Option<SimulationResult>,
 }
 
 impl IncrementalV3Competitor {
+    fn tire_context_after(&self, lap: u16) -> Result<tire_events::TireEventContextV1, String> {
+        let tire = self
+            .request
+            .pit_plan
+            .stops
+            .iter()
+            .filter(|s| s.lap <= lap)
+            .max_by_key(|s| s.lap)
+            .map(|s| &s.tire)
+            .unwrap_or(&self.physical_vehicle.tire);
+        let tire_id = self
+            .stint_plan
+            .tire_by_lap
+            .get(usize::from(lap))
+            .or_else(|| self.stint_plan.tire_by_lap.last())
+            .ok_or("missing tire context")?;
+        Ok(tire_events::TireEventContextV1 {
+            tire_id: tire_id.clone(),
+            tire: tire.clone(),
+        })
+    }
+    fn record_tire_boundary(&mut self, lap: &ResolvedSimulationLapV3) -> Result<(), String> {
+        if self.tire_event_detector.is_some() {
+            let context = self.tire_context_after(lap.lap_index)?;
+            let facts = self
+                .tire_event_detector
+                .as_mut()
+                .unwrap()
+                .observe_lap_boundary(lap, &context)?;
+            self.pending_events
+                .extend(facts.into_iter().map(|f| f.into_unreleased()));
+            self.sort_physical_queue();
+        }
+        Ok(())
+    }
+    fn sort_physical_queue(&mut self) {
+        self.pending_events.make_contiguous().sort_by(|a, b| {
+            a.0.cmp(&b.0)
+                .then_with(|| tire_events::event_order(&a.1).cmp(&tire_events::event_order(&b.1)))
+        });
+    }
+
     fn advance_solver(&mut self, playback: bool) -> Result<ResolvedSimulationStepV3, String> {
         let mut step = self.solver.advance().map_err(|error| {
             format!(
@@ -2623,6 +2668,16 @@ impl IncrementalV3Competitor {
             self.pending_events
                 .extend(facts.into_iter().map(|f| f.into_unreleased()));
         }
+        if self.tire_event_detector.is_some() {
+            let context = self.tire_context_after(lap.lap_index - 1)?;
+            let facts = self
+                .tire_event_detector
+                .as_mut()
+                .unwrap()
+                .observe_driving_lap(lap, &context)?;
+            self.pending_events
+                .extend(facts.into_iter().map(|f| f.into_unreleased()));
+        }
         // Lap crossing precedes optional service in the current Racing model.
         let crossing = time
             + lap
@@ -2657,6 +2712,12 @@ impl IncrementalV3Competitor {
             )?;
             self.pending_events
                 .extend(facts.into_iter().map(|f| f.into_unreleased()));
+        }
+        if commit_boundary {
+            self.record_tire_boundary(lap)?;
+        }
+        if self.tire_event_detector.is_some() {
+            self.sort_physical_queue();
         }
         self.playback_tail.extend(
             lap.solution
@@ -2762,6 +2823,44 @@ impl IncrementalRacingSession {
             .collect::<Result<Vec<_>, _>>()?;
         for (car, detector) in self.competitors.iter_mut().zip(detectors) {
             car.physical_event_detector = Some(detector);
+        }
+        self.align_player_horizon = true;
+        Ok(())
+    }
+    /// Native opt-in only; shares the ordered journal and player release horizon.
+    /// Independent from derating selection to preserve its frozen V1 policy.
+    pub fn enable_player_aligned_tire_events_v1(
+        &mut self,
+        policy: tire_events::TireWindowPolicyV1,
+    ) -> Result<(), String> {
+        if self.next_sequence != 0
+            || self.completed
+            || self
+                .competitors
+                .iter()
+                .any(|c| c.tire_event_detector.is_some())
+        {
+            return Err("tire event policy must be pinned once before advance".into());
+        }
+        if self
+            .competitors
+            .iter()
+            .any(|c| !c.physical_tire_context_resolved)
+        {
+            return Err("tire event policy requires resolved first-stint physics".into());
+        }
+        let detectors = self
+            .competitors
+            .iter()
+            .map(|c| {
+                tire_events::NativeTireWindowEventDetector::new(
+                    c.competitor_id.clone(),
+                    policy.clone(),
+                )
+            })
+            .collect::<Result<Vec<_>, _>>()?;
+        for (car, detector) in self.competitors.iter_mut().zip(detectors) {
+            car.tire_event_detector = Some(detector);
         }
         self.align_player_horizon = true;
         Ok(())
@@ -3141,6 +3240,8 @@ impl IncrementalRacingSession {
                 playback_tail: Vec::new(),
                 pending_events: VecDeque::new(),
                 physical_event_detector: None,
+                tire_event_detector: None,
+                physical_tire_context_resolved: effective_profile.applies_first_stint_tire(),
                 result: None,
             });
         }
@@ -3215,7 +3316,7 @@ impl IncrementalRacingSession {
         let physical_events = self
             .competitors
             .iter()
-            .any(|c| c.physical_event_detector.is_some());
+            .any(|c| c.physical_event_detector.is_some() || c.tire_event_detector.is_some());
         let result = self.advance_inner();
         // Once the physical future advanced but its event journal could not be
         // committed, a retry must never silently skip facts and publish completion.
@@ -3524,6 +3625,7 @@ impl IncrementalRacingSession {
                 .pending_events
                 .extend(facts.into_iter().map(|f| f.into_unreleased()));
         }
+        player.record_tire_boundary(&lap)?;
         player.latest_lap = Some(*lap);
         self.service_pending = false;
         let grid = self.aligned_grid()?;
@@ -3637,21 +3739,11 @@ impl IncrementalRacingSession {
             a.0.cmp(&b.0)
                 .then_with(|| phase(&a.1).cmp(&phase(&b.1)))
                 .then_with(|| {
-                    if let (
-                        RacingSessionEventV1::Physical {
-                            event: physical_events::RacingPhysicsEventV1::EngineDerating(a),
-                            ..
-                        },
-                        RacingSessionEventV1::Physical {
-                            event: physical_events::RacingPhysicsEventV1::EngineDerating(b),
-                            ..
-                        },
-                    ) = (&a.1, &b.1)
-                    {
-                        return a
-                            .competitor_id
-                            .cmp(&b.competitor_id)
-                            .then_with(|| a.sequence.cmp(&b.sequence));
+                    if let (Some(a), Some(b)) = (
+                        tire_events::event_order(&a.1),
+                        tire_events::event_order(&b.1),
+                    ) {
+                        return a.cmp(&b);
                     }
                     let id = |event: &RacingSessionEventV1| match event {
                         RacingSessionEventV1::LapCompleted { timing, .. }
@@ -7066,6 +7158,12 @@ mod tests {
             new.enable_player_aligned_physical_events_v1(Default::default())
                 .is_err()
         );
+        new.enable_player_aligned_tire_events_v1(Default::default())
+            .unwrap();
+        assert!(
+            new.enable_player_aligned_tire_events_v1(Default::default())
+                .is_err()
+        );
         let (new_batches, new_output) = collect_incremental_stream(new);
         assert_eq!(
             serde_json::to_value(old_output).unwrap(),
@@ -7091,6 +7189,7 @@ mod tests {
         };
         assert_eq!(flatten(&old_batches), flatten(&new_batches));
         let mut physical = 0;
+        let mut tires = 0;
         let mut ids = BTreeSet::new();
         for event in new_batches
             .iter()
@@ -7107,16 +7206,31 @@ mod tests {
                 ..
             } = event
             {
-                physical += 1;
+                if matches!(
+                    event,
+                    RacingSessionEventV1::Physical {
+                        event: physical_events::RacingPhysicsEventV1::TireWindow(_),
+                        ..
+                    }
+                ) {
+                    tires += 1;
+                } else {
+                    physical += 1;
+                }
                 assert!(timing.occurred_at_us <= timing.released_at_us);
                 assert!(ids.insert(timing.event_id.to_string()));
             }
         }
         assert!(physical >= 10);
+        assert!(tires >= 10);
         let mut late = make();
         late.advance().unwrap();
         assert!(
             late.enable_player_aligned_physical_events_v1(Default::default())
+                .is_err()
+        );
+        assert!(
+            late.enable_player_aligned_tire_events_v1(Default::default())
                 .is_err()
         );
         let mut invalid = make();
