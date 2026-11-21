@@ -65,6 +65,7 @@ struct AppState {
     config: ServiceConfig,
     service_catalog: Option<RacingCatalogSnapshot>,
     service_runtime: Option<Digest>,
+    service_admitted_runtimes: Vec<Digest>,
 }
 
 #[derive(Clone)]
@@ -118,6 +119,44 @@ struct RacingRunAttemptAuthorizationRequestV1 {
     seed: Seed,
     input: RunRaceInput,
     catalog_release: CatalogReleaseIdentityV1,
+}
+
+/// HTTP admission selector only. The chosen operator-allowlisted digest is
+/// still bound into the original signed decision envelope and native evidence.
+#[derive(Clone, serde::Deserialize)]
+#[serde(deny_unknown_fields)]
+struct RacingServiceAuthorizationRequestV1 {
+    subject: Identifier,
+    execution_id: ExecutionId,
+    seed: Seed,
+    input: RunRaceInput,
+    catalog_release: CatalogReleaseIdentityV1,
+    #[serde(default)]
+    runtime_digest: Option<Digest>,
+}
+
+fn service_admitted_runtimes(
+    value: Option<&str>,
+    primary: Option<Digest>,
+) -> Result<Vec<Digest>, String> {
+    let Some(value) = value else {
+        return Ok(Vec::new());
+    };
+    if primary.is_none() {
+        return Err("service runtime allowlist needs a primary runtime".into());
+    }
+    let mut result = Vec::new();
+    for item in value.split(',') {
+        if result.len() >= 8 {
+            return Err("at most eight admitted service runtimes".into());
+        }
+        let digest = item.trim().parse::<Digest>().map_err(|e| e.to_string())?;
+        if Some(digest) == primary || result.contains(&digest) {
+            return Err("duplicate admitted service runtime".into());
+        }
+        result.push(digest);
+    }
+    Ok(result)
 }
 
 #[derive(Debug, serde::Serialize)]
@@ -248,7 +287,7 @@ async fn create_racing_run_attempt_authorization(
 
 async fn create_racing_service_authorization(
     State(state): State<Arc<AppState>>,
-    Json(request): Json<RacingRunAttemptAuthorizationRequestV1>,
+    Json(request): Json<RacingServiceAuthorizationRequestV1>,
 ) -> Response {
     match build_signed_racing_service_authorization(now_ms(), &state, request) {
         Ok(response) => (StatusCode::OK, Json(response)).into_response(),
@@ -259,7 +298,7 @@ async fn create_racing_service_authorization(
 fn build_signed_racing_service_authorization(
     now: i64,
     state: &AppState,
-    request: RacingRunAttemptAuthorizationRequestV1,
+    request: RacingServiceAuthorizationRequestV1,
 ) -> Result<
     pitgun_racing_simulator::service_control::RacingServiceAuthorizationResponseV1,
     ContractError,
@@ -277,6 +316,13 @@ fn build_signed_racing_service_authorization(
     let runtime = state.service_runtime.ok_or_else(|| {
         ContractError::Unavailable("service-control runtime is not configured".into())
     })?;
+    let runtime = request.runtime_digest.unwrap_or(runtime);
+    if Some(runtime) != state.service_runtime && !state.service_admitted_runtimes.contains(&runtime)
+    {
+        return Err(ContractError::BadRequest(
+            "service-control runtime is not admitted".into(),
+        ));
+    }
     let model = pitgun_racing_simulator::racing_model_v3_component_candidate_identity();
     let prepared = prepare_racing_run_with(
         RacingPreparationContext {
@@ -1045,6 +1091,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         .map(|s| s.parse::<Digest>())
         .transpose()?;
 
+    let service_admitted_runtimes = service_admitted_runtimes(
+        std::env::var("PITGUN_RACING_SERVICE_ADMITTED_WASM_DIGESTS")
+            .ok()
+            .as_deref(),
+        service_runtime,
+    )?;
     let app_state = AppState {
         signing_key,
         tuning_policy,
@@ -1056,6 +1108,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         config,
         service_catalog,
         service_runtime,
+        service_admitted_runtimes,
     };
 
     let app = Router::new()
@@ -1141,6 +1194,7 @@ mod tests {
             retained_catalogs: Vec::new(),
             service_catalog: None,
             service_runtime: None,
+            service_admitted_runtimes: Vec::new(),
             config: ServiceConfig {
                 simulation_contract_ttl_secs: 300,
                 late_submission_grace_secs: 900,

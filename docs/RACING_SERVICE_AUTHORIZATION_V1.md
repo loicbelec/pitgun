@@ -131,3 +131,28 @@ is about1.85GiB with a3GiB local limit/one replay slot; this does not qualify th
 previous smaller staging budget. The local stack is pinned to one signed runtime
 and refuses silent upgrades. A retained hosted-runtime rollout and resource
 acceptance are required before staging; no admitted attempt may migrate.
+
+## Coexisting browser generations (compact release, 21 November 2026)
+
+The service admission HTTP body accepts optional `runtime_digest`. It selects
+only a digest in the operator configuration: the primary
+`PITGUN_RACING_SERVICE_WASM_DIGEST` or the comma-separated
+`PITGUN_RACING_SERVICE_ADMITTED_WASM_DIGESTS` (at most eight additional distinct
+digests). Unknown or malformed digests are rejected before signing. No URL, code,
+bridge or filesystem path can be supplied. Configuration requires a primary and
+refuses duplicates/malformed entries. Omitting the field keeps the primary,
+preserving old browser requests; the dynamic-driver admission body is unchanged.
+
+For the compact rollout, keep07f5bd5c as Authority's primary for old clients and
+explicitly admit9af4de2f as additional. The new browser sends its saved weekend's
+exact digest, so both an old FP-started weekend and a new weekend can reach RACE.
+The selection is still bound into the existing signed decision envelope and
+native evidence; no signature/profile/version is relabelled. Existing signed
+permissions are never reissued during recovery.
+
+Authority issuance allowlists and Verifier retained replay routes serve distinct
+roles: adding a replay route alone does not authorize new issuance. Install the
+compatible Verifier, both original byte pairs and retained manifest before adding
+the new Authority admission. A save-compatible rollback can choose07 for new
+weekends while continuing to read and finish existing9af weekends; both issuances
+and both replay routes remain available until explicitly retired.

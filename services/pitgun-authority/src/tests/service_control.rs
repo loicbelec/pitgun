@@ -9,7 +9,7 @@ use pitgun_racing_simulator::{
 };
 use pitgun_signing::VerificationKeyring;
 
-fn fixture() -> (AppState, RacingRunAttemptAuthorizationRequestV1) {
+fn fixture() -> (AppState, RacingServiceAuthorizationRequestV1) {
     let mut state = test_state_for("0.14.0", "v1.8.0");
     state.service_catalog = Some(
         RacingCatalogSnapshot::from_release_dir(
@@ -26,10 +26,11 @@ fn fixture() -> (AppState, RacingRunAttemptAuthorizationRequestV1) {
     r.input.hz = 5.0;
     r.input.race.laps = 7;
     r.input.race.competitors[0].stint_strategy=Some(serde_json::from_value(json!({"stints":[{"tire_id":"soft","laps":3},{"tire_id":"medium","laps":2},{"tire_id":"hard","laps":2}],"pit_laps":[3,5]})).unwrap());
-    let request = RacingRunAttemptAuthorizationRequestV1 {
+    let request = RacingServiceAuthorizationRequestV1 {
         subject: "test.player".parse().unwrap(),
         execution_id: "018f3b78-7e9a-7d20-a5e1-4ed92f02a591".parse().unwrap(),
         seed: Seed::new(7),
+        runtime_digest: None,
         input: r.input,
         catalog_release: state
             .service_catalog
@@ -384,4 +385,69 @@ fn signed_wasm_transport_projects_evidence_and_refuses_sidecar_substitution() {
             .status,
         VerificationStatus::Verified
     );
+}
+
+#[test]
+fn service_admission_keeps_legacy_default_and_binds_only_operator_approved_runtime() {
+    let (mut state, mut request) = fixture();
+    let original = state.service_runtime.unwrap();
+    let candidate = Digest::from_bytes(b"new reviewed WASM bytes");
+    state.service_admitted_runtimes = vec![candidate];
+    let old = build_signed_racing_service_authorization(1000, &state, request.clone()).unwrap();
+    assert_eq!(old.decision_envelope.runtime_digest, original);
+    request.runtime_digest = Some(candidate);
+    let new = build_signed_racing_service_authorization(1000, &state, request.clone()).unwrap();
+    assert_eq!(new.decision_envelope.runtime_digest, candidate);
+    assert_ne!(
+        old.signed.authorization.decision_envelope,
+        new.signed.authorization.decision_envelope
+    );
+    request.runtime_digest = Some(original);
+    assert_eq!(
+        build_signed_racing_service_authorization(1000, &state, request.clone())
+            .unwrap()
+            .decision_envelope
+            .runtime_digest,
+        original
+    );
+    request.runtime_digest = Some(Digest::from_bytes(b"participant bytes"));
+    assert!(matches!(
+        build_signed_racing_service_authorization(1000, &state, request),
+        Err(ContractError::BadRequest(_))
+    ));
+}
+
+#[test]
+fn service_admission_runtime_configuration_is_bounded_and_does_not_accept_paths() {
+    let primary = Digest::from_bytes(b"primary");
+    let candidate = Digest::from_bytes(b"candidate");
+    assert!(
+        service_admitted_runtimes(None, Some(primary))
+            .unwrap()
+            .is_empty()
+    );
+    assert_eq!(
+        service_admitted_runtimes(Some(&candidate.to_string()), Some(primary)).unwrap(),
+        vec![candidate]
+    );
+    for value in [
+        "".to_string(),
+        "https://untrusted.invalid/runtime.wasm".into(),
+        candidate.to_string() + "," + &candidate.to_string(),
+        primary.to_string(),
+    ] {
+        assert!(service_admitted_runtimes(Some(&value), Some(primary)).is_err());
+    }
+    let many = (0..9)
+        .map(|n| Digest::from_bytes(&[n]).to_string())
+        .collect::<Vec<_>>()
+        .join(",");
+    assert!(service_admitted_runtimes(Some(&many), Some(primary)).is_err());
+    assert!(service_admitted_runtimes(Some(&candidate.to_string()), None).is_err());
+    let (_, request) = fixture();
+    let mut body = json!({"subject":request.subject,"execution_id":request.execution_id,"seed":request.seed,
+        "input":request.input,"catalog_release":request.catalog_release,"runtime_digest":candidate});
+    assert!(serde_json::from_value::<RacingServiceAuthorizationRequestV1>(body.clone()).is_ok());
+    body["runtime_url"] = json!("https://untrusted.invalid/runtime.wasm");
+    assert!(serde_json::from_value::<RacingServiceAuthorizationRequestV1>(body).is_err());
 }
