@@ -1,0 +1,144 @@
+{
+  "schema": "pitgun.physics-references/v1",
+  "references": [
+    {
+      "id": "nascar-thermal-2024",
+      "title": "Tyre and brake thermal management in NASCAR",
+      "authors": [
+        "D. J. N. Limebeer",
+        "R. A. Dollar",
+        "S. Sivaramakrishnan",
+        "N. Gordhan"
+      ],
+      "year": 2025,
+      "online_year": 2024,
+      "doi": "10.1080/00423114.2024.2342534",
+      "url": "https://www.tandfonline.com/doi/full/10.1080/00423114.2024.2342534",
+      "type": "primary-research",
+      "review_depth": "publisher indexed abstract and equation excerpts; direct full-text request returned403; full derivation/data review remains required",
+      "submodels": [
+        "tire thermal",
+        "wear",
+        "brake thermal"
+      ],
+      "use": "Compare contact dissipation/temperature/wear coupling and brake thermal states. Do not transfer NASCAR fitted parameters to Pitgun.",
+      "limitation": "Circuit, vehicle, tire and instrumented test conditions differ; no independent Pitgun parameter identification yet.",
+      "consulted_on": "2026-11-21",
+      "adoption_status": "candidate-reference-not-an-implemented-Pitgun-equation"
+    },
+    {
+      "id": "sorniotti-2009",
+      "title": "Tire Thermal Model for Enhanced Vehicle Dynamics Simulation",
+      "authors": [
+        "Aldo Sorniotti"
+      ],
+      "year": 2009,
+      "doi": "10.4271/2009-01-0441",
+      "url": "https://saemobilus.sae.org/papers/tire-thermal-model-enhanced-vehicle-dynamics-simulation-2009-01-0441",
+      "type": "primary-research",
+      "review_depth": "publisher abstract and university bibliographic record; full equations not reviewed",
+      "submodels": [
+        "tire thermal",
+        "grip"
+      ],
+      "use": "Study how working conditions and temperature influence a brush-model force response.",
+      "limitation": "Not evidence that one/two temperature states or a particular parameter set are adequate for this game.",
+      "consulted_on": "2026-11-21",
+      "adoption_status": "candidate-reference-not-an-implemented-Pitgun-equation"
+    },
+    {
+      "id": "fastsim-2015",
+      "title": "FASTSim: A Model to Estimate Vehicle Efficiency, Cost and Performance",
+      "authors": [
+        "Aaron Brooker",
+        "Jeffrey Gonder",
+        "Lijuan Wang",
+        "Eric Wood",
+        "Sean Lopp",
+        "Laurie Ramroth"
+      ],
+      "year": 2015,
+      "doi": "10.4271/2015-01-0973",
+      "url": "https://research-hub.nlr.gov/en/publications/fastsim-a-model-to-estimate-vehicle-efficiency-cost-and-performan-2/",
+      "type": "primary-research",
+      "review_depth": "laboratory publication abstract and metadata; not a completed implementation comparison",
+      "submodels": [
+        "powertrain",
+        "regeneration",
+        "vehicle energy"
+      ],
+      "use": "Reference for reduced-order vehicle energy flows, efficiencies, component power limits and regenerative braking.",
+      "limitation": "Drive-cycle efficiency evidence does not validate racing tire forces or lap-time predictions.",
+      "consulted_on": "2026-11-21",
+      "adoption_status": "candidate-reference-not-an-implemented-Pitgun-equation"
+    },
+    {
+      "id": "pybamm-2021",
+      "title": "Python Battery Mathematical Modelling (PyBaMM)",
+      "authors": [
+        "Valentin Sulzer",
+        "Scott G. Marquis",
+        "Robert Timms",
+        "Martin Robinson",
+        "S. Jon Chapman"
+      ],
+      "year": 2021,
+      "doi": "10.5334/jors.309",
+      "url": "https://pybamm.org/publications/",
+      "type": "primary-software-publication",
+      "review_depth": "official publications page and citation metadata",
+      "submodels": [
+        "battery reference model"
+      ],
+      "use": "Candidate offline reference environment and guidance toward model-specific citations.",
+      "limitation": "Software credibility is not battery parameter identification or validation of a Pitgun battery.",
+      "consulted_on": "2026-11-21",
+      "adoption_status": "candidate-reference-not-an-implemented-Pitgun-equation"
+    },
+    {
+      "id": "pybamm-thevenin-25-12",
+      "title": "PyBaMM Thevenin model documentation",
+      "url": "https://docs.pybamm.org/en/v25.12.0/source/api/models/equivalent_circuit/thevenin.html",
+      "version": "25.12.0",
+      "type": "official-model-documentation",
+      "review_depth": "model structure/options and thermal-coupling documentation reviewed",
+      "submodels": [
+        "battery equivalent circuit",
+        "battery thermal"
+      ],
+      "use": "Compare a bounded energy-store model with OCV/resistance/one-RC dynamics if voltage/temperature constraints prove relevant.",
+      "limitation": "An equivalent circuit still needs chemistry/cell-specific data; runtime dependency not introduced.",
+      "consulted_on": "2026-11-21",
+      "adoption_status": "candidate-reference-not-an-implemented-Pitgun-equation"
+    },
+    {
+      "id": "nasa-induced-drag",
+      "title": "Induced Drag Coefficient",
+      "url": "https://www1.grc.nasa.gov/beginners-guide-to-aeronautics/induced-drag-coefficient/",
+      "type": "official-technical-reference",
+      "review_depth": "equation and reference-area conventions reviewed",
+      "submodels": [
+        "aerodynamics"
+      ],
+      "use": "Explain the qualitative appui/drag tradeoff and reference-area consistency.",
+      "limitation": "Finite-wing theory is not a validated whole-racecar aerodynamic map, especially with ground effect.",
+      "consulted_on": "2026-11-21",
+      "adoption_status": "candidate-reference-not-an-implemented-Pitgun-equation"
+    },
+    {
+      "id": "pypowsybl-docs",
+      "title": "pypowsybl documentation",
+      "url": "https://powsybl.readthedocs.io/projects/pypowsybl/en/stable/",
+      "type": "official-software-documentation",
+      "review_depth": "network/load-flow/security-analysis API overview reviewed; no integration executed",
+      "submodels": [
+        "future energy workload"
+      ],
+      "use": "Assess a future adapter using an existing network solver to test generic simulation/controller lifecycle.",
+      "limitation": "A moving stable URL must be replaced by a pinned release/data set for an experiment. No RTE endorsement, data access or partnership is inferred.",
+      "consulted_on": "2026-11-21",
+      "adoption_status": "candidate-reference-not-an-implemented-Pitgun-equation"
+    }
+  ],
+  "publication_rule": "Cite the exact equation/section actually adopted, disclose adaptation and review depth; never imply a bibliography validates unknown parameters."
+}

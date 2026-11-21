@@ -29,6 +29,7 @@
 - [Racing Era Capability Matrix V1](RACING_ERA_CAPABILITY_MATRIX_V1.md)
 - [Racing Parameter Inventory V1](RACING_PARAMETER_INVENTORY_V1.md)
 - [Racing Model Approximation Audit V1](RACING_MODEL_APPROXIMATION_AUDIT_V1.md)
+- [Physics redesign lot 0 — actual career path, equations, references and local bench](physics/FOUNDATION_2026-11-21.md)
 - [Racing Game Vehicle Contract V1](RACING_GAME_VEHICLE_CONTRACT_V1.md)
 - [Racing Model V3 driver-control contract V1](RACING_V3_DRIVER_CONTROL_CONTRACT_V1.md)
 - [Racing Model V3 driver-control runtime V1](RACING_V3_DRIVER_CONTROL_RUNTIME_V1.md)
