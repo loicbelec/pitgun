@@ -22,6 +22,10 @@ must remain in their own journal, not be inferred from a downsampled signal. The
 probe exports only named physical state fields using causal hold plus a terminal
 point; it is **not** a game wire contract, an Engineer observation policy or a
 recommended animation implementation. It has no command journal to downsample.
+These experiments use fixed controls. In an agent-controlled run, changing the
+agent's observations can change its decisions even when integration is unchanged.
+Keep graphical downsampling separate from native lap aggregates, exact events and
+the versioned controller-observation policy; qualify any change to that policy.
 
 ## Reproduce
 
@@ -74,3 +78,7 @@ Raw process samples stay private; no personal process was profiled.
 None of these justifies deleting tire/thermal/energy phenomena or silently changing
 an old runtime's observation rate/digest. Cost/fidelity and game readability gates
 remain before integration into a new admitted runtime.
+
+See the [measured review](RESULTS_V1.md). Production already uses compact replay
+evidence: the full-native-solution digest in this audit is an equality oracle,
+not a measurement of that hosted replay or a proposal to replace it.

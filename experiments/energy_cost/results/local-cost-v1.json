@@ -1,0 +1,3638 @@
+{
+  "cadence": [
+    {
+      "id": "monza-classic-5",
+      "measurements": {
+        "1": [
+          {
+            "process_lifetime_max_rss_bytes": 60784640,
+            "returncode": 0,
+            "system_cpu_ms": 12.921999999999999,
+            "timed_out": false,
+            "timings_ms": {
+              "native_digest": 80.45762500000001,
+              "observation": 0.09375,
+              "observation_digest": 0.227708,
+              "observation_json": 0.12999999999999998,
+              "resolve": 201.254375,
+              "solve": 183.477583
+            },
+            "user_cpu_ms": 461.18899999999996,
+            "wall_ms": 479.1361250000108
+          },
+          {
+            "process_lifetime_max_rss_bytes": 61079552,
+            "returncode": 0,
+            "system_cpu_ms": 13.161,
+            "timed_out": false,
+            "timings_ms": {
+              "native_digest": 78.743625,
+              "observation": 0.050333,
+              "observation_digest": 0.24954099999999999,
+              "observation_json": 0.137209,
+              "resolve": 204.470458,
+              "solve": 185.84741599999998
+            },
+            "user_cpu_ms": 463.721,
+            "wall_ms": 488.8002919999934
+          }
+        ],
+        "2": [
+          {
+            "process_lifetime_max_rss_bytes": 61800448,
+            "returncode": 0,
+            "system_cpu_ms": 12.577,
+            "timed_out": false,
+            "timings_ms": {
+              "native_digest": 79.908542,
+              "observation": 0.031083,
+              "observation_digest": 0.513334,
+              "observation_json": 0.310084,
+              "resolve": 210.367333,
+              "solve": 189.528125
+            },
+            "user_cpu_ms": 475.962,
+            "wall_ms": 503.4724170000118
+          },
+          {
+            "process_lifetime_max_rss_bytes": 61554688,
+            "returncode": 0,
+            "system_cpu_ms": 11.915000000000001,
+            "timed_out": false,
+            "timings_ms": {
+              "native_digest": 78.871625,
+              "observation": 0.034375,
+              "observation_digest": 0.508375,
+              "observation_json": 0.2895,
+              "resolve": 199.984583,
+              "solve": 183.98583399999998
+            },
+            "user_cpu_ms": 460.252,
+            "wall_ms": 486.66879200000324
+          }
+        ],
+        "5": [
+          {
+            "process_lifetime_max_rss_bytes": 62898176,
+            "returncode": 0,
+            "system_cpu_ms": 13.581,
+            "timed_out": false,
+            "timings_ms": {
+              "native_digest": 80.355209,
+              "observation": 0.044958,
+              "observation_digest": 1.287916,
+              "observation_json": 0.663417,
+              "resolve": 209.205583,
+              "solve": 187.037709
+            },
+            "user_cpu_ms": 473.514,
+            "wall_ms": 500.5458340000075
+          },
+          {
+            "process_lifetime_max_rss_bytes": 64405504,
+            "returncode": 0,
+            "system_cpu_ms": 11.521,
+            "timed_out": false,
+            "timings_ms": {
+              "native_digest": 76.681,
+              "observation": 0.047583,
+              "observation_digest": 1.377209,
+              "observation_json": 0.75725,
+              "resolve": 203.442541,
+              "solve": 186.71591700000002
+            },
+            "user_cpu_ms": 465.876,
+            "wall_ms": 488.545000000002
+          }
+        ]
+      },
+      "outcomes": {
+        "1": {
+          "binary_digest": "sha256:a5a0765a9e7ba9d029dceec736b26b6feb98153774c4d604e5e8eb0c279b8646",
+          "cars": {
+            "player": {
+              "energy": {
+                "clutch_slip_loss_j": 7301.2015200588985,
+                "distance_m": 28930.0,
+                "drag_work_j": 48675013.66941559,
+                "driveline_loss_j": 5183246.200969715,
+                "driving_time_s": 609.454324131143,
+                "engine_shaft_work_j": 103672225.22091454,
+                "final_vehicle_kinetic_j": 1313379.352753074,
+                "friction_brake_work_j": 39318944.89856772,
+                "fuel_mass_carried_kinetic_j": 10930.735806337423,
+                "generated_engine_heat_j": 46652501.34941156,
+                "initial_vehicle_kinetic_j": 0.0,
+                "kinetic_change_j": 1324310.0885594122,
+                "maximum_driveline_balance_residual_j": 9.094947017729282e-13,
+                "maximum_raw_contact_utilization": 0.9978489242749112,
+                "maximum_thermal_balance_residual_j": 7.105427357601002e-10,
+                "maximum_vehicle_balance_residual_j": 3.637978807091713e-12,
+                "potential_change_j": 0.0,
+                "rejected_engine_heat_signed_j": 48547388.638418496,
+                "rolling_work_j": 9163409.161882022,
+                "segments": 28930,
+                "service_idle_fuel_kg": 0.0,
+                "service_time_s": 0.0,
+                "unresolved_service_velocity_reset_j": 0.0,
+                "wheel_propulsion_work_j": 98481677.8184248
+              },
+              "final_state": {
+                "engine_temp": 71.05112710993014,
+                "fuel_mass": 92.84473658895324,
+                "tire_temp": 76.24254270454496,
+                "tire_wear": 0.02161234434604505
+              },
+              "last_observed_time_s": 609.454324131143,
+              "native_nodes": 28931,
+              "observation_digest": "sha256:9e6ac9a3c341f5dbf85bdadf3fcf05181097f6f83623944c5234d7e10e000525",
+              "observation_json_bytes": 146940,
+              "observation_rows": 611,
+              "result_digest": "sha256:1751b55380874b103fa47e97aa7041e909f964ca7d66d19c3a02fcdeca6f809a",
+              "total_time_s": 609.454324131143
+            }
+          },
+          "catalog": {
+            "id": "pitgun.racing",
+            "manifest_digest": "sha256:c7eafd00de0e1257d82687d8f640e0e435f530746f0bfa805bba662df20110cf",
+            "schema_version": "pitgun.catalog-release-identity/v1",
+            "version": "1.8.1"
+          },
+          "observation_hz": 1.0,
+          "request_digest": "sha256:8f78c88f0b113c446459fc4070e584d5e7779ac55bc8ec18a808cc44f77e13a0",
+          "schema": "pitgun.energy-cost-probe/v1",
+          "scope": "native audit JSON only; causal observations, no changed integration grid/equations or game admission; rendering/network/gateway packing not measured",
+          "sources": {
+            "longitudinal": "sha256:dadf2f24e933e5cbeaa6135259948ba6491ce504ea233b3ee576d487696251cf",
+            "probe": "sha256:8e9abd8c818fd1a2390bab3b3d56f9a2c2a4e376c9a982ce8fbdfa25592b11a4",
+            "simulator": "sha256:5386adb3f79a9ef2575943c57b031630f2e474c47bae7a5ba14fd3784ef0127f",
+            "solver": "sha256:711fe3beacfef185a406829a6b6c042ca91f026c15b84dada332736cba8d3b97"
+          }
+        },
+        "2": {
+          "binary_digest": "sha256:a5a0765a9e7ba9d029dceec736b26b6feb98153774c4d604e5e8eb0c279b8646",
+          "cars": {
+            "player": {
+              "energy": {
+                "clutch_slip_loss_j": 7301.2015200588985,
+                "distance_m": 28930.0,
+                "drag_work_j": 48675013.66941559,
+                "driveline_loss_j": 5183246.200969715,
+                "driving_time_s": 609.454324131143,
+                "engine_shaft_work_j": 103672225.22091454,
+                "final_vehicle_kinetic_j": 1313379.352753074,
+                "friction_brake_work_j": 39318944.89856772,
+                "fuel_mass_carried_kinetic_j": 10930.735806337423,
+                "generated_engine_heat_j": 46652501.34941156,
+                "initial_vehicle_kinetic_j": 0.0,
+                "kinetic_change_j": 1324310.0885594122,
+                "maximum_driveline_balance_residual_j": 9.094947017729282e-13,
+                "maximum_raw_contact_utilization": 0.9978489242749112,
+                "maximum_thermal_balance_residual_j": 7.105427357601002e-10,
+                "maximum_vehicle_balance_residual_j": 3.637978807091713e-12,
+                "potential_change_j": 0.0,
+                "rejected_engine_heat_signed_j": 48547388.638418496,
+                "rolling_work_j": 9163409.161882022,
+                "segments": 28930,
+                "service_idle_fuel_kg": 0.0,
+                "service_time_s": 0.0,
+                "unresolved_service_velocity_reset_j": 0.0,
+                "wheel_propulsion_work_j": 98481677.8184248
+              },
+              "final_state": {
+                "engine_temp": 71.05112710993014,
+                "fuel_mass": 92.84473658895324,
+                "tire_temp": 76.24254270454496,
+                "tire_wear": 0.02161234434604505
+              },
+              "last_observed_time_s": 609.454324131143,
+              "native_nodes": 28931,
+              "observation_digest": "sha256:c003eff7d111fb01aa22498ada239d66c3f8a9f5a01d66f0620ff74f28953142",
+              "observation_json_bytes": 293409,
+              "observation_rows": 1220,
+              "result_digest": "sha256:1751b55380874b103fa47e97aa7041e909f964ca7d66d19c3a02fcdeca6f809a",
+              "total_time_s": 609.454324131143
+            }
+          },
+          "catalog": {
+            "id": "pitgun.racing",
+            "manifest_digest": "sha256:c7eafd00de0e1257d82687d8f640e0e435f530746f0bfa805bba662df20110cf",
+            "schema_version": "pitgun.catalog-release-identity/v1",
+            "version": "1.8.1"
+          },
+          "observation_hz": 2.0,
+          "request_digest": "sha256:8f78c88f0b113c446459fc4070e584d5e7779ac55bc8ec18a808cc44f77e13a0",
+          "schema": "pitgun.energy-cost-probe/v1",
+          "scope": "native audit JSON only; causal observations, no changed integration grid/equations or game admission; rendering/network/gateway packing not measured",
+          "sources": {
+            "longitudinal": "sha256:dadf2f24e933e5cbeaa6135259948ba6491ce504ea233b3ee576d487696251cf",
+            "probe": "sha256:8e9abd8c818fd1a2390bab3b3d56f9a2c2a4e376c9a982ce8fbdfa25592b11a4",
+            "simulator": "sha256:5386adb3f79a9ef2575943c57b031630f2e474c47bae7a5ba14fd3784ef0127f",
+            "solver": "sha256:711fe3beacfef185a406829a6b6c042ca91f026c15b84dada332736cba8d3b97"
+          }
+        },
+        "5": {
+          "binary_digest": "sha256:a5a0765a9e7ba9d029dceec736b26b6feb98153774c4d604e5e8eb0c279b8646",
+          "cars": {
+            "player": {
+              "energy": {
+                "clutch_slip_loss_j": 7301.2015200588985,
+                "distance_m": 28930.0,
+                "drag_work_j": 48675013.66941559,
+                "driveline_loss_j": 5183246.200969715,
+                "driving_time_s": 609.454324131143,
+                "engine_shaft_work_j": 103672225.22091454,
+                "final_vehicle_kinetic_j": 1313379.352753074,
+                "friction_brake_work_j": 39318944.89856772,
+                "fuel_mass_carried_kinetic_j": 10930.735806337423,
+                "generated_engine_heat_j": 46652501.34941156,
+                "initial_vehicle_kinetic_j": 0.0,
+                "kinetic_change_j": 1324310.0885594122,
+                "maximum_driveline_balance_residual_j": 9.094947017729282e-13,
+                "maximum_raw_contact_utilization": 0.9978489242749112,
+                "maximum_thermal_balance_residual_j": 7.105427357601002e-10,
+                "maximum_vehicle_balance_residual_j": 3.637978807091713e-12,
+                "potential_change_j": 0.0,
+                "rejected_engine_heat_signed_j": 48547388.638418496,
+                "rolling_work_j": 9163409.161882022,
+                "segments": 28930,
+                "service_idle_fuel_kg": 0.0,
+                "service_time_s": 0.0,
+                "unresolved_service_velocity_reset_j": 0.0,
+                "wheel_propulsion_work_j": 98481677.8184248
+              },
+              "final_state": {
+                "engine_temp": 71.05112710993014,
+                "fuel_mass": 92.84473658895324,
+                "tire_temp": 76.24254270454496,
+                "tire_wear": 0.02161234434604505
+              },
+              "last_observed_time_s": 609.454324131143,
+              "native_nodes": 28931,
+              "observation_digest": "sha256:e5584fbe1223a96a816d52930de498c0a7a050065238716b8050382bb8cf5cf2",
+              "observation_json_bytes": 733347,
+              "observation_rows": 3049,
+              "result_digest": "sha256:1751b55380874b103fa47e97aa7041e909f964ca7d66d19c3a02fcdeca6f809a",
+              "total_time_s": 609.454324131143
+            }
+          },
+          "catalog": {
+            "id": "pitgun.racing",
+            "manifest_digest": "sha256:c7eafd00de0e1257d82687d8f640e0e435f530746f0bfa805bba662df20110cf",
+            "schema_version": "pitgun.catalog-release-identity/v1",
+            "version": "1.8.1"
+          },
+          "observation_hz": 5.0,
+          "request_digest": "sha256:8f78c88f0b113c446459fc4070e584d5e7779ac55bc8ec18a808cc44f77e13a0",
+          "schema": "pitgun.energy-cost-probe/v1",
+          "scope": "native audit JSON only; causal observations, no changed integration grid/equations or game admission; rendering/network/gateway packing not measured",
+          "sources": {
+            "longitudinal": "sha256:dadf2f24e933e5cbeaa6135259948ba6491ce504ea233b3ee576d487696251cf",
+            "probe": "sha256:8e9abd8c818fd1a2390bab3b3d56f9a2c2a4e376c9a982ce8fbdfa25592b11a4",
+            "simulator": "sha256:5386adb3f79a9ef2575943c57b031630f2e474c47bae7a5ba14fd3784ef0127f",
+            "solver": "sha256:711fe3beacfef185a406829a6b6c042ca91f026c15b84dada332736cba8d3b97"
+          }
+        }
+      },
+      "performance": {
+        "1": {
+          "max_rss_bytes": 61079552,
+          "median_cpu_ms": 475.49649999999997,
+          "median_stages_ms": {
+            "native_digest": 79.60062500000001,
+            "observation": 0.07204150000000001,
+            "observation_digest": 0.2386245,
+            "observation_json": 0.1336045,
+            "resolve": 202.8624165,
+            "solve": 184.6624995
+          },
+          "median_wall_ms": 483.9682085000021
+        },
+        "2": {
+          "max_rss_bytes": 61800448,
+          "median_cpu_ms": 480.353,
+          "median_stages_ms": {
+            "native_digest": 79.3900835,
+            "observation": 0.032729,
+            "observation_digest": 0.5108545,
+            "observation_json": 0.299792,
+            "resolve": 205.17595799999998,
+            "solve": 186.7569795
+          },
+          "median_wall_ms": 495.0706045000075
+        },
+        "5": {
+          "max_rss_bytes": 64405504,
+          "median_cpu_ms": 482.246,
+          "median_stages_ms": {
+            "native_digest": 78.51810449999999,
+            "observation": 0.0462705,
+            "observation_digest": 1.3325624999999999,
+            "observation_json": 0.7103335,
+            "resolve": 206.324062,
+            "solve": 186.87681300000003
+          },
+          "median_wall_ms": 494.54541700000476
+        }
+      },
+      "physics_exact_at_all_rates": true
+    },
+    {
+      "id": "monza-classic-53",
+      "measurements": {
+        "1": [
+          {
+            "process_lifetime_max_rss_bytes": 417284096,
+            "returncode": 0,
+            "system_cpu_ms": 63.147999999999996,
+            "timed_out": false,
+            "timings_ms": {
+              "native_digest": 822.1750420000001,
+              "observation": 0.3495,
+              "observation_digest": 2.7534170000000002,
+              "observation_json": 1.370125,
+              "resolve": 200.832167,
+              "solve": 2073.991458
+            },
+            "user_cpu_ms": 3048.483,
+            "wall_ms": 3125.2364169999964
+          },
+          {
+            "process_lifetime_max_rss_bytes": 418004992,
+            "returncode": 0,
+            "system_cpu_ms": 40.303,
+            "timed_out": false,
+            "timings_ms": {
+              "native_digest": 824.5823340000001,
+              "observation": 0.370042,
+              "observation_digest": 2.678666,
+              "observation_json": 1.42,
+              "resolve": 201.976167,
+              "solve": 2061.615625
+            },
+            "user_cpu_ms": 3061.044,
+            "wall_ms": 3114.7978329999974
+          }
+        ],
+        "2": [
+          {
+            "process_lifetime_max_rss_bytes": 414171136,
+            "returncode": 0,
+            "system_cpu_ms": 72.02499999999999,
+            "timed_out": false,
+            "timings_ms": {
+              "native_digest": 855.419833,
+              "observation": 0.33108299999999996,
+              "observation_digest": 5.067666,
+              "observation_json": 2.994167,
+              "resolve": 202.4725,
+              "solve": 2071.730917
+            },
+            "user_cpu_ms": 3057.328,
+            "wall_ms": 3161.9927920000064
+          },
+          {
+            "process_lifetime_max_rss_bytes": 411893760,
+            "returncode": 0,
+            "system_cpu_ms": 42.160999999999994,
+            "timed_out": false,
+            "timings_ms": {
+              "native_digest": 821.1810419999999,
+              "observation": 0.36779100000000003,
+              "observation_digest": 5.403458,
+              "observation_json": 2.8780419999999998,
+              "resolve": 201.01233399999998,
+              "solve": 2037.203167
+            },
+            "user_cpu_ms": 3037.14,
+            "wall_ms": 3091.982167000012
+          }
+        ],
+        "5": [
+          {
+            "process_lifetime_max_rss_bytes": 425099264,
+            "returncode": 0,
+            "system_cpu_ms": 79.17699999999999,
+            "timed_out": false,
+            "timings_ms": {
+              "native_digest": 844.584833,
+              "observation": 0.401125,
+              "observation_digest": 13.178417,
+              "observation_json": 6.834,
+              "resolve": 199.621375,
+              "solve": 2096.6659999999997
+            },
+            "user_cpu_ms": 3085.313,
+            "wall_ms": 3184.3721670000064
+          },
+          {
+            "process_lifetime_max_rss_bytes": 423346176,
+            "returncode": 0,
+            "system_cpu_ms": 40.248,
+            "timed_out": false,
+            "timings_ms": {
+              "native_digest": 826.5081250000001,
+              "observation": 0.44125000000000003,
+              "observation_digest": 14.015667,
+              "observation_json": 6.931709000000001,
+              "resolve": 202.06275000000002,
+              "solve": 2035.086084
+            },
+            "user_cpu_ms": 3053.281,
+            "wall_ms": 3108.613667
+          }
+        ]
+      },
+      "outcomes": {
+        "1": {
+          "binary_digest": "sha256:a5a0765a9e7ba9d029dceec736b26b6feb98153774c4d604e5e8eb0c279b8646",
+          "cars": {
+            "player": {
+              "energy": {
+                "clutch_slip_loss_j": 14294.52700039179,
+                "distance_m": 306658.0,
+                "drag_work_j": 515990245.2031283,
+                "driveline_loss_j": 54207822.19557218,
+                "driving_time_s": 6477.723517486761,
+                "engine_shaft_work_j": 1084170738.4384453,
+                "final_vehicle_kinetic_j": 1212153.0337638648,
+                "friction_brake_work_j": 416357089.6193208,
+                "fuel_mass_carried_kinetic_j": 110322.72291350726,
+                "generated_engine_heat_j": 487876832.29730064,
+                "initial_vehicle_kinetic_j": 0.0,
+                "kinetic_change_j": 2511509.382694184,
+                "maximum_driveline_balance_residual_j": 9.094947017729282e-13,
+                "maximum_raw_contact_utilization": 0.9978489242749112,
+                "maximum_thermal_balance_residual_j": 7.107701094355434e-10,
+                "maximum_vehicle_balance_residual_j": 3.637978807091713e-12,
+                "potential_change_j": 0.0,
+                "rejected_engine_heat_signed_j": 489824587.11509615,
+                "rolling_work_j": 95089777.5107293,
+                "segments": 306658,
+                "service_idle_fuel_kg": 0.0088,
+                "service_time_s": 22.0,
+                "unresolved_service_velocity_reset_j": 1189033.6260168322,
+                "wheel_propulsion_work_j": 1029948621.7158724
+              },
+              "final_state": {
+                "engine_temp": 70.52245182204005,
+                "fuel_mass": 25.12206136377561,
+                "tire_temp": 52.63603542868121,
+                "tire_wear": 0.08638767971261761
+              },
+              "last_observed_time_s": 6499.723517486761,
+              "native_nodes": 306659,
+              "observation_digest": "sha256:20643e5c2f52509b53137419b8986f91e7090eebad788fdb4e63032ef0e26bde",
+              "observation_json_bytes": 1579677,
+              "observation_rows": 6501,
+              "result_digest": "sha256:3e46c0c8cf1cb23cd4ed943de5757e0ee27cf800e36fb8aed35d53a961590100",
+              "total_time_s": 6499.723517486761
+            }
+          },
+          "catalog": {
+            "id": "pitgun.racing",
+            "manifest_digest": "sha256:c7eafd00de0e1257d82687d8f640e0e435f530746f0bfa805bba662df20110cf",
+            "schema_version": "pitgun.catalog-release-identity/v1",
+            "version": "1.8.1"
+          },
+          "observation_hz": 1.0,
+          "request_digest": "sha256:47a5dc0f3b6cd2ec3b556c1be1157cf5d283f8f013a51ae78f21a96667a8f91c",
+          "schema": "pitgun.energy-cost-probe/v1",
+          "scope": "native audit JSON only; causal observations, no changed integration grid/equations or game admission; rendering/network/gateway packing not measured",
+          "sources": {
+            "longitudinal": "sha256:dadf2f24e933e5cbeaa6135259948ba6491ce504ea233b3ee576d487696251cf",
+            "probe": "sha256:8e9abd8c818fd1a2390bab3b3d56f9a2c2a4e376c9a982ce8fbdfa25592b11a4",
+            "simulator": "sha256:5386adb3f79a9ef2575943c57b031630f2e474c47bae7a5ba14fd3784ef0127f",
+            "solver": "sha256:711fe3beacfef185a406829a6b6c042ca91f026c15b84dada332736cba8d3b97"
+          }
+        },
+        "2": {
+          "binary_digest": "sha256:a5a0765a9e7ba9d029dceec736b26b6feb98153774c4d604e5e8eb0c279b8646",
+          "cars": {
+            "player": {
+              "energy": {
+                "clutch_slip_loss_j": 14294.52700039179,
+                "distance_m": 306658.0,
+                "drag_work_j": 515990245.2031283,
+                "driveline_loss_j": 54207822.19557218,
+                "driving_time_s": 6477.723517486761,
+                "engine_shaft_work_j": 1084170738.4384453,
+                "final_vehicle_kinetic_j": 1212153.0337638648,
+                "friction_brake_work_j": 416357089.6193208,
+                "fuel_mass_carried_kinetic_j": 110322.72291350726,
+                "generated_engine_heat_j": 487876832.29730064,
+                "initial_vehicle_kinetic_j": 0.0,
+                "kinetic_change_j": 2511509.382694184,
+                "maximum_driveline_balance_residual_j": 9.094947017729282e-13,
+                "maximum_raw_contact_utilization": 0.9978489242749112,
+                "maximum_thermal_balance_residual_j": 7.107701094355434e-10,
+                "maximum_vehicle_balance_residual_j": 3.637978807091713e-12,
+                "potential_change_j": 0.0,
+                "rejected_engine_heat_signed_j": 489824587.11509615,
+                "rolling_work_j": 95089777.5107293,
+                "segments": 306658,
+                "service_idle_fuel_kg": 0.0088,
+                "service_time_s": 22.0,
+                "unresolved_service_velocity_reset_j": 1189033.6260168322,
+                "wheel_propulsion_work_j": 1029948621.7158724
+              },
+              "final_state": {
+                "engine_temp": 70.52245182204005,
+                "fuel_mass": 25.12206136377561,
+                "tire_temp": 52.63603542868121,
+                "tire_wear": 0.08638767971261761
+              },
+              "last_observed_time_s": 6499.723517486761,
+              "native_nodes": 306659,
+              "observation_digest": "sha256:c3e1a2c392e3eb50905263cf5223ae3ea2e46afbf1b90df1db39a541b5bdcb69",
+              "observation_json_bytes": 3158966,
+              "observation_rows": 13001,
+              "result_digest": "sha256:3e46c0c8cf1cb23cd4ed943de5757e0ee27cf800e36fb8aed35d53a961590100",
+              "total_time_s": 6499.723517486761
+            }
+          },
+          "catalog": {
+            "id": "pitgun.racing",
+            "manifest_digest": "sha256:c7eafd00de0e1257d82687d8f640e0e435f530746f0bfa805bba662df20110cf",
+            "schema_version": "pitgun.catalog-release-identity/v1",
+            "version": "1.8.1"
+          },
+          "observation_hz": 2.0,
+          "request_digest": "sha256:47a5dc0f3b6cd2ec3b556c1be1157cf5d283f8f013a51ae78f21a96667a8f91c",
+          "schema": "pitgun.energy-cost-probe/v1",
+          "scope": "native audit JSON only; causal observations, no changed integration grid/equations or game admission; rendering/network/gateway packing not measured",
+          "sources": {
+            "longitudinal": "sha256:dadf2f24e933e5cbeaa6135259948ba6491ce504ea233b3ee576d487696251cf",
+            "probe": "sha256:8e9abd8c818fd1a2390bab3b3d56f9a2c2a4e376c9a982ce8fbdfa25592b11a4",
+            "simulator": "sha256:5386adb3f79a9ef2575943c57b031630f2e474c47bae7a5ba14fd3784ef0127f",
+            "solver": "sha256:711fe3beacfef185a406829a6b6c042ca91f026c15b84dada332736cba8d3b97"
+          }
+        },
+        "5": {
+          "binary_digest": "sha256:a5a0765a9e7ba9d029dceec736b26b6feb98153774c4d604e5e8eb0c279b8646",
+          "cars": {
+            "player": {
+              "energy": {
+                "clutch_slip_loss_j": 14294.52700039179,
+                "distance_m": 306658.0,
+                "drag_work_j": 515990245.2031283,
+                "driveline_loss_j": 54207822.19557218,
+                "driving_time_s": 6477.723517486761,
+                "engine_shaft_work_j": 1084170738.4384453,
+                "final_vehicle_kinetic_j": 1212153.0337638648,
+                "friction_brake_work_j": 416357089.6193208,
+                "fuel_mass_carried_kinetic_j": 110322.72291350726,
+                "generated_engine_heat_j": 487876832.29730064,
+                "initial_vehicle_kinetic_j": 0.0,
+                "kinetic_change_j": 2511509.382694184,
+                "maximum_driveline_balance_residual_j": 9.094947017729282e-13,
+                "maximum_raw_contact_utilization": 0.9978489242749112,
+                "maximum_thermal_balance_residual_j": 7.107701094355434e-10,
+                "maximum_vehicle_balance_residual_j": 3.637978807091713e-12,
+                "potential_change_j": 0.0,
+                "rejected_engine_heat_signed_j": 489824587.11509615,
+                "rolling_work_j": 95089777.5107293,
+                "segments": 306658,
+                "service_idle_fuel_kg": 0.0088,
+                "service_time_s": 22.0,
+                "unresolved_service_velocity_reset_j": 1189033.6260168322,
+                "wheel_propulsion_work_j": 1029948621.7158724
+              },
+              "final_state": {
+                "engine_temp": 70.52245182204005,
+                "fuel_mass": 25.12206136377561,
+                "tire_temp": 52.63603542868121,
+                "tire_wear": 0.08638767971261761
+              },
+              "last_observed_time_s": 6499.723517486761,
+              "native_nodes": 306659,
+              "observation_digest": "sha256:d66dc96f19873e094f71a7b377800fe53164f23edbc62a58b252c1ff462b3269",
+              "observation_json_bytes": 7897234,
+              "observation_rows": 32500,
+              "result_digest": "sha256:3e46c0c8cf1cb23cd4ed943de5757e0ee27cf800e36fb8aed35d53a961590100",
+              "total_time_s": 6499.723517486761
+            }
+          },
+          "catalog": {
+            "id": "pitgun.racing",
+            "manifest_digest": "sha256:c7eafd00de0e1257d82687d8f640e0e435f530746f0bfa805bba662df20110cf",
+            "schema_version": "pitgun.catalog-release-identity/v1",
+            "version": "1.8.1"
+          },
+          "observation_hz": 5.0,
+          "request_digest": "sha256:47a5dc0f3b6cd2ec3b556c1be1157cf5d283f8f013a51ae78f21a96667a8f91c",
+          "schema": "pitgun.energy-cost-probe/v1",
+          "scope": "native audit JSON only; causal observations, no changed integration grid/equations or game admission; rendering/network/gateway packing not measured",
+          "sources": {
+            "longitudinal": "sha256:dadf2f24e933e5cbeaa6135259948ba6491ce504ea233b3ee576d487696251cf",
+            "probe": "sha256:8e9abd8c818fd1a2390bab3b3d56f9a2c2a4e376c9a982ce8fbdfa25592b11a4",
+            "simulator": "sha256:5386adb3f79a9ef2575943c57b031630f2e474c47bae7a5ba14fd3784ef0127f",
+            "solver": "sha256:711fe3beacfef185a406829a6b6c042ca91f026c15b84dada332736cba8d3b97"
+          }
+        }
+      },
+      "performance": {
+        "1": {
+          "max_rss_bytes": 418004992,
+          "median_cpu_ms": 3106.489,
+          "median_stages_ms": {
+            "native_digest": 823.378688,
+            "observation": 0.35977099999999995,
+            "observation_digest": 2.7160415,
+            "observation_json": 1.3950624999999999,
+            "resolve": 201.404167,
+            "solve": 2067.8035415
+          },
+          "median_wall_ms": 3120.0171249999967
+        },
+        "2": {
+          "max_rss_bytes": 414171136,
+          "median_cpu_ms": 3104.327,
+          "median_stages_ms": {
+            "native_digest": 838.3004375,
+            "observation": 0.349437,
+            "observation_digest": 5.235562,
+            "observation_json": 2.9361045,
+            "resolve": 201.742417,
+            "solve": 2054.4670419999998
+          },
+          "median_wall_ms": 3126.987479500009
+        },
+        "5": {
+          "max_rss_bytes": 425099264,
+          "median_cpu_ms": 3129.0095,
+          "median_stages_ms": {
+            "native_digest": 835.5464790000001,
+            "observation": 0.42118750000000005,
+            "observation_digest": 13.597042,
+            "observation_json": 6.8828545000000005,
+            "resolve": 200.8420625,
+            "solve": 2065.876042
+          },
+          "median_wall_ms": 3146.492917000003
+        }
+      },
+      "physics_exact_at_all_rates": true
+    },
+    {
+      "id": "monza-classic-grid10-5",
+      "measurements": {
+        "1": [
+          {
+            "process_lifetime_max_rss_bytes": 125714432,
+            "returncode": 0,
+            "system_cpu_ms": 19.687,
+            "timed_out": false,
+            "timings_ms": {
+              "native_digest": 778.5884169999999,
+              "observation": 0.387208,
+              "observation_digest": 2.518,
+              "observation_json": 1.4171679999999998,
+              "resolve": 198.555959,
+              "solve": 1827.6769610000001
+            },
+            "user_cpu_ms": 2798.8779999999997,
+            "wall_ms": 2822.119541999996
+          },
+          {
+            "process_lifetime_max_rss_bytes": 155828224,
+            "returncode": 0,
+            "system_cpu_ms": 22.305,
+            "timed_out": false,
+            "timings_ms": {
+              "native_digest": 776.520083,
+              "observation": 0.423166,
+              "observation_digest": 2.471417,
+              "observation_json": 1.379873,
+              "resolve": 196.561375,
+              "solve": 1823.1476670000002
+            },
+            "user_cpu_ms": 2787.472,
+            "wall_ms": 2825.5912090000093
+          }
+        ],
+        "2": [
+          {
+            "process_lifetime_max_rss_bytes": 153501696,
+            "returncode": 0,
+            "system_cpu_ms": 24.782,
+            "timed_out": false,
+            "timings_ms": {
+              "native_digest": 775.688417,
+              "observation": 0.33891899999999997,
+              "observation_digest": 5.072585999999999,
+              "observation_json": 2.8546679999999998,
+              "resolve": 208.38458300000002,
+              "solve": 1836.8958309999998
+            },
+            "user_cpu_ms": 2813.8830000000003,
+            "wall_ms": 2853.5179579999976
+          },
+          {
+            "process_lifetime_max_rss_bytes": 127565824,
+            "returncode": 0,
+            "system_cpu_ms": 21.432,
+            "timed_out": false,
+            "timings_ms": {
+              "native_digest": 774.982041,
+              "observation": 0.345041,
+              "observation_digest": 5.086957,
+              "observation_json": 2.8635409999999997,
+              "resolve": 202.78725,
+              "solve": 1837.564081
+            },
+            "user_cpu_ms": 2811.689,
+            "wall_ms": 2844.9864590000116
+          }
+        ],
+        "5": [
+          {
+            "process_lifetime_max_rss_bytes": 126697472,
+            "returncode": 0,
+            "system_cpu_ms": 22.729,
+            "timed_out": false,
+            "timings_ms": {
+              "native_digest": 775.5744589999999,
+              "observation": 0.43066599999999994,
+              "observation_digest": 12.626458,
+              "observation_json": 6.532167,
+              "resolve": 200.156833,
+              "solve": 1836.1219150000002
+            },
+            "user_cpu_ms": 2818.189,
+            "wall_ms": 2848.8142079999934
+          },
+          {
+            "process_lifetime_max_rss_bytes": 152469504,
+            "returncode": 0,
+            "system_cpu_ms": 21.982,
+            "timed_out": false,
+            "timings_ms": {
+              "native_digest": 778.0376239999999,
+              "observation": 0.44737599999999994,
+              "observation_digest": 12.554834,
+              "observation_json": 6.531502000000001,
+              "resolve": 200.93704200000002,
+              "solve": 1819.9134170000002
+            },
+            "user_cpu_ms": 2805.736,
+            "wall_ms": 2841.874083999997
+          }
+        ]
+      },
+      "outcomes": {
+        "1": {
+          "binary_digest": "sha256:a5a0765a9e7ba9d029dceec736b26b6feb98153774c4d604e5e8eb0c279b8646",
+          "cars": {
+            "player": {
+              "energy": {
+                "clutch_slip_loss_j": 7301.2015200588985,
+                "distance_m": 28930.0,
+                "drag_work_j": 48675013.66941559,
+                "driveline_loss_j": 5183246.200969715,
+                "driving_time_s": 609.454324131143,
+                "engine_shaft_work_j": 103672225.22091454,
+                "final_vehicle_kinetic_j": 1313379.352753074,
+                "friction_brake_work_j": 39318944.89856772,
+                "fuel_mass_carried_kinetic_j": 10930.735806337423,
+                "generated_engine_heat_j": 46652501.34941156,
+                "initial_vehicle_kinetic_j": 0.0,
+                "kinetic_change_j": 1324310.0885594122,
+                "maximum_driveline_balance_residual_j": 9.094947017729282e-13,
+                "maximum_raw_contact_utilization": 0.9978489242749112,
+                "maximum_thermal_balance_residual_j": 7.105427357601002e-10,
+                "maximum_vehicle_balance_residual_j": 3.637978807091713e-12,
+                "potential_change_j": 0.0,
+                "rejected_engine_heat_signed_j": 48547388.638418496,
+                "rolling_work_j": 9163409.161882022,
+                "segments": 28930,
+                "service_idle_fuel_kg": 0.0,
+                "service_time_s": 0.0,
+                "unresolved_service_velocity_reset_j": 0.0,
+                "wheel_propulsion_work_j": 98481677.8184248
+              },
+              "final_state": {
+                "engine_temp": 71.05112710993014,
+                "fuel_mass": 92.84473658895324,
+                "tire_temp": 76.24254270454496,
+                "tire_wear": 0.02161234434604505
+              },
+              "last_observed_time_s": 609.454324131143,
+              "native_nodes": 28931,
+              "observation_digest": "sha256:9e6ac9a3c341f5dbf85bdadf3fcf05181097f6f83623944c5234d7e10e000525",
+              "observation_json_bytes": 146940,
+              "observation_rows": 611,
+              "result_digest": "sha256:1751b55380874b103fa47e97aa7041e909f964ca7d66d19c3a02fcdeca6f809a",
+              "total_time_s": 609.454324131143
+            },
+            "rival-1": {
+              "energy": {
+                "clutch_slip_loss_j": 7301.2015200588985,
+                "distance_m": 28930.0,
+                "drag_work_j": 48675013.66941559,
+                "driveline_loss_j": 5183246.200969715,
+                "driving_time_s": 609.454324131143,
+                "engine_shaft_work_j": 103672225.22091454,
+                "final_vehicle_kinetic_j": 1313379.352753074,
+                "friction_brake_work_j": 39318944.89856772,
+                "fuel_mass_carried_kinetic_j": 10930.735806337423,
+                "generated_engine_heat_j": 46652501.34941156,
+                "initial_vehicle_kinetic_j": 0.0,
+                "kinetic_change_j": 1324310.0885594122,
+                "maximum_driveline_balance_residual_j": 9.094947017729282e-13,
+                "maximum_raw_contact_utilization": 0.9978489242749112,
+                "maximum_thermal_balance_residual_j": 7.105427357601002e-10,
+                "maximum_vehicle_balance_residual_j": 3.637978807091713e-12,
+                "potential_change_j": 0.0,
+                "rejected_engine_heat_signed_j": 48547388.638418496,
+                "rolling_work_j": 9163409.161882022,
+                "segments": 28930,
+                "service_idle_fuel_kg": 0.0,
+                "service_time_s": 0.0,
+                "unresolved_service_velocity_reset_j": 0.0,
+                "wheel_propulsion_work_j": 98481677.8184248
+              },
+              "final_state": {
+                "engine_temp": 71.05112710993014,
+                "fuel_mass": 92.84473658895324,
+                "tire_temp": 76.24254270454496,
+                "tire_wear": 0.02161234434604505
+              },
+              "last_observed_time_s": 609.454324131143,
+              "native_nodes": 28931,
+              "observation_digest": "sha256:9e6ac9a3c341f5dbf85bdadf3fcf05181097f6f83623944c5234d7e10e000525",
+              "observation_json_bytes": 146940,
+              "observation_rows": 611,
+              "result_digest": "sha256:1751b55380874b103fa47e97aa7041e909f964ca7d66d19c3a02fcdeca6f809a",
+              "total_time_s": 609.454324131143
+            },
+            "rival-2": {
+              "energy": {
+                "clutch_slip_loss_j": 7301.2015200588985,
+                "distance_m": 28930.0,
+                "drag_work_j": 48675013.66941559,
+                "driveline_loss_j": 5183246.200969715,
+                "driving_time_s": 609.454324131143,
+                "engine_shaft_work_j": 103672225.22091454,
+                "final_vehicle_kinetic_j": 1313379.352753074,
+                "friction_brake_work_j": 39318944.89856772,
+                "fuel_mass_carried_kinetic_j": 10930.735806337423,
+                "generated_engine_heat_j": 46652501.34941156,
+                "initial_vehicle_kinetic_j": 0.0,
+                "kinetic_change_j": 1324310.0885594122,
+                "maximum_driveline_balance_residual_j": 9.094947017729282e-13,
+                "maximum_raw_contact_utilization": 0.9978489242749112,
+                "maximum_thermal_balance_residual_j": 7.105427357601002e-10,
+                "maximum_vehicle_balance_residual_j": 3.637978807091713e-12,
+                "potential_change_j": 0.0,
+                "rejected_engine_heat_signed_j": 48547388.638418496,
+                "rolling_work_j": 9163409.161882022,
+                "segments": 28930,
+                "service_idle_fuel_kg": 0.0,
+                "service_time_s": 0.0,
+                "unresolved_service_velocity_reset_j": 0.0,
+                "wheel_propulsion_work_j": 98481677.8184248
+              },
+              "final_state": {
+                "engine_temp": 71.05112710993014,
+                "fuel_mass": 92.84473658895324,
+                "tire_temp": 76.24254270454496,
+                "tire_wear": 0.02161234434604505
+              },
+              "last_observed_time_s": 609.454324131143,
+              "native_nodes": 28931,
+              "observation_digest": "sha256:9e6ac9a3c341f5dbf85bdadf3fcf05181097f6f83623944c5234d7e10e000525",
+              "observation_json_bytes": 146940,
+              "observation_rows": 611,
+              "result_digest": "sha256:1751b55380874b103fa47e97aa7041e909f964ca7d66d19c3a02fcdeca6f809a",
+              "total_time_s": 609.454324131143
+            },
+            "rival-3": {
+              "energy": {
+                "clutch_slip_loss_j": 7301.2015200588985,
+                "distance_m": 28930.0,
+                "drag_work_j": 48675013.66941559,
+                "driveline_loss_j": 5183246.200969715,
+                "driving_time_s": 609.454324131143,
+                "engine_shaft_work_j": 103672225.22091454,
+                "final_vehicle_kinetic_j": 1313379.352753074,
+                "friction_brake_work_j": 39318944.89856772,
+                "fuel_mass_carried_kinetic_j": 10930.735806337423,
+                "generated_engine_heat_j": 46652501.34941156,
+                "initial_vehicle_kinetic_j": 0.0,
+                "kinetic_change_j": 1324310.0885594122,
+                "maximum_driveline_balance_residual_j": 9.094947017729282e-13,
+                "maximum_raw_contact_utilization": 0.9978489242749112,
+                "maximum_thermal_balance_residual_j": 7.105427357601002e-10,
+                "maximum_vehicle_balance_residual_j": 3.637978807091713e-12,
+                "potential_change_j": 0.0,
+                "rejected_engine_heat_signed_j": 48547388.638418496,
+                "rolling_work_j": 9163409.161882022,
+                "segments": 28930,
+                "service_idle_fuel_kg": 0.0,
+                "service_time_s": 0.0,
+                "unresolved_service_velocity_reset_j": 0.0,
+                "wheel_propulsion_work_j": 98481677.8184248
+              },
+              "final_state": {
+                "engine_temp": 71.05112710993014,
+                "fuel_mass": 92.84473658895324,
+                "tire_temp": 76.24254270454496,
+                "tire_wear": 0.02161234434604505
+              },
+              "last_observed_time_s": 609.454324131143,
+              "native_nodes": 28931,
+              "observation_digest": "sha256:9e6ac9a3c341f5dbf85bdadf3fcf05181097f6f83623944c5234d7e10e000525",
+              "observation_json_bytes": 146940,
+              "observation_rows": 611,
+              "result_digest": "sha256:1751b55380874b103fa47e97aa7041e909f964ca7d66d19c3a02fcdeca6f809a",
+              "total_time_s": 609.454324131143
+            },
+            "rival-4": {
+              "energy": {
+                "clutch_slip_loss_j": 7301.2015200588985,
+                "distance_m": 28930.0,
+                "drag_work_j": 48675013.66941559,
+                "driveline_loss_j": 5183246.200969715,
+                "driving_time_s": 609.454324131143,
+                "engine_shaft_work_j": 103672225.22091454,
+                "final_vehicle_kinetic_j": 1313379.352753074,
+                "friction_brake_work_j": 39318944.89856772,
+                "fuel_mass_carried_kinetic_j": 10930.735806337423,
+                "generated_engine_heat_j": 46652501.34941156,
+                "initial_vehicle_kinetic_j": 0.0,
+                "kinetic_change_j": 1324310.0885594122,
+                "maximum_driveline_balance_residual_j": 9.094947017729282e-13,
+                "maximum_raw_contact_utilization": 0.9978489242749112,
+                "maximum_thermal_balance_residual_j": 7.105427357601002e-10,
+                "maximum_vehicle_balance_residual_j": 3.637978807091713e-12,
+                "potential_change_j": 0.0,
+                "rejected_engine_heat_signed_j": 48547388.638418496,
+                "rolling_work_j": 9163409.161882022,
+                "segments": 28930,
+                "service_idle_fuel_kg": 0.0,
+                "service_time_s": 0.0,
+                "unresolved_service_velocity_reset_j": 0.0,
+                "wheel_propulsion_work_j": 98481677.8184248
+              },
+              "final_state": {
+                "engine_temp": 71.05112710993014,
+                "fuel_mass": 92.84473658895324,
+                "tire_temp": 76.24254270454496,
+                "tire_wear": 0.02161234434604505
+              },
+              "last_observed_time_s": 609.454324131143,
+              "native_nodes": 28931,
+              "observation_digest": "sha256:9e6ac9a3c341f5dbf85bdadf3fcf05181097f6f83623944c5234d7e10e000525",
+              "observation_json_bytes": 146940,
+              "observation_rows": 611,
+              "result_digest": "sha256:1751b55380874b103fa47e97aa7041e909f964ca7d66d19c3a02fcdeca6f809a",
+              "total_time_s": 609.454324131143
+            },
+            "rival-5": {
+              "energy": {
+                "clutch_slip_loss_j": 7301.2015200588985,
+                "distance_m": 28930.0,
+                "drag_work_j": 48675013.66941559,
+                "driveline_loss_j": 5183246.200969715,
+                "driving_time_s": 609.454324131143,
+                "engine_shaft_work_j": 103672225.22091454,
+                "final_vehicle_kinetic_j": 1313379.352753074,
+                "friction_brake_work_j": 39318944.89856772,
+                "fuel_mass_carried_kinetic_j": 10930.735806337423,
+                "generated_engine_heat_j": 46652501.34941156,
+                "initial_vehicle_kinetic_j": 0.0,
+                "kinetic_change_j": 1324310.0885594122,
+                "maximum_driveline_balance_residual_j": 9.094947017729282e-13,
+                "maximum_raw_contact_utilization": 0.9978489242749112,
+                "maximum_thermal_balance_residual_j": 7.105427357601002e-10,
+                "maximum_vehicle_balance_residual_j": 3.637978807091713e-12,
+                "potential_change_j": 0.0,
+                "rejected_engine_heat_signed_j": 48547388.638418496,
+                "rolling_work_j": 9163409.161882022,
+                "segments": 28930,
+                "service_idle_fuel_kg": 0.0,
+                "service_time_s": 0.0,
+                "unresolved_service_velocity_reset_j": 0.0,
+                "wheel_propulsion_work_j": 98481677.8184248
+              },
+              "final_state": {
+                "engine_temp": 71.05112710993014,
+                "fuel_mass": 92.84473658895324,
+                "tire_temp": 76.24254270454496,
+                "tire_wear": 0.02161234434604505
+              },
+              "last_observed_time_s": 609.454324131143,
+              "native_nodes": 28931,
+              "observation_digest": "sha256:9e6ac9a3c341f5dbf85bdadf3fcf05181097f6f83623944c5234d7e10e000525",
+              "observation_json_bytes": 146940,
+              "observation_rows": 611,
+              "result_digest": "sha256:1751b55380874b103fa47e97aa7041e909f964ca7d66d19c3a02fcdeca6f809a",
+              "total_time_s": 609.454324131143
+            },
+            "rival-6": {
+              "energy": {
+                "clutch_slip_loss_j": 7301.2015200588985,
+                "distance_m": 28930.0,
+                "drag_work_j": 48675013.66941559,
+                "driveline_loss_j": 5183246.200969715,
+                "driving_time_s": 609.454324131143,
+                "engine_shaft_work_j": 103672225.22091454,
+                "final_vehicle_kinetic_j": 1313379.352753074,
+                "friction_brake_work_j": 39318944.89856772,
+                "fuel_mass_carried_kinetic_j": 10930.735806337423,
+                "generated_engine_heat_j": 46652501.34941156,
+                "initial_vehicle_kinetic_j": 0.0,
+                "kinetic_change_j": 1324310.0885594122,
+                "maximum_driveline_balance_residual_j": 9.094947017729282e-13,
+                "maximum_raw_contact_utilization": 0.9978489242749112,
+                "maximum_thermal_balance_residual_j": 7.105427357601002e-10,
+                "maximum_vehicle_balance_residual_j": 3.637978807091713e-12,
+                "potential_change_j": 0.0,
+                "rejected_engine_heat_signed_j": 48547388.638418496,
+                "rolling_work_j": 9163409.161882022,
+                "segments": 28930,
+                "service_idle_fuel_kg": 0.0,
+                "service_time_s": 0.0,
+                "unresolved_service_velocity_reset_j": 0.0,
+                "wheel_propulsion_work_j": 98481677.8184248
+              },
+              "final_state": {
+                "engine_temp": 71.05112710993014,
+                "fuel_mass": 92.84473658895324,
+                "tire_temp": 76.24254270454496,
+                "tire_wear": 0.02161234434604505
+              },
+              "last_observed_time_s": 609.454324131143,
+              "native_nodes": 28931,
+              "observation_digest": "sha256:9e6ac9a3c341f5dbf85bdadf3fcf05181097f6f83623944c5234d7e10e000525",
+              "observation_json_bytes": 146940,
+              "observation_rows": 611,
+              "result_digest": "sha256:1751b55380874b103fa47e97aa7041e909f964ca7d66d19c3a02fcdeca6f809a",
+              "total_time_s": 609.454324131143
+            },
+            "rival-7": {
+              "energy": {
+                "clutch_slip_loss_j": 7301.2015200588985,
+                "distance_m": 28930.0,
+                "drag_work_j": 48675013.66941559,
+                "driveline_loss_j": 5183246.200969715,
+                "driving_time_s": 609.454324131143,
+                "engine_shaft_work_j": 103672225.22091454,
+                "final_vehicle_kinetic_j": 1313379.352753074,
+                "friction_brake_work_j": 39318944.89856772,
+                "fuel_mass_carried_kinetic_j": 10930.735806337423,
+                "generated_engine_heat_j": 46652501.34941156,
+                "initial_vehicle_kinetic_j": 0.0,
+                "kinetic_change_j": 1324310.0885594122,
+                "maximum_driveline_balance_residual_j": 9.094947017729282e-13,
+                "maximum_raw_contact_utilization": 0.9978489242749112,
+                "maximum_thermal_balance_residual_j": 7.105427357601002e-10,
+                "maximum_vehicle_balance_residual_j": 3.637978807091713e-12,
+                "potential_change_j": 0.0,
+                "rejected_engine_heat_signed_j": 48547388.638418496,
+                "rolling_work_j": 9163409.161882022,
+                "segments": 28930,
+                "service_idle_fuel_kg": 0.0,
+                "service_time_s": 0.0,
+                "unresolved_service_velocity_reset_j": 0.0,
+                "wheel_propulsion_work_j": 98481677.8184248
+              },
+              "final_state": {
+                "engine_temp": 71.05112710993014,
+                "fuel_mass": 92.84473658895324,
+                "tire_temp": 76.24254270454496,
+                "tire_wear": 0.02161234434604505
+              },
+              "last_observed_time_s": 609.454324131143,
+              "native_nodes": 28931,
+              "observation_digest": "sha256:9e6ac9a3c341f5dbf85bdadf3fcf05181097f6f83623944c5234d7e10e000525",
+              "observation_json_bytes": 146940,
+              "observation_rows": 611,
+              "result_digest": "sha256:1751b55380874b103fa47e97aa7041e909f964ca7d66d19c3a02fcdeca6f809a",
+              "total_time_s": 609.454324131143
+            },
+            "rival-8": {
+              "energy": {
+                "clutch_slip_loss_j": 7301.2015200588985,
+                "distance_m": 28930.0,
+                "drag_work_j": 48675013.66941559,
+                "driveline_loss_j": 5183246.200969715,
+                "driving_time_s": 609.454324131143,
+                "engine_shaft_work_j": 103672225.22091454,
+                "final_vehicle_kinetic_j": 1313379.352753074,
+                "friction_brake_work_j": 39318944.89856772,
+                "fuel_mass_carried_kinetic_j": 10930.735806337423,
+                "generated_engine_heat_j": 46652501.34941156,
+                "initial_vehicle_kinetic_j": 0.0,
+                "kinetic_change_j": 1324310.0885594122,
+                "maximum_driveline_balance_residual_j": 9.094947017729282e-13,
+                "maximum_raw_contact_utilization": 0.9978489242749112,
+                "maximum_thermal_balance_residual_j": 7.105427357601002e-10,
+                "maximum_vehicle_balance_residual_j": 3.637978807091713e-12,
+                "potential_change_j": 0.0,
+                "rejected_engine_heat_signed_j": 48547388.638418496,
+                "rolling_work_j": 9163409.161882022,
+                "segments": 28930,
+                "service_idle_fuel_kg": 0.0,
+                "service_time_s": 0.0,
+                "unresolved_service_velocity_reset_j": 0.0,
+                "wheel_propulsion_work_j": 98481677.8184248
+              },
+              "final_state": {
+                "engine_temp": 71.05112710993014,
+                "fuel_mass": 92.84473658895324,
+                "tire_temp": 76.24254270454496,
+                "tire_wear": 0.02161234434604505
+              },
+              "last_observed_time_s": 609.454324131143,
+              "native_nodes": 28931,
+              "observation_digest": "sha256:9e6ac9a3c341f5dbf85bdadf3fcf05181097f6f83623944c5234d7e10e000525",
+              "observation_json_bytes": 146940,
+              "observation_rows": 611,
+              "result_digest": "sha256:1751b55380874b103fa47e97aa7041e909f964ca7d66d19c3a02fcdeca6f809a",
+              "total_time_s": 609.454324131143
+            },
+            "rival-9": {
+              "energy": {
+                "clutch_slip_loss_j": 7301.2015200588985,
+                "distance_m": 28930.0,
+                "drag_work_j": 48675013.66941559,
+                "driveline_loss_j": 5183246.200969715,
+                "driving_time_s": 609.454324131143,
+                "engine_shaft_work_j": 103672225.22091454,
+                "final_vehicle_kinetic_j": 1313379.352753074,
+                "friction_brake_work_j": 39318944.89856772,
+                "fuel_mass_carried_kinetic_j": 10930.735806337423,
+                "generated_engine_heat_j": 46652501.34941156,
+                "initial_vehicle_kinetic_j": 0.0,
+                "kinetic_change_j": 1324310.0885594122,
+                "maximum_driveline_balance_residual_j": 9.094947017729282e-13,
+                "maximum_raw_contact_utilization": 0.9978489242749112,
+                "maximum_thermal_balance_residual_j": 7.105427357601002e-10,
+                "maximum_vehicle_balance_residual_j": 3.637978807091713e-12,
+                "potential_change_j": 0.0,
+                "rejected_engine_heat_signed_j": 48547388.638418496,
+                "rolling_work_j": 9163409.161882022,
+                "segments": 28930,
+                "service_idle_fuel_kg": 0.0,
+                "service_time_s": 0.0,
+                "unresolved_service_velocity_reset_j": 0.0,
+                "wheel_propulsion_work_j": 98481677.8184248
+              },
+              "final_state": {
+                "engine_temp": 71.05112710993014,
+                "fuel_mass": 92.84473658895324,
+                "tire_temp": 76.24254270454496,
+                "tire_wear": 0.02161234434604505
+              },
+              "last_observed_time_s": 609.454324131143,
+              "native_nodes": 28931,
+              "observation_digest": "sha256:9e6ac9a3c341f5dbf85bdadf3fcf05181097f6f83623944c5234d7e10e000525",
+              "observation_json_bytes": 146940,
+              "observation_rows": 611,
+              "result_digest": "sha256:1751b55380874b103fa47e97aa7041e909f964ca7d66d19c3a02fcdeca6f809a",
+              "total_time_s": 609.454324131143
+            }
+          },
+          "catalog": {
+            "id": "pitgun.racing",
+            "manifest_digest": "sha256:c7eafd00de0e1257d82687d8f640e0e435f530746f0bfa805bba662df20110cf",
+            "schema_version": "pitgun.catalog-release-identity/v1",
+            "version": "1.8.1"
+          },
+          "observation_hz": 1.0,
+          "request_digest": "sha256:6e8c1f9c2cd454620426dc8d655e2716e7f23c7c3f58f0a3b7cdb47ee149d1d8",
+          "schema": "pitgun.energy-cost-probe/v1",
+          "scope": "native audit JSON only; causal observations, no changed integration grid/equations or game admission; rendering/network/gateway packing not measured",
+          "sources": {
+            "longitudinal": "sha256:dadf2f24e933e5cbeaa6135259948ba6491ce504ea233b3ee576d487696251cf",
+            "probe": "sha256:8e9abd8c818fd1a2390bab3b3d56f9a2c2a4e376c9a982ce8fbdfa25592b11a4",
+            "simulator": "sha256:5386adb3f79a9ef2575943c57b031630f2e474c47bae7a5ba14fd3784ef0127f",
+            "solver": "sha256:711fe3beacfef185a406829a6b6c042ca91f026c15b84dada332736cba8d3b97"
+          }
+        },
+        "2": {
+          "binary_digest": "sha256:a5a0765a9e7ba9d029dceec736b26b6feb98153774c4d604e5e8eb0c279b8646",
+          "cars": {
+            "player": {
+              "energy": {
+                "clutch_slip_loss_j": 7301.2015200588985,
+                "distance_m": 28930.0,
+                "drag_work_j": 48675013.66941559,
+                "driveline_loss_j": 5183246.200969715,
+                "driving_time_s": 609.454324131143,
+                "engine_shaft_work_j": 103672225.22091454,
+                "final_vehicle_kinetic_j": 1313379.352753074,
+                "friction_brake_work_j": 39318944.89856772,
+                "fuel_mass_carried_kinetic_j": 10930.735806337423,
+                "generated_engine_heat_j": 46652501.34941156,
+                "initial_vehicle_kinetic_j": 0.0,
+                "kinetic_change_j": 1324310.0885594122,
+                "maximum_driveline_balance_residual_j": 9.094947017729282e-13,
+                "maximum_raw_contact_utilization": 0.9978489242749112,
+                "maximum_thermal_balance_residual_j": 7.105427357601002e-10,
+                "maximum_vehicle_balance_residual_j": 3.637978807091713e-12,
+                "potential_change_j": 0.0,
+                "rejected_engine_heat_signed_j": 48547388.638418496,
+                "rolling_work_j": 9163409.161882022,
+                "segments": 28930,
+                "service_idle_fuel_kg": 0.0,
+                "service_time_s": 0.0,
+                "unresolved_service_velocity_reset_j": 0.0,
+                "wheel_propulsion_work_j": 98481677.8184248
+              },
+              "final_state": {
+                "engine_temp": 71.05112710993014,
+                "fuel_mass": 92.84473658895324,
+                "tire_temp": 76.24254270454496,
+                "tire_wear": 0.02161234434604505
+              },
+              "last_observed_time_s": 609.454324131143,
+              "native_nodes": 28931,
+              "observation_digest": "sha256:c003eff7d111fb01aa22498ada239d66c3f8a9f5a01d66f0620ff74f28953142",
+              "observation_json_bytes": 293409,
+              "observation_rows": 1220,
+              "result_digest": "sha256:1751b55380874b103fa47e97aa7041e909f964ca7d66d19c3a02fcdeca6f809a",
+              "total_time_s": 609.454324131143
+            },
+            "rival-1": {
+              "energy": {
+                "clutch_slip_loss_j": 7301.2015200588985,
+                "distance_m": 28930.0,
+                "drag_work_j": 48675013.66941559,
+                "driveline_loss_j": 5183246.200969715,
+                "driving_time_s": 609.454324131143,
+                "engine_shaft_work_j": 103672225.22091454,
+                "final_vehicle_kinetic_j": 1313379.352753074,
+                "friction_brake_work_j": 39318944.89856772,
+                "fuel_mass_carried_kinetic_j": 10930.735806337423,
+                "generated_engine_heat_j": 46652501.34941156,
+                "initial_vehicle_kinetic_j": 0.0,
+                "kinetic_change_j": 1324310.0885594122,
+                "maximum_driveline_balance_residual_j": 9.094947017729282e-13,
+                "maximum_raw_contact_utilization": 0.9978489242749112,
+                "maximum_thermal_balance_residual_j": 7.105427357601002e-10,
+                "maximum_vehicle_balance_residual_j": 3.637978807091713e-12,
+                "potential_change_j": 0.0,
+                "rejected_engine_heat_signed_j": 48547388.638418496,
+                "rolling_work_j": 9163409.161882022,
+                "segments": 28930,
+                "service_idle_fuel_kg": 0.0,
+                "service_time_s": 0.0,
+                "unresolved_service_velocity_reset_j": 0.0,
+                "wheel_propulsion_work_j": 98481677.8184248
+              },
+              "final_state": {
+                "engine_temp": 71.05112710993014,
+                "fuel_mass": 92.84473658895324,
+                "tire_temp": 76.24254270454496,
+                "tire_wear": 0.02161234434604505
+              },
+              "last_observed_time_s": 609.454324131143,
+              "native_nodes": 28931,
+              "observation_digest": "sha256:c003eff7d111fb01aa22498ada239d66c3f8a9f5a01d66f0620ff74f28953142",
+              "observation_json_bytes": 293409,
+              "observation_rows": 1220,
+              "result_digest": "sha256:1751b55380874b103fa47e97aa7041e909f964ca7d66d19c3a02fcdeca6f809a",
+              "total_time_s": 609.454324131143
+            },
+            "rival-2": {
+              "energy": {
+                "clutch_slip_loss_j": 7301.2015200588985,
+                "distance_m": 28930.0,
+                "drag_work_j": 48675013.66941559,
+                "driveline_loss_j": 5183246.200969715,
+                "driving_time_s": 609.454324131143,
+                "engine_shaft_work_j": 103672225.22091454,
+                "final_vehicle_kinetic_j": 1313379.352753074,
+                "friction_brake_work_j": 39318944.89856772,
+                "fuel_mass_carried_kinetic_j": 10930.735806337423,
+                "generated_engine_heat_j": 46652501.34941156,
+                "initial_vehicle_kinetic_j": 0.0,
+                "kinetic_change_j": 1324310.0885594122,
+                "maximum_driveline_balance_residual_j": 9.094947017729282e-13,
+                "maximum_raw_contact_utilization": 0.9978489242749112,
+                "maximum_thermal_balance_residual_j": 7.105427357601002e-10,
+                "maximum_vehicle_balance_residual_j": 3.637978807091713e-12,
+                "potential_change_j": 0.0,
+                "rejected_engine_heat_signed_j": 48547388.638418496,
+                "rolling_work_j": 9163409.161882022,
+                "segments": 28930,
+                "service_idle_fuel_kg": 0.0,
+                "service_time_s": 0.0,
+                "unresolved_service_velocity_reset_j": 0.0,
+                "wheel_propulsion_work_j": 98481677.8184248
+              },
+              "final_state": {
+                "engine_temp": 71.05112710993014,
+                "fuel_mass": 92.84473658895324,
+                "tire_temp": 76.24254270454496,
+                "tire_wear": 0.02161234434604505
+              },
+              "last_observed_time_s": 609.454324131143,
+              "native_nodes": 28931,
+              "observation_digest": "sha256:c003eff7d111fb01aa22498ada239d66c3f8a9f5a01d66f0620ff74f28953142",
+              "observation_json_bytes": 293409,
+              "observation_rows": 1220,
+              "result_digest": "sha256:1751b55380874b103fa47e97aa7041e909f964ca7d66d19c3a02fcdeca6f809a",
+              "total_time_s": 609.454324131143
+            },
+            "rival-3": {
+              "energy": {
+                "clutch_slip_loss_j": 7301.2015200588985,
+                "distance_m": 28930.0,
+                "drag_work_j": 48675013.66941559,
+                "driveline_loss_j": 5183246.200969715,
+                "driving_time_s": 609.454324131143,
+                "engine_shaft_work_j": 103672225.22091454,
+                "final_vehicle_kinetic_j": 1313379.352753074,
+                "friction_brake_work_j": 39318944.89856772,
+                "fuel_mass_carried_kinetic_j": 10930.735806337423,
+                "generated_engine_heat_j": 46652501.34941156,
+                "initial_vehicle_kinetic_j": 0.0,
+                "kinetic_change_j": 1324310.0885594122,
+                "maximum_driveline_balance_residual_j": 9.094947017729282e-13,
+                "maximum_raw_contact_utilization": 0.9978489242749112,
+                "maximum_thermal_balance_residual_j": 7.105427357601002e-10,
+                "maximum_vehicle_balance_residual_j": 3.637978807091713e-12,
+                "potential_change_j": 0.0,
+                "rejected_engine_heat_signed_j": 48547388.638418496,
+                "rolling_work_j": 9163409.161882022,
+                "segments": 28930,
+                "service_idle_fuel_kg": 0.0,
+                "service_time_s": 0.0,
+                "unresolved_service_velocity_reset_j": 0.0,
+                "wheel_propulsion_work_j": 98481677.8184248
+              },
+              "final_state": {
+                "engine_temp": 71.05112710993014,
+                "fuel_mass": 92.84473658895324,
+                "tire_temp": 76.24254270454496,
+                "tire_wear": 0.02161234434604505
+              },
+              "last_observed_time_s": 609.454324131143,
+              "native_nodes": 28931,
+              "observation_digest": "sha256:c003eff7d111fb01aa22498ada239d66c3f8a9f5a01d66f0620ff74f28953142",
+              "observation_json_bytes": 293409,
+              "observation_rows": 1220,
+              "result_digest": "sha256:1751b55380874b103fa47e97aa7041e909f964ca7d66d19c3a02fcdeca6f809a",
+              "total_time_s": 609.454324131143
+            },
+            "rival-4": {
+              "energy": {
+                "clutch_slip_loss_j": 7301.2015200588985,
+                "distance_m": 28930.0,
+                "drag_work_j": 48675013.66941559,
+                "driveline_loss_j": 5183246.200969715,
+                "driving_time_s": 609.454324131143,
+                "engine_shaft_work_j": 103672225.22091454,
+                "final_vehicle_kinetic_j": 1313379.352753074,
+                "friction_brake_work_j": 39318944.89856772,
+                "fuel_mass_carried_kinetic_j": 10930.735806337423,
+                "generated_engine_heat_j": 46652501.34941156,
+                "initial_vehicle_kinetic_j": 0.0,
+                "kinetic_change_j": 1324310.0885594122,
+                "maximum_driveline_balance_residual_j": 9.094947017729282e-13,
+                "maximum_raw_contact_utilization": 0.9978489242749112,
+                "maximum_thermal_balance_residual_j": 7.105427357601002e-10,
+                "maximum_vehicle_balance_residual_j": 3.637978807091713e-12,
+                "potential_change_j": 0.0,
+                "rejected_engine_heat_signed_j": 48547388.638418496,
+                "rolling_work_j": 9163409.161882022,
+                "segments": 28930,
+                "service_idle_fuel_kg": 0.0,
+                "service_time_s": 0.0,
+                "unresolved_service_velocity_reset_j": 0.0,
+                "wheel_propulsion_work_j": 98481677.8184248
+              },
+              "final_state": {
+                "engine_temp": 71.05112710993014,
+                "fuel_mass": 92.84473658895324,
+                "tire_temp": 76.24254270454496,
+                "tire_wear": 0.02161234434604505
+              },
+              "last_observed_time_s": 609.454324131143,
+              "native_nodes": 28931,
+              "observation_digest": "sha256:c003eff7d111fb01aa22498ada239d66c3f8a9f5a01d66f0620ff74f28953142",
+              "observation_json_bytes": 293409,
+              "observation_rows": 1220,
+              "result_digest": "sha256:1751b55380874b103fa47e97aa7041e909f964ca7d66d19c3a02fcdeca6f809a",
+              "total_time_s": 609.454324131143
+            },
+            "rival-5": {
+              "energy": {
+                "clutch_slip_loss_j": 7301.2015200588985,
+                "distance_m": 28930.0,
+                "drag_work_j": 48675013.66941559,
+                "driveline_loss_j": 5183246.200969715,
+                "driving_time_s": 609.454324131143,
+                "engine_shaft_work_j": 103672225.22091454,
+                "final_vehicle_kinetic_j": 1313379.352753074,
+                "friction_brake_work_j": 39318944.89856772,
+                "fuel_mass_carried_kinetic_j": 10930.735806337423,
+                "generated_engine_heat_j": 46652501.34941156,
+                "initial_vehicle_kinetic_j": 0.0,
+                "kinetic_change_j": 1324310.0885594122,
+                "maximum_driveline_balance_residual_j": 9.094947017729282e-13,
+                "maximum_raw_contact_utilization": 0.9978489242749112,
+                "maximum_thermal_balance_residual_j": 7.105427357601002e-10,
+                "maximum_vehicle_balance_residual_j": 3.637978807091713e-12,
+                "potential_change_j": 0.0,
+                "rejected_engine_heat_signed_j": 48547388.638418496,
+                "rolling_work_j": 9163409.161882022,
+                "segments": 28930,
+                "service_idle_fuel_kg": 0.0,
+                "service_time_s": 0.0,
+                "unresolved_service_velocity_reset_j": 0.0,
+                "wheel_propulsion_work_j": 98481677.8184248
+              },
+              "final_state": {
+                "engine_temp": 71.05112710993014,
+                "fuel_mass": 92.84473658895324,
+                "tire_temp": 76.24254270454496,
+                "tire_wear": 0.02161234434604505
+              },
+              "last_observed_time_s": 609.454324131143,
+              "native_nodes": 28931,
+              "observation_digest": "sha256:c003eff7d111fb01aa22498ada239d66c3f8a9f5a01d66f0620ff74f28953142",
+              "observation_json_bytes": 293409,
+              "observation_rows": 1220,
+              "result_digest": "sha256:1751b55380874b103fa47e97aa7041e909f964ca7d66d19c3a02fcdeca6f809a",
+              "total_time_s": 609.454324131143
+            },
+            "rival-6": {
+              "energy": {
+                "clutch_slip_loss_j": 7301.2015200588985,
+                "distance_m": 28930.0,
+                "drag_work_j": 48675013.66941559,
+                "driveline_loss_j": 5183246.200969715,
+                "driving_time_s": 609.454324131143,
+                "engine_shaft_work_j": 103672225.22091454,
+                "final_vehicle_kinetic_j": 1313379.352753074,
+                "friction_brake_work_j": 39318944.89856772,
+                "fuel_mass_carried_kinetic_j": 10930.735806337423,
+                "generated_engine_heat_j": 46652501.34941156,
+                "initial_vehicle_kinetic_j": 0.0,
+                "kinetic_change_j": 1324310.0885594122,
+                "maximum_driveline_balance_residual_j": 9.094947017729282e-13,
+                "maximum_raw_contact_utilization": 0.9978489242749112,
+                "maximum_thermal_balance_residual_j": 7.105427357601002e-10,
+                "maximum_vehicle_balance_residual_j": 3.637978807091713e-12,
+                "potential_change_j": 0.0,
+                "rejected_engine_heat_signed_j": 48547388.638418496,
+                "rolling_work_j": 9163409.161882022,
+                "segments": 28930,
+                "service_idle_fuel_kg": 0.0,
+                "service_time_s": 0.0,
+                "unresolved_service_velocity_reset_j": 0.0,
+                "wheel_propulsion_work_j": 98481677.8184248
+              },
+              "final_state": {
+                "engine_temp": 71.05112710993014,
+                "fuel_mass": 92.84473658895324,
+                "tire_temp": 76.24254270454496,
+                "tire_wear": 0.02161234434604505
+              },
+              "last_observed_time_s": 609.454324131143,
+              "native_nodes": 28931,
+              "observation_digest": "sha256:c003eff7d111fb01aa22498ada239d66c3f8a9f5a01d66f0620ff74f28953142",
+              "observation_json_bytes": 293409,
+              "observation_rows": 1220,
+              "result_digest": "sha256:1751b55380874b103fa47e97aa7041e909f964ca7d66d19c3a02fcdeca6f809a",
+              "total_time_s": 609.454324131143
+            },
+            "rival-7": {
+              "energy": {
+                "clutch_slip_loss_j": 7301.2015200588985,
+                "distance_m": 28930.0,
+                "drag_work_j": 48675013.66941559,
+                "driveline_loss_j": 5183246.200969715,
+                "driving_time_s": 609.454324131143,
+                "engine_shaft_work_j": 103672225.22091454,
+                "final_vehicle_kinetic_j": 1313379.352753074,
+                "friction_brake_work_j": 39318944.89856772,
+                "fuel_mass_carried_kinetic_j": 10930.735806337423,
+                "generated_engine_heat_j": 46652501.34941156,
+                "initial_vehicle_kinetic_j": 0.0,
+                "kinetic_change_j": 1324310.0885594122,
+                "maximum_driveline_balance_residual_j": 9.094947017729282e-13,
+                "maximum_raw_contact_utilization": 0.9978489242749112,
+                "maximum_thermal_balance_residual_j": 7.105427357601002e-10,
+                "maximum_vehicle_balance_residual_j": 3.637978807091713e-12,
+                "potential_change_j": 0.0,
+                "rejected_engine_heat_signed_j": 48547388.638418496,
+                "rolling_work_j": 9163409.161882022,
+                "segments": 28930,
+                "service_idle_fuel_kg": 0.0,
+                "service_time_s": 0.0,
+                "unresolved_service_velocity_reset_j": 0.0,
+                "wheel_propulsion_work_j": 98481677.8184248
+              },
+              "final_state": {
+                "engine_temp": 71.05112710993014,
+                "fuel_mass": 92.84473658895324,
+                "tire_temp": 76.24254270454496,
+                "tire_wear": 0.02161234434604505
+              },
+              "last_observed_time_s": 609.454324131143,
+              "native_nodes": 28931,
+              "observation_digest": "sha256:c003eff7d111fb01aa22498ada239d66c3f8a9f5a01d66f0620ff74f28953142",
+              "observation_json_bytes": 293409,
+              "observation_rows": 1220,
+              "result_digest": "sha256:1751b55380874b103fa47e97aa7041e909f964ca7d66d19c3a02fcdeca6f809a",
+              "total_time_s": 609.454324131143
+            },
+            "rival-8": {
+              "energy": {
+                "clutch_slip_loss_j": 7301.2015200588985,
+                "distance_m": 28930.0,
+                "drag_work_j": 48675013.66941559,
+                "driveline_loss_j": 5183246.200969715,
+                "driving_time_s": 609.454324131143,
+                "engine_shaft_work_j": 103672225.22091454,
+                "final_vehicle_kinetic_j": 1313379.352753074,
+                "friction_brake_work_j": 39318944.89856772,
+                "fuel_mass_carried_kinetic_j": 10930.735806337423,
+                "generated_engine_heat_j": 46652501.34941156,
+                "initial_vehicle_kinetic_j": 0.0,
+                "kinetic_change_j": 1324310.0885594122,
+                "maximum_driveline_balance_residual_j": 9.094947017729282e-13,
+                "maximum_raw_contact_utilization": 0.9978489242749112,
+                "maximum_thermal_balance_residual_j": 7.105427357601002e-10,
+                "maximum_vehicle_balance_residual_j": 3.637978807091713e-12,
+                "potential_change_j": 0.0,
+                "rejected_engine_heat_signed_j": 48547388.638418496,
+                "rolling_work_j": 9163409.161882022,
+                "segments": 28930,
+                "service_idle_fuel_kg": 0.0,
+                "service_time_s": 0.0,
+                "unresolved_service_velocity_reset_j": 0.0,
+                "wheel_propulsion_work_j": 98481677.8184248
+              },
+              "final_state": {
+                "engine_temp": 71.05112710993014,
+                "fuel_mass": 92.84473658895324,
+                "tire_temp": 76.24254270454496,
+                "tire_wear": 0.02161234434604505
+              },
+              "last_observed_time_s": 609.454324131143,
+              "native_nodes": 28931,
+              "observation_digest": "sha256:c003eff7d111fb01aa22498ada239d66c3f8a9f5a01d66f0620ff74f28953142",
+              "observation_json_bytes": 293409,
+              "observation_rows": 1220,
+              "result_digest": "sha256:1751b55380874b103fa47e97aa7041e909f964ca7d66d19c3a02fcdeca6f809a",
+              "total_time_s": 609.454324131143
+            },
+            "rival-9": {
+              "energy": {
+                "clutch_slip_loss_j": 7301.2015200588985,
+                "distance_m": 28930.0,
+                "drag_work_j": 48675013.66941559,
+                "driveline_loss_j": 5183246.200969715,
+                "driving_time_s": 609.454324131143,
+                "engine_shaft_work_j": 103672225.22091454,
+                "final_vehicle_kinetic_j": 1313379.352753074,
+                "friction_brake_work_j": 39318944.89856772,
+                "fuel_mass_carried_kinetic_j": 10930.735806337423,
+                "generated_engine_heat_j": 46652501.34941156,
+                "initial_vehicle_kinetic_j": 0.0,
+                "kinetic_change_j": 1324310.0885594122,
+                "maximum_driveline_balance_residual_j": 9.094947017729282e-13,
+                "maximum_raw_contact_utilization": 0.9978489242749112,
+                "maximum_thermal_balance_residual_j": 7.105427357601002e-10,
+                "maximum_vehicle_balance_residual_j": 3.637978807091713e-12,
+                "potential_change_j": 0.0,
+                "rejected_engine_heat_signed_j": 48547388.638418496,
+                "rolling_work_j": 9163409.161882022,
+                "segments": 28930,
+                "service_idle_fuel_kg": 0.0,
+                "service_time_s": 0.0,
+                "unresolved_service_velocity_reset_j": 0.0,
+                "wheel_propulsion_work_j": 98481677.8184248
+              },
+              "final_state": {
+                "engine_temp": 71.05112710993014,
+                "fuel_mass": 92.84473658895324,
+                "tire_temp": 76.24254270454496,
+                "tire_wear": 0.02161234434604505
+              },
+              "last_observed_time_s": 609.454324131143,
+              "native_nodes": 28931,
+              "observation_digest": "sha256:c003eff7d111fb01aa22498ada239d66c3f8a9f5a01d66f0620ff74f28953142",
+              "observation_json_bytes": 293409,
+              "observation_rows": 1220,
+              "result_digest": "sha256:1751b55380874b103fa47e97aa7041e909f964ca7d66d19c3a02fcdeca6f809a",
+              "total_time_s": 609.454324131143
+            }
+          },
+          "catalog": {
+            "id": "pitgun.racing",
+            "manifest_digest": "sha256:c7eafd00de0e1257d82687d8f640e0e435f530746f0bfa805bba662df20110cf",
+            "schema_version": "pitgun.catalog-release-identity/v1",
+            "version": "1.8.1"
+          },
+          "observation_hz": 2.0,
+          "request_digest": "sha256:6e8c1f9c2cd454620426dc8d655e2716e7f23c7c3f58f0a3b7cdb47ee149d1d8",
+          "schema": "pitgun.energy-cost-probe/v1",
+          "scope": "native audit JSON only; causal observations, no changed integration grid/equations or game admission; rendering/network/gateway packing not measured",
+          "sources": {
+            "longitudinal": "sha256:dadf2f24e933e5cbeaa6135259948ba6491ce504ea233b3ee576d487696251cf",
+            "probe": "sha256:8e9abd8c818fd1a2390bab3b3d56f9a2c2a4e376c9a982ce8fbdfa25592b11a4",
+            "simulator": "sha256:5386adb3f79a9ef2575943c57b031630f2e474c47bae7a5ba14fd3784ef0127f",
+            "solver": "sha256:711fe3beacfef185a406829a6b6c042ca91f026c15b84dada332736cba8d3b97"
+          }
+        },
+        "5": {
+          "binary_digest": "sha256:a5a0765a9e7ba9d029dceec736b26b6feb98153774c4d604e5e8eb0c279b8646",
+          "cars": {
+            "player": {
+              "energy": {
+                "clutch_slip_loss_j": 7301.2015200588985,
+                "distance_m": 28930.0,
+                "drag_work_j": 48675013.66941559,
+                "driveline_loss_j": 5183246.200969715,
+                "driving_time_s": 609.454324131143,
+                "engine_shaft_work_j": 103672225.22091454,
+                "final_vehicle_kinetic_j": 1313379.352753074,
+                "friction_brake_work_j": 39318944.89856772,
+                "fuel_mass_carried_kinetic_j": 10930.735806337423,
+                "generated_engine_heat_j": 46652501.34941156,
+                "initial_vehicle_kinetic_j": 0.0,
+                "kinetic_change_j": 1324310.0885594122,
+                "maximum_driveline_balance_residual_j": 9.094947017729282e-13,
+                "maximum_raw_contact_utilization": 0.9978489242749112,
+                "maximum_thermal_balance_residual_j": 7.105427357601002e-10,
+                "maximum_vehicle_balance_residual_j": 3.637978807091713e-12,
+                "potential_change_j": 0.0,
+                "rejected_engine_heat_signed_j": 48547388.638418496,
+                "rolling_work_j": 9163409.161882022,
+                "segments": 28930,
+                "service_idle_fuel_kg": 0.0,
+                "service_time_s": 0.0,
+                "unresolved_service_velocity_reset_j": 0.0,
+                "wheel_propulsion_work_j": 98481677.8184248
+              },
+              "final_state": {
+                "engine_temp": 71.05112710993014,
+                "fuel_mass": 92.84473658895324,
+                "tire_temp": 76.24254270454496,
+                "tire_wear": 0.02161234434604505
+              },
+              "last_observed_time_s": 609.454324131143,
+              "native_nodes": 28931,
+              "observation_digest": "sha256:e5584fbe1223a96a816d52930de498c0a7a050065238716b8050382bb8cf5cf2",
+              "observation_json_bytes": 733347,
+              "observation_rows": 3049,
+              "result_digest": "sha256:1751b55380874b103fa47e97aa7041e909f964ca7d66d19c3a02fcdeca6f809a",
+              "total_time_s": 609.454324131143
+            },
+            "rival-1": {
+              "energy": {
+                "clutch_slip_loss_j": 7301.2015200588985,
+                "distance_m": 28930.0,
+                "drag_work_j": 48675013.66941559,
+                "driveline_loss_j": 5183246.200969715,
+                "driving_time_s": 609.454324131143,
+                "engine_shaft_work_j": 103672225.22091454,
+                "final_vehicle_kinetic_j": 1313379.352753074,
+                "friction_brake_work_j": 39318944.89856772,
+                "fuel_mass_carried_kinetic_j": 10930.735806337423,
+                "generated_engine_heat_j": 46652501.34941156,
+                "initial_vehicle_kinetic_j": 0.0,
+                "kinetic_change_j": 1324310.0885594122,
+                "maximum_driveline_balance_residual_j": 9.094947017729282e-13,
+                "maximum_raw_contact_utilization": 0.9978489242749112,
+                "maximum_thermal_balance_residual_j": 7.105427357601002e-10,
+                "maximum_vehicle_balance_residual_j": 3.637978807091713e-12,
+                "potential_change_j": 0.0,
+                "rejected_engine_heat_signed_j": 48547388.638418496,
+                "rolling_work_j": 9163409.161882022,
+                "segments": 28930,
+                "service_idle_fuel_kg": 0.0,
+                "service_time_s": 0.0,
+                "unresolved_service_velocity_reset_j": 0.0,
+                "wheel_propulsion_work_j": 98481677.8184248
+              },
+              "final_state": {
+                "engine_temp": 71.05112710993014,
+                "fuel_mass": 92.84473658895324,
+                "tire_temp": 76.24254270454496,
+                "tire_wear": 0.02161234434604505
+              },
+              "last_observed_time_s": 609.454324131143,
+              "native_nodes": 28931,
+              "observation_digest": "sha256:e5584fbe1223a96a816d52930de498c0a7a050065238716b8050382bb8cf5cf2",
+              "observation_json_bytes": 733347,
+              "observation_rows": 3049,
+              "result_digest": "sha256:1751b55380874b103fa47e97aa7041e909f964ca7d66d19c3a02fcdeca6f809a",
+              "total_time_s": 609.454324131143
+            },
+            "rival-2": {
+              "energy": {
+                "clutch_slip_loss_j": 7301.2015200588985,
+                "distance_m": 28930.0,
+                "drag_work_j": 48675013.66941559,
+                "driveline_loss_j": 5183246.200969715,
+                "driving_time_s": 609.454324131143,
+                "engine_shaft_work_j": 103672225.22091454,
+                "final_vehicle_kinetic_j": 1313379.352753074,
+                "friction_brake_work_j": 39318944.89856772,
+                "fuel_mass_carried_kinetic_j": 10930.735806337423,
+                "generated_engine_heat_j": 46652501.34941156,
+                "initial_vehicle_kinetic_j": 0.0,
+                "kinetic_change_j": 1324310.0885594122,
+                "maximum_driveline_balance_residual_j": 9.094947017729282e-13,
+                "maximum_raw_contact_utilization": 0.9978489242749112,
+                "maximum_thermal_balance_residual_j": 7.105427357601002e-10,
+                "maximum_vehicle_balance_residual_j": 3.637978807091713e-12,
+                "potential_change_j": 0.0,
+                "rejected_engine_heat_signed_j": 48547388.638418496,
+                "rolling_work_j": 9163409.161882022,
+                "segments": 28930,
+                "service_idle_fuel_kg": 0.0,
+                "service_time_s": 0.0,
+                "unresolved_service_velocity_reset_j": 0.0,
+                "wheel_propulsion_work_j": 98481677.8184248
+              },
+              "final_state": {
+                "engine_temp": 71.05112710993014,
+                "fuel_mass": 92.84473658895324,
+                "tire_temp": 76.24254270454496,
+                "tire_wear": 0.02161234434604505
+              },
+              "last_observed_time_s": 609.454324131143,
+              "native_nodes": 28931,
+              "observation_digest": "sha256:e5584fbe1223a96a816d52930de498c0a7a050065238716b8050382bb8cf5cf2",
+              "observation_json_bytes": 733347,
+              "observation_rows": 3049,
+              "result_digest": "sha256:1751b55380874b103fa47e97aa7041e909f964ca7d66d19c3a02fcdeca6f809a",
+              "total_time_s": 609.454324131143
+            },
+            "rival-3": {
+              "energy": {
+                "clutch_slip_loss_j": 7301.2015200588985,
+                "distance_m": 28930.0,
+                "drag_work_j": 48675013.66941559,
+                "driveline_loss_j": 5183246.200969715,
+                "driving_time_s": 609.454324131143,
+                "engine_shaft_work_j": 103672225.22091454,
+                "final_vehicle_kinetic_j": 1313379.352753074,
+                "friction_brake_work_j": 39318944.89856772,
+                "fuel_mass_carried_kinetic_j": 10930.735806337423,
+                "generated_engine_heat_j": 46652501.34941156,
+                "initial_vehicle_kinetic_j": 0.0,
+                "kinetic_change_j": 1324310.0885594122,
+                "maximum_driveline_balance_residual_j": 9.094947017729282e-13,
+                "maximum_raw_contact_utilization": 0.9978489242749112,
+                "maximum_thermal_balance_residual_j": 7.105427357601002e-10,
+                "maximum_vehicle_balance_residual_j": 3.637978807091713e-12,
+                "potential_change_j": 0.0,
+                "rejected_engine_heat_signed_j": 48547388.638418496,
+                "rolling_work_j": 9163409.161882022,
+                "segments": 28930,
+                "service_idle_fuel_kg": 0.0,
+                "service_time_s": 0.0,
+                "unresolved_service_velocity_reset_j": 0.0,
+                "wheel_propulsion_work_j": 98481677.8184248
+              },
+              "final_state": {
+                "engine_temp": 71.05112710993014,
+                "fuel_mass": 92.84473658895324,
+                "tire_temp": 76.24254270454496,
+                "tire_wear": 0.02161234434604505
+              },
+              "last_observed_time_s": 609.454324131143,
+              "native_nodes": 28931,
+              "observation_digest": "sha256:e5584fbe1223a96a816d52930de498c0a7a050065238716b8050382bb8cf5cf2",
+              "observation_json_bytes": 733347,
+              "observation_rows": 3049,
+              "result_digest": "sha256:1751b55380874b103fa47e97aa7041e909f964ca7d66d19c3a02fcdeca6f809a",
+              "total_time_s": 609.454324131143
+            },
+            "rival-4": {
+              "energy": {
+                "clutch_slip_loss_j": 7301.2015200588985,
+                "distance_m": 28930.0,
+                "drag_work_j": 48675013.66941559,
+                "driveline_loss_j": 5183246.200969715,
+                "driving_time_s": 609.454324131143,
+                "engine_shaft_work_j": 103672225.22091454,
+                "final_vehicle_kinetic_j": 1313379.352753074,
+                "friction_brake_work_j": 39318944.89856772,
+                "fuel_mass_carried_kinetic_j": 10930.735806337423,
+                "generated_engine_heat_j": 46652501.34941156,
+                "initial_vehicle_kinetic_j": 0.0,
+                "kinetic_change_j": 1324310.0885594122,
+                "maximum_driveline_balance_residual_j": 9.094947017729282e-13,
+                "maximum_raw_contact_utilization": 0.9978489242749112,
+                "maximum_thermal_balance_residual_j": 7.105427357601002e-10,
+                "maximum_vehicle_balance_residual_j": 3.637978807091713e-12,
+                "potential_change_j": 0.0,
+                "rejected_engine_heat_signed_j": 48547388.638418496,
+                "rolling_work_j": 9163409.161882022,
+                "segments": 28930,
+                "service_idle_fuel_kg": 0.0,
+                "service_time_s": 0.0,
+                "unresolved_service_velocity_reset_j": 0.0,
+                "wheel_propulsion_work_j": 98481677.8184248
+              },
+              "final_state": {
+                "engine_temp": 71.05112710993014,
+                "fuel_mass": 92.84473658895324,
+                "tire_temp": 76.24254270454496,
+                "tire_wear": 0.02161234434604505
+              },
+              "last_observed_time_s": 609.454324131143,
+              "native_nodes": 28931,
+              "observation_digest": "sha256:e5584fbe1223a96a816d52930de498c0a7a050065238716b8050382bb8cf5cf2",
+              "observation_json_bytes": 733347,
+              "observation_rows": 3049,
+              "result_digest": "sha256:1751b55380874b103fa47e97aa7041e909f964ca7d66d19c3a02fcdeca6f809a",
+              "total_time_s": 609.454324131143
+            },
+            "rival-5": {
+              "energy": {
+                "clutch_slip_loss_j": 7301.2015200588985,
+                "distance_m": 28930.0,
+                "drag_work_j": 48675013.66941559,
+                "driveline_loss_j": 5183246.200969715,
+                "driving_time_s": 609.454324131143,
+                "engine_shaft_work_j": 103672225.22091454,
+                "final_vehicle_kinetic_j": 1313379.352753074,
+                "friction_brake_work_j": 39318944.89856772,
+                "fuel_mass_carried_kinetic_j": 10930.735806337423,
+                "generated_engine_heat_j": 46652501.34941156,
+                "initial_vehicle_kinetic_j": 0.0,
+                "kinetic_change_j": 1324310.0885594122,
+                "maximum_driveline_balance_residual_j": 9.094947017729282e-13,
+                "maximum_raw_contact_utilization": 0.9978489242749112,
+                "maximum_thermal_balance_residual_j": 7.105427357601002e-10,
+                "maximum_vehicle_balance_residual_j": 3.637978807091713e-12,
+                "potential_change_j": 0.0,
+                "rejected_engine_heat_signed_j": 48547388.638418496,
+                "rolling_work_j": 9163409.161882022,
+                "segments": 28930,
+                "service_idle_fuel_kg": 0.0,
+                "service_time_s": 0.0,
+                "unresolved_service_velocity_reset_j": 0.0,
+                "wheel_propulsion_work_j": 98481677.8184248
+              },
+              "final_state": {
+                "engine_temp": 71.05112710993014,
+                "fuel_mass": 92.84473658895324,
+                "tire_temp": 76.24254270454496,
+                "tire_wear": 0.02161234434604505
+              },
+              "last_observed_time_s": 609.454324131143,
+              "native_nodes": 28931,
+              "observation_digest": "sha256:e5584fbe1223a96a816d52930de498c0a7a050065238716b8050382bb8cf5cf2",
+              "observation_json_bytes": 733347,
+              "observation_rows": 3049,
+              "result_digest": "sha256:1751b55380874b103fa47e97aa7041e909f964ca7d66d19c3a02fcdeca6f809a",
+              "total_time_s": 609.454324131143
+            },
+            "rival-6": {
+              "energy": {
+                "clutch_slip_loss_j": 7301.2015200588985,
+                "distance_m": 28930.0,
+                "drag_work_j": 48675013.66941559,
+                "driveline_loss_j": 5183246.200969715,
+                "driving_time_s": 609.454324131143,
+                "engine_shaft_work_j": 103672225.22091454,
+                "final_vehicle_kinetic_j": 1313379.352753074,
+                "friction_brake_work_j": 39318944.89856772,
+                "fuel_mass_carried_kinetic_j": 10930.735806337423,
+                "generated_engine_heat_j": 46652501.34941156,
+                "initial_vehicle_kinetic_j": 0.0,
+                "kinetic_change_j": 1324310.0885594122,
+                "maximum_driveline_balance_residual_j": 9.094947017729282e-13,
+                "maximum_raw_contact_utilization": 0.9978489242749112,
+                "maximum_thermal_balance_residual_j": 7.105427357601002e-10,
+                "maximum_vehicle_balance_residual_j": 3.637978807091713e-12,
+                "potential_change_j": 0.0,
+                "rejected_engine_heat_signed_j": 48547388.638418496,
+                "rolling_work_j": 9163409.161882022,
+                "segments": 28930,
+                "service_idle_fuel_kg": 0.0,
+                "service_time_s": 0.0,
+                "unresolved_service_velocity_reset_j": 0.0,
+                "wheel_propulsion_work_j": 98481677.8184248
+              },
+              "final_state": {
+                "engine_temp": 71.05112710993014,
+                "fuel_mass": 92.84473658895324,
+                "tire_temp": 76.24254270454496,
+                "tire_wear": 0.02161234434604505
+              },
+              "last_observed_time_s": 609.454324131143,
+              "native_nodes": 28931,
+              "observation_digest": "sha256:e5584fbe1223a96a816d52930de498c0a7a050065238716b8050382bb8cf5cf2",
+              "observation_json_bytes": 733347,
+              "observation_rows": 3049,
+              "result_digest": "sha256:1751b55380874b103fa47e97aa7041e909f964ca7d66d19c3a02fcdeca6f809a",
+              "total_time_s": 609.454324131143
+            },
+            "rival-7": {
+              "energy": {
+                "clutch_slip_loss_j": 7301.2015200588985,
+                "distance_m": 28930.0,
+                "drag_work_j": 48675013.66941559,
+                "driveline_loss_j": 5183246.200969715,
+                "driving_time_s": 609.454324131143,
+                "engine_shaft_work_j": 103672225.22091454,
+                "final_vehicle_kinetic_j": 1313379.352753074,
+                "friction_brake_work_j": 39318944.89856772,
+                "fuel_mass_carried_kinetic_j": 10930.735806337423,
+                "generated_engine_heat_j": 46652501.34941156,
+                "initial_vehicle_kinetic_j": 0.0,
+                "kinetic_change_j": 1324310.0885594122,
+                "maximum_driveline_balance_residual_j": 9.094947017729282e-13,
+                "maximum_raw_contact_utilization": 0.9978489242749112,
+                "maximum_thermal_balance_residual_j": 7.105427357601002e-10,
+                "maximum_vehicle_balance_residual_j": 3.637978807091713e-12,
+                "potential_change_j": 0.0,
+                "rejected_engine_heat_signed_j": 48547388.638418496,
+                "rolling_work_j": 9163409.161882022,
+                "segments": 28930,
+                "service_idle_fuel_kg": 0.0,
+                "service_time_s": 0.0,
+                "unresolved_service_velocity_reset_j": 0.0,
+                "wheel_propulsion_work_j": 98481677.8184248
+              },
+              "final_state": {
+                "engine_temp": 71.05112710993014,
+                "fuel_mass": 92.84473658895324,
+                "tire_temp": 76.24254270454496,
+                "tire_wear": 0.02161234434604505
+              },
+              "last_observed_time_s": 609.454324131143,
+              "native_nodes": 28931,
+              "observation_digest": "sha256:e5584fbe1223a96a816d52930de498c0a7a050065238716b8050382bb8cf5cf2",
+              "observation_json_bytes": 733347,
+              "observation_rows": 3049,
+              "result_digest": "sha256:1751b55380874b103fa47e97aa7041e909f964ca7d66d19c3a02fcdeca6f809a",
+              "total_time_s": 609.454324131143
+            },
+            "rival-8": {
+              "energy": {
+                "clutch_slip_loss_j": 7301.2015200588985,
+                "distance_m": 28930.0,
+                "drag_work_j": 48675013.66941559,
+                "driveline_loss_j": 5183246.200969715,
+                "driving_time_s": 609.454324131143,
+                "engine_shaft_work_j": 103672225.22091454,
+                "final_vehicle_kinetic_j": 1313379.352753074,
+                "friction_brake_work_j": 39318944.89856772,
+                "fuel_mass_carried_kinetic_j": 10930.735806337423,
+                "generated_engine_heat_j": 46652501.34941156,
+                "initial_vehicle_kinetic_j": 0.0,
+                "kinetic_change_j": 1324310.0885594122,
+                "maximum_driveline_balance_residual_j": 9.094947017729282e-13,
+                "maximum_raw_contact_utilization": 0.9978489242749112,
+                "maximum_thermal_balance_residual_j": 7.105427357601002e-10,
+                "maximum_vehicle_balance_residual_j": 3.637978807091713e-12,
+                "potential_change_j": 0.0,
+                "rejected_engine_heat_signed_j": 48547388.638418496,
+                "rolling_work_j": 9163409.161882022,
+                "segments": 28930,
+                "service_idle_fuel_kg": 0.0,
+                "service_time_s": 0.0,
+                "unresolved_service_velocity_reset_j": 0.0,
+                "wheel_propulsion_work_j": 98481677.8184248
+              },
+              "final_state": {
+                "engine_temp": 71.05112710993014,
+                "fuel_mass": 92.84473658895324,
+                "tire_temp": 76.24254270454496,
+                "tire_wear": 0.02161234434604505
+              },
+              "last_observed_time_s": 609.454324131143,
+              "native_nodes": 28931,
+              "observation_digest": "sha256:e5584fbe1223a96a816d52930de498c0a7a050065238716b8050382bb8cf5cf2",
+              "observation_json_bytes": 733347,
+              "observation_rows": 3049,
+              "result_digest": "sha256:1751b55380874b103fa47e97aa7041e909f964ca7d66d19c3a02fcdeca6f809a",
+              "total_time_s": 609.454324131143
+            },
+            "rival-9": {
+              "energy": {
+                "clutch_slip_loss_j": 7301.2015200588985,
+                "distance_m": 28930.0,
+                "drag_work_j": 48675013.66941559,
+                "driveline_loss_j": 5183246.200969715,
+                "driving_time_s": 609.454324131143,
+                "engine_shaft_work_j": 103672225.22091454,
+                "final_vehicle_kinetic_j": 1313379.352753074,
+                "friction_brake_work_j": 39318944.89856772,
+                "fuel_mass_carried_kinetic_j": 10930.735806337423,
+                "generated_engine_heat_j": 46652501.34941156,
+                "initial_vehicle_kinetic_j": 0.0,
+                "kinetic_change_j": 1324310.0885594122,
+                "maximum_driveline_balance_residual_j": 9.094947017729282e-13,
+                "maximum_raw_contact_utilization": 0.9978489242749112,
+                "maximum_thermal_balance_residual_j": 7.105427357601002e-10,
+                "maximum_vehicle_balance_residual_j": 3.637978807091713e-12,
+                "potential_change_j": 0.0,
+                "rejected_engine_heat_signed_j": 48547388.638418496,
+                "rolling_work_j": 9163409.161882022,
+                "segments": 28930,
+                "service_idle_fuel_kg": 0.0,
+                "service_time_s": 0.0,
+                "unresolved_service_velocity_reset_j": 0.0,
+                "wheel_propulsion_work_j": 98481677.8184248
+              },
+              "final_state": {
+                "engine_temp": 71.05112710993014,
+                "fuel_mass": 92.84473658895324,
+                "tire_temp": 76.24254270454496,
+                "tire_wear": 0.02161234434604505
+              },
+              "last_observed_time_s": 609.454324131143,
+              "native_nodes": 28931,
+              "observation_digest": "sha256:e5584fbe1223a96a816d52930de498c0a7a050065238716b8050382bb8cf5cf2",
+              "observation_json_bytes": 733347,
+              "observation_rows": 3049,
+              "result_digest": "sha256:1751b55380874b103fa47e97aa7041e909f964ca7d66d19c3a02fcdeca6f809a",
+              "total_time_s": 609.454324131143
+            }
+          },
+          "catalog": {
+            "id": "pitgun.racing",
+            "manifest_digest": "sha256:c7eafd00de0e1257d82687d8f640e0e435f530746f0bfa805bba662df20110cf",
+            "schema_version": "pitgun.catalog-release-identity/v1",
+            "version": "1.8.1"
+          },
+          "observation_hz": 5.0,
+          "request_digest": "sha256:6e8c1f9c2cd454620426dc8d655e2716e7f23c7c3f58f0a3b7cdb47ee149d1d8",
+          "schema": "pitgun.energy-cost-probe/v1",
+          "scope": "native audit JSON only; causal observations, no changed integration grid/equations or game admission; rendering/network/gateway packing not measured",
+          "sources": {
+            "longitudinal": "sha256:dadf2f24e933e5cbeaa6135259948ba6491ce504ea233b3ee576d487696251cf",
+            "probe": "sha256:8e9abd8c818fd1a2390bab3b3d56f9a2c2a4e376c9a982ce8fbdfa25592b11a4",
+            "simulator": "sha256:5386adb3f79a9ef2575943c57b031630f2e474c47bae7a5ba14fd3784ef0127f",
+            "solver": "sha256:711fe3beacfef185a406829a6b6c042ca91f026c15b84dada332736cba8d3b97"
+          }
+        }
+      },
+      "performance": {
+        "1": {
+          "max_rss_bytes": 155828224,
+          "median_cpu_ms": 2814.171,
+          "median_stages_ms": {
+            "native_digest": 777.5542499999999,
+            "observation": 0.40518699999999996,
+            "observation_digest": 2.4947084999999998,
+            "observation_json": 1.3985204999999998,
+            "resolve": 197.558667,
+            "solve": 1825.4123140000002
+          },
+          "median_wall_ms": 2823.8553755000025
+        },
+        "2": {
+          "max_rss_bytes": 153501696,
+          "median_cpu_ms": 2835.893,
+          "median_stages_ms": {
+            "native_digest": 775.335229,
+            "observation": 0.34197999999999995,
+            "observation_digest": 5.0797715,
+            "observation_json": 2.8591045,
+            "resolve": 205.5859165,
+            "solve": 1837.229956
+          },
+          "median_wall_ms": 2849.2522085000046
+        },
+        "5": {
+          "max_rss_bytes": 152469504,
+          "median_cpu_ms": 2834.3179999999998,
+          "median_stages_ms": {
+            "native_digest": 776.8060415,
+            "observation": 0.43902099999999994,
+            "observation_digest": 12.590646,
+            "observation_json": 6.5318345,
+            "resolve": 200.5469375,
+            "solve": 1828.0176660000002
+          },
+          "median_wall_ms": 2845.344145999995
+        }
+      },
+      "physics_exact_at_all_rates": true
+    },
+    {
+      "id": "monaco-classic-78",
+      "measurements": {
+        "1": [
+          {
+            "process_lifetime_max_rss_bytes": 363200512,
+            "returncode": 0,
+            "system_cpu_ms": 34.232,
+            "timed_out": false,
+            "timings_ms": {
+              "native_digest": 704.117,
+              "observation": 0.312459,
+              "observation_digest": 2.982208,
+              "observation_json": 1.5728339999999998,
+              "resolve": 201.030334,
+              "solve": 1561.400167
+            },
+            "user_cpu_ms": 2445.995,
+            "wall_ms": 2498.006332999992
+          },
+          {
+            "process_lifetime_max_rss_bytes": 369459200,
+            "returncode": 0,
+            "system_cpu_ms": 32.052,
+            "timed_out": false,
+            "timings_ms": {
+              "native_digest": 682.814583,
+              "observation": 0.277667,
+              "observation_digest": 3.066875,
+              "observation_json": 1.601042,
+              "resolve": 195.361125,
+              "solve": 1558.8174999999999
+            },
+            "user_cpu_ms": 2418.824,
+            "wall_ms": 2467.022333999992
+          }
+        ],
+        "2": [
+          {
+            "process_lifetime_max_rss_bytes": 369442816,
+            "returncode": 0,
+            "system_cpu_ms": 34.149,
+            "timed_out": false,
+            "timings_ms": {
+              "native_digest": 693.334833,
+              "observation": 0.324375,
+              "observation_digest": 5.96925,
+              "observation_json": 3.429125,
+              "resolve": 198.669,
+              "solve": 1560.083542
+            },
+            "user_cpu_ms": 2438.31,
+            "wall_ms": 2483.6751249999907
+          },
+          {
+            "process_lifetime_max_rss_bytes": 365084672,
+            "returncode": 0,
+            "system_cpu_ms": 35.418,
+            "timed_out": false,
+            "timings_ms": {
+              "native_digest": 690.925625,
+              "observation": 0.329917,
+              "observation_digest": 6.04575,
+              "observation_json": 3.2212080000000003,
+              "resolve": 203.057041,
+              "solve": 1546.864916
+            },
+            "user_cpu_ms": 2426.194,
+            "wall_ms": 2471.4585000000116
+          }
+        ],
+        "5": [
+          {
+            "process_lifetime_max_rss_bytes": 378667008,
+            "returncode": 0,
+            "system_cpu_ms": 51.089,
+            "timed_out": false,
+            "timings_ms": {
+              "native_digest": 705.1545420000001,
+              "observation": 0.6604589999999999,
+              "observation_digest": 14.926,
+              "observation_json": 7.739667000000001,
+              "resolve": 204.816542,
+              "solve": 1579.418375
+            },
+            "user_cpu_ms": 2466.898,
+            "wall_ms": 2539.047499999995
+          },
+          {
+            "process_lifetime_max_rss_bytes": 375226368,
+            "returncode": 0,
+            "system_cpu_ms": 33.72899999999999,
+            "timed_out": false,
+            "timings_ms": {
+              "native_digest": 692.462125,
+              "observation": 0.5632499999999999,
+              "observation_digest": 15.206375,
+              "observation_json": 7.7368749999999995,
+              "resolve": 196.33045800000002,
+              "solve": 1542.308416
+            },
+            "user_cpu_ms": 2429.8669999999997,
+            "wall_ms": 2475.4633329999933
+          }
+        ]
+      },
+      "outcomes": {
+        "1": {
+          "binary_digest": "sha256:a5a0765a9e7ba9d029dceec736b26b6feb98153774c4d604e5e8eb0c279b8646",
+          "cars": {
+            "player": {
+              "energy": {
+                "clutch_slip_loss_j": 7301.2015200588985,
+                "distance_m": 259272.0,
+                "drag_work_j": 279724146.32782555,
+                "driveline_loss_j": 48429952.86791258,
+                "driving_time_s": 7213.183282417429,
+                "engine_shaft_work_j": 968606358.5597731,
+                "final_vehicle_kinetic_j": 760059.1671091714,
+                "friction_brake_work_j": 572155374.0452619,
+                "fuel_mass_carried_kinetic_j": 64614.84402693057,
+                "generated_engine_heat_j": 435872861.3518981,
+                "initial_vehicle_kinetic_j": 0.0,
+                "kinetic_change_j": 824674.0111361035,
+                "maximum_driveline_balance_residual_j": 9.094947017729282e-13,
+                "maximum_raw_contact_utilization": 0.9981111550918857,
+                "maximum_thermal_balance_residual_j": 7.107701094355434e-10,
+                "maximum_vehicle_balance_residual_j": 3.637978807091713e-12,
+                "potential_change_j": 0.0,
+                "rejected_engine_heat_signed_j": 437744730.3397059,
+                "rolling_work_j": 67464910.10611658,
+                "segments": 259272,
+                "service_idle_fuel_kg": 0.0,
+                "service_time_s": 0.0,
+                "unresolved_service_velocity_reset_j": 0.0,
+                "wheel_propulsion_work_j": 920169104.4903404
+              },
+              "final_state": {
+                "engine_temp": 71.28131012191766,
+                "fuel_mass": 32.540969449714794,
+                "tire_temp": 49.66051865601893,
+                "tire_wear": 0.32406347681044606
+              },
+              "last_observed_time_s": 7213.183282417429,
+              "native_nodes": 259273,
+              "observation_digest": "sha256:fc2071ee3b57866aeaafd4881415ff2a7bdb0480dc16a3947f489f7978796b3e",
+              "observation_json_bytes": 1751461,
+              "observation_rows": 7215,
+              "result_digest": "sha256:4f2ecb00a46bda456dfa5a4a5f1dbad651c933a426afede550c0181b8e3bc117",
+              "total_time_s": 7213.183282417429
+            }
+          },
+          "catalog": {
+            "id": "pitgun.racing",
+            "manifest_digest": "sha256:c7eafd00de0e1257d82687d8f640e0e435f530746f0bfa805bba662df20110cf",
+            "schema_version": "pitgun.catalog-release-identity/v1",
+            "version": "1.8.1"
+          },
+          "observation_hz": 1.0,
+          "request_digest": "sha256:16e717e8687e79ecdaef42ed92be59e5ab9bed08284876b22d228fb54eb69c25",
+          "schema": "pitgun.energy-cost-probe/v1",
+          "scope": "native audit JSON only; causal observations, no changed integration grid/equations or game admission; rendering/network/gateway packing not measured",
+          "sources": {
+            "longitudinal": "sha256:dadf2f24e933e5cbeaa6135259948ba6491ce504ea233b3ee576d487696251cf",
+            "probe": "sha256:8e9abd8c818fd1a2390bab3b3d56f9a2c2a4e376c9a982ce8fbdfa25592b11a4",
+            "simulator": "sha256:5386adb3f79a9ef2575943c57b031630f2e474c47bae7a5ba14fd3784ef0127f",
+            "solver": "sha256:711fe3beacfef185a406829a6b6c042ca91f026c15b84dada332736cba8d3b97"
+          }
+        },
+        "2": {
+          "binary_digest": "sha256:a5a0765a9e7ba9d029dceec736b26b6feb98153774c4d604e5e8eb0c279b8646",
+          "cars": {
+            "player": {
+              "energy": {
+                "clutch_slip_loss_j": 7301.2015200588985,
+                "distance_m": 259272.0,
+                "drag_work_j": 279724146.32782555,
+                "driveline_loss_j": 48429952.86791258,
+                "driving_time_s": 7213.183282417429,
+                "engine_shaft_work_j": 968606358.5597731,
+                "final_vehicle_kinetic_j": 760059.1671091714,
+                "friction_brake_work_j": 572155374.0452619,
+                "fuel_mass_carried_kinetic_j": 64614.84402693057,
+                "generated_engine_heat_j": 435872861.3518981,
+                "initial_vehicle_kinetic_j": 0.0,
+                "kinetic_change_j": 824674.0111361035,
+                "maximum_driveline_balance_residual_j": 9.094947017729282e-13,
+                "maximum_raw_contact_utilization": 0.9981111550918857,
+                "maximum_thermal_balance_residual_j": 7.107701094355434e-10,
+                "maximum_vehicle_balance_residual_j": 3.637978807091713e-12,
+                "potential_change_j": 0.0,
+                "rejected_engine_heat_signed_j": 437744730.3397059,
+                "rolling_work_j": 67464910.10611658,
+                "segments": 259272,
+                "service_idle_fuel_kg": 0.0,
+                "service_time_s": 0.0,
+                "unresolved_service_velocity_reset_j": 0.0,
+                "wheel_propulsion_work_j": 920169104.4903404
+              },
+              "final_state": {
+                "engine_temp": 71.28131012191766,
+                "fuel_mass": 32.540969449714794,
+                "tire_temp": 49.66051865601893,
+                "tire_wear": 0.32406347681044606
+              },
+              "last_observed_time_s": 7213.183282417429,
+              "native_nodes": 259273,
+              "observation_digest": "sha256:07b6e7d8e4894fa44dc2a5e50eb204972357fb23ce79a3c41fab081833dc17cc",
+              "observation_json_bytes": 3502348,
+              "observation_rows": 14428,
+              "result_digest": "sha256:4f2ecb00a46bda456dfa5a4a5f1dbad651c933a426afede550c0181b8e3bc117",
+              "total_time_s": 7213.183282417429
+            }
+          },
+          "catalog": {
+            "id": "pitgun.racing",
+            "manifest_digest": "sha256:c7eafd00de0e1257d82687d8f640e0e435f530746f0bfa805bba662df20110cf",
+            "schema_version": "pitgun.catalog-release-identity/v1",
+            "version": "1.8.1"
+          },
+          "observation_hz": 2.0,
+          "request_digest": "sha256:16e717e8687e79ecdaef42ed92be59e5ab9bed08284876b22d228fb54eb69c25",
+          "schema": "pitgun.energy-cost-probe/v1",
+          "scope": "native audit JSON only; causal observations, no changed integration grid/equations or game admission; rendering/network/gateway packing not measured",
+          "sources": {
+            "longitudinal": "sha256:dadf2f24e933e5cbeaa6135259948ba6491ce504ea233b3ee576d487696251cf",
+            "probe": "sha256:8e9abd8c818fd1a2390bab3b3d56f9a2c2a4e376c9a982ce8fbdfa25592b11a4",
+            "simulator": "sha256:5386adb3f79a9ef2575943c57b031630f2e474c47bae7a5ba14fd3784ef0127f",
+            "solver": "sha256:711fe3beacfef185a406829a6b6c042ca91f026c15b84dada332736cba8d3b97"
+          }
+        },
+        "5": {
+          "binary_digest": "sha256:a5a0765a9e7ba9d029dceec736b26b6feb98153774c4d604e5e8eb0c279b8646",
+          "cars": {
+            "player": {
+              "energy": {
+                "clutch_slip_loss_j": 7301.2015200588985,
+                "distance_m": 259272.0,
+                "drag_work_j": 279724146.32782555,
+                "driveline_loss_j": 48429952.86791258,
+                "driving_time_s": 7213.183282417429,
+                "engine_shaft_work_j": 968606358.5597731,
+                "final_vehicle_kinetic_j": 760059.1671091714,
+                "friction_brake_work_j": 572155374.0452619,
+                "fuel_mass_carried_kinetic_j": 64614.84402693057,
+                "generated_engine_heat_j": 435872861.3518981,
+                "initial_vehicle_kinetic_j": 0.0,
+                "kinetic_change_j": 824674.0111361035,
+                "maximum_driveline_balance_residual_j": 9.094947017729282e-13,
+                "maximum_raw_contact_utilization": 0.9981111550918857,
+                "maximum_thermal_balance_residual_j": 7.107701094355434e-10,
+                "maximum_vehicle_balance_residual_j": 3.637978807091713e-12,
+                "potential_change_j": 0.0,
+                "rejected_engine_heat_signed_j": 437744730.3397059,
+                "rolling_work_j": 67464910.10611658,
+                "segments": 259272,
+                "service_idle_fuel_kg": 0.0,
+                "service_time_s": 0.0,
+                "unresolved_service_velocity_reset_j": 0.0,
+                "wheel_propulsion_work_j": 920169104.4903404
+              },
+              "final_state": {
+                "engine_temp": 71.28131012191766,
+                "fuel_mass": 32.540969449714794,
+                "tire_temp": 49.66051865601893,
+                "tire_wear": 0.32406347681044606
+              },
+              "last_observed_time_s": 7213.183282417429,
+              "native_nodes": 259273,
+              "observation_digest": "sha256:6d998e88582bcc531dd3d125e358fb6f67bab9318e2607c34f834281026a3d89",
+              "observation_json_bytes": 8755462,
+              "observation_rows": 36067,
+              "result_digest": "sha256:4f2ecb00a46bda456dfa5a4a5f1dbad651c933a426afede550c0181b8e3bc117",
+              "total_time_s": 7213.183282417429
+            }
+          },
+          "catalog": {
+            "id": "pitgun.racing",
+            "manifest_digest": "sha256:c7eafd00de0e1257d82687d8f640e0e435f530746f0bfa805bba662df20110cf",
+            "schema_version": "pitgun.catalog-release-identity/v1",
+            "version": "1.8.1"
+          },
+          "observation_hz": 5.0,
+          "request_digest": "sha256:16e717e8687e79ecdaef42ed92be59e5ab9bed08284876b22d228fb54eb69c25",
+          "schema": "pitgun.energy-cost-probe/v1",
+          "scope": "native audit JSON only; causal observations, no changed integration grid/equations or game admission; rendering/network/gateway packing not measured",
+          "sources": {
+            "longitudinal": "sha256:dadf2f24e933e5cbeaa6135259948ba6491ce504ea233b3ee576d487696251cf",
+            "probe": "sha256:8e9abd8c818fd1a2390bab3b3d56f9a2c2a4e376c9a982ce8fbdfa25592b11a4",
+            "simulator": "sha256:5386adb3f79a9ef2575943c57b031630f2e474c47bae7a5ba14fd3784ef0127f",
+            "solver": "sha256:711fe3beacfef185a406829a6b6c042ca91f026c15b84dada332736cba8d3b97"
+          }
+        }
+      },
+      "performance": {
+        "1": {
+          "max_rss_bytes": 369459200,
+          "median_cpu_ms": 2465.5515,
+          "median_stages_ms": {
+            "native_digest": 693.4657915,
+            "observation": 0.29506299999999996,
+            "observation_digest": 3.0245414999999998,
+            "observation_json": 1.586938,
+            "resolve": 198.1957295,
+            "solve": 1560.1088335
+          },
+          "median_wall_ms": 2482.514333499992
+        },
+        "2": {
+          "max_rss_bytes": 369442816,
+          "median_cpu_ms": 2467.0355,
+          "median_stages_ms": {
+            "native_digest": 692.130229,
+            "observation": 0.32714600000000005,
+            "observation_digest": 6.0075,
+            "observation_json": 3.3251665,
+            "resolve": 200.8630205,
+            "solve": 1553.474229
+          },
+          "median_wall_ms": 2477.566812500001
+        },
+        "5": {
+          "max_rss_bytes": 378667008,
+          "median_cpu_ms": 2490.7915,
+          "median_stages_ms": {
+            "native_digest": 698.8083335000001,
+            "observation": 0.6118545,
+            "observation_digest": 15.0661875,
+            "observation_json": 7.738271,
+            "resolve": 200.57350000000002,
+            "solve": 1560.8633955
+          },
+          "median_wall_ms": 2507.255416499994
+        }
+      },
+      "physics_exact_at_all_rates": true
+    }
+  ],
+  "environment": {
+    "platform": "macOS-26.5.1-arm64-arm-64bit",
+    "rustc": "rustc 1.89.0 (29483883e 2025-08-04)"
+  },
+  "historical_parity": [
+    {
+      "exact_frozen_output_equal": true,
+      "id": "monza-classic-5"
+    },
+    {
+      "exact_frozen_output_equal": true,
+      "id": "monza-classic-5-1hz"
+    },
+    {
+      "exact_frozen_output_equal": true,
+      "id": "silverstone-classic-5"
+    },
+    {
+      "exact_frozen_output_equal": true,
+      "id": "monaco-classic-5"
+    },
+    {
+      "exact_frozen_output_equal": true,
+      "id": "suzuka-classic-5"
+    },
+    {
+      "exact_frozen_output_equal": true,
+      "id": "monza-classic-53"
+    },
+    {
+      "exact_frozen_output_equal": true,
+      "id": "monza-modern-5"
+    },
+    {
+      "exact_frozen_output_equal": true,
+      "id": "monza-hybrid-resource-5"
+    },
+    {
+      "exact_frozen_output_equal": true,
+      "id": "monza-classic-grid10-5"
+    },
+    {
+      "exact_frozen_output_equal": true,
+      "id": "monaco-classic-78"
+    }
+  ],
+  "identity": {
+    "baseline_digest": "sha256:90250b92eb801b9a5e6fc505f2b7fc0151eef82fc5e47e42cbffc450a6e894d7",
+    "binaries": {
+      "after": "sha256:aa0556fb301e4b3041c877b2618ad7217d311b2c253c2776e1e1ea9ba1870d91",
+      "before": "sha256:1fb472b3b5cd47a88b73e867e76cc3628694bf4ecfa8527560de31e5bd2612e4",
+      "legacy": "sha256:4d51ecfeae1de013702cb1afb31f728fd9f93913662b595801fca65435a3bf92",
+      "observations": "sha256:a5a0765a9e7ba9d029dceec736b26b6feb98153774c4d604e5e8eb0c279b8646"
+    },
+    "plan_digest": "sha256:0139df14bd73808bae060571382e025cacbdb425ddb450eedab500617da9840d",
+    "runner_digest": "sha256:54ca9e4758aab68a35159b1d59fb81d437395ecefb08df31855045a6587b88ae",
+    "source_commit": "346f36b34752bf4bcda67ef566df576279c16a07",
+    "source_files": {
+      "Cargo.lock": "sha256:fe9e9d1c7cda7d2f86d972ddfe13337f7dd48aca1393173852e369f26ccde372",
+      "Cargo.toml": "sha256:b6c6bd18d4987876ec2c6765099026537254370f2360b9f07f8a372939fe0ef1",
+      "crates/pitgun-racing-simulator/Cargo.toml": "sha256:cab00142c70e4e997f7889b5018d09dd11d1292e9f73fe379b52a6650a535fee",
+      "crates/pitgun-racing-simulator/examples/continuous_curvature_response_probe.rs": "sha256:c997daa1fffb2d7b8db512ac6ffdd1ee70872f8691fa498b3d1499e88d2266c1",
+      "crates/pitgun-racing-simulator/examples/energy_cost_probe.rs": "sha256:8e9abd8c818fd1a2390bab3b3d56f9a2c2a4e376c9a982ce8fbdfa25592b11a4",
+      "crates/pitgun-racing-simulator/examples/high_speed_response_probe.rs": "sha256:192f6108fc174eb9c83de2757ecda8e9358e1cf2c4becaf3147e3b2d82e7b606",
+      "crates/pitgun-racing-simulator/examples/longitudinal_energy_probe.rs": "sha256:7e9067980d329f81d8d71f06f940b070f7107932528867327b9b3fed975dae26",
+      "crates/pitgun-racing-simulator/examples/physics_baseline_probe.rs": "sha256:bd0316254d08f524ebf1a64f124d8317501beaa021504e1b21d51ac8dca2bd18",
+      "crates/pitgun-racing-simulator/examples/power_telemetry_policy_probe.rs": "sha256:9bfa67c7f996c29d3b6641d6ef2e41ffad4cbb03905454264ee2f6d355660295",
+      "crates/pitgun-racing-simulator/examples/racing_control_gp_probe.rs": "sha256:98fd0f6c98a93cf709f26960f43f578848286ddfc1b3663e7be796e4d39627d8",
+      "crates/pitgun-racing-simulator/examples/racing_control_probe.rs": "sha256:a9cd452e43ccbb0a053bac1a91dd8f55ea7c0d7e4ae9410c2e7c3e3623607f36",
+      "crates/pitgun-racing-simulator/examples/racing_replay_phase_probe.rs": "sha256:2146c20b396edcfe1accdfafad420817bd2dcd149cd66e7a2619a3639a2e8464",
+      "crates/pitgun-racing-simulator/examples/racing_service_control_probe.rs": "sha256:bdca19ca686eb19238f87e6e9cc153eef7c9d706bfe9a4f095888c73179d826b",
+      "crates/pitgun-racing-simulator/examples/relief_response_probe.rs": "sha256:9a3af987bda95f7e19ef4d5ef284d6495ce88867693f268b03d21725c1ef5ff2",
+      "crates/pitgun-racing-simulator/examples/tuning_response_probe.rs": "sha256:e90881ec4d87ca40aca10cfac77465c75bc5356bd79936a099edac5ccc958776",
+      "crates/pitgun-racing-simulator/examples/v3_decision_surface_probe.rs": "sha256:65a98b178cf94b04ac845f35b40fb5ea11dd8b0e865818a98e3e91c8b038e550",
+      "crates/pitgun-racing-simulator/examples/v3_driver_control_probe.rs": "sha256:ed5280b5255efeb780e7837754cafdf71690e55c8990ffaba9308df8eba005c7",
+      "crates/pitgun-racing-simulator/examples/v3_validation_probe.rs": "sha256:5eff32d1f49f93321c75ecf7622d224b5f71bcbf4dc6897e3b87c46a8f488879",
+      "crates/pitgun-racing-simulator/src/catalog.rs": "sha256:d26e2222abc3bbaee766f239720b55d53de7778c4a2e3be921da5d22acc1a575",
+      "crates/pitgun-racing-simulator/src/control_prototype.rs": "sha256:38c479c40d88e0d342d15fcc9e7bb1daa3b7d150599ca60c190a82cabf5421c5",
+      "crates/pitgun-racing-simulator/src/control_prototype/relevance.rs": "sha256:93f58d186c0c6500b25c731f74781c344c2f5326f88ca5e5cbb4670466d0f773",
+      "crates/pitgun-racing-simulator/src/control_prototype/tests.rs": "sha256:4311b2db30468e24ebca2ba6cfacb644b60fc3de5e770969440cb716bd245bed",
+      "crates/pitgun-racing-simulator/src/controlled_stream.rs": "sha256:31f4f4e9fb8fc5cc142b0e3979c0c9e5969227bea94f44e5eb9ce6d52e211195",
+      "crates/pitgun-racing-simulator/src/controlled_stream/tests.rs": "sha256:b9954875cf626b7ff6aab72f1a1f40451e0f172dbb18c17a5317a5c7716cbf94",
+      "crates/pitgun-racing-simulator/src/evidence.rs": "sha256:296125813c019e33ef9b7acba91ba9d27050c6caf82d4f4ba25d7b2112ea2bea",
+      "crates/pitgun-racing-simulator/src/fuel_contract.rs": "sha256:4796c2d60e45ecac44fb7ff24253335e3110468cc3c7e03dd99c2f24dc8f02cb",
+      "crates/pitgun-racing-simulator/src/lib.rs": "sha256:5386adb3f79a9ef2575943c57b031630f2e474c47bae7a5ba14fd3784ef0127f",
+      "crates/pitgun-racing-simulator/src/local_stream.rs": "sha256:f29c371a6246bc6e6cb2ef02ea1c958c1236ea8b4114531dfa41a335f376691c",
+      "crates/pitgun-racing-simulator/src/power_stream.rs": "sha256:971fdc2a86df95b8ed2fd988ff3beec3fbec0344311f9df9c3373a560197478f",
+      "crates/pitgun-racing-simulator/src/service_control.rs": "sha256:352c0554eb998aa9feef491c774ba538017e11d869bf08abca70b1ec012e7f81",
+      "crates/pitgun-racing-simulator/src/thermal_profile.rs": "sha256:cacdff461d47384f6194fd5c7a789ab8ff2157047642f0651c2d12629d450911",
+      "crates/pitgun-racing-simulator/src/workload.rs": "sha256:8a0d7ee5dcc26de0757760fd53eda57f656f9d029266f029d8035da963fa74e9",
+      "crates/pitgun-racing-solver/Cargo.toml": "sha256:aa2843343a05d686e20e236b0f7c9da38d3608921a8e0c18aa1c683750768c9d",
+      "crates/pitgun-racing-solver/src/lib.rs": "sha256:711fe3beacfef185a406829a6b6c042ca91f026c15b84dada332736cba8d3b97",
+      "crates/pitgun-racing-solver/src/longitudinal_energy.rs": "sha256:dadf2f24e933e5cbeaa6135259948ba6491ce504ea233b3ee576d487696251cf",
+      "crates/pitgun-racing-solver/src/power_telemetry.rs": "sha256:b0c1de9fdaad9293cce2afc8ee416a2259925d7451f66a82f704ba1e25eefd6e",
+      "crates/pitgun-racing-solver/tests/physical_kernel.rs": "sha256:8f5fa1ae1e595968e818359bbc282489d74e797d2d1d20df86e2d73451f6a0ad",
+      "experiments/energy_cost/plan-v1.json": "sha256:0139df14bd73808bae060571382e025cacbdb425ddb450eedab500617da9840d",
+      "experiments/energy_cost/run_local.py": "sha256:54ca9e4758aab68a35159b1d59fb81d437395ecefb08df31855045a6587b88ae",
+      "experiments/physics_foundation/baseline_local.py": "sha256:a4d59c3fa4fc65c3946d1e362284aafab8e925a10d51415ae7565c54a00c59af"
+    }
+  },
+  "paired": [
+    {
+      "exact_full_physical_outputs_equal": true,
+      "failures": {},
+      "id": "monza-classic-5",
+      "measurements": {
+        "after": [
+          {
+            "process_lifetime_max_rss_bytes": 60653568,
+            "returncode": 0,
+            "system_cpu_ms": 13.731,
+            "timed_out": false,
+            "timings_ms": {
+              "solve": 190.582042
+            },
+            "user_cpu_ms": 473.587,
+            "wall_ms": 503.8747080000014
+          },
+          {
+            "process_lifetime_max_rss_bytes": 64913408,
+            "returncode": 0,
+            "system_cpu_ms": 10.649,
+            "timed_out": false,
+            "timings_ms": {
+              "solve": 183.18183299999998
+            },
+            "user_cpu_ms": 464.258,
+            "wall_ms": 484.3323330000011
+          }
+        ],
+        "before": [
+          {
+            "process_lifetime_max_rss_bytes": 61587456,
+            "returncode": 0,
+            "system_cpu_ms": 10.391,
+            "timed_out": false,
+            "timings_ms": {
+              "solve": 248.468583
+            },
+            "user_cpu_ms": 527.3829999999999,
+            "wall_ms": 548.2966670000006
+          },
+          {
+            "process_lifetime_max_rss_bytes": 60784640,
+            "returncode": 0,
+            "system_cpu_ms": 8.466999999999999,
+            "timed_out": false,
+            "timings_ms": {
+              "solve": 253.03741699999998
+            },
+            "user_cpu_ms": 541.1659999999999,
+            "wall_ms": 554.5118749999993
+          }
+        ]
+      },
+      "performance": {
+        "after": {
+          "max_rss_bytes": 64913408,
+          "median_cpu_ms": 481.11249999999995,
+          "median_stages_ms": {
+            "solve": 186.8819375
+          },
+          "median_wall_ms": 494.10352050000125
+        },
+        "before": {
+          "max_rss_bytes": 61587456,
+          "median_cpu_ms": 543.7034999999998,
+          "median_stages_ms": {
+            "solve": 250.753
+          },
+          "median_wall_ms": 551.404271
+        }
+      },
+      "result_digests": {
+        "player": "sha256:1751b55380874b103fa47e97aa7041e909f964ca7d66d19c3a02fcdeca6f809a"
+      }
+    },
+    {
+      "exact_full_physical_outputs_equal": true,
+      "failures": {},
+      "id": "monza-classic-5-1hz",
+      "measurements": {
+        "after": [
+          {
+            "process_lifetime_max_rss_bytes": 63193088,
+            "returncode": 0,
+            "system_cpu_ms": 8.533,
+            "timed_out": false,
+            "timings_ms": {
+              "solve": 180.945209
+            },
+            "user_cpu_ms": 462.28999999999996,
+            "wall_ms": 474.3637079999985
+          },
+          {
+            "process_lifetime_max_rss_bytes": 59457536,
+            "returncode": 0,
+            "system_cpu_ms": 7.871999999999999,
+            "timed_out": false,
+            "timings_ms": {
+              "solve": 179.95416699999998
+            },
+            "user_cpu_ms": 468.918,
+            "wall_ms": 483.7848339999997
+          }
+        ],
+        "before": [
+          {
+            "process_lifetime_max_rss_bytes": 60145664,
+            "returncode": 0,
+            "system_cpu_ms": 8.472,
+            "timed_out": false,
+            "timings_ms": {
+              "solve": 251.11633300000003
+            },
+            "user_cpu_ms": 534.429,
+            "wall_ms": 550.3702080000004
+          },
+          {
+            "process_lifetime_max_rss_bytes": 63733760,
+            "returncode": 0,
+            "system_cpu_ms": 11.203,
+            "timed_out": false,
+            "timings_ms": {
+              "solve": 253.27212500000002
+            },
+            "user_cpu_ms": 534.669,
+            "wall_ms": 552.0529579999991
+          }
+        ]
+      },
+      "performance": {
+        "after": {
+          "max_rss_bytes": 63193088,
+          "median_cpu_ms": 473.8065,
+          "median_stages_ms": {
+            "solve": 180.44968799999998
+          },
+          "median_wall_ms": 479.0742709999991
+        },
+        "before": {
+          "max_rss_bytes": 63733760,
+          "median_cpu_ms": 544.3865,
+          "median_stages_ms": {
+            "solve": 252.194229
+          },
+          "median_wall_ms": 551.2115829999998
+        }
+      },
+      "result_digests": {
+        "player": "sha256:1751b55380874b103fa47e97aa7041e909f964ca7d66d19c3a02fcdeca6f809a"
+      }
+    },
+    {
+      "exact_full_physical_outputs_equal": true,
+      "failures": {},
+      "id": "silverstone-classic-5",
+      "measurements": {
+        "after": [
+          {
+            "process_lifetime_max_rss_bytes": 61227008,
+            "returncode": 0,
+            "system_cpu_ms": 13.472999999999999,
+            "timed_out": false,
+            "timings_ms": {
+              "solve": 177.791125
+            },
+            "user_cpu_ms": 457.359,
+            "wall_ms": 483.95024999999947
+          },
+          {
+            "process_lifetime_max_rss_bytes": 61063168,
+            "returncode": 0,
+            "system_cpu_ms": 10.638,
+            "timed_out": false,
+            "timings_ms": {
+              "solve": 173.702583
+            },
+            "user_cpu_ms": 455.856,
+            "wall_ms": 470.10583300000167
+          }
+        ],
+        "before": [
+          {
+            "process_lifetime_max_rss_bytes": 63455232,
+            "returncode": 0,
+            "system_cpu_ms": 11.754999999999999,
+            "timed_out": false,
+            "timings_ms": {
+              "solve": 244.797709
+            },
+            "user_cpu_ms": 525.038,
+            "wall_ms": 546.6526659999981
+          },
+          {
+            "process_lifetime_max_rss_bytes": 58867712,
+            "returncode": 0,
+            "system_cpu_ms": 9.436,
+            "timed_out": false,
+            "timings_ms": {
+              "solve": 246.154958
+            },
+            "user_cpu_ms": 530.9039999999999,
+            "wall_ms": 541.8132080000007
+          }
+        ]
+      },
+      "performance": {
+        "after": {
+          "max_rss_bytes": 61227008,
+          "median_cpu_ms": 468.663,
+          "median_stages_ms": {
+            "solve": 175.74685399999998
+          },
+          "median_wall_ms": 477.02804150000054
+        },
+        "before": {
+          "max_rss_bytes": 63455232,
+          "median_cpu_ms": 538.5664999999999,
+          "median_stages_ms": {
+            "solve": 245.4763335
+          },
+          "median_wall_ms": 544.2329369999994
+        }
+      },
+      "result_digests": {
+        "player": "sha256:60d94d0e6c0718ef121291907924cf67809d05652d62cc0114ad5c852a877d2e"
+      }
+    },
+    {
+      "exact_full_physical_outputs_equal": true,
+      "failures": {},
+      "id": "monaco-classic-5",
+      "measurements": {
+        "after": [
+          {
+            "process_lifetime_max_rss_bytes": 43941888,
+            "returncode": 0,
+            "system_cpu_ms": 5.829,
+            "timed_out": false,
+            "timings_ms": {
+              "solve": 95.09525000000001
+            },
+            "user_cpu_ms": 344.904,
+            "wall_ms": 362.79624999999885
+          },
+          {
+            "process_lifetime_max_rss_bytes": 44007424,
+            "returncode": 0,
+            "system_cpu_ms": 5.196999999999999,
+            "timed_out": false,
+            "timings_ms": {
+              "solve": 91.883542
+            },
+            "user_cpu_ms": 340.738,
+            "wall_ms": 358.7057499999986
+          }
+        ],
+        "before": [
+          {
+            "process_lifetime_max_rss_bytes": 44138496,
+            "returncode": 0,
+            "system_cpu_ms": 5.718,
+            "timed_out": false,
+            "timings_ms": {
+              "solve": 127.88508300000001
+            },
+            "user_cpu_ms": 378.228,
+            "wall_ms": 389.00458299999843
+          },
+          {
+            "process_lifetime_max_rss_bytes": 45383680,
+            "returncode": 0,
+            "system_cpu_ms": 5.199,
+            "timed_out": false,
+            "timings_ms": {
+              "solve": 127.63758299999999
+            },
+            "user_cpu_ms": 381.644,
+            "wall_ms": 398.2469170000016
+          }
+        ]
+      },
+      "performance": {
+        "after": {
+          "max_rss_bytes": 44007424,
+          "median_cpu_ms": 348.334,
+          "median_stages_ms": {
+            "solve": 93.489396
+          },
+          "median_wall_ms": 360.7509999999987
+        },
+        "before": {
+          "max_rss_bytes": 45383680,
+          "median_cpu_ms": 385.3945,
+          "median_stages_ms": {
+            "solve": 127.76133300000001
+          },
+          "median_wall_ms": 393.62575000000004
+        }
+      },
+      "result_digests": {
+        "player": "sha256:ff96333fe5a33fa2c2486ae87899f416562c03d0856e73c302b0bef842c6352f"
+      }
+    },
+    {
+      "exact_full_physical_outputs_equal": true,
+      "failures": {},
+      "id": "suzuka-classic-5",
+      "measurements": {
+        "after": [
+          {
+            "process_lifetime_max_rss_bytes": 58425344,
+            "returncode": 0,
+            "system_cpu_ms": 6.0489999999999995,
+            "timed_out": false,
+            "timings_ms": {
+              "solve": 169.367583
+            },
+            "user_cpu_ms": 453.042,
+            "wall_ms": 462.3492079999991
+          },
+          {
+            "process_lifetime_max_rss_bytes": 58572800,
+            "returncode": 0,
+            "system_cpu_ms": 5.7780000000000005,
+            "timed_out": false,
+            "timings_ms": {
+              "solve": 170.23075
+            },
+            "user_cpu_ms": 455.584,
+            "wall_ms": 468.32129199999883
+          }
+        ],
+        "before": [
+          {
+            "process_lifetime_max_rss_bytes": 58867712,
+            "returncode": 0,
+            "system_cpu_ms": 6.177999999999999,
+            "timed_out": false,
+            "timings_ms": {
+              "solve": 235.037708
+            },
+            "user_cpu_ms": 523.281,
+            "wall_ms": 542.9056249999995
+          },
+          {
+            "process_lifetime_max_rss_bytes": 65110016,
+            "returncode": 0,
+            "system_cpu_ms": 5.921,
+            "timed_out": false,
+            "timings_ms": {
+              "solve": 236.057959
+            },
+            "user_cpu_ms": 521.5419999999999,
+            "wall_ms": 533.6449160000001
+          }
+        ]
+      },
+      "performance": {
+        "after": {
+          "max_rss_bytes": 58572800,
+          "median_cpu_ms": 460.2265,
+          "median_stages_ms": {
+            "solve": 169.7991665
+          },
+          "median_wall_ms": 465.33524999999895
+        },
+        "before": {
+          "max_rss_bytes": 65110016,
+          "median_cpu_ms": 528.461,
+          "median_stages_ms": {
+            "solve": 235.54783350000002
+          },
+          "median_wall_ms": 538.2752704999998
+        }
+      },
+      "result_digests": {
+        "player": "sha256:9f5ec59ef5c0de48417ec65b42af8f094da5f5674d89e7503773107c258b4b93"
+      }
+    },
+    {
+      "exact_full_physical_outputs_equal": true,
+      "failures": {},
+      "id": "monza-classic-53",
+      "measurements": {
+        "after": [
+          {
+            "process_lifetime_max_rss_bytes": 420741120,
+            "returncode": 0,
+            "system_cpu_ms": 63.385,
+            "timed_out": false,
+            "timings_ms": {
+              "solve": 2073.611291
+            },
+            "user_cpu_ms": 3045.7000000000003,
+            "wall_ms": 3130.482208
+          },
+          {
+            "process_lifetime_max_rss_bytes": 419004416,
+            "returncode": 0,
+            "system_cpu_ms": 61.728,
+            "timed_out": false,
+            "timings_ms": {
+              "solve": 2053.352833
+            },
+            "user_cpu_ms": 3034.124,
+            "wall_ms": 3119.555208999998
+          }
+        ],
+        "before": [
+          {
+            "process_lifetime_max_rss_bytes": 416743424,
+            "returncode": 0,
+            "system_cpu_ms": 63.724000000000004,
+            "timed_out": false,
+            "timings_ms": {
+              "solve": 2761.810375
+            },
+            "user_cpu_ms": 3755.747,
+            "wall_ms": 3831.754667000002
+          },
+          {
+            "process_lifetime_max_rss_bytes": 421019648,
+            "returncode": 0,
+            "system_cpu_ms": 63.712999999999994,
+            "timed_out": false,
+            "timings_ms": {
+              "solve": 2809.5077499999998
+            },
+            "user_cpu_ms": 3799.646,
+            "wall_ms": 3878.6150839999964
+          }
+        ]
+      },
+      "performance": {
+        "after": {
+          "max_rss_bytes": 420741120,
+          "median_cpu_ms": 3102.4685,
+          "median_stages_ms": {
+            "solve": 2063.482062
+          },
+          "median_wall_ms": 3125.018708499999
+        },
+        "before": {
+          "max_rss_bytes": 421019648,
+          "median_cpu_ms": 3841.415,
+          "median_stages_ms": {
+            "solve": 2785.6590625
+          },
+          "median_wall_ms": 3855.184875499999
+        }
+      },
+      "result_digests": {
+        "player": "sha256:3e46c0c8cf1cb23cd4ed943de5757e0ee27cf800e36fb8aed35d53a961590100"
+      }
+    },
+    {
+      "exact_full_physical_outputs_equal": true,
+      "failures": {},
+      "id": "monza-modern-5",
+      "measurements": {
+        "after": [
+          {
+            "process_lifetime_max_rss_bytes": 58703872,
+            "returncode": 0,
+            "system_cpu_ms": 7.678,
+            "timed_out": false,
+            "timings_ms": {
+              "solve": 172.08599999999998
+            },
+            "user_cpu_ms": 456.704,
+            "wall_ms": 479.119040999997
+          },
+          {
+            "process_lifetime_max_rss_bytes": 58310656,
+            "returncode": 0,
+            "system_cpu_ms": 8.033999999999999,
+            "timed_out": false,
+            "timings_ms": {
+              "solve": 173.19733300000001
+            },
+            "user_cpu_ms": 453.991,
+            "wall_ms": 476.23987500000453
+          }
+        ],
+        "before": [
+          {
+            "process_lifetime_max_rss_bytes": 60571648,
+            "returncode": 0,
+            "system_cpu_ms": 9.155999999999999,
+            "timed_out": false,
+            "timings_ms": {
+              "solve": 238.061208
+            },
+            "user_cpu_ms": 522.7579999999999,
+            "wall_ms": 535.935791
+          },
+          {
+            "process_lifetime_max_rss_bytes": 58671104,
+            "returncode": 0,
+            "system_cpu_ms": 8.121,
+            "timed_out": false,
+            "timings_ms": {
+              "solve": 234.15112499999998
+            },
+            "user_cpu_ms": 523.463,
+            "wall_ms": 536.1054589999981
+          }
+        ]
+      },
+      "performance": {
+        "after": {
+          "max_rss_bytes": 58703872,
+          "median_cpu_ms": 463.20349999999996,
+          "median_stages_ms": {
+            "solve": 172.64166649999999
+          },
+          "median_wall_ms": 477.67945800000075
+        },
+        "before": {
+          "max_rss_bytes": 60571648,
+          "median_cpu_ms": 531.7489999999999,
+          "median_stages_ms": {
+            "solve": 236.10616649999997
+          },
+          "median_wall_ms": 536.020624999999
+        }
+      },
+      "result_digests": {
+        "player": "sha256:55ff655f592474d55ed871c05d148536ab1dac2949474a2ba84c8538acc5600e"
+      }
+    },
+    {
+      "exact_full_physical_outputs_equal": true,
+      "failures": {},
+      "id": "monza-hybrid-resource-5",
+      "measurements": {
+        "after": [
+          {
+            "process_lifetime_max_rss_bytes": 64765952,
+            "returncode": 0,
+            "system_cpu_ms": 15.886999999999999,
+            "timed_out": false,
+            "timings_ms": {
+              "solve": 187.71320799999998
+            },
+            "user_cpu_ms": 467.01,
+            "wall_ms": 487.80970799999324
+          },
+          {
+            "process_lifetime_max_rss_bytes": 57901056,
+            "returncode": 0,
+            "system_cpu_ms": 9.099,
+            "timed_out": false,
+            "timings_ms": {
+              "solve": 177.27779199999998
+            },
+            "user_cpu_ms": 460.034,
+            "wall_ms": 475.2199169999969
+          }
+        ],
+        "before": [
+          {
+            "process_lifetime_max_rss_bytes": 60669952,
+            "returncode": 0,
+            "system_cpu_ms": 11.963999999999999,
+            "timed_out": false,
+            "timings_ms": {
+              "solve": 266.159625
+            },
+            "user_cpu_ms": 546.433,
+            "wall_ms": 568.5200419999958
+          },
+          {
+            "process_lifetime_max_rss_bytes": 59817984,
+            "returncode": 0,
+            "system_cpu_ms": 9.162,
+            "timed_out": false,
+            "timings_ms": {
+              "solve": 262.28287500000005
+            },
+            "user_cpu_ms": 547.055,
+            "wall_ms": 558.9077079999995
+          }
+        ]
+      },
+      "performance": {
+        "after": {
+          "max_rss_bytes": 64765952,
+          "median_cpu_ms": 476.015,
+          "median_stages_ms": {
+            "solve": 182.4955
+          },
+          "median_wall_ms": 481.51481249999506
+        },
+        "before": {
+          "max_rss_bytes": 60669952,
+          "median_cpu_ms": 557.307,
+          "median_stages_ms": {
+            "solve": 264.22125000000005
+          },
+          "median_wall_ms": 563.7138749999976
+        }
+      },
+      "result_digests": {
+        "player": "sha256:c301f40891e68d3f7fea926c3ecaa0b2d58280240ebc5331ff82dd5dbf17cf24"
+      }
+    },
+    {
+      "exact_full_physical_outputs_equal": true,
+      "failures": {},
+      "id": "monza-classic-grid10-5",
+      "measurements": {
+        "after": [
+          {
+            "process_lifetime_max_rss_bytes": 154779648,
+            "returncode": 0,
+            "system_cpu_ms": 41.065999999999995,
+            "timed_out": false,
+            "timings_ms": {
+              "solve": 1839.2708330000005
+            },
+            "user_cpu_ms": 2841.0099999999998,
+            "wall_ms": 2905.0878750000065
+          },
+          {
+            "process_lifetime_max_rss_bytes": 151486464,
+            "returncode": 0,
+            "system_cpu_ms": 32.33,
+            "timed_out": false,
+            "timings_ms": {
+              "solve": 1813.6563760000001
+            },
+            "user_cpu_ms": 2815.286,
+            "wall_ms": 2855.287833000006
+          }
+        ],
+        "before": [
+          {
+            "process_lifetime_max_rss_bytes": 150994944,
+            "returncode": 0,
+            "system_cpu_ms": 41.876,
+            "timed_out": false,
+            "timings_ms": {
+              "solve": 2556.6452090000002
+            },
+            "user_cpu_ms": 3559.9449999999997,
+            "wall_ms": 3620.8012089999997
+          },
+          {
+            "process_lifetime_max_rss_bytes": 153894912,
+            "returncode": 0,
+            "system_cpu_ms": 33.131,
+            "timed_out": false,
+            "timings_ms": {
+              "solve": 2553.6906680000006
+            },
+            "user_cpu_ms": 3575.2019999999998,
+            "wall_ms": 3617.4519160000004
+          }
+        ]
+      },
+      "performance": {
+        "after": {
+          "max_rss_bytes": 154779648,
+          "median_cpu_ms": 2864.8459999999995,
+          "median_stages_ms": {
+            "solve": 1826.4636045000002
+          },
+          "median_wall_ms": 2880.187854000006
+        },
+        "before": {
+          "max_rss_bytes": 153894912,
+          "median_cpu_ms": 3605.0769999999998,
+          "median_stages_ms": {
+            "solve": 2555.1679385000007
+          },
+          "median_wall_ms": 3619.1265625
+        }
+      },
+      "result_digests": {
+        "player": "sha256:1751b55380874b103fa47e97aa7041e909f964ca7d66d19c3a02fcdeca6f809a",
+        "rival-1": "sha256:1751b55380874b103fa47e97aa7041e909f964ca7d66d19c3a02fcdeca6f809a",
+        "rival-2": "sha256:1751b55380874b103fa47e97aa7041e909f964ca7d66d19c3a02fcdeca6f809a",
+        "rival-3": "sha256:1751b55380874b103fa47e97aa7041e909f964ca7d66d19c3a02fcdeca6f809a",
+        "rival-4": "sha256:1751b55380874b103fa47e97aa7041e909f964ca7d66d19c3a02fcdeca6f809a",
+        "rival-5": "sha256:1751b55380874b103fa47e97aa7041e909f964ca7d66d19c3a02fcdeca6f809a",
+        "rival-6": "sha256:1751b55380874b103fa47e97aa7041e909f964ca7d66d19c3a02fcdeca6f809a",
+        "rival-7": "sha256:1751b55380874b103fa47e97aa7041e909f964ca7d66d19c3a02fcdeca6f809a",
+        "rival-8": "sha256:1751b55380874b103fa47e97aa7041e909f964ca7d66d19c3a02fcdeca6f809a",
+        "rival-9": "sha256:1751b55380874b103fa47e97aa7041e909f964ca7d66d19c3a02fcdeca6f809a"
+      }
+    },
+    {
+      "exact_full_physical_outputs_equal": true,
+      "failures": {},
+      "id": "monaco-classic-78",
+      "measurements": {
+        "after": [
+          {
+            "process_lifetime_max_rss_bytes": 368082944,
+            "returncode": 0,
+            "system_cpu_ms": 54.54,
+            "timed_out": false,
+            "timings_ms": {
+              "solve": 1594.1495
+            },
+            "user_cpu_ms": 2438.812,
+            "wall_ms": 2527.607041000003
+          },
+          {
+            "process_lifetime_max_rss_bytes": 367312896,
+            "returncode": 0,
+            "system_cpu_ms": 38.041,
+            "timed_out": false,
+            "timings_ms": {
+              "solve": 1545.1182919999999
+            },
+            "user_cpu_ms": 2409.714,
+            "wall_ms": 2467.986332999999
+          }
+        ],
+        "before": [
+          {
+            "process_lifetime_max_rss_bytes": 369475584,
+            "returncode": 0,
+            "system_cpu_ms": 53.544,
+            "timed_out": false,
+            "timings_ms": {
+              "solve": 2097.021542
+            },
+            "user_cpu_ms": 2933.598,
+            "wall_ms": 2999.0092910000003
+          },
+          {
+            "process_lifetime_max_rss_bytes": 363134976,
+            "returncode": 0,
+            "system_cpu_ms": 42.609,
+            "timed_out": false,
+            "timings_ms": {
+              "solve": 2085.444834
+            },
+            "user_cpu_ms": 2957.4660000000003,
+            "wall_ms": 3010.7240829999996
+          }
+        ]
+      },
+      "performance": {
+        "after": {
+          "max_rss_bytes": 368082944,
+          "median_cpu_ms": 2470.5535,
+          "median_stages_ms": {
+            "solve": 1569.6338959999998
+          },
+          "median_wall_ms": 2497.796687000001
+        },
+        "before": {
+          "max_rss_bytes": 369475584,
+          "median_cpu_ms": 2993.6085000000003,
+          "median_stages_ms": {
+            "solve": 2091.233188
+          },
+          "median_wall_ms": 3004.8666869999997
+        }
+      },
+      "result_digests": {
+        "player": "sha256:4f2ecb00a46bda456dfa5a4a5f1dbad651c933a426afede550c0181b8e3bc117"
+      }
+    },
+    {
+      "exact_full_physical_outputs_equal": true,
+      "failures": {},
+      "id": "spa-classic-5-seed17",
+      "measurements": {
+        "after": [
+          {
+            "process_lifetime_max_rss_bytes": 74104832,
+            "returncode": 0,
+            "system_cpu_ms": 15.049,
+            "timed_out": false,
+            "timings_ms": {
+              "solve": 219.329083
+            },
+            "user_cpu_ms": 512.539,
+            "wall_ms": 546.8175840000029
+          },
+          {
+            "process_lifetime_max_rss_bytes": 72171520,
+            "returncode": 0,
+            "system_cpu_ms": 9.835999999999999,
+            "timed_out": false,
+            "timings_ms": {
+              "solve": 212.011792
+            },
+            "user_cpu_ms": 509.93699999999995,
+            "wall_ms": 525.2713330000063
+          }
+        ],
+        "before": [
+          {
+            "process_lifetime_max_rss_bytes": 72744960,
+            "returncode": 0,
+            "system_cpu_ms": 14.679999999999998,
+            "timed_out": false,
+            "timings_ms": {
+              "solve": 300.27825
+            },
+            "user_cpu_ms": 593.953,
+            "wall_ms": 616.072416999998
+          },
+          {
+            "process_lifetime_max_rss_bytes": 75907072,
+            "returncode": 0,
+            "system_cpu_ms": 13.243999999999998,
+            "timed_out": false,
+            "timings_ms": {
+              "solve": 313.585833
+            },
+            "user_cpu_ms": 605.281,
+            "wall_ms": 637.6879590000044
+          }
+        ]
+      },
+      "performance": {
+        "after": {
+          "max_rss_bytes": 74104832,
+          "median_cpu_ms": 523.6804999999999,
+          "median_stages_ms": {
+            "solve": 215.6704375
+          },
+          "median_wall_ms": 536.0444585000046
+        },
+        "before": {
+          "max_rss_bytes": 75907072,
+          "median_cpu_ms": 613.579,
+          "median_stages_ms": {
+            "solve": 306.93204149999997
+          },
+          "median_wall_ms": 626.8801880000012
+        }
+      },
+      "result_digests": {
+        "player": "sha256:f8d81665235087e7fa3875de553c5450478633431535ea9fd81f33a81e42666c"
+      }
+    },
+    {
+      "exact_full_physical_outputs_equal": true,
+      "failures": {
+        "player": "V3 fuel depleted on lap 63: required 1.719240 kg, available 0.544623 kg"
+      },
+      "id": "barcelona-modern-66-fuel-feasibility",
+      "measurements": {
+        "after": [
+          {
+            "process_lifetime_max_rss_bytes": 96272384,
+            "returncode": 0,
+            "system_cpu_ms": 26.151999999999997,
+            "timed_out": false,
+            "timings_ms": {
+              "solve": 1709.473625
+            },
+            "user_cpu_ms": 1900.504,
+            "wall_ms": 1944.5347499999884
+          },
+          {
+            "process_lifetime_max_rss_bytes": 93995008,
+            "returncode": 0,
+            "system_cpu_ms": 30.348,
+            "timed_out": false,
+            "timings_ms": {
+              "solve": 1731.04825
+            },
+            "user_cpu_ms": 1915.263,
+            "wall_ms": 1967.6150000000093
+          }
+        ],
+        "before": [
+          {
+            "process_lifetime_max_rss_bytes": 88358912,
+            "returncode": 0,
+            "system_cpu_ms": 40.126,
+            "timed_out": false,
+            "timings_ms": {
+              "solve": 2314.113625
+            },
+            "user_cpu_ms": 2464.864,
+            "wall_ms": 2541.287666999992
+          },
+          {
+            "process_lifetime_max_rss_bytes": 97157120,
+            "returncode": 0,
+            "system_cpu_ms": 41.645999999999994,
+            "timed_out": false,
+            "timings_ms": {
+              "solve": 2273.1417079999997
+            },
+            "user_cpu_ms": 2445.187,
+            "wall_ms": 2501.923458999997
+          }
+        ]
+      },
+      "performance": {
+        "after": {
+          "max_rss_bytes": 96272384,
+          "median_cpu_ms": 1936.1335,
+          "median_stages_ms": {
+            "solve": 1720.2609375000002
+          },
+          "median_wall_ms": 1956.0748749999989
+        },
+        "before": {
+          "max_rss_bytes": 97157120,
+          "median_cpu_ms": 2495.9115,
+          "median_stages_ms": {
+            "solve": 2293.6276664999996
+          },
+          "median_wall_ms": 2521.6055629999946
+        }
+      },
+      "result_digests": {
+        "player": null
+      }
+    }
+  ],
+  "plan": {
+    "acceptance": "Exact complete native physical outcomes/digests and failure reasons versus frozen energy V1 for all twelve cases and eleven sensitivities; exact historical canonical defaults; no changed equation/grid/tolerance/coupling iteration/event/control semantics. No performance threshold fitted after measurements.",
+    "baseline": "experiments/longitudinal_energy/results/local-energy-v1.json",
+    "baseline_digest": "sha256:90250b92eb801b9a5e6fc505f2b7fc0151eef82fc5e47e42cbffc450a6e894d7",
+    "cadence_cases": [
+      "monza-classic-5",
+      "monza-classic-53",
+      "monza-classic-grid10-5",
+      "monaco-classic-78"
+    ],
+    "cadence_order_hz": [
+      5,
+      2,
+      1,
+      1,
+      2,
+      5
+    ],
+    "catalog": "catalogs/racing/v1.8.1",
+    "paired_order": [
+      "before",
+      "after",
+      "after",
+      "before"
+    ],
+    "schema": "pitgun.energy-cost-plan/v1",
+    "scope": "Fresh-process native core/process/RSS and causal audit-observation JSON at1/2/5Hz. Observations are not the real game wire contract; no browser/VPS/rendering/network or model accuracy claim. Existing game export still hardcodes5Hz. OS sampling is a short qualitative attribution only.",
+    "timeout_s": 180
+  },
+  "qualified": true,
+  "schema": "pitgun.energy-cost-report/v1",
+  "sensitivities": [
+    {
+      "base": "suzuka-classic-5",
+      "exact_full_physical_outputs_equal": true,
+      "group": "mesh",
+      "options": [
+        "1",
+        "1",
+        "35",
+        "smooth-driver"
+      ]
+    },
+    {
+      "base": "suzuka-classic-5",
+      "exact_full_physical_outputs_equal": true,
+      "group": "mesh",
+      "options": [
+        "2",
+        "1",
+        "35",
+        "smooth-driver"
+      ]
+    },
+    {
+      "base": "suzuka-classic-5",
+      "exact_full_physical_outputs_equal": true,
+      "group": "mesh",
+      "options": [
+        "4",
+        "1",
+        "35",
+        "smooth-driver"
+      ]
+    },
+    {
+      "base": "monza-modern-5",
+      "exact_full_physical_outputs_equal": true,
+      "group": "cooling",
+      "options": [
+        "1",
+        "0.25",
+        "35",
+        "smooth-driver"
+      ]
+    },
+    {
+      "base": "monza-modern-5",
+      "exact_full_physical_outputs_equal": true,
+      "group": "cooling",
+      "options": [
+        "1",
+        "0.5",
+        "35",
+        "smooth-driver"
+      ]
+    },
+    {
+      "base": "monza-modern-5",
+      "exact_full_physical_outputs_equal": true,
+      "group": "cooling",
+      "options": [
+        "1",
+        "1.0",
+        "35",
+        "smooth-driver"
+      ]
+    },
+    {
+      "base": "monza-modern-5",
+      "exact_full_physical_outputs_equal": true,
+      "group": "cooling",
+      "options": [
+        "1",
+        "2.0",
+        "35",
+        "smooth-driver"
+      ]
+    },
+    {
+      "base": "monza-modern-5",
+      "exact_full_physical_outputs_equal": true,
+      "group": "cooling",
+      "options": [
+        "1",
+        "0.25",
+        "55",
+        "smooth-driver"
+      ]
+    },
+    {
+      "base": "monza-modern-5",
+      "exact_full_physical_outputs_equal": true,
+      "group": "cooling",
+      "options": [
+        "1",
+        "0.5",
+        "55",
+        "smooth-driver"
+      ]
+    },
+    {
+      "base": "monza-modern-5",
+      "exact_full_physical_outputs_equal": true,
+      "group": "cooling",
+      "options": [
+        "1",
+        "1.0",
+        "55",
+        "smooth-driver"
+      ]
+    },
+    {
+      "base": "monza-modern-5",
+      "exact_full_physical_outputs_equal": true,
+      "group": "cooling",
+      "options": [
+        "1",
+        "2.0",
+        "55",
+        "smooth-driver"
+      ]
+    }
+  ]
+}

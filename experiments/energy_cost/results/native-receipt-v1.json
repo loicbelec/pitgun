@@ -1,0 +1,39 @@
+{
+  "schema": "pitgun.energy-cost-native-receipt/v1",
+  "source_commit": "346f36b34752bf4bcda67ef566df576279c16a07",
+  "report_digest": "sha256:fb25a254ddc7627b7030ae4d8cce20f2b247c2c3a82347fa94b7a86de06441c9",
+  "complete_recheck_without_archive_write": true,
+  "exact_energy_cases": 12,
+  "exact_prior_sensitivities": 11,
+  "exact_historical_canonical_defaults": 10,
+  "cadence_cases": 4,
+  "cadence_hz": [
+    1,
+    2,
+    5
+  ],
+  "new_rust_tests": 3,
+  "native_tests_passed": 224,
+  "python_checks_passed": 16,
+  "new_archive_checks": 2,
+  "clippy": "PASS solver/simulator libraries and observation probe strict",
+  "rustfmt": "PASS workspace",
+  "wasm_compilation": "PASS simulator features wasm and dependent solver; not an actual new-model WASM replay or admission",
+  "preserved": [
+    "equations",
+    "spatial nodes",
+    "root algorithm and tolerances",
+    "four tire coupling passes",
+    "thermal derating and tire laws",
+    "fixed control inputs",
+    "full physical output digests and same explicit fuel failure"
+  ],
+  "not_claimed": [
+    "browser or VPS performance",
+    "game wire byte savings",
+    "RSS reduction",
+    "external physical accuracy",
+    "closed-loop agent invariance under changed observations",
+    "hosted change or new runtime admission"
+  ]
+}
