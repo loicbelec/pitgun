@@ -1737,6 +1737,14 @@ async fn run_resolved_simulation_kernel_incremental(
     let lap_count = input.lap_count.max(1);
     let driver = input.driver.clone();
     let mut vehicle = tuned_vehicle.clone();
+    let energy_torque_knots = energy_mode.then(|| {
+        vehicle
+            .engine
+            .n_rpm
+            .iter()
+            .map(|&r| interp_linear(r, &vehicle.engine.n_rpm, &vehicle.engine.trq) * 1000.)
+            .collect::<Vec<_>>()
+    });
 
     let s = &input.track.s;
     let n = s.len();
@@ -1943,6 +1951,8 @@ async fn run_resolved_simulation_kernel_incremental(
                 // end-of-lap tire state and the already pinned next driver limits.
                 let end_temperature = *tire_temp_reference.last().unwrap();
                 let end_wear = *tire_wear_reference.last().unwrap();
+                let forecast_mu =
+                    effective_mu(vehicle.chassis.mu0, end_wear, end_temperature, &tire_curr);
                 let temperatures = vec![end_temperature; n];
                 let wears = vec![end_wear; n];
                 let (next_corner, next_braking) = next_driver_limits.as_ref().unwrap();
@@ -1967,17 +1977,13 @@ async fn run_resolved_simulation_kernel_incremental(
                             vehicle: &vehicle,
                             mechanical,
                             contact: energy_contact.unwrap(),
+                            torque_knots_nm: energy_torque_knots.as_deref(),
                             mass_kg: mass,
                             ds_m: segment_distance(spatial_integration, s, ds, i),
                             dz_m: input.track.z[i + 1] - input.track.z[i],
                             curvature_radpm: input.track.kappa[i],
                             vertical_curvature_per_m: slope_gradient[i],
-                            mu: effective_mu(
-                                vehicle.chassis.mu0,
-                                end_wear,
-                                end_temperature,
-                                &tire_curr,
-                            ),
+                            mu: forecast_mu,
                             traction_utilization: 0.0,
                             braking_utilization: next_braking[i].clamp(0., 1.),
                         };
@@ -2010,6 +2016,7 @@ async fn run_resolved_simulation_kernel_incremental(
                             vehicle: &vehicle,
                             mechanical,
                             contact: energy_contact.expect("resolved V3 contact"),
+                            torque_knots_nm: energy_torque_knots.as_deref(),
                             mass_kg: mass,
                             ds_m: segment_ds,
                             dz_m: input.track.z[i + 1] - input.track.z[i],
@@ -2159,10 +2166,6 @@ async fn run_resolved_simulation_kernel_incremental(
                     shift_time_remaining_s = (shift_time_remaining_s - dt).max(0.0);
                 }
 
-                let ratio = vehicle.engine.gear_ratios[selected_gear as usize - 1];
-                let rpm =
-                    rpm_from_speed_gear(v_safe, ratio, &vehicle.chassis).max(vehicle.engine.n_idle);
-                let engine_power_kw = power_kw_from_rpm(rpm, &vehicle.engine);
                 let derating = derating_factor_v3(
                     temp[i],
                     &vehicle.engine,
@@ -2172,10 +2175,6 @@ async fn run_resolved_simulation_kernel_incremental(
                 if derating < 1.0 && !energy_mode {
                     iteration_engine_derated_time_s += dt;
                 }
-                let pwr = engine_power_kw
-                    * derating
-                    * mechanical.driveline_efficiency
-                    * delivered_shift_fraction;
                 let mut engine_load_power_kw = 0.0;
 
                 let mut segment_energy = None;
@@ -2185,6 +2184,7 @@ async fn run_resolved_simulation_kernel_incremental(
                         vehicle: &vehicle,
                         mechanical,
                         contact: energy_contact.expect("resolved V3 contact"),
+                        torque_knots_nm: energy_torque_knots.as_deref(),
                         mass_kg: mass,
                         ds_m: segment_ds,
                         dz_m: input.track.z[i + 1] - input.track.z[i],
@@ -2235,6 +2235,14 @@ async fn run_resolved_simulation_kernel_incremental(
                     power[i] = 0.0;
                     v_fwd[i + 1] = v_bwd[i];
                 } else {
+                    let ratio = vehicle.engine.gear_ratios[selected_gear as usize - 1];
+                    let rpm = rpm_from_speed_gear(v_safe, ratio, &vehicle.chassis)
+                        .max(vehicle.engine.n_idle);
+                    let engine_power_kw = power_kw_from_rpm(rpm, &vehicle.engine);
+                    let pwr = engine_power_kw
+                        * derating
+                        * mechanical.driveline_efficiency
+                        * delivered_shift_fraction;
                     let (drag, downforce) = aero_forces(
                         v_safe,
                         input.track.kappa[i],
@@ -2326,40 +2334,6 @@ async fn run_resolved_simulation_kernel_incremental(
                         tire_wear[i + 1] = (tire_wear[i] + wear_rate * dt).min(1.0);
                     }
                     TireDynamics::AggregateV1(contact, _) => {
-                        let (drag, downforce) = aero_forces(
-                            v_safe,
-                            input.track.kappa[i],
-                            &vehicle.aero,
-                            &vehicle.chassis,
-                            curvature_response,
-                            input.track.kappa[i].abs() > CORNER_CURVATURE_THRESHOLD_RAD_PER_M,
-                        );
-                        let a_vert = vertical_acceleration(
-                            spatial_integration,
-                            v_safe,
-                            slope_change[i],
-                            slope_gradient[i],
-                            ds,
-                        );
-                        let normal_load =
-                            (mass * (vehicle.chassis.g + a_vert) + downforce).max(0.0);
-                        let mu_eff = effective_mu(
-                            vehicle.chassis.mu0,
-                            tire_wear_reference[i],
-                            tire_temp_reference[i],
-                            &tire_curr,
-                        );
-                        let available_force =
-                            tire_force_capacity(mu_eff, normal_load, tire_dynamics);
-                        let rolling = vehicle.chassis.c_rr * normal_load;
-                        let slope_force = mass * vehicle.chassis.g * input.track.slope[i];
-                        let longitudinal_force = mass * a_long + drag + rolling + slope_force;
-                        let lateral_force = mass * a_lat;
-                        let utilization = combined_force_utilization(
-                            longitudinal_force,
-                            lateral_force,
-                            available_force,
-                        );
                         let (normal_load, available_force, utilization, contact_speed) =
                             if let Some((normal, available, longitudinal, speed)) = segment_contact
                             {
@@ -2374,6 +2348,42 @@ async fn run_resolved_simulation_kernel_incremental(
                                     speed,
                                 )
                             } else {
+                                let (drag, downforce) = aero_forces(
+                                    v_safe,
+                                    input.track.kappa[i],
+                                    &vehicle.aero,
+                                    &vehicle.chassis,
+                                    curvature_response,
+                                    input.track.kappa[i].abs()
+                                        > CORNER_CURVATURE_THRESHOLD_RAD_PER_M,
+                                );
+                                let a_vert = vertical_acceleration(
+                                    spatial_integration,
+                                    v_safe,
+                                    slope_change[i],
+                                    slope_gradient[i],
+                                    ds,
+                                );
+                                let normal_load =
+                                    (mass * (vehicle.chassis.g + a_vert) + downforce).max(0.0);
+                                let mu_eff = effective_mu(
+                                    vehicle.chassis.mu0,
+                                    tire_wear_reference[i],
+                                    tire_temp_reference[i],
+                                    &tire_curr,
+                                );
+                                let available_force =
+                                    tire_force_capacity(mu_eff, normal_load, tire_dynamics);
+                                let rolling = vehicle.chassis.c_rr * normal_load;
+                                let slope_force = mass * vehicle.chassis.g * input.track.slope[i];
+                                let longitudinal_force =
+                                    mass * a_long + drag + rolling + slope_force;
+                                let lateral_force = mass * a_lat;
+                                let utilization = combined_force_utilization(
+                                    longitudinal_force,
+                                    lateral_force,
+                                    available_force,
+                                );
                                 (normal_load, available_force, utilization, v_safe)
                             };
                         let base_workload_w =
@@ -2406,40 +2416,6 @@ async fn run_resolved_simulation_kernel_incremental(
                         iteration_correction_generated_heat_j += correction_heat_w * dt;
                     }
                     TireDynamics::AggregateV2(contact, _, degradation) => {
-                        let (drag, downforce) = aero_forces(
-                            v_safe,
-                            input.track.kappa[i],
-                            &vehicle.aero,
-                            &vehicle.chassis,
-                            curvature_response,
-                            input.track.kappa[i].abs() > CORNER_CURVATURE_THRESHOLD_RAD_PER_M,
-                        );
-                        let a_vert = vertical_acceleration(
-                            spatial_integration,
-                            v_safe,
-                            slope_change[i],
-                            slope_gradient[i],
-                            ds,
-                        );
-                        let normal_load =
-                            (mass * (vehicle.chassis.g + a_vert) + downforce).max(0.0);
-                        let mu_eff = effective_mu(
-                            vehicle.chassis.mu0,
-                            tire_wear_reference[i],
-                            tire_temp_reference[i],
-                            &tire_curr,
-                        );
-                        let available_force =
-                            tire_force_capacity(mu_eff, normal_load, tire_dynamics);
-                        let rolling = vehicle.chassis.c_rr * normal_load;
-                        let slope_force = mass * vehicle.chassis.g * input.track.slope[i];
-                        let longitudinal_force = mass * a_long + drag + rolling + slope_force;
-                        let lateral_force = mass * a_lat;
-                        let utilization = combined_force_utilization(
-                            longitudinal_force,
-                            lateral_force,
-                            available_force,
-                        );
                         let (normal_load, available_force, utilization, contact_speed) =
                             if let Some((normal, available, longitudinal, speed)) = segment_contact
                             {
@@ -2454,6 +2430,42 @@ async fn run_resolved_simulation_kernel_incremental(
                                     speed,
                                 )
                             } else {
+                                let (drag, downforce) = aero_forces(
+                                    v_safe,
+                                    input.track.kappa[i],
+                                    &vehicle.aero,
+                                    &vehicle.chassis,
+                                    curvature_response,
+                                    input.track.kappa[i].abs()
+                                        > CORNER_CURVATURE_THRESHOLD_RAD_PER_M,
+                                );
+                                let a_vert = vertical_acceleration(
+                                    spatial_integration,
+                                    v_safe,
+                                    slope_change[i],
+                                    slope_gradient[i],
+                                    ds,
+                                );
+                                let normal_load =
+                                    (mass * (vehicle.chassis.g + a_vert) + downforce).max(0.0);
+                                let mu_eff = effective_mu(
+                                    vehicle.chassis.mu0,
+                                    tire_wear_reference[i],
+                                    tire_temp_reference[i],
+                                    &tire_curr,
+                                );
+                                let available_force =
+                                    tire_force_capacity(mu_eff, normal_load, tire_dynamics);
+                                let rolling = vehicle.chassis.c_rr * normal_load;
+                                let slope_force = mass * vehicle.chassis.g * input.track.slope[i];
+                                let longitudinal_force =
+                                    mass * a_long + drag + rolling + slope_force;
+                                let lateral_force = mass * a_lat;
+                                let utilization = combined_force_utilization(
+                                    longitudinal_force,
+                                    lateral_force,
+                                    available_force,
+                                );
                                 (normal_load, available_force, utilization, v_safe)
                             };
                         let base_workload_w =
@@ -2527,6 +2539,12 @@ async fn run_resolved_simulation_kernel_incremental(
                 shift_power_fraction[n - 1] = shift_power_fraction[n - 2];
             }
 
+            if !is_final_coupling_iteration {
+                tire_temp_reference = tire_temp;
+                tire_wear_reference = tire_wear;
+                continue;
+            }
+
             let v_final: Vec<f64> = if energy_mode {
                 v_fwd.clone()
             } else {
@@ -2537,11 +2555,6 @@ async fn run_resolved_simulation_kernel_incremental(
                     .collect()
             };
 
-            if !is_final_coupling_iteration {
-                tire_temp_reference = tire_temp;
-                tire_wear_reference = tire_wear;
-                continue;
-            }
             if energy_mode {
                 energy_ledger.accumulate(&iteration_energy);
             }
