@@ -6,6 +6,27 @@ par `ResolvedSimulationRequestV3.longitudinal_energy`. Le marqueur sérialisé e
 sélectionner `None` : le jeu, les anciennes preuves et les catalogues ne changent
 pas. Ce candidat n'est pas un runtime admis par Authority ou Verifier.
 
+## Portée de la refonte déjà réalisée
+
+Le terme « thermique » décrit ici une intégration numérique plus cohérente de la
+loi moteur existante, avec la même horloge que le mouvement. Il ne désigne pas une
+nouvelle loi de production de chaleur, un nouveau radiateur ou une nouvelle
+calibration des familles moteur. Les seuils de derating et leur paramétrage ont
+été conservés. La loi thermique/usure/adhérence des pneus est également conservée.
+
+| Partie | Changement dans ce candidat |
+| --- | --- |
+| Mécanique longitudinale et transmission | Nouveau bilan travail-énergie et démarrage à couple fini |
+| Intégration thermique moteur | Pas exponentiel stable et horloge commune sur la loi existante |
+| Lois de chaleur/refroidissement et pertinence du cooling dès l'ère I | Refonte physique et calibration encore à réaliser |
+| Lois thermiques/usure/adhérence des pneus | Inchangées ; refonte encore à réaliser |
+
+L'audit suivant mesure ces limites ; il ne les corrige pas par lui-même. Le
+propriétaire demande désormais un derating significatif dès l'ère I dans les
+conditions chargées jouables, et une vraie reprise des échanges thermiques des
+pneus avant le raccordement WASM. Voir les critères dans
+[NEXT_STEPS.md](../../experiments/thermal_tire_gameplay/NEXT_STEPS.md).
+
 ## Problèmes ciblés
 
 Le chemin historique peut attribuer une propulsion nulle à un segment parcouru à
@@ -164,3 +185,10 @@ ensuite des suppressions de travail répété à sorties physiques strictement �
 sans changer les équations, la grille ou les quatre passes de couplage. Il distingue
 le coût du cœur de celui d’observations à 1/2/5 Hz. Ces observations d’audit ne sont
 pas encore un export admis dans le jeu ni un contrat d’observation d’agent.
+
+Le [nouvel audit de gameplay thermique/pneus](../../experiments/thermal_tire_gameplay/RESULTS_V1.md)
+compare des budgets effectifs et des relais avec les deux noyaux. Il confirme les
+mécanismes mais conserve un verdict de gameplay `REFINE` : les V8 testés ne
+dératent pas, les pneus restent souvent froids et les choix doivent être calibrés.
+La loi de pneus n’a pas été remplacée par le candidat énergie. Cette validation
+locale précède désormais son raccordement Worker/WASM.

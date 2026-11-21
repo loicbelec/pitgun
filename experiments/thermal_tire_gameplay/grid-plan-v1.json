@@ -1,0 +1,18 @@
+{
+  "schema": "pitgun.thermal-tire-budget-grid/v1",
+  "models": ["historical", "energy"],
+  "seed": 42,
+  "laps": 5,
+  "downforce": 0.5,
+  "gearing": 0.5,
+  "groups": [
+    {"id":"modern20-monza","vehicle":"modern_v6t","era":5,"track":"MONZA","budget":20,"step":4},
+    {"id":"modern20-barcelona","vehicle":"modern_v6t","era":5,"track":"BARCELONA","budget":20,"step":4},
+    {"id":"classic15-montreal","vehicle":"classic_v8_1970","era":2,"track":"MONTREAL","budget":15,"step":3},
+    {"id":"hybrid40-monza","vehicle":"f1_2026","era":5,"track":"MONZA","budget":40,"step":10}
+  ],
+  "axis_cap": 20,
+  "tie_margin_s": 0.05,
+  "scope":"Preregistered coarse exhaustive grid at fixed sliders/driver/seed, not a global continuous optimum. Compare best zero-cooling versus positive-cooling allocations, not a single donor direction. No coefficient fitting, earned HQ save, opponent race or industrial validity claim. Added after V1 response-line evidence; separate plan/data identity. All domain failures retained.",
+  "repeat":"Re-run both selected group minima with identical request and require exact full physical digest; whole-grid replay available via --check but not implied by winner replay."
+}
