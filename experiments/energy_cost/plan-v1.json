@@ -1,0 +1,12 @@
+{
+  "schema": "pitgun.energy-cost-plan/v1",
+  "baseline": "experiments/longitudinal_energy/results/local-energy-v1.json",
+  "baseline_digest": "sha256:90250b92eb801b9a5e6fc505f2b7fc0151eef82fc5e47e42cbffc450a6e894d7",
+  "catalog": "catalogs/racing/v1.8.1",
+  "paired_order": ["before", "after", "after", "before"],
+  "cadence_cases": ["monza-classic-5", "monza-classic-53", "monza-classic-grid10-5", "monaco-classic-78"],
+  "cadence_order_hz": [5, 2, 1, 1, 2, 5],
+  "timeout_s": 180,
+  "acceptance": "Exact complete native physical outcomes/digests and failure reasons versus frozen energy V1 for all twelve cases and eleven sensitivities; exact historical canonical defaults; no changed equation/grid/tolerance/coupling iteration/event/control semantics. No performance threshold fitted after measurements.",
+  "scope": "Fresh-process native core/process/RSS and causal audit-observation JSON at1/2/5Hz. Observations are not the real game wire contract; no browser/VPS/rendering/network or model accuracy claim. Existing game export still hardcodes5Hz. OS sampling is a short qualitative attribution only."
+}

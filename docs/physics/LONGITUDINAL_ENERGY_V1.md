@@ -158,3 +158,9 @@ récupération d'énergie. Les paramètres devront être identifiés sur des sc�
 locaux explicites, avec des cas de validation séparés. L'interface générique du
 framework et le futur domaine réseau électrique ne reçoivent pas de règles de
 course dans cette branche.
+
+Le [lot de coût et cadence](../../experiments/energy_cost/RESULTS_V1.md) mesure
+ensuite des suppressions de travail répété à sorties physiques strictement égales,
+sans changer les équations, la grille ou les quatre passes de couplage. Il distingue
+le coût du cœur de celui d’observations à 1/2/5 Hz. Ces observations d’audit ne sont
+pas encore un export admis dans le jeu ni un contrat d’observation d’agent.

@@ -97,6 +97,9 @@ pub(crate) struct SegmentContext<'a> {
     pub vehicle: &'a VehicleParams,
     pub mechanical: &'a MechanicalParamsV3,
     pub contact: &'a TireContactParamsV3,
+    // Prepared once for the unchanged engine, using the exact interpolator even
+    // at knots (direct map ordinates can differ in their final floating bits).
+    pub torque_knots_nm: Option<&'a [f64]>,
     pub mass_kg: f64,
     pub ds_m: f64,
     pub dz_m: f64,
@@ -106,6 +109,7 @@ pub(crate) struct SegmentContext<'a> {
     pub traction_utilization: f64,
     pub braking_utilization: f64,
 }
+#[derive(Debug, PartialEq)]
 pub(crate) struct SegmentAdvance {
     pub end_speed_mps: f64,
     pub duration_s: f64,
@@ -135,7 +139,15 @@ impl SegmentContext<'_> {
         (drag, rolling, grade, normal)
     }
     fn limits(&self, v0: f64, v1: f64) -> (f64, f64, f64, f64) {
-        let (drag, rolling, grade, normal) = self.road_load(v0, v1);
+        self.limits_with_load(v0, v1, self.road_load(v0, v1))
+    }
+    fn limits_with_load(
+        &self,
+        v0: f64,
+        v1: f64,
+        load: (f64, f64, f64, f64),
+    ) -> (f64, f64, f64, f64) {
+        let (drag, rolling, grade, normal) = load;
         let v = 0.5 * (v0 + v1);
         let available = aggregate_tire_force_capacity_v3(self.mu, normal, self.contact)
             * self.mechanical.chassis_force_transfer_efficiency;
@@ -147,9 +159,6 @@ impl SegmentContext<'_> {
             (longitudinal * self.braking_utilization).min(self.mechanical.maximum_brake_force_n),
             available,
         )
-    }
-    fn required_force(&self, v0: f64, v1: f64) -> f64 {
-        self.mass_kg * (v1 * v1 - v0 * v0) / (2.0 * self.ds_m) + self.limits(v0, v1).0
     }
     pub(crate) fn braking_start_limit(&self, end: f64, upper: f64) -> Result<f64, String> {
         let residual = |start: f64| {
@@ -163,7 +172,7 @@ impl SegmentContext<'_> {
         if value <= 0.0 {
             return Ok(upper);
         }
-        feasible_root(0.0, upper, residual)
+        feasible_root(0.0, upper, residual(0.0), value, residual)
     }
     pub(crate) fn advance(
         &self,
@@ -186,24 +195,35 @@ impl SegmentContext<'_> {
                 f64::INFINITY
             }
         };
+        let e = &self.vehicle.engine;
+        let rpm = |v: f64| rpm_from_speed_gear(v, ratio, &self.vehicle.chassis).max(e.n_idle);
+        let torque = |r: f64| {
+            if r < e.n_rpm[0] || r > *e.n_rpm.last().unwrap() {
+                0.0
+            } else {
+                crate::interp_linear(r, &e.n_rpm, &e.trq) * 1000.0
+            }
+        };
+        let initial_rpm = rpm(start);
+        let initial_torque = torque(initial_rpm);
+        let endpoint_torque = |r: f64| {
+            if r == initial_rpm {
+                initial_torque
+            } else {
+                torque(r)
+            }
+        };
         let shaft_torque_limit = |end: f64| {
-            // A held torque must be available across this entire RPM interval.
-            // Piecewise linear torque maps attain their minima at endpoints/knots.
-            let e = &self.vehicle.engine;
-            let rpm = |v: f64| rpm_from_speed_gear(v, ratio, &self.vehicle.chassis).max(e.n_idle);
+            // Same held minimum across RPM endpoints and interior map knots.
             let low = rpm(start.min(end));
             let high = rpm(start.max(end));
-            let torque = |r: f64| {
-                if r < e.n_rpm[0] || r > *e.n_rpm.last().unwrap() {
-                    0.0
-                } else {
-                    crate::interp_linear(r, &e.n_rpm, &e.trq) * 1000.0
-                }
-            };
-            let mut minimum = torque(low).min(torque(high));
-            for &r in &e.n_rpm {
+            let mut minimum = endpoint_torque(low).min(endpoint_torque(high));
+            for (index, &r) in e.n_rpm.iter().enumerate() {
                 if r > low && r < high {
-                    minimum = minimum.min(torque(r));
+                    let at_knot = self
+                        .torque_knots_nm
+                        .map_or_else(|| torque(r), |values| values[index]);
+                    minimum = minimum.min(at_knot);
                 }
             }
             let shift_fraction = (shift_remaining_s / duration(end)).clamp(0.0, 1.0);
@@ -219,31 +239,35 @@ impl SegmentContext<'_> {
             self.mass_kg * (end * end - start * start) / (2.0 * self.ds_m) + resistance
                 - torque_force.min(traction)
         };
-        let end = if drive_residual(target) <= 0.0 {
+        let target_residual = drive_residual(target);
+        let end = if target_residual <= 0.0 {
             target
         } else {
-            if drive_residual(0.0) > 0.0 {
+            let zero_residual = drive_residual(0.0);
+            if zero_residual > 0.0 {
                 return Err(
                     "energy V1: no feasible motion under the resolved torque and road load".into(),
                 );
             }
-            feasible_root(0.0, target, drive_residual)?
+            feasible_root(0.0, target, zero_residual, target_residual, drive_residual)?
         };
         let dt = duration(end);
         if !dt.is_finite() || dt <= 0.0 {
             return Err("energy V1: vehicle stalled; cannot traverse this segment".into());
         }
-        let signed_force = self.required_force(start, end);
+        let load = self.road_load(start, end);
+        let (resistance, _, brake_limit, available) = self.limits_with_load(start, end, load);
+        let signed_force =
+            self.mass_kg * (end * end - start * start) / (2.0 * self.ds_m) + resistance;
         let drive = signed_force.max(0.0);
         let brake = (-signed_force).max(0.0);
-        let (_, _, brake_limit, available) = self.limits(start, end);
         if brake > brake_limit + 1e-2 {
             return Err(format!(
                 "energy V1: braking envelope inconsistent by {:.6} N",
                 brake - brake_limit
             ));
         }
-        let (drag, rolling, grade, normal) = self.road_load(start, end);
+        let (drag, rolling, grade, normal) = load;
         let wheel = drive * self.ds_m;
         // Clutch upstream of the gearbox: input speed cannot drop below idle.
         let lock_speed =
@@ -368,10 +392,10 @@ impl SegmentContext<'_> {
 fn feasible_root(
     mut low: f64,
     mut high: f64,
+    mut left: f64,
+    mut right: f64,
     mut residual: impl FnMut(f64) -> f64,
 ) -> Result<f64, String> {
-    let mut left = residual(low);
-    let mut right = residual(high);
     let mut actual_left = left;
     if !left.is_finite() || !right.is_finite() || left > 0.0 || right <= 0.0 {
         return Err("energy V1: no finite bracket for the segment constraint".into());
@@ -531,6 +555,7 @@ mod tests {
             vehicle: v,
             mechanical: m,
             contact: c,
+            torque_knots_nm: None,
             mass_kg: 1000.,
             ds_m: 100.,
             dz_m: 0.,
@@ -553,6 +578,34 @@ mod tests {
         assert!(r.ledger.maximum_thermal_balance_residual_j < 1e-6);
         close(r.ledger.driving_time_s, r.duration_s);
     }
+    #[test]
+    fn prepared_torque_knots_preserve_complete_segment_results() {
+        let mut v = vehicle();
+        v.engine.n_rpm = vec![1000., 2500., 4500., 7000., 10000.];
+        v.engine.trq = vec![0.101, 0.153, 0.087, 0.135, 0.073];
+        let knots = v
+            .engine
+            .n_rpm
+            .iter()
+            .map(|&r| crate::interp_linear(r, &v.engine.n_rpm, &v.engine.trq) * 1000.)
+            .collect::<Vec<_>>();
+        let m = mechanical();
+        let c = TireContactParamsV3::default();
+        for start in [0., 5., 15., 30.] {
+            for target in [10., 20., 45.] {
+                let plain = context(&v, &m, &c);
+                let cached = SegmentContext {
+                    torque_knots_nm: Some(&knots),
+                    ..context(&v, &m, &c)
+                };
+                assert_eq!(
+                    plain.advance(start, target, 1, 0.7, 0.05, 95.),
+                    cached.advance(start, target, 1, 0.7, 0.05, 95.)
+                );
+            }
+        }
+    }
+
     #[test]
     fn energy_v1_launch_uses_finite_wheel_torque_and_records_physical_clutch_slip() {
         let v = vehicle();
