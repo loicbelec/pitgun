@@ -144,3 +144,54 @@ coefficients, recherche des réglages et conditions précoces, stratégies léga
 distances complètes, meilleure anticipation/couplage et mesure de coût isolée,
 échelle d'usure et comparaison aux données disponibles. Les points #420/#421
 restent en cours. Ni ce rapport ni la répétabilité ne valent validation industrielle.
+
+## Confirmation ciblée : température et puissance
+
+Lecture des résultats natifs gelés, sans nouveau choix de coefficients : à
+Barcelona/medium, les températures de surface en fin de tour sont 87.58°C au tour 1,
+101.44°C au tour 5, 113.24°C au tour 14 et 111.17°C au tour 20 (90°C au départ).
+L'usure évolue simultanément de 3.38% à 78.70%. La décroissance systématique n'est
+donc plus le comportement unique du modèle. À Monza/V8 1960, en revanche, les
+températures de fin de tour baissent encore de 90°C à 71.37°C sur les cinq tours.
+Le nouveau bilan n'impose pas d'échauffement monotone ; un pneu initialement chaud
+peut refroidir quand ses pertes et conditions d'échange l'expliquent.
+
+Le facteur de derating multiplie le couple admissible avant la résolution du
+mouvement. À régime identique, la puissance disponible subit le même facteur.
+La puissance effectivement fournie dépend aussi de la demande et des autres
+limites : ne pas attribuer une chute de 9.4% à toute la courbe de puissance réelle.
+
+| Même configuration, protection thermique active/désactivée | Réduction maximale de puissance disponible | Puissance moyenne d'arbre avec protection | Sans protection |
+| --- | ---: | ---: | ---: |
+| V8 1960,Monza, 5 tours,cooling 0 | 9.39% | 43.045 kW | 43.312 kW |
+| V6T,Monza, 5 tours,cooling 0 | 18.44% | 305.781 kW | 343.693 kW |
+
+Les moyennes viennent du travail d'arbre divisé par la durée, dans les ablations
+du même plan/voiture/réglages/seed. Les vitesses et durées résultantes varient : ce
+ne sont pas des comparaisons point à point au même régime. Le bénéfice précoce
+reste volontairement doux ; le V6T montre une baisse nette de puissance fournie.
+Le nouveau contrat d'affichage Pit Wall reste à raccorder : ces chiffres ne
+constituent pas une validation visuelle du jeu actuel.
+
+Complément de test : `thermal_v2_derating_reduces_delivered_work_and_power_against_analytic_launch`
+compare les facteurs 1/0.9/0.5 sur un moteur à couple constant, deux maillages,
+température tenue, sans limite d'adhérence ni résistance. Les temps, travaux et
+intégrales de puissance suivent la solution analytique, avec les pertes
+d'embrayage comptées séparément. Les 51 tests d'intégration du Solver passent.
+Les équations, profils et 112 sorties de la campagne gelée ne sont pas modifiés ;
+le total 236 tests ci-dessus décrit sa qualification initiale.
+
+## Exigence compétitive ajoutée par le propriétaire
+
+Un effet physique observable ne prouve pas des réglages équilibrés ou des IA
+compétitives. Le propriétaire veut éviter que l'ère I soit gagnée trivialement
+avec une allocation essentiellement moteur/châssis en ignorant le reste.
+
+Avant admission compétitive dans le jeu : rechercher les allocations/sliders à
+budget/technologies comparables, puis vérifier les bonus et conditions réelles de
+carrière ; confronter les stratégies moteur/châssis aux autres compromis sur le
+calendrier et plusieurs seeds ; recalibrer les concurrents sur la physique figée
+avec des plans de pneus pertinents. Enregistrer marges de victoire et échecs.
+Ne pas imposer une part positive de chaque axe à chaque circuit, ni augmenter le
+derating précoce pour compenser des concurrents faibles. Les essais mono-voiture
+actuels ne satisfont pas encore cette recette compétitive (#413/game#266).

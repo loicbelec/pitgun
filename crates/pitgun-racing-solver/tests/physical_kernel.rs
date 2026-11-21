@@ -1555,6 +1555,70 @@ fn thermal_v2_request() -> ResolvedSimulationRequestV3 {
 }
 
 #[test]
+fn thermal_v2_derating_reduces_delivered_work_and_power_against_analytic_launch() {
+    use pitgun_racing_solver::thermal_physics::TireCompoundHeatV2;
+    // Manufactured constant-torque engine:100Nm, ratio10, eta1, wheel0.5m,
+    // mass1000kg. No road load or tire-force bottleneck. Hold engine temperature
+    // to isolate thermal derating from changes to heat generation/radiator sizing.
+    for mesh_m in [1.0, 5.0] {
+        let mut previous_mean_power = f64::INFINITY;
+        for factor in [1.0_f64, 0.9, 0.5] {
+            let mut input = energy_analytic_request(mesh_m);
+            let mut thermal = thermal_v2_request().thermal_physics_v2.unwrap();
+            thermal.engine.coolant_waste_fraction = 0.0;
+            thermal.engine.passive_conductance_w_per_k = 0.0;
+            thermal.engine.radiator_idle_conductance_w_per_k = 0.0;
+            thermal.engine.radiator_speed_conductance_w_per_k_mps = 0.0;
+            let mut heat = thermal.compounds[0].heat;
+            heat.deformation_resistance_coefficient = 0.0;
+            thermal.compounds = vec![TireCompoundHeatV2 {
+                tire: input.vehicle.tire.clone(),
+                heat,
+            }];
+            input.vehicle.engine.t_soft = 100.0;
+            input.vehicle.engine.beta_derate = 0.01;
+            input.state.engine_temp = 100.0 + (1.0 - factor) / 0.01;
+            input.engine_thermal = Some(Default::default());
+            input.fuel_mass = Some(Default::default());
+            input.tire_degradation = Some(Default::default());
+            input.thermal_physics_v2 = Some(thermal);
+
+            let result = run_resolved_simulation_v3(&input).unwrap();
+            let ledger = result.longitudinal_energy_v1.unwrap();
+            let acceleration = 2.0 * factor;
+            let expected_time = (200.0 / acceleration).sqrt();
+            let lock_speed = 1000.0 * std::f64::consts::TAU * 0.5 / (60.0 * 10.0);
+            let expected_wheel_work = 200000.0 * factor;
+            // Ideal slipping-clutch launch loses half*m*v_lock², independent of
+            // force here; it must remain distinct from the derated wheel work.
+            let expected_shaft_work = expected_wheel_work + 0.5 * 1000.0 * lock_speed.powi(2);
+            let observed_power_integral = result
+                .solution
+                .t
+                .windows(2)
+                .zip(&result.solution.power)
+                .map(|(t, power_kw)| 1000.0 * power_kw * (t[1] - t[0]))
+                .sum::<f64>();
+            assert!((result.total_time_s - expected_time).abs() < 1e-7);
+            assert!((ledger.wheel_propulsion_work_j - expected_wheel_work).abs() < 0.01);
+            assert!((ledger.engine_shaft_work_j - expected_shaft_work).abs() < 0.01);
+            assert!((observed_power_integral - expected_shaft_work).abs() < 0.01);
+            assert!(
+                result
+                    .solution
+                    .engine_derating_factor
+                    .iter()
+                    .all(|v| (v - factor).abs() < 1e-12)
+            );
+            let mean_power = observed_power_integral / result.total_time_s;
+            assert!((mean_power - expected_shaft_work / expected_time).abs() < 0.01);
+            assert!(mean_power < previous_mean_power);
+            previous_mean_power = mean_power;
+        }
+    }
+}
+
+#[test]
 fn thermal_v2_laps_keep_carcass_state_and_commit_both_states_at_service() {
     let mut input = thermal_v2_request();
     input.pit_plan.stops.push(pitgun_racing_solver::PitStop {
