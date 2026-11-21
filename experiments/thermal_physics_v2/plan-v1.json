@@ -1,0 +1,2736 @@
+{
+  "schema": "pitgun.thermal-physics-screen/v2",
+  "status": "EXPLORATORY_CALIBRATION_NOT_ACCEPTANCE",
+  "catalog": "catalogs/racing/v1.8.1",
+  "models": [
+    false,
+    true
+  ],
+  "cases": [
+    {
+      "id": "budget-early8-monza-c0",
+      "group": "equal_budget",
+      "request": {
+        "input": {
+          "track_id": "MONZA",
+          "laps": 5,
+          "vehicle_id": "classic_v8_1960",
+          "era": 1,
+          "hz": 5.0,
+          "pit_strategy": {
+            "player_pit_laps": []
+          },
+          "competitors": [
+            {
+              "id": "player",
+              "name": "Audit driver",
+              "driver_id": "default",
+              "team_id": "pitgun-lab",
+              "is_player": true,
+              "tuning": {
+                "engine_points": 6,
+                "cooling_points": 0,
+                "aero_points": 1,
+                "chassis_points": 1,
+                "downforce_slider": 0.5,
+                "gear_ratio_slider": 0.5
+              },
+              "budget_cap": 8,
+              "stint_strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 5
+                  }
+                ],
+                "pit_laps": []
+              }
+            }
+          ]
+        },
+        "seed": 42,
+        "era": 1,
+        "hz": 5.0
+      },
+      "overrides": {}
+    },
+    {
+      "id": "budget-early8-monza-c1",
+      "group": "equal_budget",
+      "request": {
+        "input": {
+          "track_id": "MONZA",
+          "laps": 5,
+          "vehicle_id": "classic_v8_1960",
+          "era": 1,
+          "hz": 5.0,
+          "pit_strategy": {
+            "player_pit_laps": []
+          },
+          "competitors": [
+            {
+              "id": "player",
+              "name": "Audit driver",
+              "driver_id": "default",
+              "team_id": "pitgun-lab",
+              "is_player": true,
+              "tuning": {
+                "engine_points": 5,
+                "cooling_points": 1,
+                "aero_points": 1,
+                "chassis_points": 1,
+                "downforce_slider": 0.5,
+                "gear_ratio_slider": 0.5
+              },
+              "budget_cap": 8,
+              "stint_strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 5
+                  }
+                ],
+                "pit_laps": []
+              }
+            }
+          ]
+        },
+        "seed": 42,
+        "era": 1,
+        "hz": 5.0
+      },
+      "overrides": {}
+    },
+    {
+      "id": "budget-early8-monza-c2",
+      "group": "equal_budget",
+      "request": {
+        "input": {
+          "track_id": "MONZA",
+          "laps": 5,
+          "vehicle_id": "classic_v8_1960",
+          "era": 1,
+          "hz": 5.0,
+          "pit_strategy": {
+            "player_pit_laps": []
+          },
+          "competitors": [
+            {
+              "id": "player",
+              "name": "Audit driver",
+              "driver_id": "default",
+              "team_id": "pitgun-lab",
+              "is_player": true,
+              "tuning": {
+                "engine_points": 4,
+                "cooling_points": 2,
+                "aero_points": 1,
+                "chassis_points": 1,
+                "downforce_slider": 0.5,
+                "gear_ratio_slider": 0.5
+              },
+              "budget_cap": 8,
+              "stint_strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 5
+                  }
+                ],
+                "pit_laps": []
+              }
+            }
+          ]
+        },
+        "seed": 42,
+        "era": 1,
+        "hz": 5.0
+      },
+      "overrides": {}
+    },
+    {
+      "id": "budget-classic15-monza-c0",
+      "group": "equal_budget",
+      "request": {
+        "input": {
+          "track_id": "MONZA",
+          "laps": 5,
+          "vehicle_id": "classic_v8_1970",
+          "era": 2,
+          "hz": 5.0,
+          "pit_strategy": {
+            "player_pit_laps": []
+          },
+          "competitors": [
+            {
+              "id": "player",
+              "name": "Audit driver",
+              "driver_id": "default",
+              "team_id": "pitgun-lab",
+              "is_player": true,
+              "tuning": {
+                "engine_points": 7,
+                "cooling_points": 0,
+                "aero_points": 0,
+                "chassis_points": 8,
+                "downforce_slider": 0.5,
+                "gear_ratio_slider": 0.5
+              },
+              "budget_cap": 15,
+              "stint_strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 5
+                  }
+                ],
+                "pit_laps": []
+              }
+            }
+          ]
+        },
+        "seed": 42,
+        "era": 2,
+        "hz": 5.0
+      },
+      "overrides": {}
+    },
+    {
+      "id": "budget-classic15-monza-c1",
+      "group": "equal_budget",
+      "request": {
+        "input": {
+          "track_id": "MONZA",
+          "laps": 5,
+          "vehicle_id": "classic_v8_1970",
+          "era": 2,
+          "hz": 5.0,
+          "pit_strategy": {
+            "player_pit_laps": []
+          },
+          "competitors": [
+            {
+              "id": "player",
+              "name": "Audit driver",
+              "driver_id": "default",
+              "team_id": "pitgun-lab",
+              "is_player": true,
+              "tuning": {
+                "engine_points": 6,
+                "cooling_points": 1,
+                "aero_points": 0,
+                "chassis_points": 8,
+                "downforce_slider": 0.5,
+                "gear_ratio_slider": 0.5
+              },
+              "budget_cap": 15,
+              "stint_strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 5
+                  }
+                ],
+                "pit_laps": []
+              }
+            }
+          ]
+        },
+        "seed": 42,
+        "era": 2,
+        "hz": 5.0
+      },
+      "overrides": {}
+    },
+    {
+      "id": "budget-classic15-monza-c2",
+      "group": "equal_budget",
+      "request": {
+        "input": {
+          "track_id": "MONZA",
+          "laps": 5,
+          "vehicle_id": "classic_v8_1970",
+          "era": 2,
+          "hz": 5.0,
+          "pit_strategy": {
+            "player_pit_laps": []
+          },
+          "competitors": [
+            {
+              "id": "player",
+              "name": "Audit driver",
+              "driver_id": "default",
+              "team_id": "pitgun-lab",
+              "is_player": true,
+              "tuning": {
+                "engine_points": 5,
+                "cooling_points": 2,
+                "aero_points": 0,
+                "chassis_points": 8,
+                "downforce_slider": 0.5,
+                "gear_ratio_slider": 0.5
+              },
+              "budget_cap": 15,
+              "stint_strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 5
+                  }
+                ],
+                "pit_laps": []
+              }
+            }
+          ]
+        },
+        "seed": 42,
+        "era": 2,
+        "hz": 5.0
+      },
+      "overrides": {}
+    },
+    {
+      "id": "budget-classic15-monza-c4",
+      "group": "equal_budget",
+      "request": {
+        "input": {
+          "track_id": "MONZA",
+          "laps": 5,
+          "vehicle_id": "classic_v8_1970",
+          "era": 2,
+          "hz": 5.0,
+          "pit_strategy": {
+            "player_pit_laps": []
+          },
+          "competitors": [
+            {
+              "id": "player",
+              "name": "Audit driver",
+              "driver_id": "default",
+              "team_id": "pitgun-lab",
+              "is_player": true,
+              "tuning": {
+                "engine_points": 3,
+                "cooling_points": 4,
+                "aero_points": 0,
+                "chassis_points": 8,
+                "downforce_slider": 0.5,
+                "gear_ratio_slider": 0.5
+              },
+              "budget_cap": 15,
+              "stint_strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 5
+                  }
+                ],
+                "pit_laps": []
+              }
+            }
+          ]
+        },
+        "seed": 42,
+        "era": 2,
+        "hz": 5.0
+      },
+      "overrides": {}
+    },
+    {
+      "id": "budget-classic15-montreal-c0",
+      "group": "equal_budget",
+      "request": {
+        "input": {
+          "track_id": "MONTREAL",
+          "laps": 5,
+          "vehicle_id": "classic_v8_1970",
+          "era": 2,
+          "hz": 5.0,
+          "pit_strategy": {
+            "player_pit_laps": []
+          },
+          "competitors": [
+            {
+              "id": "player",
+              "name": "Audit driver",
+              "driver_id": "default",
+              "team_id": "pitgun-lab",
+              "is_player": true,
+              "tuning": {
+                "engine_points": 7,
+                "cooling_points": 0,
+                "aero_points": 0,
+                "chassis_points": 8,
+                "downforce_slider": 0.5,
+                "gear_ratio_slider": 0.5
+              },
+              "budget_cap": 15,
+              "stint_strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 5
+                  }
+                ],
+                "pit_laps": []
+              }
+            }
+          ]
+        },
+        "seed": 42,
+        "era": 2,
+        "hz": 5.0
+      },
+      "overrides": {}
+    },
+    {
+      "id": "budget-classic15-montreal-c1",
+      "group": "equal_budget",
+      "request": {
+        "input": {
+          "track_id": "MONTREAL",
+          "laps": 5,
+          "vehicle_id": "classic_v8_1970",
+          "era": 2,
+          "hz": 5.0,
+          "pit_strategy": {
+            "player_pit_laps": []
+          },
+          "competitors": [
+            {
+              "id": "player",
+              "name": "Audit driver",
+              "driver_id": "default",
+              "team_id": "pitgun-lab",
+              "is_player": true,
+              "tuning": {
+                "engine_points": 6,
+                "cooling_points": 1,
+                "aero_points": 0,
+                "chassis_points": 8,
+                "downforce_slider": 0.5,
+                "gear_ratio_slider": 0.5
+              },
+              "budget_cap": 15,
+              "stint_strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 5
+                  }
+                ],
+                "pit_laps": []
+              }
+            }
+          ]
+        },
+        "seed": 42,
+        "era": 2,
+        "hz": 5.0
+      },
+      "overrides": {}
+    },
+    {
+      "id": "budget-classic15-montreal-c2",
+      "group": "equal_budget",
+      "request": {
+        "input": {
+          "track_id": "MONTREAL",
+          "laps": 5,
+          "vehicle_id": "classic_v8_1970",
+          "era": 2,
+          "hz": 5.0,
+          "pit_strategy": {
+            "player_pit_laps": []
+          },
+          "competitors": [
+            {
+              "id": "player",
+              "name": "Audit driver",
+              "driver_id": "default",
+              "team_id": "pitgun-lab",
+              "is_player": true,
+              "tuning": {
+                "engine_points": 5,
+                "cooling_points": 2,
+                "aero_points": 0,
+                "chassis_points": 8,
+                "downforce_slider": 0.5,
+                "gear_ratio_slider": 0.5
+              },
+              "budget_cap": 15,
+              "stint_strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 5
+                  }
+                ],
+                "pit_laps": []
+              }
+            }
+          ]
+        },
+        "seed": 42,
+        "era": 2,
+        "hz": 5.0
+      },
+      "overrides": {}
+    },
+    {
+      "id": "budget-classic15-montreal-c4",
+      "group": "equal_budget",
+      "request": {
+        "input": {
+          "track_id": "MONTREAL",
+          "laps": 5,
+          "vehicle_id": "classic_v8_1970",
+          "era": 2,
+          "hz": 5.0,
+          "pit_strategy": {
+            "player_pit_laps": []
+          },
+          "competitors": [
+            {
+              "id": "player",
+              "name": "Audit driver",
+              "driver_id": "default",
+              "team_id": "pitgun-lab",
+              "is_player": true,
+              "tuning": {
+                "engine_points": 3,
+                "cooling_points": 4,
+                "aero_points": 0,
+                "chassis_points": 8,
+                "downforce_slider": 0.5,
+                "gear_ratio_slider": 0.5
+              },
+              "budget_cap": 15,
+              "stint_strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 5
+                  }
+                ],
+                "pit_laps": []
+              }
+            }
+          ]
+        },
+        "seed": 42,
+        "era": 2,
+        "hz": 5.0
+      },
+      "overrides": {}
+    },
+    {
+      "id": "budget-modern20-monza-c0",
+      "group": "equal_budget",
+      "request": {
+        "input": {
+          "track_id": "MONZA",
+          "laps": 5,
+          "vehicle_id": "modern_v6t",
+          "era": 5,
+          "hz": 5.0,
+          "pit_strategy": {
+            "player_pit_laps": []
+          },
+          "competitors": [
+            {
+              "id": "player",
+              "name": "Audit driver",
+              "driver_id": "default",
+              "team_id": "pitgun-lab",
+              "is_player": true,
+              "tuning": {
+                "engine_points": 12,
+                "cooling_points": 0,
+                "aero_points": 4,
+                "chassis_points": 4,
+                "downforce_slider": 0.5,
+                "gear_ratio_slider": 0.5
+              },
+              "budget_cap": 20,
+              "stint_strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 5
+                  }
+                ],
+                "pit_laps": []
+              }
+            }
+          ]
+        },
+        "seed": 42,
+        "era": 5,
+        "hz": 5.0
+      },
+      "overrides": {}
+    },
+    {
+      "id": "budget-modern20-monza-c2",
+      "group": "equal_budget",
+      "request": {
+        "input": {
+          "track_id": "MONZA",
+          "laps": 5,
+          "vehicle_id": "modern_v6t",
+          "era": 5,
+          "hz": 5.0,
+          "pit_strategy": {
+            "player_pit_laps": []
+          },
+          "competitors": [
+            {
+              "id": "player",
+              "name": "Audit driver",
+              "driver_id": "default",
+              "team_id": "pitgun-lab",
+              "is_player": true,
+              "tuning": {
+                "engine_points": 10,
+                "cooling_points": 2,
+                "aero_points": 4,
+                "chassis_points": 4,
+                "downforce_slider": 0.5,
+                "gear_ratio_slider": 0.5
+              },
+              "budget_cap": 20,
+              "stint_strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 5
+                  }
+                ],
+                "pit_laps": []
+              }
+            }
+          ]
+        },
+        "seed": 42,
+        "era": 5,
+        "hz": 5.0
+      },
+      "overrides": {}
+    },
+    {
+      "id": "budget-modern20-monza-c4",
+      "group": "equal_budget",
+      "request": {
+        "input": {
+          "track_id": "MONZA",
+          "laps": 5,
+          "vehicle_id": "modern_v6t",
+          "era": 5,
+          "hz": 5.0,
+          "pit_strategy": {
+            "player_pit_laps": []
+          },
+          "competitors": [
+            {
+              "id": "player",
+              "name": "Audit driver",
+              "driver_id": "default",
+              "team_id": "pitgun-lab",
+              "is_player": true,
+              "tuning": {
+                "engine_points": 8,
+                "cooling_points": 4,
+                "aero_points": 4,
+                "chassis_points": 4,
+                "downforce_slider": 0.5,
+                "gear_ratio_slider": 0.5
+              },
+              "budget_cap": 20,
+              "stint_strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 5
+                  }
+                ],
+                "pit_laps": []
+              }
+            }
+          ]
+        },
+        "seed": 42,
+        "era": 5,
+        "hz": 5.0
+      },
+      "overrides": {}
+    },
+    {
+      "id": "budget-modern20-monza-c6",
+      "group": "equal_budget",
+      "request": {
+        "input": {
+          "track_id": "MONZA",
+          "laps": 5,
+          "vehicle_id": "modern_v6t",
+          "era": 5,
+          "hz": 5.0,
+          "pit_strategy": {
+            "player_pit_laps": []
+          },
+          "competitors": [
+            {
+              "id": "player",
+              "name": "Audit driver",
+              "driver_id": "default",
+              "team_id": "pitgun-lab",
+              "is_player": true,
+              "tuning": {
+                "engine_points": 6,
+                "cooling_points": 6,
+                "aero_points": 4,
+                "chassis_points": 4,
+                "downforce_slider": 0.5,
+                "gear_ratio_slider": 0.5
+              },
+              "budget_cap": 20,
+              "stint_strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 5
+                  }
+                ],
+                "pit_laps": []
+              }
+            }
+          ]
+        },
+        "seed": 42,
+        "era": 5,
+        "hz": 5.0
+      },
+      "overrides": {}
+    },
+    {
+      "id": "budget-modern20-silverstone-c0",
+      "group": "equal_budget",
+      "request": {
+        "input": {
+          "track_id": "SILVERSTONE",
+          "laps": 5,
+          "vehicle_id": "modern_v6t",
+          "era": 5,
+          "hz": 5.0,
+          "pit_strategy": {
+            "player_pit_laps": []
+          },
+          "competitors": [
+            {
+              "id": "player",
+              "name": "Audit driver",
+              "driver_id": "default",
+              "team_id": "pitgun-lab",
+              "is_player": true,
+              "tuning": {
+                "engine_points": 12,
+                "cooling_points": 0,
+                "aero_points": 4,
+                "chassis_points": 4,
+                "downforce_slider": 0.5,
+                "gear_ratio_slider": 0.5
+              },
+              "budget_cap": 20,
+              "stint_strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 5
+                  }
+                ],
+                "pit_laps": []
+              }
+            }
+          ]
+        },
+        "seed": 42,
+        "era": 5,
+        "hz": 5.0
+      },
+      "overrides": {}
+    },
+    {
+      "id": "budget-modern20-silverstone-c2",
+      "group": "equal_budget",
+      "request": {
+        "input": {
+          "track_id": "SILVERSTONE",
+          "laps": 5,
+          "vehicle_id": "modern_v6t",
+          "era": 5,
+          "hz": 5.0,
+          "pit_strategy": {
+            "player_pit_laps": []
+          },
+          "competitors": [
+            {
+              "id": "player",
+              "name": "Audit driver",
+              "driver_id": "default",
+              "team_id": "pitgun-lab",
+              "is_player": true,
+              "tuning": {
+                "engine_points": 10,
+                "cooling_points": 2,
+                "aero_points": 4,
+                "chassis_points": 4,
+                "downforce_slider": 0.5,
+                "gear_ratio_slider": 0.5
+              },
+              "budget_cap": 20,
+              "stint_strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 5
+                  }
+                ],
+                "pit_laps": []
+              }
+            }
+          ]
+        },
+        "seed": 42,
+        "era": 5,
+        "hz": 5.0
+      },
+      "overrides": {}
+    },
+    {
+      "id": "budget-modern20-silverstone-c4",
+      "group": "equal_budget",
+      "request": {
+        "input": {
+          "track_id": "SILVERSTONE",
+          "laps": 5,
+          "vehicle_id": "modern_v6t",
+          "era": 5,
+          "hz": 5.0,
+          "pit_strategy": {
+            "player_pit_laps": []
+          },
+          "competitors": [
+            {
+              "id": "player",
+              "name": "Audit driver",
+              "driver_id": "default",
+              "team_id": "pitgun-lab",
+              "is_player": true,
+              "tuning": {
+                "engine_points": 8,
+                "cooling_points": 4,
+                "aero_points": 4,
+                "chassis_points": 4,
+                "downforce_slider": 0.5,
+                "gear_ratio_slider": 0.5
+              },
+              "budget_cap": 20,
+              "stint_strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 5
+                  }
+                ],
+                "pit_laps": []
+              }
+            }
+          ]
+        },
+        "seed": 42,
+        "era": 5,
+        "hz": 5.0
+      },
+      "overrides": {}
+    },
+    {
+      "id": "budget-modern20-silverstone-c6",
+      "group": "equal_budget",
+      "request": {
+        "input": {
+          "track_id": "SILVERSTONE",
+          "laps": 5,
+          "vehicle_id": "modern_v6t",
+          "era": 5,
+          "hz": 5.0,
+          "pit_strategy": {
+            "player_pit_laps": []
+          },
+          "competitors": [
+            {
+              "id": "player",
+              "name": "Audit driver",
+              "driver_id": "default",
+              "team_id": "pitgun-lab",
+              "is_player": true,
+              "tuning": {
+                "engine_points": 6,
+                "cooling_points": 6,
+                "aero_points": 4,
+                "chassis_points": 4,
+                "downforce_slider": 0.5,
+                "gear_ratio_slider": 0.5
+              },
+              "budget_cap": 20,
+              "stint_strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 5
+                  }
+                ],
+                "pit_laps": []
+              }
+            }
+          ]
+        },
+        "seed": 42,
+        "era": 5,
+        "hz": 5.0
+      },
+      "overrides": {}
+    },
+    {
+      "id": "budget-modern20-barcelona-c0",
+      "group": "equal_budget",
+      "request": {
+        "input": {
+          "track_id": "BARCELONA",
+          "laps": 5,
+          "vehicle_id": "modern_v6t",
+          "era": 5,
+          "hz": 5.0,
+          "pit_strategy": {
+            "player_pit_laps": []
+          },
+          "competitors": [
+            {
+              "id": "player",
+              "name": "Audit driver",
+              "driver_id": "default",
+              "team_id": "pitgun-lab",
+              "is_player": true,
+              "tuning": {
+                "engine_points": 12,
+                "cooling_points": 0,
+                "aero_points": 4,
+                "chassis_points": 4,
+                "downforce_slider": 0.5,
+                "gear_ratio_slider": 0.5
+              },
+              "budget_cap": 20,
+              "stint_strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 5
+                  }
+                ],
+                "pit_laps": []
+              }
+            }
+          ]
+        },
+        "seed": 42,
+        "era": 5,
+        "hz": 5.0
+      },
+      "overrides": {}
+    },
+    {
+      "id": "budget-modern20-barcelona-c2",
+      "group": "equal_budget",
+      "request": {
+        "input": {
+          "track_id": "BARCELONA",
+          "laps": 5,
+          "vehicle_id": "modern_v6t",
+          "era": 5,
+          "hz": 5.0,
+          "pit_strategy": {
+            "player_pit_laps": []
+          },
+          "competitors": [
+            {
+              "id": "player",
+              "name": "Audit driver",
+              "driver_id": "default",
+              "team_id": "pitgun-lab",
+              "is_player": true,
+              "tuning": {
+                "engine_points": 10,
+                "cooling_points": 2,
+                "aero_points": 4,
+                "chassis_points": 4,
+                "downforce_slider": 0.5,
+                "gear_ratio_slider": 0.5
+              },
+              "budget_cap": 20,
+              "stint_strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 5
+                  }
+                ],
+                "pit_laps": []
+              }
+            }
+          ]
+        },
+        "seed": 42,
+        "era": 5,
+        "hz": 5.0
+      },
+      "overrides": {}
+    },
+    {
+      "id": "budget-modern20-barcelona-c4",
+      "group": "equal_budget",
+      "request": {
+        "input": {
+          "track_id": "BARCELONA",
+          "laps": 5,
+          "vehicle_id": "modern_v6t",
+          "era": 5,
+          "hz": 5.0,
+          "pit_strategy": {
+            "player_pit_laps": []
+          },
+          "competitors": [
+            {
+              "id": "player",
+              "name": "Audit driver",
+              "driver_id": "default",
+              "team_id": "pitgun-lab",
+              "is_player": true,
+              "tuning": {
+                "engine_points": 8,
+                "cooling_points": 4,
+                "aero_points": 4,
+                "chassis_points": 4,
+                "downforce_slider": 0.5,
+                "gear_ratio_slider": 0.5
+              },
+              "budget_cap": 20,
+              "stint_strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 5
+                  }
+                ],
+                "pit_laps": []
+              }
+            }
+          ]
+        },
+        "seed": 42,
+        "era": 5,
+        "hz": 5.0
+      },
+      "overrides": {}
+    },
+    {
+      "id": "budget-modern20-barcelona-c6",
+      "group": "equal_budget",
+      "request": {
+        "input": {
+          "track_id": "BARCELONA",
+          "laps": 5,
+          "vehicle_id": "modern_v6t",
+          "era": 5,
+          "hz": 5.0,
+          "pit_strategy": {
+            "player_pit_laps": []
+          },
+          "competitors": [
+            {
+              "id": "player",
+              "name": "Audit driver",
+              "driver_id": "default",
+              "team_id": "pitgun-lab",
+              "is_player": true,
+              "tuning": {
+                "engine_points": 6,
+                "cooling_points": 6,
+                "aero_points": 4,
+                "chassis_points": 4,
+                "downforce_slider": 0.5,
+                "gear_ratio_slider": 0.5
+              },
+              "budget_cap": 20,
+              "stint_strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 5
+                  }
+                ],
+                "pit_laps": []
+              }
+            }
+          ]
+        },
+        "seed": 42,
+        "era": 5,
+        "hz": 5.0
+      },
+      "overrides": {}
+    },
+    {
+      "id": "full-classic15-c0",
+      "group": "full_distance",
+      "request": {
+        "input": {
+          "track_id": "MONZA",
+          "laps": 53,
+          "vehicle_id": "classic_v8_1970",
+          "era": 2,
+          "hz": 5.0,
+          "pit_strategy": {
+            "player_pit_laps": [
+              26
+            ]
+          },
+          "competitors": [
+            {
+              "id": "player",
+              "name": "Audit driver",
+              "driver_id": "default",
+              "team_id": "pitgun-lab",
+              "is_player": true,
+              "tuning": {
+                "engine_points": 7,
+                "cooling_points": 0,
+                "aero_points": 0,
+                "chassis_points": 8,
+                "downforce_slider": 0.5,
+                "gear_ratio_slider": 0.5
+              },
+              "budget_cap": 15,
+              "stint_strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 26
+                  },
+                  {
+                    "tire_id": "hard",
+                    "laps": 27
+                  }
+                ],
+                "pit_laps": [
+                  26
+                ]
+              }
+            }
+          ]
+        },
+        "seed": 42,
+        "era": 2,
+        "hz": 5.0
+      },
+      "overrides": {}
+    },
+    {
+      "id": "full-classic15-c2",
+      "group": "full_distance",
+      "request": {
+        "input": {
+          "track_id": "MONZA",
+          "laps": 53,
+          "vehicle_id": "classic_v8_1970",
+          "era": 2,
+          "hz": 5.0,
+          "pit_strategy": {
+            "player_pit_laps": [
+              26
+            ]
+          },
+          "competitors": [
+            {
+              "id": "player",
+              "name": "Audit driver",
+              "driver_id": "default",
+              "team_id": "pitgun-lab",
+              "is_player": true,
+              "tuning": {
+                "engine_points": 5,
+                "cooling_points": 2,
+                "aero_points": 0,
+                "chassis_points": 8,
+                "downforce_slider": 0.5,
+                "gear_ratio_slider": 0.5
+              },
+              "budget_cap": 15,
+              "stint_strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 26
+                  },
+                  {
+                    "tire_id": "hard",
+                    "laps": 27
+                  }
+                ],
+                "pit_laps": [
+                  26
+                ]
+              }
+            }
+          ]
+        },
+        "seed": 42,
+        "era": 2,
+        "hz": 5.0
+      },
+      "overrides": {}
+    },
+    {
+      "id": "full-modern20-c0",
+      "group": "full_distance",
+      "request": {
+        "input": {
+          "track_id": "MONZA",
+          "laps": 53,
+          "vehicle_id": "modern_v6t",
+          "era": 5,
+          "hz": 5.0,
+          "pit_strategy": {
+            "player_pit_laps": [
+              26
+            ]
+          },
+          "competitors": [
+            {
+              "id": "player",
+              "name": "Audit driver",
+              "driver_id": "default",
+              "team_id": "pitgun-lab",
+              "is_player": true,
+              "tuning": {
+                "engine_points": 12,
+                "cooling_points": 0,
+                "aero_points": 4,
+                "chassis_points": 4,
+                "downforce_slider": 0.5,
+                "gear_ratio_slider": 0.5
+              },
+              "budget_cap": 20,
+              "stint_strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 26
+                  },
+                  {
+                    "tire_id": "hard",
+                    "laps": 27
+                  }
+                ],
+                "pit_laps": [
+                  26
+                ]
+              }
+            }
+          ]
+        },
+        "seed": 42,
+        "era": 5,
+        "hz": 5.0
+      },
+      "overrides": {}
+    },
+    {
+      "id": "full-modern20-c2",
+      "group": "full_distance",
+      "request": {
+        "input": {
+          "track_id": "MONZA",
+          "laps": 53,
+          "vehicle_id": "modern_v6t",
+          "era": 5,
+          "hz": 5.0,
+          "pit_strategy": {
+            "player_pit_laps": [
+              26
+            ]
+          },
+          "competitors": [
+            {
+              "id": "player",
+              "name": "Audit driver",
+              "driver_id": "default",
+              "team_id": "pitgun-lab",
+              "is_player": true,
+              "tuning": {
+                "engine_points": 10,
+                "cooling_points": 2,
+                "aero_points": 4,
+                "chassis_points": 4,
+                "downforce_slider": 0.5,
+                "gear_ratio_slider": 0.5
+              },
+              "budget_cap": 20,
+              "stint_strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 26
+                  },
+                  {
+                    "tire_id": "hard",
+                    "laps": 27
+                  }
+                ],
+                "pit_laps": [
+                  26
+                ]
+              }
+            }
+          ]
+        },
+        "seed": 42,
+        "era": 5,
+        "hz": 5.0
+      },
+      "overrides": {}
+    },
+    {
+      "id": "hot-modern-c0",
+      "group": "environment_diagnostic",
+      "request": {
+        "input": {
+          "track_id": "MONZA",
+          "laps": 5,
+          "vehicle_id": "modern_v6t",
+          "era": 5,
+          "hz": 5.0,
+          "pit_strategy": {
+            "player_pit_laps": []
+          },
+          "competitors": [
+            {
+              "id": "player",
+              "name": "Audit driver",
+              "driver_id": "default",
+              "team_id": "pitgun-lab",
+              "is_player": true,
+              "tuning": {
+                "engine_points": 12,
+                "cooling_points": 0,
+                "aero_points": 4,
+                "chassis_points": 4,
+                "downforce_slider": 0.5,
+                "gear_ratio_slider": 0.5
+              },
+              "budget_cap": 20,
+              "stint_strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 5
+                  }
+                ],
+                "pit_laps": []
+              }
+            }
+          ]
+        },
+        "seed": 42,
+        "era": 5,
+        "hz": 5.0
+      },
+      "overrides": {
+        "air_temperature_c": 45.0
+      }
+    },
+    {
+      "id": "hot-modern-c4",
+      "group": "environment_diagnostic",
+      "request": {
+        "input": {
+          "track_id": "MONZA",
+          "laps": 5,
+          "vehicle_id": "modern_v6t",
+          "era": 5,
+          "hz": 5.0,
+          "pit_strategy": {
+            "player_pit_laps": []
+          },
+          "competitors": [
+            {
+              "id": "player",
+              "name": "Audit driver",
+              "driver_id": "default",
+              "team_id": "pitgun-lab",
+              "is_player": true,
+              "tuning": {
+                "engine_points": 8,
+                "cooling_points": 4,
+                "aero_points": 4,
+                "chassis_points": 4,
+                "downforce_slider": 0.5,
+                "gear_ratio_slider": 0.5
+              },
+              "budget_cap": 20,
+              "stint_strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 5
+                  }
+                ],
+                "pit_laps": []
+              }
+            }
+          ]
+        },
+        "seed": 42,
+        "era": 5,
+        "hz": 5.0
+      },
+      "overrides": {
+        "air_temperature_c": 45.0
+      }
+    },
+    {
+      "id": "tires-soft",
+      "group": "compound_stint",
+      "request": {
+        "input": {
+          "track_id": "BARCELONA",
+          "laps": 20,
+          "vehicle_id": "modern_v6t",
+          "era": 5,
+          "hz": 5.0,
+          "pit_strategy": {
+            "player_pit_laps": []
+          },
+          "competitors": [
+            {
+              "id": "player",
+              "name": "Audit driver",
+              "driver_id": "default",
+              "team_id": "pitgun-lab",
+              "is_player": true,
+              "tuning": {
+                "engine_points": 8,
+                "cooling_points": 4,
+                "aero_points": 4,
+                "chassis_points": 4,
+                "downforce_slider": 0.5,
+                "gear_ratio_slider": 0.5
+              },
+              "budget_cap": 20,
+              "stint_strategy": {
+                "stints": [
+                  {
+                    "tire_id": "soft",
+                    "laps": 20
+                  }
+                ],
+                "pit_laps": []
+              }
+            }
+          ]
+        },
+        "seed": 42,
+        "era": 5,
+        "hz": 5.0
+      },
+      "overrides": {}
+    },
+    {
+      "id": "tires-medium",
+      "group": "compound_stint",
+      "request": {
+        "input": {
+          "track_id": "BARCELONA",
+          "laps": 20,
+          "vehicle_id": "modern_v6t",
+          "era": 5,
+          "hz": 5.0,
+          "pit_strategy": {
+            "player_pit_laps": []
+          },
+          "competitors": [
+            {
+              "id": "player",
+              "name": "Audit driver",
+              "driver_id": "default",
+              "team_id": "pitgun-lab",
+              "is_player": true,
+              "tuning": {
+                "engine_points": 8,
+                "cooling_points": 4,
+                "aero_points": 4,
+                "chassis_points": 4,
+                "downforce_slider": 0.5,
+                "gear_ratio_slider": 0.5
+              },
+              "budget_cap": 20,
+              "stint_strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 20
+                  }
+                ],
+                "pit_laps": []
+              }
+            }
+          ]
+        },
+        "seed": 42,
+        "era": 5,
+        "hz": 5.0
+      },
+      "overrides": {}
+    },
+    {
+      "id": "tires-hard",
+      "group": "compound_stint",
+      "request": {
+        "input": {
+          "track_id": "BARCELONA",
+          "laps": 20,
+          "vehicle_id": "modern_v6t",
+          "era": 5,
+          "hz": 5.0,
+          "pit_strategy": {
+            "player_pit_laps": []
+          },
+          "competitors": [
+            {
+              "id": "player",
+              "name": "Audit driver",
+              "driver_id": "default",
+              "team_id": "pitgun-lab",
+              "is_player": true,
+              "tuning": {
+                "engine_points": 8,
+                "cooling_points": 4,
+                "aero_points": 4,
+                "chassis_points": 4,
+                "downforce_slider": 0.5,
+                "gear_ratio_slider": 0.5
+              },
+              "budget_cap": 20,
+              "stint_strategy": {
+                "stints": [
+                  {
+                    "tire_id": "hard",
+                    "laps": 20
+                  }
+                ],
+                "pit_laps": []
+              }
+            }
+          ]
+        },
+        "seed": 42,
+        "era": 5,
+        "hz": 5.0
+      },
+      "overrides": {}
+    },
+    {
+      "id": "tire-start-35",
+      "group": "initial_temperature_diagnostic",
+      "request": {
+        "input": {
+          "track_id": "BARCELONA",
+          "laps": 20,
+          "vehicle_id": "modern_v6t",
+          "era": 5,
+          "hz": 5.0,
+          "pit_strategy": {
+            "player_pit_laps": []
+          },
+          "competitors": [
+            {
+              "id": "player",
+              "name": "Audit driver",
+              "driver_id": "default",
+              "team_id": "pitgun-lab",
+              "is_player": true,
+              "tuning": {
+                "engine_points": 8,
+                "cooling_points": 4,
+                "aero_points": 4,
+                "chassis_points": 4,
+                "downforce_slider": 0.5,
+                "gear_ratio_slider": 0.5
+              },
+              "budget_cap": 20,
+              "stint_strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 20
+                  }
+                ],
+                "pit_laps": []
+              }
+            }
+          ]
+        },
+        "seed": 42,
+        "era": 5,
+        "hz": 5.0
+      },
+      "overrides": {
+        "initial_tire_temperature_c": 35.0
+      }
+    },
+    {
+      "id": "tire-start-110",
+      "group": "initial_temperature_diagnostic",
+      "request": {
+        "input": {
+          "track_id": "BARCELONA",
+          "laps": 20,
+          "vehicle_id": "modern_v6t",
+          "era": 5,
+          "hz": 5.0,
+          "pit_strategy": {
+            "player_pit_laps": []
+          },
+          "competitors": [
+            {
+              "id": "player",
+              "name": "Audit driver",
+              "driver_id": "default",
+              "team_id": "pitgun-lab",
+              "is_player": true,
+              "tuning": {
+                "engine_points": 8,
+                "cooling_points": 4,
+                "aero_points": 4,
+                "chassis_points": 4,
+                "downforce_slider": 0.5,
+                "gear_ratio_slider": 0.5
+              },
+              "budget_cap": 20,
+              "stint_strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 20
+                  }
+                ],
+                "pit_laps": []
+              }
+            }
+          ]
+        },
+        "seed": 42,
+        "era": 5,
+        "hz": 5.0
+      },
+      "overrides": {
+        "initial_tire_temperature_c": 110.0
+      }
+    },
+    {
+      "id": "soft-medium-pit10",
+      "group": "pit_strategy",
+      "request": {
+        "input": {
+          "track_id": "BARCELONA",
+          "laps": 20,
+          "vehicle_id": "modern_v6t",
+          "era": 5,
+          "hz": 5.0,
+          "pit_strategy": {
+            "player_pit_laps": [
+              10
+            ]
+          },
+          "competitors": [
+            {
+              "id": "player",
+              "name": "Audit driver",
+              "driver_id": "default",
+              "team_id": "pitgun-lab",
+              "is_player": true,
+              "tuning": {
+                "engine_points": 8,
+                "cooling_points": 4,
+                "aero_points": 4,
+                "chassis_points": 4,
+                "downforce_slider": 0.5,
+                "gear_ratio_slider": 0.5
+              },
+              "budget_cap": 20,
+              "stint_strategy": {
+                "stints": [
+                  {
+                    "tire_id": "soft",
+                    "laps": 10
+                  },
+                  {
+                    "tire_id": "medium",
+                    "laps": 10
+                  }
+                ],
+                "pit_laps": [
+                  10
+                ]
+              }
+            }
+          ]
+        },
+        "seed": 42,
+        "era": 5,
+        "hz": 5.0
+      },
+      "overrides": {}
+    },
+    {
+      "id": "medium-soft-pit5",
+      "group": "pit_strategy",
+      "request": {
+        "input": {
+          "track_id": "BARCELONA",
+          "laps": 20,
+          "vehicle_id": "modern_v6t",
+          "era": 5,
+          "hz": 5.0,
+          "pit_strategy": {
+            "player_pit_laps": [
+              5
+            ]
+          },
+          "competitors": [
+            {
+              "id": "player",
+              "name": "Audit driver",
+              "driver_id": "default",
+              "team_id": "pitgun-lab",
+              "is_player": true,
+              "tuning": {
+                "engine_points": 8,
+                "cooling_points": 4,
+                "aero_points": 4,
+                "chassis_points": 4,
+                "downforce_slider": 0.5,
+                "gear_ratio_slider": 0.5
+              },
+              "budget_cap": 20,
+              "stint_strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 5
+                  },
+                  {
+                    "tire_id": "soft",
+                    "laps": 15
+                  }
+                ],
+                "pit_laps": [
+                  5
+                ]
+              }
+            }
+          ]
+        },
+        "seed": 42,
+        "era": 5,
+        "hz": 5.0
+      },
+      "overrides": {}
+    },
+    {
+      "id": "medium-soft-pit10",
+      "group": "pit_strategy",
+      "request": {
+        "input": {
+          "track_id": "BARCELONA",
+          "laps": 20,
+          "vehicle_id": "modern_v6t",
+          "era": 5,
+          "hz": 5.0,
+          "pit_strategy": {
+            "player_pit_laps": [
+              10
+            ]
+          },
+          "competitors": [
+            {
+              "id": "player",
+              "name": "Audit driver",
+              "driver_id": "default",
+              "team_id": "pitgun-lab",
+              "is_player": true,
+              "tuning": {
+                "engine_points": 8,
+                "cooling_points": 4,
+                "aero_points": 4,
+                "chassis_points": 4,
+                "downforce_slider": 0.5,
+                "gear_ratio_slider": 0.5
+              },
+              "budget_cap": 20,
+              "stint_strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 10
+                  },
+                  {
+                    "tire_id": "soft",
+                    "laps": 10
+                  }
+                ],
+                "pit_laps": [
+                  10
+                ]
+              }
+            }
+          ]
+        },
+        "seed": 42,
+        "era": 5,
+        "hz": 5.0
+      },
+      "overrides": {}
+    },
+    {
+      "id": "medium-soft-pit15",
+      "group": "pit_strategy",
+      "request": {
+        "input": {
+          "track_id": "BARCELONA",
+          "laps": 20,
+          "vehicle_id": "modern_v6t",
+          "era": 5,
+          "hz": 5.0,
+          "pit_strategy": {
+            "player_pit_laps": [
+              15
+            ]
+          },
+          "competitors": [
+            {
+              "id": "player",
+              "name": "Audit driver",
+              "driver_id": "default",
+              "team_id": "pitgun-lab",
+              "is_player": true,
+              "tuning": {
+                "engine_points": 8,
+                "cooling_points": 4,
+                "aero_points": 4,
+                "chassis_points": 4,
+                "downforce_slider": 0.5,
+                "gear_ratio_slider": 0.5
+              },
+              "budget_cap": 20,
+              "stint_strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 15
+                  },
+                  {
+                    "tire_id": "soft",
+                    "laps": 5
+                  }
+                ],
+                "pit_laps": [
+                  15
+                ]
+              }
+            }
+          ]
+        },
+        "seed": 42,
+        "era": 5,
+        "hz": 5.0
+      },
+      "overrides": {}
+    },
+    {
+      "id": "setup-base",
+      "group": "setup_response",
+      "request": {
+        "input": {
+          "track_id": "BARCELONA",
+          "laps": 5,
+          "vehicle_id": "modern_v6t",
+          "era": 5,
+          "hz": 5.0,
+          "pit_strategy": {
+            "player_pit_laps": []
+          },
+          "competitors": [
+            {
+              "id": "player",
+              "name": "Audit driver",
+              "driver_id": "default",
+              "team_id": "pitgun-lab",
+              "is_player": true,
+              "tuning": {
+                "engine_points": 8,
+                "cooling_points": 4,
+                "aero_points": 4,
+                "chassis_points": 4,
+                "downforce_slider": 0.5,
+                "gear_ratio_slider": 0.5
+              },
+              "budget_cap": 20,
+              "stint_strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 5
+                  }
+                ],
+                "pit_laps": []
+              }
+            }
+          ]
+        },
+        "seed": 42,
+        "era": 5,
+        "hz": 5.0
+      },
+      "overrides": {}
+    },
+    {
+      "id": "setup-aero",
+      "group": "setup_response",
+      "request": {
+        "input": {
+          "track_id": "BARCELONA",
+          "laps": 5,
+          "vehicle_id": "modern_v6t",
+          "era": 5,
+          "hz": 5.0,
+          "pit_strategy": {
+            "player_pit_laps": []
+          },
+          "competitors": [
+            {
+              "id": "player",
+              "name": "Audit driver",
+              "driver_id": "default",
+              "team_id": "pitgun-lab",
+              "is_player": true,
+              "tuning": {
+                "engine_points": 6,
+                "cooling_points": 4,
+                "aero_points": 6,
+                "chassis_points": 4,
+                "downforce_slider": 0.5,
+                "gear_ratio_slider": 0.5
+              },
+              "budget_cap": 20,
+              "stint_strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 5
+                  }
+                ],
+                "pit_laps": []
+              }
+            }
+          ]
+        },
+        "seed": 42,
+        "era": 5,
+        "hz": 5.0
+      },
+      "overrides": {}
+    },
+    {
+      "id": "setup-chassis",
+      "group": "setup_response",
+      "request": {
+        "input": {
+          "track_id": "BARCELONA",
+          "laps": 5,
+          "vehicle_id": "modern_v6t",
+          "era": 5,
+          "hz": 5.0,
+          "pit_strategy": {
+            "player_pit_laps": []
+          },
+          "competitors": [
+            {
+              "id": "player",
+              "name": "Audit driver",
+              "driver_id": "default",
+              "team_id": "pitgun-lab",
+              "is_player": true,
+              "tuning": {
+                "engine_points": 6,
+                "cooling_points": 4,
+                "aero_points": 4,
+                "chassis_points": 6,
+                "downforce_slider": 0.5,
+                "gear_ratio_slider": 0.5
+              },
+              "budget_cap": 20,
+              "stint_strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 5
+                  }
+                ],
+                "pit_laps": []
+              }
+            }
+          ]
+        },
+        "seed": 42,
+        "era": 5,
+        "hz": 5.0
+      },
+      "overrides": {}
+    },
+    {
+      "id": "setup-cooling",
+      "group": "setup_response",
+      "request": {
+        "input": {
+          "track_id": "BARCELONA",
+          "laps": 5,
+          "vehicle_id": "modern_v6t",
+          "era": 5,
+          "hz": 5.0,
+          "pit_strategy": {
+            "player_pit_laps": []
+          },
+          "competitors": [
+            {
+              "id": "player",
+              "name": "Audit driver",
+              "driver_id": "default",
+              "team_id": "pitgun-lab",
+              "is_player": true,
+              "tuning": {
+                "engine_points": 6,
+                "cooling_points": 6,
+                "aero_points": 4,
+                "chassis_points": 4,
+                "downforce_slider": 0.5,
+                "gear_ratio_slider": 0.5
+              },
+              "budget_cap": 20,
+              "stint_strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 5
+                  }
+                ],
+                "pit_laps": []
+              }
+            }
+          ]
+        },
+        "seed": 42,
+        "era": 5,
+        "hz": 5.0
+      },
+      "overrides": {}
+    },
+    {
+      "id": "setup-engine",
+      "group": "setup_response",
+      "request": {
+        "input": {
+          "track_id": "BARCELONA",
+          "laps": 5,
+          "vehicle_id": "modern_v6t",
+          "era": 5,
+          "hz": 5.0,
+          "pit_strategy": {
+            "player_pit_laps": []
+          },
+          "competitors": [
+            {
+              "id": "player",
+              "name": "Audit driver",
+              "driver_id": "default",
+              "team_id": "pitgun-lab",
+              "is_player": true,
+              "tuning": {
+                "engine_points": 10,
+                "cooling_points": 2,
+                "aero_points": 4,
+                "chassis_points": 4,
+                "downforce_slider": 0.5,
+                "gear_ratio_slider": 0.5
+              },
+              "budget_cap": 20,
+              "stint_strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 5
+                  }
+                ],
+                "pit_laps": []
+              }
+            }
+          ]
+        },
+        "seed": 42,
+        "era": 5,
+        "hz": 5.0
+      },
+      "overrides": {}
+    },
+    {
+      "id": "setup-df02",
+      "group": "setup_response",
+      "request": {
+        "input": {
+          "track_id": "BARCELONA",
+          "laps": 5,
+          "vehicle_id": "modern_v6t",
+          "era": 5,
+          "hz": 5.0,
+          "pit_strategy": {
+            "player_pit_laps": []
+          },
+          "competitors": [
+            {
+              "id": "player",
+              "name": "Audit driver",
+              "driver_id": "default",
+              "team_id": "pitgun-lab",
+              "is_player": true,
+              "tuning": {
+                "engine_points": 8,
+                "cooling_points": 4,
+                "aero_points": 4,
+                "chassis_points": 4,
+                "downforce_slider": 0.2,
+                "gear_ratio_slider": 0.5
+              },
+              "budget_cap": 20,
+              "stint_strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 5
+                  }
+                ],
+                "pit_laps": []
+              }
+            }
+          ]
+        },
+        "seed": 42,
+        "era": 5,
+        "hz": 5.0
+      },
+      "overrides": {}
+    },
+    {
+      "id": "setup-df08",
+      "group": "setup_response",
+      "request": {
+        "input": {
+          "track_id": "BARCELONA",
+          "laps": 5,
+          "vehicle_id": "modern_v6t",
+          "era": 5,
+          "hz": 5.0,
+          "pit_strategy": {
+            "player_pit_laps": []
+          },
+          "competitors": [
+            {
+              "id": "player",
+              "name": "Audit driver",
+              "driver_id": "default",
+              "team_id": "pitgun-lab",
+              "is_player": true,
+              "tuning": {
+                "engine_points": 8,
+                "cooling_points": 4,
+                "aero_points": 4,
+                "chassis_points": 4,
+                "downforce_slider": 0.8,
+                "gear_ratio_slider": 0.5
+              },
+              "budget_cap": 20,
+              "stint_strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 5
+                  }
+                ],
+                "pit_laps": []
+              }
+            }
+          ]
+        },
+        "seed": 42,
+        "era": 5,
+        "hz": 5.0
+      },
+      "overrides": {}
+    },
+    {
+      "id": "setup-gear03",
+      "group": "setup_response",
+      "request": {
+        "input": {
+          "track_id": "BARCELONA",
+          "laps": 5,
+          "vehicle_id": "modern_v6t",
+          "era": 5,
+          "hz": 5.0,
+          "pit_strategy": {
+            "player_pit_laps": []
+          },
+          "competitors": [
+            {
+              "id": "player",
+              "name": "Audit driver",
+              "driver_id": "default",
+              "team_id": "pitgun-lab",
+              "is_player": true,
+              "tuning": {
+                "engine_points": 8,
+                "cooling_points": 4,
+                "aero_points": 4,
+                "chassis_points": 4,
+                "downforce_slider": 0.5,
+                "gear_ratio_slider": 0.3
+              },
+              "budget_cap": 20,
+              "stint_strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 5
+                  }
+                ],
+                "pit_laps": []
+              }
+            }
+          ]
+        },
+        "seed": 42,
+        "era": 5,
+        "hz": 5.0
+      },
+      "overrides": {}
+    },
+    {
+      "id": "setup-gear074",
+      "group": "setup_response",
+      "request": {
+        "input": {
+          "track_id": "BARCELONA",
+          "laps": 5,
+          "vehicle_id": "modern_v6t",
+          "era": 5,
+          "hz": 5.0,
+          "pit_strategy": {
+            "player_pit_laps": []
+          },
+          "competitors": [
+            {
+              "id": "player",
+              "name": "Audit driver",
+              "driver_id": "default",
+              "team_id": "pitgun-lab",
+              "is_player": true,
+              "tuning": {
+                "engine_points": 8,
+                "cooling_points": 4,
+                "aero_points": 4,
+                "chassis_points": 4,
+                "downforce_slider": 0.5,
+                "gear_ratio_slider": 0.74
+              },
+              "budget_cap": 20,
+              "stint_strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 5
+                  }
+                ],
+                "pit_laps": []
+              }
+            }
+          ]
+        },
+        "seed": 42,
+        "era": 5,
+        "hz": 5.0
+      },
+      "overrides": {}
+    },
+    {
+      "id": "ablation-budget-early8-monza-c0",
+      "group": "disable_derating",
+      "request": {
+        "input": {
+          "track_id": "MONZA",
+          "laps": 5,
+          "vehicle_id": "classic_v8_1960",
+          "era": 1,
+          "hz": 5.0,
+          "pit_strategy": {
+            "player_pit_laps": []
+          },
+          "competitors": [
+            {
+              "id": "player",
+              "name": "Audit driver",
+              "driver_id": "default",
+              "team_id": "pitgun-lab",
+              "is_player": true,
+              "tuning": {
+                "engine_points": 6,
+                "cooling_points": 0,
+                "aero_points": 1,
+                "chassis_points": 1,
+                "downforce_slider": 0.5,
+                "gear_ratio_slider": 0.5
+              },
+              "budget_cap": 8,
+              "stint_strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 5
+                  }
+                ],
+                "pit_laps": []
+              }
+            }
+          ]
+        },
+        "seed": 42,
+        "era": 1,
+        "hz": 5.0
+      },
+      "overrides": {
+        "disable_derating": true
+      },
+      "reference": "budget-early8-monza-c0"
+    },
+    {
+      "id": "ablation-budget-classic15-montreal-c0",
+      "group": "disable_derating",
+      "request": {
+        "input": {
+          "track_id": "MONTREAL",
+          "laps": 5,
+          "vehicle_id": "classic_v8_1970",
+          "era": 2,
+          "hz": 5.0,
+          "pit_strategy": {
+            "player_pit_laps": []
+          },
+          "competitors": [
+            {
+              "id": "player",
+              "name": "Audit driver",
+              "driver_id": "default",
+              "team_id": "pitgun-lab",
+              "is_player": true,
+              "tuning": {
+                "engine_points": 7,
+                "cooling_points": 0,
+                "aero_points": 0,
+                "chassis_points": 8,
+                "downforce_slider": 0.5,
+                "gear_ratio_slider": 0.5
+              },
+              "budget_cap": 15,
+              "stint_strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 5
+                  }
+                ],
+                "pit_laps": []
+              }
+            }
+          ]
+        },
+        "seed": 42,
+        "era": 2,
+        "hz": 5.0
+      },
+      "overrides": {
+        "disable_derating": true
+      },
+      "reference": "budget-classic15-montreal-c0"
+    },
+    {
+      "id": "ablation-budget-modern20-monza-c0",
+      "group": "disable_derating",
+      "request": {
+        "input": {
+          "track_id": "MONZA",
+          "laps": 5,
+          "vehicle_id": "modern_v6t",
+          "era": 5,
+          "hz": 5.0,
+          "pit_strategy": {
+            "player_pit_laps": []
+          },
+          "competitors": [
+            {
+              "id": "player",
+              "name": "Audit driver",
+              "driver_id": "default",
+              "team_id": "pitgun-lab",
+              "is_player": true,
+              "tuning": {
+                "engine_points": 12,
+                "cooling_points": 0,
+                "aero_points": 4,
+                "chassis_points": 4,
+                "downforce_slider": 0.5,
+                "gear_ratio_slider": 0.5
+              },
+              "budget_cap": 20,
+              "stint_strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 5
+                  }
+                ],
+                "pit_laps": []
+              }
+            }
+          ]
+        },
+        "seed": 42,
+        "era": 5,
+        "hz": 5.0
+      },
+      "overrides": {
+        "disable_derating": true
+      },
+      "reference": "budget-modern20-monza-c0"
+    },
+    {
+      "id": "ablation-budget-modern20-monza-c4",
+      "group": "disable_derating",
+      "request": {
+        "input": {
+          "track_id": "MONZA",
+          "laps": 5,
+          "vehicle_id": "modern_v6t",
+          "era": 5,
+          "hz": 5.0,
+          "pit_strategy": {
+            "player_pit_laps": []
+          },
+          "competitors": [
+            {
+              "id": "player",
+              "name": "Audit driver",
+              "driver_id": "default",
+              "team_id": "pitgun-lab",
+              "is_player": true,
+              "tuning": {
+                "engine_points": 8,
+                "cooling_points": 4,
+                "aero_points": 4,
+                "chassis_points": 4,
+                "downforce_slider": 0.5,
+                "gear_ratio_slider": 0.5
+              },
+              "budget_cap": 20,
+              "stint_strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 5
+                  }
+                ],
+                "pit_laps": []
+              }
+            }
+          ]
+        },
+        "seed": 42,
+        "era": 5,
+        "hz": 5.0
+      },
+      "overrides": {
+        "disable_derating": true
+      },
+      "reference": "budget-modern20-monza-c4"
+    },
+    {
+      "id": "isolated-early-c1",
+      "group": "isolated_cooling",
+      "request": {
+        "input": {
+          "track_id": "MONZA",
+          "laps": 5,
+          "vehicle_id": "classic_v8_1960",
+          "era": 1,
+          "hz": 5.0,
+          "pit_strategy": {
+            "player_pit_laps": []
+          },
+          "competitors": [
+            {
+              "id": "player",
+              "name": "Audit driver",
+              "driver_id": "default",
+              "team_id": "pitgun-lab",
+              "is_player": true,
+              "tuning": {
+                "engine_points": 6,
+                "cooling_points": 1,
+                "aero_points": 1,
+                "chassis_points": 1,
+                "downforce_slider": 0.5,
+                "gear_ratio_slider": 0.5
+              },
+              "budget_cap": 9,
+              "stint_strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 5
+                  }
+                ],
+                "pit_laps": []
+              }
+            }
+          ]
+        },
+        "seed": 42,
+        "era": 1,
+        "hz": 5.0
+      },
+      "overrides": {}
+    },
+    {
+      "id": "isolated-early-c2",
+      "group": "isolated_cooling",
+      "request": {
+        "input": {
+          "track_id": "MONZA",
+          "laps": 5,
+          "vehicle_id": "classic_v8_1960",
+          "era": 1,
+          "hz": 5.0,
+          "pit_strategy": {
+            "player_pit_laps": []
+          },
+          "competitors": [
+            {
+              "id": "player",
+              "name": "Audit driver",
+              "driver_id": "default",
+              "team_id": "pitgun-lab",
+              "is_player": true,
+              "tuning": {
+                "engine_points": 6,
+                "cooling_points": 2,
+                "aero_points": 1,
+                "chassis_points": 1,
+                "downforce_slider": 0.5,
+                "gear_ratio_slider": 0.5
+              },
+              "budget_cap": 10,
+              "stint_strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 5
+                  }
+                ],
+                "pit_laps": []
+              }
+            }
+          ]
+        },
+        "seed": 42,
+        "era": 1,
+        "hz": 5.0
+      },
+      "overrides": {}
+    },
+    {
+      "id": "isolated-early-c4",
+      "group": "isolated_cooling",
+      "request": {
+        "input": {
+          "track_id": "MONZA",
+          "laps": 5,
+          "vehicle_id": "classic_v8_1960",
+          "era": 1,
+          "hz": 5.0,
+          "pit_strategy": {
+            "player_pit_laps": []
+          },
+          "competitors": [
+            {
+              "id": "player",
+              "name": "Audit driver",
+              "driver_id": "default",
+              "team_id": "pitgun-lab",
+              "is_player": true,
+              "tuning": {
+                "engine_points": 6,
+                "cooling_points": 4,
+                "aero_points": 1,
+                "chassis_points": 1,
+                "downforce_slider": 0.5,
+                "gear_ratio_slider": 0.5
+              },
+              "budget_cap": 12,
+              "stint_strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 5
+                  }
+                ],
+                "pit_laps": []
+              }
+            }
+          ]
+        },
+        "seed": 42,
+        "era": 1,
+        "hz": 5.0
+      },
+      "overrides": {}
+    },
+    {
+      "id": "driver-franz_hermann",
+      "group": "physical_driver",
+      "request": {
+        "input": {
+          "track_id": "BARCELONA",
+          "laps": 20,
+          "vehicle_id": "modern_v6t",
+          "era": 5,
+          "hz": 5.0,
+          "pit_strategy": {
+            "player_pit_laps": []
+          },
+          "competitors": [
+            {
+              "id": "player",
+              "name": "Audit driver",
+              "driver_id": "franz_hermann",
+              "team_id": "pitgun-lab",
+              "is_player": true,
+              "tuning": {
+                "engine_points": 8,
+                "cooling_points": 4,
+                "aero_points": 4,
+                "chassis_points": 4,
+                "downforce_slider": 0.5,
+                "gear_ratio_slider": 0.5
+              },
+              "budget_cap": 20,
+              "stint_strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 20
+                  }
+                ],
+                "pit_laps": []
+              }
+            }
+          ]
+        },
+        "seed": 42,
+        "era": 5,
+        "hz": 5.0
+      },
+      "overrides": {}
+    },
+    {
+      "id": "driver-battery_voltas",
+      "group": "physical_driver",
+      "request": {
+        "input": {
+          "track_id": "BARCELONA",
+          "laps": 20,
+          "vehicle_id": "modern_v6t",
+          "era": 5,
+          "hz": 5.0,
+          "pit_strategy": {
+            "player_pit_laps": []
+          },
+          "competitors": [
+            {
+              "id": "player",
+              "name": "Audit driver",
+              "driver_id": "battery_voltas",
+              "team_id": "pitgun-lab",
+              "is_player": true,
+              "tuning": {
+                "engine_points": 8,
+                "cooling_points": 4,
+                "aero_points": 4,
+                "chassis_points": 4,
+                "downforce_slider": 0.5,
+                "gear_ratio_slider": 0.5
+              },
+              "budget_cap": 20,
+              "stint_strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 20
+                  }
+                ],
+                "pit_laps": []
+              }
+            }
+          ]
+        },
+        "seed": 42,
+        "era": 5,
+        "hz": 5.0
+      },
+      "overrides": {}
+    }
+  ],
+  "timeout_s": 180,
+  "scope": "Native single car, synthetic effective budgets8/15/20; no earned career reconstruction, native/WASM admission or experimental physical validation. Default100kg preserved: fuel failures must remain explicit. All anchor conditions are exposed. V2 uses a conservative minimum-grip seam forecast, so cross-model time deltas are not pure thermal effects.",
+  "criteria": [
+    "Repeat every case/model exactly excluding process measurements.",
+    "Check chemical/thermal/mechanical ledgers and serialize every failure.",
+    "Quantify equal-budget cooling, fixed-engine cooling and causal derating ablations separately.",
+    "Show both surface heating/cooling and carcass memory, compound short/long tradeoffs.",
+    "Do not claim that zero cooling can never win or that all strategy/setup parameters are balanced."
+  ]
+}

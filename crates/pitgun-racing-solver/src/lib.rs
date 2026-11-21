@@ -18,7 +18,11 @@ use serde::{Deserialize, Serialize};
 
 pub mod longitudinal_energy;
 pub mod power_telemetry;
+pub mod thermal_physics;
 use longitudinal_energy::{EnergyLedgerV1, LongitudinalEnergyModelV1, SegmentContext};
+use thermal_physics::{
+    ThermalLapV2, ThermalLedgerV2, ThermalModelV2, ThermalPhysicsV2, ThermalResultV2,
+};
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct AeroParams {
@@ -390,6 +394,9 @@ pub struct ResolvedSimulationRequestV3 {
     /// Experimental work/energy integration; absent preserves every historical model.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub longitudinal_energy: Option<LongitudinalEnergyModelV1>,
+    /// Opt-in new heat laws; requires the work/energy core and explicit compounds.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub thermal_physics_v2: Option<ThermalPhysicsV2>,
 }
 
 /// Calibrable guard for the reduced-order engine thermal law.
@@ -666,6 +673,10 @@ fn default_lap_count() -> u16 {
 pub struct SimulationSolution {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub longitudinal_model: Option<LongitudinalEnergyModelV1>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub thermal_model: Option<ThermalModelV2>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub tire_carcass_temp: Vec<f64>,
     pub s: Vec<f64>,
     pub t: Vec<f64>,
     pub v: Vec<f64>,
@@ -874,6 +885,8 @@ pub struct SetupResponseDiagnosticsV1 {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct SimulationResult {
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub thermal_v2: Option<ThermalResultV2>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub longitudinal_energy_v1: Option<EnergyLedgerV1>,
     pub solution: SimulationSolution,
     pub final_state: VehicleState,
@@ -905,6 +918,8 @@ pub struct SimulationResult {
 /// driver instructions across deterministic lap boundaries.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct ResolvedSimulationLapV3 {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub thermal_v2: Option<ThermalLapV2>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub longitudinal_energy_v1: Option<EnergyLedgerV1>,
     pub lap_index: u16,
@@ -955,6 +970,7 @@ pub struct ResolvedSimulationSessionV3 {
     completed_laps: u16,
     lap_count: u16,
     complete: bool,
+    thermal_compounds: Option<Vec<TireParams>>,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq)]
@@ -1057,6 +1073,27 @@ fn validate_resolved_simulation_request_v3(
     if input.longitudinal_energy.is_some() && !input.driver_control_schedule.is_empty() {
         return Err("energy V1 candidate requires a fixed driver envelope; physical-control transitions need separate qualification".into());
     }
+    if let Some(thermal) = &input.thermal_physics_v2 {
+        if input
+            .driver_correction_workload_multiplier
+            .is_some_and(|v| v != 1.0)
+        {
+            return Err("thermal V2 does not admit the historical correction heat proxy".into());
+        }
+        if input.longitudinal_energy.is_none() || input.tire_degradation.is_none() {
+            return Err("thermal V2 requires energy V1 and compound degradation".into());
+        }
+        thermal.validate(
+            input
+                .fuel_mass
+                .as_ref()
+                .ok_or("thermal V2 requires power-based fuel")?,
+        )?;
+        thermal.tire(&input.vehicle.tire)?;
+        for stop in &input.pit_plan.stops {
+            thermal.tire(&stop.tire)?;
+        }
+    }
     if let Some(fuel_mass) = &input.fuel_mass {
         fuel_mass.validate()?;
         if input.state.fuel_mass <= 0.0 {
@@ -1095,6 +1132,10 @@ impl ResolvedSimulationSessionV3 {
         service_boundaries: bool,
     ) -> Result<Self, String> {
         validate_resolved_simulation_request_v3(&input)?;
+        let thermal_compounds = input
+            .thermal_physics_v2
+            .as_ref()
+            .map(|p| p.compounds.iter().map(|c| c.tire.clone()).collect());
 
         let lap_slot = Rc::new(RefCell::new(None));
         let future_lap_slot = Rc::clone(&lap_slot);
@@ -1151,6 +1192,7 @@ impl ResolvedSimulationSessionV3 {
                 ),
                 input.fuel_mass.as_ref(),
                 input.longitudinal_energy,
+                input.thermal_physics_v2.as_ref(),
                 Some(future_lap_slot),
                 future_pre_service_slot,
                 future_pending_pit,
@@ -1167,6 +1209,7 @@ impl ResolvedSimulationSessionV3 {
             completed_laps: 0,
             lap_count,
             complete: false,
+            thermal_compounds,
         })
     }
 
@@ -1176,6 +1219,7 @@ impl ResolvedSimulationSessionV3 {
     /// Racing must resolve and authorize the tire before calling this method.
     pub fn request_next_lap_pit(&mut self, tire: TireParams) -> Result<u16, String> {
         validate_tire_params(&tire)?;
+        self.validate_thermal_compound(&tire)?;
         if self.pre_service_slot.is_some() {
             return Err("service-boundary sessions require resolve_service_boundary".into());
         }
@@ -1231,6 +1275,7 @@ impl ResolvedSimulationSessionV3 {
         let lap = self.open_service_lap.ok_or("no open service boundary")?;
         if let Some(tire) = tire {
             validate_tire_params(&tire)?;
+            self.validate_thermal_compound(&tire)?;
             if lap >= self.lap_count {
                 return Err("pit requires a boundary before the final lap".into());
             }
@@ -1241,6 +1286,17 @@ impl ResolvedSimulationSessionV3 {
         }
         self.open_service_lap = None;
         Ok(lap)
+    }
+
+    fn validate_thermal_compound(&self, tire: &TireParams) -> Result<(), String> {
+        if self
+            .thermal_compounds
+            .as_ref()
+            .is_some_and(|compounds| !compounds.contains(tire))
+        {
+            return Err("thermal V2: compound was not resolved before execution".into());
+        }
+        Ok(())
     }
 
     /// Advances by one deterministic lap, then returns the canonical result.
@@ -1597,6 +1653,8 @@ fn run_compatibility_simulation_kernel(
 
     let solution = SimulationSolution {
         longitudinal_model: None,
+        thermal_model: None,
+        tire_carcass_temp: Vec::new(),
         s: out_s,
         t: out_t,
         v: out_v,
@@ -1626,6 +1684,7 @@ fn run_compatibility_simulation_kernel(
 
     Ok(SimulationResult {
         longitudinal_energy_v1: None,
+        thermal_v2: None,
         solution,
         final_state: state_curr,
         lap_times_s,
@@ -1704,6 +1763,7 @@ async fn run_resolved_simulation_kernel_incremental(
     v3_controls: V3ResolvedControls<'_>,
     fuel_mass: Option<&FuelMassParamsV3>,
     energy_model: Option<LongitudinalEnergyModelV1>,
+    thermal_model: Option<&ThermalPhysicsV2>,
     lap_slot: Option<ResolvedLapSlotV3>,
     pre_service_slot: Option<ResolvedLapSlotV3>,
     pending_pit: Rc<RefCell<Option<PitStop>>>,
@@ -1724,6 +1784,9 @@ async fn run_resolved_simulation_kernel_incremental(
         TireDynamics::Compatibility => None,
     };
     let mut energy_ledger = EnergyLedgerV1::default();
+    let mut thermal_ledger = ThermalLedgerV2::default();
+    let mut carcass_temperature = thermal_model.map(|p| p.initial_carcass_temperature_c);
+    let mut out_carcass_temperature = Vec::new();
     let baseline_driver_control = resolve_driver_control_envelope_v3(
         *driver_control,
         driver_correction_workload_multiplier,
@@ -1876,12 +1939,17 @@ async fn run_resolved_simulation_kernel_incremental(
             n,
             "traction",
         );
+        let tire_heat = thermal_model.map(|p| p.tire(&tire_curr)).transpose()?;
         let mut tire_temp_reference = vec![state_curr.tire_temp; n];
         let mut tire_wear_reference = vec![state_curr.tire_wear; n];
         let coupling_iterations = match tire_dynamics {
             TireDynamics::Compatibility => 1,
             TireDynamics::AggregateV1(_, _) | TireDynamics::AggregateV2(_, _, _) => {
-                V3_TIRE_COUPLING_ITERATIONS
+                if thermal_model.is_some() {
+                    24
+                } else {
+                    V3_TIRE_COUPLING_ITERATIONS
+                }
             }
         };
 
@@ -1909,8 +1977,9 @@ async fn run_resolved_simulation_kernel_incremental(
         });
         let mut energy_terminal_cap = f64::INFINITY;
         for coupling_iteration in 0..coupling_iterations {
-            let is_final_coupling_iteration = coupling_iteration + 1 == coupling_iterations;
+            let mut is_final_coupling_iteration = coupling_iteration + 1 == coupling_iterations;
             let mut iteration_energy = EnergyLedgerV1::default();
+            let mut iteration_thermal = ThermalLedgerV2::default();
             let mut iteration_generated_heat_j = 0.0;
             let mut iteration_contact_workload_j = 0.0;
             let mut iteration_base_contact_workload_j = 0.0;
@@ -1949,8 +2018,21 @@ async fn run_resolved_simulation_kernel_incremental(
             if energy_mode && lap_idx < lap_count {
                 // A braking forecast, not future telemetry: hold the predicted
                 // end-of-lap tire state and the already pinned next driver limits.
-                let end_temperature = *tire_temp_reference.last().unwrap();
-                let end_wear = *tire_wear_reference.last().unwrap();
+                // V2 can change grip rapidly inside a lap. Until a coupled
+                // look-ahead is qualified, use its mathematical minimum grip,
+                // never an unphysical velocity trim at the next lap seam.
+                // These temperatures are envelope evaluation coordinates,
+                // not a prediction or an exported thermal state.
+                let end_temperature = if thermal_model.is_some() {
+                    tire_curr.temp_opt + 10.0 * tire_curr.temp_sigma
+                } else {
+                    *tire_temp_reference.last().unwrap()
+                };
+                let end_wear = if thermal_model.is_some() {
+                    1.0
+                } else {
+                    *tire_wear_reference.last().unwrap()
+                };
                 let forecast_mu =
                     effective_mu(vehicle.chassis.mu0, end_wear, end_temperature, &tire_curr);
                 let temperatures = vec![end_temperature; n];
@@ -1978,6 +2060,10 @@ async fn run_resolved_simulation_kernel_incremental(
                             mechanical,
                             contact: energy_contact.unwrap(),
                             torque_knots_nm: energy_torque_knots.as_deref(),
+                            thermal: thermal_model.map(|p| (&p.engine, fuel_mass.unwrap())),
+                            tire_deformation_coefficient: tire_heat
+                                .map(|p| p.deformation_resistance_coefficient)
+                                .unwrap_or(0.0),
                             mass_kg: mass,
                             ds_m: segment_distance(spatial_integration, s, ds, i),
                             dz_m: input.track.z[i + 1] - input.track.z[i],
@@ -2017,6 +2103,10 @@ async fn run_resolved_simulation_kernel_incremental(
                             mechanical,
                             contact: energy_contact.expect("resolved V3 contact"),
                             torque_knots_nm: energy_torque_knots.as_deref(),
+                            thermal: thermal_model.map(|p| (&p.engine, fuel_mass.unwrap())),
+                            tire_deformation_coefficient: tire_heat
+                                .map(|p| p.deformation_resistance_coefficient)
+                                .unwrap_or(0.0),
                             mass_kg: mass,
                             ds_m: segment_ds,
                             dz_m: input.track.z[i + 1] - input.track.z[i],
@@ -2102,6 +2192,7 @@ async fn run_resolved_simulation_kernel_incremental(
             let mut v_fwd = vec![0.0; n];
             let mut temp = vec![0.0; n];
             let mut tire_temp = vec![0.0; n];
+            let mut carcass_temp = carcass_temperature.map(|t| vec![t; n]).unwrap_or_default();
             let mut tire_wear = vec![0.0; n];
             let mut gear = vec![1u8; n];
             let mut power = vec![0.0; n];
@@ -2185,6 +2276,10 @@ async fn run_resolved_simulation_kernel_incremental(
                         mechanical,
                         contact: energy_contact.expect("resolved V3 contact"),
                         torque_knots_nm: energy_torque_knots.as_deref(),
+                        thermal: thermal_model.map(|p| (&p.engine, fuel_mass.unwrap())),
+                        tire_deformation_coefficient: tire_heat
+                            .map(|p| p.deformation_resistance_coefficient)
+                            .unwrap_or(0.0),
                         mass_kg: mass,
                         ds_m: segment_ds,
                         dz_m: input.track.z[i + 1] - input.track.z[i],
@@ -2230,6 +2325,9 @@ async fn run_resolved_simulation_kernel_incremental(
                         step.contact_longitudinal_force_n,
                         0.5 * (v + step.end_speed_mps),
                     ));
+                    if let Some(ledger) = step.thermal_ledger {
+                        iteration_thermal.accumulate(&ledger);
+                    }
                     segment_energy = Some(step.ledger);
                 } else if v_fwd[i] >= v_bwd[i] {
                     power[i] = 0.0;
@@ -2323,206 +2421,259 @@ async fn run_resolved_simulation_kernel_incremental(
                 let a_long =
                     (v_fwd[i + 1] * v_fwd[i + 1] - v_safe * v_safe) / (2.0 * segment_ds).max(1e-3);
                 let a_lat = v_safe * v_safe * input.track.kappa[i];
-                match tire_dynamics {
-                    TireDynamics::Compatibility => {
-                        let load_metric = a_lat * a_lat + a_long * a_long;
-                        let tire_heat = tire_curr.heat_k * load_metric;
-                        let tire_cool =
-                            tire_curr.cool_k * v_safe * (tire_temp[i] - input.config.tire_temp_amb);
-                        tire_temp[i + 1] = (tire_temp[i] + (tire_heat - tire_cool) * dt).max(0.0);
-                        let wear_rate = tire_curr.wear_per_s + tire_curr.wear_load_k * load_metric;
-                        tire_wear[i + 1] = (tire_wear[i] + wear_rate * dt).min(1.0);
-                    }
-                    TireDynamics::AggregateV1(contact, _) => {
-                        let (normal_load, available_force, utilization, contact_speed) =
-                            if let Some((normal, available, longitudinal, speed)) = segment_contact
-                            {
-                                (
-                                    normal,
-                                    available,
-                                    combined_force_utilization(
-                                        longitudinal,
-                                        mass * speed * speed * input.track.kappa[i],
+                if let (Some(profile), Some(heat), Some(ledger)) =
+                    (thermal_model, tire_heat, segment_energy)
+                {
+                    let (normal, available, longitudinal, speed) = segment_contact.unwrap();
+                    let rolling_work = vehicle.chassis.c_rr * normal * segment_ds;
+                    let deformation_work = (ledger.rolling_work_j - rolling_work).max(0.0);
+                    let (surface, carcass, wear, balance) = heat.step(
+                        tire_temp[i],
+                        carcass_temp[i],
+                        input.config.tire_temp_amb,
+                        profile.road_temperature_c,
+                        speed,
+                        rolling_work,
+                        deformation_work,
+                        dt,
+                        &tire_curr,
+                    )?;
+                    tire_temp[i + 1] = surface;
+                    carcass_temp[i + 1] = carcass;
+                    tire_wear[i + 1] = (tire_wear[i] + wear).min(1.0);
+                    tire_utilization[i] = combined_force_utilization(
+                        longitudinal,
+                        mass * speed * speed * input.track.kappa[i],
+                        available,
+                    );
+                    tire_normal_load[i] = normal;
+                    tire_available_force[i] = available;
+                    iteration_generated_heat_j += balance.tire_generated_heat_j;
+                    // V2 reports real dissipated work, not the V1 available-force proxy.
+                    iteration_contact_workload_j += rolling_work + deformation_work;
+                    iteration_base_contact_workload_j += rolling_work + deformation_work;
+                    iteration_requested_workload_tire_wear += wear;
+                    let thermal_factor = 1.0
+                        + heat.thermal_wear_gain
+                            * ((0.5 * (tire_temp[i] + surface) - tire_curr.temp_opt)
+                                / tire_curr.temp_sigma)
+                                .powi(2);
+                    iteration_minimum_thermal_wear_multiplier =
+                        iteration_minimum_thermal_wear_multiplier.min(thermal_factor);
+                    iteration_maximum_thermal_wear_multiplier =
+                        iteration_maximum_thermal_wear_multiplier.max(thermal_factor);
+                    iteration_thermal.accumulate(&balance);
+                } else {
+                    match tire_dynamics {
+                        TireDynamics::Compatibility => {
+                            let load_metric = a_lat * a_lat + a_long * a_long;
+                            let tire_heat = tire_curr.heat_k * load_metric;
+                            let tire_cool = tire_curr.cool_k
+                                * v_safe
+                                * (tire_temp[i] - input.config.tire_temp_amb);
+                            tire_temp[i + 1] =
+                                (tire_temp[i] + (tire_heat - tire_cool) * dt).max(0.0);
+                            let wear_rate =
+                                tire_curr.wear_per_s + tire_curr.wear_load_k * load_metric;
+                            tire_wear[i + 1] = (tire_wear[i] + wear_rate * dt).min(1.0);
+                        }
+                        TireDynamics::AggregateV1(contact, _) => {
+                            let (normal_load, available_force, utilization, contact_speed) =
+                                if let Some((normal, available, longitudinal, speed)) =
+                                    segment_contact
+                                {
+                                    (
+                                        normal,
                                         available,
-                                    ),
-                                    speed,
-                                )
-                            } else {
-                                let (drag, downforce) = aero_forces(
-                                    v_safe,
-                                    input.track.kappa[i],
-                                    &vehicle.aero,
-                                    &vehicle.chassis,
-                                    curvature_response,
-                                    input.track.kappa[i].abs()
-                                        > CORNER_CURVATURE_THRESHOLD_RAD_PER_M,
-                                );
-                                let a_vert = vertical_acceleration(
-                                    spatial_integration,
-                                    v_safe,
-                                    slope_change[i],
-                                    slope_gradient[i],
-                                    ds,
-                                );
-                                let normal_load =
-                                    (mass * (vehicle.chassis.g + a_vert) + downforce).max(0.0);
-                                let mu_eff = effective_mu(
-                                    vehicle.chassis.mu0,
-                                    tire_wear_reference[i],
-                                    tire_temp_reference[i],
-                                    &tire_curr,
-                                );
-                                let available_force =
-                                    tire_force_capacity(mu_eff, normal_load, tire_dynamics);
-                                let rolling = vehicle.chassis.c_rr * normal_load;
-                                let slope_force = mass * vehicle.chassis.g * input.track.slope[i];
-                                let longitudinal_force =
-                                    mass * a_long + drag + rolling + slope_force;
-                                let lateral_force = mass * a_lat;
-                                let utilization = combined_force_utilization(
-                                    longitudinal_force,
-                                    lateral_force,
-                                    available_force,
-                                );
-                                (normal_load, available_force, utilization, v_safe)
-                            };
-                        let base_workload_w =
-                            available_force * contact_speed * utilization * utilization;
-                        let correction_workload_w = base_workload_w
-                            * (active_driver_control
-                                .correction_workload_multiplier
-                                .unwrap_or(1.0)
-                                - 1.0);
-                        let workload_w = base_workload_w + correction_workload_w;
-                        let heat_w = contact.heat_generation_fraction * workload_w;
-                        let correction_heat_w =
-                            contact.heat_generation_fraction * correction_workload_w;
-                        let cooling_w = (contact.cooling_w_per_c
-                            + contact.speed_cooling_w_per_mps_c * contact_speed)
-                            * (tire_temp[i] - input.config.tire_temp_amb);
-                        tire_temp[i + 1] = (tire_temp[i]
-                            + (heat_w - cooling_w) / contact.thermal_capacity_j_per_c * dt)
-                            .clamp(0.0, 250.0);
-                        let wear_delta = contact.baseline_wear_per_s * dt
-                            + workload_w * dt / contact.workload_energy_to_full_wear_j;
-                        tire_wear[i + 1] = (tire_wear[i] + wear_delta).clamp(0.0, 1.0);
-                        tire_utilization[i] = utilization;
-                        tire_normal_load[i] = normal_load;
-                        tire_available_force[i] = available_force;
-                        iteration_generated_heat_j += heat_w * dt;
-                        iteration_contact_workload_j += workload_w * dt;
-                        iteration_base_contact_workload_j += base_workload_w * dt;
-                        iteration_correction_contact_workload_j += correction_workload_w * dt;
-                        iteration_correction_generated_heat_j += correction_heat_w * dt;
-                    }
-                    TireDynamics::AggregateV2(contact, _, degradation) => {
-                        let (normal_load, available_force, utilization, contact_speed) =
-                            if let Some((normal, available, longitudinal, speed)) = segment_contact
-                            {
-                                (
-                                    normal,
-                                    available,
-                                    combined_force_utilization(
-                                        longitudinal,
-                                        mass * speed * speed * input.track.kappa[i],
+                                        combined_force_utilization(
+                                            longitudinal,
+                                            mass * speed * speed * input.track.kappa[i],
+                                            available,
+                                        ),
+                                        speed,
+                                    )
+                                } else {
+                                    let (drag, downforce) = aero_forces(
+                                        v_safe,
+                                        input.track.kappa[i],
+                                        &vehicle.aero,
+                                        &vehicle.chassis,
+                                        curvature_response,
+                                        input.track.kappa[i].abs()
+                                            > CORNER_CURVATURE_THRESHOLD_RAD_PER_M,
+                                    );
+                                    let a_vert = vertical_acceleration(
+                                        spatial_integration,
+                                        v_safe,
+                                        slope_change[i],
+                                        slope_gradient[i],
+                                        ds,
+                                    );
+                                    let normal_load =
+                                        (mass * (vehicle.chassis.g + a_vert) + downforce).max(0.0);
+                                    let mu_eff = effective_mu(
+                                        vehicle.chassis.mu0,
+                                        tire_wear_reference[i],
+                                        tire_temp_reference[i],
+                                        &tire_curr,
+                                    );
+                                    let available_force =
+                                        tire_force_capacity(mu_eff, normal_load, tire_dynamics);
+                                    let rolling = vehicle.chassis.c_rr * normal_load;
+                                    let slope_force =
+                                        mass * vehicle.chassis.g * input.track.slope[i];
+                                    let longitudinal_force =
+                                        mass * a_long + drag + rolling + slope_force;
+                                    let lateral_force = mass * a_lat;
+                                    let utilization = combined_force_utilization(
+                                        longitudinal_force,
+                                        lateral_force,
+                                        available_force,
+                                    );
+                                    (normal_load, available_force, utilization, v_safe)
+                                };
+                            let base_workload_w =
+                                available_force * contact_speed * utilization * utilization;
+                            let correction_workload_w = base_workload_w
+                                * (active_driver_control
+                                    .correction_workload_multiplier
+                                    .unwrap_or(1.0)
+                                    - 1.0);
+                            let workload_w = base_workload_w + correction_workload_w;
+                            let heat_w = contact.heat_generation_fraction * workload_w;
+                            let correction_heat_w =
+                                contact.heat_generation_fraction * correction_workload_w;
+                            let cooling_w = (contact.cooling_w_per_c
+                                + contact.speed_cooling_w_per_mps_c * contact_speed)
+                                * (tire_temp[i] - input.config.tire_temp_amb);
+                            tire_temp[i + 1] = (tire_temp[i]
+                                + (heat_w - cooling_w) / contact.thermal_capacity_j_per_c * dt)
+                                .clamp(0.0, 250.0);
+                            let wear_delta = contact.baseline_wear_per_s * dt
+                                + workload_w * dt / contact.workload_energy_to_full_wear_j;
+                            tire_wear[i + 1] = (tire_wear[i] + wear_delta).clamp(0.0, 1.0);
+                            tire_utilization[i] = utilization;
+                            tire_normal_load[i] = normal_load;
+                            tire_available_force[i] = available_force;
+                            iteration_generated_heat_j += heat_w * dt;
+                            iteration_contact_workload_j += workload_w * dt;
+                            iteration_base_contact_workload_j += base_workload_w * dt;
+                            iteration_correction_contact_workload_j += correction_workload_w * dt;
+                            iteration_correction_generated_heat_j += correction_heat_w * dt;
+                        }
+                        TireDynamics::AggregateV2(contact, _, degradation) => {
+                            let (normal_load, available_force, utilization, contact_speed) =
+                                if let Some((normal, available, longitudinal, speed)) =
+                                    segment_contact
+                                {
+                                    (
+                                        normal,
                                         available,
-                                    ),
-                                    speed,
-                                )
-                            } else {
-                                let (drag, downforce) = aero_forces(
-                                    v_safe,
-                                    input.track.kappa[i],
-                                    &vehicle.aero,
-                                    &vehicle.chassis,
-                                    curvature_response,
-                                    input.track.kappa[i].abs()
-                                        > CORNER_CURVATURE_THRESHOLD_RAD_PER_M,
-                                );
-                                let a_vert = vertical_acceleration(
-                                    spatial_integration,
-                                    v_safe,
-                                    slope_change[i],
-                                    slope_gradient[i],
-                                    ds,
-                                );
-                                let normal_load =
-                                    (mass * (vehicle.chassis.g + a_vert) + downforce).max(0.0);
-                                let mu_eff = effective_mu(
-                                    vehicle.chassis.mu0,
-                                    tire_wear_reference[i],
-                                    tire_temp_reference[i],
-                                    &tire_curr,
-                                );
-                                let available_force =
-                                    tire_force_capacity(mu_eff, normal_load, tire_dynamics);
-                                let rolling = vehicle.chassis.c_rr * normal_load;
-                                let slope_force = mass * vehicle.chassis.g * input.track.slope[i];
-                                let longitudinal_force =
-                                    mass * a_long + drag + rolling + slope_force;
-                                let lateral_force = mass * a_lat;
-                                let utilization = combined_force_utilization(
-                                    longitudinal_force,
-                                    lateral_force,
-                                    available_force,
-                                );
-                                (normal_load, available_force, utilization, v_safe)
-                            };
-                        let base_workload_w =
-                            available_force * contact_speed * utilization * utilization;
-                        let correction_workload_w = base_workload_w
-                            * (active_driver_control
-                                .correction_workload_multiplier
-                                .unwrap_or(1.0)
-                                - 1.0);
-                        let workload_w = base_workload_w + correction_workload_w;
-                        let heat_w = contact.heat_generation_fraction * workload_w;
-                        let correction_heat_w =
-                            contact.heat_generation_fraction * correction_workload_w;
-                        let cooling_w = (contact.cooling_w_per_c
-                            + contact.speed_cooling_w_per_mps_c * contact_speed)
-                            * (tire_temp[i] - input.config.tire_temp_amb);
-                        tire_temp[i + 1] = (tire_temp[i]
-                            + (heat_w - cooling_w) / contact.thermal_capacity_j_per_c * dt)
-                            .clamp(0.0, 250.0);
+                                        combined_force_utilization(
+                                            longitudinal,
+                                            mass * speed * speed * input.track.kappa[i],
+                                            available,
+                                        ),
+                                        speed,
+                                    )
+                                } else {
+                                    let (drag, downforce) = aero_forces(
+                                        v_safe,
+                                        input.track.kappa[i],
+                                        &vehicle.aero,
+                                        &vehicle.chassis,
+                                        curvature_response,
+                                        input.track.kappa[i].abs()
+                                            > CORNER_CURVATURE_THRESHOLD_RAD_PER_M,
+                                    );
+                                    let a_vert = vertical_acceleration(
+                                        spatial_integration,
+                                        v_safe,
+                                        slope_change[i],
+                                        slope_gradient[i],
+                                        ds,
+                                    );
+                                    let normal_load =
+                                        (mass * (vehicle.chassis.g + a_vert) + downforce).max(0.0);
+                                    let mu_eff = effective_mu(
+                                        vehicle.chassis.mu0,
+                                        tire_wear_reference[i],
+                                        tire_temp_reference[i],
+                                        &tire_curr,
+                                    );
+                                    let available_force =
+                                        tire_force_capacity(mu_eff, normal_load, tire_dynamics);
+                                    let rolling = vehicle.chassis.c_rr * normal_load;
+                                    let slope_force =
+                                        mass * vehicle.chassis.g * input.track.slope[i];
+                                    let longitudinal_force =
+                                        mass * a_long + drag + rolling + slope_force;
+                                    let lateral_force = mass * a_lat;
+                                    let utilization = combined_force_utilization(
+                                        longitudinal_force,
+                                        lateral_force,
+                                        available_force,
+                                    );
+                                    (normal_load, available_force, utilization, v_safe)
+                                };
+                            let base_workload_w =
+                                available_force * contact_speed * utilization * utilization;
+                            let correction_workload_w = base_workload_w
+                                * (active_driver_control
+                                    .correction_workload_multiplier
+                                    .unwrap_or(1.0)
+                                    - 1.0);
+                            let workload_w = base_workload_w + correction_workload_w;
+                            let heat_w = contact.heat_generation_fraction * workload_w;
+                            let correction_heat_w =
+                                contact.heat_generation_fraction * correction_workload_w;
+                            let cooling_w = (contact.cooling_w_per_c
+                                + contact.speed_cooling_w_per_mps_c * contact_speed)
+                                * (tire_temp[i] - input.config.tire_temp_amb);
+                            tire_temp[i + 1] = (tire_temp[i]
+                                + (heat_w - cooling_w) / contact.thermal_capacity_j_per_c * dt)
+                                .clamp(0.0, 250.0);
 
-                        let normalized_thermal_deviation =
-                            (tire_temp[i] - tire_curr.temp_opt) / tire_curr.temp_sigma.max(1e-9);
-                        let thermal_wear_multiplier = (1.0
-                            + degradation.thermal_deviation_wear_gain
-                                * normalized_thermal_deviation
-                                * normalized_thermal_deviation)
-                            .min(degradation.maximum_thermal_wear_multiplier);
-                        let compound_workload_multiplier =
-                            tire_curr.wear_load_k / degradation.reference_load_wear_coefficient;
-                        let baseline_wear_delta = tire_curr.wear_per_s * dt;
-                        let workload_wear_delta = workload_w * dt
-                            / contact.workload_energy_to_full_wear_j
-                            * compound_workload_multiplier;
-                        let correction_workload_wear_delta = correction_workload_w * dt
-                            / contact.workload_energy_to_full_wear_j
-                            * compound_workload_multiplier;
-                        let wear_delta =
-                            (baseline_wear_delta + workload_wear_delta) * thermal_wear_multiplier;
-                        tire_wear[i + 1] = (tire_wear[i] + wear_delta).clamp(0.0, 1.0);
-                        tire_utilization[i] = utilization;
-                        tire_normal_load[i] = normal_load;
-                        tire_available_force[i] = available_force;
-                        iteration_generated_heat_j += heat_w * dt;
-                        iteration_contact_workload_j += workload_w * dt;
-                        iteration_base_contact_workload_j += base_workload_w * dt;
-                        iteration_correction_contact_workload_j += correction_workload_w * dt;
-                        iteration_correction_generated_heat_j += correction_heat_w * dt;
-                        iteration_requested_baseline_tire_wear +=
-                            baseline_wear_delta * thermal_wear_multiplier;
-                        iteration_requested_workload_tire_wear +=
-                            workload_wear_delta * thermal_wear_multiplier;
-                        iteration_requested_correction_tire_wear +=
-                            correction_workload_wear_delta * thermal_wear_multiplier;
-                        iteration_minimum_thermal_wear_multiplier =
-                            iteration_minimum_thermal_wear_multiplier.min(thermal_wear_multiplier);
-                        iteration_maximum_thermal_wear_multiplier =
-                            iteration_maximum_thermal_wear_multiplier.max(thermal_wear_multiplier);
+                            let normalized_thermal_deviation = (tire_temp[i] - tire_curr.temp_opt)
+                                / tire_curr.temp_sigma.max(1e-9);
+                            let thermal_wear_multiplier = (1.0
+                                + degradation.thermal_deviation_wear_gain
+                                    * normalized_thermal_deviation
+                                    * normalized_thermal_deviation)
+                                .min(degradation.maximum_thermal_wear_multiplier);
+                            let compound_workload_multiplier =
+                                tire_curr.wear_load_k / degradation.reference_load_wear_coefficient;
+                            let baseline_wear_delta = tire_curr.wear_per_s * dt;
+                            let workload_wear_delta = workload_w * dt
+                                / contact.workload_energy_to_full_wear_j
+                                * compound_workload_multiplier;
+                            let correction_workload_wear_delta = correction_workload_w * dt
+                                / contact.workload_energy_to_full_wear_j
+                                * compound_workload_multiplier;
+                            let wear_delta = (baseline_wear_delta + workload_wear_delta)
+                                * thermal_wear_multiplier;
+                            tire_wear[i + 1] = (tire_wear[i] + wear_delta).clamp(0.0, 1.0);
+                            tire_utilization[i] = utilization;
+                            tire_normal_load[i] = normal_load;
+                            tire_available_force[i] = available_force;
+                            iteration_generated_heat_j += heat_w * dt;
+                            iteration_contact_workload_j += workload_w * dt;
+                            iteration_base_contact_workload_j += base_workload_w * dt;
+                            iteration_correction_contact_workload_j += correction_workload_w * dt;
+                            iteration_correction_generated_heat_j += correction_heat_w * dt;
+                            iteration_requested_baseline_tire_wear +=
+                                baseline_wear_delta * thermal_wear_multiplier;
+                            iteration_requested_workload_tire_wear +=
+                                workload_wear_delta * thermal_wear_multiplier;
+                            iteration_requested_correction_tire_wear +=
+                                correction_workload_wear_delta * thermal_wear_multiplier;
+                            iteration_minimum_thermal_wear_multiplier =
+                                iteration_minimum_thermal_wear_multiplier
+                                    .min(thermal_wear_multiplier);
+                            iteration_maximum_thermal_wear_multiplier =
+                                iteration_maximum_thermal_wear_multiplier
+                                    .max(thermal_wear_multiplier);
+                        }
                     }
                 }
 
@@ -2539,9 +2690,44 @@ async fn run_resolved_simulation_kernel_incremental(
                 shift_power_fraction[n - 1] = shift_power_fraction[n - 2];
             }
 
+            if thermal_model.is_some() {
+                let mut error = 0.0_f64;
+                let mut held_to_actual = 1.0_f64;
+                for i in 0..n {
+                    let held = effective_mu(
+                        vehicle.chassis.mu0,
+                        tire_wear_reference[i],
+                        tire_temp_reference[i],
+                        &tire_curr,
+                    );
+                    let actual =
+                        effective_mu(vehicle.chassis.mu0, tire_wear[i], tire_temp[i], &tire_curr);
+                    error = error.max((actual / held - 1.0).abs());
+                    held_to_actual = held_to_actual.max(held / actual);
+                }
+                let bound = iteration_energy.maximum_raw_contact_utilization * held_to_actual;
+                is_final_coupling_iteration = error <= 1e-3 && bound <= 1.0002;
+                if !is_final_coupling_iteration && coupling_iteration + 1 == coupling_iterations {
+                    return Err(format!(
+                        "thermal V2: tire/velocity coupling did not converge on lap {lap_idx}: relative grip error={error}, contact bound={bound}"
+                    ));
+                }
+                iteration_thermal.maximum_relative_grip_coupling_error = error;
+                iteration_thermal.maximum_contact_utilization_upper_bound = bound;
+                iteration_thermal.maximum_coupling_passes = coupling_iteration as u32 + 1;
+            }
             if !is_final_coupling_iteration {
-                tire_temp_reference = tire_temp;
-                tire_wear_reference = tire_wear;
+                if thermal_model.is_some() {
+                    // Under-relax the thermal/force fixed point. Gear changes
+                    // make the full-step map nonsmooth even on a straight.
+                    for i in 0..n {
+                        tire_temp_reference[i] = 0.5 * (tire_temp_reference[i] + tire_temp[i]);
+                        tire_wear_reference[i] = 0.5 * (tire_wear_reference[i] + tire_wear[i]);
+                    }
+                } else {
+                    tire_temp_reference = tire_temp;
+                    tire_wear_reference = tire_wear;
+                }
                 continue;
             }
 
@@ -2557,6 +2743,7 @@ async fn run_resolved_simulation_kernel_incremental(
 
             if energy_mode {
                 energy_ledger.accumulate(&iteration_energy);
+                thermal_ledger.accumulate(&iteration_thermal);
             }
             generated_tire_heat_j += iteration_generated_heat_j;
             contact_workload_j += iteration_contact_workload_j;
@@ -2614,6 +2801,9 @@ async fn run_resolved_simulation_kernel_incremental(
             out_temp.extend_from_slice(&temp[start_idx..]);
             out_gear.extend_from_slice(&gear[start_idx..]);
             out_tire_temp.extend_from_slice(&tire_temp[start_idx..]);
+            if thermal_model.is_some() {
+                out_carcass_temperature.extend_from_slice(&carcass_temp[start_idx..]);
+            }
             out_tire_wear.extend_from_slice(&tire_wear[start_idx..]);
             if matches!(
                 tire_dynamics,
@@ -2674,9 +2864,14 @@ async fn run_resolved_simulation_kernel_incremental(
                 energy_ledger.final_vehicle_kinetic_j = iteration_energy.final_vehicle_kinetic_j;
             }
 
+            if thermal_model.is_some() {
+                carcass_temperature = carcass_temp.last().copied();
+            }
             let mut end_engine_temp = *temp.last().unwrap_or(&state_curr.engine_temp);
             let mut lap_solution = Some(SimulationSolution {
                 longitudinal_model: energy_model,
+                thermal_model: thermal_model.map(|p| p.schema_version),
+                tire_carcass_temp: carcass_temp,
                 s: input.track.s.clone(),
                 t: t.clone(),
                 v: v_final,
@@ -2699,6 +2894,10 @@ async fn run_resolved_simulation_kernel_incremental(
             if let Some(slot) = pre_service_slot.as_ref() {
                 let prefix = ResolvedSimulationLapV3 {
                     longitudinal_energy_v1: energy_mode.then_some(iteration_energy),
+                    thermal_v2: carcass_temperature.map(|t| ThermalLapV2 {
+                        carcass_temperature_c: t,
+                        ledger: iteration_thermal,
+                    }),
                     lap_index: lap_idx,
                     lap_time_s: lap_time_adj,
                     cumulative_time_s: t_offset,
@@ -2747,18 +2946,41 @@ async fn run_resolved_simulation_kernel_incremental(
                             ));
                         }
                         fuel_left = (fuel_left - burn).max(0.0);
-                        let (temperature, rejected) = longitudinal_energy::thermal_step(
-                            end_engine_temp,
-                            vehicle.engine.t_amb,
-                            vehicle.engine.c_th,
-                            vehicle.engine.p_cool0,
-                            0.0,
-                            duration,
-                        )?;
-                        let residual =
-                            vehicle.engine.c_th * (temperature - end_engine_temp) + rejected;
+                        let (temperature, rejected, service_heat) =
+                            if let Some(profile) = thermal_model {
+                                let (temperature, ledger) = profile.engine.step(
+                                    end_engine_temp,
+                                    vehicle.engine.t_amb,
+                                    vehicle.engine.c_th,
+                                    fuel_mass.unwrap(),
+                                    0.0,
+                                    0.0,
+                                    duration,
+                                )?;
+                                iteration_thermal.accumulate(&ledger);
+                                thermal_ledger.accumulate(&ledger);
+                                (
+                                    temperature,
+                                    ledger.engine_ambient_exchange_signed_j,
+                                    ledger.engine_coolant_heat_j,
+                                )
+                            } else {
+                                let (temperature, rejected) = longitudinal_energy::thermal_step(
+                                    end_engine_temp,
+                                    vehicle.engine.t_amb,
+                                    vehicle.engine.c_th,
+                                    vehicle.engine.p_cool0,
+                                    0.0,
+                                    duration,
+                                )?;
+                                (temperature, rejected, 0.0)
+                            };
+                        let residual = vehicle.engine.c_th * (temperature - end_engine_temp)
+                            + rejected
+                            - service_heat;
                         end_engine_temp = temperature;
                         for ledger in [&mut iteration_energy, &mut energy_ledger] {
+                            ledger.generated_engine_heat_j += service_heat;
                             ledger.service_time_s += duration;
                             ledger.service_idle_fuel_kg += burn;
                             ledger.rejected_engine_heat_signed_j += rejected;
@@ -2766,12 +2988,16 @@ async fn run_resolved_simulation_kernel_incremental(
                                 .maximum_thermal_balance_residual_j
                                 .max(residual.abs());
                         }
+                        generated_engine_heat_j += service_heat;
                         removed_engine_heat_j += rejected;
                     }
                 }
                 t_offset += input.config.pit_time_penalty_s.max(0.0);
                 wear_next = 0.0;
                 tire_temp_next = input.config.pit_tire_temp.unwrap_or(initial_tire_temp);
+                if let Some(p) = thermal_model {
+                    carcass_temperature = Some(p.pit_carcass_temperature_c);
+                }
                 vehicle.tire = pit_stop.tire.clone();
                 prev_end_speed = None;
                 prev_end_gear = None;
@@ -2795,6 +3021,10 @@ async fn run_resolved_simulation_kernel_incremental(
             if let Some(slot) = lap_slot.as_ref() {
                 let progress = ResolvedSimulationLapV3 {
                     longitudinal_energy_v1: energy_mode.then_some(iteration_energy),
+                    thermal_v2: carcass_temperature.map(|t| ThermalLapV2 {
+                        carcass_temperature_c: t,
+                        ledger: iteration_thermal,
+                    }),
                     lap_index: lap_idx,
                     lap_time_s: lap_time_adj,
                     cumulative_time_s: t_offset,
@@ -2811,11 +3041,16 @@ async fn run_resolved_simulation_kernel_incremental(
                 };
                 YieldResolvedLapV3::new(Rc::clone(slot), progress).await;
             }
+            // Adaptive coupling may converge before the last allowed pass.
+            // Commit exactly one physical lap, then leave this numerical loop.
+            break;
         }
     }
 
     let solution = SimulationSolution {
         longitudinal_model: energy_model,
+        thermal_model: thermal_model.map(|p| p.schema_version),
+        tire_carcass_temp: out_carcass_temperature,
         s: out_s,
         t: out_t,
         v: out_v,
@@ -2940,6 +3175,11 @@ async fn run_resolved_simulation_kernel_incremental(
     };
 
     Ok(SimulationResult {
+        thermal_v2: thermal_model.map(|p| ThermalResultV2 {
+            profile: p.clone(),
+            final_carcass_temperature_c: carcass_temperature.unwrap(),
+            ledger: thermal_ledger,
+        }),
         longitudinal_energy_v1: energy_mode.then_some(energy_ledger),
         solution,
         final_state: state_curr,
@@ -2973,7 +3213,7 @@ pub fn resample_telemetry_with_engine_thermal(
     hz: f64,
     engine_thermal: Option<EngineThermalParamsV3>,
 ) -> Result<ResampledTelemetry, String> {
-    if solution.longitudinal_model.is_some() {
+    if solution.longitudinal_model.is_some() || solution.thermal_model.is_some() {
         return Err("legacy telemetry exporter cannot reinterpret energy V1 physics".into());
     }
 
