@@ -1,0 +1,675 @@
+{
+  "schema": "pitgun.physics-baseline-plan/v1",
+  "catalog": "catalogs/racing/v1.8.1",
+  "seed_policy": "fixed public seed42; reproducibility only, not a statistical sample",
+  "cases": [
+    {
+      "id": "monza-classic-5",
+      "purpose": "baseline",
+      "request": {
+        "input": {
+          "track_id": "it-1922",
+          "laps": 5,
+          "competitors": [
+            {
+              "id": "player",
+              "driver_id": "default",
+              "name": "Baseline driver",
+              "team_id": "pitgun-lab",
+              "is_player": true,
+              "tuning": {
+                "engine_points": 10.0,
+                "cooling_points": 10.0,
+                "aero_points": 10.0,
+                "chassis_points": 10.0,
+                "downforce_slider": 0.5,
+                "gear_ratio_slider": 0.5
+              },
+              "budget_cap": 40.0,
+              "stint_strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 5
+                  }
+                ],
+                "pit_laps": []
+              }
+            }
+          ],
+          "vehicle_id": "classic_v8_1970",
+          "era": 2,
+          "hz": 5.0
+        },
+        "seed": 42,
+        "era": 2,
+        "hz": 5.0
+      }
+    },
+    {
+      "id": "monza-classic-5-1hz",
+      "purpose": "baseline",
+      "request": {
+        "input": {
+          "track_id": "it-1922",
+          "laps": 5,
+          "competitors": [
+            {
+              "id": "player",
+              "driver_id": "default",
+              "name": "Baseline driver",
+              "team_id": "pitgun-lab",
+              "is_player": true,
+              "tuning": {
+                "engine_points": 10.0,
+                "cooling_points": 10.0,
+                "aero_points": 10.0,
+                "chassis_points": 10.0,
+                "downforce_slider": 0.5,
+                "gear_ratio_slider": 0.5
+              },
+              "budget_cap": 40.0,
+              "stint_strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 5
+                  }
+                ],
+                "pit_laps": []
+              }
+            }
+          ],
+          "vehicle_id": "classic_v8_1970",
+          "era": 2,
+          "hz": 1.0
+        },
+        "seed": 42,
+        "era": 2,
+        "hz": 1.0
+      }
+    },
+    {
+      "id": "silverstone-classic-5",
+      "purpose": "baseline",
+      "request": {
+        "input": {
+          "track_id": "gb-1948",
+          "laps": 5,
+          "competitors": [
+            {
+              "id": "player",
+              "driver_id": "default",
+              "name": "Baseline driver",
+              "team_id": "pitgun-lab",
+              "is_player": true,
+              "tuning": {
+                "engine_points": 10.0,
+                "cooling_points": 10.0,
+                "aero_points": 10.0,
+                "chassis_points": 10.0,
+                "downforce_slider": 0.5,
+                "gear_ratio_slider": 0.5
+              },
+              "budget_cap": 40.0,
+              "stint_strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 5
+                  }
+                ],
+                "pit_laps": []
+              }
+            }
+          ],
+          "vehicle_id": "classic_v8_1970",
+          "era": 2,
+          "hz": 5.0
+        },
+        "seed": 42,
+        "era": 2,
+        "hz": 5.0
+      }
+    },
+    {
+      "id": "monaco-classic-5",
+      "purpose": "baseline",
+      "request": {
+        "input": {
+          "track_id": "mc-1929",
+          "laps": 5,
+          "competitors": [
+            {
+              "id": "player",
+              "driver_id": "default",
+              "name": "Baseline driver",
+              "team_id": "pitgun-lab",
+              "is_player": true,
+              "tuning": {
+                "engine_points": 10.0,
+                "cooling_points": 10.0,
+                "aero_points": 10.0,
+                "chassis_points": 10.0,
+                "downforce_slider": 0.5,
+                "gear_ratio_slider": 0.5
+              },
+              "budget_cap": 40.0,
+              "stint_strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 5
+                  }
+                ],
+                "pit_laps": []
+              }
+            }
+          ],
+          "vehicle_id": "classic_v8_1970",
+          "era": 2,
+          "hz": 5.0
+        },
+        "seed": 42,
+        "era": 2,
+        "hz": 5.0
+      }
+    },
+    {
+      "id": "suzuka-classic-5",
+      "purpose": "baseline",
+      "request": {
+        "input": {
+          "track_id": "jp-1962",
+          "laps": 5,
+          "competitors": [
+            {
+              "id": "player",
+              "driver_id": "default",
+              "name": "Baseline driver",
+              "team_id": "pitgun-lab",
+              "is_player": true,
+              "tuning": {
+                "engine_points": 10.0,
+                "cooling_points": 10.0,
+                "aero_points": 10.0,
+                "chassis_points": 10.0,
+                "downforce_slider": 0.5,
+                "gear_ratio_slider": 0.5
+              },
+              "budget_cap": 40.0,
+              "stint_strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 5
+                  }
+                ],
+                "pit_laps": []
+              }
+            }
+          ],
+          "vehicle_id": "classic_v8_1970",
+          "era": 2,
+          "hz": 5.0
+        },
+        "seed": 42,
+        "era": 2,
+        "hz": 5.0
+      }
+    },
+    {
+      "id": "monza-classic-53",
+      "purpose": "baseline",
+      "request": {
+        "input": {
+          "track_id": "it-1922",
+          "laps": 53,
+          "competitors": [
+            {
+              "id": "player",
+              "driver_id": "default",
+              "name": "Baseline driver",
+              "team_id": "pitgun-lab",
+              "is_player": true,
+              "tuning": {
+                "engine_points": 10.0,
+                "cooling_points": 10.0,
+                "aero_points": 10.0,
+                "chassis_points": 10.0,
+                "downforce_slider": 0.5,
+                "gear_ratio_slider": 0.5
+              },
+              "budget_cap": 40.0,
+              "stint_strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 26
+                  },
+                  {
+                    "tire_id": "hard",
+                    "laps": 27
+                  }
+                ],
+                "pit_laps": [
+                  26
+                ]
+              }
+            }
+          ],
+          "vehicle_id": "classic_v8_1970",
+          "era": 2,
+          "hz": 5.0
+        },
+        "seed": 42,
+        "era": 2,
+        "hz": 5.0
+      }
+    },
+    {
+      "id": "monza-modern-5",
+      "purpose": "baseline",
+      "request": {
+        "input": {
+          "track_id": "it-1922",
+          "laps": 5,
+          "competitors": [
+            {
+              "id": "player",
+              "driver_id": "default",
+              "name": "Baseline driver",
+              "team_id": "pitgun-lab",
+              "is_player": true,
+              "tuning": {
+                "engine_points": 10.0,
+                "cooling_points": 10.0,
+                "aero_points": 10.0,
+                "chassis_points": 10.0,
+                "downforce_slider": 0.5,
+                "gear_ratio_slider": 0.5
+              },
+              "budget_cap": 40.0,
+              "stint_strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 5
+                  }
+                ],
+                "pit_laps": []
+              }
+            }
+          ],
+          "vehicle_id": "modern_v6t",
+          "era": 5,
+          "hz": 5.0
+        },
+        "seed": 42,
+        "era": 5,
+        "hz": 5.0
+      }
+    },
+    {
+      "id": "monza-hybrid-resource-5",
+      "purpose": "baseline",
+      "request": {
+        "input": {
+          "track_id": "it-1922",
+          "laps": 5,
+          "competitors": [
+            {
+              "id": "player",
+              "driver_id": "default",
+              "name": "Baseline driver",
+              "team_id": "pitgun-lab",
+              "is_player": true,
+              "tuning": {
+                "engine_points": 10.0,
+                "cooling_points": 10.0,
+                "aero_points": 10.0,
+                "chassis_points": 10.0,
+                "downforce_slider": 0.5,
+                "gear_ratio_slider": 0.5
+              },
+              "budget_cap": 40.0,
+              "stint_strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 5
+                  }
+                ],
+                "pit_laps": []
+              }
+            }
+          ],
+          "vehicle_id": "f1_2026",
+          "era": 5,
+          "hz": 5.0
+        },
+        "seed": 42,
+        "era": 5,
+        "hz": 5.0
+      }
+    },
+    {
+      "id": "monza-classic-grid10-5",
+      "purpose": "baseline",
+      "request": {
+        "input": {
+          "track_id": "it-1922",
+          "laps": 5,
+          "competitors": [
+            {
+              "id": "player",
+              "driver_id": "default",
+              "name": "Baseline driver",
+              "team_id": "pitgun-lab",
+              "is_player": true,
+              "tuning": {
+                "engine_points": 10.0,
+                "cooling_points": 10.0,
+                "aero_points": 10.0,
+                "chassis_points": 10.0,
+                "downforce_slider": 0.5,
+                "gear_ratio_slider": 0.5
+              },
+              "budget_cap": 40.0,
+              "stint_strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 5
+                  }
+                ],
+                "pit_laps": []
+              }
+            },
+            {
+              "id": "rival-1",
+              "driver_id": "default",
+              "name": "Baseline driver",
+              "team_id": "pitgun-lab",
+              "is_player": false,
+              "tuning": {
+                "engine_points": 10.0,
+                "cooling_points": 10.0,
+                "aero_points": 10.0,
+                "chassis_points": 10.0,
+                "downforce_slider": 0.5,
+                "gear_ratio_slider": 0.5
+              },
+              "budget_cap": 40.0,
+              "stint_strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 5
+                  }
+                ],
+                "pit_laps": []
+              }
+            },
+            {
+              "id": "rival-2",
+              "driver_id": "default",
+              "name": "Baseline driver",
+              "team_id": "pitgun-lab",
+              "is_player": false,
+              "tuning": {
+                "engine_points": 10.0,
+                "cooling_points": 10.0,
+                "aero_points": 10.0,
+                "chassis_points": 10.0,
+                "downforce_slider": 0.5,
+                "gear_ratio_slider": 0.5
+              },
+              "budget_cap": 40.0,
+              "stint_strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 5
+                  }
+                ],
+                "pit_laps": []
+              }
+            },
+            {
+              "id": "rival-3",
+              "driver_id": "default",
+              "name": "Baseline driver",
+              "team_id": "pitgun-lab",
+              "is_player": false,
+              "tuning": {
+                "engine_points": 10.0,
+                "cooling_points": 10.0,
+                "aero_points": 10.0,
+                "chassis_points": 10.0,
+                "downforce_slider": 0.5,
+                "gear_ratio_slider": 0.5
+              },
+              "budget_cap": 40.0,
+              "stint_strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 5
+                  }
+                ],
+                "pit_laps": []
+              }
+            },
+            {
+              "id": "rival-4",
+              "driver_id": "default",
+              "name": "Baseline driver",
+              "team_id": "pitgun-lab",
+              "is_player": false,
+              "tuning": {
+                "engine_points": 10.0,
+                "cooling_points": 10.0,
+                "aero_points": 10.0,
+                "chassis_points": 10.0,
+                "downforce_slider": 0.5,
+                "gear_ratio_slider": 0.5
+              },
+              "budget_cap": 40.0,
+              "stint_strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 5
+                  }
+                ],
+                "pit_laps": []
+              }
+            },
+            {
+              "id": "rival-5",
+              "driver_id": "default",
+              "name": "Baseline driver",
+              "team_id": "pitgun-lab",
+              "is_player": false,
+              "tuning": {
+                "engine_points": 10.0,
+                "cooling_points": 10.0,
+                "aero_points": 10.0,
+                "chassis_points": 10.0,
+                "downforce_slider": 0.5,
+                "gear_ratio_slider": 0.5
+              },
+              "budget_cap": 40.0,
+              "stint_strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 5
+                  }
+                ],
+                "pit_laps": []
+              }
+            },
+            {
+              "id": "rival-6",
+              "driver_id": "default",
+              "name": "Baseline driver",
+              "team_id": "pitgun-lab",
+              "is_player": false,
+              "tuning": {
+                "engine_points": 10.0,
+                "cooling_points": 10.0,
+                "aero_points": 10.0,
+                "chassis_points": 10.0,
+                "downforce_slider": 0.5,
+                "gear_ratio_slider": 0.5
+              },
+              "budget_cap": 40.0,
+              "stint_strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 5
+                  }
+                ],
+                "pit_laps": []
+              }
+            },
+            {
+              "id": "rival-7",
+              "driver_id": "default",
+              "name": "Baseline driver",
+              "team_id": "pitgun-lab",
+              "is_player": false,
+              "tuning": {
+                "engine_points": 10.0,
+                "cooling_points": 10.0,
+                "aero_points": 10.0,
+                "chassis_points": 10.0,
+                "downforce_slider": 0.5,
+                "gear_ratio_slider": 0.5
+              },
+              "budget_cap": 40.0,
+              "stint_strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 5
+                  }
+                ],
+                "pit_laps": []
+              }
+            },
+            {
+              "id": "rival-8",
+              "driver_id": "default",
+              "name": "Baseline driver",
+              "team_id": "pitgun-lab",
+              "is_player": false,
+              "tuning": {
+                "engine_points": 10.0,
+                "cooling_points": 10.0,
+                "aero_points": 10.0,
+                "chassis_points": 10.0,
+                "downforce_slider": 0.5,
+                "gear_ratio_slider": 0.5
+              },
+              "budget_cap": 40.0,
+              "stint_strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 5
+                  }
+                ],
+                "pit_laps": []
+              }
+            },
+            {
+              "id": "rival-9",
+              "driver_id": "default",
+              "name": "Baseline driver",
+              "team_id": "pitgun-lab",
+              "is_player": false,
+              "tuning": {
+                "engine_points": 10.0,
+                "cooling_points": 10.0,
+                "aero_points": 10.0,
+                "chassis_points": 10.0,
+                "downforce_slider": 0.5,
+                "gear_ratio_slider": 0.5
+              },
+              "budget_cap": 40.0,
+              "stint_strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 5
+                  }
+                ],
+                "pit_laps": []
+              }
+            }
+          ],
+          "vehicle_id": "classic_v8_1970",
+          "era": 2,
+          "hz": 5.0
+        },
+        "seed": 42,
+        "era": 2,
+        "hz": 5.0
+      }
+    },
+    {
+      "id": "monaco-classic-78",
+      "purpose": "diagnostic-known-limitation",
+      "request": {
+        "input": {
+          "track_id": "mc-1929",
+          "laps": 78,
+          "competitors": [
+            {
+              "id": "player",
+              "driver_id": "default",
+              "name": "Baseline driver",
+              "team_id": "pitgun-lab",
+              "is_player": true,
+              "tuning": {
+                "engine_points": 10.0,
+                "cooling_points": 10.0,
+                "aero_points": 10.0,
+                "chassis_points": 10.0,
+                "downforce_slider": 0.5,
+                "gear_ratio_slider": 0.5
+              },
+              "budget_cap": 40.0,
+              "stint_strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 78
+                  }
+                ],
+                "pit_laps": []
+              }
+            }
+          ],
+          "vehicle_id": "classic_v8_1970",
+          "era": 2,
+          "hz": 5.0
+        },
+        "seed": 42,
+        "era": 2,
+        "hz": 5.0
+      }
+    }
+  ],
+  "same_physics_pairs": [
+    [
+      "monza-classic-5",
+      "monza-classic-5-1hz"
+    ]
+  ],
+  "scope": "Native existing career PowerUnitThermalV1, catalog geometry, empty timeline, no controller/provider or hosted write. f1_2026 resource does not imply an implemented electrical store."
+}

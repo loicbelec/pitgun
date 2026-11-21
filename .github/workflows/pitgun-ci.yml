@@ -80,6 +80,9 @@ jobs:
       - name: Validate Racing experiment tools
         run: python -m unittest discover -s experiments/racing_response/tests -v
 
+      - name: Validate local physics baseline tools and archived evidence
+        run: python -m unittest discover -s experiments/physics_foundation/tests -v
+
       - name: Validate Racing driver-control holdout evidence
         run: |
           python -m unittest discover -s experiments/racing_v3_driver_control/tests -v
