@@ -1,0 +1,21 @@
+{
+  "schema": "pitgun.thermal-physics-local-qualification/v1",
+  "source_commit": "dba28884d19b724cf76e983842ffdbdffe961cbb",
+  "screen_digest": "sha256:7d5a81b1426edba316606ac33db9e9d6530753ca8e9a37316d5a01cbfb2b29ba",
+  "physical_cases": 56,
+  "outcomes_per_pass": 112,
+  "full_passes": 2,
+  "frozen_outcomes_per_pass": 22,
+  "total_native_executions": 268,
+  "exact_repeat": true,
+  "historical_and_energy_goldens_equal": true,
+  "native_test_count": 236,
+  "native_test_command": "cargo test --offline --locked -p pitgun-racing-solver -p pitgun-racing-simulator -p pitgun-authority -p pitgun-verifier",
+  "strict_clippy_scope": "Solver library + new Simulator example",
+  "fmt": "pass",
+  "status": "EXPLORATORY_REFINE_NOT_ADMITTED",
+  "browser_wasm_qualification": false,
+  "experimental_parameter_validation": false,
+  "rustc": "rustc 1.89.0 (29483883e 2025-08-04)",
+  "platform": "macOS-26.5.1-arm64-arm-64bit"
+}

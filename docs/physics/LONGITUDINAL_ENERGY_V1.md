@@ -192,3 +192,7 @@ mécanismes mais conserve un verdict de gameplay `REFINE` : les V8 testés ne
 dératent pas, les pneus restent souvent froids et les choix doivent être calibrés.
 La loi de pneus n’a pas été remplacée par le candidat énergie. Cette validation
 locale précède désormais son raccordement Worker/WASM.
+
+La suite [Thermique V2](THERMAL_PHYSICS_V2.md) implémente désormais des lois
+moteur/pneus distinctes dans un nouveau candidat natif facultatif. Cela ne change
+pas rétroactivement la portée ni les équations du V1 décrit dans ce document.

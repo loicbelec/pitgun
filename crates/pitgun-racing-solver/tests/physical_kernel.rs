@@ -309,6 +309,7 @@ fn resolved_v3_request(request: &SimulationRequest) -> ResolvedSimulationRequest
         tire_degradation: None,
         engine_thermal: None,
         longitudinal_energy: None,
+        thermal_physics_v2: None,
     }
 }
 
@@ -1486,6 +1487,7 @@ fn energy_v1_incremental_continuity_fuel_and_terminal_ledger_agree() {
     );
     let legacy = run_resolved_simulation_v3(&ResolvedSimulationRequestV3 {
         longitudinal_energy: None,
+        thermal_physics_v2: None,
         ..input
     })
     .unwrap();
@@ -1524,4 +1526,283 @@ fn energy_v1_service_has_its_own_clock_cooling_fuel_and_visible_velocity_reset()
     assert!(
         (heat_storage - (e.generated_engine_heat_j - e.rejected_engine_heat_signed_j)).abs() < 1e-6
     );
+}
+
+fn thermal_v2_request() -> ResolvedSimulationRequestV3 {
+    use pitgun_racing_solver::{
+        longitudinal_energy::LongitudinalEnergyModelV1, thermal_physics::*,
+    };
+    let mut r = resolved_v3_request(&synthetic_request());
+    let profile: serde_json::Value = serde_json::from_str(include_str!(
+        "../../../experiments/thermal_physics_v2/profile-v1.json"
+    ))
+    .unwrap();
+    r.longitudinal_energy = Some(LongitudinalEnergyModelV1::V1);
+    r.fuel_mass = Some(Default::default());
+    r.tire_degradation = Some(Default::default());
+    r.thermal_physics_v2 = Some(ThermalPhysicsV2 {
+        schema_version: ThermalModelV2::V2,
+        engine: serde_json::from_value(profile["engine"].clone()).unwrap(),
+        initial_carcass_temperature_c: 80.0,
+        pit_carcass_temperature_c: 70.0,
+        road_temperature_c: 42.0,
+        compounds: vec![TireCompoundHeatV2 {
+            tire: r.vehicle.tire.clone(),
+            heat: serde_json::from_value(profile["compounds"]["medium"]["heat"].clone()).unwrap(),
+        }],
+    });
+    r
+}
+
+#[test]
+fn thermal_v2_derating_reduces_delivered_work_and_power_against_analytic_launch() {
+    use pitgun_racing_solver::thermal_physics::TireCompoundHeatV2;
+    // Manufactured constant-torque engine:100Nm, ratio10, eta1, wheel0.5m,
+    // mass1000kg. No road load or tire-force bottleneck. Hold engine temperature
+    // to isolate thermal derating from changes to heat generation/radiator sizing.
+    for mesh_m in [1.0, 5.0] {
+        let mut previous_mean_power = f64::INFINITY;
+        for factor in [1.0_f64, 0.9, 0.5] {
+            let mut input = energy_analytic_request(mesh_m);
+            let mut thermal = thermal_v2_request().thermal_physics_v2.unwrap();
+            thermal.engine.coolant_waste_fraction = 0.0;
+            thermal.engine.passive_conductance_w_per_k = 0.0;
+            thermal.engine.radiator_idle_conductance_w_per_k = 0.0;
+            thermal.engine.radiator_speed_conductance_w_per_k_mps = 0.0;
+            let mut heat = thermal.compounds[0].heat;
+            heat.deformation_resistance_coefficient = 0.0;
+            thermal.compounds = vec![TireCompoundHeatV2 {
+                tire: input.vehicle.tire.clone(),
+                heat,
+            }];
+            input.vehicle.engine.t_soft = 100.0;
+            input.vehicle.engine.beta_derate = 0.01;
+            input.state.engine_temp = 100.0 + (1.0 - factor) / 0.01;
+            input.engine_thermal = Some(Default::default());
+            input.fuel_mass = Some(Default::default());
+            input.tire_degradation = Some(Default::default());
+            input.thermal_physics_v2 = Some(thermal);
+
+            let result = run_resolved_simulation_v3(&input).unwrap();
+            let ledger = result.longitudinal_energy_v1.unwrap();
+            let acceleration = 2.0 * factor;
+            let expected_time = (200.0 / acceleration).sqrt();
+            let lock_speed = 1000.0 * std::f64::consts::TAU * 0.5 / (60.0 * 10.0);
+            let expected_wheel_work = 200000.0 * factor;
+            // Ideal slipping-clutch launch loses half*m*v_lock², independent of
+            // force here; it must remain distinct from the derated wheel work.
+            let expected_shaft_work = expected_wheel_work + 0.5 * 1000.0 * lock_speed.powi(2);
+            let observed_power_integral = result
+                .solution
+                .t
+                .windows(2)
+                .zip(&result.solution.power)
+                .map(|(t, power_kw)| 1000.0 * power_kw * (t[1] - t[0]))
+                .sum::<f64>();
+            assert!((result.total_time_s - expected_time).abs() < 1e-7);
+            assert!((ledger.wheel_propulsion_work_j - expected_wheel_work).abs() < 0.01);
+            assert!((ledger.engine_shaft_work_j - expected_shaft_work).abs() < 0.01);
+            assert!((observed_power_integral - expected_shaft_work).abs() < 0.01);
+            assert!(
+                result
+                    .solution
+                    .engine_derating_factor
+                    .iter()
+                    .all(|v| (v - factor).abs() < 1e-12)
+            );
+            let mean_power = observed_power_integral / result.total_time_s;
+            assert!((mean_power - expected_shaft_work / expected_time).abs() < 0.01);
+            assert!(mean_power < previous_mean_power);
+            previous_mean_power = mean_power;
+        }
+    }
+}
+
+#[test]
+fn thermal_v2_laps_keep_carcass_state_and_commit_both_states_at_service() {
+    let mut input = thermal_v2_request();
+    input.pit_plan.stops.push(pitgun_racing_solver::PitStop {
+        lap: 1,
+        tire: input.vehicle.tire.clone(),
+    });
+    let direct = run_resolved_simulation_v3(&input).unwrap();
+    let mut session = ResolvedSimulationSessionV3::new(input.clone()).unwrap();
+    let mut previous = None;
+    let mut chemical = 0.0;
+    let mut emitted_laps = 0;
+    loop {
+        match session.advance().unwrap() {
+            ResolvedSimulationStepV3::Lap(lap) => {
+                emitted_laps += 1;
+                assert_eq!(lap.lap_index, emitted_laps);
+                let thermal = lap.thermal_v2.unwrap();
+                assert_eq!(
+                    lap.solution.thermal_model,
+                    Some(input.thermal_physics_v2.as_ref().unwrap().schema_version)
+                );
+                assert_eq!(lap.solution.t.len(), lap.solution.tire_carcass_temp.len());
+                if let Some(t) = previous {
+                    assert_eq!(lap.solution.tire_carcass_temp[0], t);
+                }
+                previous = Some(thermal.carcass_temperature_c);
+                chemical += thermal.ledger.fuel_chemical_energy_j;
+                if lap.lap_index == 1 {
+                    assert_eq!(thermal.carcass_temperature_c, 70.0);
+                    assert_eq!(
+                        lap.state_after_lap.tire_temp,
+                        input.config.pit_tire_temp.unwrap_or(input.state.tire_temp)
+                    );
+                }
+            }
+            ResolvedSimulationStepV3::Complete(result) => {
+                assert_eq!(*result, direct);
+                break;
+            }
+        }
+    }
+    let thermal = direct.thermal_v2.unwrap();
+    assert_eq!(emitted_laps, input.lap_count);
+    assert_eq!(direct.lap_times_s.len(), usize::from(input.lap_count));
+    assert_eq!(previous, Some(thermal.final_carcass_temperature_c));
+    assert!((chemical - thermal.ledger.fuel_chemical_energy_j).abs() < 1e-6);
+    let f = input.fuel_mass.unwrap();
+    let e = direct.longitudinal_energy_v1.unwrap();
+    let expected_fuel = e.engine_shaft_work_j / 3_600_000.0
+        * f.brake_specific_fuel_consumption_kg_per_kwh
+        + f.idle_fuel_flow_kg_per_s * direct.total_time_s;
+    assert!(
+        (expected_fuel
+            * input
+                .thermal_physics_v2
+                .unwrap()
+                .engine
+                .fuel_lower_heating_value_j_per_kg
+            - chemical)
+            .abs()
+            < 1e-5
+    );
+    assert!(thermal.ledger.maximum_engine_balance_residual_j < 1e-5);
+    assert!(thermal.ledger.maximum_tire_balance_residual_j < 1e-5);
+    assert!(thermal.ledger.maximum_relative_grip_coupling_error <= 1e-3);
+    assert!(thermal.ledger.maximum_contact_utilization_upper_bound <= 1.0002);
+}
+
+#[test]
+fn thermal_v2_rejects_missing_energy_compounds_and_impossible_efficiency() {
+    let input = thermal_v2_request();
+    let mut invalid = input.clone();
+    invalid.longitudinal_energy = None;
+    assert!(ResolvedSimulationSessionV3::new(invalid).is_err());
+    let mut invalid = input.clone();
+    invalid
+        .thermal_physics_v2
+        .as_mut()
+        .unwrap()
+        .compounds
+        .clear();
+    assert!(ResolvedSimulationSessionV3::new(invalid).is_err());
+    let mut invalid = input.clone();
+    invalid
+        .fuel_mass
+        .as_mut()
+        .unwrap()
+        .brake_specific_fuel_consumption_kg_per_kwh = 0.05;
+    assert!(ResolvedSimulationSessionV3::new(invalid).is_err());
+    let mut session = ResolvedSimulationSessionV3::new(input.clone()).unwrap();
+    let mut unknown = input.vehicle.tire.clone();
+    unknown.mu_scale += 0.01;
+    assert!(session.request_next_lap_pit(unknown).is_err());
+    assert!(session.advance().is_ok());
+}
+
+#[test]
+fn thermal_v2_deformation_heat_costs_real_mechanical_work() {
+    let mut input = energy_analytic_request(2.0);
+    let profile = thermal_v2_request().thermal_physics_v2.unwrap();
+    input.vehicle.chassis.c_rr = 0.02;
+    input.vehicle.chassis.mu0 = 2.0;
+    input.fuel_mass = Some(Default::default());
+    input.tire_degradation = Some(Default::default());
+    input.thermal_physics_v2 = Some(pitgun_racing_solver::thermal_physics::ThermalPhysicsV2 {
+        compounds: vec![pitgun_racing_solver::thermal_physics::TireCompoundHeatV2 {
+            tire: input.vehicle.tire.clone(),
+            heat: profile.compounds[0].heat,
+        }],
+        ..profile
+    });
+    let loss = run_resolved_simulation_v3(&input).unwrap();
+    input.thermal_physics_v2.as_mut().unwrap().compounds[0]
+        .heat
+        .deformation_resistance_coefficient = 0.0;
+    let no_loss = run_resolved_simulation_v3(&input).unwrap();
+    assert!(loss.total_time_s > no_loss.total_time_s);
+    let e = loss.longitudinal_energy_v1.unwrap();
+    let t = loss.thermal_v2.unwrap().ledger;
+    assert!(t.tire_deformation_dissipation_j > 0.0);
+    assert!(
+        (t.tire_rolling_dissipation_j + t.tire_deformation_dissipation_j - e.rolling_work_j).abs()
+            < 1e-6
+    );
+    assert!(e.maximum_vehicle_balance_residual_j < 1e-5);
+    assert!(
+        no_loss
+            .thermal_v2
+            .unwrap()
+            .ledger
+            .tire_deformation_dissipation_j
+            < 1e-6
+    );
+}
+
+#[test]
+fn absent_thermal_candidate_does_not_add_historical_fields() {
+    let input = resolved_v3_request(&synthetic_request());
+    let input_json = serde_json::to_value(&input).unwrap();
+    assert!(input_json.get("thermal_physics_v2").is_none());
+    let result = serde_json::to_value(run_resolved_simulation_v3(&input).unwrap()).unwrap();
+    assert!(result.get("thermal_v2").is_none());
+    assert!(result["solution"].get("thermal_model").is_none());
+    assert!(result["solution"].get("tire_carcass_temp").is_none());
+}
+
+#[test]
+fn thermal_v2_service_boundary_reports_driving_before_committing_replacement() {
+    use pitgun_racing_solver::ResolvedServiceStepV3;
+    let mut input = thermal_v2_request();
+    input.pit_plan.stops.push(pitgun_racing_solver::PitStop {
+        lap: 1,
+        tire: input.vehicle.tire.clone(),
+    });
+    let direct = run_resolved_simulation_v3(&input).unwrap();
+    let mut session = ResolvedSimulationSessionV3::new_with_service_boundaries(input).unwrap();
+    let mut before_first_service = None;
+    loop {
+        match session.advance_service().unwrap() {
+            ResolvedServiceStepV3::BeforeService(lap) => {
+                assert_eq!(
+                    lap.thermal_v2.unwrap().carcass_temperature_c,
+                    *lap.solution.tire_carcass_temp.last().unwrap()
+                );
+                if lap.lap_index == 1 {
+                    before_first_service = Some(lap.thermal_v2.unwrap());
+                }
+                session.resolve_service_boundary(None).unwrap();
+            }
+            ResolvedServiceStepV3::Lap(lap) if lap.lap_index == 1 => {
+                let before = before_first_service.unwrap();
+                let after = lap.thermal_v2.unwrap();
+                assert_eq!(after.carcass_temperature_c, 70.0);
+                assert!(after.ledger.fuel_chemical_energy_j > before.ledger.fuel_chemical_energy_j);
+                assert_eq!(
+                    after.ledger.tire_generated_heat_j,
+                    before.ledger.tire_generated_heat_j
+                );
+            }
+            ResolvedServiceStepV3::Lap(_) => {}
+            ResolvedServiceStepV3::Complete(result) => {
+                assert_eq!(*result, direct);
+                break;
+            }
+        }
+    }
 }

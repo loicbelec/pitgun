@@ -2754,6 +2754,7 @@ impl IncrementalRacingSession {
                         tire_degradation: degradation,
                         engine_thermal: car.engine_thermal,
                         longitudinal_energy: None,
+                        thermal_physics_v2: None,
                     },
                 ))
             })
@@ -3016,6 +3017,7 @@ impl IncrementalRacingSession {
                 tire_degradation: effective_profile.tire_degradation,
                 engine_thermal,
                 longitudinal_energy: None,
+                thermal_physics_v2: None,
             };
             let solver =
                 if service_control && (competitor.is_player || competitor.id == "player") {
@@ -3995,6 +3997,7 @@ fn run_single_session(
                         }
                     }),
                     longitudinal_energy: None,
+                    thermal_physics_v2: None,
                 })
             }
             _ => unreachable!("session model and resolved V3 profile must agree"),

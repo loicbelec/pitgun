@@ -100,6 +100,11 @@ pub(crate) struct SegmentContext<'a> {
     // Prepared once for the unchanged engine, using the exact interpolator even
     // at knots (direct map ordinates can differ in their final floating bits).
     pub torque_knots_nm: Option<&'a [f64]>,
+    pub thermal: Option<(
+        &'a crate::thermal_physics::EngineHeatParamsV2,
+        &'a crate::FuelMassParamsV3,
+    )>,
+    pub tire_deformation_coefficient: f64,
     pub mass_kg: f64,
     pub ds_m: f64,
     pub dz_m: f64,
@@ -123,6 +128,7 @@ pub(crate) struct SegmentAdvance {
     pub brake_force_n: f64,
     pub contact_longitudinal_force_n: f64,
     pub ledger: EnergyLedgerV1,
+    pub thermal_ledger: Option<crate::thermal_physics::ThermalLedgerV2>,
 }
 
 impl SegmentContext<'_> {
@@ -134,8 +140,24 @@ impl SegmentContext<'_> {
         let downforce = 0.5 * c.rho * self.mechanical.fixed_downforce_area_m2 * v * v;
         let normal =
             (self.mass_kg * (c.g + v * v * self.vertical_curvature_per_m) + downforce).max(0.0);
-        let rolling = c.c_rr * normal;
         let grade = self.mass_kg * c.g * self.dz_m / self.ds_m;
+        let mut rolling = c.c_rr * normal;
+        if self.tire_deformation_coefficient > 0.0 {
+            let available = aggregate_tire_force_capacity_v3(self.mu, normal, self.contact)
+                * self.mechanical.chassis_force_transfer_efficiency;
+            let base_longitudinal =
+                self.mass_kg * (v1 * v1 - v0 * v0) / (2.0 * self.ds_m) + drag + rolling + grade;
+            let lateral = self.mass_kg * v * v * self.curvature_radpm;
+            let utilization = if available > 0.0 {
+                base_longitudinal.hypot(lateral) / available
+            } else {
+                0.0
+            };
+            // An explicitly reduced deformation loss. It is included in the
+            // propulsion/braking solve and energy ledger, not invented as heat.
+            rolling +=
+                self.tire_deformation_coefficient * normal * utilization.clamp(0.0, 1.0).powi(2);
+        }
         (drag, rolling, grade, normal)
     }
     fn limits(&self, v0: f64, v1: f64) -> (f64, f64, f64, f64) {
@@ -286,17 +308,37 @@ impl SegmentContext<'_> {
         let clutch = drive * slip_distance / eta;
         let loss = wheel * (1.0 / eta - 1.0);
         let shaft = wheel + loss + clutch;
-        let heat = self.vehicle.engine.alpha_heat * shaft;
-        let conductance =
-            self.vehicle.engine.p_cool0 + self.vehicle.engine.k_cool * 0.5 * (start + end);
-        let (next_temp, rejected) = thermal_step(
-            temperature_c,
-            self.vehicle.engine.t_amb,
-            self.vehicle.engine.c_th,
-            conductance,
-            heat / dt,
-            dt,
-        )?;
+        let (next_temp, heat, rejected, thermal_ledger) =
+            if let Some((thermal, fuel)) = self.thermal {
+                let (temperature, ledger) = thermal.step(
+                    temperature_c,
+                    self.vehicle.engine.t_amb,
+                    self.vehicle.engine.c_th,
+                    fuel,
+                    shaft,
+                    0.5 * (start + end),
+                    dt,
+                )?;
+                (
+                    temperature,
+                    ledger.engine_coolant_heat_j,
+                    ledger.engine_ambient_exchange_signed_j,
+                    Some(ledger),
+                )
+            } else {
+                let heat = self.vehicle.engine.alpha_heat * shaft;
+                let conductance =
+                    self.vehicle.engine.p_cool0 + self.vehicle.engine.k_cool * 0.5 * (start + end);
+                let (temperature, rejected) = thermal_step(
+                    temperature_c,
+                    self.vehicle.engine.t_amb,
+                    self.vehicle.engine.c_th,
+                    conductance,
+                    heat / dt,
+                    dt,
+                )?;
+                (temperature, heat, rejected, None)
+            };
         let kinetic = 0.5 * self.mass_kg * (end * end - start * start);
         let vehicle_residual = wheel
             - brake * self.ds_m
@@ -369,6 +411,7 @@ impl SegmentContext<'_> {
         };
         let shift_time = shift_remaining_s.min(dt);
         Ok(SegmentAdvance {
+            thermal_ledger,
             end_speed_mps: end,
             duration_s: dt,
             engine_budget_kw: shaft * eta / dt / 1000.0,
@@ -556,6 +599,8 @@ mod tests {
             mechanical: m,
             contact: c,
             torque_knots_nm: None,
+            thermal: None,
+            tire_deformation_coefficient: 0.0,
             mass_kg: 1000.,
             ds_m: 100.,
             dz_m: 0.,

@@ -1,0 +1,23 @@
+{
+  "scope": "Principles adopted for an independent reduced candidate, not transferred coefficients or industrial validation. Publisher HTML read; no claim of a full NASCAR equation review.",
+  "references": [
+    {
+      "title": "Comparative Study of Physics-Based Modeling and Neural Network Approach to Predict Cooling in Vehicle Integrated Thermal Management System",
+      "authors": "Choi et al.",
+      "year": 2020,
+      "url": "https://www.mdpi.com/1996-1073/13/20/5301",
+      "read": "Publisher HTML sections2.1\u20132.1.1, equation1 chemical input/shaft/coolant/oil/exhaust and thermostat context.",
+      "adoption": "Explicit chemical/shaft/waste energy accounting; own one-node aggregate coolant model and provisional radiator parameters.",
+      "not_adopted": "Full circuits, measured transfer coefficients, vehicle-specific percentages, NN or parameter identification."
+    },
+    {
+      "title": "A Semi-physical Multi-layer Tyre Temperature Model that Enables a Pragmatic Parameter Identification",
+      "authors": "Schabauer, Scherndl, Lex",
+      "year": 2024,
+      "url": "https://link.springer.com/chapter/10.1007/978-3-031-66968-2_29",
+      "read": "Publisher HTML sections1\u20132, equations1\u20137: capacities, interlayer conduction, rolling/hysteresis/sliding heat, road and air boundaries.",
+      "adoption": "Principle of separate fast surface and slow structure; explicit dissipative sources and signed air/road exchange. Own two-node reduction.",
+      "not_adopted": "Full three-layer+sidewall model, force/slip characteristics or measured parameters. Pitgun k*N*u^2 closure and work-based wear are hypotheses, not equations attributed to this paper."
+    }
+  ]
+}

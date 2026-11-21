@@ -1,0 +1,91 @@
+{
+  "status": "EXPLORATORY_NOT_IDENTIFIED_OR_ADMITTED",
+  "engine": {
+    "fuel_lower_heating_value_j_per_kg": 43000000.0,
+    "coolant_waste_fraction": 0.45,
+    "passive_conductance_w_per_k": 30.0,
+    "radiator_idle_conductance_w_per_k": 70.0,
+    "radiator_speed_conductance_w_per_k_mps": 45.0,
+    "thermostat_start_c": 85.0,
+    "thermostat_full_c": 98.0
+  },
+  "cooling_size_without_development": 0.75,
+  "cooling_size_gain_at_cap": 2.5,
+  "cooling_drag_area_m2_at_cap": 0.06,
+  "road_temperature_c": 42.0,
+  "compounds": {
+    "soft": {
+      "heat": {
+        "surface_capacity_j_per_k": 10200.0,
+        "carcass_capacity_j_per_k": 59500.0,
+        "surface_carcass_conductance_w_per_k": 200.0,
+        "surface_air_idle_conductance_w_per_k": 20.0,
+        "surface_air_speed_conductance_w_per_k_mps": 0.7,
+        "carcass_air_conductance_w_per_k": 30.0,
+        "surface_road_conductance_w_per_k": 40.0,
+        "deformation_resistance_coefficient": 0.018,
+        "rolling_heat_fraction": 0.4,
+        "deformation_heat_fraction": 0.65,
+        "deformation_surface_fraction": 0.65,
+        "deformation_energy_to_full_wear_j": 16000000.0,
+        "rolling_wear_fraction": 0.05,
+        "thermal_wear_gain": 0.6
+      },
+      "grip_scale": 1.06,
+      "temperature_optimum_c": 90.0,
+      "temperature_width_c": 38.0,
+      "minimum_temperature_grip_factor": 0.65
+    },
+    "medium": {
+      "heat": {
+        "surface_capacity_j_per_k": 12000.0,
+        "carcass_capacity_j_per_k": 70000.0,
+        "surface_carcass_conductance_w_per_k": 200.0,
+        "surface_air_idle_conductance_w_per_k": 20.0,
+        "surface_air_speed_conductance_w_per_k_mps": 0.7,
+        "carcass_air_conductance_w_per_k": 30.0,
+        "surface_road_conductance_w_per_k": 40.0,
+        "deformation_resistance_coefficient": 0.018,
+        "rolling_heat_fraction": 0.4,
+        "deformation_heat_fraction": 0.65,
+        "deformation_surface_fraction": 0.65,
+        "deformation_energy_to_full_wear_j": 24000000.0,
+        "rolling_wear_fraction": 0.05,
+        "thermal_wear_gain": 0.6
+      },
+      "grip_scale": 1.0,
+      "temperature_optimum_c": 95.0,
+      "temperature_width_c": 42.0,
+      "minimum_temperature_grip_factor": 0.65
+    },
+    "hard": {
+      "heat": {
+        "surface_capacity_j_per_k": 13799.999999999998,
+        "carcass_capacity_j_per_k": 80500.0,
+        "surface_carcass_conductance_w_per_k": 200.0,
+        "surface_air_idle_conductance_w_per_k": 20.0,
+        "surface_air_speed_conductance_w_per_k_mps": 0.7,
+        "carcass_air_conductance_w_per_k": 30.0,
+        "surface_road_conductance_w_per_k": 40.0,
+        "deformation_resistance_coefficient": 0.018,
+        "rolling_heat_fraction": 0.4,
+        "deformation_heat_fraction": 0.65,
+        "deformation_surface_fraction": 0.65,
+        "deformation_energy_to_full_wear_j": 34000000.0,
+        "rolling_wear_fraction": 0.05,
+        "thermal_wear_gain": 0.6
+      },
+      "grip_scale": 0.97,
+      "temperature_optimum_c": 100.0,
+      "temperature_width_c": 48.0,
+      "minimum_temperature_grip_factor": 0.65
+    }
+  },
+  "note": "All numbers are provisional engineering/gameplay hypotheses, not fitted/validated race-tire data. No borrowed paper coefficients. Physical capacity and derating threshold/slope restored from each installed engine catalog resource; old heat-family multipliers removed only in this opt-in probe.",
+  "radiator_speed_conductance_by_power_unit": {
+    "v8_1960": 14.0,
+    "v8_1970": 45.0,
+    "v6t": 70.0,
+    "v6t_hybrid": 85.0
+  }
+}
