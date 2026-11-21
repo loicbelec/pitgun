@@ -24,8 +24,12 @@ class EnergyEvidenceTests(unittest.TestCase):
         digest = lambda raw: 'sha256:'+hashlib.sha256(raw).hexdigest()
         self.assertEqual(self.path.with_suffix('.sha256').read_text().strip(), digest(self.path.read_bytes()))
         self.assertEqual(r['identity']['plan_digest'], digest((HERE/'plan-v1.json').read_bytes()))
-        for path, value in r['identity']['source_files'].items():
-            self.assertEqual(value, digest((ROOT/path).read_bytes()), path)
+        # Historical evidence must not freeze every later model's source bytes.
+        # Live campaigns check the actual tree and compiled source identities.
+        for name, path in runner.SOURCES.items():
+            self.assertEqual(r['identity']['compiled_sources'][name], r['identity']['source_files'][path])
+        for value in r['identity']['source_files'].values():
+            self.assertRegex(value, r'^sha256:[0-9a-f]{64}$')
         previous = json.loads((ROOT/'experiments/physics_foundation/results/local-baseline-v1.json').read_bytes())
         old = {c['case_id']:c['outcome']['result']['output_digest'] for c in previous['cases']}
         self.assertEqual(old, {c['id']:c['output_digest'] for c in r['historical_canonical_parity']})

@@ -1,0 +1,53 @@
+{
+  "schema": "pitgun.longitudinal-energy-native-receipt/v1",
+  "status": "NATIVE_NUMERICAL_ACCOUNTING_QUALIFIED",
+  "source_commit": "f9833699beb1fc53988af40c24fbd5629bd05a8f",
+  "physical_source_commit": "6d8fcb5",
+  "report_digest": "sha256:90250b92eb801b9a5e6fc505f2b7fc0151eef82fc5e47e42cbffc450a6e894d7",
+  "candidate_identity": {
+    "digest": "sha256:cab6807c76e7434b760abf6e7d0da9f7bf78e3b94156af9a717bad93f2ee5a21",
+    "id": "pitgun.racing-longitudinal-energy-candidate",
+    "version": "1.0.0"
+  },
+  "catalog_identity": {
+    "id": "pitgun.racing",
+    "manifest_digest": "sha256:c7eafd00de0e1257d82687d8f640e0e435f530746f0bfa805bba662df20110cf",
+    "schema_version": "pitgun.catalog-release-identity/v1",
+    "version": "1.8.1"
+  },
+  "historical_canonical_outputs_equal": 10,
+  "required_paired_cases_complete": 11,
+  "expected_fuel_feasibility_cases_failed_both_models": 1,
+  "same_binary_repetitions_per_mode": 2,
+  "complete_check_replayed_without_archive_write": true,
+  "native_tests": {
+    "authority": 30,
+    "simulator": 114,
+    "solver_unit": 10,
+    "solver_integration": 45,
+    "verifier_lib": 16,
+    "verifier_main": 6,
+    "total": 221,
+    "result": "PASS"
+  },
+  "python_checks": {
+    "energy_evidence": 4,
+    "historical_baseline_tools": 8,
+    "historical_power_evidence": 2,
+    "result": "PASS"
+  },
+  "strict_clippy": "PASS four libraries and new probe; not an all-target test-lint claim",
+  "rustfmt": "PASS all workspace Rust",
+  "wasm_compilation": "PASS solver and simulator --features wasm; no new runtime built, admitted or replayed",
+  "external_accuracy_validation": false,
+  "new_model_browser_admission": false,
+  "hosted_changes": false,
+  "limitations": [
+    "Empirical existing tire/BSFC/heat/derating parameters remain",
+    "Four fixed tire coupling passes and next-lap held-state forecast are approximations",
+    "Pit velocity reset has explicit unresolved energy; not a modeled pit-entry trajectory",
+    "Native core cost approximately5.7–6.5x; browser/VPS acceptance budget not established",
+    "Barcelona66 separate fuel case fails both; original issue445 request is not reconstructed",
+    "No dynamic driver-control timeline or hybrid battery qualified"
+  ]
+}

@@ -28,6 +28,15 @@ records identify this experiment; they are not a reproducible-build attestation.
 A report/documentation commit can follow the frozen source commit without changing
 source hashes. `--check` repeats the campaign and never overwrites the archive.
 
+CI runs four cheap archive-integrity and refusal checks. It does not rerun this
+Mac's binary on Linux or require future physical models to keep this historical
+source unchanged. The live campaign validates current source/binary agreement;
+revisiting changed equations needs separately identified evidence.
+
+The [results review](RESULTS_V1.md) includes the measured deltas and limitations.
+With optional Matplotlib installed, `python3 experiments/longitudinal_energy/plot_report.py`
+regenerates its PNG/SVG from the checksum-checked archive without running a solve.
+
 ## Fixed campaign and interpretation
 
 [plan-v1.json](plan-v1.json) names ten exposed lot-0 reference cases, plus Spa with a
