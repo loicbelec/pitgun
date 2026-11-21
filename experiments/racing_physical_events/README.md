@@ -100,7 +100,7 @@ old lap/pit/derating journal after removing the new tire facts. Detector/queue/
 journal restore is covered; the Solver still stays in memory.
 
 The cold-start Barcelona and early Monza cases include separate unranked previews:
-every second accepted native point in the first600s for five existing numeric
+at most600 accepted native points per channel in the first600s, for five numeric
 channels. It computes no new physics and supplies no interpolated service values.
 It is a deterministic visual fixture, **not** an admitted exporter, complete saved
 run, Worker or WASM qualification. Its event IDs/occurrence/release times are the

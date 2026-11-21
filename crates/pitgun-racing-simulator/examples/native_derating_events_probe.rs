@@ -360,6 +360,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         let preview = if enable_tires && ["tire-start-35", "budget-early8-monza-c0"].contains(&id) {
             let s = &result.solution;
             let mut channels = serde_json::Map::new();
+            let native_stride =
+                s.t.iter()
+                    .take_while(|t| **t <= 600.0)
+                    .count()
+                    .div_ceil(600)
+                    .max(1);
             for (name, values, scale) in [
                 ("sim.speed_kph", &s.v, 3.6),
                 ("sim.distance_m", &s.s, 1.0),
@@ -370,15 +376,15 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 let points =
                     s.t.iter()
                         .enumerate()
-                        .step_by(2)
+                        .step_by(native_stride)
                         .take_while(|(_, t)| **t <= 600.0)
                         .map(|(i, t)| json!({"t":t*1e9,"v":values[i]*scale}))
                         .collect::<Vec<_>>();
                 channels.insert(name.into(), json!(points));
             }
-            json!({"policy":"pitgun.native-thermal-events-preview/every-second-native-point-first-600s/v1",
+            json!({"policy":"pitgun.native-thermal-events-preview/bounded-native-points-first-600s/v1",
                 "scope":"Unranked native presentation sample, not an admitted graphical exporter or WASM execution.",
-                "track_id":case["request"]["input"]["track_id"],"track_length_m":input.track.s.last(),"series":channels})
+                "max_points_per_channel":600,"native_stride":native_stride,"track_id":case["request"]["input"]["track_id"],"track_length_m":input.track.s.last(),"series":channels})
         } else {
             Value::Null
         };
