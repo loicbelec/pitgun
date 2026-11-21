@@ -75,8 +75,11 @@ fn summarize(output: &RaceOutput) -> Result<serde_json::Value, String> {
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args = env::args().skip(1).collect::<Vec<_>>();
-    if args.len() != 2 {
-        return Err("usage: physics_baseline_probe REQUEST_JSON CATALOG_RELEASE_DIR".into());
+    let power_v1 = args.len() == 3 && args[2] == "--power-v1";
+    if args.len() != 2 && !power_v1 {
+        return Err(
+            "usage: physics_baseline_probe REQUEST_JSON CATALOG_RELEASE_DIR [--power-v1]".into(),
+        );
     }
     let began = Instant::now();
     let request: RunRaceRequest = serde_json::from_slice(&fs::read(&args[0])?)?;
@@ -88,6 +91,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Embed source bytes at compilation so an old executable cannot be silently
     // associated with newly edited equations by the local runner.
     let compiled_sources = BTreeMap::from([
+        (
+            "crates/pitgun-racing-solver/src/power_telemetry.rs",
+            Digest::from_bytes(include_bytes!(
+                "../../pitgun-racing-solver/src/power_telemetry.rs"
+            )),
+        ),
         (
             "crates/pitgun-racing-solver/src/lib.rs",
             Digest::from_bytes(include_bytes!("../../pitgun-racing-solver/src/lib.rs")),
@@ -134,12 +143,42 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let prepare_ms = began.elapsed().as_secs_f64() * 1000.0;
     let mut advance_ms = 0.0;
     let mut advance_calls = Vec::new();
+    let mut power_laps = BTreeMap::new();
+    let mut power_projection_ms = 0.0;
     let (summary, summary_ms) = loop {
         let start = Instant::now();
         let step = session.advance()?;
         let elapsed = start.elapsed().as_secs_f64() * 1000.0;
         advance_ms += elapsed;
         advance_calls.push(elapsed);
+        if power_v1 {
+            let start = Instant::now();
+            if let Some((lap, projection)) = session.latest_player_power_telemetry_v1()? {
+                let maximum_load = projection
+                    .points
+                    .iter()
+                    .map(|p| p.equivalent_engine_load_pct)
+                    .fold(0.0_f64, f64::max);
+                power_laps.insert(
+                    lap,
+                    json!({
+                        "lap":lap,"schema_version":projection.schema_version,
+                        "pedal_command_pct":projection.pedal_command_pct,
+                        "brake_command_pct":projection.brake_command_pct,
+                        "native_nodes":projection.points.len(),
+                        "maximum_equivalent_engine_load_pct":maximum_load,
+                    "export_1hz_samples":projection.resample(1.0)?.len(),
+                    "export_5hz_samples":projection.resample(5.0)?.len(),
+                    "maximum_port_residual_w":projection.points.iter().map(|p|
+                        (p.engine_delivered_w-p.wheel_propulsion_w-p.driveline_loss_w-p.launch_regularization_w).abs()
+                    ).fold(0.0_f64,f64::max),
+                        "projection_digest":canonical_json_digest(&projection)?,
+                        "ledger":projection.ledger,
+                    }),
+                );
+            }
+            power_projection_ms += start.elapsed().as_secs_f64() * 1000.0;
+        }
         match step {
             ControlStep::AwaitingDecision(_) => {
                 return Err("baseline unexpectedly requested a controller".into());
@@ -169,11 +208,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 "config":config_json,
             },
             "result":summary,
+            "power_projection":power_v1.then_some(power_laps),
             "timings":{
                 "prepare_ms":prepare_ms,
                 "advance_ms":advance_ms,
                 "advance_calls_ms":advance_calls,
                 "summary_and_digest_ms":summary_ms,
+                "power_projection_ms":power_projection_ms,
             }
         })
     );
