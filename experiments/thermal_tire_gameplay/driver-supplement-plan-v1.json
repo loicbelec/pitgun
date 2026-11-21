@@ -1,0 +1,120 @@
+{
+  "schema": "pitgun.thermal-tire-driver-followup/v1",
+  "reason": "V1 conservative/aggressive are strategy policy labels without physical aggressiveness; legacy V9 falls back to default. Preserve that finding and compare valid physical driver resources instead. Different driver IDs also change seeded driver-noise streams; this is not a one-factor aggressiveness derivative or an active UI control test.",
+  "cases": [
+    {
+      "id": "physical-driver-battery_voltas",
+      "group": "physical_driver_followup",
+      "raw_tuning": {
+        "engine_points": 8,
+        "cooling_points": 4,
+        "aero_points": 4,
+        "chassis_points": 4,
+        "downforce_slider": 0.5,
+        "gear_ratio_slider": 0.5
+      },
+      "cooling_offset": 0,
+      "metadata": {},
+      "request": {
+        "input": {
+          "track_id": "BARCELONA",
+          "laps": 20,
+          "vehicle_id": "modern_v6t",
+          "era": 5,
+          "hz": 5.0,
+          "pit_strategy": {
+            "player_pit_laps": []
+          },
+          "competitors": [
+            {
+              "id": "player",
+              "name": "Audit driver",
+              "driver_id": "battery_voltas",
+              "team_id": "pitgun-lab",
+              "is_player": true,
+              "tuning": {
+                "engine_points": 8,
+                "cooling_points": 4,
+                "aero_points": 4,
+                "chassis_points": 4,
+                "downforce_slider": 0.5,
+                "gear_ratio_slider": 0.5
+              },
+              "budget_cap": 20,
+              "stint_strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 20
+                  }
+                ],
+                "pit_laps": []
+              }
+            }
+          ]
+        },
+        "seed": 42,
+        "era": 5,
+        "hz": 5.0
+      },
+      "overrides": {}
+    },
+    {
+      "id": "physical-driver-franz_hermann",
+      "group": "physical_driver_followup",
+      "raw_tuning": {
+        "engine_points": 8,
+        "cooling_points": 4,
+        "aero_points": 4,
+        "chassis_points": 4,
+        "downforce_slider": 0.5,
+        "gear_ratio_slider": 0.5
+      },
+      "cooling_offset": 0,
+      "metadata": {},
+      "request": {
+        "input": {
+          "track_id": "BARCELONA",
+          "laps": 20,
+          "vehicle_id": "modern_v6t",
+          "era": 5,
+          "hz": 5.0,
+          "pit_strategy": {
+            "player_pit_laps": []
+          },
+          "competitors": [
+            {
+              "id": "player",
+              "name": "Audit driver",
+              "driver_id": "franz_hermann",
+              "team_id": "pitgun-lab",
+              "is_player": true,
+              "tuning": {
+                "engine_points": 8,
+                "cooling_points": 4,
+                "aero_points": 4,
+                "chassis_points": 4,
+                "downforce_slider": 0.5,
+                "gear_ratio_slider": 0.5
+              },
+              "budget_cap": 20,
+              "stint_strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 20
+                  }
+                ],
+                "pit_laps": []
+              }
+            }
+          ]
+        },
+        "seed": 42,
+        "era": 5,
+        "hz": 5.0
+      },
+      "overrides": {}
+    }
+  ]
+}
