@@ -1,0 +1,355 @@
+{
+  "audit": {
+    "binary_digest": "sha256:bfb28730ca76a97f57b48fe4ef66cf37a8e42af39072a35f8506e0f77f8bdf73",
+    "career_v9_resolution": [
+      {
+        "correction_workload_multiplier": null,
+        "driver_control_schedule_length": 0,
+        "request_digest": "sha256:1f8c520049c93dc6a604ef4a7a3cf23bbc1acf79f5e37a56a84d4cdf4326d366",
+        "requested_driver_id": "default",
+        "resolved_controls": {
+          "braking_utilization": 0.9600000000000001,
+          "control_error": 0.025,
+          "cornering_utilization": 0.965,
+          "traction_utilization": 0.97
+        },
+        "resolved_driver": {
+          "aggressiveness": 0.5,
+          "display_name": "Default Driver",
+          "id": "default"
+        },
+        "resolved_input_digest": "sha256:d0f3a7f27cb9c0c9e8a44a0f48c2b35f1d9c86d0ba18f185fbe92d389cf5bf56"
+      },
+      {
+        "correction_workload_multiplier": null,
+        "driver_control_schedule_length": 0,
+        "request_digest": "sha256:4d61cfb6283a1eeb7873a1891ac21401642022106faecfe59e375ee62b8c5df2",
+        "requested_driver_id": "balanced_reference",
+        "resolved_controls": {
+          "braking_utilization": 0.9600000000000001,
+          "control_error": 0.025,
+          "cornering_utilization": 0.965,
+          "traction_utilization": 0.97
+        },
+        "resolved_driver": {
+          "aggressiveness": 0.5,
+          "display_name": "Default Driver",
+          "id": "default"
+        },
+        "resolved_input_digest": "sha256:d0f3a7f27cb9c0c9e8a44a0f48c2b35f1d9c86d0ba18f185fbe92d389cf5bf56"
+      },
+      {
+        "correction_workload_multiplier": null,
+        "driver_control_schedule_length": 0,
+        "request_digest": "sha256:456a5c51f57c9f32c9c45d4f4943d11d04be3e395f5f9d0ff3761694531c8eec",
+        "requested_driver_id": "limit_specialist",
+        "resolved_controls": {
+          "braking_utilization": 0.9600000000000001,
+          "control_error": 0.025,
+          "cornering_utilization": 0.965,
+          "traction_utilization": 0.97
+        },
+        "resolved_driver": {
+          "aggressiveness": 0.5,
+          "display_name": "Default Driver",
+          "id": "default"
+        },
+        "resolved_input_digest": "sha256:d0f3a7f27cb9c0c9e8a44a0f48c2b35f1d9c86d0ba18f185fbe92d389cf5bf56"
+      },
+      {
+        "correction_workload_multiplier": null,
+        "driver_control_schedule_length": 0,
+        "request_digest": "sha256:42dff1f1f2689ab8a45826b006941fc8e0073f39cac519d94780931903dced2f",
+        "requested_driver_id": "smooth_operator",
+        "resolved_controls": {
+          "braking_utilization": 0.9600000000000001,
+          "control_error": 0.025,
+          "cornering_utilization": 0.965,
+          "traction_utilization": 0.97
+        },
+        "resolved_driver": {
+          "aggressiveness": 0.5,
+          "display_name": "Smooth Operator",
+          "id": "smooth_operator"
+        },
+        "resolved_input_digest": "sha256:6305ff6ff0f2422b5c65ad6795c37a4a2a2855b08ff459f14fcac0a46dc0d718"
+      },
+      {
+        "correction_workload_multiplier": null,
+        "driver_control_schedule_length": 0,
+        "request_digest": "sha256:f674ca2b898e6b05af2726af7b7b5347007b62929174c1102179e0d7c34b5237",
+        "requested_driver_id": "tire_manager",
+        "resolved_controls": {
+          "braking_utilization": 0.9600000000000001,
+          "control_error": 0.025,
+          "cornering_utilization": 0.965,
+          "traction_utilization": 0.97
+        },
+        "resolved_driver": {
+          "aggressiveness": 0.5,
+          "display_name": "Default Driver",
+          "id": "default"
+        },
+        "resolved_input_digest": "sha256:d0f3a7f27cb9c0c9e8a44a0f48c2b35f1d9c86d0ba18f185fbe92d389cf5bf56"
+      },
+      {
+        "correction_workload_multiplier": null,
+        "driver_control_schedule_length": 0,
+        "request_digest": "sha256:784507c28c8a66e696ebba5cdca7f2c42165f7a30cf204abdd52e325b5bac2cd",
+        "requested_driver_id": "franz_hermann",
+        "resolved_controls": {
+          "braking_utilization": 0.9810000000000001,
+          "control_error": 0.014500000000000002,
+          "cornering_utilization": 0.9824999999999999,
+          "traction_utilization": 0.984
+        },
+        "resolved_driver": {
+          "aggressiveness": 0.85,
+          "display_name": "Franz Hermann",
+          "id": "franz_hermann"
+        },
+        "resolved_input_digest": "sha256:2f024c45b554a44b3c0b6920418de0c7038316b48360b4005bf0012a99404dd8"
+      },
+      {
+        "correction_workload_multiplier": null,
+        "driver_control_schedule_length": 0,
+        "request_digest": "sha256:5f9e8769882188f3896c511b653fbc91adb0162f21cfad9f22436084a0e6585a",
+        "requested_driver_id": "battery_voltas",
+        "resolved_controls": {
+          "braking_utilization": 0.9420000000000001,
+          "control_error": 0.034,
+          "cornering_utilization": 0.95,
+          "traction_utilization": 0.958
+        },
+        "resolved_driver": {
+          "aggressiveness": 0.2,
+          "display_name": "Battery Voltas",
+          "id": "battery_voltas"
+        },
+        "resolved_input_digest": "sha256:d509fd42bd05be96b47e5c4a2233a329ba7263f23e1f422f515069282221b48f"
+      },
+      {
+        "correction_workload_multiplier": null,
+        "driver_control_schedule_length": 0,
+        "request_digest": "sha256:ac5fdddf1e79fe8d728e6164c957dc32bacd035ca99e9043632c617a0398631c",
+        "requested_driver_id": "not-a-driver",
+        "resolved_controls": {
+          "braking_utilization": 0.9600000000000001,
+          "control_error": 0.025,
+          "cornering_utilization": 0.965,
+          "traction_utilization": 0.97
+        },
+        "resolved_driver": {
+          "aggressiveness": 0.5,
+          "display_name": "Default Driver",
+          "id": "default"
+        },
+        "resolved_input_digest": "sha256:d0f3a7f27cb9c0c9e8a44a0f48c2b35f1d9c86d0ba18f185fbe92d389cf5bf56"
+      }
+    ],
+    "catalog": {
+      "id": "pitgun.racing",
+      "manifest_digest": "sha256:c7eafd00de0e1257d82687d8f640e0e435f530746f0bfa805bba662df20110cf",
+      "schema_version": "pitgun.catalog-release-identity/v1",
+      "version": "1.8.1"
+    },
+    "compiled_sources": {
+      "catalog": "sha256:d26e2222abc3bbaee766f239720b55d53de7778c4a2e3be921da5d22acc1a575",
+      "driver_contract": "sha256:b1eb7033c745cc04fe54ba17cd15a2581b1038b455de30c7d6b928e941cf601c",
+      "probe": "sha256:0ac3b8b118b8e1df99def353764f3a0bc5849c1567aa9526a4226ec5f8fac251",
+      "simulator": "sha256:02ff0729f48c410efcdf88f3e0f7a4e98f4bfcdbd4b952e6aa64df041752a12d",
+      "solver": "sha256:0452720478236ae312d41cb8ea21e7cad0fadadcaabe6008379fff49a37045f9"
+    },
+    "schema": "pitgun.driver-resolution-audit/v1",
+    "scope": "Native career-V9 resolution and separate trait arithmetic only. No assertion about deployed requests, performance, incident probabilities, driver integration into thermal V2 or balance.",
+    "separate_v2_trait_mapping": [
+      {
+        "braking_utilization": 0.89088,
+        "control_error_amplitude": 0.009608000000000002,
+        "cornering_utilization": 0.9008,
+        "correction_workload_multiplier": 1.001844736,
+        "driver_id": "balanced_reference",
+        "driver_traits": {
+          "consistency": 0.84,
+          "limit_exploitation": 0.84,
+          "tire_management": 0.84
+        },
+        "driving_mode": "manage",
+        "requested_commitment": 0.6,
+        "traction_utilization": 0.91072
+      },
+      {
+        "braking_utilization": 0.92784,
+        "control_error_amplitude": 0.013192000000000002,
+        "cornering_utilization": 0.9344000000000001,
+        "correction_workload_multiplier": 1.003377152,
+        "driver_id": "balanced_reference",
+        "driver_traits": {
+          "consistency": 0.84,
+          "limit_exploitation": 0.84,
+          "tire_management": 0.84
+        },
+        "driving_mode": "balanced",
+        "requested_commitment": 0.8,
+        "traction_utilization": 0.94096
+      },
+      {
+        "braking_utilization": 0.9648,
+        "control_error_amplitude": 0.017800000000000003,
+        "cornering_utilization": 0.9680000000000001,
+        "correction_workload_multiplier": 1.005696,
+        "driver_id": "balanced_reference",
+        "driver_traits": {
+          "consistency": 0.84,
+          "limit_exploitation": 0.84,
+          "tire_management": 0.84
+        },
+        "driving_mode": "attack",
+        "requested_commitment": 1.0,
+        "traction_utilization": 0.9712
+      },
+      {
+        "braking_utilization": 0.90672,
+        "control_error_amplitude": 0.011335999999999999,
+        "cornering_utilization": 0.9152,
+        "correction_workload_multiplier": 1.002992704,
+        "driver_id": "limit_specialist",
+        "driver_traits": {
+          "consistency": 0.78,
+          "limit_exploitation": 0.96,
+          "tire_management": 0.78
+        },
+        "driving_mode": "manage",
+        "requested_commitment": 0.6,
+        "traction_utilization": 0.92368
+      },
+      {
+        "braking_utilization": 0.94896,
+        "control_error_amplitude": 0.016264,
+        "cornering_utilization": 0.9536,
+        "correction_workload_multiplier": 1.005724928,
+        "driver_id": "limit_specialist",
+        "driver_traits": {
+          "consistency": 0.78,
+          "limit_exploitation": 0.96,
+          "tire_management": 0.78
+        },
+        "driving_mode": "balanced",
+        "requested_commitment": 0.8,
+        "traction_utilization": 0.95824
+      },
+      {
+        "braking_utilization": 0.9912000000000001,
+        "control_error_amplitude": 0.0226,
+        "cornering_utilization": 0.992,
+        "correction_workload_multiplier": 1.009944,
+        "driver_id": "limit_specialist",
+        "driver_traits": {
+          "consistency": 0.78,
+          "limit_exploitation": 0.96,
+          "tire_management": 0.78
+        },
+        "driving_mode": "attack",
+        "requested_commitment": 1.0,
+        "traction_utilization": 0.9927999999999999
+      },
+      {
+        "braking_utilization": 0.88296,
+        "control_error_amplitude": 0.006152000000000001,
+        "cornering_utilization": 0.8936000000000001,
+        "correction_workload_multiplier": 1.001624128,
+        "driver_id": "smooth_operator",
+        "driver_traits": {
+          "consistency": 0.96,
+          "limit_exploitation": 0.78,
+          "tire_management": 0.78
+        },
+        "driving_mode": "manage",
+        "requested_commitment": 0.6,
+        "traction_utilization": 0.9042399999999999
+      },
+      {
+        "braking_utilization": 0.9172800000000001,
+        "control_error_amplitude": 0.007048000000000002,
+        "cornering_utilization": 0.9248000000000001,
+        "correction_workload_multiplier": 1.002480896,
+        "driver_id": "smooth_operator",
+        "driver_traits": {
+          "consistency": 0.96,
+          "limit_exploitation": 0.78,
+          "tire_management": 0.78
+        },
+        "driving_mode": "balanced",
+        "requested_commitment": 0.8,
+        "traction_utilization": 0.9323199999999999
+      },
+      {
+        "braking_utilization": 0.9516,
+        "control_error_amplitude": 0.008200000000000002,
+        "cornering_utilization": 0.9560000000000001,
+        "correction_workload_multiplier": 1.003608,
+        "driver_id": "smooth_operator",
+        "driver_traits": {
+          "consistency": 0.96,
+          "limit_exploitation": 0.78,
+          "tire_management": 0.78
+        },
+        "driving_mode": "attack",
+        "requested_commitment": 1.0,
+        "traction_utilization": 0.9603999999999999
+      },
+      {
+        "braking_utilization": 0.88296,
+        "control_error_amplitude": 0.011335999999999999,
+        "cornering_utilization": 0.8936000000000001,
+        "correction_workload_multiplier": 1.000544128,
+        "driver_id": "tire_manager",
+        "driver_traits": {
+          "consistency": 0.78,
+          "limit_exploitation": 0.78,
+          "tire_management": 0.96
+        },
+        "driving_mode": "manage",
+        "requested_commitment": 0.6,
+        "traction_utilization": 0.9042399999999999
+      },
+      {
+        "braking_utilization": 0.9172800000000001,
+        "control_error_amplitude": 0.016264,
+        "cornering_utilization": 0.9248000000000001,
+        "correction_workload_multiplier": 1.001040896,
+        "driver_id": "tire_manager",
+        "driver_traits": {
+          "consistency": 0.78,
+          "limit_exploitation": 0.78,
+          "tire_management": 0.96
+        },
+        "driving_mode": "balanced",
+        "requested_commitment": 0.8,
+        "traction_utilization": 0.9323199999999999
+      },
+      {
+        "braking_utilization": 0.9516,
+        "control_error_amplitude": 0.0226,
+        "cornering_utilization": 0.9560000000000001,
+        "correction_workload_multiplier": 1.001808,
+        "driver_id": "tire_manager",
+        "driver_traits": {
+          "consistency": 0.78,
+          "limit_exploitation": 0.78,
+          "tire_management": 0.96
+        },
+        "driving_mode": "attack",
+        "requested_commitment": 1.0,
+        "traction_utilization": 0.9603999999999999
+      }
+    ],
+    "simulation_executions": 0,
+    "source_plan_digest": "sha256:ee97c3157a68433e9e8bfc588bb763c9484146d310f0de9820338ed7f4dce6a8"
+  },
+  "exact_second_resolution_pass": true,
+  "plan_digest": "sha256:65cf9e206abec9cfe2af63fa1e7a761155f84362d58e38f8f159340837dcc8b9",
+  "schema": "pitgun.driver-readiness-receipt/v1",
+  "simulation_executions": 0,
+  "source_commit": "e3e04c81cdeff14e96f3e57f64ec43be5447d4ae"
+}

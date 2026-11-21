@@ -1,0 +1,275 @@
+{
+  "schema": "pitgun.opponent-physics-campaign-plan/v1",
+  "status": "PROTOCOL_ONLY_BLOCKED_BEFORE_FITTING",
+  "date": "2026-11-22",
+  "objective": "Thoughtful allocations/sliders against coherent competitive opponents; no robust engine/chassis-only winning shortcut.",
+  "independence": {
+    "event_axis_affects_physics_or_opponent_parameters": false,
+    "opponent_fitting_depends_on_physics_driver_and_incident_profile": true,
+    "new_runtime_activation_in_scope": false
+  },
+  "pinned_audit_context": {
+    "framework_base_commit": "fc5958ceb852c6b6c62e68f2e04d41189d9dbd64",
+    "game_commit": "13aab3d65ca65c233821138846be5a7d5903fbef",
+    "native_files": {
+      "crates/pitgun-racing-solver/src/lib.rs": "sha256:0452720478236ae312d41cb8ea21e7cad0fadadcaabe6008379fff49a37045f9",
+      "crates/pitgun-racing-solver/src/thermal_physics.rs": "sha256:95962d01e124aaceaa809215abf62850687772a3cd20996aaa54532ff6935699",
+      "crates/pitgun-racing-simulator/src/lib.rs": "sha256:02ff0729f48c410efcdf88f3e0f7a4e98f4bfcdbd4b952e6aa64df041752a12d",
+      "crates/pitgun-racing-contract/src/driver.rs": "sha256:b1eb7033c745cc04fe54ba17cd15a2581b1038b455de30c7d6b928e941cf601c",
+      "experiments/thermal_physics_v2/profile-v1.json": "sha256:54840473418c1d576b9e925f0d90722194b4827b58494e519bf06dbaea766b6b",
+      "catalogs/racing/v1.8.1/simulation/driver-control/profile-v1.json": "sha256:67f343482ff12fdceec3b0f068add6f96b7248a0c7de7efb01ae03851b4f26d6",
+      "catalogs/racing/v1.8.1/simulation/policies/competitive.json": "sha256:3ae8204156754fcf6758bcb452e0b648582e0e8afa196365ea9167e2203a3370"
+    },
+    "game_files": {
+      "src/app/pitwallSessionExecution.ts": "sha256:64bfbea29ea105d6ee58a3d80edf774bcf0cb37e2a4a940088d9207a7d9e29dd",
+      "src/engine/competitors.ts": "sha256:efbf24e19c622ac0b03e8e87b64dedc80613dd5c5d6f43c897d71fdb192ff178",
+      "src/engine/opponentPolicy.ts": "sha256:fe309aa45bfdc6c7476cee63f15f8ad9d737ed7600bda7ff1cee936b5fa27817",
+      "src/economy/seasonContent.ts": "sha256:0b654634106002317632f930b0072927a0fb78edb1d4b751b47e308fd57b3120",
+      "src/economy/seasonCareer.ts": "sha256:e8b5cb2180965d658656708858404b0bf549cf109b498d2ad852d3d20dffba94"
+    },
+    "catalog": "racing1.8.1 audit only; accepted target version must be explicit"
+  },
+  "blocking_prerequisites": [
+    {
+      "id": "effective_driver_schema",
+      "state": "unresolved",
+      "requires": "V2 requested identity resolves to V2 traits, explicit fixed player mode; no accidental legacy fallback in new profile"
+    },
+    {
+      "id": "thermal_trait_connection",
+      "state": "unresolved",
+      "requires": "Accounted tire-management/correction effects in thermalV2, single-trait causality and identity-controlled noise"
+    },
+    {
+      "id": "performance_incident_tradeoff",
+      "state": "not_implemented",
+      "requires": "Versioned simulated mistake/incident law, ordinary pace noise distinguished, deterministic seeded exposure/recovery"
+    },
+    {
+      "id": "fuel_and_legal_full_gp",
+      "state": "unresolved_445",
+      "requires": "Declared automatic load/physical limits and explicit fuel exhaustion; no tank inflation or censoring failed races"
+    },
+    {
+      "id": "career_fixtures",
+      "state": "to_generate_from_game",
+      "requires": "Era entry/exit snapshots, real earned budgets/HQ offsets/components/doctrines/unlocks from reducers and preparation"
+    },
+    {
+      "id": "frozen_model_and_targets",
+      "state": "pending",
+      "requires": "Freeze equations/profiles/cost and difficulty bands before full policy fitting"
+    }
+  ],
+  "stages": [
+    {
+      "id": "G0_resolution_audit",
+      "kind": "read_only_native_no_simulation",
+      "command": "cargo run --release --locked --offline -p pitgun-racing-simulator --example driver_resolution_audit -- REPOSITORY_ROOT",
+      "requested_ids": [
+        "default",
+        "balanced_reference",
+        "limit_specialist",
+        "smooth_operator",
+        "tire_manager",
+        "franz_hermann",
+        "battery_voltas",
+        "not-a-driver"
+      ],
+      "separate_trait_modes": [
+        "manage",
+        "balanced",
+        "attack"
+      ],
+      "must_report": [
+        "requested/resolved identities",
+        "actual legacy aggression and controls",
+        "V2 trait arithmetic separately",
+        "binary/catalog/source identities"
+      ],
+      "does_not_prove": [
+        "deployed behavior",
+        "V2 physical integration",
+        "race strength",
+        "incident probabilities"
+      ]
+    },
+    {
+      "id": "G1_driver_mechanisms",
+      "kind": "native_causal_pairs",
+      "must_hold_fixed": [
+        "vehicle/components/setup",
+        "initial thermal/fuel/tire states",
+        "noise identity",
+        "all non-target traits"
+      ],
+      "axes": [
+        "limit_exploitation",
+        "consistency",
+        "tire_management",
+        "requested_commitment"
+      ],
+      "requires": [
+        "thermal_trait_connection",
+        "performance_incident_tradeoff"
+      ],
+      "checks": [
+        "direction and opportunity cost",
+        "no universally dominant archetype or max commitment",
+        "actual incident state effects",
+        "continuous/chunked/restored seeded parity"
+      ]
+    },
+    {
+      "id": "G2_setup_screen",
+      "kind": "single_car_short_then_legal_stints",
+      "priority_eras": [
+        1,
+        2
+      ],
+      "controls": [
+        "optimized engine/chassis-only spend",
+        ">=80% engine/chassis spend",
+        "balanced",
+        "circuit-informed"
+      ],
+      "allocation_search": {
+        "small_budget": "all legal integer allocations for discretionary budget <=8",
+        "larger_budget": "bounded deterministic space-filling shortlist and local integer transfers; not global optimum"
+      },
+      "slider_search": {
+        "domain": "actual player legal bounds/unlocks including endpoints",
+        "coarse_reference": [
+          0.0,
+          0.25,
+          0.5,
+          0.75,
+          1.0
+        ],
+        "separate_from_allocation": true,
+        "ai_current_bounds": [
+          0.15,
+          0.85
+        ],
+        "refine": "predeclared neighborhood after screening; freeze before reserved evaluation"
+      },
+      "checks": [
+        "one-variable causal response before combined optimization",
+        "equal common budget, fixed HQ offsets",
+        "record actual effective points and components",
+        "thermals/grip/energy/fuel consequences, not unexplained time multipliers"
+      ]
+    },
+    {
+      "id": "G3_opponent_fit",
+      "kind": "nine_rival_field_shortlist",
+      "roster_roles": {
+        "front_runner": 2,
+        "midfield": 4,
+        "challenger": 3
+      },
+      "requires_all_prerequisites": true,
+      "fit_axes": [
+        "allocation roles",
+        "circuit slider baselines",
+        "driver traits and fixed commitment roles",
+        "legal compounds/stops and pacing policy if supported"
+      ],
+      "forbidden": [
+        "field follows player setup/future plan",
+        "hidden grip/power multipliers",
+        "tuning to decision-message quotas",
+        "discarding failures"
+      ],
+      "paired_field_frozen": true
+    },
+    {
+      "id": "G4_reserved_evaluation",
+      "kind": "full_gp_and_seasons",
+      "before_tuning": "Freeze exact model/policy/corpus and decision thresholds",
+      "covers": "all public era1..5 calendars and real legal progression fixtures",
+      "seeds": {
+        "fitting": [
+          17041,
+          27043,
+          37049
+        ],
+        "reserved_debug": [
+          47051,
+          57059,
+          67061
+        ],
+        "incident_shortlist_target_independent_seed_count": 50,
+        "risk_intervals_required": true,
+        "three_seeds_not_rare_event_evidence": true
+      },
+      "deferred": [
+        {
+          "circuit": "MONACO",
+          "reason": "owner-deferred full-distance seam/physical issue; explicit exception, not PASS"
+        }
+      ],
+      "diagnostics": [
+        "matched incident-disabled pace comparisons",
+        "incident-enabled expected outcomes and tails"
+      ],
+      "outputs": [
+        "paired finish gaps",
+        "ranks/wins and season performance",
+        "sampled allocation/slider regret",
+        "derating and actual shaft work",
+        "surface/carcass/grip/wear",
+        "fuel and all failures/DNFs",
+        "risk exposure counts and uncertainty",
+        "cost/memory"
+      ]
+    },
+    {
+      "id": "G5_admission",
+      "kind": "separate_future_delivery",
+      "requires": [
+        "physical acceptance",
+        "proper driver schema",
+        "qualified export/Worker/checkpoint",
+        "runtime/catalog/policy identity and independent verifier replay"
+      ],
+      "event_display": "existing observer, no calibration coupling",
+      "engineer": "deterministic relevance/visibility after competition; no automatic one-event-one-LLM-call"
+    }
+  ],
+  "incident_contract": {
+    "implementation": "future",
+    "player_and_rivals_share_law": true,
+    "initial_player_mode": "explicit fixed balanced, no UI slider required",
+    "ability_is_not_commitment": true,
+    "exposure": "declared simulation time/distance, not render/telemetry samples",
+    "rng": "pinned purpose-separated streams and stable competitor/exposure coordinates, checkpoint continuity",
+    "initial_scope": "single-car mistake with actual future state/time/resource effects; retirement if explicitly supported",
+    "vsc": "separate global-frontier/race-state integration before all affected futures commit",
+    "risk_coefficients": "reduced game hypothesis, not industrial safety data"
+  },
+  "acceptance": {
+    "verdicts": [
+      "ACCEPT",
+      "REFINE",
+      "REJECT"
+    ],
+    "current_verdict": "NO_CALIBRATION_VERDICT",
+    "proposed_checks": [
+      "reject robust engine/chassis shortcut dominating the eraI season across reserved fields",
+      "strict reproducible gain outside that family on technical/thermal cases above numerical uncertainty; field must exploit it",
+      "informed settings improve against same attainable field",
+      "reject always-best maximum commitment and archetypes",
+      "retain modest accepted early cooling effect",
+      "allow circuit-appropriate engine focus and occasional lucky wins; no forced four-axis spending"
+    ],
+    "win_rate_difficulty_bands": "must be declared before fitting, not selected after results"
+  },
+  "operations": {
+    "execution": "local computer, no Databricks/provider calls",
+    "start_workers": 4,
+    "pilot_before_expansion": true,
+    "retain": "compact diagnostics/identities/accepted actions and all failures; no default complete telemetry archive",
+    "source_of_setup_and_physics": "governed Rust and game preparation; no duplicated numerical laws in runner"
+  }
+}
