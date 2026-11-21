@@ -60,6 +60,14 @@ maximal peuvent limiter l'effet sur la vitesse. Ne pas présenter ces chiffres
 comme la preuve qu'un joueur ne peut jamais ignorer le cooling. Il faut encore
 éprouver les allocations/sliders, bonus HQ et conditions précoces réellement joués.
 
+Clarification gameplay du propriétaire après lecture : **ce gain modeste sur cinq
+tours dans les premières ères correspond au comportement recherché**. Le cooling
+doit être perceptible et pédagogique, sans pénaliser fortement les premiers
+réglages. Ne pas amplifier le derating ou le gain chronométrique dans le seul but
+de rendre ce cas plus spectaculaire. La validation des autres configurations,
+conditions et distances reste nécessaire ; ce choix ne vaut pas acceptation de
+l'ensemble du candidat physique.
+
 La comparaison à moteur inchangé,cooling 0→2, donne 802.425 s au prix d'un budget
 augmenté : c'est un diagnostic causal distinct du tableau à budget égal. Les
 seuils de protection restent ceux du catalogue ; le dimensionnement de radiateur
