@@ -122,3 +122,98 @@ the UI and is tracked in #430 / game #315. Exact provider feature/clock projecti
 full rival-lap Compare, initial Authority capabilities and terminal ordered-journal
 Verifier evidence remain separate gates. Gemini can be connected experimentally
 after its observation/budget contract is specified, before ranked activation.
+
+## Physical-event direction — 21 November 2026
+
+Owner requirement: derating belongs in the event channel used by Pit Wall and
+controllers, alongside future incidents caused by aggressive driving. This section
+specifies the proposed extension; it does **not** add event variants, thresholds,
+an incident model, a new wire/runtime identity or UI behavior.
+
+### Reuse and ownership
+
+`RacingSessionEventV1` currently carries `LapCompleted`, `PitStopCompleted` and
+`DriverInstructionApplied`. Optional `RacingEventTimingV1` already separates
+simulation occurrence from release at an observed compute frontier. The shared
+contract also has generic frame events. Reuse these transport/journal primitives
+with a versioned domain payload and an explicit new profile; do not create two
+independent authoritative event logs or silently change old saved streams.
+
+The Solver owns physical state and validated transitions. Racing-owned event
+detectors consume the **accepted native trajectory/state**, before graphical
+resampling, and keep their detector state between chunks. Numerical coupling/root
+iterations are provisional work: they must never produce committed physical
+events. Racing Simulator owns consequences involving the race as a whole, such
+as neutralization, and legal command-effect frontiers. Generic framework code
+owns identity, ordering, release, persistence and replay without understanding
+engines, tires or laps. Presentation owns icons, messages, playback and navigation.
+
+### Proposed event families
+
+| Family | Useful facts/transitions | Prerequisite/status |
+| --- | --- | --- |
+| Engine | Thermal derating begins/ends; a significant worsening of an existing episode | Native V2 has temperature/derating samples, not these discrete records yet. Distinguish available power from delivered power. |
+| Tires | Surface exits/returns to its thermal window, wear crosses a declared milestone, modeled grip loss becomes significant | Surface/carcass/wear exist in V2; warning thresholds require calibration/versioning.100% wear is not automatically a puncture or retirement. |
+| Fuel | Reserve threshold reached, actual fuel exhausted; separately labelled range-risk estimate | Current exhaustion is a solver error. Domain DNF semantics and automatic sizing remain #445. An autonomy forecast is an estimate, not an observed physical fact. |
+| Energy | Charge/reserve threshold crossed, recovery/deployment limit reached, electrical thermal protection | Only after battery/regen/limits exist (#246). |
+| Race/strategy | Existing completed laps/pits/instructions; future observed position changes or race-control transitions | Derived by Racing from released committed facts, not the React cursor or hidden future plans. Do not invent pit-entry precision from an abstract pit penalty. |
+| Incidents | Modeled driving error, spin, collision/damage or retirement, when supported | Aggressiveness must affect an explicit incident model first. No incident inferred or invented by an LLM from a slow lap. |
+| Conditions | A scenario/weather state changes, track conditions change, VSC begins/ends | Only after the corresponding scenario and physical/race consequences are implemented. |
+
+Exact names and payload schemas remain to review. A first bounded implementation
+should cover thermal derating episode entry/recovery, then tire-window transitions;
+fuel events follow sizing/exhaustion semantics. Existing lap/pit/instruction events
+remain the reference. Incidents, neutralization and weather are separate modules,
+not fabricated notifications added to this thermal slice.
+
+### Facts, relevance and presentation
+
+Continuous quantities remain numeric channels. Discrete records capture meaningful
+transitions; event definitions must state whether they denote an exact physical
+mode change or a sustained diagnostic condition. Use declared, versioned thresholds,
+hysteresis and persistence for diagnostic episodes, without changing the physical
+derating law. Do not issue an event for every changing temperature sample.
+
+A separate deterministic relevance policy selects/groups released events into
+episodes, with deduplication, cooldown and a bounded decision/message budget. Most
+events need no bubble or LLM call. An alert may explain a condition without opening
+a decision window if no valid action exists. Current thermal V2 does not admit
+dynamic driver-control schedules; do not offer an actionable cooling/pace command
+just because an engine event was detected.
+
+Internal audit facts and controller-visible facts are different views of the same
+journal. A rival's actual engine temperature, fuel or future strategy must not be
+given to a player/LLM unless its observation capability explicitly permits it.
+An inferred rival performance issue belongs to the analysis/estimate layer, not
+an authoritative claim about a hidden physical cause. Freeze both visibility and
+relevance policies with the run, and bind selected episodes to source event IDs.
+
+### Determinism, causality and audit
+
+Each new record needs a stable run-scoped occurrence ID/order, kind/schema,
+entity, simulation occurrence coordinate/time, release frontier and typed numeric
+payload with units. The run manifest binds model/input/policy identities. Declare
+native detection-time precision; ordering must be stable even when rounded times
+coincide. Repeated starts/stops of the same kind within one lap must have distinct
+IDs. Wall-clock time and rendering frequency must not define physical events.
+
+Given model, initial/scenario inputs, seed and accepted actions, events must replay
+in the same order. Seeded incidents remain deterministic: pin the risk law and
+random-stream identity/ordering, and ensure chunking, UI speed and controller
+latency cannot alter their draws. Replay uses recorded accepted actions rather
+than calling the original LLM again. This is reproducibility, not remote attestation.
+
+An incident that triggers VSC produces a race-state consequence. Every affected
+car must be advanced under that state before affected future work is committed;
+painting a VSC banner over an already solved race is insufficient. Current
+independent-car/prefetch assumptions must be qualified for coupled race events.
+The controller observes only released history and may act at a declared future
+legal boundary, never rewrite a computed prefix.
+
+Acceptance: continuous/chunked/reloaded execution yields the same events; observation
+export rates leave event identity/order unchanged; provisional passes emit no
+duplicates; threshold episodes do not chatter; future/private facts stay outside
+unauthorized views; recording a fact is distinct from opening a window; full
+event/decision/effect evidence is replay-verifiable. The first observation-only
+event slice must preserve physical results when no action is taken. Old streams
+retain their schemas, outputs and saved runtime identities.
