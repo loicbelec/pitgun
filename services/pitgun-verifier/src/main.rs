@@ -1,3 +1,5 @@
+mod service_replay_config;
+
 use std::{
     fs,
     net::SocketAddr,
@@ -47,9 +49,11 @@ struct AppState {
     replay_slots: Arc<Semaphore>,
     ready: bool,
     service_verifier: Option<Arc<ServiceVerifier>>,
+    retained_service_verifiers: Vec<Arc<ServiceVerifier>>,
 }
 
 struct ServiceVerifier {
+    catalog_release: CatalogReleaseIdentityV1,
     verifier: RacingVerifier,
     replay: pitgun_verifier::wasm_service_replay::WasmServiceReplay,
 }
@@ -207,6 +211,40 @@ async fn verify_racing_attempt(
     }
 }
 
+// Routing selects only operator-validated entries. It grants no trust: the
+// selected verifier still validates the signature, receipt and entire history.
+// Unknown pairs stay on the strict primary and are rejected before replay.
+fn select_service_verifier(
+    primary: Arc<ServiceVerifier>,
+    retained: &[Arc<ServiceVerifier>],
+    release: &CatalogReleaseIdentityV1,
+    runtime: Digest,
+) -> Arc<ServiceVerifier> {
+    retained
+        .iter()
+        .find(|v| &v.catalog_release == release && v.replay.runtime_digest == runtime)
+        .map(Arc::clone)
+        .unwrap_or(primary)
+}
+
+fn retain_service_verifier(
+    primary: &ServiceVerifier,
+    retained: &mut Vec<Arc<ServiceVerifier>>,
+    candidate: ServiceVerifier,
+) -> Result<(), String> {
+    if std::iter::once(primary)
+        .chain(retained.iter().map(AsRef::as_ref))
+        .any(|v| {
+            v.catalog_release == candidate.catalog_release
+                && v.replay.runtime_digest == candidate.replay.runtime_digest
+        })
+    {
+        return Err("duplicate service catalog/runtime replay identity".into());
+    }
+    retained.push(Arc::new(candidate));
+    Ok(())
+}
+
 async fn verify_racing_service(
     State(state): State<AppState>,
     Json(submission): Json<RacingServiceVerificationSubmissionV1>,
@@ -229,6 +267,12 @@ async fn verify_racing_service(
         )
             .into_response();
     };
+    let verifier = select_service_verifier(
+        verifier,
+        &state.retained_service_verifiers,
+        &submission.catalog_release,
+        submission.decision_envelope.runtime_digest,
+    );
     let (received, permit) = match admit_replay(Arc::clone(&state.replay_slots)).await {
         Ok(v) => v,
         Err(_) => return internal_error(),
@@ -464,6 +508,7 @@ fn load_state() -> Result<AppState, String> {
             replay.validate()?;
             let identity = replay.verifier_identity(&verifier_identity)?;
             Some(Arc::new(ServiceVerifier {
+                catalog_release: service_catalog.release_identity().clone(),
                 verifier: RacingVerifier::new(
                     keyring.clone(),
                     expected_audience.clone(),
@@ -482,6 +527,51 @@ fn load_state() -> Result<AppState, String> {
             );
         }
     };
+    let mut retained_service_verifiers = Vec::new();
+    if let Some(path) = std::env::var_os("PITGUN_RETAINED_SERVICE_REPLAYS_FILE") {
+        let primary = service_verifier
+            .as_ref()
+            .ok_or("retained service replays require a configured primary service verifier")?;
+        let manifest = service_replay_config::RetainedReplays::load(PathBuf::from(path))?;
+        for config in manifest.replays {
+            let service_model =
+                pitgun_racing_simulator::racing_model_v3_component_candidate_identity();
+            let catalog = RacingCatalogSnapshot::from_release_dir(config.catalog_release_dir)
+                .map_err(|e| e.to_string())?;
+            catalog
+                .manifest()
+                .compatibility
+                .validate_for(&service_model, pitgun_contract::ContractVersion::V1)
+                .map_err(|e| e.to_string())?;
+            let replay = pitgun_verifier::wasm_service_replay::WasmServiceReplay {
+                node: config.node,
+                script: config.script,
+                wasm: config.wasm,
+                bridge: config.bridge,
+                runtime_digest: config.runtime_digest,
+                bridge_digest: config.bridge_digest,
+                timeout: pitgun_verifier::wasm_service_replay::replay_timeout(Some(
+                    &config.timeout_seconds.to_string(),
+                ))?,
+            };
+            replay.validate()?;
+            let identity = replay.verifier_identity(&verifier_identity)?;
+            let candidate = ServiceVerifier {
+                catalog_release: catalog.release_identity().clone(),
+                verifier: RacingVerifier::new(
+                    keyring.clone(),
+                    expected_audience.clone(),
+                    service_model,
+                    policy.clone(),
+                    Some(catalog),
+                    identity,
+                )
+                .with_service_runtime(config.runtime_digest),
+                replay,
+            };
+            retain_service_verifier(primary, &mut retained_service_verifiers, candidate)?;
+        }
+    }
     let verifier = RacingVerifier::new(
         keyring.clone(),
         expected_audience.clone(),
@@ -519,6 +609,7 @@ fn load_state() -> Result<AppState, String> {
         replay_slots: Arc::new(Semaphore::new(parse_max_concurrent_replays())),
         ready,
         service_verifier,
+        retained_service_verifiers,
     })
 }
 
@@ -586,6 +677,68 @@ mod tests {
             &select_verifier(&primary, &retained, None),
             &primary
         ));
+    }
+
+    #[test]
+    fn service_routing_matches_catalog_and_runtime_and_refuses_duplicate_pairs() {
+        use super::*;
+        let catalog = RacingCatalogSnapshot::from_release_dir(
+            PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../catalogs/racing/v1.8.1"),
+        )
+        .unwrap();
+        let release = catalog.release_identity().clone();
+        let make = |runtime: Digest| ServiceVerifier {
+            catalog_release: release.clone(),
+            verifier: RacingVerifier::new(
+                VerificationKeyring::new(),
+                "pitgun.verifier".parse().unwrap(),
+                pitgun_racing_simulator::racing_model_v3_component_candidate_identity(),
+                verdict(VerificationStatus::Verified).verifier,
+                Some(catalog.clone()),
+                verdict(VerificationStatus::Verified).verifier,
+            )
+            .with_service_runtime(runtime),
+            replay: pitgun_verifier::wasm_service_replay::WasmServiceReplay {
+                node: "/not-used/node".into(),
+                script: "/not-used/script".into(),
+                wasm: "/not-used/engine.wasm".into(),
+                bridge: "/not-used/bridge.mjs".into(),
+                runtime_digest: runtime,
+                bridge_digest: Digest::from_bytes(b"bridge"),
+                timeout: Duration::from_secs(120),
+            },
+        };
+        let current = Digest::from_bytes(b"current");
+        let old = Digest::from_bytes(b"retained");
+        let primary = Arc::new(make(current));
+        let mut retained = Vec::new();
+        retain_service_verifier(&primary, &mut retained, make(old)).unwrap();
+        assert!(Arc::ptr_eq(
+            &select_service_verifier(primary.clone(), &retained, &release, old),
+            &retained[0]
+        ));
+        assert!(Arc::ptr_eq(
+            &select_service_verifier(primary.clone(), &retained, &release, current),
+            &primary
+        ));
+        assert!(Arc::ptr_eq(
+            &select_service_verifier(
+                primary.clone(),
+                &retained,
+                &release,
+                Digest::from_bytes(b"unknown")
+            ),
+            &primary
+        ));
+        let mut wrong = release.clone();
+        wrong.manifest_digest = Digest::from_bytes(b"unknown catalog");
+        assert!(Arc::ptr_eq(
+            &select_service_verifier(primary.clone(), &retained, &wrong, old),
+            &primary
+        ));
+        assert!(retain_service_verifier(&primary, &mut retained, make(old)).is_err());
+        assert!(retain_service_verifier(&primary, &mut retained, make(current)).is_err());
+        assert_eq!(retained.len(), 1);
     }
 
     #[tokio::test]

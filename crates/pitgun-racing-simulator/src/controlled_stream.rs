@@ -16,11 +16,56 @@ pub(crate) const MAX_CONTROL_REQUEST_BYTES: usize = 1024 * 1024;
 struct Session {
     engine: LocalControlledRacingSession,
     output: Option<RaceOutput>,
+    replay_evidence: Option<evidence::RacingRunEvidenceV1>,
+    transport: Option<OutputTransport>,
     submissions: usize,
     signed_service: Option<(
         service_control::RacingServiceAuthorizationResponseV1,
         RacingCatalogSnapshot,
     )>,
+}
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum OutputTransport {
+    Presentation,
+    Replay,
+}
+
+/// Serialize the borrowed native batch directly. A serde_json::Value would
+/// materialize every telemetry scalar again before encoding the same JSON.
+#[derive(Serialize)]
+struct PresentationBatchResponse<'a, B> {
+    schema_version: &'static str,
+    handle: u32,
+    kind: &'static str,
+    complete: bool,
+    batch: &'a B,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    control_prefix: Option<bool>,
+}
+
+struct PresentationJsonFormatter;
+
+impl serde_json::ser::Formatter for PresentationJsonFormatter {
+    fn write_f32<W: ?Sized + std::io::Write>(
+        &mut self,
+        writer: &mut W,
+        value: f32,
+    ) -> std::io::Result<()> {
+        // Match serde_json::to_value's exact f32 -> f64 widening. Compact
+        // f32 formatting would change JS-visible distances/sample values.
+        self.write_f64(writer, f64::from(value))
+    }
+}
+
+fn serialize_presentation<T: Serialize>(value: &T) -> Result<String, serde_json::Error> {
+    let mut bytes = Vec::new();
+    value.serialize(&mut serde_json::Serializer::with_formatter(
+        &mut bytes,
+        PresentationJsonFormatter,
+    ))?;
+    // serde_json emits valid UTF-8 for every successful serialization.
+    Ok(String::from_utf8(bytes).expect("JSON serializer emitted invalid UTF-8"))
 }
 
 thread_local! {
@@ -105,6 +150,8 @@ pub fn start_experimental_controlled_racing_session_json(
         Ok(Session {
             engine: LocalControlledRacingSession::start(request, &snapshot, timeline, config)?,
             output: None,
+            replay_evidence: None,
+            transport: None,
             submissions: 0,
             signed_service,
         })
@@ -134,10 +181,25 @@ pub fn start_experimental_controlled_racing_session_json(
 /// A waiting result is stable: pulling it again does not advance the solver.
 #[cfg_attr(feature = "wasm", wasm_bindgen)]
 pub fn pull_experimental_controlled_racing_session_json(handle: u32) -> String {
+    pull_controlled_session(handle, OutputTransport::Presentation)
+}
+
+/// Same engine/observations/proposal validation, without presentation batches
+/// crossing the ABI. Experimental; does not replace a distributed artifact.
+#[cfg_attr(feature = "wasm", wasm_bindgen)]
+pub fn pull_experimental_controlled_racing_replay_json(handle: u32) -> String {
+    pull_controlled_session(handle, OutputTransport::Replay)
+}
+
+fn pull_controlled_session(handle: u32, transport: OutputTransport) -> String {
     SESSIONS.with(|sessions| {
         let mut sessions = sessions.borrow_mut();
         let Some(session) = sessions.get_mut(&handle) else { return json_error("unknown control handle"); };
-        if session.output.is_some() { return json_error("control session already complete"); }
+        if session.transport.is_some_and(|chosen| chosen != transport) {
+            return json_error("cannot mix presentation and replay transports");
+        }
+        if session.output.is_some() || session.replay_evidence.is_some() { return json_error("control session already complete"); }
+        session.transport = Some(transport);
         let step = match session.engine.advance() { Ok(step) => step, Err(error) => return json_error(&error) };
         match step {
             ControlStep::AwaitingDecision(observation) => {
@@ -146,13 +208,34 @@ pub fn pull_experimental_controlled_racing_session_json(handle: u32) -> String {
                     "kind":"decision", "observation":observation, "observation_digest":digest}).to_string()
             }
             ControlStep::Batch(batch) => {
-                session.output = batch.records().iter().find_map(|record| match record.event() {
-                    IncrementalExecutionStreamEventV1::Complete(output) => Some(output.clone()), _ => None,
+                if transport == OutputTransport::Replay {
+                    // Borrow the terminal result once to project governed evidence.
+                    // Avoid its full clone and the presentation JSON Value/tree.
+                    for record in batch.records() {
+                        if let IncrementalExecutionStreamEventV1::Complete(output) = record.event() {
+                            let projected = match evidence::RacingRunEvidenceV1::from_race_output(output) {
+                                Ok(e) => e, Err(e) => return json_error(&e.to_string()),
+                            };
+                            session.replay_evidence = Some(projected);
+                            break;
+                        }
+                    }
+                    let mut response = serde_json::json!({"schema_version":"pitgun.racing-control-replay-pull/v1",
+                        "handle":handle,"kind":"batch","complete":session.replay_evidence.is_some()});
+                    if session.engine.has_window_prefix() { response["control_prefix"] = serde_json::json!(true); }
+                    return response.to_string();
+                }
+                let complete = batch.records().iter().any(|record| matches!(record.event(), IncrementalExecutionStreamEventV1::Complete(_)));
+                let response = match serialize_presentation(&PresentationBatchResponse {
+                    schema_version: "pitgun.racing-control-pull/v1", handle, kind: "batch", complete, batch: &batch,
+                    control_prefix: session.engine.has_window_prefix().then_some(true),
+                }) { Ok(raw) => raw, Err(e) => return json_error(&e.to_string()) };
+                // Encoding is finished. Move the terminal result into the live
+                // handle instead of cloning its complete telemetry history.
+                session.output = batch.into_records().into_iter().find_map(|record| match record.into_event() {
+                    IncrementalExecutionStreamEventV1::Complete(output) => Some(output), _ => None,
                 });
-                let mut response = serde_json::json!({"schema_version":"pitgun.racing-control-pull/v1", "handle":handle,
-                    "kind":"batch", "complete":session.output.is_some(), "batch":batch});
-                if session.engine.has_window_prefix() { response["control_prefix"] = serde_json::json!(true); }
-                response.to_string()
+                response
             }
         }
     })
@@ -182,15 +265,32 @@ pub fn propose_experimental_controlled_racing_session_json(
 /// the same runtime that applied the instructions, not by JavaScript physics.
 #[cfg_attr(feature = "wasm", wasm_bindgen)]
 pub fn complete_experimental_controlled_racing_session_json(handle: u32) -> String {
+    complete_presentation_session(handle, true)
+}
+
+/// Opt-in browser completion: the terminal presentation batch already carries
+/// the exact result. Retain its native digest, journal and evidence without
+/// materializing/serializing that result a second time. Consumes the same handle.
+#[cfg_attr(feature = "wasm", wasm_bindgen)]
+pub fn complete_experimental_controlled_racing_metadata_json(handle: u32) -> String {
+    complete_presentation_session(handle, false)
+}
+
+fn complete_presentation_session(handle: u32, include_result: bool) -> String {
     SESSIONS.with(|sessions| {
         let mut sessions = sessions.borrow_mut();
         let Some(session) = sessions.get(&handle) else { return json_error("unknown control handle"); };
+        if session.transport == Some(OutputTransport::Replay) {
+            return json_error("cannot mix presentation and replay transports");
+        }
         let Some(output) = &session.output else { return json_error("control session is not complete"); };
         let digest = match canonical_json_digest(output) { Ok(d) => d, Err(e) => return json_error(&e.to_string()) };
         let evidence=match evidence::RacingRunEvidenceV1::from_race_output(output){Ok(v)=>v,Err(e)=>return json_error(&e.to_string())};
-        let mut response = serde_json::json!({"schema_version":"pitgun.racing-control-completion/v1", "handle":handle,
-            "result":output, "canonical_result_digest":digest, "journal":session.engine.journal(),
+        let schema = if include_result { "pitgun.racing-control-completion/v1" } else { "pitgun.racing-control-metadata/v1" };
+        let mut response = serde_json::json!({"schema_version":schema, "handle":handle,
+            "canonical_result_digest":digest, "journal":session.engine.journal(),
             "native_evidence":{"output":evidence.output,"telemetry_summary":evidence.telemetry_summary}});
+        if include_result { response["result"] = serde_json::json!(output); }
         if let Some((authorization,catalog)) = &session.signed_service {
             let history = session.engine.journal().iter().filter_map(|entry| {
                 if let control_prototype::JournalEntry::Applied(applied) = entry {
@@ -203,6 +303,24 @@ pub fn complete_experimental_controlled_racing_session_json(handle: u32) -> Stri
             }
         }
         let response=response.to_string();
+        sessions.remove(&handle);
+        response
+    })
+}
+
+/// Consumes a terminal replay handle. Only the canonical domain output and
+/// telemetry summary are returned; the presentation digest/journal are omitted.
+#[cfg_attr(feature = "wasm", wasm_bindgen)]
+pub fn complete_experimental_controlled_racing_replay_json(handle: u32) -> String {
+    SESSIONS.with(|sessions| {
+        let mut sessions = sessions.borrow_mut();
+        let Some(session) = sessions.get(&handle) else { return json_error("unknown control handle"); };
+        if session.transport == Some(OutputTransport::Presentation) {
+            return json_error("cannot mix presentation and replay transports");
+        }
+        let Some(evidence) = &session.replay_evidence else { return json_error("control session is not complete"); };
+        let response = serde_json::json!({"schema_version":"pitgun.racing-control-replay-completion/v1", "handle":handle,
+            "native_evidence":{"output":evidence.output,"telemetry_summary":evidence.telemetry_summary}}).to_string();
         sessions.remove(&handle);
         response
     })
