@@ -156,7 +156,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                         tail_curvature = tail_curvature.max(input.track.kappa[i].abs());
                     }
                 }
-                if case.tail_trace {
+                if case.tail_trace
+                    && (lap.lap_index <= 3
+                        || lap.lap_index.saturating_add(1) >= input.lap_count
+                        || lap.pit_stop_completed)
+                {
                     tails.push(json!({"lap":lap.lap_index,"columns":["distance_to_line_m","speed_kph","brake_force_n","surface_c","wear"],"points":(0..s.s.len()).filter(|&i| s.s[i]>=length-500.0).map(|i|[s.s[i]-length,s.v[i]*3.6,s.brake_force_budget_n[i],s.tire_temp[i],s.tire_wear[i]]).step_by(5).collect::<Vec<_>>()}));
                 }
                 laps.push(json!({"lap":lap.lap_index,"time_s":lap.lap_time_s,"elapsed_s":lap.cumulative_time_s,"start_speed_mps":s.v[0],"end_driving_speed_mps":s.v.last(),"tail_300m":{"time_s":tail_time,"friction_brake_work_j":tail_brake,"speed_range_mps":[tail_min,tail_max],"maximum_abs_curvature_per_m":tail_curvature},"pit":lap.pit_stop_completed,"after_service":lap.state_after_lap,"thermal":lap.thermal_v2}));
@@ -174,7 +178,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         "{}",
         json!({"schema":"pitgun.lap-boundary-probe/v1","data":{"id":case.id,"physical_input_digest":canonical_json_digest(&input)?,"diagnostic_input_digest":diagnostic_input_digest,"forecast":case.forecast,"recompute_invariant":case.recompute_invariant,"driver":driver,"preparation":preparation,"tail_traces":tails,"catalog":catalog.release_identity(),"laps":laps,"outcome":outcome,"maximum_speed_jump_mps":max_speed_jump,"maximum_engine_temperature_jump_c":engine_jump,"maximum_tire_surface_jump_c":surface_jump,"maximum_tire_carcass_jump_c":carcass_jump,"maximum_wear_jump_fraction":wear_jump,"work":session.boundary_work(),
         "binary_digest":Digest::from_bytes(&fs::read(env::current_exe()?)?),"sources":{"probe":Digest::from_bytes(include_bytes!("lap_boundary_probe.rs")),"helper":Digest::from_bytes(include_bytes!("support/frozen_thermal_input.rs")),"solver":Digest::from_bytes(include_bytes!("../../pitgun-racing-solver/src/lib.rs")),"boundary":Digest::from_bytes(include_bytes!("../../pitgun-racing-solver/src/lap_boundary.rs")),"reachability":Digest::from_bytes(include_bytes!("../../pitgun-racing-solver/src/tire_reachability.rs")),"energy":Digest::from_bytes(include_bytes!("../../pitgun-racing-solver/src/longitudinal_energy.rs")),"thermal":Digest::from_bytes(include_bytes!("../../pitgun-racing-solver/src/thermal_physics.rs"))}},
-        "performance":{"solver_ms":solver_ms,"scope":"sum of advance calls; excludes catalog/input resolution, constructor validation, metrics and final digest/JSON serialization; native diagnostic counters included"}})
+        "performance":{"solver_ms":solver_ms,"scope":"sum of advance calls (and unchanged service resolution if selected); excludes catalog/input resolution, constructor validation, metrics and final digest/JSON serialization; native diagnostic counters included"}})
     );
     Ok(())
 }
