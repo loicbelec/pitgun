@@ -2670,13 +2670,13 @@ impl IncrementalV3Competitor {
             self.pending_events
                 .extend(facts.into_iter().map(|f| f.into_unreleased()));
         }
-        if self.tire_event_detector.is_some() {
-            let context = self.tire_context_after(lap.lap_index - 1)?;
-            let facts = self
-                .tire_event_detector
-                .as_mut()
-                .unwrap()
-                .observe_driving_lap(lap, &context)?;
+        let tire_context = self
+            .tire_event_detector
+            .as_ref()
+            .map(|_| self.tire_context_after(lap.lap_index - 1))
+            .transpose()?;
+        if let (Some(detector), Some(context)) = (&mut self.tire_event_detector, tire_context) {
+            let facts = detector.observe_driving_lap(lap, &context)?;
             self.pending_events
                 .extend(facts.into_iter().map(|f| f.into_unreleased()));
         }

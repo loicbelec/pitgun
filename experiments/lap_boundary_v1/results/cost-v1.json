@@ -1,0 +1,473 @@
+{
+  "schema": "pitgun.lap-boundary-cost/v1",
+  "identity": {
+    "source_commit": "4364e19ac7b9597fa5cc7f9583f0dceec5375039",
+    "plan_digest": "sha256:650651fe0d132bc2e2a8f68ef908deaf1f4a8cff9687f32f8aa8d29947bef923",
+    "runner_digest": "sha256:a5a4c65f28f8e1e19759612419aef2ce4bb12594a3a7f1b4867e9a895dfc6c80",
+    "binary_digest": "sha256:47c560ecfbf195c8ed605ec2764d4e4aff9ecec023045b3a681d24120dbc031b"
+  },
+  "scope": "serial alternating independent native processes; sum of advance calls only, excludes catalog/metrics/digest/JSON. Other machine activity not controlled; not browser/WASM/VPS or statistical throughput qualification.",
+  "summary": [
+    {
+      "scenario": "budget-early8-monza-c0",
+      "cached_median_ms": 260.530875,
+      "recompute_median_ms": 357.130459,
+      "speedup_ratio": 1.370779793373818,
+      "time_reduction_fraction": 0.2704882251446382,
+      "samples": {
+        "cached": [
+          261.520458,
+          264.253583,
+          261.651792,
+          260.13320899999997,
+          256.612208,
+          258.741709,
+          260.530875
+        ],
+        "recompute": [
+          360.936291,
+          356.144749,
+          355.990458,
+          357.130459,
+          354.786126,
+          357.628125,
+          359.491792
+        ]
+      }
+    },
+    {
+      "scenario": "tires-medium",
+      "cached_median_ms": 947.1014599999999,
+      "recompute_median_ms": 1238.8442919999998,
+      "speedup_ratio": 1.3080375697024054,
+      "time_reduction_fraction": 0.2354959649763636,
+      "samples": {
+        "cached": [
+          926.537542,
+          947.4297919999999,
+          934.0669160000001,
+          951.2577510000001,
+          947.1014599999999,
+          945.4757079999998,
+          972.400999
+        ],
+        "recompute": [
+          1238.8442919999998,
+          1237.519373,
+          1245.604165,
+          1220.1569169999998,
+          1254.1995010000003,
+          1238.0983320000003,
+          1273.183416
+        ]
+      }
+    },
+    {
+      "scenario": "full-classic15-c2",
+      "cached_median_ms": 2930.3142539999994,
+      "recompute_median_ms": 3852.5466660000006,
+      "speedup_ratio": 1.3147213343214352,
+      "time_reduction_fraction": 0.23938254145991467,
+      "samples": {
+        "cached": [
+          2931.4879990000004,
+          2945.6528329999996,
+          2916.1319609999996,
+          2895.862126000001,
+          2892.968875,
+          2940.7383370000002,
+          2930.3142539999994
+        ],
+        "recompute": [
+          3873.030665,
+          3852.5466660000006,
+          3856.3402499999993,
+          3814.6797519999996,
+          3830.1832140000015,
+          3813.205834000001,
+          3862.772876
+        ]
+      }
+    }
+  ],
+  "samples": [
+    {
+      "scenario": "budget-early8-monza-c0",
+      "mode": "cached",
+      "repetition": 0,
+      "performance": {
+        "scope": "sum of advance calls; excludes catalog/input resolution, constructor validation, metrics and final digest/JSON serialization; native diagnostic counters included",
+        "solver_ms": 261.520458
+      }
+    },
+    {
+      "scenario": "budget-early8-monza-c0",
+      "mode": "recompute",
+      "repetition": 0,
+      "performance": {
+        "scope": "sum of advance calls; excludes catalog/input resolution, constructor validation, metrics and final digest/JSON serialization; native diagnostic counters included",
+        "solver_ms": 360.936291
+      }
+    },
+    {
+      "scenario": "budget-early8-monza-c0",
+      "mode": "recompute",
+      "repetition": 1,
+      "performance": {
+        "scope": "sum of advance calls; excludes catalog/input resolution, constructor validation, metrics and final digest/JSON serialization; native diagnostic counters included",
+        "solver_ms": 356.144749
+      }
+    },
+    {
+      "scenario": "budget-early8-monza-c0",
+      "mode": "cached",
+      "repetition": 1,
+      "performance": {
+        "scope": "sum of advance calls; excludes catalog/input resolution, constructor validation, metrics and final digest/JSON serialization; native diagnostic counters included",
+        "solver_ms": 264.253583
+      }
+    },
+    {
+      "scenario": "budget-early8-monza-c0",
+      "mode": "cached",
+      "repetition": 2,
+      "performance": {
+        "scope": "sum of advance calls; excludes catalog/input resolution, constructor validation, metrics and final digest/JSON serialization; native diagnostic counters included",
+        "solver_ms": 261.651792
+      }
+    },
+    {
+      "scenario": "budget-early8-monza-c0",
+      "mode": "recompute",
+      "repetition": 2,
+      "performance": {
+        "scope": "sum of advance calls; excludes catalog/input resolution, constructor validation, metrics and final digest/JSON serialization; native diagnostic counters included",
+        "solver_ms": 355.990458
+      }
+    },
+    {
+      "scenario": "budget-early8-monza-c0",
+      "mode": "recompute",
+      "repetition": 3,
+      "performance": {
+        "scope": "sum of advance calls; excludes catalog/input resolution, constructor validation, metrics and final digest/JSON serialization; native diagnostic counters included",
+        "solver_ms": 357.130459
+      }
+    },
+    {
+      "scenario": "budget-early8-monza-c0",
+      "mode": "cached",
+      "repetition": 3,
+      "performance": {
+        "scope": "sum of advance calls; excludes catalog/input resolution, constructor validation, metrics and final digest/JSON serialization; native diagnostic counters included",
+        "solver_ms": 260.13320899999997
+      }
+    },
+    {
+      "scenario": "budget-early8-monza-c0",
+      "mode": "cached",
+      "repetition": 4,
+      "performance": {
+        "scope": "sum of advance calls; excludes catalog/input resolution, constructor validation, metrics and final digest/JSON serialization; native diagnostic counters included",
+        "solver_ms": 256.612208
+      }
+    },
+    {
+      "scenario": "budget-early8-monza-c0",
+      "mode": "recompute",
+      "repetition": 4,
+      "performance": {
+        "scope": "sum of advance calls; excludes catalog/input resolution, constructor validation, metrics and final digest/JSON serialization; native diagnostic counters included",
+        "solver_ms": 354.786126
+      }
+    },
+    {
+      "scenario": "budget-early8-monza-c0",
+      "mode": "recompute",
+      "repetition": 5,
+      "performance": {
+        "scope": "sum of advance calls; excludes catalog/input resolution, constructor validation, metrics and final digest/JSON serialization; native diagnostic counters included",
+        "solver_ms": 357.628125
+      }
+    },
+    {
+      "scenario": "budget-early8-monza-c0",
+      "mode": "cached",
+      "repetition": 5,
+      "performance": {
+        "scope": "sum of advance calls; excludes catalog/input resolution, constructor validation, metrics and final digest/JSON serialization; native diagnostic counters included",
+        "solver_ms": 258.741709
+      }
+    },
+    {
+      "scenario": "budget-early8-monza-c0",
+      "mode": "cached",
+      "repetition": 6,
+      "performance": {
+        "scope": "sum of advance calls; excludes catalog/input resolution, constructor validation, metrics and final digest/JSON serialization; native diagnostic counters included",
+        "solver_ms": 260.530875
+      }
+    },
+    {
+      "scenario": "budget-early8-monza-c0",
+      "mode": "recompute",
+      "repetition": 6,
+      "performance": {
+        "scope": "sum of advance calls; excludes catalog/input resolution, constructor validation, metrics and final digest/JSON serialization; native diagnostic counters included",
+        "solver_ms": 359.491792
+      }
+    },
+    {
+      "scenario": "tires-medium",
+      "mode": "cached",
+      "repetition": 0,
+      "performance": {
+        "scope": "sum of advance calls; excludes catalog/input resolution, constructor validation, metrics and final digest/JSON serialization; native diagnostic counters included",
+        "solver_ms": 926.537542
+      }
+    },
+    {
+      "scenario": "tires-medium",
+      "mode": "recompute",
+      "repetition": 0,
+      "performance": {
+        "scope": "sum of advance calls; excludes catalog/input resolution, constructor validation, metrics and final digest/JSON serialization; native diagnostic counters included",
+        "solver_ms": 1238.8442919999998
+      }
+    },
+    {
+      "scenario": "tires-medium",
+      "mode": "recompute",
+      "repetition": 1,
+      "performance": {
+        "scope": "sum of advance calls; excludes catalog/input resolution, constructor validation, metrics and final digest/JSON serialization; native diagnostic counters included",
+        "solver_ms": 1237.519373
+      }
+    },
+    {
+      "scenario": "tires-medium",
+      "mode": "cached",
+      "repetition": 1,
+      "performance": {
+        "scope": "sum of advance calls; excludes catalog/input resolution, constructor validation, metrics and final digest/JSON serialization; native diagnostic counters included",
+        "solver_ms": 947.4297919999999
+      }
+    },
+    {
+      "scenario": "tires-medium",
+      "mode": "cached",
+      "repetition": 2,
+      "performance": {
+        "scope": "sum of advance calls; excludes catalog/input resolution, constructor validation, metrics and final digest/JSON serialization; native diagnostic counters included",
+        "solver_ms": 934.0669160000001
+      }
+    },
+    {
+      "scenario": "tires-medium",
+      "mode": "recompute",
+      "repetition": 2,
+      "performance": {
+        "scope": "sum of advance calls; excludes catalog/input resolution, constructor validation, metrics and final digest/JSON serialization; native diagnostic counters included",
+        "solver_ms": 1245.604165
+      }
+    },
+    {
+      "scenario": "tires-medium",
+      "mode": "recompute",
+      "repetition": 3,
+      "performance": {
+        "scope": "sum of advance calls; excludes catalog/input resolution, constructor validation, metrics and final digest/JSON serialization; native diagnostic counters included",
+        "solver_ms": 1220.1569169999998
+      }
+    },
+    {
+      "scenario": "tires-medium",
+      "mode": "cached",
+      "repetition": 3,
+      "performance": {
+        "scope": "sum of advance calls; excludes catalog/input resolution, constructor validation, metrics and final digest/JSON serialization; native diagnostic counters included",
+        "solver_ms": 951.2577510000001
+      }
+    },
+    {
+      "scenario": "tires-medium",
+      "mode": "cached",
+      "repetition": 4,
+      "performance": {
+        "scope": "sum of advance calls; excludes catalog/input resolution, constructor validation, metrics and final digest/JSON serialization; native diagnostic counters included",
+        "solver_ms": 947.1014599999999
+      }
+    },
+    {
+      "scenario": "tires-medium",
+      "mode": "recompute",
+      "repetition": 4,
+      "performance": {
+        "scope": "sum of advance calls; excludes catalog/input resolution, constructor validation, metrics and final digest/JSON serialization; native diagnostic counters included",
+        "solver_ms": 1254.1995010000003
+      }
+    },
+    {
+      "scenario": "tires-medium",
+      "mode": "recompute",
+      "repetition": 5,
+      "performance": {
+        "scope": "sum of advance calls; excludes catalog/input resolution, constructor validation, metrics and final digest/JSON serialization; native diagnostic counters included",
+        "solver_ms": 1238.0983320000003
+      }
+    },
+    {
+      "scenario": "tires-medium",
+      "mode": "cached",
+      "repetition": 5,
+      "performance": {
+        "scope": "sum of advance calls; excludes catalog/input resolution, constructor validation, metrics and final digest/JSON serialization; native diagnostic counters included",
+        "solver_ms": 945.4757079999998
+      }
+    },
+    {
+      "scenario": "tires-medium",
+      "mode": "cached",
+      "repetition": 6,
+      "performance": {
+        "scope": "sum of advance calls; excludes catalog/input resolution, constructor validation, metrics and final digest/JSON serialization; native diagnostic counters included",
+        "solver_ms": 972.400999
+      }
+    },
+    {
+      "scenario": "tires-medium",
+      "mode": "recompute",
+      "repetition": 6,
+      "performance": {
+        "scope": "sum of advance calls; excludes catalog/input resolution, constructor validation, metrics and final digest/JSON serialization; native diagnostic counters included",
+        "solver_ms": 1273.183416
+      }
+    },
+    {
+      "scenario": "full-classic15-c2",
+      "mode": "cached",
+      "repetition": 0,
+      "performance": {
+        "scope": "sum of advance calls; excludes catalog/input resolution, constructor validation, metrics and final digest/JSON serialization; native diagnostic counters included",
+        "solver_ms": 2931.4879990000004
+      }
+    },
+    {
+      "scenario": "full-classic15-c2",
+      "mode": "recompute",
+      "repetition": 0,
+      "performance": {
+        "scope": "sum of advance calls; excludes catalog/input resolution, constructor validation, metrics and final digest/JSON serialization; native diagnostic counters included",
+        "solver_ms": 3873.030665
+      }
+    },
+    {
+      "scenario": "full-classic15-c2",
+      "mode": "recompute",
+      "repetition": 1,
+      "performance": {
+        "scope": "sum of advance calls; excludes catalog/input resolution, constructor validation, metrics and final digest/JSON serialization; native diagnostic counters included",
+        "solver_ms": 3852.5466660000006
+      }
+    },
+    {
+      "scenario": "full-classic15-c2",
+      "mode": "cached",
+      "repetition": 1,
+      "performance": {
+        "scope": "sum of advance calls; excludes catalog/input resolution, constructor validation, metrics and final digest/JSON serialization; native diagnostic counters included",
+        "solver_ms": 2945.6528329999996
+      }
+    },
+    {
+      "scenario": "full-classic15-c2",
+      "mode": "cached",
+      "repetition": 2,
+      "performance": {
+        "scope": "sum of advance calls; excludes catalog/input resolution, constructor validation, metrics and final digest/JSON serialization; native diagnostic counters included",
+        "solver_ms": 2916.1319609999996
+      }
+    },
+    {
+      "scenario": "full-classic15-c2",
+      "mode": "recompute",
+      "repetition": 2,
+      "performance": {
+        "scope": "sum of advance calls; excludes catalog/input resolution, constructor validation, metrics and final digest/JSON serialization; native diagnostic counters included",
+        "solver_ms": 3856.3402499999993
+      }
+    },
+    {
+      "scenario": "full-classic15-c2",
+      "mode": "recompute",
+      "repetition": 3,
+      "performance": {
+        "scope": "sum of advance calls; excludes catalog/input resolution, constructor validation, metrics and final digest/JSON serialization; native diagnostic counters included",
+        "solver_ms": 3814.6797519999996
+      }
+    },
+    {
+      "scenario": "full-classic15-c2",
+      "mode": "cached",
+      "repetition": 3,
+      "performance": {
+        "scope": "sum of advance calls; excludes catalog/input resolution, constructor validation, metrics and final digest/JSON serialization; native diagnostic counters included",
+        "solver_ms": 2895.862126000001
+      }
+    },
+    {
+      "scenario": "full-classic15-c2",
+      "mode": "cached",
+      "repetition": 4,
+      "performance": {
+        "scope": "sum of advance calls; excludes catalog/input resolution, constructor validation, metrics and final digest/JSON serialization; native diagnostic counters included",
+        "solver_ms": 2892.968875
+      }
+    },
+    {
+      "scenario": "full-classic15-c2",
+      "mode": "recompute",
+      "repetition": 4,
+      "performance": {
+        "scope": "sum of advance calls; excludes catalog/input resolution, constructor validation, metrics and final digest/JSON serialization; native diagnostic counters included",
+        "solver_ms": 3830.1832140000015
+      }
+    },
+    {
+      "scenario": "full-classic15-c2",
+      "mode": "recompute",
+      "repetition": 5,
+      "performance": {
+        "scope": "sum of advance calls; excludes catalog/input resolution, constructor validation, metrics and final digest/JSON serialization; native diagnostic counters included",
+        "solver_ms": 3813.205834000001
+      }
+    },
+    {
+      "scenario": "full-classic15-c2",
+      "mode": "cached",
+      "repetition": 5,
+      "performance": {
+        "scope": "sum of advance calls; excludes catalog/input resolution, constructor validation, metrics and final digest/JSON serialization; native diagnostic counters included",
+        "solver_ms": 2940.7383370000002
+      }
+    },
+    {
+      "scenario": "full-classic15-c2",
+      "mode": "cached",
+      "repetition": 6,
+      "performance": {
+        "scope": "sum of advance calls; excludes catalog/input resolution, constructor validation, metrics and final digest/JSON serialization; native diagnostic counters included",
+        "solver_ms": 2930.3142539999994
+      }
+    },
+    {
+      "scenario": "full-classic15-c2",
+      "mode": "recompute",
+      "repetition": 6,
+      "performance": {
+        "scope": "sum of advance calls; excludes catalog/input resolution, constructor validation, metrics and final digest/JSON serialization; native diagnostic counters included",
+        "solver_ms": 3862.772876
+      }
+    }
+  ]
+}

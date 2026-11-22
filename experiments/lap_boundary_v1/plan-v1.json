@@ -1,0 +1,47 @@
+{
+  "schema": "pitgun.lap-boundary-plan/v1",
+  "status": "FROZEN_BEFORE_MEASUREMENT",
+  "scenarios": [
+    "budget-early8-monza-c0",
+    "budget-early8-monza-c2",
+    "budget-classic15-monza-c2",
+    "budget-modern20-silverstone-c4",
+    "tires-medium",
+    "tire-start-35",
+    "soft-medium-pit10",
+    "full-classic15-c2"
+  ],
+  "modes": [
+    {
+      "id": "cached",
+      "forecast": "minimum_grip",
+      "recompute_invariant": false
+    },
+    {
+      "id": "recompute",
+      "forecast": "minimum_grip",
+      "recompute_invariant": true
+    },
+    {
+      "id": "held-diagnostic",
+      "forecast": "end_state_held_diagnostic",
+      "recompute_invariant": false
+    }
+  ],
+  "repeats": 2,
+  "cost_repetitions": 7,
+  "cost_scenarios": [
+    "budget-early8-monza-c0",
+    "tires-medium",
+    "full-classic15-c2"
+  ],
+  "cost_order": "alternate cached/recompute order each repetition, serial independent processes; compare exact complete results before comparing costs",
+  "criteria": {
+    "cached_vs_recomputed": "complete outputs/digests and accepted lap metrics must match exactly; continuity jumps zero; forecasts1per nonfinal lap",
+    "historical": "56 driver outcomes and22 frozen earlier outcomes unchanged",
+    "held": "diagnostic ablation only; retain rejected trajectories; no acceptance of held state as a future grip bound",
+    "continuation": "unchanged pre-service continuation exact; no process-checkpoint or changing-driver schedule claim",
+    "performance": "native advance-clock only, not browser/VPS/WASM or an isolated allocator study"
+  },
+  "scope": "No physics/driver/thermal/tire coefficients, sampling cadence, current game, Worker/WASM, catalog/runtime, deployment or model provider changed. Normal native V2 uses the invariant cache; held-state ablation is available only through the explicitly hashed diagnostic request."
+}

@@ -19,7 +19,11 @@ use serde::{Deserialize, Serialize};
 pub mod driver_lapses;
 pub mod fuel_outcome;
 use fuel_outcome::{FuelShortfallPhaseV1, FuelShortfallV1, NativeFailureV3};
+pub mod lap_boundary;
 pub mod longitudinal_energy;
+use lap_boundary::{
+    BoundaryDiagnosticRequestV1, BoundaryForecastV1, BoundaryLapWorkV1, BoundaryWorkV1,
+};
 pub mod power_telemetry;
 pub mod thermal_physics;
 use longitudinal_energy::{EnergyLedgerV1, LongitudinalEnergyModelV1, SegmentContext};
@@ -984,6 +988,7 @@ pub struct ResolvedSimulationSessionV3 {
     lap_count: u16,
     complete: bool,
     thermal_compounds: Option<Vec<TireParams>>,
+    boundary_work: Option<Rc<RefCell<BoundaryWorkV1>>>,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq)]
@@ -1148,18 +1153,40 @@ fn validate_resolved_simulation_request_v3(
 impl ResolvedSimulationSessionV3 {
     /// Validates and pins all physical inputs before any lap is computed.
     pub fn new(input: ResolvedSimulationRequestV3) -> Result<Self, String> {
-        Self::new_inner(input, false)
+        Self::new_inner(input, false, None)
     }
 
     /// Local capability only: the host must resolve every pre-service boundary.
     /// No Authority delegation, public controller contract or implicit deadline.
     pub fn new_with_service_boundaries(input: ResolvedSimulationRequestV3) -> Result<Self, String> {
-        Self::new_inner(input, true)
+        Self::new_inner(input, true, None)
+    }
+
+    /// Explicit offline diagnostic, not a catalog/runtime/Authority selection.
+    /// Hash the whole request (including forecast/work mode), not only its input.
+    pub fn new_boundary_diagnostic(
+        request: BoundaryDiagnosticRequestV1,
+        service_boundaries: bool,
+    ) -> Result<Self, String> {
+        if request.input.thermal_physics_v2.is_none() || request.input.longitudinal_energy.is_none()
+        {
+            return Err("boundary diagnostic requires explicit energy/thermal V2".into());
+        }
+        Self::new_inner(
+            request.input,
+            service_boundaries,
+            Some((request.forecast, request.recompute_invariant)),
+        )
+    }
+
+    pub fn boundary_work(&self) -> Option<BoundaryWorkV1> {
+        self.boundary_work.as_ref().map(|w| w.borrow().clone())
     }
 
     fn new_inner(
         input: ResolvedSimulationRequestV3,
         service_boundaries: bool,
+        boundary_diagnostic: Option<(BoundaryForecastV1, bool)>,
     ) -> Result<Self, String> {
         validate_resolved_simulation_request_v3(&input)?;
         let thermal_compounds = input
@@ -1174,6 +1201,9 @@ impl ResolvedSimulationSessionV3 {
         let pending_pit = Rc::new(RefCell::new(None));
         let future_pending_pit = Rc::clone(&pending_pit);
         let lap_count = input.lap_count.max(1);
+        let boundary_work =
+            boundary_diagnostic.map(|_| Rc::new(RefCell::new(BoundaryWorkV1::default())));
+        let future_boundary_work = boundary_work.clone();
         let future = Box::pin(async move {
             let compatibility_request = SimulationRequest {
                 track: input.track.clone(),
@@ -1227,6 +1257,8 @@ impl ResolvedSimulationSessionV3 {
                 Some(future_lap_slot),
                 future_pre_service_slot,
                 future_pending_pit,
+                boundary_diagnostic,
+                future_boundary_work,
             )
             .await
         });
@@ -1241,6 +1273,7 @@ impl ResolvedSimulationSessionV3 {
             lap_count,
             complete: false,
             thermal_compounds,
+            boundary_work,
         })
     }
 
@@ -1817,6 +1850,8 @@ async fn run_resolved_simulation_kernel_incremental(
     lap_slot: Option<ResolvedLapSlotV3>,
     pre_service_slot: Option<ResolvedLapSlotV3>,
     pending_pit: Rc<RefCell<Option<PitStop>>>,
+    boundary_diagnostic: Option<(BoundaryForecastV1, bool)>,
+    boundary_work: Option<Rc<RefCell<BoundaryWorkV1>>>,
 ) -> Result<SimulationResult, NativeFailureV3> {
     let (
         mechanical,
@@ -2072,6 +2107,25 @@ async fn run_resolved_simulation_kernel_incremental(
             )
         });
         let mut energy_terminal_cap = f64::INFINITY;
+        let held_state_diagnostic = boundary_diagnostic
+            .is_some_and(|(forecast, _)| forecast == BoundaryForecastV1::EndStateHeldDiagnostic);
+        let cache_invariant = thermal_model.is_some()
+            && !held_state_diagnostic
+            && !boundary_diagnostic.is_some_and(|(_, recompute)| recompute);
+        let mut invariant_cap = None;
+        if let Some(work) = &boundary_work
+            && lap_idx < lap_count
+        {
+            work.borrow_mut().laps.push(BoundaryLapWorkV1 {
+                lap: lap_idx,
+                forecast_evaluations: 0,
+                cache_hits: 0,
+                backward_sweeps: 0,
+                last_forecast_cap_mps: 0.0,
+                last_assumed_temperature_c: 0.0,
+                last_assumed_wear: 0.0,
+            });
+        }
         for coupling_iteration in 0..coupling_iterations {
             let mut is_final_coupling_iteration = coupling_iteration + 1 == coupling_iterations;
             let mut iteration_energy = EnergyLedgerV1::default();
@@ -2112,77 +2166,106 @@ async fn run_resolved_simulation_kernel_incremental(
 
             let mut v_bwd = v_corner.clone();
             if energy_mode && lap_idx < lap_count {
-                // A braking forecast, not future telemetry: hold the predicted
-                // end-of-lap tire state and the already pinned next driver limits.
-                // V2 can change grip rapidly inside a lap. Until a coupled
-                // look-ahead is qualified, use its mathematical minimum grip,
-                // never an unphysical velocity trim at the next lap seam.
-                // These temperatures are envelope evaluation coordinates,
-                // not a prediction or an exported thermal state.
-                let end_temperature = if thermal_model.is_some() {
-                    tire_curr.temp_opt + 10.0 * tire_curr.temp_sigma
-                } else {
-                    *tire_temp_reference.last().unwrap()
-                };
-                let end_wear = if thermal_model.is_some() {
-                    1.0
-                } else {
-                    *tire_wear_reference.last().unwrap()
-                };
-                let forecast_mu =
-                    effective_mu(vehicle.chassis.mu0, end_wear, end_temperature, &tire_curr);
-                let temperatures = vec![end_temperature; n];
-                let wears = vec![end_wear; n];
-                let (next_corner, next_braking) = next_driver_limits.as_ref().unwrap();
-                let mut next_envelope = corner_speed_limit(
-                    &input.track,
-                    &vehicle,
-                    &state_curr,
-                    &input.config,
-                    &tire_curr,
-                    curvature_response,
-                    TireEnvelopeState {
-                        dynamics: tire_dynamics,
-                        temperatures_c: &temperatures,
-                        wear: &wears,
-                        lateral_utilization: next_corner,
-                    },
-                );
-                for _ in 0..16 {
-                    next_envelope[n - 1] = next_envelope[n - 1].min(next_envelope[0]);
-                    for i in (0..n - 1).rev() {
-                        let context = SegmentContext {
-                            vehicle: &vehicle,
-                            mechanical,
-                            contact: energy_contact.unwrap(),
-                            torque_knots_nm: energy_torque_knots.as_deref(),
-                            thermal: thermal_model.map(|p| (&p.engine, fuel_mass.unwrap())),
-                            tire_deformation_coefficient: tire_heat
-                                .map(|p| p.deformation_resistance_coefficient)
-                                .unwrap_or(0.0),
-                            force_capacity_fraction: energy_force_capacity_fraction,
-                            mass_kg: mass,
-                            ds_m: segment_distance(spatial_integration, s, ds, i),
-                            dz_m: input.track.z[i + 1] - input.track.z[i],
-                            curvature_radpm: input.track.kappa[i],
-                            vertical_curvature_per_m: slope_gradient[i],
-                            mu: forecast_mu,
-                            engine_effort_fraction: 1.0,
-                            traction_utilization: 0.0,
-                            braking_utilization: (next_braking[i] / energy_force_capacity_fraction)
-                                .clamp(0., 1.),
-                        };
-                        next_envelope[i] =
-                            context.braking_start_limit(next_envelope[i + 1], next_envelope[i])?;
+                // The default V2 minimum-grip forecast is invariant within this
+                // lap: state, mass, compound and pinned next controls are fixed.
+                // Cache that work only. V1/diagnostic held-end references evolve
+                // during coupling and must be recomputed. The diagnostic is not
+                // a lower bound on actual future grip. No path trims seam speed.
+                // Forecast coordinates never replace the physical tire state.
+                let next_cap = if let Some(cap) = invariant_cap {
+                    if let Some(work) = &boundary_work {
+                        work.borrow_mut().laps.last_mut().unwrap().cache_hits += 1;
                     }
-                    if next_envelope[n - 1] <= next_envelope[0] + 1e-9 {
-                        break;
+                    cap
+                } else {
+                    let end_temperature = if thermal_model.is_some() && !held_state_diagnostic {
+                        tire_curr.temp_opt + 10.0 * tire_curr.temp_sigma
+                    } else {
+                        *tire_temp_reference.last().unwrap()
+                    };
+                    let end_wear = if thermal_model.is_some() && !held_state_diagnostic {
+                        1.0
+                    } else {
+                        *tire_wear_reference.last().unwrap()
+                    };
+                    let forecast_mu =
+                        effective_mu(vehicle.chassis.mu0, end_wear, end_temperature, &tire_curr);
+                    let temperatures = vec![end_temperature; n];
+                    let wears = vec![end_wear; n];
+                    let (next_corner, next_braking) = next_driver_limits.as_ref().unwrap();
+                    let mut next_envelope = corner_speed_limit(
+                        &input.track,
+                        &vehicle,
+                        &state_curr,
+                        &input.config,
+                        &tire_curr,
+                        curvature_response,
+                        TireEnvelopeState {
+                            dynamics: tire_dynamics,
+                            temperatures_c: &temperatures,
+                            wear: &wears,
+                            lateral_utilization: next_corner,
+                        },
+                    );
+                    if let Some(work) = &boundary_work {
+                        let mut work = work.borrow_mut();
+                        let lap = work.laps.last_mut().unwrap();
+                        lap.forecast_evaluations += 1;
+                        lap.last_assumed_temperature_c = end_temperature;
+                        lap.last_assumed_wear = end_wear;
                     }
-                }
-                if next_envelope[n - 1] > next_envelope[0] + 1e-9 {
-                    return Err("energy V1: next-lap braking forecast did not converge".into());
-                }
-                energy_terminal_cap = energy_terminal_cap.min(next_envelope[0]);
+                    for _ in 0..16 {
+                        if let Some(work) = &boundary_work {
+                            work.borrow_mut().laps.last_mut().unwrap().backward_sweeps += 1;
+                        }
+                        next_envelope[n - 1] = next_envelope[n - 1].min(next_envelope[0]);
+                        for i in (0..n - 1).rev() {
+                            let context = SegmentContext {
+                                vehicle: &vehicle,
+                                mechanical,
+                                contact: energy_contact.unwrap(),
+                                torque_knots_nm: energy_torque_knots.as_deref(),
+                                thermal: thermal_model.map(|p| (&p.engine, fuel_mass.unwrap())),
+                                tire_deformation_coefficient: tire_heat
+                                    .map(|p| p.deformation_resistance_coefficient)
+                                    .unwrap_or(0.0),
+                                force_capacity_fraction: energy_force_capacity_fraction,
+                                mass_kg: mass,
+                                ds_m: segment_distance(spatial_integration, s, ds, i),
+                                dz_m: input.track.z[i + 1] - input.track.z[i],
+                                curvature_radpm: input.track.kappa[i],
+                                vertical_curvature_per_m: slope_gradient[i],
+                                mu: forecast_mu,
+                                engine_effort_fraction: 1.0,
+                                traction_utilization: 0.0,
+                                braking_utilization: (next_braking[i]
+                                    / energy_force_capacity_fraction)
+                                    .clamp(0., 1.),
+                            };
+                            next_envelope[i] = context
+                                .braking_start_limit(next_envelope[i + 1], next_envelope[i])?;
+                        }
+                        if next_envelope[n - 1] <= next_envelope[0] + 1e-9 {
+                            break;
+                        }
+                    }
+                    if next_envelope[n - 1] > next_envelope[0] + 1e-9 {
+                        return Err("energy V1: next-lap braking forecast did not converge".into());
+                    }
+                    let cap = next_envelope[0];
+                    if let Some(work) = &boundary_work {
+                        work.borrow_mut()
+                            .laps
+                            .last_mut()
+                            .unwrap()
+                            .last_forecast_cap_mps = cap;
+                    }
+                    if cache_invariant {
+                        invariant_cap = Some(cap);
+                    }
+                    cap
+                };
+                energy_terminal_cap = energy_terminal_cap.min(next_cap);
                 v_bwd[n - 1] = v_bwd[n - 1].min(energy_terminal_cap);
             }
 

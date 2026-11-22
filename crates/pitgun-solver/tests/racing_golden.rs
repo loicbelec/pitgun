@@ -493,6 +493,7 @@ fn stream_record_projection(
         }) => ("player_telemetry", frames.len()),
         IncrementalExecutionStreamEventV1::Progress(RacingSessionProgressV1::Event(event)) => {
             let kind = match event {
+                pitgun_racing_simulator::RacingSessionEventV1::Physical { .. } => "physical",
                 pitgun_racing_simulator::RacingSessionEventV1::LapCompleted { .. } => {
                     "lap_completed"
                 }
