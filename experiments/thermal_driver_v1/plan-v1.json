@@ -1,0 +1,441 @@
+{
+  "schema": "pitgun.thermal-driver-qualification/v1",
+  "status": "EXPLORATORY_NATIVE_ONLY",
+  "cases": [
+    {
+      "id": "budget-classic15-monza-c0-balanced_reference-manage",
+      "frozen_case": "budget-classic15-monza-c0",
+      "driver_id": "balanced_reference",
+      "mode": "manage"
+    },
+    {
+      "id": "budget-classic15-monza-c0-balanced_reference-balanced",
+      "frozen_case": "budget-classic15-monza-c0",
+      "driver_id": "balanced_reference",
+      "mode": "balanced"
+    },
+    {
+      "id": "budget-classic15-monza-c0-balanced_reference-attack",
+      "frozen_case": "budget-classic15-monza-c0",
+      "driver_id": "balanced_reference",
+      "mode": "attack"
+    },
+    {
+      "id": "budget-classic15-monza-c0-limit_specialist-manage",
+      "frozen_case": "budget-classic15-monza-c0",
+      "driver_id": "limit_specialist",
+      "mode": "manage"
+    },
+    {
+      "id": "budget-classic15-monza-c0-limit_specialist-balanced",
+      "frozen_case": "budget-classic15-monza-c0",
+      "driver_id": "limit_specialist",
+      "mode": "balanced"
+    },
+    {
+      "id": "budget-classic15-monza-c0-limit_specialist-attack",
+      "frozen_case": "budget-classic15-monza-c0",
+      "driver_id": "limit_specialist",
+      "mode": "attack"
+    },
+    {
+      "id": "budget-classic15-monza-c0-smooth_operator-manage",
+      "frozen_case": "budget-classic15-monza-c0",
+      "driver_id": "smooth_operator",
+      "mode": "manage"
+    },
+    {
+      "id": "budget-classic15-monza-c0-smooth_operator-balanced",
+      "frozen_case": "budget-classic15-monza-c0",
+      "driver_id": "smooth_operator",
+      "mode": "balanced"
+    },
+    {
+      "id": "budget-classic15-monza-c0-smooth_operator-attack",
+      "frozen_case": "budget-classic15-monza-c0",
+      "driver_id": "smooth_operator",
+      "mode": "attack"
+    },
+    {
+      "id": "budget-classic15-monza-c0-tire_manager-manage",
+      "frozen_case": "budget-classic15-monza-c0",
+      "driver_id": "tire_manager",
+      "mode": "manage"
+    },
+    {
+      "id": "budget-classic15-monza-c0-tire_manager-balanced",
+      "frozen_case": "budget-classic15-monza-c0",
+      "driver_id": "tire_manager",
+      "mode": "balanced"
+    },
+    {
+      "id": "budget-classic15-monza-c0-tire_manager-attack",
+      "frozen_case": "budget-classic15-monza-c0",
+      "driver_id": "tire_manager",
+      "mode": "attack"
+    },
+    {
+      "id": "tires-medium-balanced_reference-manage",
+      "frozen_case": "tires-medium",
+      "driver_id": "balanced_reference",
+      "mode": "manage"
+    },
+    {
+      "id": "tires-medium-balanced_reference-balanced",
+      "frozen_case": "tires-medium",
+      "driver_id": "balanced_reference",
+      "mode": "balanced"
+    },
+    {
+      "id": "tires-medium-balanced_reference-attack",
+      "frozen_case": "tires-medium",
+      "driver_id": "balanced_reference",
+      "mode": "attack"
+    },
+    {
+      "id": "tires-medium-limit_specialist-manage",
+      "frozen_case": "tires-medium",
+      "driver_id": "limit_specialist",
+      "mode": "manage"
+    },
+    {
+      "id": "tires-medium-limit_specialist-balanced",
+      "frozen_case": "tires-medium",
+      "driver_id": "limit_specialist",
+      "mode": "balanced"
+    },
+    {
+      "id": "tires-medium-limit_specialist-attack",
+      "frozen_case": "tires-medium",
+      "driver_id": "limit_specialist",
+      "mode": "attack"
+    },
+    {
+      "id": "tires-medium-smooth_operator-manage",
+      "frozen_case": "tires-medium",
+      "driver_id": "smooth_operator",
+      "mode": "manage"
+    },
+    {
+      "id": "tires-medium-smooth_operator-balanced",
+      "frozen_case": "tires-medium",
+      "driver_id": "smooth_operator",
+      "mode": "balanced"
+    },
+    {
+      "id": "tires-medium-smooth_operator-attack",
+      "frozen_case": "tires-medium",
+      "driver_id": "smooth_operator",
+      "mode": "attack"
+    },
+    {
+      "id": "tires-medium-tire_manager-manage",
+      "frozen_case": "tires-medium",
+      "driver_id": "tire_manager",
+      "mode": "manage"
+    },
+    {
+      "id": "tires-medium-tire_manager-balanced",
+      "frozen_case": "tires-medium",
+      "driver_id": "tire_manager",
+      "mode": "balanced"
+    },
+    {
+      "id": "tires-medium-tire_manager-attack",
+      "frozen_case": "tires-medium",
+      "driver_id": "tire_manager",
+      "mode": "attack"
+    },
+    {
+      "id": "ablation-limit_exploitation-0.78",
+      "frozen_case": "tires-medium",
+      "driver_id": "balanced_reference",
+      "mode": "attack",
+      "traits": {
+        "limit_exploitation": 0.78,
+        "consistency": 0.84,
+        "tire_management": 0.84
+      },
+      "risk_off": true
+    },
+    {
+      "id": "ablation-limit_exploitation-0.96",
+      "frozen_case": "tires-medium",
+      "driver_id": "balanced_reference",
+      "mode": "attack",
+      "traits": {
+        "limit_exploitation": 0.96,
+        "consistency": 0.84,
+        "tire_management": 0.84
+      },
+      "risk_off": true
+    },
+    {
+      "id": "ablation-consistency-0.78",
+      "frozen_case": "tires-medium",
+      "driver_id": "balanced_reference",
+      "mode": "attack",
+      "traits": {
+        "limit_exploitation": 0.84,
+        "consistency": 0.78,
+        "tire_management": 0.84
+      },
+      "risk_off": true
+    },
+    {
+      "id": "ablation-consistency-0.96",
+      "frozen_case": "tires-medium",
+      "driver_id": "balanced_reference",
+      "mode": "attack",
+      "traits": {
+        "limit_exploitation": 0.84,
+        "consistency": 0.96,
+        "tire_management": 0.84
+      },
+      "risk_off": true
+    },
+    {
+      "id": "ablation-tire_management-0.78",
+      "frozen_case": "tires-medium",
+      "driver_id": "balanced_reference",
+      "mode": "attack",
+      "traits": {
+        "limit_exploitation": 0.84,
+        "consistency": 0.84,
+        "tire_management": 0.78
+      },
+      "risk_off": true
+    },
+    {
+      "id": "ablation-tire_management-0.96",
+      "frozen_case": "tires-medium",
+      "driver_id": "balanced_reference",
+      "mode": "attack",
+      "traits": {
+        "limit_exploitation": 0.84,
+        "consistency": 0.84,
+        "tire_management": 0.96
+      },
+      "risk_off": true
+    },
+    {
+      "id": "ablation-reference-manage",
+      "frozen_case": "tires-medium",
+      "driver_id": "balanced_reference",
+      "mode": "manage",
+      "risk_off": true
+    },
+    {
+      "id": "ablation-reference-balanced",
+      "frozen_case": "tires-medium",
+      "driver_id": "balanced_reference",
+      "mode": "balanced",
+      "risk_off": true
+    },
+    {
+      "id": "ablation-reference-attack",
+      "frozen_case": "tires-medium",
+      "driver_id": "balanced_reference",
+      "mode": "attack",
+      "risk_off": true
+    },
+    {
+      "id": "gp-17-manage-risk-True",
+      "frozen_case": "full-classic15-c2",
+      "driver_id": "balanced_reference",
+      "mode": "manage",
+      "seed": 17,
+      "risk_off": false,
+      "compare_service": false
+    },
+    {
+      "id": "gp-17-manage-risk-False",
+      "frozen_case": "full-classic15-c2",
+      "driver_id": "balanced_reference",
+      "mode": "manage",
+      "seed": 17,
+      "risk_off": true,
+      "compare_service": false
+    },
+    {
+      "id": "gp-17-balanced-risk-True",
+      "frozen_case": "full-classic15-c2",
+      "driver_id": "balanced_reference",
+      "mode": "balanced",
+      "seed": 17,
+      "risk_off": false,
+      "compare_service": false
+    },
+    {
+      "id": "gp-17-balanced-risk-False",
+      "frozen_case": "full-classic15-c2",
+      "driver_id": "balanced_reference",
+      "mode": "balanced",
+      "seed": 17,
+      "risk_off": true,
+      "compare_service": false
+    },
+    {
+      "id": "gp-17-attack-risk-True",
+      "frozen_case": "full-classic15-c2",
+      "driver_id": "balanced_reference",
+      "mode": "attack",
+      "seed": 17,
+      "risk_off": false,
+      "compare_service": false
+    },
+    {
+      "id": "gp-17-attack-risk-False",
+      "frozen_case": "full-classic15-c2",
+      "driver_id": "balanced_reference",
+      "mode": "attack",
+      "seed": 17,
+      "risk_off": true,
+      "compare_service": false
+    },
+    {
+      "id": "gp-42-manage-risk-True",
+      "frozen_case": "full-classic15-c2",
+      "driver_id": "balanced_reference",
+      "mode": "manage",
+      "seed": 42,
+      "risk_off": false,
+      "compare_service": true
+    },
+    {
+      "id": "gp-42-manage-risk-False",
+      "frozen_case": "full-classic15-c2",
+      "driver_id": "balanced_reference",
+      "mode": "manage",
+      "seed": 42,
+      "risk_off": true,
+      "compare_service": false
+    },
+    {
+      "id": "gp-42-balanced-risk-True",
+      "frozen_case": "full-classic15-c2",
+      "driver_id": "balanced_reference",
+      "mode": "balanced",
+      "seed": 42,
+      "risk_off": false,
+      "compare_service": true
+    },
+    {
+      "id": "gp-42-balanced-risk-False",
+      "frozen_case": "full-classic15-c2",
+      "driver_id": "balanced_reference",
+      "mode": "balanced",
+      "seed": 42,
+      "risk_off": true,
+      "compare_service": false
+    },
+    {
+      "id": "gp-42-attack-risk-True",
+      "frozen_case": "full-classic15-c2",
+      "driver_id": "balanced_reference",
+      "mode": "attack",
+      "seed": 42,
+      "risk_off": false,
+      "compare_service": true
+    },
+    {
+      "id": "gp-42-attack-risk-False",
+      "frozen_case": "full-classic15-c2",
+      "driver_id": "balanced_reference",
+      "mode": "attack",
+      "seed": 42,
+      "risk_off": true,
+      "compare_service": false
+    },
+    {
+      "id": "gp-73-manage-risk-True",
+      "frozen_case": "full-classic15-c2",
+      "driver_id": "balanced_reference",
+      "mode": "manage",
+      "seed": 73,
+      "risk_off": false,
+      "compare_service": false
+    },
+    {
+      "id": "gp-73-manage-risk-False",
+      "frozen_case": "full-classic15-c2",
+      "driver_id": "balanced_reference",
+      "mode": "manage",
+      "seed": 73,
+      "risk_off": true,
+      "compare_service": false
+    },
+    {
+      "id": "gp-73-balanced-risk-True",
+      "frozen_case": "full-classic15-c2",
+      "driver_id": "balanced_reference",
+      "mode": "balanced",
+      "seed": 73,
+      "risk_off": false,
+      "compare_service": false
+    },
+    {
+      "id": "gp-73-balanced-risk-False",
+      "frozen_case": "full-classic15-c2",
+      "driver_id": "balanced_reference",
+      "mode": "balanced",
+      "seed": 73,
+      "risk_off": true,
+      "compare_service": false
+    },
+    {
+      "id": "gp-73-attack-risk-True",
+      "frozen_case": "full-classic15-c2",
+      "driver_id": "balanced_reference",
+      "mode": "attack",
+      "seed": 73,
+      "risk_off": false,
+      "compare_service": false
+    },
+    {
+      "id": "gp-73-attack-risk-False",
+      "frozen_case": "full-classic15-c2",
+      "driver_id": "balanced_reference",
+      "mode": "attack",
+      "seed": 73,
+      "risk_off": true,
+      "compare_service": false
+    },
+    {
+      "id": "baseline-budget-early8-monza-c0",
+      "frozen_case": "budget-early8-monza-c0",
+      "baseline": true
+    },
+    {
+      "id": "baseline-budget-early8-monza-c2",
+      "frozen_case": "budget-early8-monza-c2",
+      "baseline": true
+    },
+    {
+      "id": "baseline-budget-modern20-monza-c0",
+      "frozen_case": "budget-modern20-monza-c0",
+      "baseline": true
+    },
+    {
+      "id": "baseline-budget-modern20-monza-c4",
+      "frozen_case": "budget-modern20-monza-c4",
+      "baseline": true
+    },
+    {
+      "id": "baseline-full-classic15-c0",
+      "frozen_case": "full-classic15-c0",
+      "baseline": true
+    }
+  ],
+  "repeats": 2,
+  "frozen_before_measurement": true,
+  "criteria": {
+    "historical_output_digests": "unchanged",
+    "physical_baseline_output_digests": "unchanged",
+    "repeat": "exact JSON per case",
+    "service": "exact complete result at unchanged boundary",
+    "new_profile_completion": "all admitted test cases complete; failures retained, never silently removed",
+    "balance": "diagnostic only; no demand that every mode wins; no opponent fitting"
+  },
+  "scope": "Single-car driver laws on frozen thermal V2 parameters; common actor noise; no deployed profile/admission/UI or empirical accident calibration."
+}

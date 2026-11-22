@@ -6,6 +6,7 @@ mod fuel_contract;
 mod local_stream;
 pub mod physical_events;
 mod power_stream;
+pub mod thermal_driver;
 pub mod tire_events;
 pub use power_stream::{POWER_CHANNELS, power_telemetry_policy_identity};
 pub mod service_control;
@@ -2938,6 +2939,7 @@ impl IncrementalRacingSession {
                         engine_thermal: car.engine_thermal,
                         longitudinal_energy: None,
                         thermal_physics_v2: None,
+                        driver_lapses_v1: None,
                     },
                 ))
             })
@@ -3201,6 +3203,7 @@ impl IncrementalRacingSession {
                 engine_thermal,
                 longitudinal_energy: None,
                 thermal_physics_v2: None,
+                driver_lapses_v1: None,
             };
             let solver =
                 if service_control && (competitor.is_player || competitor.id == "player") {
@@ -4221,6 +4224,7 @@ fn run_single_session(
                     }),
                     longitudinal_energy: None,
                     thermal_physics_v2: None,
+                    driver_lapses_v1: None,
                 })
             }
             _ => unreachable!("session model and resolved V3 profile must agree"),
