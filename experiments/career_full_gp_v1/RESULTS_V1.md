@@ -1,6 +1,7 @@
 # Réponses sur GP complet : résultats et portée
 
 Protocole, probe et règles de sélection figés avant calcul en **d124d69**.
+Livraison [brouillon #470](https://github.com/loicbelec/pitgun/pull/470), empilée sur #467.
 Les équations, coefficients, catalogue v1.8.1 et tolérances restent inchangés.
 [Méthode](README.md), [plan gelé](plan-v1.json),
 [tableaux détaillés](MEASURED_TABLES_V1.md),
