@@ -78,3 +78,19 @@ Next gates: initial-plan prediction/reserve and all-era feasibility, fine-graine
 fuel-stop/domain result semantics and shared journal, boundary look-ahead/cost,
 real-career allocation fixtures and opponent fitting, independent native/WASM/
 Authority admission. Keep the modest accepted early cooling effect unchanged.
+
+## Future gameplay direction retained by the owner
+
+Fuel mass should become a strategic resource once preparation and consumption
+are qualified. Explore the tradeoff between a lighter initial charge and finish
+reserve, then actual pace/consumption commands and their interaction with future
+battery deployment/recovery (#246). A lighter car, a saving instruction or an
+energy strategy must affect solved work, motion and resources, with the same
+laws for player and rivals and recorded/replayable decisions.
+
+The future UX is undecided: explicit kilograms, an automatic suggested reserve,
+or concise driving/energy modes are options to evaluate. The current agreed
+implementation remains automatic initial preparation; this note does not select
+a new slider, regulation, capacity or gameplay balance coefficient. Track this
+direction alongside #445 and hybridization, separately from the current numerical
+boundary/feasibility qualification.
