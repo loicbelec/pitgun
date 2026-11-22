@@ -1,0 +1,21 @@
+{
+  "schema": "pitgun.pit-strategy-audit/v1",
+  "owner_requirement": "At most two voluntary strategic stops in the game, for player and rivals alike. Do not admit a field benefiting from5..8stops; diagnose the incentives first. This domain/game rule does not cap the generic solver's diagnostic capabilities.",
+  "workers": 8,
+  "source": "experiments/fixed_opponents_v2/results/strategy-search-v2.json.gz",
+  "training_only": true,
+  "reserved_results_opened": false,
+  "plans": "In each of ten existing I/II contexts, select source-best complete-GP plan at each stop count1..8 and12; also test explicit medium1lap then soft remaining laps as a fresh-static-grip sanity anchor. Keep exact car, sliders, actor, seed, environment and physical tolerances for paired comparisons. More-than-two-stop cases are offline diagnostics only, never eligible game plans.",
+  "interventions": [
+    null,
+    {"kind": "no_wear_grip"},
+    {"kind": "no_direct_temperature_grip"},
+    {"kind": "no_tire_grip_age_or_temperature"},
+    {"kind": "wear_grip_scale", "factor": 0.25},
+    {"kind": "mount_temperature", "celsius": 70.0},
+    {"kind": "pit_penalty", "seconds": 44.0}
+  ],
+  "interpretation": "Ablations and quarter-slope/double-pit-cost/preparation70 controls diagnose mechanisms, not proposed physics coefficients. Every altered request is fully re-solved with thermal/energy closure, not a retimed result. Existing source-optimal plans are not guaranteed optimal under an intervention; do not claim global alternative optima. NoWearGrip retains wear accumulation/heat; NoDirectTemperatureGrip retains thermal wear effects. Joint ablation removes both direct grip mechanisms only.",
+  "checks": "All unchanged controls must match source physical/diagnostic/result digests, per-lap times, final state, ledgers and metrics exactly. Verify total elapsed minus summed moving-lap times equals configured pit cost times stop count; max carry jumps, all failed outcomes and exact fresh representative repeats retained. Native only; no game/catalog/solver equations changed.",
+  "observed_accounting_before_audit": "4500 source GP results close at22seconds per stop (not generic20s default), max residual5.46e-12s. Soft legacy wear_grip_k=.6 gives12% direct grip loss at raw wear.2. Thermal-career adapter replaced wear accumulation/temperature profiles but inherited old linear wear-to-grip parameters."
+}

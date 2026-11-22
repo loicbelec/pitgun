@@ -1,5 +1,13 @@
 # Plateau fixe de neuf IA — deuxième calibration native
 
+**Campagne arrêtée sur instruction propriétaire avant sélection/réserve.** Le
+jeu doit autoriser au plus deux arrêts volontaires. L'espace élargi révèle un
+optimum échantillonné à 5–8 arrêts : ces résultats sont des diagnostics, pas une
+politique à intégrer. Les 4 500 stratégies et 690 adaptations individuelles
+terminées sont conservées ; aucun résultat réservé n'a été ouvert. Voir la
+[décision d'arrêt](results/owner-stop-v2.json) et
+l'[audit causal des pneus/stands](../pit_strategy_audit_v1/README.md).
+
 La [première campagne](../fixed_opponents_v1/README.md) est conservée comme
 résultat négatif : aucune des 27 calibrations ne permettait une victoire du
 joueur informé en sortie d'ère I/II, malgré la bonne hiérarchie des favoris.

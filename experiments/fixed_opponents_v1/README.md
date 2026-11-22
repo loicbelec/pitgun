@@ -1,5 +1,9 @@
 # Plateau fixe de neuf IA — campagne native I/II
 
+**Résultat : REFINE**, 6 155 GP d'entraînement, aucune des 27 calibrations ne
+satisfait la victoire du joueur informé. Aucun essai réservé ouvert. Voir le
+[rapport négatif conservé](RESULTS_V1.md) et la [seconde calibration](../fixed_opponents_v2/README.md).
+
 Demande propriétaire : neuf personnalités constantes, Franz Hermann et Charles
 L'Éclair les plus compétitifs. Les capacités ne sont plus des rôles permutés selon
 la course. Identités et traits, style et politique sont enregistrés séparément.

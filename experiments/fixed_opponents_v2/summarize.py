@@ -30,10 +30,13 @@ def main():
   campaign=load(OUT/'campaign-v2.json')
   for p,d in campaign['files'].items():
    if sha((OUT/p).read_bytes())!=d:raise RuntimeError('receipt pin differs:'+p)
- unique={}
+ unique={};imported={x['case_key']:x for x in imports['imported']}
  for p in sorted(OUT.glob('*-v2.json.gz')):
   if p.name=='native-field-audit-v2.json.gz':continue
-  for r in load(p):unique[key(r['case'])]=r
+  for r in load(p):
+   k=key(r['case'])
+   if k in imported and sha(enc(r['data']))!=imported[k]['rebound_data_digest']:raise RuntimeError('imported output differs from sealed lineage:'+k)
+   unique[k]=r
  numeric={r['data']['diagnostic_input_digest']:r for r in unique.values()};failures=[];carry=[0.]*5;thermal=collections.defaultdict(float);fallback=0;updates=0
  for r in numeric.values():
   d=r['data']
