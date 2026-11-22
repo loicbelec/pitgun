@@ -63,6 +63,12 @@ python3 experiments/lap_boundary_v1/qualify_local.py cost \
 
 The cost phase refuses mismatched source/binary identity or unequal/failed floor
 results. Preserve raw receipts privately and commit compact evidence afterwards.
+
+Before integration, use the full workspace scope: `cargo check --workspace
+--all-targets` and `cargo test --workspace`. Plain `cargo check --all-targets`
+uses Cargo's narrower `default-members` and misses the generic Solver golden
+integration tests. Run these checks before the isolated cost phase.
+
 Actual coupled look-ahead, its bounded horizon/cost, restored control continuity
 and all-era competitive acceptance remain separate requirements. Current game,
 personal browser saves/ports, deployed catalog/runtime and staging/prod stay as-is.

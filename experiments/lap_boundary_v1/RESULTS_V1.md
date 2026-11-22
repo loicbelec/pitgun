@@ -93,7 +93,7 @@ performance gain**, because that assumption fails elsewhere.
 - 171 native simulation attempts in this bank:48screen+56driver+3service+22history
   +42cost. This includes explicit failed attempts, not171successful finishes.
 - 270 native tests pass: Authority30, Simulator135, Solver25+58, Verifier16+6.
-  Strict scoped Clippy, all-target workspace check, formatting and diff pass.
+  Strict scoped Clippy, default-member all-target check, formatting and diff pass.
   Tests include complete cached/recomputed/service equality, exact continuity
   and agreement of the two forecast semantics at manufactured constant grip.
 
@@ -101,6 +101,24 @@ Full [screen receipt](results/screen-v1.json) and [checksum](results/screen-v1.s
 bind source, binary, catalog, driver, physical and whole diagnostic input identity.
 The explicitly hashed diagnostic wrapper is not an Authority/runtime admission.
 Ordinary constructors select no diagnostic profile and emit no work counters.
+
+### Workspace integration follow-up
+
+CI exposed an older non-exhaustive event projection in the generic
+`pitgun-solver` golden tests: it did not handle the previously added `Physical`
+event variant. The initial local package-scoped270 tests and default-member
+all-target check did not include that target. Test-only fix963f765 adds the
+explicit projection; historical golden fixtures and simulation code are unchanged.
+
+The expanded `cargo check --workspace --all-targets` passes, as does
+`cargo test --workspace`:588 passed,0 failed,22 existing ignores (one live-Postgres
+test and21 illustrative doctests). The14 generic Racing golden tests also pass
+separately. The CI-scoped service/policy Clippy and formatting commands pass
+locally. No new ignore or weakened assertion was added. Remote CI is rerun;
+local success is not a claim that every remote job has completed.
+
+These integration checks do not change or rerun the frozen performance evidence:
+the only subsequent code edit is in the event projection test helper.
 
 ## Next physical gate
 

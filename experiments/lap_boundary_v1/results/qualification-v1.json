@@ -69,5 +69,21 @@
     "architecture": "arm64",
     "macos": "26.5.1",
     "cost_concurrency": "serial; unrelated native tests ended; other Mac activity not controlled"
+  },
+  "ci_integration_followup": {
+    "test_only_fix_commit": "963f765",
+    "initial_check_scope": "270 selected native tests and cargo default-member all-target check",
+    "generic_solver_golden_tests": 14,
+    "full_workspace_check": "cargo check --offline --locked --workspace --all-targets passes",
+    "full_workspace_tests": {
+      "passed": 588,
+      "failed": 0,
+      "existing_ignored": 22,
+      "ignore_reasons": "1 live PostgreSQL test,21 illustrative doctests; no new ignores"
+    },
+    "ci_scope_clippy_and_fmt": "pass locally",
+    "remote_ci": "rerun, not claimed complete",
+    "physics_and_frozen_timing_unchanged": true,
+    "workspace_log_digest": "sha256:dc9de781e03ee639399fade81f6320499f575e8cc3afcc6f6bb6287e08da818e"
   }
 }
