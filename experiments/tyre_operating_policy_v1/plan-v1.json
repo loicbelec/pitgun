@@ -1,0 +1,225 @@
+{
+  "schema": "pitgun.tire-operating-plan/v1",
+  "status": "FROZEN_BEFORE_MEASUREMENT_EXPOSED_DIAGNOSTIC",
+  "repeats": 2,
+  "cases": [
+    {
+      "id": "soft-70",
+      "frozen_case": "tires-soft",
+      "baseline": false,
+      "initial_temperature_c": null,
+      "mode": null,
+      "air_temperature_c": null,
+      "road_temperature_c": null
+    },
+    {
+      "id": "medium-70",
+      "frozen_case": "tires-medium",
+      "baseline": false,
+      "initial_temperature_c": null,
+      "mode": null,
+      "air_temperature_c": null,
+      "road_temperature_c": null
+    },
+    {
+      "id": "hard-70",
+      "frozen_case": "tires-hard",
+      "baseline": false,
+      "initial_temperature_c": null,
+      "mode": null,
+      "air_temperature_c": null,
+      "road_temperature_c": null
+    },
+    {
+      "id": "medium-initial-35",
+      "frozen_case": "tires-medium",
+      "baseline": false,
+      "initial_temperature_c": 35,
+      "mode": null,
+      "air_temperature_c": null,
+      "road_temperature_c": null
+    },
+    {
+      "id": "medium-initial-90",
+      "frozen_case": "tires-medium",
+      "baseline": false,
+      "initial_temperature_c": 90,
+      "mode": null,
+      "air_temperature_c": null,
+      "road_temperature_c": null
+    },
+    {
+      "id": "medium-initial-110",
+      "frozen_case": "tires-medium",
+      "baseline": false,
+      "initial_temperature_c": 110,
+      "mode": null,
+      "air_temperature_c": null,
+      "road_temperature_c": null
+    },
+    {
+      "id": "medium-manage",
+      "frozen_case": "tires-medium",
+      "baseline": false,
+      "initial_temperature_c": null,
+      "mode": "manage",
+      "air_temperature_c": null,
+      "road_temperature_c": null
+    },
+    {
+      "id": "medium-attack",
+      "frozen_case": "tires-medium",
+      "baseline": false,
+      "initial_temperature_c": null,
+      "mode": "attack",
+      "air_temperature_c": null,
+      "road_temperature_c": null
+    },
+    {
+      "id": "monza-70",
+      "frozen_case": "budget-modern20-monza-c4",
+      "baseline": false,
+      "initial_temperature_c": null,
+      "mode": null,
+      "air_temperature_c": null,
+      "road_temperature_c": null
+    },
+    {
+      "id": "silverstone-70",
+      "frozen_case": "budget-modern20-silverstone-c4",
+      "baseline": false,
+      "initial_temperature_c": null,
+      "mode": null,
+      "air_temperature_c": null,
+      "road_temperature_c": null
+    },
+    {
+      "id": "downforce-02",
+      "frozen_case": "setup-df02",
+      "baseline": false,
+      "initial_temperature_c": null,
+      "mode": null,
+      "air_temperature_c": null,
+      "road_temperature_c": null
+    },
+    {
+      "id": "downforce-08",
+      "frozen_case": "setup-df08",
+      "baseline": false,
+      "initial_temperature_c": null,
+      "mode": null,
+      "air_temperature_c": null,
+      "road_temperature_c": null
+    },
+    {
+      "id": "cold-environment",
+      "frozen_case": "tires-medium",
+      "baseline": false,
+      "initial_temperature_c": null,
+      "mode": null,
+      "air_temperature_c": 15,
+      "road_temperature_c": 20
+    },
+    {
+      "id": "hot-environment",
+      "frozen_case": "tires-medium",
+      "baseline": false,
+      "initial_temperature_c": null,
+      "mode": null,
+      "air_temperature_c": 45,
+      "road_temperature_c": 60
+    },
+    {
+      "id": "soft-medium-pit10-70",
+      "frozen_case": "soft-medium-pit10",
+      "baseline": false,
+      "initial_temperature_c": null,
+      "mode": null,
+      "air_temperature_c": null,
+      "road_temperature_c": null
+    },
+    {
+      "id": "cold-start-prepared-replacement",
+      "frozen_case": "soft-medium-pit10",
+      "baseline": false,
+      "initial_temperature_c": 35,
+      "mode": null,
+      "air_temperature_c": null,
+      "road_temperature_c": null
+    },
+    {
+      "id": "medium-soft-pit5-70",
+      "frozen_case": "medium-soft-pit5",
+      "baseline": false,
+      "initial_temperature_c": null,
+      "mode": null,
+      "air_temperature_c": null,
+      "road_temperature_c": null
+    },
+    {
+      "id": "medium-soft-pit10-70",
+      "frozen_case": "medium-soft-pit10",
+      "baseline": false,
+      "initial_temperature_c": null,
+      "mode": null,
+      "air_temperature_c": null,
+      "road_temperature_c": null
+    },
+    {
+      "id": "medium-soft-pit15-70",
+      "frozen_case": "medium-soft-pit15",
+      "baseline": false,
+      "initial_temperature_c": null,
+      "mode": null,
+      "air_temperature_c": null,
+      "road_temperature_c": null
+    },
+    {
+      "id": "unchanged-tire-start-35",
+      "frozen_case": "tire-start-35",
+      "baseline": true,
+      "initial_temperature_c": null,
+      "mode": null,
+      "air_temperature_c": null,
+      "road_temperature_c": null
+    },
+    {
+      "id": "unchanged-tires-medium",
+      "frozen_case": "tires-medium",
+      "baseline": true,
+      "initial_temperature_c": null,
+      "mode": null,
+      "air_temperature_c": null,
+      "road_temperature_c": null
+    },
+    {
+      "id": "unchanged-budget-early8-monza-c0",
+      "frozen_case": "budget-early8-monza-c0",
+      "baseline": true,
+      "initial_temperature_c": null,
+      "mode": null,
+      "air_temperature_c": null,
+      "road_temperature_c": null
+    },
+    {
+      "id": "unchanged-full-classic15-c2",
+      "frozen_case": "full-classic15-c2",
+      "baseline": true,
+      "initial_temperature_c": null,
+      "mode": null,
+      "air_temperature_c": null,
+      "road_temperature_c": null
+    }
+  ],
+  "timeout_s": 180,
+  "scope": "Native single-car exposed qualification of preparation/reporting policies. Same provisional thermal equations/compound parameters and conservative minimum-grip seam; no fitted coefficients or game/career/admission. Modern preheat hypothesis is applied only explicitly; old eras are unchanged references, not assigned modern blanket rules.",
+  "criteria": {
+    "identity": "Commit plan/code/profile first; pin sources/binaries/catalog/input/result/policy; repeat all non-timing output exactly, including errors and events.",
+    "compatibility": "Four unchanged thermal baselines,56driver outcomes,22historical/energy outcomes and existing V1 tire/derating journals remain exact.",
+    "continuity": "Exact surface/carcass carry from accepted post-service state. New pit sets70C independently from diagnostic initial35/90/110C.",
+    "window": "New V2 event band is temperature-grip factor>=0.95 of peak, independently from wear/compound scale. Reject floors at or above the target. Old V1 checkpoints/events unchanged.",
+    "behavior": "Report native heating/cooling, cold/near-peak/hot occupancy, floor occupancy, surface/carcass, wear, service and mode/environment response. No forced oscillations, strategy ordering or every-case warming.",
+    "physics_verdict": "Preparation/reporting implementation may PASS while physical parameter identification and balance stay REFINE. Diagnose cold-floor cases and dominated strategies; do not tune after seeing this exposed screen and call it held-out validation.",
+    "cost": "No performance/RSS claim. Charts use1s first300s then10s selected native points+lap ends; physics/metrics/events retain native cadence."
+  }
+}

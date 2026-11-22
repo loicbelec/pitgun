@@ -3746,9 +3746,15 @@ pub fn apply_tuning_with_response(
 
 pub fn effective_mu(mu0: f64, tire_wear: f64, tire_temp: f64, tire: &TireParams) -> f64 {
     let wear_k = (1.0 - tire.wear_grip_k * tire_wear).max(tire.wear_min);
-    let temp_z = (tire_temp - tire.temp_opt) / tire.temp_sigma.max(1e-3);
-    let temp_k = (-temp_z * temp_z).exp().max(tire.temp_min_k);
+    let temp_k = tire_temperature_grip_factor(tire_temp, tire);
     mu0 * tire.mu_scale * wear_k * temp_k
+}
+
+/// Temperature-only factor, shared with observed thermal operating-window policies.
+/// The input tire must have passed the normal resolved-request validation.
+pub fn tire_temperature_grip_factor(tire_temp: f64, tire: &TireParams) -> f64 {
+    let temp_z = (tire_temp - tire.temp_opt) / tire.temp_sigma.max(1e-3);
+    (-temp_z * temp_z).exp().max(tire.temp_min_k)
 }
 
 /// Aggregate force available from all four tires in Model V3.

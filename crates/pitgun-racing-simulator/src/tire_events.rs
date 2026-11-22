@@ -42,6 +42,73 @@ impl TireWindowPolicyV1 {
         Ok(())
     }
 }
+
+/// New opt-in semantics: a band derived from the actual temperature/grip law.
+/// The threshold is a Pitgun reporting convention, not a manufacturer prescription.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct TireWindowPolicyV2 {
+    pub schema_version: TireWindowPolicyVersionV2,
+    pub minimum_peak_grip_milli: u16,
+    pub max_events_per_competitor: u32,
+}
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum TireWindowPolicyVersionV2 {
+    #[serde(rename = "pitgun.racing-tire-window-policy/v2")]
+    V2,
+}
+impl TireWindowPolicyV2 {
+    pub fn validate(&self) -> Result<(), String> {
+        if !(1..1000).contains(&self.minimum_peak_grip_milli)
+            || !(1..=65536).contains(&self.max_events_per_competitor)
+        {
+            return Err("tire events: invalid peak-grip window policy".into());
+        }
+        Ok(())
+    }
+    pub fn bounds(&self, tire: &TireParams) -> Result<(f64, f64), String> {
+        self.validate()?;
+        let fraction = f64::from(self.minimum_peak_grip_milli) / 1000.0;
+        if !tire.temp_opt.is_finite()
+            || !tire.temp_sigma.is_finite()
+            || tire.temp_sigma <= 0.0
+            || !tire.temp_min_k.is_finite()
+            || !(0.0..fraction).contains(&tire.temp_min_k)
+        {
+            // A floor at/above the threshold has no finite near-peak band.
+            return Err("tire events: peak-grip band requires a lower grip floor".into());
+        }
+        let width = tire.temp_sigma.max(1e-3) * (-fraction.ln()).sqrt();
+        let low = tire.temp_opt - width;
+        let high = tire.temp_opt + width;
+        milli(low)?;
+        milli(high)?;
+        Ok((low, high))
+    }
+}
+
+// Untagged serialization keeps historical V1 checkpoints and policy digests exact.
+// The version field and deny_unknown_fields make the two alternatives disjoint.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(untagged)]
+enum WindowPolicy {
+    V1(TireWindowPolicyV1),
+    V2(TireWindowPolicyV2),
+}
+impl WindowPolicy {
+    fn validate(&self) -> Result<(), String> {
+        match self {
+            Self::V1(p) => p.validate(),
+            Self::V2(p) => p.validate(),
+        }
+    }
+    fn maximum_events(&self) -> u32 {
+        match self {
+            Self::V1(p) => p.max_events_per_competitor,
+            Self::V2(p) => p.max_events_per_competitor,
+        }
+    }
+}
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum TireWindowEventVersion {
     #[serde(rename = "pitgun.racing-tire-window-event/v1")]
@@ -83,7 +150,7 @@ pub struct TireEventContextV1 {
     pub tire: TireParams,
 }
 impl TireEventContextV1 {
-    fn validate(&self, policy: &TireWindowPolicyV1) -> Result<(f64, f64), String> {
+    fn validate(&self, policy: &WindowPolicy) -> Result<(f64, f64), String> {
         if self.tire_id.is_empty()
             || self.tire_id.len() > 512
             || !self.tire.temp_opt.is_finite()
@@ -108,6 +175,12 @@ impl TireEventContextV1 {
             return Err("tire events: non-finite compound context".into());
         }
         // Validate all serialized context values, including fields outside this band law.
+        if let WindowPolicy::V2(p) = policy {
+            return p.bounds(&self.tire);
+        }
+        let WindowPolicy::V1(policy) = policy else {
+            unreachable!()
+        };
         let width = self.tire.temp_sigma * f64::from(policy.half_width_sigma_milli) / 1000.0;
         let low = self.tire.temp_opt - width;
         let high = self.tire.temp_opt + width;
@@ -125,7 +198,7 @@ pub enum TireDetectorStateVersion {
 #[serde(deny_unknown_fields)]
 pub struct TireWindowCheckpointV1 {
     schema_version: TireDetectorStateVersion,
-    policy: TireWindowPolicyV1,
+    policy: WindowPolicy,
     competitor_id: String,
     next_sequence: u64,
     last_lap: u16,
@@ -150,6 +223,15 @@ fn milli(t: f64) -> Result<i32, String> {
 }
 impl NativeTireWindowEventDetector {
     pub fn new(competitor_id: String, policy: TireWindowPolicyV1) -> Result<Self, String> {
+        Self::with_policy(competitor_id, WindowPolicy::V1(policy))
+    }
+    pub fn new_with_peak_grip_window(
+        competitor_id: String,
+        policy: TireWindowPolicyV2,
+    ) -> Result<Self, String> {
+        Self::with_policy(competitor_id, WindowPolicy::V2(policy))
+    }
+    fn with_policy(competitor_id: String, policy: WindowPolicy) -> Result<Self, String> {
         Self::restore(TireWindowCheckpointV1 {
             schema_version: TireDetectorStateVersion::V1,
             policy,
@@ -171,7 +253,7 @@ impl NativeTireWindowEventDetector {
         super::physical_events::checked_time(state.last_time_s)?;
         if state.competitor_id.is_empty()
             || state.competitor_id.len() > 512
-            || state.next_sequence > u64::from(state.policy.max_events_per_competitor)
+            || state.next_sequence > u64::from(state.policy.maximum_events())
             || state.context.is_some() != state.band.is_some()
             || (state.last_lap == 0) != state.context.is_none()
             || state
@@ -297,7 +379,7 @@ impl NativeTireWindowEventDetector {
             return Ok(());
         }
         let sequence = self.state.next_sequence;
-        if sequence >= u64::from(self.state.policy.max_events_per_competitor) {
+        if sequence >= u64::from(self.state.policy.maximum_events()) {
             return Err("tire events: record budget exhausted".into());
         }
         events.push(NativePhysicsEventOccurrence {
@@ -398,6 +480,73 @@ mod tests {
             panic!("tire event expected")
         };
         e
+    }
+    fn peak_policy() -> TireWindowPolicyV2 {
+        TireWindowPolicyV2 {
+            schema_version: TireWindowPolicyVersionV2::V2,
+            minimum_peak_grip_milli: 950,
+            max_events_per_competitor: 8192,
+        }
+    }
+    #[test]
+    fn peak_window_tracks_the_actual_grip_curve_and_rejects_an_unbounded_floor() {
+        let mut c = context("medium", 95.0);
+        c.tire.temp_sigma = 42.0;
+        c.tire.temp_min_k = 0.65;
+        let (low, high) = peak_policy().bounds(&c.tire).unwrap();
+        for t in [low, high] {
+            assert!(
+                (pitgun_racing_solver::tire_temperature_grip_factor(t, &c.tire) - 0.95).abs()
+                    < 1e-12
+            );
+        }
+        assert!(pitgun_racing_solver::tire_temperature_grip_factor(low - 0.01, &c.tire) < 0.95);
+        assert!(pitgun_racing_solver::tire_temperature_grip_factor(high + 0.01, &c.tire) < 0.95);
+        c.tire.temp_min_k = 0.95;
+        assert!(peak_policy().bounds(&c.tire).is_err());
+        let mut invalid = peak_policy();
+        invalid.minimum_peak_grip_milli = 1000;
+        assert!(invalid.validate().is_err());
+    }
+    #[test]
+    fn peak_window_replays_crossings_and_restores_its_distinct_policy_identity() {
+        let c = context("medium", 100.0);
+        let mut d = NativeTireWindowEventDetector::new_with_peak_grip_window(
+            "player".into(),
+            peak_policy(),
+        )
+        .unwrap();
+        let facts = d
+            .observe_driving_lap(&lap(1, 0.0, &[80.0, 100.0, 120.0, 100.0]), &c)
+            .unwrap();
+        assert_eq!(
+            facts.iter().map(|f| event(f).band).collect::<Vec<_>>(),
+            vec![
+                TireThermalBandV1::Cold,
+                TireThermalBandV1::InWindow,
+                TireThermalBandV1::Hot,
+                TireThermalBandV1::InWindow
+            ]
+        );
+        assert_eq!(
+            event(&facts[0]).policy_digest,
+            canonical_json_digest(&peak_policy()).unwrap()
+        );
+        let bytes = serde_json::to_vec(&d.checkpoint()).unwrap();
+        let restored =
+            NativeTireWindowEventDetector::restore(serde_json::from_slice(&bytes).unwrap())
+                .unwrap();
+        assert_eq!(d.checkpoint(), restored.checkpoint());
+        let old = NativeTireWindowEventDetector::new("player".into(), Default::default()).unwrap();
+        let serialized = serde_json::to_value(old.checkpoint()).unwrap();
+        assert_eq!(
+            serialized["policy"],
+            serde_json::to_value(TireWindowPolicyV1::default()).unwrap()
+        );
+        assert_ne!(
+            canonical_json_digest(&peak_policy()).unwrap(),
+            canonical_json_digest(&TireWindowPolicyV1::default()).unwrap()
+        );
     }
     #[test]
     fn native_crossings_include_both_directions_and_keep_inclusive_window_edges() {
