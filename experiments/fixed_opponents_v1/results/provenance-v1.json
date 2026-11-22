@@ -1,0 +1,21 @@
+{
+  "source_commit": "6da3783f9e4f69fbab8fb892a061f5c3c2e795e2",
+  "sources": {
+    "experiments/fixed_opponents_v1/roster-v1.json": "sha256:d46f0e6e480f3344d3dcaadceb4639602e06bc986aad39f932bfa9a048989add",
+    "experiments/fixed_opponents_v1/plan-v1.json": "sha256:2f0ef54053ad6a9f21ec8417777f00bbcec84e35997e3e9a49273589d8f455de",
+    "experiments/fixed_opponents_v1/run_local.py": "sha256:097e3052af3c1551726f76aa4f84aa22e6d3f54f4b7c1f015e6c1bbd2f194943",
+    "experiments/fixed_opponents_v1/qualify.py": "sha256:00ccb0aba35499278d5702bb741fd0af8a8b2ea875cb2ea755157943313f3a60",
+    "crates/pitgun-racing-simulator/examples/fixed_field_probe.rs": "sha256:1016f133de914c49c747642dc15323beef5e562b124b800b8f69b6e1928f3473",
+    "crates/pitgun-racing-simulator/src/lib.rs": "sha256:4059225fb3790cbfbb65ceaa0e43825bd2cb35d4cce39e1874bc7154da9a339a",
+    "crates/pitgun-racing-simulator/src/thermal_career.rs": "sha256:f8b6300748c91f5058491c65f3c657b0cf4d0a17099851453b9bde891fcbd5a6",
+    "crates/pitgun-racing-simulator/src/thermal_driver.rs": "sha256:874101895f54b1ad590c8ee80b7bcc5d53a665d32daee3a690b6ab33865719c2",
+    "crates/pitgun-racing-solver/src/lib.rs": "sha256:66b9af79501017b4315b21e1d9f8b63702846ff41a44557b26199cadbcdebe37",
+    "crates/pitgun-racing-solver/src/thermal_physics.rs": "sha256:95962d01e124aaceaa809215abf62850687772a3cd20996aaa54532ff6935699",
+    "crates/pitgun-racing-solver/src/longitudinal_energy.rs": "sha256:428fe94886fa8f85c88d905c11932275532de04fb4ff6e0b6f36e31bd36df187",
+    "crates/pitgun-racing-solver/src/tire_reachability.rs": "sha256:46b625c3cc6787a7e68c5ea977ee68bd981307285007d23f56fdc3ddb56ae933",
+    "experiments/career_physics_v1/profile-v1.json": "sha256:8541169625752e5a15cb79ca11827f02e7587dc155b5045f122b78edf24bf7dc",
+    "experiments/opponent_physics_v2/results/career-fixtures-v1.json": "sha256:858cce40ccb942b5667bab84f99af9e1231711d6cf13afca472537051ef3c6d9"
+  },
+  "binary_digest": "sha256:bb1f217b2e5673712196f3b16cfd6e2accdfd41b16bd36caee76d76c71247fec",
+  "execution": "up to8native workers, no clocks/RSS performance claim"
+}

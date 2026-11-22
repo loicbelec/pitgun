@@ -409,6 +409,7 @@ The current sequence remains proof-driven:
 - [Thermal driver V1](docs/physics/THERMAL_DRIVER_V1.md) — native opt-in ability/commitment, accounted corrections and recoverable throttle hesitations
 - [Native fuel preparation/outcomes](experiments/fuel_preparation_v1/README.md) — bounded initial-load estimate, isolated shortfalls and explicit qualification limits
 - [Native lap-boundary audit](experiments/lap_boundary_v1/RESULTS_V1.md) — exact-output forecast cache, paired cost and rejected held-state continuity shortcut
+- [Fixed-nine-opponent campaign and tire/stand audit](experiments/pit_strategy_audit_v1/RESULTS_V1.md) — preserved failed fits, exact pit accounting and paired diagnosis before a two-stop game policy; no admitted opponent field yet
 - [Racing control prototype](docs/RACING_CONTROL_PROTOTYPE_V1.md) — local experimental pit/tyre decisions and exact native replay; not a published contract
 - [Racing Model V3 tire degradation](experiments/racing_v3_tire_degradation/README.md) — compound wear law, diagnostics, local evidence, and governed Databricks replay
 - [Racing Model V3 Unified Decision Screen V1](docs/RACING_V3_UNIFIED_DECISION_SCREEN_V1.md) — exact 0.9 mechanical activation, setup diversity, development trade-offs, and linked long-run evidence

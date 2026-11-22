@@ -1,0 +1,136 @@
+{
+  "schema": "pitgun.fixed-opponent-roster/v1",
+  "status": "native V2 training refinement after V1 unattainable player wins; all base traits minus .06; fixed abilities across all contexts; no admitted runtime change",
+  "drivers": {
+    "franz_hermann": {
+      "name": "Franz Hermann",
+      "resource": {
+        "schema_version": "pitgun.racing-driver/v2",
+        "id": "franz_hermann",
+        "traits": {
+          "limit_exploitation": 0.84,
+          "consistency": 0.88,
+          "tire_management": 0.84
+        }
+      },
+      "mode": "balanced",
+      "style": "balanced"
+    },
+    "charles_leclair": {
+      "name": "Charles L’Éclair",
+      "resource": {
+        "schema_version": "pitgun.racing-driver/v2",
+        "id": "charles_leclair",
+        "traits": {
+          "limit_exploitation": 0.87,
+          "consistency": 0.83,
+          "tire_management": 0.83
+        }
+      },
+      "mode": "balanced",
+      "style": "power"
+    },
+    "luis_amilton": {
+      "name": "Luis Amilton",
+      "resource": {
+        "schema_version": "pitgun.racing-driver/v2",
+        "id": "luis_amilton",
+        "traits": {
+          "limit_exploitation": 0.79,
+          "consistency": 0.83,
+          "tire_management": 0.86
+        }
+      },
+      "mode": "balanced",
+      "style": "tire_manager"
+    },
+    "smooth_operator": {
+      "name": "Smooth Operator",
+      "resource": {
+        "schema_version": "pitgun.racing-driver/v2",
+        "id": "smooth_operator",
+        "traits": {
+          "limit_exploitation": 0.79,
+          "consistency": 0.86,
+          "tire_management": 0.82
+        }
+      },
+      "mode": "balanced",
+      "style": "smooth"
+    },
+    "isa_kadjar": {
+      "name": "Isa Kadjar",
+      "resource": {
+        "schema_version": "pitgun.racing-driver/v2",
+        "id": "isa_kadjar",
+        "traits": {
+          "limit_exploitation": 0.81,
+          "consistency": 0.75,
+          "tire_management": 0.76
+        }
+      },
+      "mode": "balanced",
+      "style": "power"
+    },
+    "pedro_gaseoso": {
+      "name": "Pedro Gaseoso",
+      "resource": {
+        "schema_version": "pitgun.racing-driver/v2",
+        "id": "pedro_gaseoso",
+        "traits": {
+          "limit_exploitation": 0.78,
+          "consistency": 0.79,
+          "tire_management": 0.79
+        }
+      },
+      "mode": "balanced",
+      "style": "balanced"
+    },
+    "battery_voltas": {
+      "name": "Battery Voltas",
+      "resource": {
+        "schema_version": "pitgun.racing-driver/v2",
+        "id": "battery_voltas",
+        "traits": {
+          "limit_exploitation": 0.75,
+          "consistency": 0.83,
+          "tire_management": 0.84
+        }
+      },
+      "mode": "balanced",
+      "style": "tire_manager"
+    },
+    "daniel_enchantier": {
+      "name": "Daniel Enchantier",
+      "resource": {
+        "schema_version": "pitgun.racing-driver/v2",
+        "id": "daniel_enchantier",
+        "traits": {
+          "limit_exploitation": 0.77,
+          "consistency": 0.74,
+          "tire_management": 0.79
+        }
+      },
+      "mode": "balanced",
+      "style": "mechanical"
+    },
+    "goat_tifi": {
+      "name": "Goat Tifi",
+      "resource": {
+        "schema_version": "pitgun.racing-driver/v2",
+        "id": "goat_tifi",
+        "traits": {
+          "limit_exploitation": 0.69,
+          "consistency": 0.71,
+          "tire_management": 0.73
+        }
+      },
+      "mode": "balanced",
+      "style": "balanced"
+    }
+  },
+  "front_runners": [
+    "franz_hermann",
+    "charles_leclair"
+  ]
+}

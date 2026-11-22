@@ -1,0 +1,12 @@
+{
+  "status": "STOPPED_FOR_PHYSICAL_STRATEGY_AUDIT",
+  "reason": "Owner requires at most two voluntary stops; observed5..8-stop optimum must be diagnosed before field fitting continues. Do not admit this search as a game policy.",
+  "maximum_voluntary_game_stops": 2,
+  "selection_sealed": false,
+  "reserved_results_opened": false,
+  "partial_named_driver_requests_preserved": 690,
+  "completed_strategy_requests": 4500,
+  "actual_pit_loss_s": 22,
+  "maximum_pit_time_closure_residual_s": 5.4569682106375694e-12,
+  "default20s_is_not_resolved_value": true
+}

@@ -1,0 +1,26 @@
+{
+  "schema": "pitgun.fixed-field-summary/v1",
+  "status": "IN_PROGRESS_OR_REFINE",
+  "source_commit": "6da3783f9e4f69fbab8fb892a061f5c3c2e795e2",
+  "unique_semantic_requests": 6155,
+  "unique_diagnostic_inputs": 6084,
+  "failed_simulations": [],
+  "maximum_carry_jumps_speed_engine_surface_carcass_wear": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "thermal_maxima": {
+    "maximum_contact_utilization_upper_bound": 0.9977587024098092,
+    "maximum_coupling_passes": 15,
+    "maximum_engine_balance_residual_j": 2.319211489520967e-08,
+    "maximum_fuel_balance_residual_j": 0.0,
+    "maximum_relative_grip_coupling_error": 0.0009999977173533736,
+    "maximum_tire_balance_residual_j": 7.647486199857667e-09
+  },
+  "conservative_recompute_laps": 34,
+  "maximum_cap_updates": 5,
+  "eligible_training_calibrations": []
+}

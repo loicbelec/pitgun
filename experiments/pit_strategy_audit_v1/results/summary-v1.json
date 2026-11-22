@@ -1,0 +1,580 @@
+{
+  "schema": "pitgun.pit-strategy-audit-summary/v1",
+  "verdict": "TIRE_GRIP_CURVES_REQUIRE_REVIEW_BEFORE_FIXED_FIELD",
+  "game_maximum_voluntary_stops": 2,
+  "source_commit": "a436a2bc6810e435eb8663961e09c7d1945b654e",
+  "native_gp_executions": 714,
+  "unchanged_source_controls": 100,
+  "exact_fresh_repeats": 14,
+  "failed_simulations": [],
+  "maximum_carry_jumps": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "maximum_pit_time_closure_residual_s": 3.637978807091713e-12,
+  "thermal_maxima": {
+    "maximum_contact_utilization_upper_bound": 0.9942345899300313,
+    "maximum_coupling_passes": 13,
+    "maximum_engine_balance_residual_j": 1.7389538697898388e-08,
+    "maximum_fuel_balance_residual_j": 0.0,
+    "maximum_relative_grip_coupling_error": 0.0009998972253303373,
+    "maximum_tire_balance_residual_j": 6.054506229702383e-09
+  },
+  "contexts": [
+    {
+      "fixture": "craft_engineering:era1-exit",
+      "circuit": "MONZA",
+      "interventions": {
+        "control": {
+          "best_tested_stops": 7,
+          "best_tested_case": "b32c39cb89ff89c449e53d51d32d60a1ecc41148db393b239986230dafb3b23a",
+          "best_tested_time_s": 8171.264630790072,
+          "best_legal_stops": 2,
+          "advantage_more_than_two_s": 186.89106285538583
+        },
+        "no_wear_grip": {
+          "best_tested_stops": 1,
+          "best_tested_case": "cf0461482e756069f7fa76743ef75d55da879bdedbd304693a0e38e33c043bd3",
+          "best_tested_time_s": 8070.740919571827,
+          "best_legal_stops": 1,
+          "advantage_more_than_two_s": 0.0
+        },
+        "no_direct_temperature_grip": {
+          "best_tested_stops": 4,
+          "best_tested_case": "98cea03bfe56f4c45ad6a928be0f8cb38739c122c5621d018dd2fda64f493738",
+          "best_tested_time_s": 7832.087294877871,
+          "best_legal_stops": 2,
+          "advantage_more_than_two_s": 29.844720405521002
+        },
+        "no_tire_grip_age_or_temperature": {
+          "best_tested_stops": 1,
+          "best_tested_case": "fb3d12f0b56c3bd8c77cf1e7b1910f0437be02bacd853da2f0bc808088a1a3a9",
+          "best_tested_time_s": 7628.405708025956,
+          "best_legal_stops": 1,
+          "advantage_more_than_two_s": 0.0
+        },
+        "wear_grip_scale": {
+          "best_tested_stops": 5,
+          "best_tested_case": "b4877b971e25523610ff4de0f0d1b680bc4eaff35a4a11d864070a199e5c57c8",
+          "best_tested_time_s": 8099.7900702852585,
+          "best_legal_stops": 2,
+          "advantage_more_than_two_s": 60.15260686017973
+        },
+        "mount_temperature": {
+          "best_tested_stops": 4,
+          "best_tested_case": "2951953852d88f4c6cc3b4779c2c2a71b7b21488499a1c88d1b6f5fe2fc9ff0c",
+          "best_tested_time_s": 8548.632106030276,
+          "best_legal_stops": 2,
+          "advantage_more_than_two_s": 68.71813920430759
+        },
+        "pit_penalty": {
+          "best_tested_stops": 5,
+          "best_tested_case": "6ad9c30f060e9a4769dc7c45500fa21520a25accc56ee81d773056f04d4aef7c",
+          "best_tested_time_s": 8295.46758805662,
+          "best_legal_stops": 2,
+          "advantage_more_than_two_s": 106.69232414458747
+        }
+      }
+    },
+    {
+      "fixture": "craft_engineering:era1-exit",
+      "circuit": "SILVERSTONE",
+      "interventions": {
+        "control": {
+          "best_tested_stops": 8,
+          "best_tested_case": "fe1c9d1f51c254c81fc666cca29d9178f22051143e9b6969784e185a1d050a15",
+          "best_tested_time_s": 8334.044301954349,
+          "best_legal_stops": 2,
+          "advantage_more_than_two_s": 274.74156346023665
+        },
+        "no_wear_grip": {
+          "best_tested_stops": 1,
+          "best_tested_case": "257d883754767eb6002697fefaccba487d06d99f1c243ceb6a546e782e32e15b",
+          "best_tested_time_s": 8199.875178033752,
+          "best_legal_stops": 1,
+          "advantage_more_than_two_s": 0.0
+        },
+        "no_direct_temperature_grip": {
+          "best_tested_stops": 4,
+          "best_tested_case": "c3958802f45e883ec257ff1848e602651cf21b3d8f7c313ad5157fdb37df0c04",
+          "best_tested_time_s": 7983.25416716238,
+          "best_legal_stops": 2,
+          "advantage_more_than_two_s": 66.73233242021524
+        },
+        "no_tire_grip_age_or_temperature": {
+          "best_tested_stops": 1,
+          "best_tested_case": "40fbd33f9f74ce7d45d5417cc7f84b98839632264a0275b6c35390c0d86f66a3",
+          "best_tested_time_s": 7737.299938942947,
+          "best_legal_stops": 1,
+          "advantage_more_than_two_s": 0.0
+        },
+        "wear_grip_scale": {
+          "best_tested_stops": 5,
+          "best_tested_case": "5ae85a7b3978e17a887e1eeb8f446ec97215a0634be7b4b54d09aaaa20f30c79",
+          "best_tested_time_s": 8246.488790639227,
+          "best_legal_stops": 2,
+          "advantage_more_than_two_s": 72.73865265839777
+        },
+        "mount_temperature": {
+          "best_tested_stops": 5,
+          "best_tested_case": "110ea0759ea75ba6de282c7dd9b263d053f15dec13882b13b4611f2732298a3c",
+          "best_tested_time_s": 8802.662347958152,
+          "best_legal_stops": 2,
+          "advantage_more_than_two_s": 131.18584517165982
+        },
+        "pit_penalty": {
+          "best_tested_stops": 5,
+          "best_tested_case": "58d4e4182d92e5524eaf930a5e26f590a0a9dc25eb11d668d5fa0a2ecf91096e",
+          "best_tested_time_s": 8473.809035315506,
+          "best_legal_stops": 2,
+          "advantage_more_than_two_s": 178.96553874703932
+        }
+      }
+    },
+    {
+      "fixture": "craft_engineering:era1-exit",
+      "circuit": "ZANDVOORT",
+      "interventions": {
+        "control": {
+          "best_tested_stops": 8,
+          "best_tested_case": "71cd9f7790b2de8ae3074785c20bda460f7f9a5bb64a4d12c225eec97b4f639e",
+          "best_tested_time_s": 8869.566077690748,
+          "best_legal_stops": 2,
+          "advantage_more_than_two_s": 452.11549081350313
+        },
+        "no_wear_grip": {
+          "best_tested_stops": 1,
+          "best_tested_case": "5cbe68891bc50036e511d579ba60f6bec8d76b8d46b063f2e0547e5050d4d99d",
+          "best_tested_time_s": 8695.496866495136,
+          "best_legal_stops": 1,
+          "advantage_more_than_two_s": 0.0
+        },
+        "no_direct_temperature_grip": {
+          "best_tested_stops": 6,
+          "best_tested_case": "9d898756510674366f81753ac290b834ebed4c0571d2a2a80fac5c0fc2032a28",
+          "best_tested_time_s": 8493.638665132123,
+          "best_legal_stops": 2,
+          "advantage_more_than_two_s": 161.41987397287448
+        },
+        "no_tire_grip_age_or_temperature": {
+          "best_tested_stops": 1,
+          "best_tested_case": "9c35932456ba425553f182bc9d411c0c0ae109d343849c05f359015ad988fa83",
+          "best_tested_time_s": 8176.711573770952,
+          "best_legal_stops": 1,
+          "advantage_more_than_two_s": 0.0
+        },
+        "wear_grip_scale": {
+          "best_tested_stops": 6,
+          "best_tested_case": "4310ba7ef2bb7f78caef67b943b06dc56e2f6bc02f71030c4dcd3ed7cb79d101",
+          "best_tested_time_s": 8753.033421863758,
+          "best_legal_stops": 2,
+          "advantage_more_than_two_s": 115.75760906821597
+        },
+        "mount_temperature": {
+          "best_tested_stops": 6,
+          "best_tested_case": "97ea76c19e0883dc3d1f0456213cf6a11947bfa6fbbf15432296b1559a85090a",
+          "best_tested_time_s": 9468.945026410982,
+          "best_legal_stops": 2,
+          "advantage_more_than_two_s": 264.04510427027344
+        },
+        "pit_penalty": {
+          "best_tested_stops": 6,
+          "best_tested_case": "de31a0ad582969be851f73a6943df136cfbd97f31c8d886d370b323be4b8c752",
+          "best_tested_time_s": 9032.495462360213,
+          "best_legal_stops": 2,
+          "advantage_more_than_two_s": 333.1725133003074
+        }
+      }
+    },
+    {
+      "fixture": "craft_engineering:era2-entry",
+      "circuit": "SILVERSTONE",
+      "interventions": {
+        "control": {
+          "best_tested_stops": 6,
+          "best_tested_case": "685408244a0f7f9b535e8da6f6e7f98d2ea3e284f8780f23d0c222d83ec5c15d",
+          "best_tested_time_s": 6717.210155643957,
+          "best_legal_stops": 2,
+          "advantage_more_than_two_s": 108.75726410223979
+        },
+        "no_wear_grip": {
+          "best_tested_stops": 1,
+          "best_tested_case": "521031e7a47d913793344ac303dc01fee19b716a6aa85d0345a83a95bfcff06d",
+          "best_tested_time_s": 6464.722145754546,
+          "best_legal_stops": 1,
+          "advantage_more_than_two_s": 0.0
+        },
+        "no_direct_temperature_grip": {
+          "best_tested_stops": 6,
+          "best_tested_case": "24f1b452056dd255bf36ddafee86b9bd5afddf0c76d5a924db4ad04ceae1115a",
+          "best_tested_time_s": 6686.266832489062,
+          "best_legal_stops": 2,
+          "advantage_more_than_two_s": 77.83124762021362
+        },
+        "no_tire_grip_age_or_temperature": {
+          "best_tested_stops": 1,
+          "best_tested_case": "f118c4e9e212910d6314df198498ddd9bbbfcd6663660f2585d22c0727a16672",
+          "best_tested_time_s": 6406.3037175477475,
+          "best_legal_stops": 1,
+          "advantage_more_than_two_s": 0.0
+        },
+        "wear_grip_scale": {
+          "best_tested_stops": 4,
+          "best_tested_case": "86b38aff0f7b3778a12174aab627e2ebb97cc9a9b725154883171aa899a0946e",
+          "best_tested_time_s": 6574.413433369262,
+          "best_legal_stops": 1,
+          "advantage_more_than_two_s": 76.70696609254355
+        },
+        "mount_temperature": {
+          "best_tested_stops": 4,
+          "best_tested_case": "283d710d31faaa7f8f65ab2e360ab764bbd637fc48496edd3b15f453927c65ee",
+          "best_tested_time_s": 6936.837745282753,
+          "best_legal_stops": 2,
+          "advantage_more_than_two_s": 76.21010929238855
+        },
+        "pit_penalty": {
+          "best_tested_stops": 4,
+          "best_tested_case": "8f6796c38525eb21f201833696b3ba64d4520e2805bda032250ba1de8aad2d9b",
+          "best_tested_time_s": 6830.369163849365,
+          "best_legal_stops": 2,
+          "advantage_more_than_two_s": 39.58035719268355
+        }
+      }
+    },
+    {
+      "fixture": "craft_engineering:era2-exit",
+      "circuit": "MEXICO",
+      "interventions": {
+        "control": {
+          "best_tested_stops": 7,
+          "best_tested_case": "8097053237b20268c181b42bbe3f2ad1a76814643de60b2d7fd3edcc215a62a3",
+          "best_tested_time_s": 7603.822599291292,
+          "best_legal_stops": 2,
+          "advantage_more_than_two_s": 214.75580489938784
+        },
+        "no_wear_grip": {
+          "best_tested_stops": 1,
+          "best_tested_case": "4635a3ca4c2da22e52056099fa703f1846ab16de822852404dd85747f9006067",
+          "best_tested_time_s": 7224.367401722215,
+          "best_legal_stops": 1,
+          "advantage_more_than_two_s": 0.0
+        },
+        "no_direct_temperature_grip": {
+          "best_tested_stops": 7,
+          "best_tested_case": "bf0ff6878f4ab534ffffb8dfa0b27d59f3d1b6e055bc4d7bf125314ee627d46b",
+          "best_tested_time_s": 7554.560711872801,
+          "best_legal_stops": 2,
+          "advantage_more_than_two_s": 145.9185394455708
+        },
+        "no_tire_grip_age_or_temperature": {
+          "best_tested_stops": 1,
+          "best_tested_case": "dd7501a6500073ee0d96e7ee7535369919b557655cc4df8c4b3588d3eba1cef5",
+          "best_tested_time_s": 7201.959431452846,
+          "best_legal_stops": 1,
+          "advantage_more_than_two_s": 0.0
+        },
+        "wear_grip_scale": {
+          "best_tested_stops": 4,
+          "best_tested_case": "642ead43e214422ec50a85a5ce037d0c5bbdc43548437f40c53c69c23f642db5",
+          "best_tested_time_s": 7396.9917082848715,
+          "best_legal_stops": 1,
+          "advantage_more_than_two_s": 118.78629489829473
+        },
+        "mount_temperature": {
+          "best_tested_stops": 5,
+          "best_tested_case": "0b442546f389f26607b14dbbdccc369ce7fdb72429d53d5131193e05ff422ef4",
+          "best_tested_time_s": 7930.807189735399,
+          "best_legal_stops": 2,
+          "advantage_more_than_two_s": 172.10192166306388
+        },
+        "pit_penalty": {
+          "best_tested_stops": 5,
+          "best_tested_case": "dfcee95a8bc722cd425845086acfde216511eb510c5f2e9d30983ec3a10c27ca",
+          "best_tested_time_s": 7731.99741282655,
+          "best_legal_stops": 2,
+          "advantage_more_than_two_s": 130.5665246520066
+        }
+      }
+    },
+    {
+      "fixture": "craft_engineering:era2-exit",
+      "circuit": "MONTREAL",
+      "interventions": {
+        "control": {
+          "best_tested_stops": 5,
+          "best_tested_case": "959296e54fab5efb444f931ca912ced8c731ede9f1ec218cbbae805a8e8174f6",
+          "best_tested_time_s": 6977.819970601762,
+          "best_legal_stops": 2,
+          "advantage_more_than_two_s": 93.28814895810956
+        },
+        "no_wear_grip": {
+          "best_tested_stops": 1,
+          "best_tested_case": "1210ca5e60e1ac745583184e8f1168f1b17e0d148cc63886cf37b5308fcc9612",
+          "best_tested_time_s": 6699.024826375823,
+          "best_legal_stops": 1,
+          "advantage_more_than_two_s": 0.0
+        },
+        "no_direct_temperature_grip": {
+          "best_tested_stops": 6,
+          "best_tested_case": "1d92e3133e61bc79747d78199d90d353cbd018c55041f0f9c78ea35d13759e66",
+          "best_tested_time_s": 6942.50179036672,
+          "best_legal_stops": 2,
+          "advantage_more_than_two_s": 68.86234996706207
+        },
+        "no_tire_grip_age_or_temperature": {
+          "best_tested_stops": 1,
+          "best_tested_case": "c16b7e9616927b332a3b7212eb5212544c4cd2771fa8d95d378d94ff97c6879c",
+          "best_tested_time_s": 6683.614510503913,
+          "best_legal_stops": 1,
+          "advantage_more_than_two_s": 0.0
+        },
+        "wear_grip_scale": {
+          "best_tested_stops": 3,
+          "best_tested_case": "6953077a6490ee7292cb96d911df17372c4ab32b571426a115f5ff92c6d90f9b",
+          "best_tested_time_s": 6810.744121711622,
+          "best_legal_stops": 2,
+          "advantage_more_than_two_s": 80.44477103049849
+        },
+        "mount_temperature": {
+          "best_tested_stops": 4,
+          "best_tested_case": "ad2b2195297b775448bb6ff60215a21a1e7749245649518a23ff1f6db6f82e1b",
+          "best_tested_time_s": 7182.762937318781,
+          "best_legal_stops": 2,
+          "advantage_more_than_two_s": 71.78059575240422
+        },
+        "pit_penalty": {
+          "best_tested_stops": 4,
+          "best_tested_case": "6d133e09f54b55460dc59e45b71d416b605e11a7629508908b639073eac927d2",
+          "best_tested_time_s": 7075.35995395973,
+          "best_legal_stops": 2,
+          "advantage_more_than_two_s": 39.73438905555304
+        }
+      }
+    },
+    {
+      "fixture": "craft_engineering:era2-exit",
+      "circuit": "MONZA",
+      "interventions": {
+        "control": {
+          "best_tested_stops": 5,
+          "best_tested_case": "516ea27ac4616d480196eae5a7212872416c96553cae3409ea66eb05d79c7dad",
+          "best_tested_time_s": 6404.762640130151,
+          "best_legal_stops": 2,
+          "advantage_more_than_two_s": 65.52930041287254
+        },
+        "no_wear_grip": {
+          "best_tested_stops": 1,
+          "best_tested_case": "2085c804b380a9cdb7c5cf4a3c7404a69edfab7825ec6af7573f68aa65b997bb",
+          "best_tested_time_s": 6158.027522386899,
+          "best_legal_stops": 1,
+          "advantage_more_than_two_s": 0.0
+        },
+        "no_direct_temperature_grip": {
+          "best_tested_stops": 5,
+          "best_tested_case": "cdf67bda79729fdd4f54e648f4f667ed3843bf3685c2062d1537043202543aca",
+          "best_tested_time_s": 6357.898019906784,
+          "best_legal_stops": 2,
+          "advantage_more_than_two_s": 45.910316531973876
+        },
+        "no_tire_grip_age_or_temperature": {
+          "best_tested_stops": 1,
+          "best_tested_case": "8553a36e981f540a1d47e0e9846f09b05c50d500265b11ea7be56bf54f9f98a2",
+          "best_tested_time_s": 6124.597276976422,
+          "best_legal_stops": 1,
+          "advantage_more_than_two_s": 0.0
+        },
+        "wear_grip_scale": {
+          "best_tested_stops": 3,
+          "best_tested_case": "e9d95c0ee2606cd83aa2eeb8e6767399968d3743d09fd1f62bc9865d6bd32979",
+          "best_tested_time_s": 6254.457923797414,
+          "best_legal_stops": 2,
+          "advantage_more_than_two_s": 63.96268660805072
+        },
+        "mount_temperature": {
+          "best_tested_stops": 4,
+          "best_tested_case": "5f2bebc65364ebf290f5401e41fdb5eaff105585e78eb3a012fcbdb399b6cd56",
+          "best_tested_time_s": 6570.56790511075,
+          "best_legal_stops": 2,
+          "advantage_more_than_two_s": 33.523561989373775
+        },
+        "pit_penalty": {
+          "best_tested_stops": 4,
+          "best_tested_case": "6ddfae02340584bbff421e608f96af215de0ac2e48374305b3609ce180e542f7",
+          "best_tested_time_s": 6499.912302760447,
+          "best_legal_stops": 2,
+          "advantage_more_than_two_s": 14.392202951820764
+        }
+      }
+    },
+    {
+      "fixture": "craft_engineering:era2-exit",
+      "circuit": "SAOPAULO",
+      "interventions": {
+        "control": {
+          "best_tested_stops": 6,
+          "best_tested_case": "a989464efb366cb3169db3691d5b444de9ecaff34c8b94269683dee713e8eae4",
+          "best_tested_time_s": 6865.4389080571145,
+          "best_legal_stops": 2,
+          "advantage_more_than_two_s": 89.13663946441557
+        },
+        "no_wear_grip": {
+          "best_tested_stops": 1,
+          "best_tested_case": "56bd98d88a24c35077e03cdb8dac4b174b0284d151d3c3a02148ef17ddb2eb1a",
+          "best_tested_time_s": 6606.525827610386,
+          "best_legal_stops": 1,
+          "advantage_more_than_two_s": 0.0
+        },
+        "no_direct_temperature_grip": {
+          "best_tested_stops": 6,
+          "best_tested_case": "f0a605ca20450ec42d2708081297769974a274531fc0e91cb1d23777c527e9e8",
+          "best_tested_time_s": 6834.333162965191,
+          "best_legal_stops": 2,
+          "advantage_more_than_two_s": 58.905301305779176
+        },
+        "no_tire_grip_age_or_temperature": {
+          "best_tested_stops": 1,
+          "best_tested_case": "9e2eb6fb55696c175674250cdecb725959b87290d956732b5c28ab72af3b02df",
+          "best_tested_time_s": 6542.283079663271,
+          "best_legal_stops": 1,
+          "advantage_more_than_two_s": 0.0
+        },
+        "wear_grip_scale": {
+          "best_tested_stops": 4,
+          "best_tested_case": "f7f44d23026005071a0bc9bb077fbdc8ebec56941ad3b2641fac31309da2c84f",
+          "best_tested_time_s": 6710.2072111221205,
+          "best_legal_stops": 1,
+          "advantage_more_than_two_s": 72.39994867380392
+        },
+        "mount_temperature": {
+          "best_tested_stops": 5,
+          "best_tested_case": "4f3b012d3931e31c5321fdf2559fcc1945ca0cf0572e610bada4b76e861c206b",
+          "best_tested_time_s": 7063.492562818931,
+          "best_legal_stops": 2,
+          "advantage_more_than_two_s": 123.88786882776276
+        },
+        "pit_penalty": {
+          "best_tested_stops": 5,
+          "best_tested_case": "b4e972749d65e2c6089f8b02d5f49c4f7e98e9e3e1ce161ffc49843e2b603e67",
+          "best_tested_time_s": 6979.944202903553,
+          "best_legal_stops": 2,
+          "advantage_more_than_two_s": 18.621104035431017
+        }
+      }
+    },
+    {
+      "fixture": "craft_engineering:era2-exit",
+      "circuit": "SPIELBERG",
+      "interventions": {
+        "control": {
+          "best_tested_stops": 5,
+          "best_tested_case": "014ab296f87b5d48c57f8ecc76c7e4d9f8f23dda6bb60adb359dc5bc8dbc43f1",
+          "best_tested_time_s": 6694.087187836271,
+          "best_legal_stops": 2,
+          "advantage_more_than_two_s": 55.060162782115185
+        },
+        "no_wear_grip": {
+          "best_tested_stops": 1,
+          "best_tested_case": "c3afa74c4b69b201e84e817d475d08ccede3ccd7e6f0b82d8875a9ffa2e82caf",
+          "best_tested_time_s": 6439.665059084903,
+          "best_legal_stops": 1,
+          "advantage_more_than_two_s": 0.0
+        },
+        "no_direct_temperature_grip": {
+          "best_tested_stops": 5,
+          "best_tested_case": "4d1399aac7f304e5d3b660e0bc1d68ef80280a0d001282edaacec12df7df91bc",
+          "best_tested_time_s": 6666.581783412959,
+          "best_legal_stops": 2,
+          "advantage_more_than_two_s": 33.3929044012566
+        },
+        "no_tire_grip_age_or_temperature": {
+          "best_tested_stops": 1,
+          "best_tested_case": "84e7425da46a1d11f229df1ff20df874bdea7ac3d8b292ba52f93aff69b2e69b",
+          "best_tested_time_s": 6408.425579943631,
+          "best_legal_stops": 1,
+          "advantage_more_than_two_s": 0.0
+        },
+        "wear_grip_scale": {
+          "best_tested_stops": 4,
+          "best_tested_case": "d205c2e20d47b63678004571da0c7b49a4fdf508398f51686dd4942791957e7c",
+          "best_tested_time_s": 6584.369063640966,
+          "best_legal_stops": 1,
+          "advantage_more_than_two_s": 29.77459527267456
+        },
+        "mount_temperature": {
+          "best_tested_stops": 4,
+          "best_tested_case": "ce48c8a88ce3855960d3dd9587dd553d9980fcd7e869939efc366e0170fa760e",
+          "best_tested_time_s": 6852.956245011663,
+          "best_legal_stops": 2,
+          "advantage_more_than_two_s": 87.0297223084035
+        },
+        "pit_penalty": {
+          "best_tested_stops": 3,
+          "best_tested_case": "b37e58fef16c68321363705dbb34b3fafc5dd0b4af838f828bbc9d52c553d043",
+          "best_tested_time_s": 6778.051263727899,
+          "best_legal_stops": 2,
+          "advantage_more_than_two_s": 15.078421279214126
+        }
+      }
+    },
+    {
+      "fixture": "craft_engineering:era2-exit",
+      "circuit": "ZANDVOORT",
+      "interventions": {
+        "control": {
+          "best_tested_stops": 6,
+          "best_tested_case": "d31a4e6f086375077326cb972c20a4db99bb685c85caf331ae17b261cc27cc1e",
+          "best_tested_time_s": 7254.1805420623095,
+          "best_legal_stops": 2,
+          "advantage_more_than_two_s": 114.48803047192905
+        },
+        "no_wear_grip": {
+          "best_tested_stops": 1,
+          "best_tested_case": "4c5153828e6204d9e2bfe2a025b3283772f5f846d19f33d47b2253f06edd712c",
+          "best_tested_time_s": 6977.375895989909,
+          "best_legal_stops": 1,
+          "advantage_more_than_two_s": 0.0
+        },
+        "no_direct_temperature_grip": {
+          "best_tested_stops": 6,
+          "best_tested_case": "fbf10d7a61481a7d6d956c88794cfd3d50b7292b96e83f071be1036af220d61f",
+          "best_tested_time_s": 7225.910599178946,
+          "best_legal_stops": 2,
+          "advantage_more_than_two_s": 88.71693044383665
+        },
+        "no_tire_grip_age_or_temperature": {
+          "best_tested_stops": 1,
+          "best_tested_case": "c9e46920c29c2e6c6529b73dfc5a502a4dfaf70550e73159e4d1e25fe7173b8e",
+          "best_tested_time_s": 6906.261196820201,
+          "best_legal_stops": 1,
+          "advantage_more_than_two_s": 0.0
+        },
+        "wear_grip_scale": {
+          "best_tested_stops": 5,
+          "best_tested_case": "e3d536d45d31abf3ef18051ca253170ead5522d32f5f90144809f1cbc678b3ee",
+          "best_tested_time_s": 7119.228819252858,
+          "best_legal_stops": 1,
+          "advantage_more_than_two_s": 42.79588637256438
+        },
+        "mount_temperature": {
+          "best_tested_stops": 5,
+          "best_tested_case": "7e567e13f1fc9df493bf2b1883b970b0d5675a44b965ae362de2bc2aab238323",
+          "best_tested_time_s": 7472.095300062197,
+          "best_legal_stops": 2,
+          "advantage_more_than_two_s": 117.04111416591695
+        },
+        "pit_penalty": {
+          "best_tested_stops": 5,
+          "best_tested_case": "39f6c92b4c316ca308a6c616613783df6074e07e9bdb653f263bb06d353358ee",
+          "best_tested_time_s": 7373.074831256634,
+          "best_legal_stops": 2,
+          "advantage_more_than_two_s": 39.58581631762081
+        }
+      }
+    }
+  ],
+  "reserved_results_opened": false,
+  "opponent_policy_selected": false
+}
