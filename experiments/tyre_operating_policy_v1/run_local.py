@@ -59,6 +59,7 @@ def main():
                 if row["sources"] != identity["source_digests"]:
                     raise RuntimeError("stale compiled source")
                 rows.append(row)
+                (destination/f"pass-{repetition+1}-{case['id']}.json").write_text(json.dumps(row)+"\n")
             passes.append(rows)
         if passes[0] != passes[1]:
             raise RuntimeError("repeat differs, including errors/accepted prefixes/events")
@@ -87,14 +88,14 @@ def main():
                 if signature(row) != signature(c["outcomes"][mode]): raise RuntimeError("historical outcome differs")
                 historical.append({"id":c["id"],"mode":mode,"exact":True})
         print("historical V1 physical-event journals",flush=True)
-        journal = invoke("native_derating_events_probe",[ROOT,"--tires"])
+        journal = invoke("native_derating_events_probe",[ROOT,"--tires","--requalify-physical-source"])
         old_journal = read(ROOT/"experiments/racing_physical_events/results/tire-v1.json")["bank"]
         if journal["cases"] != old_journal["cases"] or journal["policy"] != old_journal["policy"] or journal["tire_policy"] != old_journal["tire_policy"]:
             raise RuntimeError("old physical outcomes/events/checkpoint evidence differs")
         baseline_equal = all(r["outcome"].get("frozen_outcome_equal") is True for r in passes[0] if r["case"]["baseline"])
         if not baseline_equal: raise RuntimeError("unchanged thermal baseline differs")
         if not all(r["maximum_surface_jump_c"] == 0 and r["maximum_carcass_jump_c"] == 0 for r in passes[0]): raise RuntimeError("thermal continuity differs")
-        report = {"schema":"pitgun.tire-operating-screen/v1","identity":identity,"repeat_exact":True,"baseline_equal":baseline_equal,"continuity_exact":True,"driver_regressions":drivers,"historical_regressions":historical,"old_event_cases_equal":len(journal["cases"]),"results":passes[0]}
+        report = {"schema":"pitgun.tire-operating-screen/v1","identity":identity,"repeat_exact":True,"baseline_equal":baseline_equal,"continuity_exact":True,"driver_regressions":drivers,"historical_regressions":historical,"old_event_cases_equal":len(journal["cases"]),"legacy_event_requalification":{"physical_sources_match_frozen":journal["physical_sources_match_frozen"],"changed_physical_sources":journal["changed_physical_sources"],"explicit_source_requalification":journal["explicit_source_requalification"]},"results":passes[0]}
         path = destination/"screen-v1.json"
         path.write_text(json.dumps(report,sort_keys=True,indent=2)+"\n")
         path.with_suffix(".sha256").write_text(digest(path)+"\n")

@@ -218,9 +218,19 @@ fn execute(
 }
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args = env::args().skip(1).collect::<Vec<_>>();
-    let enable_tires = args.get(1).is_some_and(|v| v == "--tires");
-    if args.len() != 1 && !(args.len() == 2 && enable_tires) {
-        return Err("usage: native_derating_events_probe REPOSITORY_ROOT [--tires]".into());
+    let enable_tires = args.iter().skip(1).any(|v| v == "--tires");
+    let requalify = args
+        .iter()
+        .skip(1)
+        .any(|v| v == "--requalify-physical-source");
+    if args.is_empty()
+        || args.len() > 3
+        || args
+            .iter()
+            .skip(1)
+            .any(|v| !["--tires", "--requalify-physical-source"].contains(&v.as_str()))
+    {
+        return Err("usage: native_derating_events_probe REPOSITORY_ROOT [--tires] [--requalify-physical-source]".into());
     }
     let root = Path::new(&args[0]);
     let exp = root.join("experiments/thermal_physics_v2");
@@ -243,9 +253,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             include_bytes!("../../pitgun-racing-solver/src/thermal_physics.rs").as_slice(),
         ),
     ];
+    let mut changed_sources = Vec::new();
     for (name, bytes) in source {
         if frozen["identity"]["source_files"][name] != json!(Digest::from_bytes(bytes)) {
-            return Err(format!("physical source changed: {name}").into());
+            if !requalify {
+                return Err(format!("physical source changed: {name}").into());
+            }
+            changed_sources.push(name);
         }
     }
     let mut cases = Vec::new();
@@ -400,7 +414,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
     println!(
         "{}",
-        json!({"schema":"pitgun.native-derating-events-qualification/v1","frozen_screen_digest":Digest::from_bytes(&frozen_bytes),"physical_sources_match_frozen":true,
+        json!({"schema":"pitgun.native-derating-events-qualification/v1","frozen_screen_digest":Digest::from_bytes(&frozen_bytes),"physical_sources_match_frozen":changed_sources.is_empty(),"explicit_source_requalification":requalify,"changed_physical_sources":changed_sources,
         "binary_digest":Digest::from_bytes(&fs::read(env::current_exe()?)?),"catalog":catalog.release_identity(),
         "sources":sources,"tire_policy":if enable_tires {json!(pitgun_racing_simulator::tire_events::TireWindowPolicyV1::default())} else {Value::Null},
         "policy":pitgun_racing_simulator::physical_events::DeratingEventPolicyV1::default(),"cases":cases,"scope":"Native audit only, exact frozen physical inputs/results. No UI/provider/Authority admission; raw state transitions, no relevance calibration."})
