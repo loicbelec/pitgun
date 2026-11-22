@@ -8,7 +8,8 @@
     462,
     464,
     465,
-    467
+    467,
+    470
   ],
   "gates": {
     "effective_driver_resolution": "native opt-in qualified; signed/runtime admission open",
@@ -16,18 +17,18 @@
     "performance_risk": "native recoverable throttle hesitation qualified; grip-dependent incidents/shared journal/full-process qualification open",
     "fuel_and_full_gp": "native per-car outcome isolation qualified; preparation/reserve REFINE, not universally infeasible above an estimate",
     "career_fixtures": "12 authored real-reducer snapshots/54 prepared GP requests, exact repeat and fixed-field independence; bookkeeping not pace evidence",
-    "boundary_lookahead_cost": "native reachable_wear_v1 qualified on26scenarios/2modes/2repeats including8reserved; actual-component I/II addition467:18GP references and12selected setups paired/exact repeats, no carry jumps/failures and six GP pair orders agree. Wider reserved career/strategy acceptance461 remains open. Native advance overhead1.8..32.2% on3prior cases; no WASM/VPS/RSS acceptance.",
-    "setup_screen": "native actual-component resolver qualified on54authored requests/540cars exactly twice;18GP references paired/exact repeats;500short samples and12setups paired at full GP/exact repeats, no failures or carry jumps. Six full-GP pair orders agree across forecasts. Late-eraII short-to-GP reversals expose horizon bias; concentrated spends still competitive. No exhaustive search/field fit/holdout/admission verdict.",
-    "opponent_fit": "not started; no calibrated field or balance verdict",
-    "reserved_evaluation": "not performed",
+    "boundary_lookahead_cost": "native reachable_wear_v1 qualified on26scenarios/2modes/2repeats including8reserved; actual-component I/II addition467:18GP references and12selected setups paired/exact repeats, no carry jumps/failures and six GP pair orders agree. Wider reserved career/strategy acceptance461 remains open. Native advance overhead1.8..32.2% on3prior cases; no WASM/VPS/RSS acceptance. Full-GP extension468 uses10controlled conservative lap recomputations after5cap updates; all certified, max15/24coupling passes and zero carry jumps. No new clock/RSS claim.",
+    "setup_screen": "full-GP response468:240fixed-slider allocations,870slider cases including complete720integer concentrated split/grid combinations,54local cases,24off-budget one-axis pairs and96strategy recipes.1235semantic requests/1223diagnostic envelopes/1211physical inputs;1307native executions,0failures,zero carry jumps. Four axes connected; early aero weak in authored settings and chassis dominates sampled concentrated optima. No exhaustive alternate/continuous optimum or field balance verdict.",
+    "opponent_fit": "not started; initial fixed-field native I/II pilot Ready457 after response468; broader fine balance/season/admission not accepted",
+    "reserved_evaluation": "selected native setup/strategy responses468:60reserved seed/temperature/circuit-transfer cases, all finish and fresh repeats exact; selection sealed before opening. No held-out calibrated-opponent policy/season evaluation yet.",
     "runtime_admission": "not performed",
     "tire_preparation_and_window": "explicit modern70C mount/pit and95% thermal-grip event policy qualified natively:23cases\u00d72exact repeats,4unchanged baselines,56driver+22historical outcomes and8old event cases exact; physical parameters, warm-up duration/compound balance and era applicability remain REFINE (#463)."
   },
   "next": [
-    "pre-register full-GP allocation/slider and isolated service-strategy sensitivity, starting near concentrated shortlisted setups; reserve conditions before any fitting",
-    "retain qualified sourced tire preparation/window #463 as explicit input; reserve unseen thermal validation before any further coefficient fitting",
-    "validate reachable-wear seam quality on actual installed-component career inputs and assess allocation/strategy bias461 before fine opponent fit",
-    "fixed-field fit and reserved full-GP/seasons after prerequisite acceptance"
+    "start a bounded fixed-nine-opponent eraI/II native pilot using frozen physics, legal real-career budgets/components and multiple strategies",
+    "audit weak early-aero marginal response and legal gearbox endpoint saturation; no forced four-axis spend or automatic coefficient change",
+    "reserve opponent-policy season/circuit/seed evaluation before fine balance/admission",
+    "retain explicit tire preparation/fuel gates and separately qualify Worker/WASM/Authority/Verifier"
   ],
   "retained_owner_constraints": [
     "modest early cooling response is desired",
@@ -43,5 +44,7 @@
   "tire_operating_evidence": "experiments/tyre_operating_policy_v1/RESULTS_V1.md",
   "boundary_bounded_evidence": "experiments/bounded_lap_lookahead_v1/RESULTS_V1.md",
   "career_component_evidence": "experiments/career_physics_v1/RESULTS_V1.md",
-  "acceptance_criteria": "experiments/career_physics_v1/ACCEPTANCE_CRITERIA.md"
+  "acceptance_criteria": "experiments/career_physics_v1/ACCEPTANCE_CRITERIA.md",
+  "full_gp_response_evidence": "experiments/career_full_gp_v1/RESULTS_V1.md",
+  "point_value_audit": "issue469; early authored aero weak, concentrated sampled optimum fully chassis and5/6gearbox upper endpoint; contextual diagnosis before any mapping adjustment"
 }

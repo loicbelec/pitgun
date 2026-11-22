@@ -4,6 +4,16 @@
 Current implementation readiness is tracked separately in
 [readiness-v2.json](readiness-v2.json); the original plan remains frozen.
 
+Latest native response gate [#468](https://github.com/loicbelec/pitgun/issues/468):
+[full-GP campaign](../career_full_gp_v1/RESULTS_V1.md),1307native single-car GP
+executions, zero failures/carry jumps;60reserved conditions with exact fresh
+repeat and sealed selection. All four axes connect to physical parameters, but
+early-aero practical sensitivity is weak in authored settings and all six sampled
+concentrated optima spend fully on chassis. Cooling importance and configuration
+orders vary with engine/circuit/conditions; concentrated wins can be legitimate.
+Initial fixed-field I/II pilots can use these frozen controls; neither an
+opponent-policy fit nor a season balance verdict has been produced.
+
 The subsequent [actual-component career screen](../career_physics_v1/RESULTS_V1.md)
 resolves54requests/540cars exactly twice and executes18player GP references,
 500short setup samples and12paired full-GP confirmations. No carry jumps or

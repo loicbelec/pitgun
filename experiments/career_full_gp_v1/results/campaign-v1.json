@@ -1,0 +1,88 @@
+{
+  "schema": "pitgun.career-full-gp-campaign/v1",
+  "provenance": {
+    "source_commit": "d124d6944c29633a6b60016da3fd5f8e2feae6fa",
+    "sources": {
+      "experiments/career_full_gp_v1/plan-v1.json": "sha256:7d6f8e85ed5f231159a252e2be0dc00267bc6917e0747dbcf9ab15442e45033d",
+      "experiments/career_full_gp_v1/run_local.py": "sha256:006f3fe60ac32337aec07244f2a1d221e0a89ba43eb449e414833860ccc0b987",
+      "experiments/career_full_gp_v1/self_check.py": "sha256:7ffaf3c0d88140ace8b67e8786aefe62538251f825d09496d86db2fa512f4b7b",
+      "crates/pitgun-racing-simulator/examples/career_full_gp_probe.rs": "sha256:e66ce6d4fe7314574cc5362f6f93c7903b585bcce67d116a2f3c64bafebc47cc",
+      "crates/pitgun-racing-simulator/src/thermal_career.rs": "sha256:f8b6300748c91f5058491c65f3c657b0cf4d0a17099851453b9bde891fcbd5a6",
+      "crates/pitgun-racing-simulator/src/thermal_driver.rs": "sha256:874101895f54b1ad590c8ee80b7bcc5d53a665d32daee3a690b6ab33865719c2",
+      "crates/pitgun-racing-simulator/src/lib.rs": "sha256:4059225fb3790cbfbb65ceaa0e43825bd2cb35d4cce39e1874bc7154da9a339a",
+      "crates/pitgun-racing-solver/src/lib.rs": "sha256:66b9af79501017b4315b21e1d9f8b63702846ff41a44557b26199cadbcdebe37",
+      "crates/pitgun-racing-solver/src/thermal_physics.rs": "sha256:95962d01e124aaceaa809215abf62850687772a3cd20996aaa54532ff6935699",
+      "crates/pitgun-racing-solver/src/longitudinal_energy.rs": "sha256:428fe94886fa8f85c88d905c11932275532de04fb4ff6e0b6f36e31bd36df187",
+      "crates/pitgun-racing-solver/src/lap_boundary.rs": "sha256:908689a312ab4561038e6050d39611e00a0d947caf692614c9666446461f7b13",
+      "crates/pitgun-racing-solver/src/tire_reachability.rs": "sha256:46b625c3cc6787a7e68c5ea977ee68bd981307285007d23f56fdc3ddb56ae933",
+      "experiments/opponent_physics_v2/results/career-fixtures-v1.json": "sha256:858cce40ccb942b5667bab84f99af9e1231711d6cf13afca472537051ef3c6d9",
+      "experiments/career_physics_v1/profile-v1.json": "sha256:8541169625752e5a15cb79ca11827f02e7587dc155b5045f122b78edf24bf7dc",
+      "experiments/career_physics_v1/results/shortlist-v1.json": "sha256:ba8c12ab432fc4dcfbc65e78106964da22672446886f9375e51a7255ccbc039d"
+    },
+    "binary_digest": "sha256:ee20aebe8cd3070453afbe46a355ff90b866cfb8a686723b72cf628e6507fa44",
+    "execution": "up to4concurrent native processes; no timing/RSS claim"
+  },
+  "phase_stats": {
+    "allocations": {
+      "cases": 240,
+      "cached": 0,
+      "fresh": 240
+    },
+    "sliders": {
+      "cases": 870,
+      "cached": 94,
+      "fresh": 776
+    },
+    "local": {
+      "cases": 54,
+      "cached": 15,
+      "fresh": 39
+    },
+    "axis-diagnostics": {
+      "cases": 30,
+      "cached": 6,
+      "fresh": 24
+    },
+    "strategies": {
+      "cases": 96,
+      "cached": 12,
+      "fresh": 84
+    },
+    "confirmation": {
+      "cases": 12,
+      "cached": 0,
+      "fresh": 12
+    },
+    "reference": {
+      "cases": 12,
+      "cached": 0,
+      "fresh": 12
+    },
+    "reserved": {
+      "cases": 60,
+      "cached": 0,
+      "fresh": 60
+    },
+    "reserved-repeat": {
+      "cases": 60,
+      "cached": 0,
+      "fresh": 60
+    }
+  },
+  "selection_digest": "sha256:0fa89eb2989a7ec1c206fe1c5cd12c283dc25e610676b3fc06d5cdb1887e8110",
+  "files": {
+    "allocations-v1.json.gz": "sha256:17c37cd1e664ae1e2f6f766e0f30f1c4ff9b67c446b135ff7494860a0c3e7154",
+    "axis-diagnostics-v1.json.gz": "sha256:4ba55fa18cb6f6551509599bdc961b3d654076749a3a7b0ba8f6ede4086f83fe",
+    "confirmation-v1.json.gz": "sha256:73980f12d54ea173b841b28d51b091c89f502f06ff35f05c2efc074ca9fa085a",
+    "local-v1.json.gz": "sha256:ba61abc9b0b22e3363a4f0b4b9c8c8a087763aad663f5a94ecac75252feac625",
+    "provenance-v1.json": "sha256:57707e6f6778fcbc987412a15da1f1db898551e23f4b62d203789f4cb40d19b1",
+    "qualification-v1.json": "sha256:6675739ed17c74bacb77e2807007ab66c357c6f59a2a984d9d4bc369bee38cb6",
+    "reference-v1.json.gz": "sha256:cdc97360b439a9ac7e8fcce607fc2f3c2676b9efaa30900164df485a014b2640",
+    "reserved-repeat-v1.json.gz": "sha256:69e595a2460f4864dc329bec2edc73bad051de459e6dd3840fd88e9d1280293d",
+    "reserved-v1.json.gz": "sha256:69e595a2460f4864dc329bec2edc73bad051de459e6dd3840fd88e9d1280293d",
+    "selection-lock-v1.json": "sha256:82b3e4f508613f0b8d459c1f2fbf532a176cb76d42bfcda4ca98f0d578036ddf",
+    "sliders-v1.json.gz": "sha256:716d873a9322ffb6bf81c70d9937d4d9b2e94c065bd6f6f6c6d560b2f843e1b5",
+    "strategies-v1.json.gz": "sha256:8df218b12a81435c78701d79c5214a0901e90377f0820ad28a2ac4e96da4e911",
+    "validation-plan-v1.json": "sha256:89ef1733e94558d83a7ed890d406591bc55aa236b7b9454a34e332ac17213350"
+  }
+}

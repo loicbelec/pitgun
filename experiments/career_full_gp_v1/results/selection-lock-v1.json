@@ -1,0 +1,2158 @@
+{
+  "schema": "pitgun.full-gp-selection-lock/v1",
+  "selection_digest": "sha256:0fa89eb2989a7ec1c206fe1c5cd12c283dc25e610676b3fc06d5cdb1887e8110",
+  "selections": [
+    {
+      "fixture_id": "craft_engineering:era1-entry",
+      "circuit": "MONZA",
+      "family": "concentrated",
+      "recipe": "sms_thirds",
+      "case": {
+        "fixture_id": "craft_engineering:era1-entry",
+        "circuit": "MONZA",
+        "allocation": [
+          0,
+          8,
+          0,
+          0
+        ],
+        "gear": 1,
+        "downforce": 0.5,
+        "forecast": "reachable_wear_v1",
+        "actor": "player",
+        "id": "558720e6c73c9d0e2bae0d31218a8c348924705a4161ffc35580cca70d3ef7a0",
+        "strategy": {
+          "stints": [
+            {
+              "tire_id": "soft",
+              "laps": 17
+            },
+            {
+              "tire_id": "medium",
+              "laps": 18
+            },
+            {
+              "tire_id": "soft",
+              "laps": 18
+            }
+          ],
+          "pit_laps": [
+            17,
+            35
+          ]
+        }
+      },
+      "outcome": {
+        "energy": {
+          "clutch_slip_loss_j": 57715.82284999365,
+          "distance_m": 306658.0,
+          "drag_work_j": 74952749.37012629,
+          "driveline_loss_j": 20603249.669463497,
+          "driving_time_s": 8387.609578490023,
+          "engine_shaft_work_j": 412122709.2121204,
+          "final_vehicle_kinetic_j": 892958.1668303286,
+          "friction_brake_work_j": 243874520.08728036,
+          "fuel_mass_carried_kinetic_j": 19714.47617017808,
+          "generated_engine_heat_j": 411443733.87568974,
+          "initial_vehicle_kinetic_j": 0.0,
+          "kinetic_change_j": 1522285.3012292513,
+          "maximum_driveline_balance_residual_j": 1.8189894035458565e-12,
+          "maximum_raw_contact_utilization": 0.9912535352972373,
+          "maximum_thermal_balance_residual_j": 8.207280188798904e-09,
+          "maximum_vehicle_balance_residual_j": 1.8189894035458565e-12,
+          "potential_change_j": 0.0,
+          "rejected_engine_heat_signed_j": 406802758.67034066,
+          "rolling_work_j": 71112188.96116781,
+          "segments": 306658,
+          "service_idle_fuel_kg": 0.0176,
+          "service_time_s": 44.0,
+          "unresolved_service_velocity_reset_j": 609612.6582287438,
+          "wheel_propulsion_work_j": 391461743.71980685
+        },
+        "final_state": {
+          "engine_temp": 136.40975205349028,
+          "fuel_mass": 69.15250888779599,
+          "tire_temp": 68.40693349214152,
+          "tire_wear": 0.4929589547619376
+        },
+        "ok": true,
+        "result_digest": "sha256:e6a94ed3a264691f7174f1681f8169d42fd51ddaa9b18bffab22adfd7197f575",
+        "thermal": {
+          "final_carcass_temperature_c": 77.88563036865892,
+          "ledger": {
+            "engine_ambient_exchange_signed_j": 406802758.67034066,
+            "engine_coolant_heat_j": 411443733.87568974,
+            "engine_shaft_work_j": 412122709.2121204,
+            "engine_storage_change_j": 4640975.205349032,
+            "exhaust_and_other_energy_j": 502875674.7369543,
+            "fuel_chemical_energy_j": 1326442117.8247645,
+            "maximum_contact_utilization_upper_bound": 0.993762726284828,
+            "maximum_coupling_passes": 13,
+            "maximum_engine_balance_residual_j": 8.207280188798904e-09,
+            "maximum_fuel_balance_residual_j": 0.0,
+            "maximum_relative_grip_coupling_error": 0.0009898810438117023,
+            "maximum_tire_balance_residual_j": 3.2413964845545706e-09,
+            "tire_air_exchange_signed_j": 25771482.46125712,
+            "tire_deformation_dissipation_j": 17875093.860416163,
+            "tire_direct_environment_heat_j": 38198539.91159665,
+            "tire_generated_heat_j": 32913649.049571168,
+            "tire_road_exchange_signed_j": 10032639.733604047,
+            "tire_rolling_dissipation_j": 53237095.10075192,
+            "tire_storage_change_j": -2890473.1452632733
+          },
+          "profile": {
+            "compounds": [
+              {
+                "heat": {
+                  "carcass_air_conductance_w_per_k": 30.0,
+                  "carcass_capacity_j_per_k": 59500.0,
+                  "deformation_energy_to_full_wear_j": 16000000.0,
+                  "deformation_heat_fraction": 0.65,
+                  "deformation_resistance_coefficient": 0.018,
+                  "deformation_surface_fraction": 0.65,
+                  "rolling_heat_fraction": 0.4,
+                  "rolling_wear_fraction": 0.05,
+                  "surface_air_idle_conductance_w_per_k": 20.0,
+                  "surface_air_speed_conductance_w_per_k_mps": 0.7,
+                  "surface_capacity_j_per_k": 10200.0,
+                  "surface_carcass_conductance_w_per_k": 200.0,
+                  "surface_road_conductance_w_per_k": 40.0,
+                  "thermal_wear_gain": 0.6
+                },
+                "tire": {
+                  "cool_k": 0.00089,
+                  "heat_k": 0.0061,
+                  "mu_scale": 1.06,
+                  "temp_min_k": 0.65,
+                  "temp_opt": 90.0,
+                  "temp_sigma": 38.0,
+                  "wear_grip_k": 0.6,
+                  "wear_load_k": 2e-07,
+                  "wear_min": 0.45,
+                  "wear_per_s": 2e-06
+                }
+              },
+              {
+                "heat": {
+                  "carcass_air_conductance_w_per_k": 30.0,
+                  "carcass_capacity_j_per_k": 70000.0,
+                  "deformation_energy_to_full_wear_j": 24000000.0,
+                  "deformation_heat_fraction": 0.65,
+                  "deformation_resistance_coefficient": 0.018,
+                  "deformation_surface_fraction": 0.65,
+                  "rolling_heat_fraction": 0.4,
+                  "rolling_wear_fraction": 0.05,
+                  "surface_air_idle_conductance_w_per_k": 20.0,
+                  "surface_air_speed_conductance_w_per_k_mps": 0.7,
+                  "surface_capacity_j_per_k": 12000.0,
+                  "surface_carcass_conductance_w_per_k": 200.0,
+                  "surface_road_conductance_w_per_k": 40.0,
+                  "thermal_wear_gain": 0.6
+                },
+                "tire": {
+                  "cool_k": 0.0009,
+                  "heat_k": 0.006,
+                  "mu_scale": 1.0,
+                  "temp_min_k": 0.65,
+                  "temp_opt": 95.0,
+                  "temp_sigma": 42.0,
+                  "wear_grip_k": 0.5,
+                  "wear_load_k": 1e-07,
+                  "wear_min": 0.5,
+                  "wear_per_s": 1e-06
+                }
+              }
+            ],
+            "engine": {
+              "coolant_waste_fraction": 0.45,
+              "fuel_lower_heating_value_j_per_kg": 43000000.0,
+              "passive_conductance_w_per_k": 30.0,
+              "radiator_idle_conductance_w_per_k": 52.5,
+              "radiator_speed_conductance_w_per_k_mps": 10.5,
+              "thermostat_full_c": 98.0,
+              "thermostat_start_c": 85.0
+            },
+            "initial_carcass_temperature_c": 90.0,
+            "pit_carcass_temperature_c": 90.0,
+            "road_temperature_c": 42.0,
+            "schema_version": "pitgun.racing-thermal/v2"
+          }
+        },
+        "time_s": 8431.609578490023
+      },
+      "diagnostic_input_digest": "sha256:468d988396d27584b52fcd8696b11299ac6baa71d5e3d573871293eb55fe19c8"
+    },
+    {
+      "fixture_id": "craft_engineering:era1-entry",
+      "circuit": "MONZA",
+      "family": "diversified",
+      "recipe": "sms_thirds",
+      "case": {
+        "fixture_id": "craft_engineering:era1-entry",
+        "circuit": "MONZA",
+        "allocation": [
+          0,
+          5,
+          0,
+          3
+        ],
+        "gear": 1,
+        "downforce": 0.5,
+        "forecast": "reachable_wear_v1",
+        "actor": "player",
+        "id": "98030e7bc643c376fa9ebc8cec08643ab192b2d69d6e80b89ed7104cdf3dc83a",
+        "strategy": {
+          "stints": [
+            {
+              "tire_id": "soft",
+              "laps": 17
+            },
+            {
+              "tire_id": "medium",
+              "laps": 18
+            },
+            {
+              "tire_id": "soft",
+              "laps": 18
+            }
+          ],
+          "pit_laps": [
+            17,
+            35
+          ]
+        }
+      },
+      "outcome": {
+        "energy": {
+          "clutch_slip_loss_j": 57409.47250947285,
+          "distance_m": 306658.0,
+          "drag_work_j": 78730031.53488044,
+          "driveline_loss_j": 21207270.959526528,
+          "driving_time_s": 8315.44868747071,
+          "engine_shaft_work_j": 424202828.6630403,
+          "final_vehicle_kinetic_j": 892160.4225701162,
+          "friction_brake_work_j": 251087670.73592964,
+          "fuel_mass_carried_kinetic_j": 20077.36766097267,
+          "generated_engine_heat_j": 421032508.9179732,
+          "initial_vehicle_kinetic_j": 0.0,
+          "kinetic_change_j": 1519071.8901889445,
+          "maximum_driveline_balance_residual_j": 6.821210263296962e-13,
+          "maximum_raw_contact_utilization": 0.9914582170576945,
+          "maximum_thermal_balance_residual_j": 2.0372681319713593e-09,
+          "maximum_vehicle_balance_residual_j": 1.8189894035458565e-12,
+          "potential_change_j": 0.0,
+          "rejected_engine_heat_signed_j": 419575908.4145819,
+          "rolling_work_j": 71601374.07000378,
+          "segments": 306658,
+          "service_idle_fuel_kg": 0.0176,
+          "service_time_s": 44.0,
+          "unresolved_service_velocity_reset_j": 606834.0999578503,
+          "wheel_propulsion_work_j": 402938148.2310045
+        },
+        "final_state": {
+          "engine_temp": 104.56600503390779,
+          "fuel_mass": 68.37603194747568,
+          "tire_temp": 68.91492713059752,
+          "tire_wear": 0.5020951492008802
+        },
+        "ok": true,
+        "result_digest": "sha256:219416c9725a6fbe113d5cb42f4e9a4006ca479cbcc68f321574594f2bec8ac9",
+        "thermal": {
+          "final_carcass_temperature_c": 78.51621743103739,
+          "ledger": {
+            "engine_ambient_exchange_signed_j": 419575908.4145819,
+            "engine_coolant_heat_j": 421032508.9179732,
+            "engine_shaft_work_j": 424202828.6630403,
+            "engine_storage_change_j": 1456600.5033907914,
+            "exhaust_and_other_energy_j": 514595288.6775227,
+            "fuel_chemical_energy_j": 1359830626.2585366,
+            "maximum_contact_utilization_upper_bound": 0.9941042654454436,
+            "maximum_coupling_passes": 13,
+            "maximum_engine_balance_residual_j": 2.048636815743521e-09,
+            "maximum_fuel_balance_residual_j": 0.0,
+            "maximum_relative_grip_coupling_error": 0.000997363958432862,
+            "maximum_tire_balance_residual_j": 3.0152023100527003e-09,
+            "tire_air_exchange_signed_j": 25898052.73915875,
+            "tire_deformation_dissipation_j": 18386955.75410363,
+            "tire_direct_environment_heat_j": 38364085.50347634,
+            "tire_generated_heat_j": 33237288.56652741,
+            "tire_road_exchange_signed_j": 10086138.669535037,
+            "tire_rolling_dissipation_j": 53214418.31590075,
+            "tire_storage_change_j": -2746902.84213742
+          },
+          "profile": {
+            "compounds": [
+              {
+                "heat": {
+                  "carcass_air_conductance_w_per_k": 30.0,
+                  "carcass_capacity_j_per_k": 59500.0,
+                  "deformation_energy_to_full_wear_j": 16000000.0,
+                  "deformation_heat_fraction": 0.65,
+                  "deformation_resistance_coefficient": 0.018,
+                  "deformation_surface_fraction": 0.65,
+                  "rolling_heat_fraction": 0.4,
+                  "rolling_wear_fraction": 0.05,
+                  "surface_air_idle_conductance_w_per_k": 20.0,
+                  "surface_air_speed_conductance_w_per_k_mps": 0.7,
+                  "surface_capacity_j_per_k": 10200.0,
+                  "surface_carcass_conductance_w_per_k": 200.0,
+                  "surface_road_conductance_w_per_k": 40.0,
+                  "thermal_wear_gain": 0.6
+                },
+                "tire": {
+                  "cool_k": 0.00089,
+                  "heat_k": 0.0061,
+                  "mu_scale": 1.06,
+                  "temp_min_k": 0.65,
+                  "temp_opt": 90.0,
+                  "temp_sigma": 38.0,
+                  "wear_grip_k": 0.6,
+                  "wear_load_k": 2e-07,
+                  "wear_min": 0.45,
+                  "wear_per_s": 2e-06
+                }
+              },
+              {
+                "heat": {
+                  "carcass_air_conductance_w_per_k": 30.0,
+                  "carcass_capacity_j_per_k": 70000.0,
+                  "deformation_energy_to_full_wear_j": 24000000.0,
+                  "deformation_heat_fraction": 0.65,
+                  "deformation_resistance_coefficient": 0.018,
+                  "deformation_surface_fraction": 0.65,
+                  "rolling_heat_fraction": 0.4,
+                  "rolling_wear_fraction": 0.05,
+                  "surface_air_idle_conductance_w_per_k": 20.0,
+                  "surface_air_speed_conductance_w_per_k_mps": 0.7,
+                  "surface_capacity_j_per_k": 12000.0,
+                  "surface_carcass_conductance_w_per_k": 200.0,
+                  "surface_road_conductance_w_per_k": 40.0,
+                  "thermal_wear_gain": 0.6
+                },
+                "tire": {
+                  "cool_k": 0.0009,
+                  "heat_k": 0.006,
+                  "mu_scale": 1.0,
+                  "temp_min_k": 0.65,
+                  "temp_opt": 95.0,
+                  "temp_sigma": 42.0,
+                  "wear_grip_k": 0.5,
+                  "wear_load_k": 1e-07,
+                  "wear_min": 0.5,
+                  "wear_per_s": 1e-06
+                }
+              }
+            ],
+            "engine": {
+              "coolant_waste_fraction": 0.45,
+              "fuel_lower_heating_value_j_per_kg": 43000000.0,
+              "passive_conductance_w_per_k": 30.0,
+              "radiator_idle_conductance_w_per_k": 78.75,
+              "radiator_speed_conductance_w_per_k_mps": 15.75,
+              "thermostat_full_c": 98.0,
+              "thermostat_start_c": 85.0
+            },
+            "initial_carcass_temperature_c": 90.0,
+            "pit_carcass_temperature_c": 90.0,
+            "road_temperature_c": 42.0,
+            "schema_version": "pitgun.racing-thermal/v2"
+          }
+        },
+        "time_s": 8359.44868747071
+      },
+      "diagnostic_input_digest": "sha256:71c65753fcc4b7f5dfc6fc6b0d3b88f10b045ca167cdd2e1e00f6fea4c91a2b2"
+    },
+    {
+      "fixture_id": "craft_engineering:era1-entry",
+      "circuit": "ZANDVOORT",
+      "family": "concentrated",
+      "recipe": "sms_thirds",
+      "case": {
+        "fixture_id": "craft_engineering:era1-entry",
+        "circuit": "ZANDVOORT",
+        "allocation": [
+          0,
+          8,
+          0,
+          0
+        ],
+        "gear": 1,
+        "downforce": 0.5,
+        "forecast": "reachable_wear_v1",
+        "actor": "player",
+        "id": "54b963f0fa9dd9038882bc268c13646d7faed82f83729b4b3451a7a2d08c0e46",
+        "strategy": {
+          "stints": [
+            {
+              "tire_id": "soft",
+              "laps": 24
+            },
+            {
+              "tire_id": "medium",
+              "laps": 24
+            },
+            {
+              "tire_id": "soft",
+              "laps": 24
+            }
+          ],
+          "pit_laps": [
+            24,
+            48
+          ]
+        }
+      },
+      "outcome": {
+        "energy": {
+          "clutch_slip_loss_j": 57843.87932174178,
+          "distance_m": 306360.0,
+          "drag_work_j": 60659900.04288173,
+          "driveline_loss_j": 24645866.22565981,
+          "driving_time_s": 9489.226254862308,
+          "engine_shaft_work_j": 492975168.3925189,
+          "final_vehicle_kinetic_j": 886967.6531914974,
+          "friction_brake_work_j": 327046270.07377166,
+          "fuel_mass_carried_kinetic_j": 37664.8202416628,
+          "generated_engine_heat_j": 487886312.66234946,
+          "initial_vehicle_kinetic_j": 0.0,
+          "kinetic_change_j": 2736050.000169659,
+          "maximum_driveline_balance_residual_j": 4.547473508864641e-13,
+          "maximum_raw_contact_utilization": 0.9912029952467228,
+          "maximum_thermal_balance_residual_j": 3.6961864680051804e-09,
+          "maximum_vehicle_balance_residual_j": 1.8189894035458565e-12,
+          "potential_change_j": 0.0,
+          "rejected_engine_heat_signed_j": 481314672.42568594,
+          "rolling_work_j": 77829238.17071444,
+          "segments": 306360,
+          "service_idle_fuel_kg": 0.0176,
+          "service_time_s": 44.0,
+          "unresolved_service_velocity_reset_j": 1811417.5267364993,
+          "wheel_propulsion_work_j": 468271458.2875374
+        },
+        "final_state": {
+          "engine_temp": 155.7164023666341,
+          "fuel_mass": 63.321698271887215,
+          "tire_temp": 69.99839419945476,
+          "tire_wear": 0.6396457911314521
+        },
+        "ok": true,
+        "result_digest": "sha256:500695862616656353dd78eba21d32d173743823ad1f8cbd6d73ab6669019b70",
+        "thermal": {
+          "final_carcass_temperature_c": 77.31073268508942,
+          "ledger": {
+            "engine_ambient_exchange_signed_j": 481314672.42568594,
+            "engine_coolant_heat_j": 487886312.66234946,
+            "engine_shaft_work_j": 492975168.3925189,
+            "engine_storage_change_j": 6571640.236663402,
+            "exhaust_and_other_energy_j": 596305493.2539827,
+            "fuel_chemical_energy_j": 1577166974.3088508,
+            "maximum_contact_utilization_upper_bound": 0.9938366788111411,
+            "maximum_coupling_passes": 10,
+            "maximum_engine_balance_residual_j": 3.7034624256193638e-09,
+            "maximum_fuel_balance_residual_j": 0.0,
+            "maximum_relative_grip_coupling_error": 0.0009800880596050332,
+            "maximum_tire_balance_residual_j": 2.733713699853979e-09,
+            "tire_air_exchange_signed_j": 28531152.370531715,
+            "tire_deformation_dissipation_j": 24822978.94983833,
+            "tire_direct_environment_heat_j": 40491798.16496906,
+            "tire_generated_heat_j": 37337440.005745366,
+            "tire_road_exchange_signed_j": 11736223.41138753,
+            "tire_rolling_dissipation_j": 53006259.2208761,
+            "tire_storage_change_j": -2929935.7761644
+          },
+          "profile": {
+            "compounds": [
+              {
+                "heat": {
+                  "carcass_air_conductance_w_per_k": 30.0,
+                  "carcass_capacity_j_per_k": 59500.0,
+                  "deformation_energy_to_full_wear_j": 16000000.0,
+                  "deformation_heat_fraction": 0.65,
+                  "deformation_resistance_coefficient": 0.018,
+                  "deformation_surface_fraction": 0.65,
+                  "rolling_heat_fraction": 0.4,
+                  "rolling_wear_fraction": 0.05,
+                  "surface_air_idle_conductance_w_per_k": 20.0,
+                  "surface_air_speed_conductance_w_per_k_mps": 0.7,
+                  "surface_capacity_j_per_k": 10200.0,
+                  "surface_carcass_conductance_w_per_k": 200.0,
+                  "surface_road_conductance_w_per_k": 40.0,
+                  "thermal_wear_gain": 0.6
+                },
+                "tire": {
+                  "cool_k": 0.00089,
+                  "heat_k": 0.0061,
+                  "mu_scale": 1.06,
+                  "temp_min_k": 0.65,
+                  "temp_opt": 90.0,
+                  "temp_sigma": 38.0,
+                  "wear_grip_k": 0.6,
+                  "wear_load_k": 2e-07,
+                  "wear_min": 0.45,
+                  "wear_per_s": 2e-06
+                }
+              },
+              {
+                "heat": {
+                  "carcass_air_conductance_w_per_k": 30.0,
+                  "carcass_capacity_j_per_k": 70000.0,
+                  "deformation_energy_to_full_wear_j": 24000000.0,
+                  "deformation_heat_fraction": 0.65,
+                  "deformation_resistance_coefficient": 0.018,
+                  "deformation_surface_fraction": 0.65,
+                  "rolling_heat_fraction": 0.4,
+                  "rolling_wear_fraction": 0.05,
+                  "surface_air_idle_conductance_w_per_k": 20.0,
+                  "surface_air_speed_conductance_w_per_k_mps": 0.7,
+                  "surface_capacity_j_per_k": 12000.0,
+                  "surface_carcass_conductance_w_per_k": 200.0,
+                  "surface_road_conductance_w_per_k": 40.0,
+                  "thermal_wear_gain": 0.6
+                },
+                "tire": {
+                  "cool_k": 0.0009,
+                  "heat_k": 0.006,
+                  "mu_scale": 1.0,
+                  "temp_min_k": 0.65,
+                  "temp_opt": 95.0,
+                  "temp_sigma": 42.0,
+                  "wear_grip_k": 0.5,
+                  "wear_load_k": 1e-07,
+                  "wear_min": 0.5,
+                  "wear_per_s": 1e-06
+                }
+              }
+            ],
+            "engine": {
+              "coolant_waste_fraction": 0.45,
+              "fuel_lower_heating_value_j_per_kg": 43000000.0,
+              "passive_conductance_w_per_k": 30.0,
+              "radiator_idle_conductance_w_per_k": 52.5,
+              "radiator_speed_conductance_w_per_k_mps": 10.5,
+              "thermostat_full_c": 98.0,
+              "thermostat_start_c": 85.0
+            },
+            "initial_carcass_temperature_c": 90.0,
+            "pit_carcass_temperature_c": 90.0,
+            "road_temperature_c": 42.0,
+            "schema_version": "pitgun.racing-thermal/v2"
+          }
+        },
+        "time_s": 9533.226254862308
+      },
+      "diagnostic_input_digest": "sha256:b29f6ea505dba171bd4212221ea4875f573288fc4779a433d1f14e0e4249ee44"
+    },
+    {
+      "fixture_id": "craft_engineering:era1-entry",
+      "circuit": "ZANDVOORT",
+      "family": "diversified",
+      "recipe": "sms_thirds",
+      "case": {
+        "fixture_id": "craft_engineering:era1-entry",
+        "circuit": "ZANDVOORT",
+        "allocation": [
+          0,
+          3,
+          0,
+          5
+        ],
+        "gear": 1,
+        "downforce": 0.5,
+        "forecast": "reachable_wear_v1",
+        "actor": "player",
+        "id": "c78e080b30c0549b43c8e4017740ff3aaa2de7a66001fd837d11b6d4782557ae",
+        "strategy": {
+          "stints": [
+            {
+              "tire_id": "soft",
+              "laps": 24
+            },
+            {
+              "tire_id": "medium",
+              "laps": 24
+            },
+            {
+              "tire_id": "soft",
+              "laps": 24
+            }
+          ],
+          "pit_laps": [
+            24,
+            48
+          ]
+        }
+      },
+      "outcome": {
+        "energy": {
+          "clutch_slip_loss_j": 57223.57919086129,
+          "distance_m": 306360.0,
+          "drag_work_j": 67115621.23481207,
+          "driveline_loss_j": 26552402.128415704,
+          "driving_time_s": 9281.901154660833,
+          "engine_shaft_work_j": 531105266.14750546,
+          "final_vehicle_kinetic_j": 884441.223824418,
+          "friction_brake_work_j": 355394935.143436,
+          "fuel_mass_carried_kinetic_j": 40191.249608742124,
+          "generated_engine_heat_j": 518310898.5009789,
+          "initial_vehicle_kinetic_j": 0.0,
+          "kinetic_change_j": 2733517.908467807,
+          "maximum_driveline_balance_residual_j": 1.8189894035458565e-12,
+          "maximum_raw_contact_utilization": 0.9913305701197295,
+          "maximum_thermal_balance_residual_j": 3.1141098588705063e-09,
+          "maximum_vehicle_balance_residual_j": 1.8189894035458565e-12,
+          "potential_change_j": 0.0,
+          "rejected_engine_heat_signed_j": 516564403.10025465,
+          "rolling_work_j": 79251566.15318388,
+          "segments": 306360,
+          "service_idle_fuel_kg": 0.0176,
+          "service_time_s": 44.0,
+          "unresolved_service_velocity_reset_j": 1808885.4350346501,
+          "wheel_propulsion_work_j": 504495640.4398991
+        },
+        "final_state": {
+          "engine_temp": 107.46495400723894,
+          "fuel_mass": 60.86262179496864,
+          "tire_temp": 71.5035617110393,
+          "tire_wear": 0.6639809488691527
+        },
+        "ok": true,
+        "result_digest": "sha256:8ae643567e23c0f7d5bb9ab9fbf2366db73258c49e36b12e12d773faf469947a",
+        "thermal": {
+          "final_carcass_temperature_c": 79.01322426711735,
+          "ledger": {
+            "engine_ambient_exchange_signed_j": 516564403.10025465,
+            "engine_coolant_heat_j": 518310898.5009789,
+            "engine_shaft_work_j": 531105266.14750546,
+            "engine_storage_change_j": 1746495.4007238953,
+            "exhaust_and_other_energy_j": 633491098.167863,
+            "fuel_chemical_energy_j": 1682907262.8163474,
+            "maximum_contact_utilization_upper_bound": 0.9933821454131285,
+            "maximum_coupling_passes": 10,
+            "maximum_engine_balance_residual_j": 3.1141098588705063e-09,
+            "maximum_fuel_balance_residual_j": 0.0,
+            "maximum_relative_grip_coupling_error": 0.0005101846048016778,
+            "maximum_tire_balance_residual_j": 3.001659365509113e-09,
+            "tire_air_exchange_signed_j": 28906176.04247234,
+            "tire_deformation_dissipation_j": 26317434.52223255,
+            "tire_direct_environment_heat_j": 40971581.06135217,
+            "tire_generated_heat_j": 38279985.091831684,
+            "tire_road_exchange_signed_j": 11910680.635100653,
+            "tire_rolling_dissipation_j": 52934131.630951844,
+            "tire_storage_change_j": -2536871.5857282626
+          },
+          "profile": {
+            "compounds": [
+              {
+                "heat": {
+                  "carcass_air_conductance_w_per_k": 30.0,
+                  "carcass_capacity_j_per_k": 59500.0,
+                  "deformation_energy_to_full_wear_j": 16000000.0,
+                  "deformation_heat_fraction": 0.65,
+                  "deformation_resistance_coefficient": 0.018,
+                  "deformation_surface_fraction": 0.65,
+                  "rolling_heat_fraction": 0.4,
+                  "rolling_wear_fraction": 0.05,
+                  "surface_air_idle_conductance_w_per_k": 20.0,
+                  "surface_air_speed_conductance_w_per_k_mps": 0.7,
+                  "surface_capacity_j_per_k": 10200.0,
+                  "surface_carcass_conductance_w_per_k": 200.0,
+                  "surface_road_conductance_w_per_k": 40.0,
+                  "thermal_wear_gain": 0.6
+                },
+                "tire": {
+                  "cool_k": 0.00089,
+                  "heat_k": 0.0061,
+                  "mu_scale": 1.06,
+                  "temp_min_k": 0.65,
+                  "temp_opt": 90.0,
+                  "temp_sigma": 38.0,
+                  "wear_grip_k": 0.6,
+                  "wear_load_k": 2e-07,
+                  "wear_min": 0.45,
+                  "wear_per_s": 2e-06
+                }
+              },
+              {
+                "heat": {
+                  "carcass_air_conductance_w_per_k": 30.0,
+                  "carcass_capacity_j_per_k": 70000.0,
+                  "deformation_energy_to_full_wear_j": 24000000.0,
+                  "deformation_heat_fraction": 0.65,
+                  "deformation_resistance_coefficient": 0.018,
+                  "deformation_surface_fraction": 0.65,
+                  "rolling_heat_fraction": 0.4,
+                  "rolling_wear_fraction": 0.05,
+                  "surface_air_idle_conductance_w_per_k": 20.0,
+                  "surface_air_speed_conductance_w_per_k_mps": 0.7,
+                  "surface_capacity_j_per_k": 12000.0,
+                  "surface_carcass_conductance_w_per_k": 200.0,
+                  "surface_road_conductance_w_per_k": 40.0,
+                  "thermal_wear_gain": 0.6
+                },
+                "tire": {
+                  "cool_k": 0.0009,
+                  "heat_k": 0.006,
+                  "mu_scale": 1.0,
+                  "temp_min_k": 0.65,
+                  "temp_opt": 95.0,
+                  "temp_sigma": 42.0,
+                  "wear_grip_k": 0.5,
+                  "wear_load_k": 1e-07,
+                  "wear_min": 0.5,
+                  "wear_per_s": 1e-06
+                }
+              }
+            ],
+            "engine": {
+              "coolant_waste_fraction": 0.45,
+              "fuel_lower_heating_value_j_per_kg": 43000000.0,
+              "passive_conductance_w_per_k": 30.0,
+              "radiator_idle_conductance_w_per_k": 96.25,
+              "radiator_speed_conductance_w_per_k_mps": 19.25,
+              "thermostat_full_c": 98.0,
+              "thermostat_start_c": 85.0
+            },
+            "initial_carcass_temperature_c": 90.0,
+            "pit_carcass_temperature_c": 90.0,
+            "road_temperature_c": 42.0,
+            "schema_version": "pitgun.racing-thermal/v2"
+          }
+        },
+        "time_s": 9325.901154660833
+      },
+      "diagnostic_input_digest": "sha256:3db0c2c807e28b0f42055c5c66abec5558094d01363c00de9e41d659c475ae56"
+    },
+    {
+      "fixture_id": "craft_engineering:era1-exit",
+      "circuit": "MONZA",
+      "family": "concentrated",
+      "recipe": "sms_thirds",
+      "case": {
+        "fixture_id": "craft_engineering:era1-exit",
+        "circuit": "MONZA",
+        "allocation": [
+          0,
+          11,
+          0,
+          0
+        ],
+        "gear": 1,
+        "downforce": 0.5,
+        "forecast": "reachable_wear_v1",
+        "actor": "player",
+        "id": "24f5a6db1470c081fbeb7d57d08d37019ee3b4e98db4840077856d24b3f61d02",
+        "strategy": {
+          "stints": [
+            {
+              "tire_id": "soft",
+              "laps": 17
+            },
+            {
+              "tire_id": "medium",
+              "laps": 18
+            },
+            {
+              "tire_id": "soft",
+              "laps": 18
+            }
+          ],
+          "pit_laps": [
+            17,
+            35
+          ]
+        }
+      },
+      "outcome": {
+        "energy": {
+          "clutch_slip_loss_j": 57714.35896011322,
+          "distance_m": 306658.0,
+          "drag_work_j": 75089413.00369847,
+          "driveline_loss_j": 20595581.30091817,
+          "driving_time_s": 8374.301477184352,
+          "engine_shaft_work_j": 411969340.3773238,
+          "final_vehicle_kinetic_j": 892974.1405072084,
+          "friction_brake_work_j": 243674883.7712342,
+          "fuel_mass_carried_kinetic_j": 19829.31667228552,
+          "generated_engine_heat_j": 411211899.3503546,
+          "initial_vehicle_kinetic_j": 0.0,
+          "kinetic_change_j": 1526076.017362691,
+          "maximum_driveline_balance_residual_j": 1.8189894035458565e-12,
+          "maximum_raw_contact_utilization": 0.9912428044388849,
+          "maximum_thermal_balance_residual_j": 2.190063241869211e-09,
+          "maximum_vehicle_balance_residual_j": 1.8189894035458565e-12,
+          "potential_change_j": 0.0,
+          "rejected_engine_heat_signed_j": 406569223.3538634,
+          "rolling_work_j": 71025671.9251468,
+          "segments": 306658,
+          "service_idle_fuel_kg": 0.0176,
+          "service_time_s": 44.0,
+          "unresolved_service_velocity_reset_j": 613272.5601832075,
+          "wheel_propulsion_work_j": 391316044.7174456
+        },
+        "final_state": {
+          "engine_temp": 136.42675996490436,
+          "fuel_mass": 69.16805671730464,
+          "tire_temp": 68.38885135925055,
+          "tire_wear": 0.49093780541251253
+        },
+        "ok": true,
+        "result_digest": "sha256:8d39e01f255fc4a529ff0b666f09ae12b9d79d67308a1b6b37ee8dbe9e097c7a",
+        "thermal": {
+          "final_carcass_temperature_c": 77.87864589755281,
+          "ledger": {
+            "engine_ambient_exchange_signed_j": 406569223.3538634,
+            "engine_coolant_heat_j": 411211899.3503546,
+            "engine_shaft_work_j": 411969340.3773238,
+            "engine_storage_change_j": 4642675.996490426,
+            "exhaust_and_other_energy_j": 502592321.42821115,
+            "fuel_chemical_energy_j": 1325773561.1558902,
+            "maximum_contact_utilization_upper_bound": 0.9937720825975523,
+            "maximum_coupling_passes": 13,
+            "maximum_engine_balance_residual_j": 2.190063241869211e-09,
+            "maximum_fuel_balance_residual_j": 0.0,
+            "maximum_relative_grip_coupling_error": 0.000996674150487764,
+            "maximum_tire_balance_residual_j": 4.019966581836343e-09,
+            "tire_air_exchange_signed_j": 25737737.522793718,
+            "tire_deformation_dissipation_j": 17788053.999142177,
+            "tire_direct_environment_heat_j": 38168389.655302554,
+            "tire_generated_heat_j": 32857282.269844297,
+            "tire_road_exchange_signed_j": 10011870.855872177,
+            "tire_rolling_dissipation_j": 53237617.92600426,
+            "tire_storage_change_j": -2892326.1087950547
+          },
+          "profile": {
+            "compounds": [
+              {
+                "heat": {
+                  "carcass_air_conductance_w_per_k": 30.0,
+                  "carcass_capacity_j_per_k": 59500.0,
+                  "deformation_energy_to_full_wear_j": 16000000.0,
+                  "deformation_heat_fraction": 0.65,
+                  "deformation_resistance_coefficient": 0.018,
+                  "deformation_surface_fraction": 0.65,
+                  "rolling_heat_fraction": 0.4,
+                  "rolling_wear_fraction": 0.05,
+                  "surface_air_idle_conductance_w_per_k": 20.0,
+                  "surface_air_speed_conductance_w_per_k_mps": 0.7,
+                  "surface_capacity_j_per_k": 10200.0,
+                  "surface_carcass_conductance_w_per_k": 200.0,
+                  "surface_road_conductance_w_per_k": 40.0,
+                  "thermal_wear_gain": 0.6
+                },
+                "tire": {
+                  "cool_k": 0.00089,
+                  "heat_k": 0.0061,
+                  "mu_scale": 1.06,
+                  "temp_min_k": 0.65,
+                  "temp_opt": 90.0,
+                  "temp_sigma": 38.0,
+                  "wear_grip_k": 0.6,
+                  "wear_load_k": 2e-07,
+                  "wear_min": 0.45,
+                  "wear_per_s": 2e-06
+                }
+              },
+              {
+                "heat": {
+                  "carcass_air_conductance_w_per_k": 30.0,
+                  "carcass_capacity_j_per_k": 70000.0,
+                  "deformation_energy_to_full_wear_j": 24000000.0,
+                  "deformation_heat_fraction": 0.65,
+                  "deformation_resistance_coefficient": 0.018,
+                  "deformation_surface_fraction": 0.65,
+                  "rolling_heat_fraction": 0.4,
+                  "rolling_wear_fraction": 0.05,
+                  "surface_air_idle_conductance_w_per_k": 20.0,
+                  "surface_air_speed_conductance_w_per_k_mps": 0.7,
+                  "surface_capacity_j_per_k": 12000.0,
+                  "surface_carcass_conductance_w_per_k": 200.0,
+                  "surface_road_conductance_w_per_k": 40.0,
+                  "thermal_wear_gain": 0.6
+                },
+                "tire": {
+                  "cool_k": 0.0009,
+                  "heat_k": 0.006,
+                  "mu_scale": 1.0,
+                  "temp_min_k": 0.65,
+                  "temp_opt": 95.0,
+                  "temp_sigma": 42.0,
+                  "wear_grip_k": 0.5,
+                  "wear_load_k": 1e-07,
+                  "wear_min": 0.5,
+                  "wear_per_s": 1e-06
+                }
+              }
+            ],
+            "engine": {
+              "coolant_waste_fraction": 0.45,
+              "fuel_lower_heating_value_j_per_kg": 43000000.0,
+              "passive_conductance_w_per_k": 30.0,
+              "radiator_idle_conductance_w_per_k": 52.5,
+              "radiator_speed_conductance_w_per_k_mps": 10.5,
+              "thermostat_full_c": 98.0,
+              "thermostat_start_c": 85.0
+            },
+            "initial_carcass_temperature_c": 90.0,
+            "pit_carcass_temperature_c": 90.0,
+            "road_temperature_c": 42.0,
+            "schema_version": "pitgun.racing-thermal/v2"
+          }
+        },
+        "time_s": 8418.301477184352
+      },
+      "diagnostic_input_digest": "sha256:058745715750c6bf5e9238984858022503fee92e0e5fe1f0f91928bbc9495aa5"
+    },
+    {
+      "fixture_id": "craft_engineering:era1-exit",
+      "circuit": "MONZA",
+      "family": "diversified",
+      "recipe": "sms_thirds",
+      "case": {
+        "fixture_id": "craft_engineering:era1-exit",
+        "circuit": "MONZA",
+        "allocation": [
+          0,
+          8,
+          0,
+          3
+        ],
+        "gear": 1,
+        "downforce": 0.5,
+        "forecast": "reachable_wear_v1",
+        "actor": "player",
+        "id": "b26b3f8de2c3fee3b742179d31818c9919dc787dad7d7bbaba963d48b8699995",
+        "strategy": {
+          "stints": [
+            {
+              "tire_id": "soft",
+              "laps": 17
+            },
+            {
+              "tire_id": "medium",
+              "laps": 18
+            },
+            {
+              "tire_id": "soft",
+              "laps": 18
+            }
+          ],
+          "pit_laps": [
+            17,
+            35
+          ]
+        }
+      },
+      "outcome": {
+        "energy": {
+          "clutch_slip_loss_j": 57407.986633962384,
+          "distance_m": 306658.0,
+          "drag_work_j": 78869806.02167366,
+          "driveline_loss_j": 21198796.545773778,
+          "driving_time_s": 8302.394686961454,
+          "engine_shaft_work_j": 424033338.90211034,
+          "final_vehicle_kinetic_j": 892177.3959874887,
+          "friction_brake_work_j": 250872992.409807,
+          "fuel_mass_carried_kinetic_j": 20194.457784316826,
+          "generated_engine_heat_j": 420789099.5548499,
+          "initial_vehicle_kinetic_j": 0.0,
+          "kinetic_change_j": 1522866.038554109,
+          "maximum_driveline_balance_residual_j": 1.8189894035458565e-12,
+          "maximum_raw_contact_utilization": 0.9914603771494728,
+          "maximum_thermal_balance_residual_j": 3.4633558243513107e-09,
+          "maximum_vehicle_balance_residual_j": 1.8189894035458565e-12,
+          "potential_change_j": 0.0,
+          "rejected_engine_heat_signed_j": 419332826.097778,
+          "rolling_work_j": 71511469.89966594,
+          "segments": 306658,
+          "service_idle_fuel_kg": 0.0176,
+          "service_time_s": 44.0,
+          "unresolved_service_velocity_reset_j": 610494.1847823043,
+          "wheel_propulsion_work_j": 402777134.36970246
+        },
+        "final_state": {
+          "engine_temp": 104.56273457071609,
+          "fuel_mass": 68.39255286507476,
+          "tire_temp": 68.89529666349914,
+          "tire_wear": 0.5000289650877063
+        },
+        "ok": true,
+        "result_digest": "sha256:df4615a31bb874f43074db8706ff86ffc9562e726be6cf0b93b06798126f01e1",
+        "thermal": {
+          "final_carcass_temperature_c": 78.50740123139722,
+          "ledger": {
+            "engine_ambient_exchange_signed_j": 419332826.097778,
+            "engine_coolant_heat_j": 420789099.5548499,
+            "engine_shaft_work_j": 424033338.90211034,
+            "engine_storage_change_j": 1456273.4570716296,
+            "exhaust_and_other_energy_j": 514297788.3448173,
+            "fuel_chemical_energy_j": 1359120226.8017774,
+            "maximum_contact_utilization_upper_bound": 0.9941070503695993,
+            "maximum_coupling_passes": 13,
+            "maximum_engine_balance_residual_j": 3.4592630981933326e-09,
+            "maximum_fuel_balance_residual_j": 0.0,
+            "maximum_relative_grip_coupling_error": 0.0009981098033464697,
+            "maximum_tire_balance_residual_j": 2.940375054549804e-09,
+            "tire_air_exchange_signed_j": 25863180.600348566,
+            "tire_deformation_dissipation_j": 18296473.415345185,
+            "tire_direct_environment_heat_j": 38332763.58596328,
+            "tire_generated_heat_j": 33178706.313702695,
+            "tire_road_exchange_signed_j": 10064772.311171299,
+            "tire_rolling_dissipation_j": 53214996.48432106,
+            "tire_storage_change_j": -2749246.597787943
+          },
+          "profile": {
+            "compounds": [
+              {
+                "heat": {
+                  "carcass_air_conductance_w_per_k": 30.0,
+                  "carcass_capacity_j_per_k": 59500.0,
+                  "deformation_energy_to_full_wear_j": 16000000.0,
+                  "deformation_heat_fraction": 0.65,
+                  "deformation_resistance_coefficient": 0.018,
+                  "deformation_surface_fraction": 0.65,
+                  "rolling_heat_fraction": 0.4,
+                  "rolling_wear_fraction": 0.05,
+                  "surface_air_idle_conductance_w_per_k": 20.0,
+                  "surface_air_speed_conductance_w_per_k_mps": 0.7,
+                  "surface_capacity_j_per_k": 10200.0,
+                  "surface_carcass_conductance_w_per_k": 200.0,
+                  "surface_road_conductance_w_per_k": 40.0,
+                  "thermal_wear_gain": 0.6
+                },
+                "tire": {
+                  "cool_k": 0.00089,
+                  "heat_k": 0.0061,
+                  "mu_scale": 1.06,
+                  "temp_min_k": 0.65,
+                  "temp_opt": 90.0,
+                  "temp_sigma": 38.0,
+                  "wear_grip_k": 0.6,
+                  "wear_load_k": 2e-07,
+                  "wear_min": 0.45,
+                  "wear_per_s": 2e-06
+                }
+              },
+              {
+                "heat": {
+                  "carcass_air_conductance_w_per_k": 30.0,
+                  "carcass_capacity_j_per_k": 70000.0,
+                  "deformation_energy_to_full_wear_j": 24000000.0,
+                  "deformation_heat_fraction": 0.65,
+                  "deformation_resistance_coefficient": 0.018,
+                  "deformation_surface_fraction": 0.65,
+                  "rolling_heat_fraction": 0.4,
+                  "rolling_wear_fraction": 0.05,
+                  "surface_air_idle_conductance_w_per_k": 20.0,
+                  "surface_air_speed_conductance_w_per_k_mps": 0.7,
+                  "surface_capacity_j_per_k": 12000.0,
+                  "surface_carcass_conductance_w_per_k": 200.0,
+                  "surface_road_conductance_w_per_k": 40.0,
+                  "thermal_wear_gain": 0.6
+                },
+                "tire": {
+                  "cool_k": 0.0009,
+                  "heat_k": 0.006,
+                  "mu_scale": 1.0,
+                  "temp_min_k": 0.65,
+                  "temp_opt": 95.0,
+                  "temp_sigma": 42.0,
+                  "wear_grip_k": 0.5,
+                  "wear_load_k": 1e-07,
+                  "wear_min": 0.5,
+                  "wear_per_s": 1e-06
+                }
+              }
+            ],
+            "engine": {
+              "coolant_waste_fraction": 0.45,
+              "fuel_lower_heating_value_j_per_kg": 43000000.0,
+              "passive_conductance_w_per_k": 30.0,
+              "radiator_idle_conductance_w_per_k": 78.75,
+              "radiator_speed_conductance_w_per_k_mps": 15.75,
+              "thermostat_full_c": 98.0,
+              "thermostat_start_c": 85.0
+            },
+            "initial_carcass_temperature_c": 90.0,
+            "pit_carcass_temperature_c": 90.0,
+            "road_temperature_c": 42.0,
+            "schema_version": "pitgun.racing-thermal/v2"
+          }
+        },
+        "time_s": 8346.394686961454
+      },
+      "diagnostic_input_digest": "sha256:ef9be50ad3d9d0e8808ce0a82aec2bc148fbe4042d0b2ca7af5b355a023da440"
+    },
+    {
+      "fixture_id": "craft_engineering:era1-exit",
+      "circuit": "ZANDVOORT",
+      "family": "concentrated",
+      "recipe": "sms_thirds",
+      "case": {
+        "fixture_id": "craft_engineering:era1-exit",
+        "circuit": "ZANDVOORT",
+        "allocation": [
+          0,
+          11,
+          0,
+          0
+        ],
+        "gear": 1,
+        "downforce": 0.5,
+        "forecast": "reachable_wear_v1",
+        "actor": "player",
+        "id": "63115729af698a33521166c02e0fdd98a22edf4205a0b7dfcddd9b6f0ca826ff",
+        "strategy": {
+          "stints": [
+            {
+              "tire_id": "soft",
+              "laps": 24
+            },
+            {
+              "tire_id": "medium",
+              "laps": 24
+            },
+            {
+              "tire_id": "soft",
+              "laps": 24
+            }
+          ],
+          "pit_laps": [
+            24,
+            48
+          ]
+        }
+      },
+      "outcome": {
+        "energy": {
+          "clutch_slip_loss_j": 57844.145835391464,
+          "distance_m": 306360.0,
+          "drag_work_j": 60872184.766364425,
+          "driveline_loss_j": 24642707.993486524,
+          "driving_time_s": 9466.607885036081,
+          "engine_shaft_work_j": 492912004.01556605,
+          "final_vehicle_kinetic_j": 886981.2746363551,
+          "friction_brake_work_j": 326874463.9177567,
+          "fuel_mass_carried_kinetic_j": 37651.19879680505,
+          "generated_engine_heat_j": 487658188.4032545,
+          "initial_vehicle_kinetic_j": 0.0,
+          "kinetic_change_j": 2736063.5347245284,
+          "maximum_driveline_balance_residual_j": 1.8189894035458565e-12,
+          "maximum_raw_contact_utilization": 0.9912040034911817,
+          "maximum_thermal_balance_residual_j": 2.244632923975587e-09,
+          "maximum_vehicle_balance_residual_j": 1.8189894035458565e-12,
+          "potential_change_j": 0.0,
+          "rejected_engine_heat_signed_j": 481076320.04076713,
+          "rolling_work_j": 77728739.65739895,
+          "segments": 306360,
+          "service_idle_fuel_kg": 0.0176,
+          "service_time_s": 44.0,
+          "unresolved_service_velocity_reset_j": 1811431.0612913538,
+          "wheel_propulsion_work_j": 468211451.8762443
+        },
+        "final_state": {
+          "engine_temp": 155.81868362486924,
+          "fuel_mass": 63.334956578281144,
+          "tire_temp": 70.00210573178286,
+          "tire_wear": 0.6372305492854011
+        },
+        "ok": true,
+        "result_digest": "sha256:728750692582bef7a729d73fde03341836a5db35e79247db9eb1b57ebed40f7c",
+        "thermal": {
+          "final_carcass_temperature_c": 77.33467654070333,
+          "ledger": {
+            "engine_ambient_exchange_signed_j": 481076320.04076713,
+            "engine_coolant_heat_j": 487658188.4032545,
+            "engine_shaft_work_j": 492912004.01556605,
+            "engine_storage_change_j": 6581868.362486917,
+            "exhaust_and_other_energy_j": 596026674.7150886,
+            "fuel_chemical_energy_j": 1576596867.1339097,
+            "maximum_contact_utilization_upper_bound": 0.9938311067358674,
+            "maximum_coupling_passes": 10,
+            "maximum_engine_balance_residual_j": 2.244632923975587e-09,
+            "maximum_fuel_balance_residual_j": 0.0,
+            "maximum_relative_grip_coupling_error": 0.000980381468862146,
+            "maximum_tire_balance_residual_j": 2.8506548233053763e-09,
+            "tire_air_exchange_signed_j": 28488619.935786735,
+            "tire_deformation_dissipation_j": 24721966.779600244,
+            "tire_direct_environment_heat_j": 40456752.09953931,
+            "tire_generated_heat_j": 37271987.55785965,
+            "tire_road_exchange_signed_j": 11708691.366390074,
+            "tire_rolling_dissipation_j": 53006772.87779932,
+            "tire_storage_change_j": -2925323.7443074677
+          },
+          "profile": {
+            "compounds": [
+              {
+                "heat": {
+                  "carcass_air_conductance_w_per_k": 30.0,
+                  "carcass_capacity_j_per_k": 59500.0,
+                  "deformation_energy_to_full_wear_j": 16000000.0,
+                  "deformation_heat_fraction": 0.65,
+                  "deformation_resistance_coefficient": 0.018,
+                  "deformation_surface_fraction": 0.65,
+                  "rolling_heat_fraction": 0.4,
+                  "rolling_wear_fraction": 0.05,
+                  "surface_air_idle_conductance_w_per_k": 20.0,
+                  "surface_air_speed_conductance_w_per_k_mps": 0.7,
+                  "surface_capacity_j_per_k": 10200.0,
+                  "surface_carcass_conductance_w_per_k": 200.0,
+                  "surface_road_conductance_w_per_k": 40.0,
+                  "thermal_wear_gain": 0.6
+                },
+                "tire": {
+                  "cool_k": 0.00089,
+                  "heat_k": 0.0061,
+                  "mu_scale": 1.06,
+                  "temp_min_k": 0.65,
+                  "temp_opt": 90.0,
+                  "temp_sigma": 38.0,
+                  "wear_grip_k": 0.6,
+                  "wear_load_k": 2e-07,
+                  "wear_min": 0.45,
+                  "wear_per_s": 2e-06
+                }
+              },
+              {
+                "heat": {
+                  "carcass_air_conductance_w_per_k": 30.0,
+                  "carcass_capacity_j_per_k": 70000.0,
+                  "deformation_energy_to_full_wear_j": 24000000.0,
+                  "deformation_heat_fraction": 0.65,
+                  "deformation_resistance_coefficient": 0.018,
+                  "deformation_surface_fraction": 0.65,
+                  "rolling_heat_fraction": 0.4,
+                  "rolling_wear_fraction": 0.05,
+                  "surface_air_idle_conductance_w_per_k": 20.0,
+                  "surface_air_speed_conductance_w_per_k_mps": 0.7,
+                  "surface_capacity_j_per_k": 12000.0,
+                  "surface_carcass_conductance_w_per_k": 200.0,
+                  "surface_road_conductance_w_per_k": 40.0,
+                  "thermal_wear_gain": 0.6
+                },
+                "tire": {
+                  "cool_k": 0.0009,
+                  "heat_k": 0.006,
+                  "mu_scale": 1.0,
+                  "temp_min_k": 0.65,
+                  "temp_opt": 95.0,
+                  "temp_sigma": 42.0,
+                  "wear_grip_k": 0.5,
+                  "wear_load_k": 1e-07,
+                  "wear_min": 0.5,
+                  "wear_per_s": 1e-06
+                }
+              }
+            ],
+            "engine": {
+              "coolant_waste_fraction": 0.45,
+              "fuel_lower_heating_value_j_per_kg": 43000000.0,
+              "passive_conductance_w_per_k": 30.0,
+              "radiator_idle_conductance_w_per_k": 52.5,
+              "radiator_speed_conductance_w_per_k_mps": 10.5,
+              "thermostat_full_c": 98.0,
+              "thermostat_start_c": 85.0
+            },
+            "initial_carcass_temperature_c": 90.0,
+            "pit_carcass_temperature_c": 90.0,
+            "road_temperature_c": 42.0,
+            "schema_version": "pitgun.racing-thermal/v2"
+          }
+        },
+        "time_s": 9510.607885036081
+      },
+      "diagnostic_input_digest": "sha256:43b7742ac4a8385616cc1af4676f15996068db995f763526bc1cd3c43e1b4f24"
+    },
+    {
+      "fixture_id": "craft_engineering:era1-exit",
+      "circuit": "ZANDVOORT",
+      "family": "diversified",
+      "recipe": "sms_thirds",
+      "case": {
+        "fixture_id": "craft_engineering:era1-exit",
+        "circuit": "ZANDVOORT",
+        "allocation": [
+          0,
+          6,
+          0,
+          5
+        ],
+        "gear": 1,
+        "downforce": 0.5,
+        "forecast": "reachable_wear_v1",
+        "actor": "player",
+        "id": "d7497838ff75c306902dad47efd81638445f716ea13abd3d28bbb1a2fa0827fd",
+        "strategy": {
+          "stints": [
+            {
+              "tire_id": "soft",
+              "laps": 24
+            },
+            {
+              "tire_id": "medium",
+              "laps": 24
+            },
+            {
+              "tire_id": "soft",
+              "laps": 24
+            }
+          ],
+          "pit_laps": [
+            24,
+            48
+          ]
+        }
+      },
+      "outcome": {
+        "energy": {
+          "clutch_slip_loss_j": 57222.130813452604,
+          "distance_m": 306360.0,
+          "drag_work_j": 67342103.59522861,
+          "driveline_loss_j": 26545747.047782827,
+          "driving_time_s": 9259.75358372298,
+          "engine_shaft_work_j": 530972163.08647037,
+          "final_vehicle_kinetic_j": 884459.442076414,
+          "friction_brake_work_j": 355153863.7152482,
+          "fuel_mass_carried_kinetic_j": 40173.03135674621,
+          "generated_engine_heat_j": 518027669.73065037,
+          "initial_vehicle_kinetic_j": 0.0,
+          "kinetic_change_j": 2733537.90217421,
+          "maximum_driveline_balance_residual_j": 1.8189894035458565e-12,
+          "maximum_raw_contact_utilization": 0.9913310594828494,
+          "maximum_thermal_balance_residual_j": 3.2014213502407074e-09,
+          "maximum_vehicle_balance_residual_j": 1.8189894035458565e-12,
+          "potential_change_j": 0.0,
+          "rejected_engine_heat_signed_j": 516269735.3726387,
+          "rolling_work_j": 79139688.69522391,
+          "segments": 306360,
+          "service_idle_fuel_kg": 0.0176,
+          "service_time_s": 44.0,
+          "unresolved_service_velocity_reset_j": 1808905.4287410518,
+          "wheel_propulsion_work_j": 504369193.907874
+        },
+        "final_state": {
+          "engine_temp": 107.57934358011859,
+          "fuel_mass": 60.88035436074606,
+          "tire_temp": 71.50801596331652,
+          "tire_wear": 0.6613936528321597
+        },
+        "ok": true,
+        "result_digest": "sha256:bfa4fdd9ce4df5be9f507281a7c797f692b68fe024b84408f032b591238e8aee",
+        "thermal": {
+          "final_carcass_temperature_c": 79.03961828354278,
+          "ledger": {
+            "engine_ambient_exchange_signed_j": 516269735.3726387,
+            "engine_coolant_heat_j": 518027669.73065037,
+            "engine_shaft_work_j": 530972163.08647037,
+            "engine_storage_change_j": 1757934.3580118576,
+            "exhaust_and_other_energy_j": 633144929.6707951,
+            "fuel_chemical_energy_j": 1682144762.487917,
+            "maximum_contact_utilization_upper_bound": 0.9933784345569023,
+            "maximum_coupling_passes": 10,
+            "maximum_engine_balance_residual_j": 3.2014213502407074e-09,
+            "maximum_fuel_balance_residual_j": 0.0,
+            "maximum_relative_grip_coupling_error": 0.0005054197518721271,
+            "maximum_tire_balance_residual_j": 3.441982698859647e-09,
+            "tire_air_exchange_signed_j": 28859046.41857567,
+            "tire_deformation_dissipation_j": 26204825.35299637,
+            "tire_direct_environment_heat_j": 40932606.87888523,
+            "tire_generated_heat_j": 38207081.81633864,
+            "tire_road_exchange_signed_j": 11880436.45690593,
+            "tire_rolling_dissipation_j": 52934863.34222756,
+            "tire_storage_change_j": -2532401.0591294956
+          },
+          "profile": {
+            "compounds": [
+              {
+                "heat": {
+                  "carcass_air_conductance_w_per_k": 30.0,
+                  "carcass_capacity_j_per_k": 59500.0,
+                  "deformation_energy_to_full_wear_j": 16000000.0,
+                  "deformation_heat_fraction": 0.65,
+                  "deformation_resistance_coefficient": 0.018,
+                  "deformation_surface_fraction": 0.65,
+                  "rolling_heat_fraction": 0.4,
+                  "rolling_wear_fraction": 0.05,
+                  "surface_air_idle_conductance_w_per_k": 20.0,
+                  "surface_air_speed_conductance_w_per_k_mps": 0.7,
+                  "surface_capacity_j_per_k": 10200.0,
+                  "surface_carcass_conductance_w_per_k": 200.0,
+                  "surface_road_conductance_w_per_k": 40.0,
+                  "thermal_wear_gain": 0.6
+                },
+                "tire": {
+                  "cool_k": 0.00089,
+                  "heat_k": 0.0061,
+                  "mu_scale": 1.06,
+                  "temp_min_k": 0.65,
+                  "temp_opt": 90.0,
+                  "temp_sigma": 38.0,
+                  "wear_grip_k": 0.6,
+                  "wear_load_k": 2e-07,
+                  "wear_min": 0.45,
+                  "wear_per_s": 2e-06
+                }
+              },
+              {
+                "heat": {
+                  "carcass_air_conductance_w_per_k": 30.0,
+                  "carcass_capacity_j_per_k": 70000.0,
+                  "deformation_energy_to_full_wear_j": 24000000.0,
+                  "deformation_heat_fraction": 0.65,
+                  "deformation_resistance_coefficient": 0.018,
+                  "deformation_surface_fraction": 0.65,
+                  "rolling_heat_fraction": 0.4,
+                  "rolling_wear_fraction": 0.05,
+                  "surface_air_idle_conductance_w_per_k": 20.0,
+                  "surface_air_speed_conductance_w_per_k_mps": 0.7,
+                  "surface_capacity_j_per_k": 12000.0,
+                  "surface_carcass_conductance_w_per_k": 200.0,
+                  "surface_road_conductance_w_per_k": 40.0,
+                  "thermal_wear_gain": 0.6
+                },
+                "tire": {
+                  "cool_k": 0.0009,
+                  "heat_k": 0.006,
+                  "mu_scale": 1.0,
+                  "temp_min_k": 0.65,
+                  "temp_opt": 95.0,
+                  "temp_sigma": 42.0,
+                  "wear_grip_k": 0.5,
+                  "wear_load_k": 1e-07,
+                  "wear_min": 0.5,
+                  "wear_per_s": 1e-06
+                }
+              }
+            ],
+            "engine": {
+              "coolant_waste_fraction": 0.45,
+              "fuel_lower_heating_value_j_per_kg": 43000000.0,
+              "passive_conductance_w_per_k": 30.0,
+              "radiator_idle_conductance_w_per_k": 96.25,
+              "radiator_speed_conductance_w_per_k_mps": 19.25,
+              "thermostat_full_c": 98.0,
+              "thermostat_start_c": 85.0
+            },
+            "initial_carcass_temperature_c": 90.0,
+            "pit_carcass_temperature_c": 90.0,
+            "road_temperature_c": 42.0,
+            "schema_version": "pitgun.racing-thermal/v2"
+          }
+        },
+        "time_s": 9303.75358372298
+      },
+      "diagnostic_input_digest": "sha256:1a5659e98eecbd9238bc463edfd963c40fb3660652d36aec9bd2d98d51e2a032"
+    },
+    {
+      "fixture_id": "craft_engineering:era2-exit",
+      "circuit": "MONZA",
+      "family": "concentrated",
+      "recipe": "sms_thirds",
+      "case": {
+        "fixture_id": "craft_engineering:era2-exit",
+        "circuit": "MONZA",
+        "allocation": [
+          0,
+          16,
+          0,
+          0
+        ],
+        "gear": 1,
+        "downforce": 0,
+        "forecast": "reachable_wear_v1",
+        "actor": "player",
+        "id": "384bf7d203b2c06e7bc0c9476f5da048f76908deed89fef48801217a1695f40f",
+        "strategy": {
+          "stints": [
+            {
+              "tire_id": "soft",
+              "laps": 17
+            },
+            {
+              "tire_id": "medium",
+              "laps": 18
+            },
+            {
+              "tire_id": "soft",
+              "laps": 18
+            }
+          ],
+          "pit_laps": [
+            17,
+            35
+          ]
+        }
+      },
+      "outcome": {
+        "energy": {
+          "clutch_slip_loss_j": 26245.592201730942,
+          "distance_m": 306658.0,
+          "drag_work_j": 410841138.00769675,
+          "driveline_loss_j": 53065502.56221401,
+          "driving_time_s": 6482.667498661475,
+          "engine_shaft_work_j": 1061336296.8364826,
+          "final_vehicle_kinetic_j": 2020668.931361196,
+          "friction_brake_work_j": 485124805.2107525,
+          "fuel_mass_carried_kinetic_j": 59115.72044241632,
+          "generated_engine_heat_j": 942038895.7822845,
+          "initial_vehicle_kinetic_j": 0.0,
+          "kinetic_change_j": 2767868.421092443,
+          "maximum_driveline_balance_residual_j": 1.8189894035458565e-12,
+          "maximum_raw_contact_utilization": 0.9917040392800273,
+          "maximum_thermal_balance_residual_j": 2.735760062932968e-09,
+          "maximum_vehicle_balance_residual_j": 3.637978807091713e-12,
+          "potential_change_j": 0.0,
+          "rejected_engine_heat_signed_j": 940081349.8720508,
+          "rolling_work_j": 109510737.04252498,
+          "segments": 306658,
+          "service_idle_fuel_kg": 0.0176,
+          "service_time_s": 44.0,
+          "unresolved_service_velocity_reset_j": 688083.7692888527,
+          "wheel_propulsion_work_j": 1008244548.6820667
+        },
+        "final_state": {
+          "engine_temp": 109.57545910234073,
+          "fuel_mass": 26.633579878103212,
+          "tire_temp": 93.1591983713933,
+          "tire_wear": 0.617797609997232
+        },
+        "ok": true,
+        "result_digest": "sha256:18e450d6025133590cbea44dd9c8c5d0bfa2a8eccf271a95d6b7cbc98b811869",
+        "thermal": {
+          "final_carcass_temperature_c": 112.07554911238682,
+          "ledger": {
+            "engine_ambient_exchange_signed_j": 940081349.8720508,
+            "engine_coolant_heat_j": 942038895.7822845,
+            "engine_shaft_work_j": 1061336296.8364826,
+            "engine_storage_change_j": 1957545.9102340748,
+            "exhaust_and_other_energy_j": 1151380872.6227925,
+            "fuel_chemical_energy_j": 3154756065.241559,
+            "maximum_contact_utilization_upper_bound": 0.9938717476851534,
+            "maximum_coupling_passes": 12,
+            "maximum_engine_balance_residual_j": 2.7430360205471516e-09,
+            "maximum_fuel_balance_residual_j": 0.0,
+            "maximum_relative_grip_coupling_error": 0.0009932003088108932,
+            "maximum_tire_balance_residual_j": 3.6571350392478053e-09,
+            "tire_air_exchange_signed_j": 33019437.139743038,
+            "tire_deformation_dissipation_j": 25054213.122121766,
+            "tire_direct_environment_heat_j": 59442888.944984555,
+            "tire_generated_heat_j": 50067848.097540446,
+            "tire_road_exchange_signed_j": 12568848.524563503,
+            "tire_rolling_dissipation_j": 84456523.92040326,
+            "tire_storage_change_j": 4479562.433233912
+          },
+          "profile": {
+            "compounds": [
+              {
+                "heat": {
+                  "carcass_air_conductance_w_per_k": 30.0,
+                  "carcass_capacity_j_per_k": 59500.0,
+                  "deformation_energy_to_full_wear_j": 16000000.0,
+                  "deformation_heat_fraction": 0.65,
+                  "deformation_resistance_coefficient": 0.018,
+                  "deformation_surface_fraction": 0.65,
+                  "rolling_heat_fraction": 0.4,
+                  "rolling_wear_fraction": 0.05,
+                  "surface_air_idle_conductance_w_per_k": 20.0,
+                  "surface_air_speed_conductance_w_per_k_mps": 0.7,
+                  "surface_capacity_j_per_k": 10200.0,
+                  "surface_carcass_conductance_w_per_k": 200.0,
+                  "surface_road_conductance_w_per_k": 40.0,
+                  "thermal_wear_gain": 0.6
+                },
+                "tire": {
+                  "cool_k": 0.00089,
+                  "heat_k": 0.0061,
+                  "mu_scale": 1.06,
+                  "temp_min_k": 0.65,
+                  "temp_opt": 90.0,
+                  "temp_sigma": 38.0,
+                  "wear_grip_k": 0.6,
+                  "wear_load_k": 2e-07,
+                  "wear_min": 0.45,
+                  "wear_per_s": 2e-06
+                }
+              },
+              {
+                "heat": {
+                  "carcass_air_conductance_w_per_k": 30.0,
+                  "carcass_capacity_j_per_k": 70000.0,
+                  "deformation_energy_to_full_wear_j": 24000000.0,
+                  "deformation_heat_fraction": 0.65,
+                  "deformation_resistance_coefficient": 0.018,
+                  "deformation_surface_fraction": 0.65,
+                  "rolling_heat_fraction": 0.4,
+                  "rolling_wear_fraction": 0.05,
+                  "surface_air_idle_conductance_w_per_k": 20.0,
+                  "surface_air_speed_conductance_w_per_k_mps": 0.7,
+                  "surface_capacity_j_per_k": 12000.0,
+                  "surface_carcass_conductance_w_per_k": 200.0,
+                  "surface_road_conductance_w_per_k": 40.0,
+                  "thermal_wear_gain": 0.6
+                },
+                "tire": {
+                  "cool_k": 0.0009,
+                  "heat_k": 0.006,
+                  "mu_scale": 1.0,
+                  "temp_min_k": 0.65,
+                  "temp_opt": 95.0,
+                  "temp_sigma": 42.0,
+                  "wear_grip_k": 0.5,
+                  "wear_load_k": 1e-07,
+                  "wear_min": 0.5,
+                  "wear_per_s": 1e-06
+                }
+              }
+            ],
+            "engine": {
+              "coolant_waste_fraction": 0.45,
+              "fuel_lower_heating_value_j_per_kg": 43000000.0,
+              "passive_conductance_w_per_k": 30.0,
+              "radiator_idle_conductance_w_per_k": 61.25,
+              "radiator_speed_conductance_w_per_k_mps": 39.375,
+              "thermostat_full_c": 98.0,
+              "thermostat_start_c": 85.0
+            },
+            "initial_carcass_temperature_c": 90.0,
+            "pit_carcass_temperature_c": 90.0,
+            "road_temperature_c": 42.0,
+            "schema_version": "pitgun.racing-thermal/v2"
+          }
+        },
+        "time_s": 6526.667498661475
+      },
+      "diagnostic_input_digest": "sha256:f12c5447340ec39312cd631d1947d23cfaaa329aa20b538683d65e7d5a42fcd4"
+    },
+    {
+      "fixture_id": "craft_engineering:era2-exit",
+      "circuit": "MONZA",
+      "family": "diversified",
+      "recipe": "sms_thirds",
+      "case": {
+        "fixture_id": "craft_engineering:era2-exit",
+        "circuit": "MONZA",
+        "allocation": [
+          0,
+          9,
+          6,
+          1
+        ],
+        "gear": 0.75,
+        "downforce": 0.5,
+        "forecast": "reachable_wear_v1",
+        "actor": "player",
+        "id": "92d7063fbf23d5e773e88b3771ddb289a48852d4beecde60947df816809436af",
+        "strategy": {
+          "stints": [
+            {
+              "tire_id": "soft",
+              "laps": 17
+            },
+            {
+              "tire_id": "medium",
+              "laps": 18
+            },
+            {
+              "tire_id": "soft",
+              "laps": 18
+            }
+          ],
+          "pit_laps": [
+            17,
+            35
+          ]
+        }
+      },
+      "outcome": {
+        "energy": {
+          "clutch_slip_loss_j": 23739.438875710806,
+          "distance_m": 306658.0,
+          "drag_work_j": 526694705.5877001,
+          "driveline_loss_j": 55707592.987442926,
+          "driving_time_s": 6501.577573058161,
+          "engine_shaft_work_j": 1114175599.1877353,
+          "final_vehicle_kinetic_j": 1777857.3047214611,
+          "friction_brake_work_j": 411215387.04340625,
+          "fuel_mass_carried_kinetic_j": 66175.31649710417,
+          "generated_engine_heat_j": 986570273.7331678,
+          "initial_vehicle_kinetic_j": 0.0,
+          "kinetic_change_j": 2556970.386274385,
+          "maximum_driveline_balance_residual_j": 1.8189894035458565e-12,
+          "maximum_raw_contact_utilization": 0.9915430068633008,
+          "maximum_thermal_balance_residual_j": 6.810296326875687e-09,
+          "maximum_vehicle_balance_residual_j": 3.637978807091713e-12,
+          "potential_change_j": 0.0,
+          "rejected_engine_heat_signed_j": 985166471.8003511,
+          "rolling_work_j": 117977203.74403615,
+          "segments": 306658,
+          "service_idle_fuel_kg": 0.0176,
+          "service_time_s": 44.0,
+          "unresolved_service_velocity_reset_j": 712937.765055804,
+          "wheel_propulsion_work_j": 1058444266.7614163
+        },
+        "final_state": {
+          "engine_temp": 104.03801932816381,
+          "fuel_mass": 23.10339569159433,
+          "tire_temp": 96.45447097172215,
+          "tire_wear": 0.6187540774456524
+        },
+        "ok": true,
+        "result_digest": "sha256:abbb38d4ddaa7e7acaee967a1e6c426b962fda48d407c7d86799ca017e0d4872",
+        "thermal": {
+          "final_carcass_temperature_c": 116.95253392144544,
+          "ledger": {
+            "engine_ambient_exchange_signed_j": 985166471.8003511,
+            "engine_coolant_heat_j": 986570273.7331678,
+            "engine_shaft_work_j": 1114175599.1877353,
+            "engine_storage_change_j": 1403801.93281638,
+            "exhaust_and_other_energy_j": 1205808112.3405383,
+            "fuel_chemical_energy_j": 3306553985.2614403,
+            "maximum_contact_utilization_upper_bound": 0.9938107749698682,
+            "maximum_coupling_passes": 13,
+            "maximum_engine_balance_residual_j": 6.813934305682778e-09,
+            "maximum_fuel_balance_residual_j": 0.0,
+            "maximum_relative_grip_coupling_error": 0.0009844134645331515,
+            "maximum_tire_balance_residual_j": 3.820844085566932e-09,
+            "tire_air_exchange_signed_j": 34594748.82896654,
+            "tire_deformation_dissipation_j": 24341482.715640333,
+            "tire_direct_environment_heat_j": 64700951.56751165,
+            "tire_generated_heat_j": 53276252.17652458,
+            "tire_road_exchange_signed_j": 13207794.11269679,
+            "tire_rolling_dissipation_j": 93635721.02839589,
+            "tire_storage_change_j": 5473709.234861436
+          },
+          "profile": {
+            "compounds": [
+              {
+                "heat": {
+                  "carcass_air_conductance_w_per_k": 30.0,
+                  "carcass_capacity_j_per_k": 59500.0,
+                  "deformation_energy_to_full_wear_j": 16000000.0,
+                  "deformation_heat_fraction": 0.65,
+                  "deformation_resistance_coefficient": 0.018,
+                  "deformation_surface_fraction": 0.65,
+                  "rolling_heat_fraction": 0.4,
+                  "rolling_wear_fraction": 0.05,
+                  "surface_air_idle_conductance_w_per_k": 20.0,
+                  "surface_air_speed_conductance_w_per_k_mps": 0.7,
+                  "surface_capacity_j_per_k": 10200.0,
+                  "surface_carcass_conductance_w_per_k": 200.0,
+                  "surface_road_conductance_w_per_k": 40.0,
+                  "thermal_wear_gain": 0.6
+                },
+                "tire": {
+                  "cool_k": 0.00089,
+                  "heat_k": 0.0061,
+                  "mu_scale": 1.06,
+                  "temp_min_k": 0.65,
+                  "temp_opt": 90.0,
+                  "temp_sigma": 38.0,
+                  "wear_grip_k": 0.6,
+                  "wear_load_k": 2e-07,
+                  "wear_min": 0.45,
+                  "wear_per_s": 2e-06
+                }
+              },
+              {
+                "heat": {
+                  "carcass_air_conductance_w_per_k": 30.0,
+                  "carcass_capacity_j_per_k": 70000.0,
+                  "deformation_energy_to_full_wear_j": 24000000.0,
+                  "deformation_heat_fraction": 0.65,
+                  "deformation_resistance_coefficient": 0.018,
+                  "deformation_surface_fraction": 0.65,
+                  "rolling_heat_fraction": 0.4,
+                  "rolling_wear_fraction": 0.05,
+                  "surface_air_idle_conductance_w_per_k": 20.0,
+                  "surface_air_speed_conductance_w_per_k_mps": 0.7,
+                  "surface_capacity_j_per_k": 12000.0,
+                  "surface_carcass_conductance_w_per_k": 200.0,
+                  "surface_road_conductance_w_per_k": 40.0,
+                  "thermal_wear_gain": 0.6
+                },
+                "tire": {
+                  "cool_k": 0.0009,
+                  "heat_k": 0.006,
+                  "mu_scale": 1.0,
+                  "temp_min_k": 0.65,
+                  "temp_opt": 95.0,
+                  "temp_sigma": 42.0,
+                  "wear_grip_k": 0.5,
+                  "wear_load_k": 1e-07,
+                  "wear_min": 0.5,
+                  "wear_per_s": 1e-06
+                }
+              }
+            ],
+            "engine": {
+              "coolant_waste_fraction": 0.45,
+              "fuel_lower_heating_value_j_per_kg": 43000000.0,
+              "passive_conductance_w_per_k": 30.0,
+              "radiator_idle_conductance_w_per_k": 70.0,
+              "radiator_speed_conductance_w_per_k_mps": 45.0,
+              "thermostat_full_c": 98.0,
+              "thermostat_start_c": 85.0
+            },
+            "initial_carcass_temperature_c": 90.0,
+            "pit_carcass_temperature_c": 90.0,
+            "road_temperature_c": 42.0,
+            "schema_version": "pitgun.racing-thermal/v2"
+          }
+        },
+        "time_s": 6545.577573058161
+      },
+      "diagnostic_input_digest": "sha256:9ffac93363e4f2b894f46539de882864369ddb5a9b6f43e8c9b469c36d0ded0f"
+    },
+    {
+      "fixture_id": "craft_engineering:era2-exit",
+      "circuit": "ZANDVOORT",
+      "family": "concentrated",
+      "recipe": "mh35",
+      "case": {
+        "fixture_id": "craft_engineering:era2-exit",
+        "circuit": "ZANDVOORT",
+        "allocation": [
+          0,
+          16,
+          0,
+          0
+        ],
+        "gear": 0.5,
+        "downforce": 0.5,
+        "forecast": "reachable_wear_v1",
+        "actor": "player",
+        "id": "047f2e3a2315b4c2dfdcbbb8aff723f1181f499b2ff751479803bbd3929edca4",
+        "strategy": {
+          "stints": [
+            {
+              "tire_id": "medium",
+              "laps": 25
+            },
+            {
+              "tire_id": "hard",
+              "laps": 47
+            }
+          ],
+          "pit_laps": [
+            25
+          ]
+        }
+      },
+      "outcome": {
+        "energy": {
+          "clutch_slip_loss_j": 14489.285810283862,
+          "distance_m": 306360.0,
+          "drag_work_j": 407617923.604132,
+          "driveline_loss_j": 53991813.24311132,
+          "driving_time_s": 7510.951355668609,
+          "engine_shaft_work_j": 1079850754.148038,
+          "final_vehicle_kinetic_j": 1513743.443209221,
+          "friction_brake_work_j": 496052440.2073647,
+          "fuel_mass_carried_kinetic_j": 144922.8771577668,
+          "generated_engine_heat_j": 965379676.9772265,
+          "initial_vehicle_kinetic_j": 0.0,
+          "kinetic_change_j": 3282049.2593240016,
+          "maximum_driveline_balance_residual_j": 9.094947017729282e-13,
+          "maximum_raw_contact_utilization": 0.9911271967157067,
+          "maximum_thermal_balance_residual_j": 5.908077582716942e-09,
+          "maximum_vehicle_balance_residual_j": 3.637978807091713e-12,
+          "potential_change_j": 0.0,
+          "rejected_engine_heat_signed_j": 963495223.277946,
+          "rolling_work_j": 118892038.54829554,
+          "segments": 306360,
+          "service_idle_fuel_kg": 0.0088,
+          "service_time_s": 22.0,
+          "unresolved_service_velocity_reset_j": 1623382.9389570034,
+          "wheel_propulsion_work_j": 1025844451.6191162
+        },
+        "final_state": {
+          "engine_temp": 108.84453699281042,
+          "fuel_mass": 24.996769181196708,
+          "tire_temp": 93.9900189884571,
+          "tire_wear": 0.7633060716692935
+        },
+        "ok": true,
+        "result_digest": "sha256:72169f3113c6e046fd39d7d9547ec9d3585caa43f530afd4a6a7543b24b6d835",
+        "thermal": {
+          "final_carcass_temperature_c": 108.15324159992973,
+          "ledger": {
+            "engine_ambient_exchange_signed_j": 963495223.277946,
+            "engine_coolant_heat_j": 965379676.9772265,
+            "engine_shaft_work_j": 1079850754.148038,
+            "engine_storage_change_j": 1884453.6992810534,
+            "exhaust_and_other_energy_j": 1179908494.0832767,
+            "fuel_chemical_energy_j": 3225138925.208541,
+            "maximum_contact_utilization_upper_bound": 0.993459854735449,
+            "maximum_coupling_passes": 9,
+            "maximum_engine_balance_residual_j": 5.909896572120488e-09,
+            "maximum_fuel_balance_residual_j": 0.0,
+            "maximum_relative_grip_coupling_error": 0.0008340959598235331,
+            "maximum_tire_balance_residual_j": 4.472465064964126e-09,
+            "tire_air_exchange_signed_j": 37661585.020046756,
+            "tire_deformation_dissipation_j": 34619353.514716394,
+            "tire_direct_environment_heat_j": 62680384.75029822,
+            "tire_generated_heat_j": 56211653.79799728,
+            "tire_road_exchange_signed_j": 15396950.602124205,
+            "tire_rolling_dissipation_j": 84272685.03357917,
+            "tire_storage_change_j": 3153118.1758257984
+          },
+          "profile": {
+            "compounds": [
+              {
+                "heat": {
+                  "carcass_air_conductance_w_per_k": 30.0,
+                  "carcass_capacity_j_per_k": 70000.0,
+                  "deformation_energy_to_full_wear_j": 24000000.0,
+                  "deformation_heat_fraction": 0.65,
+                  "deformation_resistance_coefficient": 0.018,
+                  "deformation_surface_fraction": 0.65,
+                  "rolling_heat_fraction": 0.4,
+                  "rolling_wear_fraction": 0.05,
+                  "surface_air_idle_conductance_w_per_k": 20.0,
+                  "surface_air_speed_conductance_w_per_k_mps": 0.7,
+                  "surface_capacity_j_per_k": 12000.0,
+                  "surface_carcass_conductance_w_per_k": 200.0,
+                  "surface_road_conductance_w_per_k": 40.0,
+                  "thermal_wear_gain": 0.6
+                },
+                "tire": {
+                  "cool_k": 0.0009,
+                  "heat_k": 0.006,
+                  "mu_scale": 1.0,
+                  "temp_min_k": 0.65,
+                  "temp_opt": 95.0,
+                  "temp_sigma": 42.0,
+                  "wear_grip_k": 0.5,
+                  "wear_load_k": 1e-07,
+                  "wear_min": 0.5,
+                  "wear_per_s": 1e-06
+                }
+              },
+              {
+                "heat": {
+                  "carcass_air_conductance_w_per_k": 30.0,
+                  "carcass_capacity_j_per_k": 80500.0,
+                  "deformation_energy_to_full_wear_j": 34000000.0,
+                  "deformation_heat_fraction": 0.65,
+                  "deformation_resistance_coefficient": 0.018,
+                  "deformation_surface_fraction": 0.65,
+                  "rolling_heat_fraction": 0.4,
+                  "rolling_wear_fraction": 0.05,
+                  "surface_air_idle_conductance_w_per_k": 20.0,
+                  "surface_air_speed_conductance_w_per_k_mps": 0.7,
+                  "surface_capacity_j_per_k": 13799.999999999998,
+                  "surface_carcass_conductance_w_per_k": 200.0,
+                  "surface_road_conductance_w_per_k": 40.0,
+                  "thermal_wear_gain": 0.6
+                },
+                "tire": {
+                  "cool_k": 0.00092,
+                  "heat_k": 0.0058,
+                  "mu_scale": 0.97,
+                  "temp_min_k": 0.65,
+                  "temp_opt": 100.0,
+                  "temp_sigma": 48.0,
+                  "wear_grip_k": 0.47,
+                  "wear_load_k": 7e-08,
+                  "wear_min": 0.52,
+                  "wear_per_s": 7e-07
+                }
+              }
+            ],
+            "engine": {
+              "coolant_waste_fraction": 0.45,
+              "fuel_lower_heating_value_j_per_kg": 43000000.0,
+              "passive_conductance_w_per_k": 30.0,
+              "radiator_idle_conductance_w_per_k": 61.25,
+              "radiator_speed_conductance_w_per_k_mps": 39.375,
+              "thermostat_full_c": 98.0,
+              "thermostat_start_c": 85.0
+            },
+            "initial_carcass_temperature_c": 90.0,
+            "pit_carcass_temperature_c": 90.0,
+            "road_temperature_c": 42.0,
+            "schema_version": "pitgun.racing-thermal/v2"
+          }
+        },
+        "time_s": 7532.951355668611
+      },
+      "diagnostic_input_digest": "sha256:b864cc4432be17a4702790a91bdaf9287c76d9a0c8483edc6077307faa77f87a"
+    },
+    {
+      "fixture_id": "craft_engineering:era2-exit",
+      "circuit": "ZANDVOORT",
+      "family": "diversified",
+      "recipe": "mh35",
+      "case": {
+        "fixture_id": "craft_engineering:era2-exit",
+        "circuit": "ZANDVOORT",
+        "allocation": [
+          0,
+          15,
+          0,
+          1
+        ],
+        "gear": 0.5,
+        "downforce": 0.5,
+        "forecast": "reachable_wear_v1",
+        "actor": "player",
+        "id": "cf3fcbe9d0b88012f033b565dd01143d72fdc99b6700fa8c598869ca70483026",
+        "strategy": {
+          "stints": [
+            {
+              "tire_id": "medium",
+              "laps": 25
+            },
+            {
+              "tire_id": "hard",
+              "laps": 47
+            }
+          ],
+          "pit_laps": [
+            25
+          ]
+        }
+      },
+      "outcome": {
+        "energy": {
+          "clutch_slip_loss_j": 14485.282979758262,
+          "distance_m": 306360.0,
+          "drag_work_j": 409655085.8112627,
+          "driveline_loss_j": 54267199.42748982,
+          "driving_time_s": 7511.169639495049,
+          "engine_shaft_work_j": 1085358473.8327768,
+          "final_vehicle_kinetic_j": 1510647.5414658568,
+          "friction_brake_work_j": 499025466.013514,
+          "fuel_mass_carried_kinetic_j": 146300.12846898445,
+          "generated_engine_heat_j": 970007851.0292245,
+          "initial_vehicle_kinetic_j": 0.0,
+          "kinetic_change_j": 3289668.5590146687,
+          "maximum_driveline_balance_residual_j": 9.094947017729282e-13,
+          "maximum_raw_contact_utilization": 0.9911268005464167,
+          "maximum_thermal_balance_residual_j": 1.4842953532934189e-09,
+          "maximum_vehicle_balance_residual_j": 3.637978807091713e-12,
+          "potential_change_j": 0.0,
+          "rejected_engine_heat_signed_j": 968844783.8131702,
+          "rolling_work_j": 119106568.73851638,
+          "segments": 306360,
+          "service_idle_fuel_kg": 0.0088,
+          "service_time_s": 22.0,
+          "unresolved_service_velocity_reset_j": 1632720.8890798315,
+          "wheel_propulsion_work_j": 1031076789.1223074
+        },
+        "final_state": {
+          "engine_temp": 101.63067216053976,
+          "fuel_mass": 24.62950055535023,
+          "tire_temp": 93.97317540629045,
+          "tire_wear": 0.7656552142240586
+        },
+        "ok": true,
+        "result_digest": "sha256:07c7c61ebd8efba12bff665d1c5013f42b618f7e00af5dffcbdc8df8253e6f64",
+        "thermal": {
+          "final_carcass_temperature_c": 108.11456364564498,
+          "ledger": {
+            "engine_ambient_exchange_signed_j": 968844783.8131702,
+            "engine_coolant_heat_j": 970007851.0292245,
+            "engine_shaft_work_j": 1085358473.8327768,
+            "engine_storage_change_j": 1163067.2160539704,
+            "exhaust_and_other_energy_j": 1185565151.257941,
+            "fuel_chemical_energy_j": 3240931476.1199417,
+            "maximum_contact_utilization_upper_bound": 0.9934924933058892,
+            "maximum_coupling_passes": 9,
+            "maximum_engine_balance_residual_j": 1.4733814168721437e-09,
+            "maximum_fuel_balance_residual_j": 0.0,
+            "maximum_relative_grip_coupling_error": 0.0008679016035272324,
+            "maximum_tire_balance_residual_j": 4.245919171808055e-09,
+            "tire_air_exchange_signed_j": 37738981.28326931,
+            "tire_deformation_dissipation_j": 34781642.250205874,
+            "tire_direct_environment_heat_j": 62768530.680558346,
+            "tire_generated_heat_j": 56338038.05795801,
+            "tire_road_exchange_signed_j": 15435215.334470397,
+            "tire_rolling_dissipation_j": 84324926.48831049,
+            "tire_storage_change_j": 3163841.4402193045
+          },
+          "profile": {
+            "compounds": [
+              {
+                "heat": {
+                  "carcass_air_conductance_w_per_k": 30.0,
+                  "carcass_capacity_j_per_k": 70000.0,
+                  "deformation_energy_to_full_wear_j": 24000000.0,
+                  "deformation_heat_fraction": 0.65,
+                  "deformation_resistance_coefficient": 0.018,
+                  "deformation_surface_fraction": 0.65,
+                  "rolling_heat_fraction": 0.4,
+                  "rolling_wear_fraction": 0.05,
+                  "surface_air_idle_conductance_w_per_k": 20.0,
+                  "surface_air_speed_conductance_w_per_k_mps": 0.7,
+                  "surface_capacity_j_per_k": 12000.0,
+                  "surface_carcass_conductance_w_per_k": 200.0,
+                  "surface_road_conductance_w_per_k": 40.0,
+                  "thermal_wear_gain": 0.6
+                },
+                "tire": {
+                  "cool_k": 0.0009,
+                  "heat_k": 0.006,
+                  "mu_scale": 1.0,
+                  "temp_min_k": 0.65,
+                  "temp_opt": 95.0,
+                  "temp_sigma": 42.0,
+                  "wear_grip_k": 0.5,
+                  "wear_load_k": 1e-07,
+                  "wear_min": 0.5,
+                  "wear_per_s": 1e-06
+                }
+              },
+              {
+                "heat": {
+                  "carcass_air_conductance_w_per_k": 30.0,
+                  "carcass_capacity_j_per_k": 80500.0,
+                  "deformation_energy_to_full_wear_j": 34000000.0,
+                  "deformation_heat_fraction": 0.65,
+                  "deformation_resistance_coefficient": 0.018,
+                  "deformation_surface_fraction": 0.65,
+                  "rolling_heat_fraction": 0.4,
+                  "rolling_wear_fraction": 0.05,
+                  "surface_air_idle_conductance_w_per_k": 20.0,
+                  "surface_air_speed_conductance_w_per_k_mps": 0.7,
+                  "surface_capacity_j_per_k": 13799.999999999998,
+                  "surface_carcass_conductance_w_per_k": 200.0,
+                  "surface_road_conductance_w_per_k": 40.0,
+                  "thermal_wear_gain": 0.6
+                },
+                "tire": {
+                  "cool_k": 0.00092,
+                  "heat_k": 0.0058,
+                  "mu_scale": 0.97,
+                  "temp_min_k": 0.65,
+                  "temp_opt": 100.0,
+                  "temp_sigma": 48.0,
+                  "wear_grip_k": 0.47,
+                  "wear_load_k": 7e-08,
+                  "wear_min": 0.52,
+                  "wear_per_s": 7e-07
+                }
+              }
+            ],
+            "engine": {
+              "coolant_waste_fraction": 0.45,
+              "fuel_lower_heating_value_j_per_kg": 43000000.0,
+              "passive_conductance_w_per_k": 30.0,
+              "radiator_idle_conductance_w_per_k": 70.0,
+              "radiator_speed_conductance_w_per_k_mps": 45.0,
+              "thermostat_full_c": 98.0,
+              "thermostat_start_c": 85.0
+            },
+            "initial_carcass_temperature_c": 90.0,
+            "pit_carcass_temperature_c": 90.0,
+            "road_temperature_c": 42.0,
+            "schema_version": "pitgun.racing-thermal/v2"
+          }
+        },
+        "time_s": 7533.169639495049
+      },
+      "diagnostic_input_digest": "sha256:507a04ee6145c7c7d736e1ec8f42f7baef32b22d0383e0dd823bda887300cae5"
+    }
+  ],
+  "source_commit": "d124d6944c29633a6b60016da3fd5f8e2feae6fa",
+  "opened_reserved_results": false
+}
