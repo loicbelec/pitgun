@@ -151,6 +151,9 @@ pub struct TireEventContextV1 {
 }
 impl TireEventContextV1 {
     fn validate(&self, policy: &WindowPolicy) -> Result<(f64, f64), String> {
+        if let Some(curve) = &self.tire.wear_grip_curve {
+            curve.validate()?;
+        }
         if self.tire_id.is_empty()
             || self.tire_id.len() > 512
             || !self.tire.temp_opt.is_finite()
@@ -439,6 +442,7 @@ mod tests {
                 wear_load_k: 0.0,
                 wear_grip_k: 0.0,
                 wear_min: 0.5,
+                wear_grip_curve: None,
                 heat_k: 0.0,
                 cool_k: 0.0,
                 temp_opt: opt,

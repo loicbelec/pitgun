@@ -10,6 +10,7 @@ mod power_stream;
 pub mod thermal_career;
 pub mod thermal_driver;
 pub mod tire_events;
+pub mod tire_performance;
 pub mod tire_preparation;
 pub use power_stream::{POWER_CHANNELS, power_telemetry_policy_identity};
 pub mod service_control;
@@ -6252,6 +6253,14 @@ fn parse_tire(value: &Value) -> Result<TireParams, String> {
         wear_load_k: read_required_f64(value, &["wear_load_k"])?,
         wear_grip_k: read_required_f64(value, &["wear_grip_k"])?,
         wear_min: read_required_f64(value, &["wear_min"])?,
+        wear_grip_curve: value
+            .get("wear_grip_curve")
+            .filter(|v| !v.is_null())
+            .map(|v| {
+                serde_json::from_value(v.clone())
+                    .map_err(|e| format!("invalid wear grip curve: {e}"))
+            })
+            .transpose()?,
         temp_opt: read_required_f64(value, &["temp_opt", "temp_opt_c"])?,
         temp_sigma: read_required_f64(value, &["temp_sigma", "temp_sigma_c"])?,
         temp_min_k: read_required_f64(value, &["temp_min_k"])?,

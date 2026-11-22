@@ -1,0 +1,48 @@
+{
+  "schema": "pitgun.tire-performance-screen/v1",
+  "scope": "Native opt-in physical consistency correction before nine-opponent fitting; no admitted runtime/catalog/game/deployment change",
+  "workers": 8,
+  "training_contexts": [
+    [
+      1,
+      "MONZA"
+    ],
+    [
+      1,
+      "ZANDVOORT"
+    ],
+    [
+      2,
+      "MONTREAL"
+    ],
+    [
+      2,
+      "MEXICO"
+    ]
+  ],
+  "profiles": [
+    "progressive4",
+    "progressive8",
+    "progressive2"
+  ],
+  "profile_priority_before_results": "Prefer progressive4, then progressive8, then progressive2 among eligible global profiles; never per-circuit curves or coefficient changes to force a finish order. All three share .02 initial loss/.18 late loss; only integer power varies. No field reserved seeds are opened here.",
+  "source_setup": "Use unchanged source-best V2 reference setup per context, at constant era budgets8/16, explicit engine/HQ offsets/components. Training seed73013 and inherited environment. This is a reduced physical-screen anchor, not a new setup optimum.",
+  "legal_recipes": "Every two-compound opening pair for1stop at25/35/50/65/75percent plus1lap first/last. All first-two-distinct three-stint sequences for2stops at25/55percent, thirds,40/75percent and one-lap middle at half distance. Deduplicate rounded integer boundaries. Game plans1..2stops only.",
+  "extra_stop_diagnostics": "For3,4,5,6,7,8 and12stops, all six ordered opening pairs then repeat second compound, evenly spaced or first stint1lap. Same compound rule as legal plans; diagnostic flag explicit, never field-eligible. Tests whether3+still beat legal strategies without hiding the incentive behind a cap.",
+  "selection_targets": [
+    "All candidate full-GP simulations finish without numerical/fuel failure or lap-state discontinuity; same force/heat/energy tolerances as before",
+    "Every compound retains at least97percent direct temperature grip at +/-20C; a dated FIA2025 design reference, not universal measured or historical tire data",
+    "Wear curve monotone, raw wear.2 retains>=98percent direct wear grip, wear1 retains80percent; finite validated coefficients, no deleted work/heat/wear accumulation",
+    "For each of four training contexts, best legal1..2-stop time is no slower than every sampled3+diagnostic plan; failed profiles retained as REFINE rather than retimed or silently capped"
+  ],
+  "additional_diagnostics": "After global selection, same settings/selected legal strategy under Manage/Balanced/Attack on training contexts, paired on same actor/noise identity; explicit Balanced must equal default input/result exactly. No claim of complete aggression/risk requalification from this small screen. Five-lap single-set MonzaI test at reference E0/C4/K0 and E4/C4/K0, each paired with off-budget +1K, legacy plus selected profile; isolates cooling physically, not a legal same-budget gameplay comparison.",
+  "reserved_scope": "Independent field seeds99173,104729,130363,155921 and cold/hot environments remain unopened for subsequent field-policy evaluation. Broader curve applicability, doctrines, public erasIII+ and new native/WASM/Authority/Verifier admission remain later gates.",
+  "provenance": "Shared content-pinned kernel case cache permits later exact-case reuse without new compute. Sources/binary and all3profile resources frozen. Previous unchanged source results may be retained as comparison evidence only after100fresh exact equivalence controls; no candidate/driver result is imported from old physics.",
+  "non_goals": [
+    "No post-solve lap-time multipliers or forced finishing positions",
+    "No raw-wear unit reinterpretation silently applied to old profiles/replays",
+    "No mesh/sampling reduction or relaxed tire/braking coupling checks",
+    "No automatic promotion of a successful screen as an industrial calibration or all-era game balance",
+    "No per-circuit material tuning merely to impose exactly two stops"
+  ]
+}

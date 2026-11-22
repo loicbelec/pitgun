@@ -629,6 +629,7 @@ mod tests {
                 wear_load_k: 0.,
                 wear_grip_k: 0.,
                 wear_min: 1.,
+                wear_grip_curve: None,
                 temp_opt: 90.,
                 temp_sigma: 20.,
                 temp_min_k: 1.,

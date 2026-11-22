@@ -258,6 +258,7 @@ fn synthetic_request() -> SimulationRequest {
                 wear_load_k: 0.000_001,
                 wear_grip_k: 0.3,
                 wear_min: 0.7,
+                wear_grip_curve: None,
                 temp_opt: 90.0,
                 temp_sigma: 20.0,
                 temp_min_k: 0.5,
