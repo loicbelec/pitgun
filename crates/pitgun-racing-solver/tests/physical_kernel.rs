@@ -1974,6 +1974,117 @@ fn fuel_outcome_distinguishes_service_shortfall_and_technical_failure() {
 }
 
 #[test]
+fn invariant_lap_forecast_cache_preserves_complete_result_and_service_continuity() {
+    use pitgun_racing_solver::lap_boundary::{
+        BoundaryDiagnosticRequestV1, BoundaryDiagnosticVersionV1, BoundaryForecastV1,
+    };
+    let mut input = thermal_v2_request();
+    input.lap_count = 3;
+    input.pit_plan.stops.push(pitgun_racing_solver::PitStop {
+        lap: 1,
+        tire: input.vehicle.tire.clone(),
+    });
+    let expected = run_resolved_simulation_v3(&input).unwrap();
+    let run = |recompute, service| {
+        let request = BoundaryDiagnosticRequestV1 {
+            schema_version: BoundaryDiagnosticVersionV1::V1,
+            forecast: BoundaryForecastV1::MinimumGrip,
+            recompute_invariant: recompute,
+            input: input.clone(),
+        };
+        let mut session =
+            ResolvedSimulationSessionV3::new_boundary_diagnostic(request, service).unwrap();
+        let result = loop {
+            if service {
+                match session.advance_service().unwrap() {
+                    pitgun_racing_solver::ResolvedServiceStepV3::BeforeService(_) => {
+                        session.resolve_service_boundary(None).unwrap();
+                    }
+                    pitgun_racing_solver::ResolvedServiceStepV3::Lap(_) => {}
+                    pitgun_racing_solver::ResolvedServiceStepV3::Complete(result) => break result,
+                }
+            } else {
+                match session.advance().unwrap() {
+                    ResolvedSimulationStepV3::Lap(_) => {}
+                    ResolvedSimulationStepV3::Complete(result) => break result,
+                }
+            }
+        };
+        (*result, session.boundary_work().unwrap())
+    };
+    let (cached, work) = run(false, false);
+    let (recomputed, repeated) = run(true, false);
+    let (service, service_work) = run(false, true);
+    assert_eq!(cached, expected);
+    assert_eq!(recomputed, expected);
+    assert_eq!(service, expected);
+    assert_eq!(work, service_work);
+    assert_eq!(work.laps.len(), 2);
+    assert!(work.laps.iter().all(|l| l.forecast_evaluations == 1));
+    assert!(work.laps.iter().map(|l| l.cache_hits).sum::<u32>() > 0);
+    assert!(repeated.laps.iter().all(|l| l.cache_hits == 0));
+    assert!(
+        repeated
+            .laps
+            .iter()
+            .map(|l| l.forecast_evaluations)
+            .sum::<u32>()
+            > 2
+    );
+    assert!(
+        ResolvedSimulationSessionV3::new(input)
+            .unwrap()
+            .boundary_work()
+            .is_none()
+    );
+}
+
+#[test]
+fn held_state_diagnostic_requires_thermal_profile_and_agrees_at_constant_grip() {
+    use pitgun_racing_solver::lap_boundary::{
+        BoundaryDiagnosticRequestV1, BoundaryDiagnosticVersionV1, BoundaryForecastV1,
+    };
+    let mut input = thermal_v2_request();
+    input.lap_count = 3;
+    input.vehicle.tire.temp_min_k = 1.0;
+    input.vehicle.tire.wear_min = 1.0;
+    input.thermal_physics_v2.as_mut().unwrap().compounds[0].tire = input.vehicle.tire.clone();
+    let expected = run_resolved_simulation_v3(&input).unwrap();
+    let request = BoundaryDiagnosticRequestV1 {
+        schema_version: BoundaryDiagnosticVersionV1::V1,
+        forecast: BoundaryForecastV1::EndStateHeldDiagnostic,
+        recompute_invariant: false,
+        input: input.clone(),
+    };
+    let restored = serde_json::from_str(&serde_json::to_string(&request).unwrap()).unwrap();
+    let mut session =
+        ResolvedSimulationSessionV3::new_boundary_diagnostic(restored, false).unwrap();
+    let mut end = None;
+    loop {
+        match session.advance().unwrap() {
+            ResolvedSimulationStepV3::Lap(lap) => {
+                if let Some(previous) = end {
+                    assert_eq!(lap.solution.v[0], previous);
+                }
+                end = lap.solution.v.last().copied();
+            }
+            ResolvedSimulationStepV3::Complete(result) => {
+                assert_eq!(*result, expected);
+                break;
+            }
+        }
+    }
+    input.thermal_physics_v2 = None;
+    let request = BoundaryDiagnosticRequestV1 {
+        schema_version: BoundaryDiagnosticVersionV1::V1,
+        forecast: BoundaryForecastV1::EndStateHeldDiagnostic,
+        recompute_invariant: false,
+        input,
+    };
+    assert!(ResolvedSimulationSessionV3::new_boundary_diagnostic(request, false).is_err());
+}
+
+#[test]
 fn absent_thermal_candidate_does_not_add_historical_fields() {
     let input = resolved_v3_request(&synthetic_request());
     let input_json = serde_json::to_value(&input).unwrap();
