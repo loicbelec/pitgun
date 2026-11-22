@@ -1,0 +1,93 @@
+{
+  "schema": "pitgun.bounded-lap-lookahead-cost/v1",
+  "identity": {
+    "source_commit": "0efdfa3b128498beb903b069973523e1d3fecf09",
+    "plan_digest": "sha256:3288b157dae1255a11a5daa2e5af294a64805e8d83945bfa7d72988779e073b4",
+    "runner_digest": "sha256:c2478fe9b6227cf2ec857d23e136a79f003f4547d653db7f941f514b82569b01",
+    "probe_digest": "sha256:376a13c4680dd70936e7816d69066ec25a9bf72986ce214269aa60fcfaab0b42"
+  },
+  "summary": [
+    {
+      "id": "reference-budget-early8-monza-c0",
+      "samples_ms": {
+        "minimum_grip": [
+          227.79708300000001,
+          228.317166,
+          229.659916,
+          226.14479100000003,
+          225.681583,
+          234.41816500000002,
+          228.87174900000002
+        ],
+        "reachable_wear_v1": [
+          304.624499,
+          303.468499,
+          295.75483099999997,
+          304.175335,
+          295.75862500000005,
+          300.81775,
+          301.734667
+        ]
+      },
+      "medians_ms": {
+        "minimum_grip": 228.317166,
+        "reachable_wear_v1": 301.734667
+      }
+    },
+    {
+      "id": "reference-tires-medium",
+      "samples_ms": {
+        "minimum_grip": [
+          832.1671260000002,
+          838.809292,
+          837.4948319999999,
+          861.7349160000001,
+          856.0806249999999,
+          874.5733309999998,
+          867.506999
+        ],
+        "reachable_wear_v1": [
+          851.8477489999998,
+          861.5284600000001,
+          859.4075829999999,
+          871.8115450000001,
+          871.7390419999999,
+          882.5933749999999,
+          897.826956
+        ]
+      },
+      "medians_ms": {
+        "minimum_grip": 856.0806249999999,
+        "reachable_wear_v1": 871.7390419999999
+      }
+    },
+    {
+      "id": "reference-full-classic15-c2",
+      "samples_ms": {
+        "minimum_grip": [
+          2743.2101199999997,
+          2731.3116649999997,
+          2735.0628769999994,
+          2741.7265810000004,
+          2752.282334,
+          2725.620707,
+          2721.6253300000003
+        ],
+        "reachable_wear_v1": [
+          3438.589752,
+          3454.5806619999994,
+          3444.767958,
+          3443.3402100000003,
+          3428.5169180000003,
+          3430.882169,
+          3428.3821740000008
+        ]
+      },
+      "medians_ms": {
+        "minimum_grip": 2735.0628769999994,
+        "reachable_wear_v1": 3438.589752
+      }
+    }
+  ],
+  "scope": "Serial alternating native advance calls. Different physical outputs: not an equal-output optimization, browser/WASM/VPS/RSS result. Metrics/digest/serialization outside timer."
+}

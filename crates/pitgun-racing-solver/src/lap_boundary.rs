@@ -14,6 +14,8 @@ pub enum BoundaryForecastV1 {
     MinimumGrip,
     /// Diagnostic ablation only; not a bound on evolving future grip.
     EndStateHeldDiagnostic,
+    /// Native candidate: reachable wear, temperature floor, no deformation brake assist.
+    ReachableWearV1,
 }
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -33,6 +35,20 @@ pub struct BoundaryLapWorkV1 {
     pub last_forecast_cap_mps: f64,
     pub last_assumed_temperature_c: f64,
     pub last_assumed_wear: f64,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub reachable: Option<ReachableBoundaryWorkV1>,
+}
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+pub struct ReachableBoundaryWorkV1 {
+    pub anchor_cap_mps: f64,
+    pub certificate_cap_mps: f64,
+    pub committed_end_speed_mps: f64,
+    pub certificate_checks: u32,
+    pub uncommitted_cap_updates: u32,
+    pub conservative_recompute: bool,
+    pub service_reset: bool,
+    pub future_start_wear: f64,
+    pub future_end_wear_upper: f64,
 }
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 pub struct BoundaryWorkV1 {

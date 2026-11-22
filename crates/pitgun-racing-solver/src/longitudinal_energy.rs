@@ -548,6 +548,47 @@ pub fn thermal_step(
 mod tests {
     use super::*;
     use crate::{AeroParams, ChassisParams, EngineParams, TireParams};
+    #[test]
+    fn less_mass_more_grip_and_nonnegative_passive_assist_do_not_weaken_braking() {
+        let mut v = vehicle();
+        v.chassis.c_rr = 0.012;
+        let mut m = mechanical();
+        m.fixed_drag_area_m2 = 0.8;
+        m.fixed_downforce_area_m2 = 2.0;
+        for exponent in [0.0, 0.15, 0.3] {
+            let c = TireContactParamsV3 {
+                load_sensitivity_exponent: exponent,
+                ..Default::default()
+            };
+            for vertical in [-0.002, 0.0, 0.002] {
+                for grade in [-0.03, 0.0, 0.03] {
+                    for start in [10.0, 30.0, 70.0] {
+                        for end in [5.0, 20.0, 60.0] {
+                            let mut bound = context(&v, &m, &c);
+                            bound.mass_kg = 1100.0;
+                            bound.mu = 0.8;
+                            bound.vertical_curvature_per_m = vertical;
+                            bound.dz_m = grade * bound.ds_m;
+                            bound.curvature_radpm = 0.001;
+                            let (r, _, b, _) = bound.limits(start, end);
+                            let conservative = (r + b) / bound.mass_kg;
+                            for mass in [1000.0, 1050.0, 1100.0] {
+                                let mut actual = context(&v, &m, &c);
+                                actual.mass_kg = mass;
+                                actual.mu = 1.4;
+                                actual.tire_deformation_coefficient = 0.02;
+                                actual.vertical_curvature_per_m = vertical;
+                                actual.dz_m = grade * actual.ds_m;
+                                actual.curvature_radpm = 0.001;
+                                let (r, _, b, _) = actual.limits(start, end);
+                                assert!((r + b) / mass >= conservative - 1e-10);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
     fn vehicle() -> VehicleParams {
         VehicleParams {
             chassis: ChassisParams {
