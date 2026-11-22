@@ -65,3 +65,17 @@ hérités, pas une nouvelle politique physique/réglementaire par ère.
 
 Une cohérence physique et de bons compromis ne constituent pas encore un verdict
 sur la difficulté : aucun champ de neuf adversaires ou saison n'est simulé ici.
+
+Résultats : [RESULTS_V1.md](RESULTS_V1.md), [tableaux](MEASURED_TABLES_V1.md).
+Le post-traitement vérifie les digests de sources/reçus, le scellement des choix,
+leur conformité à la sélection déclarée et les répétitions publiées :
+
+```sh
+python3 experiments/career_full_gp_v1/summarize.py
+MPLCONFIGDIR=/private/tmp/pitgun-mplconfig python3 \
+  experiments/career_full_gp_v1/plot_report.py
+```
+
+Le tracé utilise Matplotlib/Numpy. Il lit exclusivement les résultats enregistrés,
+sans relancer la simulation ni intervenir dans la sélection. Les données brutes
+restent séparées des synthèses/figures dérivées.

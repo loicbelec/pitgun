@@ -1,0 +1,29 @@
+{
+  "schema": "pitgun.full-gp-postprocess/v1",
+  "simulation_source": "d124d69",
+  "campaign_digest": "sha256:bc7b59ba342946220f68b32740818649addef7b1521e60e8d5cf8d7bd33e4527",
+  "source_digests": {
+    "experiments/career_full_gp_v1/summarize.py": "sha256:a98e16f0f3fd1239e9b3d426ebc9589975e009a6878d6583caf8670745653795",
+    "experiments/career_full_gp_v1/plot_report.py": "sha256:0dd479f1107e57d75333124a50a7036603bf35d6f9513aaf471ae732a084d911"
+  },
+  "derived_digests": {
+    "experiments/career_full_gp_v1/results/summary-v1.json": "sha256:f80020fac96bb41857159f4b156ab45e95f61d74d26aee02d04d5ed6c2b03bf7",
+    "experiments/career_full_gp_v1/MEASURED_TABLES_V1.md": "sha256:1cbf7eadd7a6a55f22ad05edda5fac185d8028e6b4a152971988f99049486766",
+    "experiments/career_full_gp_v1/figures/axis-diagnostics-v1.png": "sha256:2c425eb6e8a751304848ee11fbdbd3b8e899fe699db4f468c23019c62d3e77e5",
+    "experiments/career_full_gp_v1/figures/axis-diagnostics-v1.svg": "sha256:6187568ca4752f0f341326404296b94beb40e707d2d43bd4f7d8929cb60e34bb",
+    "experiments/career_full_gp_v1/figures/selected-setups-v1.png": "sha256:a2a6087690243da1bfa57256428016b3aecae58dc0f641efaff800897d05688b",
+    "experiments/career_full_gp_v1/figures/selected-setups-v1.svg": "sha256:d082b071b96ec8359447f58e23b7a911daf93791486b66c7a6e53328522631da"
+  },
+  "checks": {
+    "workspace_passed": 598,
+    "failed": 0,
+    "existing_ignored": 22,
+    "workspace_all_target_check": "pass",
+    "new_example_strict_clippy": "pass",
+    "ci_scope_strict_clippy": "pass",
+    "format_diff": "pass",
+    "retained_full_gp_controls": 2,
+    "strict_rejections": 8
+  },
+  "figure_renderer": "Matplotlib3.11.2 / static recorded native results; no simulation or selection during rendering"
+}

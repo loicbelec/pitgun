@@ -1,0 +1,362 @@
+[
+  {
+    "kind": "same_circuit",
+    "key": "eed4a98b731da3fed1ba2abbb0b4cfd2c1af5fd761e8e59140d1b8da29d3fa2b",
+    "family": "concentrated",
+    "source": "sha256:468d988396d27584b52fcd8696b11299ac6baa71d5e3d573871293eb55fe19c8"
+  },
+  {
+    "kind": "same_circuit",
+    "key": "61a8e76a376457bb4471c3554a9de628b9354b3c908eb53ba0d10cbbe9d75594",
+    "family": "concentrated",
+    "source": "sha256:468d988396d27584b52fcd8696b11299ac6baa71d5e3d573871293eb55fe19c8"
+  },
+  {
+    "kind": "circuit_transfer",
+    "key": "3a3d2c7c1bfa6db96fe52627905e0eea6cd47b889e2297de4f226b4f03cc7216",
+    "family": "concentrated",
+    "source": "sha256:468d988396d27584b52fcd8696b11299ac6baa71d5e3d573871293eb55fe19c8"
+  },
+  {
+    "kind": "same_circuit",
+    "key": "558ada3003b9809ebe583a109e53b83aebcd4b65aace38fedd364b3f9cbd9cac",
+    "family": "concentrated",
+    "source": "sha256:468d988396d27584b52fcd8696b11299ac6baa71d5e3d573871293eb55fe19c8"
+  },
+  {
+    "kind": "same_circuit",
+    "key": "bfbbc0c84991898bd46c2cea24c0202654ac82f8b7dc6e4745f73b53abd24654",
+    "family": "concentrated",
+    "source": "sha256:468d988396d27584b52fcd8696b11299ac6baa71d5e3d573871293eb55fe19c8"
+  },
+  {
+    "kind": "circuit_transfer",
+    "key": "2ef4741f603b70705d98f0741a16e3c2f99b43570f9bbedd2bb70b5462ad9787",
+    "family": "concentrated",
+    "source": "sha256:468d988396d27584b52fcd8696b11299ac6baa71d5e3d573871293eb55fe19c8"
+  },
+  {
+    "kind": "same_circuit",
+    "key": "97b4624ed778fb3dd47fb254c0ee707ac4c6485cb16543e21c98aeb6d3f07bcd",
+    "family": "diversified",
+    "source": "sha256:71c65753fcc4b7f5dfc6fc6b0d3b88f10b045ca167cdd2e1e00f6fea4c91a2b2"
+  },
+  {
+    "kind": "same_circuit",
+    "key": "613a6f66bce1e10dd3eeb362663b7229ad893574eea8bddc5162c8bb530133d6",
+    "family": "diversified",
+    "source": "sha256:71c65753fcc4b7f5dfc6fc6b0d3b88f10b045ca167cdd2e1e00f6fea4c91a2b2"
+  },
+  {
+    "kind": "circuit_transfer",
+    "key": "714afb8cd42f063d9e74a0562c84b13f58aedb8888e94492c51f0fbf4f21e388",
+    "family": "diversified",
+    "source": "sha256:71c65753fcc4b7f5dfc6fc6b0d3b88f10b045ca167cdd2e1e00f6fea4c91a2b2"
+  },
+  {
+    "kind": "same_circuit",
+    "key": "bd0613b1a9586ad6ac996dd9c802afc7d0c0ac77d2232bc03e02d0c7029ee787",
+    "family": "diversified",
+    "source": "sha256:71c65753fcc4b7f5dfc6fc6b0d3b88f10b045ca167cdd2e1e00f6fea4c91a2b2"
+  },
+  {
+    "kind": "same_circuit",
+    "key": "a4874b56fc9cb8aa6876c7ba55e4e0cfd3cc9ddc99d0dce29afb2e5c2864a4c8",
+    "family": "diversified",
+    "source": "sha256:71c65753fcc4b7f5dfc6fc6b0d3b88f10b045ca167cdd2e1e00f6fea4c91a2b2"
+  },
+  {
+    "kind": "circuit_transfer",
+    "key": "4a9741003aa50cebf238c933484c7dc639e4c11a189330907f544926c78cca0e",
+    "family": "diversified",
+    "source": "sha256:71c65753fcc4b7f5dfc6fc6b0d3b88f10b045ca167cdd2e1e00f6fea4c91a2b2"
+  },
+  {
+    "kind": "same_circuit",
+    "key": "051486e4a4bcd1e54b87aab3bcf89b110e785238a49afae16bcebdb528073ffb",
+    "family": "concentrated",
+    "source": "sha256:b29f6ea505dba171bd4212221ea4875f573288fc4779a433d1f14e0e4249ee44"
+  },
+  {
+    "kind": "same_circuit",
+    "key": "3d25a578b15d86fdc32e9d95290360bba21f471044f00139dda583d12cc24ffb",
+    "family": "concentrated",
+    "source": "sha256:b29f6ea505dba171bd4212221ea4875f573288fc4779a433d1f14e0e4249ee44"
+  },
+  {
+    "kind": "same_circuit",
+    "key": "9d3b5103ce34ce51fd132e5adb7da76b8595df042055fc06b6df2b68ec426de7",
+    "family": "concentrated",
+    "source": "sha256:b29f6ea505dba171bd4212221ea4875f573288fc4779a433d1f14e0e4249ee44"
+  },
+  {
+    "kind": "same_circuit",
+    "key": "0617c490ede67a011a2de5b8c73a05c3c6d21ea5bee77641b95540b88eebd2e6",
+    "family": "concentrated",
+    "source": "sha256:b29f6ea505dba171bd4212221ea4875f573288fc4779a433d1f14e0e4249ee44"
+  },
+  {
+    "kind": "same_circuit",
+    "key": "da80af494ae494fe0342e85fd5f2f0e5fda33a844206d2a8975130f53f94160b",
+    "family": "diversified",
+    "source": "sha256:3db0c2c807e28b0f42055c5c66abec5558094d01363c00de9e41d659c475ae56"
+  },
+  {
+    "kind": "same_circuit",
+    "key": "93ae6a1ba8ba724ab70e0b9fbbc4b671b7b9a3635acb92a1f37c8b43c96d46db",
+    "family": "diversified",
+    "source": "sha256:3db0c2c807e28b0f42055c5c66abec5558094d01363c00de9e41d659c475ae56"
+  },
+  {
+    "kind": "same_circuit",
+    "key": "fd7fafaabc30260f7af0427b12e24437ee5ad888b01415a7ad23711edb3cd1c3",
+    "family": "diversified",
+    "source": "sha256:3db0c2c807e28b0f42055c5c66abec5558094d01363c00de9e41d659c475ae56"
+  },
+  {
+    "kind": "same_circuit",
+    "key": "f297b01634cbfda987f3d0dbc7406c173971deee67c818a98e42528af04d6a75",
+    "family": "diversified",
+    "source": "sha256:3db0c2c807e28b0f42055c5c66abec5558094d01363c00de9e41d659c475ae56"
+  },
+  {
+    "kind": "same_circuit",
+    "key": "c29f0d95bfc6ce04ce62639d92e10db25a5801e13022a5346bbdf61409606de5",
+    "family": "concentrated",
+    "source": "sha256:058745715750c6bf5e9238984858022503fee92e0e5fe1f0f91928bbc9495aa5"
+  },
+  {
+    "kind": "same_circuit",
+    "key": "50d0a08a934c2f77e266d2a8baf25b7df9cf8858a74b1eae15c4f7e35a52c7fc",
+    "family": "concentrated",
+    "source": "sha256:058745715750c6bf5e9238984858022503fee92e0e5fe1f0f91928bbc9495aa5"
+  },
+  {
+    "kind": "circuit_transfer",
+    "key": "7d83d40f3fbe15b2af606fe8241a19dd9ecd3bd5c1894926beddb89d7cec8527",
+    "family": "concentrated",
+    "source": "sha256:058745715750c6bf5e9238984858022503fee92e0e5fe1f0f91928bbc9495aa5"
+  },
+  {
+    "kind": "same_circuit",
+    "key": "834f7d95513ccb3cc0d0410bf5c6e01f38e8869be58319ce0a9a407087d98bbd",
+    "family": "concentrated",
+    "source": "sha256:058745715750c6bf5e9238984858022503fee92e0e5fe1f0f91928bbc9495aa5"
+  },
+  {
+    "kind": "same_circuit",
+    "key": "f42d7e9f3a24e7569b386b935c87627ce0d357ef64319b57b5a32225d5b59c9d",
+    "family": "concentrated",
+    "source": "sha256:058745715750c6bf5e9238984858022503fee92e0e5fe1f0f91928bbc9495aa5"
+  },
+  {
+    "kind": "circuit_transfer",
+    "key": "9712650c2631b1622a5197fffd371970a4e58502c5ce91d28fcc8dba4429a3bf",
+    "family": "concentrated",
+    "source": "sha256:058745715750c6bf5e9238984858022503fee92e0e5fe1f0f91928bbc9495aa5"
+  },
+  {
+    "kind": "same_circuit",
+    "key": "169cace49e2d8937b271d4671de38bfd6b99756d6fac6e37e4b1dc6ce1982058",
+    "family": "diversified",
+    "source": "sha256:ef9be50ad3d9d0e8808ce0a82aec2bc148fbe4042d0b2ca7af5b355a023da440"
+  },
+  {
+    "kind": "same_circuit",
+    "key": "12f84977245fd2c826f183ed831bc51af1d08d1b6021e4c8ce66d352f0bab5f9",
+    "family": "diversified",
+    "source": "sha256:ef9be50ad3d9d0e8808ce0a82aec2bc148fbe4042d0b2ca7af5b355a023da440"
+  },
+  {
+    "kind": "circuit_transfer",
+    "key": "7365d43191fbe6a7b77e511e94124ae966990ad965e742e37eba8a6082b56a64",
+    "family": "diversified",
+    "source": "sha256:ef9be50ad3d9d0e8808ce0a82aec2bc148fbe4042d0b2ca7af5b355a023da440"
+  },
+  {
+    "kind": "same_circuit",
+    "key": "c05dfb9683bb8f1877dedb9a2dbee5f804154fb8e74642a21d0a74f2d25aa275",
+    "family": "diversified",
+    "source": "sha256:ef9be50ad3d9d0e8808ce0a82aec2bc148fbe4042d0b2ca7af5b355a023da440"
+  },
+  {
+    "kind": "same_circuit",
+    "key": "a61946a58b4881417387cd61f3926a0f6109942bb260a163e7c6eaced2bb5c7d",
+    "family": "diversified",
+    "source": "sha256:ef9be50ad3d9d0e8808ce0a82aec2bc148fbe4042d0b2ca7af5b355a023da440"
+  },
+  {
+    "kind": "circuit_transfer",
+    "key": "39b8c73647c9a7209af285e5b01ae81042952e7635b2c794f64269b8d5dd79a6",
+    "family": "diversified",
+    "source": "sha256:ef9be50ad3d9d0e8808ce0a82aec2bc148fbe4042d0b2ca7af5b355a023da440"
+  },
+  {
+    "kind": "same_circuit",
+    "key": "984911a79d34aaa9baacfd4b07293a23e5f02d40545137d7387c8353d1368075",
+    "family": "concentrated",
+    "source": "sha256:43b7742ac4a8385616cc1af4676f15996068db995f763526bc1cd3c43e1b4f24"
+  },
+  {
+    "kind": "same_circuit",
+    "key": "26382c181ad2127d5d4c11ecb8d50af4eafd35c36d362607907b82ac04a4f36a",
+    "family": "concentrated",
+    "source": "sha256:43b7742ac4a8385616cc1af4676f15996068db995f763526bc1cd3c43e1b4f24"
+  },
+  {
+    "kind": "same_circuit",
+    "key": "9134ba48d9ce745a5adee891bd6ddea8bcd5c1af4b491623ccadba4df00ef542",
+    "family": "concentrated",
+    "source": "sha256:43b7742ac4a8385616cc1af4676f15996068db995f763526bc1cd3c43e1b4f24"
+  },
+  {
+    "kind": "same_circuit",
+    "key": "4df0fd6352fc0e169cd9f254842a146eaf5ab10b8adcf552dc8e6f164bc5bd7c",
+    "family": "concentrated",
+    "source": "sha256:43b7742ac4a8385616cc1af4676f15996068db995f763526bc1cd3c43e1b4f24"
+  },
+  {
+    "kind": "same_circuit",
+    "key": "a5c603114a2889cd098e1272d336b5089c99f4fb19e3413fcfe60b8283ab6061",
+    "family": "diversified",
+    "source": "sha256:1a5659e98eecbd9238bc463edfd963c40fb3660652d36aec9bd2d98d51e2a032"
+  },
+  {
+    "kind": "same_circuit",
+    "key": "1fab7f0a0025e5df9dfe31d20326b215f1810e3d5c0ef2183b40935e6296e59c",
+    "family": "diversified",
+    "source": "sha256:1a5659e98eecbd9238bc463edfd963c40fb3660652d36aec9bd2d98d51e2a032"
+  },
+  {
+    "kind": "same_circuit",
+    "key": "6c39fb334597c069005c3b2460fc455035036223ecc6df811a7c082acacef63f",
+    "family": "diversified",
+    "source": "sha256:1a5659e98eecbd9238bc463edfd963c40fb3660652d36aec9bd2d98d51e2a032"
+  },
+  {
+    "kind": "same_circuit",
+    "key": "635dc2b4576d6a122d7bf7a19ba555b957c077bc7698b9217b9cd5317201d800",
+    "family": "diversified",
+    "source": "sha256:1a5659e98eecbd9238bc463edfd963c40fb3660652d36aec9bd2d98d51e2a032"
+  },
+  {
+    "kind": "same_circuit",
+    "key": "1a8918d3bce47220154a609592fdbddab1308a9335c91830c2743bbc15b4917c",
+    "family": "concentrated",
+    "source": "sha256:f12c5447340ec39312cd631d1947d23cfaaa329aa20b538683d65e7d5a42fcd4"
+  },
+  {
+    "kind": "same_circuit",
+    "key": "24a4935c920d8e00023b047677a968252ec48f5048163e2e09772a6d346541cc",
+    "family": "concentrated",
+    "source": "sha256:f12c5447340ec39312cd631d1947d23cfaaa329aa20b538683d65e7d5a42fcd4"
+  },
+  {
+    "kind": "circuit_transfer",
+    "key": "63a80c5e6f01177b1036b1833c1045339aeb2885628f1d7531fe971add3a45d1",
+    "family": "concentrated",
+    "source": "sha256:f12c5447340ec39312cd631d1947d23cfaaa329aa20b538683d65e7d5a42fcd4"
+  },
+  {
+    "kind": "same_circuit",
+    "key": "499481823284d8c1b2ef34c38caefd8436e9343af9365eaa6ba12dc568914cf5",
+    "family": "concentrated",
+    "source": "sha256:f12c5447340ec39312cd631d1947d23cfaaa329aa20b538683d65e7d5a42fcd4"
+  },
+  {
+    "kind": "same_circuit",
+    "key": "3890b5329a6e59f9ff14e537175e05abc1e2b8c6be3a36eba088a2d264229ee1",
+    "family": "concentrated",
+    "source": "sha256:f12c5447340ec39312cd631d1947d23cfaaa329aa20b538683d65e7d5a42fcd4"
+  },
+  {
+    "kind": "circuit_transfer",
+    "key": "51c49de7f3ef8b82843cc98b6ac9d96d761c9b8aef7ba759827a0a543c1dda19",
+    "family": "concentrated",
+    "source": "sha256:f12c5447340ec39312cd631d1947d23cfaaa329aa20b538683d65e7d5a42fcd4"
+  },
+  {
+    "kind": "same_circuit",
+    "key": "99dadaaae5df317811b8a1f215f6a2e17041cab58f61d2aab2a1dcd452be88e7",
+    "family": "diversified",
+    "source": "sha256:9ffac93363e4f2b894f46539de882864369ddb5a9b6f43e8c9b469c36d0ded0f"
+  },
+  {
+    "kind": "same_circuit",
+    "key": "a92a22f01910b5e7078ed882ab21c25d255461b29b6ec378acf5fa9397f50ab9",
+    "family": "diversified",
+    "source": "sha256:9ffac93363e4f2b894f46539de882864369ddb5a9b6f43e8c9b469c36d0ded0f"
+  },
+  {
+    "kind": "circuit_transfer",
+    "key": "2f538d8f2933addaa82503b34363c740f6c0a28f4077a0c2715a5ec3177c82e0",
+    "family": "diversified",
+    "source": "sha256:9ffac93363e4f2b894f46539de882864369ddb5a9b6f43e8c9b469c36d0ded0f"
+  },
+  {
+    "kind": "same_circuit",
+    "key": "1913a66f895a57ae0c6df4e24280407188296ec17ae12ad401400fcb23c14dc7",
+    "family": "diversified",
+    "source": "sha256:9ffac93363e4f2b894f46539de882864369ddb5a9b6f43e8c9b469c36d0ded0f"
+  },
+  {
+    "kind": "same_circuit",
+    "key": "33328af579a5ffc1750f0418b6bb8a92345d112a4cba304e2df0f7c70f464859",
+    "family": "diversified",
+    "source": "sha256:9ffac93363e4f2b894f46539de882864369ddb5a9b6f43e8c9b469c36d0ded0f"
+  },
+  {
+    "kind": "circuit_transfer",
+    "key": "308819161951d93a661da3611279d5f9425403606060b638bad7aff5f97723bd",
+    "family": "diversified",
+    "source": "sha256:9ffac93363e4f2b894f46539de882864369ddb5a9b6f43e8c9b469c36d0ded0f"
+  },
+  {
+    "kind": "same_circuit",
+    "key": "5e6faec055683ae40285992d8f75a15b2a900ec55eff99cbe988b33a91c63d81",
+    "family": "concentrated",
+    "source": "sha256:b864cc4432be17a4702790a91bdaf9287c76d9a0c8483edc6077307faa77f87a"
+  },
+  {
+    "kind": "same_circuit",
+    "key": "3c44272fb45896affd7520baa6387a0154fabc93116be1b256d496abf3d07cef",
+    "family": "concentrated",
+    "source": "sha256:b864cc4432be17a4702790a91bdaf9287c76d9a0c8483edc6077307faa77f87a"
+  },
+  {
+    "kind": "same_circuit",
+    "key": "f553d78321aca5f2fdd57068d0e4b1f8edc0efaa52067e9a75b5f264d2e13edb",
+    "family": "concentrated",
+    "source": "sha256:b864cc4432be17a4702790a91bdaf9287c76d9a0c8483edc6077307faa77f87a"
+  },
+  {
+    "kind": "same_circuit",
+    "key": "94c184cba1b238c271ebfbe540a3fb043f21afcec07eecebbe5c4aa13fdb62e5",
+    "family": "concentrated",
+    "source": "sha256:b864cc4432be17a4702790a91bdaf9287c76d9a0c8483edc6077307faa77f87a"
+  },
+  {
+    "kind": "same_circuit",
+    "key": "ef9ca35699fc92179e367251bb7dd28f9a662e4a3de151e4866130195327cfaf",
+    "family": "diversified",
+    "source": "sha256:507a04ee6145c7c7d736e1ec8f42f7baef32b22d0383e0dd823bda887300cae5"
+  },
+  {
+    "kind": "same_circuit",
+    "key": "7b265ca7604f87373a6bb9a37aaf353e5f7eee2af639c4f640dae63b93fd5574",
+    "family": "diversified",
+    "source": "sha256:507a04ee6145c7c7d736e1ec8f42f7baef32b22d0383e0dd823bda887300cae5"
+  },
+  {
+    "kind": "same_circuit",
+    "key": "8b3448614a20e561c31e10d77251c7cd9a9c4882505daddb78a62088e342f7a7",
+    "family": "diversified",
+    "source": "sha256:507a04ee6145c7c7d736e1ec8f42f7baef32b22d0383e0dd823bda887300cae5"
+  },
+  {
+    "kind": "same_circuit",
+    "key": "f5ecd7c93806b04142e2a29c2bac6347bc7894a58f3cfb03de0bf65470a15936",
+    "family": "diversified",
+    "source": "sha256:507a04ee6145c7c7d736e1ec8f42f7baef32b22d0383e0dd823bda887300cae5"
+  }
+]

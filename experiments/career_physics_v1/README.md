@@ -47,6 +47,12 @@ vrais réducteurs du jeu, sans sauvegarde personnelle. Les trois routes de
 doctrine sont des alias physiques dans cet échantillon : 54 requêtes/540 voitures,
 mais 18 courses distinctes, pas 54 observations indépendantes.
 
+Précision de provenance : le seed est fixé par requête de circuit (17041 plus
+son index dans le calendrier exporté), puis conservé entre variantes appariées.
+La mention abrégée «seed17041» du plan gelé ne doit pas être interprétée comme une
+graine identique sur tous les circuits ; les requêtes/reçus conservent les valeurs
+effectivement utilisées et leurs digests.
+
 ```sh
 cargo build --release --offline --locked -p pitgun-racing-simulator \
   --example career_physics_probe
