@@ -2017,6 +2017,8 @@ async fn run_resolved_simulation_kernel_incremental(
         } else {
             1.0
         };
+        // Reserve corrections in the combined circle, including lateral demand.
+        let energy_force_capacity_fraction = correction_energy_multiplier.sqrt().recip();
         let tire_heat = thermal_model
             .map(|p| p.tire(&tire_curr).copied())
             .transpose()?
@@ -2150,6 +2152,7 @@ async fn run_resolved_simulation_kernel_incremental(
                             tire_deformation_coefficient: tire_heat
                                 .map(|p| p.deformation_resistance_coefficient)
                                 .unwrap_or(0.0),
+                            force_capacity_fraction: energy_force_capacity_fraction,
                             mass_kg: mass,
                             ds_m: segment_distance(spatial_integration, s, ds, i),
                             dz_m: input.track.z[i + 1] - input.track.z[i],
@@ -2158,7 +2161,8 @@ async fn run_resolved_simulation_kernel_incremental(
                             mu: forecast_mu,
                             engine_effort_fraction: 1.0,
                             traction_utilization: 0.0,
-                            braking_utilization: next_braking[i].clamp(0., 1.),
+                            braking_utilization: (next_braking[i] / energy_force_capacity_fraction)
+                                .clamp(0., 1.),
                         };
                         next_envelope[i] =
                             context.braking_start_limit(next_envelope[i + 1], next_envelope[i])?;
@@ -2194,6 +2198,7 @@ async fn run_resolved_simulation_kernel_incremental(
                             tire_deformation_coefficient: tire_heat
                                 .map(|p| p.deformation_resistance_coefficient)
                                 .unwrap_or(0.0),
+                            force_capacity_fraction: energy_force_capacity_fraction,
                             mass_kg: mass,
                             ds_m: segment_ds,
                             dz_m: input.track.z[i + 1] - input.track.z[i],
@@ -2206,8 +2211,12 @@ async fn run_resolved_simulation_kernel_incremental(
                                 &tire_curr,
                             ),
                             engine_effort_fraction: 1.0,
-                            traction_utilization: traction_utilization[i].clamp(0.0, 1.0),
-                            braking_utilization: braking_utilization[i].clamp(0.0, 1.0),
+                            traction_utilization: (traction_utilization[i]
+                                / energy_force_capacity_fraction)
+                                .clamp(0.0, 1.0),
+                            braking_utilization: (braking_utilization[i]
+                                / energy_force_capacity_fraction)
+                                .clamp(0.0, 1.0),
                         };
                         v_bwd[i] = context.braking_start_limit(v_target, v_bwd[i])?;
                         continue;
@@ -2368,6 +2377,7 @@ async fn run_resolved_simulation_kernel_incremental(
                         tire_deformation_coefficient: tire_heat
                             .map(|p| p.deformation_resistance_coefficient)
                             .unwrap_or(0.0),
+                        force_capacity_fraction: energy_force_capacity_fraction,
                         mass_kg: mass,
                         ds_m: segment_ds,
                         dz_m: input.track.z[i + 1] - input.track.z[i],
@@ -2380,8 +2390,12 @@ async fn run_resolved_simulation_kernel_incremental(
                             &tire_curr,
                         ),
                         engine_effort_fraction: lapse_effort.as_ref().map_or(1.0, |f| f[i]),
-                        traction_utilization: traction_utilization[i].clamp(0.0, 1.0),
-                        braking_utilization: braking_utilization[i].clamp(0.0, 1.0),
+                        traction_utilization: (traction_utilization[i]
+                            / energy_force_capacity_fraction)
+                            .clamp(0.0, 1.0),
+                        braking_utilization: (braking_utilization[i]
+                            / energy_force_capacity_fraction)
+                            .clamp(0.0, 1.0),
                     };
                     let step = context.advance(
                         v,
