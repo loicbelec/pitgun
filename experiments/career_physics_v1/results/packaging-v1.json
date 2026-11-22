@@ -1,0 +1,27 @@
+{
+  "schema": "pitgun.lossless-evidence-packaging/v1",
+  "method": "gzip mtime=0; original campaign digests apply to decompressed exact bytes",
+  "files": {
+    "baselines-v1.json.gz": {
+      "compressed_digest": "sha256:9aff1ad02c8a2c45991864be3eab4bdb2c33fa990f26c510098e199a91125e65",
+      "original_digest": "sha256:bd2df56847b6342180ff7fdfe67c73204070c3f22ce6bd0fb7d62216bb815a0d",
+      "original_file": "baselines-v1.json",
+      "original_bytes": 6307445,
+      "compressed_bytes": 942770
+    },
+    "screen-v1.json.gz": {
+      "compressed_digest": "sha256:b53ffed336b61211385161d6174ed72a5fe5bd6300f3ec7b5d965b89f015afb9",
+      "original_digest": "sha256:bf30e3faa03909859668a4f6379456d2cea863685bf115685a179369e3545599",
+      "original_file": "screen-v1.json",
+      "original_bytes": 11696755,
+      "compressed_bytes": 1294697
+    },
+    "confirmation-v1.json.gz": {
+      "compressed_digest": "sha256:365a40395283a7fc1f8709db25c52bcfe9265d068346c07beb739c555e519253",
+      "original_digest": "sha256:acccfdd08f4e41200c2baa948814cf7b65bb86ce74b921fab1d3f3418319114e",
+      "original_file": "confirmation-v1.json",
+      "original_bytes": 4133214,
+      "compressed_bytes": 626070
+    }
+  }
+}

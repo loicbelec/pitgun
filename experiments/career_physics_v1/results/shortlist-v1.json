@@ -1,0 +1,362 @@
+[
+  {
+    "id": "confirm-era1-entry-MONZA-0_8_0_0-g1-d0.5-minimum_grip",
+    "fixture_id": "craft_engineering:era1-entry",
+    "circuit": "MONZA",
+    "allocation": [
+      0,
+      8,
+      0,
+      0
+    ],
+    "gear": 1,
+    "downforce": 0.5,
+    "five_laps": false,
+    "forecast": "minimum_grip"
+  },
+  {
+    "id": "confirm-era1-entry-MONZA-0_8_0_0-g1-d0.5-reachable_wear_v1",
+    "fixture_id": "craft_engineering:era1-entry",
+    "circuit": "MONZA",
+    "allocation": [
+      0,
+      8,
+      0,
+      0
+    ],
+    "gear": 1,
+    "downforce": 0.5,
+    "five_laps": false,
+    "forecast": "reachable_wear_v1"
+  },
+  {
+    "id": "confirm-era1-entry-MONZA-0_3_3_2-g1-d0.5-minimum_grip",
+    "fixture_id": "craft_engineering:era1-entry",
+    "circuit": "MONZA",
+    "allocation": [
+      0,
+      3,
+      3,
+      2
+    ],
+    "gear": 1,
+    "downforce": 0.5,
+    "five_laps": false,
+    "forecast": "minimum_grip"
+  },
+  {
+    "id": "confirm-era1-entry-MONZA-0_3_3_2-g1-d0.5-reachable_wear_v1",
+    "fixture_id": "craft_engineering:era1-entry",
+    "circuit": "MONZA",
+    "allocation": [
+      0,
+      3,
+      3,
+      2
+    ],
+    "gear": 1,
+    "downforce": 0.5,
+    "five_laps": false,
+    "forecast": "reachable_wear_v1"
+  },
+  {
+    "id": "confirm-era1-entry-ZANDVOORT-0_8_0_0-g1-d0.5-minimum_grip",
+    "fixture_id": "craft_engineering:era1-entry",
+    "circuit": "ZANDVOORT",
+    "allocation": [
+      0,
+      8,
+      0,
+      0
+    ],
+    "gear": 1,
+    "downforce": 0.5,
+    "five_laps": false,
+    "forecast": "minimum_grip"
+  },
+  {
+    "id": "confirm-era1-entry-ZANDVOORT-0_8_0_0-g1-d0.5-reachable_wear_v1",
+    "fixture_id": "craft_engineering:era1-entry",
+    "circuit": "ZANDVOORT",
+    "allocation": [
+      0,
+      8,
+      0,
+      0
+    ],
+    "gear": 1,
+    "downforce": 0.5,
+    "five_laps": false,
+    "forecast": "reachable_wear_v1"
+  },
+  {
+    "id": "confirm-era1-entry-ZANDVOORT-0_3_3_2-g1-d0.5-minimum_grip",
+    "fixture_id": "craft_engineering:era1-entry",
+    "circuit": "ZANDVOORT",
+    "allocation": [
+      0,
+      3,
+      3,
+      2
+    ],
+    "gear": 1,
+    "downforce": 0.5,
+    "five_laps": false,
+    "forecast": "minimum_grip"
+  },
+  {
+    "id": "confirm-era1-entry-ZANDVOORT-0_3_3_2-g1-d0.5-reachable_wear_v1",
+    "fixture_id": "craft_engineering:era1-entry",
+    "circuit": "ZANDVOORT",
+    "allocation": [
+      0,
+      3,
+      3,
+      2
+    ],
+    "gear": 1,
+    "downforce": 0.5,
+    "five_laps": false,
+    "forecast": "reachable_wear_v1"
+  },
+  {
+    "id": "confirm-era1-exit-MONZA-0_11_0_0-g1-d0.5-minimum_grip",
+    "fixture_id": "craft_engineering:era1-exit",
+    "circuit": "MONZA",
+    "allocation": [
+      0,
+      11,
+      0,
+      0
+    ],
+    "gear": 1,
+    "downforce": 0.5,
+    "five_laps": false,
+    "forecast": "minimum_grip"
+  },
+  {
+    "id": "confirm-era1-exit-MONZA-0_11_0_0-g1-d0.5-reachable_wear_v1",
+    "fixture_id": "craft_engineering:era1-exit",
+    "circuit": "MONZA",
+    "allocation": [
+      0,
+      11,
+      0,
+      0
+    ],
+    "gear": 1,
+    "downforce": 0.5,
+    "five_laps": false,
+    "forecast": "reachable_wear_v1"
+  },
+  {
+    "id": "confirm-era1-exit-MONZA-0_4_5_2-g1-d0.5-minimum_grip",
+    "fixture_id": "craft_engineering:era1-exit",
+    "circuit": "MONZA",
+    "allocation": [
+      0,
+      4,
+      5,
+      2
+    ],
+    "gear": 1,
+    "downforce": 0.5,
+    "five_laps": false,
+    "forecast": "minimum_grip"
+  },
+  {
+    "id": "confirm-era1-exit-MONZA-0_4_5_2-g1-d0.5-reachable_wear_v1",
+    "fixture_id": "craft_engineering:era1-exit",
+    "circuit": "MONZA",
+    "allocation": [
+      0,
+      4,
+      5,
+      2
+    ],
+    "gear": 1,
+    "downforce": 0.5,
+    "five_laps": false,
+    "forecast": "reachable_wear_v1"
+  },
+  {
+    "id": "confirm-era1-exit-ZANDVOORT-0_11_0_0-g1-d0.5-minimum_grip",
+    "fixture_id": "craft_engineering:era1-exit",
+    "circuit": "ZANDVOORT",
+    "allocation": [
+      0,
+      11,
+      0,
+      0
+    ],
+    "gear": 1,
+    "downforce": 0.5,
+    "five_laps": false,
+    "forecast": "minimum_grip"
+  },
+  {
+    "id": "confirm-era1-exit-ZANDVOORT-0_11_0_0-g1-d0.5-reachable_wear_v1",
+    "fixture_id": "craft_engineering:era1-exit",
+    "circuit": "ZANDVOORT",
+    "allocation": [
+      0,
+      11,
+      0,
+      0
+    ],
+    "gear": 1,
+    "downforce": 0.5,
+    "five_laps": false,
+    "forecast": "reachable_wear_v1"
+  },
+  {
+    "id": "confirm-era1-exit-ZANDVOORT-0_4_5_2-g1-d0.5-minimum_grip",
+    "fixture_id": "craft_engineering:era1-exit",
+    "circuit": "ZANDVOORT",
+    "allocation": [
+      0,
+      4,
+      5,
+      2
+    ],
+    "gear": 1,
+    "downforce": 0.5,
+    "five_laps": false,
+    "forecast": "minimum_grip"
+  },
+  {
+    "id": "confirm-era1-exit-ZANDVOORT-0_4_5_2-g1-d0.5-reachable_wear_v1",
+    "fixture_id": "craft_engineering:era1-exit",
+    "circuit": "ZANDVOORT",
+    "allocation": [
+      0,
+      4,
+      5,
+      2
+    ],
+    "gear": 1,
+    "downforce": 0.5,
+    "five_laps": false,
+    "forecast": "reachable_wear_v1"
+  },
+  {
+    "id": "confirm-era2-exit-MONZA-0_0_16_0-g1-d0-minimum_grip",
+    "fixture_id": "craft_engineering:era2-exit",
+    "circuit": "MONZA",
+    "allocation": [
+      0,
+      0,
+      16,
+      0
+    ],
+    "gear": 1,
+    "downforce": 0,
+    "five_laps": false,
+    "forecast": "minimum_grip"
+  },
+  {
+    "id": "confirm-era2-exit-MONZA-0_0_16_0-g1-d0-reachable_wear_v1",
+    "fixture_id": "craft_engineering:era2-exit",
+    "circuit": "MONZA",
+    "allocation": [
+      0,
+      0,
+      16,
+      0
+    ],
+    "gear": 1,
+    "downforce": 0,
+    "five_laps": false,
+    "forecast": "reachable_wear_v1"
+  },
+  {
+    "id": "confirm-era2-exit-MONZA-0_8_7_1-g0-d0-minimum_grip",
+    "fixture_id": "craft_engineering:era2-exit",
+    "circuit": "MONZA",
+    "allocation": [
+      0,
+      8,
+      7,
+      1
+    ],
+    "gear": 0,
+    "downforce": 0,
+    "five_laps": false,
+    "forecast": "minimum_grip"
+  },
+  {
+    "id": "confirm-era2-exit-MONZA-0_8_7_1-g0-d0-reachable_wear_v1",
+    "fixture_id": "craft_engineering:era2-exit",
+    "circuit": "MONZA",
+    "allocation": [
+      0,
+      8,
+      7,
+      1
+    ],
+    "gear": 0,
+    "downforce": 0,
+    "five_laps": false,
+    "forecast": "reachable_wear_v1"
+  },
+  {
+    "id": "confirm-era2-exit-ZANDVOORT-0_16_0_0-g0.75-d0.5-minimum_grip",
+    "fixture_id": "craft_engineering:era2-exit",
+    "circuit": "ZANDVOORT",
+    "allocation": [
+      0,
+      16,
+      0,
+      0
+    ],
+    "gear": 0.75,
+    "downforce": 0.5,
+    "five_laps": false,
+    "forecast": "minimum_grip"
+  },
+  {
+    "id": "confirm-era2-exit-ZANDVOORT-0_16_0_0-g0.75-d0.5-reachable_wear_v1",
+    "fixture_id": "craft_engineering:era2-exit",
+    "circuit": "ZANDVOORT",
+    "allocation": [
+      0,
+      16,
+      0,
+      0
+    ],
+    "gear": 0.75,
+    "downforce": 0.5,
+    "five_laps": false,
+    "forecast": "reachable_wear_v1"
+  },
+  {
+    "id": "confirm-era2-exit-ZANDVOORT-0_8_7_1-g0.75-d0.5-minimum_grip",
+    "fixture_id": "craft_engineering:era2-exit",
+    "circuit": "ZANDVOORT",
+    "allocation": [
+      0,
+      8,
+      7,
+      1
+    ],
+    "gear": 0.75,
+    "downforce": 0.5,
+    "five_laps": false,
+    "forecast": "minimum_grip"
+  },
+  {
+    "id": "confirm-era2-exit-ZANDVOORT-0_8_7_1-g0.75-d0.5-reachable_wear_v1",
+    "fixture_id": "craft_engineering:era2-exit",
+    "circuit": "ZANDVOORT",
+    "allocation": [
+      0,
+      8,
+      7,
+      1
+    ],
+    "gear": 0.75,
+    "downforce": 0.5,
+    "five_laps": false,
+    "forecast": "reachable_wear_v1"
+  }
+]

@@ -3,6 +3,15 @@
 **Protocol and resolution audit, not a fitted policy or balance verdict.**
 Current implementation readiness is tracked separately in
 [readiness-v2.json](readiness-v2.json); the original plan remains frozen.
+
+The subsequent [actual-component career screen](../career_physics_v1/RESULTS_V1.md)
+resolves54requests/540cars exactly twice and executes18player GP references,
+500short setup samples and12paired full-GP confirmations. No carry jumps or
+simulation failures; six shortlisted pair rankings agree across forecasts.
+Short-distance selection reverses on the GP horizon for two late-eraII pairs,
+where concentrated discretionary engine/chassis spending remains competitive.
+This is not a calibrated nine-opponent field or proof of exploit removal: search
+the GP horizon and reserve conditions before fitting opponents. #466/#461.
 The event journal/axis is instrumentation. No event/display work changes an AI
 allocation, setup, driver, strategy or physical result. Further UI/runtime work
 is secondary to the driver/physics and competition work specified here.
@@ -140,6 +149,14 @@ Use a larger independent seed set for the shortlisted stochastic evaluation;
 report denominators/intervals and all failures rather than the surviving winner.
 
 ## Competitive acceptance
+
+Owner clarification after the actual-career screen: each available axis must
+have a real, measurable physical role in appropriate operating conditions, with
+different importance across engines, eras, circuits and race duration. A late-II
+concentrated spend can legitimately win when HQ bonuses already provide cooling.
+Do not require every axis to improve every run or every best setup to spend on
+all four. Audit unexplained structural inactivity, not every locally weak marginal
+return. [Detailed criteria](../career_physics_v1/ACCEPTANCE_CRITERIA.md).
 
 The owner's target is thoughtful point/slider choice rather than routine wins by
 motor/chassis concentration. Do not turn this into an arbitrary obligation to

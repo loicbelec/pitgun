@@ -61,3 +61,8 @@ Les tickets #420/#421 restent ouverts. Le projet électrique et les contrats
 d'agents génériques ne reçoivent aucune règle de course.
 
 Résultats et limites mesurées : [RESULTS_V1.md](RESULTS_V1.md).
+
+Pour les véritables configurations de carrière avec moteur remplacé, utiliser
+désormais le [résolveur natif des composants installés](../career_physics_v1/README.md).
+Le présent banc conserve ses entrées synthétiques et résultats gelés ; son choix
+de moteur par véhicule de base ne suffit pas à représenter ces remplacements.

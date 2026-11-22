@@ -7,6 +7,7 @@ pub mod fuel_preparation;
 mod local_stream;
 pub mod physical_events;
 mod power_stream;
+pub mod thermal_career;
 pub mod thermal_driver;
 pub mod tire_events;
 pub mod tire_preparation;

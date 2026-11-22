@@ -1,0 +1,26 @@
+{
+  "schema": "pitgun.career-physics-screen-plan/v1",
+  "scope": "Native actual-component resolution and bounded first sensitivity screen; no coefficient fitting, opponent calibration, runtime admission or deployment",
+  "catalog": "catalogs/racing/v1.8.1",
+  "fixtures": "experiments/opponent_physics_v2/results/career-fixtures-v1.json",
+  "thermal_policy": "experiments/career_physics_v1/profile-v1.json",
+  "mapping": "all 54 authored requests / 540 cars, exact two passes; doctrine aliases retained, never counted as independent physical samples",
+  "full_gp_baselines": "18 unique typed requests, player only, reachable_wear_v1 and minimum_grip, exact two passes",
+  "screen": {
+    "fixtures": ["craft_engineering:era1-entry", "craft_engineering:era1-exit", "craft_engineering:era2-exit"],
+    "circuits": ["MONZA", "ZANDVOORT"],
+    "distance": "5 laps, first actual compound, no service; diagnostic, not a shortened official GP",
+    "concentrated_engine_fractions": [0, 0.25, 0.5, 0.75, 1],
+    "concentrated_rounding": "floor(budget*fraction + 0.5); remaining discretionary points to chassis; immutable HQ offsets added afterwards",
+    "diversified": "authored allocation; plus 50/50 concentration transferred by 1 or 2 points from engine/chassis to cooling or aero; total discretionary spend fixed",
+    "gear_values": [0, 0.25, 0.5, 0.75, 1],
+    "downforce_values_when_unlocked": [0, 0.5, 1],
+    "downforce_when_locked": 0.5,
+    "selection": "one fastest successful five-lap sample per concentrated/diversified category and cohort, tie by case id; failures retained; no best-finish substitution",
+    "confirmation": "each selected setup at inherited full GP plan, paired reachable/minimum, exact two passes; short-screen winners are not claimed full-GP optima"
+  },
+  "fixed_controls": ["installed components", "actual point budget and HQ offsets", "balanced player V2 mode and driver noise identity", "inherited initial fuel (100 kg)", "inherited 90C mounted/pit tire convention for eras I/II; no silently generalized modern blankets", "source stints and official GP distance on full runs", "seed 17041", "road and ambient conditions", "unmodified frozen thermal/driver coefficients"],
+  "metrics": ["installed engine/components and strict driver identity", "all outcome/error and accepted prefix", "lap carry speed/engine/surface/carcass/wear jumps", "bounded certificate updates/fallbacks", "grip/contact and heat/energy residuals", "total time and derating", "setup ranking changes between boundary algorithms"],
+  "reserved": ["all other seeds and ambient/road temperatures", "Silverstone and non-Monza/Zandvoort setup response", "eras III and later", "modern 70C preparation applicability", "fuel auto-preparation sensitivity", "full integer allocation space and fine continuous slider optima", "independent fixed-field opponent fitting and full-season evaluation", "tire/service strategy search"],
+  "non_acceptance": ["do not claim absence of engine/chassis exploit from a coarse sample", "do not require nonzero spend on each axis", "do not increase cooling response just to make zero cooling lose", "do not change a rival or seed to improve player comparison", "no errors silently classified as fuel exhaustion", "native cost is not WASM/VPS/RSS evidence"]
+}
