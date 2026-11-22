@@ -1,0 +1,19 @@
+{
+  "schema": "pitgun.fuel-ceiling-diagnostic/v1",
+  "purpose": "Distinguish estimator refusal from actual physical finish/fuel outcome at the unchanged declared110kg ceiling. No preparation/policy/BSFC fitting.",
+  "repeats": 2,
+  "cases": [
+    {
+      "id": "full-modern20-c0-ceiling110",
+      "frozen_case": "full-modern20-c0",
+      "mode": "balanced",
+      "diagnostic_ceiling_only": true
+    },
+    {
+      "id": "full-modern20-c2-ceiling110",
+      "frozen_case": "full-modern20-c2",
+      "mode": "balanced",
+      "diagnostic_ceiling_only": true
+    }
+  ]
+}

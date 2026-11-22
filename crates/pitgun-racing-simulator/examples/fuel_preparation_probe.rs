@@ -25,6 +25,8 @@ struct Case {
     compare_original: bool,
     #[serde(default)]
     isolation: bool,
+    #[serde(default)]
+    diagnostic_ceiling_only: bool,
 }
 fn execute(input: ResolvedSimulationRequestV3) -> Result<Value, String> {
     let mut session = FuelAwareSessionV1::new(input)?;
@@ -75,23 +77,28 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     } else {
         None
     };
-    let prepared = match prepare_fuel_v1(&input, &policy) {
-        Ok((receipt, resolved)) => {
-            let outcome = resolved.clone().map(execute);
-            let isolation = if case.isolation {
-                let healthy = resolved.ok_or("isolation requires prepared input")?;
-                let mut rival = healthy.clone();
-                rival.state.fuel_mass = 0.000001;
-                Some(run_fuel_aware_field_v1(BTreeMap::from([
-                    ("player".into(), healthy),
-                    ("rival".into(), rival),
-                ])))
-            } else {
-                None
-            };
-            json!({"receipt":receipt,"outcome":outcome,"isolation":isolation})
+    let prepared = if case.diagnostic_ceiling_only {
+        input.state.fuel_mass = policy.maximum_start_kg;
+        json!({"diagnostic_ceiling_kg":policy.maximum_start_kg,"diagnostic_input_digest":canonical_json_digest(&input)?,"outcome":execute(input.clone())})
+    } else {
+        match prepare_fuel_v1(&input, &policy) {
+            Ok((receipt, resolved)) => {
+                let outcome = resolved.clone().map(execute);
+                let isolation = if case.isolation {
+                    let healthy = resolved.ok_or("isolation requires prepared input")?;
+                    let mut rival = healthy.clone();
+                    rival.state.fuel_mass = 0.000001;
+                    Some(run_fuel_aware_field_v1(BTreeMap::from([
+                        ("player".into(), healthy),
+                        ("rival".into(), rival),
+                    ])))
+                } else {
+                    None
+                };
+                json!({"receipt":receipt,"outcome":outcome,"isolation":isolation})
+            }
+            Err(e) => json!({"technical_error":e}),
         }
-        Err(e) => json!({"technical_error":e}),
     };
     println!(
         "{}",
