@@ -1,0 +1,30 @@
+{
+  "schema": "pitgun.career-full-gp-plan/v1",
+  "scope": "Local native full-GP response campaign with frozen physics; no opponent fitting, runtime admission or deployment",
+  "fixtures": "experiments/opponent_physics_v2/results/career-fixtures-v1.json",
+  "thermal_policy": "experiments/career_physics_v1/profile-v1.json",
+  "prior_shortlist": "experiments/career_physics_v1/results/shortlist-v1.json",
+  "stages": ["era1-entry", "era1-exit", "era2-exit"],
+  "fit_circuits": ["MONZA", "ZANDVOORT"],
+  "axes": ["aero", "chassis", "engine", "cooling"],
+  "workers": 4,
+  "phase_a": "Full GP at source sliders0.5/0.5. Every integer discretionary engine/chassis split; authored allocation; prior short-screen category allocations; all feasible one-point transfers from authored/prior category anchors;1,2,4point transfers from prior concentrated anchor's largest donor to aero/cooling. Fixed source stints/driver/fuel/environment/seed. Deduplicate exact allocation.",
+  "phase_b": "Every integer engine/chassis allocation crossed with all declared slider grid points, plus three fastest successful non-concentrated phaseA allocations per cohort on same grid. Order by total GP time then stable request identity; retain all failures. No five-lap selection.",
+  "gear_grid": [0, 0.25, 0.5, 0.75, 1],
+  "downforce_grid_when_unlocked": [0, 0.5, 1],
+  "phase_c": "One bounded local round: all legal one-point allocation transfers around phaseB's best concentrated and best non-concentrated setup, each at its fixed chosen sliders. Keep phaseA/B candidates available. No global optimum claim for diversified spend or continuous sliders.",
+  "axis_diagnostics": "Authored allocation at fixed source sliders and inherited full-GP strategy; separately add exactly one point to each axis and increase budget cap by1. This isolates parameter response but is explicitly outside the authored career budget and excluded from competitive selection. Preserve fixed HQ offsets/components/driver noise. Effective per-axis cap20 remains enforced.",
+  "phase_strategy": "For best sampled concentrated and non-concentrated setup afterC, compare source plan; medium-hard stops at35%,50%,65%; soft-hard at50%; hard-soft at50%; medium-soft at55%; soft-medium-soft at thirds. All laps sum to actual full GP, integer stops floor/floored cumulative fractions, fixed source pit loss and preparation. Select best successful recipe per frozen setup; retain failures. Do not change allocations/sliders during strategy comparison.",
+  "confirmation": "Repeat each final category strategy winner in a fresh native process (cache bypass), require exact result data. Also evaluate minimum_grip reference for the same setup/strategy; reference is not used for selection.",
+  "selection_seal": "Write selection-lock-v1.json with immutable selected cases/digest before any reserved run. No retune after opening reserved results.",
+  "reserved": {
+    "seeds": [314159, 271828],
+    "environments": [{"air_c":20,"road_c":30},{"air_c":40,"road_c":50}],
+    "same_circuit": "Each final setup/strategy on its original circuit, crossed seeds/environments, exact fresh repeat; temperature conditions only, no rain/weather dynamics claimed",
+    "transfer_circuits": {"era1-entry":"SILVERSTONE","era1-exit":"SILVERSTONE","era2-exit":"MONTREAL"},
+    "transfer": "Monza category winners transfer to the named legal career circuit, same allocation/sliders, source selected recipe rebuilt at target official lap count, two reserved seeds, inherited environment, exact fresh repeat. Existing source-circuit baselines are exposed; these setup responses are reserved, not unseen physics."
+  },
+  "controls": ["same immutable catalog and installed components", "actual discretionary budget plus immutable HQ offsets", "source full official lap count", "source seed per prepared circuit (not one seed for all tracks)", "fixed balanced V2 driver/noise identity", "inherited100kg fuel and90C initial/pit preparation", "unchanged source pit loss", "unchanged thermal/driver/longitudinal/boundary coefficients and tolerances", "old frozen probes and receipts unchanged"],
+  "metrics": ["actual and effective allocations; resolved physical parameters and source/policy/input digests", "GP total and per-lap times; every failure and accepted prefix", "derated time and minimum power fraction; engine/surface/carcass/wear/fuel response", "mechanical/chemical/thermal closure, grip/contact coupling and solver work", "speed/engine/surface/carcass/wear carry jumps", "category and strategy ranks at fitting and reserved conditions"],
+  "interpretation": ["contextual axis relevance, not mandatory all-axis spending", "concentrated late-II spend can legitimately win with existing HQ cooling", "one-axis off-budget diagnostics are not legal competitive setups", "single-point budget transfers change two axes; no single-axis causal claim from those alone", "exact repeat establishes determinism, not physical accuracy or coupling-error uncertainty", "report small ambiguous effects under unchanged numerical tolerance without forcing a rank verdict", "no fitted nine-opponent field or season balance verdict", "no native/WASM/VPS performance claims from concurrent runs"]
+}
