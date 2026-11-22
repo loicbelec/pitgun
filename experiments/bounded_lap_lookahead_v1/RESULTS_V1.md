@@ -90,6 +90,10 @@ Pas d'amplification artificielle des lois pour imposer des dépenses sur tous le
   tests couvrent l'enclosure avec durées/charges variables, la monotonie de capacité
   de freinage avec masse/grip/assistance passive, le préfixe non réécrit et la
   parité de service. Aucun test ni tolérance affaibli.
+-Banc statique vérifié dans un Chrome headless isolé,1440×1000 et390×844 :
+  26scénarios, sélection/chargement effectif des figures, aucune erreur JavaScript
+  ou débordement horizontal. Figures inspectées directement. Cette recette ne
+  constitue pas une exécution du nouveau moteur en WASM dans le navigateur.
 
 Le wrapper diagnostique entier, pas seulement l'input physique, distingue ces
 algorithmes. Les compteurs décrivent des tentatives numériques ; ils ne sont pas
