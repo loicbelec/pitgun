@@ -1,0 +1,14 @@
+{
+  "retained_full_gp_controls_exact": [
+    {
+      "input_digest": "sha256:dbf5b3f4c7a979009290ccfd75c52761c6a22397ed7ba12950d4b065a6add89d",
+      "result_digest": "sha256:e070a8b75c047bbe42ee2b0423c8984f8b10ae20a904622adb2954c0a7147154"
+    },
+    {
+      "input_digest": "sha256:80fc55641389e543f19035c5178a3f96cd294d288697dd107f2709cb7c522eab",
+      "result_digest": "sha256:7240282b26d2f5f1207f4e22e8ffb33b1d14590a3df903e134113ed64248b354"
+    }
+  ],
+  "strict_rejections": 7,
+  "compact_output_only_no_solver_change": true
+}

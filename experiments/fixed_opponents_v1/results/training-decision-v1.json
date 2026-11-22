@@ -1,0 +1,9 @@
+{
+  "status": "REFINE",
+  "eligible": 0,
+  "calibrations_tested": 27,
+  "reserved_results_opened": false,
+  "reason": "No informed exit-stage victory in either era even at lowest field budgets; hierarchy passes but progression fails. Preserve negative evidence; refine only training in separately frozen V2.",
+  "native_training_gp_executions": 6155,
+  "unique_diagnostic_inputs": 6084
+}
