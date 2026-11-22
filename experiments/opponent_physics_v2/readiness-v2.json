@@ -53,5 +53,6 @@
   "point_value_audit": "issue469; early authored aero weak, concentrated sampled optimum fully chassis and5/6gearbox upper endpoint; contextual diagnosis before any mapping adjustment",
   "fixed_field_failed_evidence": "experiments/fixed_opponents_v1/RESULTS_V1.md",
   "fixed_field_stop_evidence": "experiments/fixed_opponents_v2/results/owner-stop-v2.json",
-  "tire_stand_evidence": "experiments/pit_strategy_audit_v1/RESULTS_V1.md"
+  "tire_stand_evidence": "experiments/pit_strategy_audit_v1/RESULTS_V1.md",
+  "tire_stand_fix_issue": "https://github.com/loicbelec/pitgun/issues/472"
 }

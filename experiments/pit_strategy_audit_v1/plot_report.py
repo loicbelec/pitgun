@@ -26,6 +26,8 @@ def main():
  axes[1].fill_between([-20,20],.97,1,color='#d5e2d8',label='Repère FIA 2025 : ≥97 % à ±20°C');axes[1].set_xlabel('Écart à la température optimale (°C)');axes[1].set_title('Loi thermique actuelle');axes[1].set_xlim(-40,40);axes[1].set_ylim(.6,1.02);axes[1].legend(frameon=False,loc='lower center',fontsize=9)
  fig.suptitle('Les paramètres de grip doivent être cohérents avec les nouveaux états physiques\nLe repère FIA est un objectif de conception daté, pas une mesure universelle pour les ères de Pitgun')
  fig.savefig(out/'grip-curves-v1.png',dpi=170);fig.savefig(out/'grip-curves-v1.svg',metadata={'Date':None});plt.close(fig)
+ for svg in out.glob('*.svg'):
+  svg.write_text('\n'.join(line.rstrip() for line in svg.read_text().splitlines())+'\n')
  print(out)
 
 if __name__=='__main__':main()

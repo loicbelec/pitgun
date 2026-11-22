@@ -4,6 +4,8 @@
 La perte directe d'adhérence liée à l'usure explique l'essentiel de l'incitation ;
 le doublement du temps de stand ne la corrige pas. Voir le
 [rapport et les figures](RESULTS_V1.md). Aucun coefficient modifié n'est promu.
+Correction suivie dans [#472](https://github.com/loicbelec/pitgun/issues/472), avant
+la reprise de [#457](https://github.com/loicbelec/pitgun/issues/457).
 
 La calibration des neuf IA est interrompue avant sélection et avant les résultats
 réservés. Le propriétaire fixe désormais **deux arrêts volontaires maximum** pour
