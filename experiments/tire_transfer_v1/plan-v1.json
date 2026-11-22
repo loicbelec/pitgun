@@ -1,0 +1,110 @@
+{
+  "schema": "pitgun.tire-performance-transfer/v1",
+  "status": "preregistered native training transfer; no field fitting or runtime admission",
+  "profile_selection": "Use exactly the globally locked progressive4 profile from tire_performance_v1; no coefficient, pit-cost, driver trait or tolerance modification in this campaign.",
+  "workers": 8,
+  "contexts": [
+    {
+      "era": 1,
+      "fixture_id": "craft_engineering:era1-exit",
+      "circuit": "MONZA",
+      "laps": 53,
+      "source_seed": 17041,
+      "base_budget": 8
+    },
+    {
+      "era": 1,
+      "fixture_id": "craft_engineering:era1-exit",
+      "circuit": "SILVERSTONE",
+      "laps": 52,
+      "source_seed": 17042,
+      "base_budget": 8
+    },
+    {
+      "era": 1,
+      "fixture_id": "craft_engineering:era1-exit",
+      "circuit": "ZANDVOORT",
+      "laps": 72,
+      "source_seed": 17043,
+      "base_budget": 8
+    },
+    {
+      "era": 2,
+      "fixture_id": "craft_engineering:era2-exit",
+      "circuit": "MEXICO",
+      "laps": 71,
+      "source_seed": 17043,
+      "base_budget": 16
+    },
+    {
+      "era": 2,
+      "fixture_id": "craft_engineering:era2-exit",
+      "circuit": "MONTREAL",
+      "laps": 70,
+      "source_seed": 17042,
+      "base_budget": 16
+    },
+    {
+      "era": 2,
+      "fixture_id": "craft_engineering:era2-exit",
+      "circuit": "MONZA",
+      "laps": 53,
+      "source_seed": 17046,
+      "base_budget": 16
+    },
+    {
+      "era": 2,
+      "fixture_id": "craft_engineering:era2-exit",
+      "circuit": "SAOPAULO",
+      "laps": 71,
+      "source_seed": 17044,
+      "base_budget": 16
+    },
+    {
+      "era": 2,
+      "fixture_id": "craft_engineering:era2-entry",
+      "circuit": "SILVERSTONE",
+      "laps": 52,
+      "source_seed": 17045,
+      "base_budget": 16
+    },
+    {
+      "era": 2,
+      "fixture_id": "craft_engineering:era2-exit",
+      "circuit": "SPIELBERG",
+      "laps": 71,
+      "source_seed": 17041,
+      "base_budget": 16
+    },
+    {
+      "era": 2,
+      "fixture_id": "craft_engineering:era2-exit",
+      "circuit": "ZANDVOORT",
+      "laps": 72,
+      "source_seed": 17045,
+      "base_budget": 16
+    }
+  ],
+  "training_seed": 73013,
+  "setup_search": "1551 full-GP medium/hard50percent plans: all integer engine/chassis splits; cooling0/2/4, engine0/25/50percent, aero0/12.5percent, remaining chassis; gear0/.5/1; downforce.5 inI and0/.5 inII. Fixed actual engineI1960 andII1970/basic aero; offsets0/0/0/0 and2/1/4/1. No player budget/result-based tuning.",
+  "setup_refinement": "For the best two successful setups per context, every legal one-point transfer and sliders +/-0.25; same medium/hard50percent plan. Deduplicate exactly. No global optimum claim.",
+  "anchors": "Before observing new strategy comparisons, lock two physically distinct sampled setups per context: best successful setup overall, and best successful engine/chassis-only discretionary allocation. If identical, keep overall and best successful positive-cooling alternative. Current HQ offsets/components still apply to a zero-discretionary-cooling setup.",
+  "strategy_search": "For each of20anchors,114 one/two-stop plans and84 explicitly diagnostic3..12-stop plans from the frozen tire screen recipes. Equal strategy comparison under each anchor; no post-solve time correction or extra-stop exclusion from the physical test. Distinct first-two compounds reflect existing race preparation protocol. No exhaustive continuous/all-setup/compound-sequence optimum claim.",
+  "selection": "Do not choose a new profile or final nine-driver field here. Check whether the already selected global profile transfers to these contexts/settings. Retain all negative margins and failed simulations.",
+  "gates": [
+    "Every setup/refinement/strategy simulation finishes without numerical or fuel failure. Existing solver force/energy/heat tolerances unchanged.",
+    "All lap-boundary carry jumps remain zero, including speed, engine temperature, surface/carcass temperature and wear, with intended service resets accounted for.",
+    "For each anchor, best sampled1/2-stop time <= best sampled3+stop time. No epsilon hides a negative margin.",
+    "Actual resolved pit penalty preserved; total_time - sum(moving_laps) - stop_count*penalty has absolute residual<=1e-8s, only a rounding/accounting check.",
+    "One fresh exact repeat of the best1/2-stop and best3+stop case per anchor,40 fullGP repeat executions, all output fields exactly equal."
+  ],
+  "reserved_scope": "Field seeds99173/104729/130363/155921 and reserved cold/hot environments remain unopened. Inherited training environment only. No nine-driver fitting, player-career validation, publicIII+ qualification, traffic/collisions/weather dynamics, Worker/WASM/Authority/Verifier/catalog/game/deployment change.",
+  "failure_policy": "Complete a REFINE receipt with counterexamples if any gate fails. Do not publish a model or silently change coefficients. A targeted follow-up must have its own source/protocol/result version before any field holdout.",
+  "retention": "Retain protocol, code/resources/binary identities, compact per-case inputs/results/lap metrics and digests, anchor lock, all failures, exact repeats and summary. Reuse only exact current-kernel cache cases and account for reuse separately. Do not export point-by-point full telemetry or publish campaign data inside the runtime catalog.",
+  "non_goals": [
+    "No new generic-framework cap on pit stops. The offline normal-plan eligibility guard is separate from explicitly unrestricted extra-stop physical diagnostics.",
+    "No claim that zero failures or chosen tire coefficients establish industrial physical validity.",
+    "No concurrent timing/RSS performance claim.",
+    "No deleting old calibration failures, changing personal saves or touching local game ports."
+  ]
+}
