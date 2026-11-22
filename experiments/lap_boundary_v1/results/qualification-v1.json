@@ -1,0 +1,73 @@
+{
+  "schema": "pitgun.lap-boundary-qualification/v1",
+  "status": "EXACT_OUTPUT_CACHE_QUALIFIED_HELD_DIAGNOSTIC_REJECTED",
+  "source_commit": "4364e19ac7b9597fa5cc7f9583f0dceec5375039",
+  "identity": {
+    "binary_digest": "sha256:47c560ecfbf195c8ed605ec2764d4e4aff9ecec023045b3a681d24120dbc031b",
+    "plan_digest": "sha256:650651fe0d132bc2e2a8f68ef908deaf1f4a8cff9687f32f8aa8d29947bef923",
+    "runner_digest": "sha256:a5a4c65f28f8e1e19759612419aef2ce4bb12594a3a7f1b4867e9a895dfc6c80",
+    "source_commit": "4364e19ac7b9597fa5cc7f9583f0dceec5375039"
+  },
+  "screen_attempts": 48,
+  "cost_attempts": 42,
+  "driver_regression_attempts": 56,
+  "extra_unchanged_service_attempts": 3,
+  "historical_attempts": 22,
+  "total_native_bank_attempts": 171,
+  "native_tests": 270,
+  "screen_repeat_exact": true,
+  "cache_recompute_results_equal": true,
+  "all_floor_cases_complete": true,
+  "driver_regression_equal": true,
+  "historical_equal": true,
+  "held_failures_per_pass": 3,
+  "continuity_jumps_zero": true,
+  "cost": [
+    {
+      "scenario": "budget-early8-monza-c0",
+      "cached_median_ms": 260.530875,
+      "recompute_median_ms": 357.130459,
+      "speedup_ratio": 1.370779793373818,
+      "time_reduction_fraction": 0.2704882251446382
+    },
+    {
+      "scenario": "tires-medium",
+      "cached_median_ms": 947.1014599999999,
+      "recompute_median_ms": 1238.8442919999998,
+      "speedup_ratio": 1.3080375697024054,
+      "time_reduction_fraction": 0.2354959649763636
+    },
+    {
+      "scenario": "full-classic15-c2",
+      "cached_median_ms": 2930.3142539999994,
+      "recompute_median_ms": 3852.5466660000006,
+      "speedup_ratio": 1.3147213343214352,
+      "time_reduction_fraction": 0.23938254145991467
+    }
+  ],
+  "next_physical_issue": 461,
+  "checks": {
+    "native_full_tests": true,
+    "strict_scoped_clippy": true,
+    "all_target_check": true,
+    "fmt_diff": true
+  },
+  "limits": [
+    "native Mac advance timing only; no browser/VPS/WASM/RSS claim",
+    "held endpoint is not a future-grip bound",
+    "attempt diagnostics are not committed physical events/Engineer observations",
+    "no actual bounded/coupled forecast admission or competitive balance verdict",
+    "unchanged service continuation is not arbitrary process restoration"
+  ],
+  "evidence": {
+    "screen-v1.json": "sha256:051c4d0d43e4e10e75f6f1cc82121012874b0ac8900df4c8b86dc51516aba3bc",
+    "cost-v1.json": "sha256:df211e4fe00d7a3d89587683df7bb9b3d1671c0a5b3649bcb18250f280c63fb0"
+  },
+  "environment": {
+    "rustc": "1.89.0 (29483883e 2025-08-04)",
+    "host": "aarch64-apple-darwin",
+    "architecture": "arm64",
+    "macos": "26.5.1",
+    "cost_concurrency": "serial; unrelated native tests ended; other Mac activity not controlled"
+  }
+}
