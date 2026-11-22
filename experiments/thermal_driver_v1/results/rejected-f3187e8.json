@@ -1,0 +1,553 @@
+{
+  "cases": [
+    {
+      "id": "budget-classic15-monza-c0-balanced_reference-manage",
+      "input_digest": "sha256:40807a25e6174af72deaa5f9e525571c4e5c8ad65dca1f7ea2318cf4d3dece39",
+      "outcome": {
+        "digest": "sha256:d59a12d5429bf12f5dd8fbd92115fbf1a286201f8fd33be05b082140ad083d7a",
+        "frozen_digest_equal": null,
+        "ok": true,
+        "service_equal": null
+      }
+    },
+    {
+      "id": "budget-classic15-monza-c0-balanced_reference-balanced",
+      "input_digest": "sha256:eca236290c2a28e5407eabfa713f4bac8c02f569df62e886ce755d3204574026",
+      "outcome": {
+        "digest": "sha256:e2e808353c8b543941618dfa321933b26a6b4a2257949b6f5cc970f10f6b7835",
+        "frozen_digest_equal": null,
+        "ok": true,
+        "service_equal": null
+      }
+    },
+    {
+      "id": "budget-classic15-monza-c0-balanced_reference-attack",
+      "input_digest": "sha256:3b0321af43b9e8888107df7a50c593a00c2fb256c8609e1d20e32abad5042ab3",
+      "outcome": {
+        "error": "thermal V2: tire/velocity coupling did not converge on lap 1: relative grip error=0.00000001600955146230376, contact bound=1.0002036084756507",
+        "ok": false
+      }
+    },
+    {
+      "id": "budget-classic15-monza-c0-limit_specialist-manage",
+      "input_digest": "sha256:87ffdb367b6deb939796a9c09d0da9baa3bbc515e67fb8f09e439cb30154e38a",
+      "outcome": {
+        "digest": "sha256:56eccd88928f1824a68b37c0122a10ec2ef22016d807058e37076f497143a3e4",
+        "frozen_digest_equal": null,
+        "ok": true,
+        "service_equal": null
+      }
+    },
+    {
+      "id": "budget-classic15-monza-c0-limit_specialist-balanced",
+      "input_digest": "sha256:033b203495f9107af76a7a04c3bd27de6e15051d76bab34c7a9cf159f79d41a8",
+      "outcome": {
+        "digest": "sha256:68b00b29fe578fcdc56be339e21624474ec145e46c98e2984f6b817fbb56b6a6",
+        "frozen_digest_equal": null,
+        "ok": true,
+        "service_equal": null
+      }
+    },
+    {
+      "id": "budget-classic15-monza-c0-limit_specialist-attack",
+      "input_digest": "sha256:9889ba8e6e9e5910ff0c70f38ee667adc67878ed2d3c8cd7bd11848042c82ad7",
+      "outcome": {
+        "error": "thermal V2: tire/velocity coupling did not converge on lap 1: relative grip error=0.000000011341373395978849, contact bound=1.004415959232105",
+        "ok": false
+      }
+    },
+    {
+      "id": "budget-classic15-monza-c0-smooth_operator-manage",
+      "input_digest": "sha256:f9e11de63bb070e5f76c428bfb086d66a800f2b0008f29f52ec8695996e15796",
+      "outcome": {
+        "digest": "sha256:28d1eb6f0e9bd2fb7577c17ee1c30d7440d80e12fa93654aff5ab33ee58e47ff",
+        "frozen_digest_equal": null,
+        "ok": true,
+        "service_equal": null
+      }
+    },
+    {
+      "id": "budget-classic15-monza-c0-smooth_operator-balanced",
+      "input_digest": "sha256:6759b037b15fe6076706b014dec7a39c2001f1d5e468bd9229319e5b103082dd",
+      "outcome": {
+        "digest": "sha256:b207b153dd3f11e867a1cd3abef31973c64b7f84e0d10956b97d24593354c23b",
+        "frozen_digest_equal": null,
+        "ok": true,
+        "service_equal": null
+      }
+    },
+    {
+      "id": "budget-classic15-monza-c0-smooth_operator-attack",
+      "input_digest": "sha256:6826511b3b806286a3b324a28a75b7cc8323f6aa89e7313e15d7e766994605a9",
+      "outcome": {
+        "digest": "sha256:8a539a988496ef2c7b2a5a918dd72c3d0470ca7c30cb683c0b36e9a242f7be21",
+        "frozen_digest_equal": null,
+        "ok": true,
+        "service_equal": null
+      }
+    },
+    {
+      "id": "budget-classic15-monza-c0-tire_manager-manage",
+      "input_digest": "sha256:c7c69d40cb51300e3cfb56be51510c90f313548dbf9758499fcaa29b65276184",
+      "outcome": {
+        "digest": "sha256:bee9f5427b01ee8e52c5f81388681619abd33db196a0b018a24c6381fdde1c93",
+        "frozen_digest_equal": null,
+        "ok": true,
+        "service_equal": null
+      }
+    },
+    {
+      "id": "budget-classic15-monza-c0-tire_manager-balanced",
+      "input_digest": "sha256:38f4298945f0d7b3d3079fc8440673c2fb0d2cf3f1db54809d28454867041e59",
+      "outcome": {
+        "digest": "sha256:ea1c7a3ea843938ea7b279df84e9f957f6eda7ecf235d92ec99083cf5c938569",
+        "frozen_digest_equal": null,
+        "ok": true,
+        "service_equal": null
+      }
+    },
+    {
+      "id": "budget-classic15-monza-c0-tire_manager-attack",
+      "input_digest": "sha256:0a6247c688fa44ac625ccdc357e28265174d3a75a3b3cef0f8d890a7f7cb054a",
+      "outcome": {
+        "digest": "sha256:568e404d6adb87e847ffb1fc4db1b7df72a515b11bc8c4919d625afd4117c527",
+        "frozen_digest_equal": null,
+        "ok": true,
+        "service_equal": null
+      }
+    },
+    {
+      "id": "tires-medium-balanced_reference-manage",
+      "input_digest": "sha256:6796ba5323add6d0dae486035702de37f581866aa6f65edf9ae5841879990e80",
+      "outcome": {
+        "digest": "sha256:a272f9fe7145fed37f187121cbc25c99db5d049254f69096f318db3ec7031552",
+        "frozen_digest_equal": null,
+        "ok": true,
+        "service_equal": null
+      }
+    },
+    {
+      "id": "tires-medium-balanced_reference-balanced",
+      "input_digest": "sha256:19e82c7d2cd184434668943015632d830d2fa43e6cef9f0c123a773c888ecf85",
+      "outcome": {
+        "digest": "sha256:ea46680ca4175503b01e7b96b74813cf3ecea36f0f98d62bea49644ec4d6c00d",
+        "frozen_digest_equal": null,
+        "ok": true,
+        "service_equal": null
+      }
+    },
+    {
+      "id": "tires-medium-balanced_reference-attack",
+      "input_digest": "sha256:dd16f0697ad0c6e8092499f462d1f97d6fabdbfba264fbe1aa8e593a8b4eb951",
+      "outcome": {
+        "error": "thermal V2: tire/velocity coupling did not converge on lap 1: relative grip error=0.00000003098404377510633, contact bound=1.0004090064368096",
+        "ok": false
+      }
+    },
+    {
+      "id": "tires-medium-limit_specialist-manage",
+      "input_digest": "sha256:f9cc32fa8f3ed06b5a3d8b16aa5bff6abe544f1e309784b787fa86e110d19298",
+      "outcome": {
+        "digest": "sha256:1142ef769f5c9259b0f3d24c249f6523396a920ffbaaf95a4e0a08068937696d",
+        "frozen_digest_equal": null,
+        "ok": true,
+        "service_equal": null
+      }
+    },
+    {
+      "id": "tires-medium-limit_specialist-balanced",
+      "input_digest": "sha256:326938a5ef3a8d54438be2c0b39cc2b3ab1464639179d79eeb98e619addeeb64",
+      "outcome": {
+        "digest": "sha256:0effd6a3ddf0022c89363420c6b83a61f79da38c44271b0dcedaf701b7fb128f",
+        "frozen_digest_equal": null,
+        "ok": true,
+        "service_equal": null
+      }
+    },
+    {
+      "id": "tires-medium-limit_specialist-attack",
+      "input_digest": "sha256:d3a3fb3c4fbf84ab31d16ccc1ec536c5a8275df094ffccfa63210b0d99810621",
+      "outcome": {
+        "error": "thermal V2: tire/velocity coupling did not converge on lap 1: relative grip error=0.000000021170756925315004, contact bound=1.0043795799486421",
+        "ok": false
+      }
+    },
+    {
+      "id": "tires-medium-smooth_operator-manage",
+      "input_digest": "sha256:8f68b095fea0bcfa9790cd6a8578282ee163cc5da3685235993dd2fb20a3a6d3",
+      "outcome": {
+        "digest": "sha256:a23f8e89cecf907858507868c003af9437899631af0c9414192be495e694964d",
+        "frozen_digest_equal": null,
+        "ok": true,
+        "service_equal": null
+      }
+    },
+    {
+      "id": "tires-medium-smooth_operator-balanced",
+      "input_digest": "sha256:89fca75e5bd54b60a1eae02bf34989cac83cf397fcddd244c0a8b3717d1f0a5b",
+      "outcome": {
+        "digest": "sha256:b2020e97042a5dc012f7638cded33108b61f330789a51396c2d78f504c024d9d",
+        "frozen_digest_equal": null,
+        "ok": true,
+        "service_equal": null
+      }
+    },
+    {
+      "id": "tires-medium-smooth_operator-attack",
+      "input_digest": "sha256:c91357f9c30cd94c3446e42e3aacf33cba86ce73973f5f0e49f0227d9cb6160a",
+      "outcome": {
+        "digest": "sha256:18b1a04c9cf8b69c57bec56bef96c0ed9ac254afe01c972aed7cd50a67169b00",
+        "frozen_digest_equal": null,
+        "ok": true,
+        "service_equal": null
+      }
+    },
+    {
+      "id": "tires-medium-tire_manager-manage",
+      "input_digest": "sha256:c379f4bfc40c25db13f059cf08737df68b3714a4fd44ae93889a96798387afb5",
+      "outcome": {
+        "digest": "sha256:e984e6826a7d2aff853e7658da8cd62ad95af482b0d7fdab37894a362dd583d7",
+        "frozen_digest_equal": null,
+        "ok": true,
+        "service_equal": null
+      }
+    },
+    {
+      "id": "tires-medium-tire_manager-balanced",
+      "input_digest": "sha256:0fda17b57fe41109c42c5e8a57386c44d9c9ed61a1a05aa9561017397eec54cb",
+      "outcome": {
+        "digest": "sha256:c051f28392d8cf101639b7c42018feff0d4b5da323cea1c94d275ef0bdd6a92d",
+        "frozen_digest_equal": null,
+        "ok": true,
+        "service_equal": null
+      }
+    },
+    {
+      "id": "tires-medium-tire_manager-attack",
+      "input_digest": "sha256:aed33cc881ddfe1cfe1fabed1af57b7c1eaeb9f1cca6607ff88b8108430b6536",
+      "outcome": {
+        "digest": "sha256:3dd03042c2dcdafdf2756431f377882603837b95e9136227ce84c860236993a8",
+        "frozen_digest_equal": null,
+        "ok": true,
+        "service_equal": null
+      }
+    },
+    {
+      "id": "ablation-limit_exploitation-0.78",
+      "input_digest": "sha256:c0fbd86b500a424c181d3925fb3743bb968b4661f2030f31bb46b13895020a34",
+      "outcome": {
+        "digest": "sha256:0b169b67533156e4b21c3b5240ba116e2abde140831e6b3186f09c6ec36b8460",
+        "frozen_digest_equal": null,
+        "ok": true,
+        "service_equal": null
+      }
+    },
+    {
+      "id": "ablation-limit_exploitation-0.96",
+      "input_digest": "sha256:67c884b983ad20d32af08ea7601a23a6435c36453af18bf14ac964f00200ae9e",
+      "outcome": {
+        "error": "thermal V2: tire/velocity coupling did not converge on lap 1: relative grip error=0.00000004606872638923676, contact bound=1.0024772569736424",
+        "ok": false
+      }
+    },
+    {
+      "id": "ablation-consistency-0.78",
+      "input_digest": "sha256:0023e9638e9c4623abc19fc5e5bc4f1f9e21a50a391e4621c154a4ed6de11268",
+      "outcome": {
+        "error": "thermal V2: tire/velocity coupling did not converge on lap 1: relative grip error=0.000000006021498188957253, contact bound=1.0008480644988682",
+        "ok": false
+      }
+    },
+    {
+      "id": "ablation-consistency-0.96",
+      "input_digest": "sha256:d569af2ade082e80a028981c166e05189e4b2a072e6bfe279793b66826cee510",
+      "outcome": {
+        "digest": "sha256:0ccdc702d139c47a0f5d4ed1c1d88b845b4c9376f25634f4753e711c4dc8723e",
+        "frozen_digest_equal": null,
+        "ok": true,
+        "service_equal": null
+      }
+    },
+    {
+      "id": "ablation-tire_management-0.78",
+      "input_digest": "sha256:4f223c53c2e0fd7960873028bac81dbb522a6e0cb6a614bb8118fa248a4ec65d",
+      "outcome": {
+        "error": "thermal V2: tire/velocity coupling did not converge on lap 1: relative grip error=0.000000010176214870760703, contact bound=1.0013345222761585",
+        "ok": false
+      }
+    },
+    {
+      "id": "ablation-tire_management-0.96",
+      "input_digest": "sha256:e9662a94cd339a5b1dace150fed2a293dc5299f766c4ac3d9297735cd610c75f",
+      "outcome": {
+        "digest": "sha256:94ae51ca681ff2ce06eb015ae6932dfed5be63a25b0bf4d37eeee087bad7080b",
+        "frozen_digest_equal": null,
+        "ok": true,
+        "service_equal": null
+      }
+    },
+    {
+      "id": "ablation-reference-manage",
+      "input_digest": "sha256:4301270f4dd5e0e504c731d42ebf6405c62eeaddbfd67ac4ad1053ae4e663f8d",
+      "outcome": {
+        "digest": "sha256:b190f7ed60998121e8a26df176a9ffae5338ddc99e0ac939896b8221e3f4f265",
+        "frozen_digest_equal": null,
+        "ok": true,
+        "service_equal": null
+      }
+    },
+    {
+      "id": "ablation-reference-balanced",
+      "input_digest": "sha256:eed1d0859630a514edd558232c67310fa850363cc377b4db10de0cee6ec269d7",
+      "outcome": {
+        "digest": "sha256:1e5c41d0cbe32a43e80d4523a1d4977cc8d45d4fd39f3c4894dd1ec30a194127",
+        "frozen_digest_equal": null,
+        "ok": true,
+        "service_equal": null
+      }
+    },
+    {
+      "id": "ablation-reference-attack",
+      "input_digest": "sha256:9913297b07f0126c41789e458773d2c1a33987c4c2fd4b232d1765d646776bb5",
+      "outcome": {
+        "error": "thermal V2: tire/velocity coupling did not converge on lap 1: relative grip error=0.00000003098404377510633, contact bound=1.0004090064368096",
+        "ok": false
+      }
+    },
+    {
+      "id": "gp-17-manage-risk-True",
+      "input_digest": "sha256:9792f8da5fbb413ec73bc4ca60ad87ffa04217f3da9002b8921c33be30ce1b76",
+      "outcome": {
+        "digest": "sha256:bb65fe6fbbe24bac4c3f1a8d97183dfd9c7e85ff1ca3c114124531ca7f24f492",
+        "frozen_digest_equal": null,
+        "ok": true,
+        "service_equal": null
+      }
+    },
+    {
+      "id": "gp-17-manage-risk-False",
+      "input_digest": "sha256:f4ceb5b3a7847f5b971943798aaa1b7d2b96663ae7179317af0293f6f651cb84",
+      "outcome": {
+        "digest": "sha256:b0bef9b4d7698719cb27348792ce6831040eab27889826d390bb24d9f070da47",
+        "frozen_digest_equal": null,
+        "ok": true,
+        "service_equal": null
+      }
+    },
+    {
+      "id": "gp-17-balanced-risk-True",
+      "input_digest": "sha256:ab5ca6641afab76d39b99e4cbc6e11261febe5df3acf38a910095710a8dd32f4",
+      "outcome": {
+        "digest": "sha256:85b51175f971cea5f32717c4d8f717e3bfb46253e6ca4c7545bb434d3327a6dc",
+        "frozen_digest_equal": null,
+        "ok": true,
+        "service_equal": null
+      }
+    },
+    {
+      "id": "gp-17-balanced-risk-False",
+      "input_digest": "sha256:58bc48c9af7c9123b3d5d72d22a9e7f58e2f6f379cd61e0ca4fd4b66d2d23960",
+      "outcome": {
+        "digest": "sha256:a576a88a740340e97e4ae69f6c59764f6f2a674158b266c143d1ad2da011cd12",
+        "frozen_digest_equal": null,
+        "ok": true,
+        "service_equal": null
+      }
+    },
+    {
+      "id": "gp-17-attack-risk-True",
+      "input_digest": "sha256:4f8b3889f319bbd3767bef18cc5db3f5cf41fa656862fdd45a2b96602a58530b",
+      "outcome": {
+        "error": "thermal V2: tire/velocity coupling did not converge on lap 3: relative grip error=0.000000016668765701055577, contact bound=1.0005200781565644",
+        "ok": false
+      }
+    },
+    {
+      "id": "gp-17-attack-risk-False",
+      "input_digest": "sha256:41db129c3d11ff92a06beb160b103e982fbd5f1e52f72feb1e87e95998968dc2",
+      "outcome": {
+        "error": "thermal V2: tire/velocity coupling did not converge on lap 3: relative grip error=0.000000016668765701055577, contact bound=1.0005200781565644",
+        "ok": false
+      }
+    },
+    {
+      "id": "gp-42-manage-risk-True",
+      "input_digest": "sha256:74738dc75aae740413cea9ef3ad62a54884bcd0d31e8f2380865ed0b2a88b406",
+      "outcome": {
+        "digest": "sha256:4edc64b45d803067d2006f81487fe0887a9b3d3b4a83b31e3b3e20c282afabc5",
+        "frozen_digest_equal": null,
+        "ok": true,
+        "service_equal": true
+      }
+    },
+    {
+      "id": "gp-42-manage-risk-False",
+      "input_digest": "sha256:85ac00059111306638084079e934b3028a4a187519af84a5a72b083fac289819",
+      "outcome": {
+        "digest": "sha256:02927b03c738faa21cd13073aaa8dd23a42f027a860a79bc470ae5750e61e176",
+        "frozen_digest_equal": null,
+        "ok": true,
+        "service_equal": null
+      }
+    },
+    {
+      "id": "gp-42-balanced-risk-True",
+      "input_digest": "sha256:1f499f25f9a31e7222d7194865a53d9bc13931183425c601805216f2f8c619c5",
+      "outcome": {
+        "digest": "sha256:22d24f0106bd56efa2bce78e27207a1a587d8a4e4f9e7bcf9dd088aab001a68a",
+        "frozen_digest_equal": null,
+        "ok": true,
+        "service_equal": true
+      }
+    },
+    {
+      "id": "gp-42-balanced-risk-False",
+      "input_digest": "sha256:458aa6f7f95b36870e5bdb545e12908491bc4373d8ce5e7778a735b03f54c989",
+      "outcome": {
+        "digest": "sha256:04b550866cf52e104ebf7688b63a0c27c641a685d1c07d6babae968112b5b9b1",
+        "frozen_digest_equal": null,
+        "ok": true,
+        "service_equal": null
+      }
+    },
+    {
+      "id": "gp-42-attack-risk-True",
+      "input_digest": "sha256:27a7378c25f0ece6765375afb35854a1a7930df0b89788dc0e3861a1d80c63f8",
+      "outcome": {
+        "error": "thermal V2: tire/velocity coupling did not converge on lap 1: relative grip error=0.00000002796025733164953, contact bound=1.000203409752773",
+        "ok": false
+      }
+    },
+    {
+      "id": "gp-42-attack-risk-False",
+      "input_digest": "sha256:3ae7d63f03624c4cd43c9f5e907bb05e197861b6c0bb23270cb09ddbfaf2d39b",
+      "outcome": {
+        "error": "thermal V2: tire/velocity coupling did not converge on lap 1: relative grip error=0.00000002796025733164953, contact bound=1.000203409752773",
+        "ok": false
+      }
+    },
+    {
+      "id": "gp-73-manage-risk-True",
+      "input_digest": "sha256:b2ff53a4d75e561257653f4b2afd9ec15b8a1f1e269586e290ece50cda54548b",
+      "outcome": {
+        "digest": "sha256:bbc30ae0064bf67e314c6bbe6604ffd01fc5bb53c5ab116ba148c3d99509be4c",
+        "frozen_digest_equal": null,
+        "ok": true,
+        "service_equal": null
+      }
+    },
+    {
+      "id": "gp-73-manage-risk-False",
+      "input_digest": "sha256:145dd76145e859d85678bc8e9108adfb94a76873f4ad1aa2c25d3dd764cffade",
+      "outcome": {
+        "digest": "sha256:d065b1b5915c5bfc4ba061e34e9a76c129ea0d86d62ec03a4427b9730d70482c",
+        "frozen_digest_equal": null,
+        "ok": true,
+        "service_equal": null
+      }
+    },
+    {
+      "id": "gp-73-balanced-risk-True",
+      "input_digest": "sha256:54bb4858d377eb7010dbf6360173bfe479772ad7dcad871f370271767d7908a7",
+      "outcome": {
+        "digest": "sha256:a42cf3ff71b94792c3cf921a1c9eb718e1430363691bec39bcf67757adb39708",
+        "frozen_digest_equal": null,
+        "ok": true,
+        "service_equal": null
+      }
+    },
+    {
+      "id": "gp-73-balanced-risk-False",
+      "input_digest": "sha256:8db48634a00106e62ea58ede6c2db910d0365cc2cfa9954f8cfb516f2fc8421c",
+      "outcome": {
+        "digest": "sha256:51185948a47a018a41788c0ad7aaad44ba37be69fbcdd901e0dc816fa341c87d",
+        "frozen_digest_equal": null,
+        "ok": true,
+        "service_equal": null
+      }
+    },
+    {
+      "id": "gp-73-attack-risk-True",
+      "input_digest": "sha256:33c6b4accfd4e226e66cd42fc4668fb841367f596829399636f58f0957a998d9",
+      "outcome": {
+        "error": "thermal V2: tire/velocity coupling did not converge on lap 1: relative grip error=0.000000019475613344255294, contact bound=1.0002857273789325",
+        "ok": false
+      }
+    },
+    {
+      "id": "gp-73-attack-risk-False",
+      "input_digest": "sha256:4fcce8693aae34eb67d29f80147408a8c8182c8529fe01175bf75586fbb643ef",
+      "outcome": {
+        "error": "thermal V2: tire/velocity coupling did not converge on lap 1: relative grip error=0.000000019475613344255294, contact bound=1.0002857273789325",
+        "ok": false
+      }
+    },
+    {
+      "id": "baseline-budget-early8-monza-c0",
+      "input_digest": "sha256:b49cc7d542846e95c6943f8396565a919dec424ee5d5a766bca184c7362a8625",
+      "outcome": {
+        "digest": "sha256:02ede4f7fcea7611cd5546f6487354f8e9f49d7a67e3cd5d472c36d5afe58a95",
+        "frozen_digest_equal": true,
+        "ok": true,
+        "service_equal": null
+      }
+    },
+    {
+      "id": "baseline-budget-early8-monza-c2",
+      "input_digest": "sha256:ccd58832b9697a8ada87ddb8ed95713b04c8f8b8ff6d114f53565a8ebc9d3b70",
+      "outcome": {
+        "digest": "sha256:a0af6b313470c22272c694fab751d4844c1b89b59c5f907f1a499b97a0a355be",
+        "frozen_digest_equal": true,
+        "ok": true,
+        "service_equal": null
+      }
+    },
+    {
+      "id": "baseline-budget-modern20-monza-c0",
+      "input_digest": "sha256:75168618ecc99cab8da76e41af3d713710968eb1d6af3ead457995a6ee598ce2",
+      "outcome": {
+        "digest": "sha256:a0a51a88e2876e5cba7c8c1bb2d62daf9156cc97888be61a82abe0f8e572d4ad",
+        "frozen_digest_equal": true,
+        "ok": true,
+        "service_equal": null
+      }
+    },
+    {
+      "id": "baseline-budget-modern20-monza-c4",
+      "input_digest": "sha256:15f9a946feeab3e30672ea9c3359f41b3a3e370be0dd3f6c921bf4d3c03d4ee4",
+      "outcome": {
+        "digest": "sha256:df303ea23984f3c2787c61d0c47bef4683658ccc4306ceaf22e610a31b90881f",
+        "frozen_digest_equal": true,
+        "ok": true,
+        "service_equal": null
+      }
+    },
+    {
+      "id": "baseline-full-classic15-c0",
+      "input_digest": "sha256:01eb2bcd87a1ac8dcb9fac86cd784a7beff1105c9f138626252bd9f1bae51483",
+      "outcome": {
+        "digest": "sha256:f2013bdd176ca6988ea6a00a4987a0a2905b09fc32dfbcdea7d0efdd97a8fc58",
+        "frozen_digest_equal": true,
+        "ok": true,
+        "service_equal": null
+      }
+    }
+  ],
+  "failure_count": 14,
+  "full_private_receipt_digest": "sha256:4c01a88b1e67d0ad56a3bcd8990fca778cb3a14e95b23ace5f4e9a3c5b485575",
+  "historical_equal": true,
+  "identity": {
+    "binary_digest": "sha256:9bb278f7c2dfa363bba9a58e907d6ff79684e1e264d5096fe0f17416daac8cbf",
+    "energy_binary_digest": "sha256:fd0651d1354c11b33be997be0c828acafe12966cd34f6f8a81152f0daac38205",
+    "plan_digest": "sha256:9c0dd6c90ac34fb405d4e8d57e197cc20cdf9642543ad2ece4040b2dda595a19",
+    "profile_digest": "sha256:236c8743c83ab7f44b5a9cccbd5659edea45a6ea8db48b585905af841c887fd2",
+    "runner_digest": "sha256:6f63c5465a918573b3a7ac22af559574c19597043225137b0a5c5c9a29205b06",
+    "source_commit": "f3187e80fed0ce16b5391efc0af648ca6bd2806b"
+  },
+  "physical_baseline_equal": true,
+  "reason": "Longitudinal scaling did not reserve the combined contact circle for corrections. Fixed in8c289df; unchanged plan/policy/tolerances.",
+  "repeat_exact": true,
+  "schema": "pitgun.thermal-driver-rejected-screen/v1",
+  "service_comparisons": "2 completed and equal per pass; attack not reached because normal solve failed",
+  "status": "REJECTED_NUMERICAL_INTEGRATION"
+}

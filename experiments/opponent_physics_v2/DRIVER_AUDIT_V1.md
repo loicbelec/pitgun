@@ -54,3 +54,12 @@ reuse its IDs/timing for future actual incident facts. Priorities:
 
 Old admitted catalog/runtime/fallback bytes remain unchanged. This receipt is a
 readiness finding, not a correction, balance verdict or verified race result.
+
+## Subsequent native correction
+
+The opt-in [Thermal Driver V1](../../docs/physics/THERMAL_DRIVER_V1.md) increment
+now connects strict V2 resolution, accounted correction forces/work and seeded
+recoverable throttle hesitations to thermal V2. Its separate
+[qualification](../thermal_driver_v1/README.md) preserves this historical audit
+and the existing admitted fallback behavior. It does not activate the browser
+career or establish a calibrated opponent policy.

@@ -310,6 +310,7 @@ fn resolved_v3_request(request: &SimulationRequest) -> ResolvedSimulationRequest
         engine_thermal: None,
         longitudinal_energy: None,
         thermal_physics_v2: None,
+        driver_lapses_v1: None,
     }
 }
 
@@ -1488,6 +1489,7 @@ fn energy_v1_incremental_continuity_fuel_and_terminal_ledger_agree() {
     let legacy = run_resolved_simulation_v3(&ResolvedSimulationRequestV3 {
         longitudinal_energy: None,
         thermal_physics_v2: None,
+        driver_lapses_v1: None,
         ..input
     })
     .unwrap();
@@ -1752,6 +1754,147 @@ fn thermal_v2_deformation_heat_costs_real_mechanical_work() {
             .tire_deformation_dissipation_j
             < 1e-6
     );
+}
+
+#[test]
+fn accounted_driver_corrections_pay_real_loss_heat_and_wear() {
+    let mut input = thermal_v2_request();
+    input.driver_correction_capacity_model =
+        Some(DriverCorrectionCapacityModelV3::EnergyAccountedV1);
+    input.driver_correction_workload_multiplier = Some(1.2);
+    let result = run_resolved_simulation_v3(&input).unwrap();
+    let thermal = result.thermal_v2.as_ref().unwrap().ledger;
+    let energy = result.longitudinal_energy_v1.unwrap();
+    let contact = result.tire_diagnostics_v3.unwrap();
+    assert!(thermal.tire_deformation_dissipation_j > 0.0);
+    assert!(contact.correction_contact_workload_mj.unwrap() > 0.0);
+    assert!(contact.correction_generated_heat_kj.unwrap() > 0.0);
+    assert!(
+        result
+            .tire_degradation_diagnostics_v3
+            .unwrap()
+            .requested_correction_wear_fraction
+            .unwrap()
+            > 0.0
+    );
+    assert!(
+        (thermal.tire_rolling_dissipation_j + thermal.tire_deformation_dissipation_j
+            - energy.rolling_work_j)
+            .abs()
+            < 1e-5
+    );
+    assert!(energy.maximum_vehicle_balance_residual_j < 1e-5);
+    assert!(thermal.maximum_tire_balance_residual_j < 1e-5);
+    assert!(thermal.maximum_contact_utilization_upper_bound <= 1.0002);
+    let control = result.driver_control_diagnostics_v3.unwrap();
+    assert!(
+        (control.correction_force_capacity_fraction.unwrap() - 1.0 / 1.2_f64.sqrt()).abs() < 1e-12
+    );
+    input.driver_correction_workload_multiplier = Some(1.0);
+    let clean = run_resolved_simulation_v3(&input).unwrap();
+    assert_eq!(
+        clean
+            .tire_diagnostics_v3
+            .unwrap()
+            .correction_contact_workload_mj,
+        Some(0.0)
+    );
+    assert_ne!(clean.total_time_s, result.total_time_s);
+}
+
+#[test]
+fn driver_hesitations_change_the_solved_motion_and_replay_across_service() {
+    use pitgun_racing_solver::ResolvedServiceStepV3;
+    use pitgun_racing_solver::driver_lapses::{DriverLapseParamsV1, DriverLapseVersion};
+    let mut input = thermal_v2_request();
+    input.lap_count = 3;
+    input.driver_correction_capacity_model =
+        Some(DriverCorrectionCapacityModelV3::EnergyAccountedV1);
+    input.driver_correction_workload_multiplier = Some(1.0);
+    // Manufactured near-certain events, not the gameplay policy's rate.
+    input.driver_lapses_v1 = Some(DriverLapseParamsV1 {
+        schema_version: DriverLapseVersion::V1,
+        noise_stream_id: "same-actor".into(),
+        hazard_per_100km: 1000.0,
+        exposure_cell_m: 500.0,
+        recovery_distance_m: 250.0,
+        minimum_engine_request_fraction: 0.15,
+    });
+    input.pit_plan.stops.push(pitgun_racing_solver::PitStop {
+        lap: 1,
+        tire: input.vehicle.tire.clone(),
+    });
+    let expected = run_resolved_simulation_v3(&input).unwrap();
+    assert!(!expected.solution.driver_lapses_v1.is_empty());
+    let mut unique = std::collections::BTreeSet::new();
+    for event in &expected.solution.driver_lapses_v1 {
+        assert!(unique.insert(event.exposure_index));
+    }
+    let restored: ResolvedSimulationRequestV3 =
+        serde_json::from_slice(&serde_json::to_vec(&input).unwrap()).unwrap();
+    assert_eq!(run_resolved_simulation_v3(&restored).unwrap(), expected);
+    let mut session =
+        ResolvedSimulationSessionV3::new_with_service_boundaries(input.clone()).unwrap();
+    let mut committed = Vec::new();
+    loop {
+        match session.advance_service().unwrap() {
+            ResolvedServiceStepV3::BeforeService(lap) => {
+                committed.extend(lap.solution.driver_lapses_v1.clone());
+                session.resolve_service_boundary(None).unwrap();
+            }
+            ResolvedServiceStepV3::Lap(lap) => assert!(lap.solution.driver_lapses_v1.is_empty()),
+            ResolvedServiceStepV3::Complete(result) => {
+                assert_eq!(*result, expected);
+                break;
+            }
+        }
+    }
+    assert_eq!(committed, expected.solution.driver_lapses_v1);
+    input.driver_lapses_v1.as_mut().unwrap().hazard_per_100km = 0.0;
+    let clean = run_resolved_simulation_v3(&input).unwrap();
+    assert!(clean.solution.driver_lapses_v1.is_empty());
+    assert!(expected.total_time_s > clean.total_time_s);
+    assert_ne!(expected.solution.v, clean.solution.v);
+    assert!(
+        expected
+            .longitudinal_energy_v1
+            .unwrap()
+            .maximum_vehicle_balance_residual_j
+            < 1e-5
+    );
+}
+
+#[test]
+fn energy_accounted_driver_fields_require_the_explicit_new_profile() {
+    use pitgun_racing_solver::driver_lapses::{DriverLapseParamsV1, DriverLapseVersion};
+    let mut r = thermal_v2_request();
+    r.driver_correction_workload_multiplier = Some(1.1);
+    r.driver_correction_capacity_model = Some(DriverCorrectionCapacityModelV3::FrictionBudgetV1);
+    assert!(
+        run_resolved_simulation_v3(&r)
+            .unwrap_err()
+            .contains("historical correction heat proxy")
+    );
+    r.driver_correction_capacity_model = Some(DriverCorrectionCapacityModelV3::EnergyAccountedV1);
+    r.thermal_physics_v2 = None;
+    assert!(run_resolved_simulation_v3(&r).is_err());
+    r.driver_correction_capacity_model = None;
+    r.driver_correction_workload_multiplier = None;
+    r.driver_lapses_v1 = Some(DriverLapseParamsV1 {
+        schema_version: DriverLapseVersion::V1,
+        noise_stream_id: "test".into(),
+        hazard_per_100km: 0.0,
+        exposure_cell_m: 500.0,
+        recovery_distance_m: 250.0,
+        minimum_engine_request_fraction: 0.15,
+    });
+    assert!(run_resolved_simulation_v3(&r).is_err());
+    let old = resolved_v3_request(&synthetic_request());
+    let json = serde_json::to_value(&old).unwrap();
+    assert!(json.get("driver_lapses_v1").is_none());
+    let output = serde_json::to_value(run_resolved_simulation_v3(&old).unwrap()).unwrap();
+    assert!(output["solution"].get("driver_lapses_v1").is_none());
+    assert!(output["solution"].get("driver_lapse_profile_v1").is_none());
 }
 
 #[test]

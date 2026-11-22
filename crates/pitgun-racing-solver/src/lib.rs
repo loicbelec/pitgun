@@ -16,6 +16,7 @@ use std::task::{Context, Poll, Waker};
 
 use serde::{Deserialize, Serialize};
 
+pub mod driver_lapses;
 pub mod longitudinal_energy;
 pub mod power_telemetry;
 pub mod thermal_physics;
@@ -341,6 +342,9 @@ pub struct SimulationRequest {
 /// physical vehicle parameters before invoking the Solver.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct ResolvedSimulationRequestV3 {
+    /// Explicit new native driver profile; absent from all historic inputs.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub driver_lapses_v1: Option<driver_lapses::DriverLapseParamsV1>,
     pub track: Track,
     pub vehicle: VehicleParams,
     pub state: VehicleState,
@@ -618,6 +622,9 @@ pub enum DriverCorrectionCapacityModelV3 {
     /// Treat correction workload as an orthogonal demand on the same aggregate
     /// tire-force envelope used for braking, cornering and traction.
     FrictionBudgetV1,
+    /// Thermal V2: correction forces reserve capacity and deformation losses
+    /// are paid by the actual mechanical/thermal/wear balance.
+    EnergyAccountedV1,
 }
 
 impl Default for DriverControlParamsV3 {
@@ -671,6 +678,10 @@ fn default_lap_count() -> u16 {
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq)]
 pub struct SimulationSolution {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub driver_lapse_profile_v1: Option<driver_lapses::DriverLapseParamsV1>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub driver_lapses_v1: Vec<driver_lapses::DriverLapseOccurrenceV1>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub longitudinal_model: Option<LongitudinalEnergyModelV1>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -1077,6 +1088,8 @@ fn validate_resolved_simulation_request_v3(
         if input
             .driver_correction_workload_multiplier
             .is_some_and(|v| v != 1.0)
+            && input.driver_correction_capacity_model
+                != Some(DriverCorrectionCapacityModelV3::EnergyAccountedV1)
         {
             return Err("thermal V2 does not admit the historical correction heat proxy".into());
         }
@@ -1092,6 +1105,21 @@ fn validate_resolved_simulation_request_v3(
         thermal.tire(&input.vehicle.tire)?;
         for stop in &input.pit_plan.stops {
             thermal.tire(&stop.tire)?;
+        }
+    }
+    if input.driver_correction_capacity_model
+        == Some(DriverCorrectionCapacityModelV3::EnergyAccountedV1)
+        && input.thermal_physics_v2.is_none()
+    {
+        return Err("energy-accounted driver corrections require thermal V2".into());
+    }
+    if let Some(risk) = &input.driver_lapses_v1 {
+        risk.validate()?;
+        if input.thermal_physics_v2.is_none()
+            || input.driver_correction_capacity_model
+                != Some(DriverCorrectionCapacityModelV3::EnergyAccountedV1)
+        {
+            return Err("driver lapse profile requires the energy-accounted thermal driver".into());
         }
     }
     if let Some(fuel_mass) = &input.fuel_mass {
@@ -1189,6 +1217,7 @@ impl ResolvedSimulationSessionV3 {
                     input.driver_correction_workload_multiplier,
                     input.driver_correction_capacity_model,
                     &input.driver_control_schedule,
+                    input.driver_lapses_v1.as_ref(),
                 ),
                 input.fuel_mass.as_ref(),
                 input.longitudinal_energy,
@@ -1652,6 +1681,8 @@ fn run_compatibility_simulation_kernel(
     }
 
     let solution = SimulationSolution {
+        driver_lapse_profile_v1: None,
+        driver_lapses_v1: Vec::new(),
         longitudinal_model: None,
         thermal_model: None,
         tire_carcass_temp: Vec::new(),
@@ -1708,6 +1739,7 @@ type V3ResolvedControls<'a> = (
     Option<f64>,
     Option<DriverCorrectionCapacityModelV3>,
     &'a [ResolvedDriverControlLapV3],
+    Option<&'a driver_lapses::DriverLapseParamsV1>,
 );
 
 #[derive(Clone, Copy)]
@@ -1732,11 +1764,21 @@ fn resolve_driver_control_envelope_v3(
     )?;
     let correction_force_capacity_fraction =
         match (correction_capacity_model, correction_workload_multiplier) {
-            (Some(DriverCorrectionCapacityModelV3::FrictionBudgetV1), Some(multiplier)) => {
-                multiplier.sqrt().recip()
-            }
+            (
+                Some(
+                    DriverCorrectionCapacityModelV3::FrictionBudgetV1
+                    | DriverCorrectionCapacityModelV3::EnergyAccountedV1,
+                ),
+                Some(multiplier),
+            ) => multiplier.sqrt().recip(),
             (None, _) => 1.0,
-            (Some(DriverCorrectionCapacityModelV3::FrictionBudgetV1), None) => unreachable!(
+            (
+                Some(
+                    DriverCorrectionCapacityModelV3::FrictionBudgetV1
+                    | DriverCorrectionCapacityModelV3::EnergyAccountedV1,
+                ),
+                None,
+            ) => unreachable!(
                 "correction capacity and workload pair was validated before physical resolution"
             ),
         };
@@ -1775,6 +1817,7 @@ async fn run_resolved_simulation_kernel_incremental(
         driver_correction_workload_multiplier,
         driver_correction_capacity_model,
         driver_control_schedule,
+        driver_lapses,
     ) = v3_controls;
     let energy_mode = energy_model.is_some();
     let energy_contact = match tire_dynamics {
@@ -1799,6 +1842,10 @@ async fn run_resolved_simulation_kernel_incremental(
 
     let lap_count = input.lap_count.max(1);
     let driver = input.driver.clone();
+    let driver_noise_id = driver_lapses
+        .map(|p| p.noise_stream_id.as_str())
+        .unwrap_or(&driver.id);
+    let mut out_driver_lapses = Vec::new();
     let mut vehicle = tuned_vehicle.clone();
     let energy_torque_knots = energy_mode.then(|| {
         vehicle
@@ -1916,7 +1963,7 @@ async fn run_resolved_simulation_kernel_incremental(
             active_driver_control.requested_cornering_utilization,
             active_driver_control.driver_control.control_error,
             input.config.sim_seed,
-            &driver.id,
+            driver_noise_id,
             lap_idx,
             n,
             "cornering",
@@ -1925,7 +1972,7 @@ async fn run_resolved_simulation_kernel_incremental(
             active_driver_control.requested_braking_utilization,
             active_driver_control.driver_control.control_error,
             input.config.sim_seed,
-            &driver.id,
+            driver_noise_id,
             lap_idx,
             n,
             "braking",
@@ -1934,12 +1981,53 @@ async fn run_resolved_simulation_kernel_incremental(
             active_driver_control.requested_traction_utilization,
             active_driver_control.driver_control.control_error,
             input.config.sim_seed,
-            &driver.id,
+            driver_noise_id,
             lap_idx,
             n,
             "traction",
         );
-        let tire_heat = thermal_model.map(|p| p.tire(&tire_curr)).transpose()?;
+        let lapse_intervals = driver_lapses
+            .map(|p| {
+                p.intervals(
+                    input.config.sim_seed,
+                    s_offset,
+                    s_offset + *s.last().unwrap(),
+                )
+            })
+            .transpose()?
+            .unwrap_or_default();
+        let lapse_effort = driver_lapses.map(|profile| {
+            (0..n - 1)
+                .map(|i| {
+                    driver_lapses::segment_engine_request_fraction(
+                        &lapse_intervals,
+                        s_offset + s[i],
+                        s_offset + s[i + 1],
+                        profile.minimum_engine_request_fraction,
+                    )
+                })
+                .collect::<Vec<_>>()
+        });
+        let correction_energy_multiplier = if driver_correction_capacity_model
+            == Some(DriverCorrectionCapacityModelV3::EnergyAccountedV1)
+        {
+            active_driver_control
+                .correction_workload_multiplier
+                .unwrap_or(1.0)
+        } else {
+            1.0
+        };
+        // Reserve corrections in the combined circle, including lateral demand.
+        let energy_force_capacity_fraction = correction_energy_multiplier.sqrt().recip();
+        let tire_heat = thermal_model
+            .map(|p| p.tire(&tire_curr).copied())
+            .transpose()?
+            .map(|mut heat| {
+                heat.deformation_resistance_coefficient *= correction_energy_multiplier;
+                heat
+            });
+        let lap_time_offset = t_offset;
+        let lap_distance_offset = s_offset;
         let mut tire_temp_reference = vec![state_curr.tire_temp; n];
         let mut tire_wear_reference = vec![state_curr.tire_wear; n];
         let coupling_iterations = match tire_dynamics {
@@ -1959,7 +2047,7 @@ async fn run_resolved_simulation_kernel_incremental(
                     active_driver_control.requested_cornering_utilization,
                     active_driver_control.driver_control.control_error,
                     input.config.sim_seed,
-                    &driver.id,
+                    driver_noise_id,
                     lap_idx + 1,
                     n,
                     "cornering",
@@ -1968,7 +2056,7 @@ async fn run_resolved_simulation_kernel_incremental(
                     active_driver_control.requested_braking_utilization,
                     active_driver_control.driver_control.control_error,
                     input.config.sim_seed,
-                    &driver.id,
+                    driver_noise_id,
                     lap_idx + 1,
                     n,
                     "braking",
@@ -2064,14 +2152,17 @@ async fn run_resolved_simulation_kernel_incremental(
                             tire_deformation_coefficient: tire_heat
                                 .map(|p| p.deformation_resistance_coefficient)
                                 .unwrap_or(0.0),
+                            force_capacity_fraction: energy_force_capacity_fraction,
                             mass_kg: mass,
                             ds_m: segment_distance(spatial_integration, s, ds, i),
                             dz_m: input.track.z[i + 1] - input.track.z[i],
                             curvature_radpm: input.track.kappa[i],
                             vertical_curvature_per_m: slope_gradient[i],
                             mu: forecast_mu,
+                            engine_effort_fraction: 1.0,
                             traction_utilization: 0.0,
-                            braking_utilization: next_braking[i].clamp(0., 1.),
+                            braking_utilization: (next_braking[i] / energy_force_capacity_fraction)
+                                .clamp(0., 1.),
                         };
                         next_envelope[i] =
                             context.braking_start_limit(next_envelope[i + 1], next_envelope[i])?;
@@ -2107,6 +2198,7 @@ async fn run_resolved_simulation_kernel_incremental(
                             tire_deformation_coefficient: tire_heat
                                 .map(|p| p.deformation_resistance_coefficient)
                                 .unwrap_or(0.0),
+                            force_capacity_fraction: energy_force_capacity_fraction,
                             mass_kg: mass,
                             ds_m: segment_ds,
                             dz_m: input.track.z[i + 1] - input.track.z[i],
@@ -2118,8 +2210,13 @@ async fn run_resolved_simulation_kernel_incremental(
                                 tire_temp_reference[i],
                                 &tire_curr,
                             ),
-                            traction_utilization: traction_utilization[i].clamp(0.0, 1.0),
-                            braking_utilization: braking_utilization[i].clamp(0.0, 1.0),
+                            engine_effort_fraction: 1.0,
+                            traction_utilization: (traction_utilization[i]
+                                / energy_force_capacity_fraction)
+                                .clamp(0.0, 1.0),
+                            braking_utilization: (braking_utilization[i]
+                                / energy_force_capacity_fraction)
+                                .clamp(0.0, 1.0),
                         };
                         v_bwd[i] = context.braking_start_limit(v_target, v_bwd[i])?;
                         continue;
@@ -2280,6 +2377,7 @@ async fn run_resolved_simulation_kernel_incremental(
                         tire_deformation_coefficient: tire_heat
                             .map(|p| p.deformation_resistance_coefficient)
                             .unwrap_or(0.0),
+                        force_capacity_fraction: energy_force_capacity_fraction,
                         mass_kg: mass,
                         ds_m: segment_ds,
                         dz_m: input.track.z[i + 1] - input.track.z[i],
@@ -2291,8 +2389,13 @@ async fn run_resolved_simulation_kernel_incremental(
                             tire_temp_reference[i],
                             &tire_curr,
                         ),
-                        traction_utilization: traction_utilization[i].clamp(0.0, 1.0),
-                        braking_utilization: braking_utilization[i].clamp(0.0, 1.0),
+                        engine_effort_fraction: lapse_effort.as_ref().map_or(1.0, |f| f[i]),
+                        traction_utilization: (traction_utilization[i]
+                            / energy_force_capacity_fraction)
+                            .clamp(0.0, 1.0),
+                        braking_utilization: (braking_utilization[i]
+                            / energy_force_capacity_fraction)
+                            .clamp(0.0, 1.0),
                     };
                     let step = context.advance(
                         v,
@@ -2451,8 +2554,21 @@ async fn run_resolved_simulation_kernel_incremental(
                     iteration_generated_heat_j += balance.tire_generated_heat_j;
                     // V2 reports real dissipated work, not the V1 available-force proxy.
                     iteration_contact_workload_j += rolling_work + deformation_work;
-                    iteration_base_contact_workload_j += rolling_work + deformation_work;
-                    iteration_requested_workload_tire_wear += wear;
+                    let correction_work =
+                        deformation_work - deformation_work / correction_energy_multiplier;
+                    iteration_base_contact_workload_j +=
+                        rolling_work + deformation_work - correction_work;
+                    iteration_correction_contact_workload_j += correction_work;
+                    iteration_correction_generated_heat_j +=
+                        correction_work * heat.deformation_heat_fraction;
+                    let wear_energy = deformation_work + heat.rolling_wear_fraction * rolling_work;
+                    let correction_wear = if wear_energy > 0.0 {
+                        wear * correction_work / wear_energy
+                    } else {
+                        0.0
+                    };
+                    iteration_requested_workload_tire_wear += wear - correction_wear;
+                    iteration_requested_correction_tire_wear += correction_wear;
                     let thermal_factor = 1.0
                         + heat.thermal_wear_gain
                             * ((0.5 * (tire_temp[i] + surface) - tire_curr.temp_opt)
@@ -2705,7 +2821,9 @@ async fn run_resolved_simulation_kernel_incremental(
                     error = error.max((actual / held - 1.0).abs());
                     held_to_actual = held_to_actual.max(held / actual);
                 }
-                let bound = iteration_energy.maximum_raw_contact_utilization * held_to_actual;
+                let bound = iteration_energy.maximum_raw_contact_utilization
+                    * held_to_actual
+                    * correction_energy_multiplier.sqrt();
                 is_final_coupling_iteration = error <= 1e-3 && bound <= 1.0002;
                 if !is_final_coupling_iteration && coupling_iteration + 1 == coupling_iterations {
                     return Err(format!(
@@ -2868,7 +2986,36 @@ async fn run_resolved_simulation_kernel_incremental(
                 carcass_temperature = carcass_temp.last().copied();
             }
             let mut end_engine_temp = *temp.last().unwrap_or(&state_curr.engine_temp);
+            // Commit facts only from the accepted trajectory, never a coupling pass.
+            let mut accepted_lapses = Vec::new();
+            if let Some(profile) = driver_lapses {
+                for event in &lapse_intervals {
+                    if event.start_distance_m < lap_distance_offset
+                        || event.start_distance_m >= s_offset
+                    {
+                        continue;
+                    }
+                    let point = input
+                        .track
+                        .s
+                        .partition_point(|d| lap_distance_offset + *d < event.start_distance_m)
+                        .min(n - 1);
+                    accepted_lapses.push(driver_lapses::DriverLapseOccurrenceV1 {
+                        schema_version: profile.schema_version,
+                        exposure_index: event.exposure_index,
+                        lap: lap_idx,
+                        start_distance_m: event.start_distance_m,
+                        end_distance_m: event.end_distance_m,
+                        observed_native_point: point as u32,
+                        observed_at_s: lap_time_offset + t[point],
+                        minimum_engine_request_fraction: profile.minimum_engine_request_fraction,
+                    });
+                }
+            }
+            out_driver_lapses.extend(accepted_lapses.iter().cloned());
             let mut lap_solution = Some(SimulationSolution {
+                driver_lapse_profile_v1: driver_lapses.cloned(),
+                driver_lapses_v1: accepted_lapses,
                 longitudinal_model: energy_model,
                 thermal_model: thermal_model.map(|p| p.schema_version),
                 tire_carcass_temp: carcass_temp,
@@ -3048,6 +3195,8 @@ async fn run_resolved_simulation_kernel_incremental(
     }
 
     let solution = SimulationSolution {
+        driver_lapse_profile_v1: driver_lapses.cloned(),
+        driver_lapses_v1: out_driver_lapses,
         longitudinal_model: energy_model,
         thermal_model: thermal_model.map(|p| p.schema_version),
         tire_carcass_temp: out_carcass_temperature,
@@ -3852,9 +4001,7 @@ fn validate_driver_correction_workload_v3(
             "driver_correction_workload_multiplier must be finite and in [1, 3.5]".to_string(),
         );
     }
-    if capacity_model == Some(DriverCorrectionCapacityModelV3::FrictionBudgetV1)
-        && multiplier.is_none()
-    {
+    if capacity_model.is_some() && multiplier.is_none() {
         return Err("driver correction friction budget requires a workload multiplier".to_string());
     }
     Ok(())

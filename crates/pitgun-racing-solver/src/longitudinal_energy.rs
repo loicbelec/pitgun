@@ -105,6 +105,11 @@ pub(crate) struct SegmentContext<'a> {
         &'a crate::FuelMassParamsV3,
     )>,
     pub tire_deformation_coefficient: f64,
+    /// Useful shared force circle after reserving orthogonal correction demand.
+    /// Full physical capacity is retained separately for audit/energy diagnostics.
+    pub force_capacity_fraction: f64,
+    /// Driver request cap, distinct from thermal availability and tire traction.
+    pub engine_effort_fraction: f64,
     pub mass_kg: f64,
     pub ds_m: f64,
     pub dz_m: f64,
@@ -174,7 +179,8 @@ impl SegmentContext<'_> {
         let available = aggregate_tire_force_capacity_v3(self.mu, normal, self.contact)
             * self.mechanical.chassis_force_transfer_efficiency;
         let lateral = self.mass_kg * v * v * self.curvature_radpm.abs();
-        let longitudinal = remaining_longitudinal_force(available, lateral);
+        let longitudinal =
+            remaining_longitudinal_force(available * self.force_capacity_fraction, lateral);
         (
             drag + rolling + grade,
             longitudinal * self.traction_utilization,
@@ -205,6 +211,14 @@ impl SegmentContext<'_> {
         shift_remaining_s: f64,
         temperature_c: f64,
     ) -> Result<SegmentAdvance, String> {
+        if !self.engine_effort_fraction.is_finite()
+            || !(0.0..=1.0).contains(&self.engine_effort_fraction)
+            || !self.force_capacity_fraction.is_finite()
+            || self.force_capacity_fraction <= 0.0
+            || self.force_capacity_fraction > 1.0
+        {
+            return Err("energy V1: invalid driver engine request".into());
+        }
         let ratio = self.vehicle.engine.gear_ratios[usize::from(gear) - 1];
         let redline =
             self.vehicle.engine.n_max * std::f64::consts::TAU * self.vehicle.chassis.r_wheel
@@ -251,6 +265,7 @@ impl SegmentContext<'_> {
             let shift_fraction = (shift_remaining_s / duration(end)).clamp(0.0, 1.0);
             minimum
                 * derating
+                * self.engine_effort_fraction
                 * (1.0 - shift_fraction * (1.0 - self.mechanical.shift_power_fraction))
         };
         let drive_residual = |end: f64| {
@@ -378,7 +393,7 @@ impl SegmentContext<'_> {
         {
             return Err("energy V1: nonfinite physical segment".into());
         }
-        if raw_contact > 1.0 + 1e-6 {
+        if raw_contact > self.force_capacity_fraction + 1e-6 {
             return Err(format!(
                 "energy V1: prescribed trajectory exceeds raw contact capacity: {raw_contact}"
             ));
@@ -601,6 +616,8 @@ mod tests {
             torque_knots_nm: None,
             thermal: None,
             tire_deformation_coefficient: 0.0,
+            force_capacity_fraction: 1.0,
+            engine_effort_fraction: 1.0,
             mass_kg: 1000.,
             ds_m: 100.,
             dz_m: 0.,
@@ -651,6 +668,45 @@ mod tests {
         }
     }
 
+    #[test]
+    fn correction_reservation_is_shared_by_lateral_and_longitudinal_forces() {
+        let v = vehicle();
+        let m = mechanical();
+        let c = TireContactParamsV3::default();
+        let ctx = SegmentContext {
+            force_capacity_fraction: 0.9,
+            curvature_radpm: 0.02,
+            mu: 1.0,
+            ..context(&v, &m, &c)
+        };
+        let (_, drive, brake, available) = ctx.limits(20., 20.);
+        let lateral = 1000.0 * 20.0_f64.powi(2) * 0.02;
+        close(drive.hypot(lateral), available * 0.9);
+        close(brake.hypot(lateral), available * 0.9);
+        // Scaling only the longitudinal remainder would overbook the circle.
+        assert!(
+            (remaining_longitudinal_force(available, lateral) * 0.9).hypot(lateral)
+                > available * 0.9
+        );
+    }
+    #[test]
+    fn reduced_engine_request_has_the_same_torque_limit_as_derating_but_a_distinct_cause() {
+        let v = vehicle();
+        let m = mechanical();
+        let c = TireContactParamsV3::default();
+        let full = context(&v, &m, &c);
+        let reduced = SegmentContext {
+            engine_effort_fraction: 0.5,
+            ..context(&v, &m, &c)
+        };
+        let nominal = full.advance(20., 50., 1, 1., 0., 90.).unwrap();
+        let hesitation = reduced.advance(20., 50., 1, 1., 0., 90.).unwrap();
+        let protected = full.advance(20., 50., 1, 0.5, 0., 90.).unwrap();
+        assert_eq!(hesitation, protected);
+        assert!(hesitation.end_speed_mps < nominal.end_speed_mps);
+        assert!(hesitation.duration_s > nominal.duration_s);
+        balances(&hesitation);
+    }
     #[test]
     fn energy_v1_launch_uses_finite_wheel_torque_and_records_physical_clutch_slip() {
         let v = vehicle();
