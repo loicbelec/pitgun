@@ -10,7 +10,8 @@
     465,
     467,
     470,
-    471
+    471,
+    473
   ],
   "gates": {
     "effective_driver_resolution": "native opt-in qualified; signed/runtime admission open",
@@ -24,10 +25,11 @@
     "reserved_evaluation": "selected native setup/strategy responses468:60reserved seed/temperature/circuit-transfer cases, all finish and fresh repeats exact; selection sealed before opening. No held-out calibrated-opponent policy/season evaluation yet. Fixed-nine field reserved results not opened: V1 REFINE and V2 stopped before policy seal.",
     "runtime_admission": "not performed",
     "tire_preparation_and_window": "explicit modern70C mount/pit and95% thermal-grip event policy qualified natively:23cases×2exact repeats,4unchanged baselines,56driver+22historical outcomes and8old event cases exact; physical parameters, warm-up duration/compound balance and era applicability remain REFINE (#463).",
-    "tire_stand_incentives": "native audit714GP:100source controls and14fresh repeats exact, zero failures/carry jumps. Source22s stop cost fully charged. Removing direct wear-grip loss makes1stop best tested in10/10contexts; doubling service44s still3..6stops. Review inherited linear wear-grip law, thermal window, compound gaps and mount policy before fitting."
+    "tire_stand_incentives": "native audit714GP:100source controls and14fresh repeats exact, zero failures/carry jumps. Source22s stop cost fully charged. Removing direct wear-grip loss makes1stop best tested in10/10contexts; doubling service44s still3..6stops. Review inherited linear wear-grip law, thermal window, compound gaps and mount policy before fitting.",
+    "tire_performance_correction": "PR473/8c9d6b1: completed native2502executions including2376GP screen,100source GP exact,2historical controls,12mode cases,8five-lap cooling cases,4fresh exact repeats.0failures/0carry jumps;604workspace tests and GitHub CI pass. Globally selected progressive4: best sampled1/2/1/2stops inMonzaI/ZandI/MontrealII/MexicoII; sampled3+ plans slower14.8..35.4s, unchanged22s stop cost. Progressive2 failsMexico by0.57s and is not selected. Limited fixed-setting screen, not global optimum/all-context field qualification. No current game restriction added; native fitting eligibility cap distinct from unrestricted3+ diagnostic physics."
   },
   "next": [
-    "qualify explicit wear-to-grip/thermal-window/compound/preparation parameters and operational tire-life semantics; preserve legacy identities and continuous lap boundaries",
+    "validate selected global progressive4 profile transfer across10I/II contexts before fitting nine fixed drivers; continue to test3+stops diagnostically and REFINE if still advantaged, not conceal with a cap",
     "verify1..2-stop dry strategies and actual service costs; retain >2-stop plans as diagnostic counterexamples, not eligible game plans",
     "resume persistent-nine I/II calibration only after corrected physical profile is frozen; fixed identities/traits/budgets, Franz Hermann and Charles LEclair strongest aggregate",
     "audit weak early-aero and gearbox endpoint response without forced four-axis spend",
@@ -54,5 +56,6 @@
   "fixed_field_failed_evidence": "experiments/fixed_opponents_v1/RESULTS_V1.md",
   "fixed_field_stop_evidence": "experiments/fixed_opponents_v2/results/owner-stop-v2.json",
   "tire_stand_evidence": "experiments/pit_strategy_audit_v1/RESULTS_V1.md",
-  "tire_stand_fix_issue": "https://github.com/loicbelec/pitgun/issues/472"
+  "tire_stand_fix_issue": "https://github.com/loicbelec/pitgun/issues/472",
+  "tire_performance_candidate_evidence": "experiments/tire_performance_v1/RESULTS_V1.md"
 }

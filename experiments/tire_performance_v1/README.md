@@ -4,7 +4,8 @@ Suite au [diagnostic pneus/stands](../pit_strategy_audit_v1/RESULTS_V1.md) et à
 [#472](https://github.com/loicbelec/pitgun/issues/472), avant la reprise du plateau
 fixe de [#457](https://github.com/loicbelec/pitgun/issues/457).
 
-**Statut : hypothèses locales à comparer, aucun profil choisi ni admis.** Le jeu,
+**Statut : écran natif terminé, candidat global `progressive4` retenu.**
+Voir [les résultats et limites](RESULTS_V1.md). Aucun modèle admis dans le jeu. Le jeu,
 ses sauvegardes, les catalogues publiés et les services déployés restent inchangés.
 Les anciennes campagnes sont conservées dans leur branche/source figée.
 
