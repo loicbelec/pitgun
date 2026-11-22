@@ -95,3 +95,10 @@ subsiste ; elle ne prouve ni l'absence ni la présence d'un freinage artificiel.
 Quantifier les trajectoires et le travail de freinage, conserver les limites
 avant tout verdict de qualité ou calibration des adversaires. Pas d'activation
 jeu/Worker/WASM, de nouvelle cadence ou de modification d'une preuve existante.
+
+Résultats :[RESULTS_V1.md](RESULTS_V1.md). Le [banc statique](index.html) lit les
+mesures natives archivées, sans exécuter le candidat dans le navigateur. La
+reconstruction des figures utilise Matplotlib et `plot_report.py`. Les extraits
+conservent un point natif tous les5indices sur les500derniers mètres des trois
+premiers/deux derniers tours et des tours de service ; métriques et contrôles
+conservent tous les points natifs de tous les tours.
