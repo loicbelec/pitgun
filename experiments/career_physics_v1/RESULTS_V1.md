@@ -1,6 +1,7 @@
 # Configurations de carrière : résolution et premier écran natif
 
 Source du résolveur/probe/protocole figée avant calcul : **aa48919**.
+Livraison [brouillon #467](https://github.com/loicbelec/pitgun/pull/467), empilée sur #465.
 Catalogue immuable v1.8.1. Coefficients thermiques V2 et pilotes V2 inchangés.
 [Protocole](plan-v1.json), [méthode](README.md),
 [synthèse machine](results/summary-v1.json),

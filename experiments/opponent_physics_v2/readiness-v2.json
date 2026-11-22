@@ -8,7 +8,7 @@
     462,
     464,
     465,
-    "career-thermal-resolution-v1 (draft pending)"
+    467
   ],
   "gates": {
     "effective_driver_resolution": "native opt-in qualified; signed/runtime admission open",
@@ -16,7 +16,7 @@
     "performance_risk": "native recoverable throttle hesitation qualified; grip-dependent incidents/shared journal/full-process qualification open",
     "fuel_and_full_gp": "native per-car outcome isolation qualified; preparation/reserve REFINE, not universally infeasible above an estimate",
     "career_fixtures": "12 authored real-reducer snapshots/54 prepared GP requests, exact repeat and fixed-field independence; bookkeeping not pace evidence",
-    "boundary_lookahead_cost": "native opt-in reachable_wear_v1 implemented:26scenarios\u00d72modes\u00d72exact passes incl8reserved; zero carry jumps, no speed trim/prefix rewrite, unchanged service replay; thermal floor conservative and actual-career/allocation-bias461 acceptance open. Native advance overhead1.8..32.2% on3cases; not WASM/VPS/RSS acceptance.",
+    "boundary_lookahead_cost": "native reachable_wear_v1 qualified on26scenarios/2modes/2repeats including8reserved; actual-component I/II addition467:18GP references and12selected setups paired/exact repeats, no carry jumps/failures and six GP pair orders agree. Wider reserved career/strategy acceptance461 remains open. Native advance overhead1.8..32.2% on3prior cases; no WASM/VPS/RSS acceptance.",
     "setup_screen": "native actual-component resolver qualified on54authored requests/540cars exactly twice;18GP references paired/exact repeats;500short samples and12setups paired at full GP/exact repeats, no failures or carry jumps. Six full-GP pair orders agree across forecasts. Late-eraII short-to-GP reversals expose horizon bias; concentrated spends still competitive. No exhaustive search/field fit/holdout/admission verdict.",
     "opponent_fit": "not started; no calibrated field or balance verdict",
     "reserved_evaluation": "not performed",
