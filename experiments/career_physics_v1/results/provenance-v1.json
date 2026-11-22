@@ -1,0 +1,19 @@
+{
+  "source_commit": "aa489199d8c281e4db4d4f2793f23484f3f8c43e",
+  "sources": {
+    "crates/pitgun-racing-simulator/src/thermal_career.rs": "sha256:f8b6300748c91f5058491c65f3c657b0cf4d0a17099851453b9bde891fcbd5a6",
+    "crates/pitgun-racing-simulator/examples/career_physics_probe.rs": "sha256:a464d5fa0efe54483b63ce7398bbfd6a91783c9891814c64453a921b93d39a55",
+    "crates/pitgun-racing-solver/src/lib.rs": "sha256:66b9af79501017b4315b21e1d9f8b63702846ff41a44557b26199cadbcdebe37",
+    "crates/pitgun-racing-solver/src/lap_boundary.rs": "sha256:908689a312ab4561038e6050d39611e00a0d947caf692614c9666446461f7b13",
+    "crates/pitgun-racing-solver/src/tire_reachability.rs": "sha256:46b625c3cc6787a7e68c5ea977ee68bd981307285007d23f56fdc3ddb56ae933",
+    "crates/pitgun-racing-solver/src/thermal_physics.rs": "sha256:95962d01e124aaceaa809215abf62850687772a3cd20996aaa54532ff6935699",
+    "crates/pitgun-racing-solver/src/longitudinal_energy.rs": "sha256:428fe94886fa8f85c88d905c11932275532de04fb4ff6e0b6f36e31bd36df187",
+    "crates/pitgun-racing-simulator/src/thermal_driver.rs": "sha256:874101895f54b1ad590c8ee80b7bcc5d53a665d32daee3a690b6ab33865719c2",
+    "experiments/career_physics_v1/plan-v1.json": "sha256:62ea9bbece77e1c2dc8df698eb67c8cb6b6888733cde8fd7f62abec96f1cd70b",
+    "experiments/career_physics_v1/profile-v1.json": "sha256:8541169625752e5a15cb79ca11827f02e7587dc155b5045f122b78edf24bf7dc",
+    "experiments/career_physics_v1/run_local.py": "sha256:aff06adbba5b2c2e1ef0e3263fda1e11a33ae05d3efbf4e79b46d4848cc9adbe",
+    "experiments/opponent_physics_v2/results/career-fixtures-v1.json": "sha256:858cce40ccb942b5667bab84f99af9e1231711d6cf13afca472537051ef3c6d9"
+  },
+  "binary_digest": "sha256:6dc0d642d05f16a0eef04bf77b1a91a7c2551df57f58428ae7b2b344d127e8a5",
+  "performance": "no clocks collected; up to four concurrent native processes"
+}

@@ -1,0 +1,508 @@
+{
+  "schema": "pitgun.career-physics-summary/v1",
+  "mapping_requests": 54,
+  "baseline_count": 36,
+  "screen_count": 500,
+  "confirmation_count": 24,
+  "failure_count": 0,
+  "failures": [],
+  "maximum_carry_jumps": {
+    "carcass_c": 0.0,
+    "engine_c": 0.0,
+    "speed_mps": 0.0,
+    "surface_c": 0.0,
+    "wear": 0.0
+  },
+  "thermal_maxima": {
+    "maximum_contact_utilization_upper_bound": 0.9943146864486248,
+    "maximum_coupling_passes": 15,
+    "maximum_engine_balance_residual_j": 2.281012712046504e-08,
+    "maximum_fuel_balance_residual_j": 0.0,
+    "maximum_relative_grip_coupling_error": 0.0009998566349920246,
+    "maximum_tire_balance_residual_j": 5.985384632367641e-09
+  },
+  "energy_maxima": {
+    "maximum_driveline_balance_residual_j": 2.7284841053187847e-12,
+    "maximum_raw_contact_utilization": 0.991699509619291,
+    "maximum_thermal_balance_residual_j": 2.2817403078079224e-08,
+    "maximum_vehicle_balance_residual_j": 3.637978807091713e-12
+  },
+  "conservative_recomputes": 0,
+  "maximum_uncommitted_cap_updates": 1,
+  "shortlisted_full_gp_comparisons": [
+    {
+      "fixture": "craft_engineering:era1-entry",
+      "circuit": "MONZA",
+      "choices": {
+        "concentrated": {
+          "discretionary_allocation_aero_chassis_engine_cooling": [
+            0,
+            8,
+            0,
+            0
+          ],
+          "gear": 1,
+          "downforce": 0.5,
+          "full_gp_outcomes": {
+            "minimum_grip": {
+              "final_state": {
+                "engine_temp": 136.43639791886793,
+                "fuel_mass": 68.75079303594488,
+                "tire_temp": 68.99537935357878,
+                "tire_wear": 0.40658909484495637
+              },
+              "ok": true,
+              "result_digest": "sha256:66594156b9fc1d86a7b667efaebf26616b5fe6bb64d546ad30f9515fc4dc085f",
+              "time_s": 8687.606656132828
+            },
+            "reachable_wear_v1": {
+              "final_state": {
+                "engine_temp": 136.34102033110088,
+                "fuel_mass": 68.99511981754789,
+                "tire_temp": 68.77742372451291,
+                "tire_wear": 0.40452126324128934
+              },
+              "ok": true,
+              "result_digest": "sha256:e070a8b75c047bbe42ee2b0423c8984f8b10ae20a904622adb2954c0a7147154",
+              "time_s": 8659.400951180785
+            }
+          }
+        },
+        "diversified": {
+          "discretionary_allocation_aero_chassis_engine_cooling": [
+            0,
+            3,
+            3,
+            2
+          ],
+          "gear": 1,
+          "downforce": 0.5,
+          "full_gp_outcomes": {
+            "minimum_grip": {
+              "final_state": {
+                "engine_temp": 112.96585596865896,
+                "fuel_mass": 68.06094184333759,
+                "tire_temp": 69.49729468816695,
+                "tire_wear": 0.4144136670206422
+              },
+              "ok": true,
+              "result_digest": "sha256:fe01a2286ed60221ba29dc4055499807dad819339d664c4ec55d76fdc5c61c70",
+              "time_s": 8624.98232010857
+            },
+            "reachable_wear_v1": {
+              "final_state": {
+                "engine_temp": 112.9762883721948,
+                "fuel_mass": 68.32384090890909,
+                "tire_temp": 69.27389053640523,
+                "tire_wear": 0.41218797853617783
+              },
+              "ok": true,
+              "result_digest": "sha256:e8273ea2d9145a6354327ad7772bdc0443d03539f9f45e65c7eecc0f39e7a469",
+              "time_s": 8598.340896366322
+            }
+          }
+        }
+      },
+      "concentrated_minus_diversified_time_s": {
+        "minimum_grip": 62.62433602425881,
+        "reachable_wear_v1": 61.060054814463
+      },
+      "forecast_reverses_pair_ranking": false
+    },
+    {
+      "fixture": "craft_engineering:era1-entry",
+      "circuit": "ZANDVOORT",
+      "choices": {
+        "concentrated": {
+          "discretionary_allocation_aero_chassis_engine_cooling": [
+            0,
+            8,
+            0,
+            0
+          ],
+          "gear": 1,
+          "downforce": 0.5,
+          "full_gp_outcomes": {
+            "minimum_grip": {
+              "final_state": {
+                "engine_temp": 155.1508846847919,
+                "fuel_mass": 63.18600642842054,
+                "tire_temp": 69.93939795687362,
+                "tire_wear": 0.5134324473309362
+              },
+              "ok": true,
+              "result_digest": "sha256:dd1be768fc2388481b0cda236e7e48173287f1796e3edb21f4c726d4453b9aee",
+              "time_s": 9899.682420417488
+            },
+            "reachable_wear_v1": {
+              "final_state": {
+                "engine_temp": 155.15404843033667,
+                "fuel_mass": 63.1853741492626,
+                "tire_temp": 69.94059633301902,
+                "tire_wear": 0.5134510289008117
+              },
+              "ok": true,
+              "result_digest": "sha256:5ef7641818823268606888a3437d524b0e42164596dcbe1d9317e26ba7992462",
+              "time_s": 9899.590583396146
+            }
+          }
+        },
+        "diversified": {
+          "discretionary_allocation_aero_chassis_engine_cooling": [
+            0,
+            3,
+            3,
+            2
+          ],
+          "gear": 1,
+          "downforce": 0.5,
+          "full_gp_outcomes": {
+            "minimum_grip": {
+              "final_state": {
+                "engine_temp": 130.5353728040436,
+                "fuel_mass": 61.654137091961424,
+                "tire_temp": 70.9140614865656,
+                "tire_wear": 0.5266242730626031
+              },
+              "ok": true,
+              "result_digest": "sha256:d518a8d7538f0708122361d1858c700fc7580ab8e6c912b90b26b335747e5cd3",
+              "time_s": 9762.94323462133
+            },
+            "reachable_wear_v1": {
+              "final_state": {
+                "engine_temp": 130.53661357407182,
+                "fuel_mass": 61.65354064026252,
+                "tire_temp": 70.91501111297919,
+                "tire_wear": 0.5266405709571043
+              },
+              "ok": true,
+              "result_digest": "sha256:cc87df23b508260cb69a4f2adf737b29c0a25753551e08ad7583e1b448c6273a",
+              "time_s": 9762.882716124477
+            }
+          }
+        }
+      },
+      "concentrated_minus_diversified_time_s": {
+        "minimum_grip": 136.73918579615747,
+        "reachable_wear_v1": 136.70786727166887
+      },
+      "forecast_reverses_pair_ranking": false
+    },
+    {
+      "fixture": "craft_engineering:era1-exit",
+      "circuit": "MONZA",
+      "choices": {
+        "concentrated": {
+          "discretionary_allocation_aero_chassis_engine_cooling": [
+            0,
+            11,
+            0,
+            0
+          ],
+          "gear": 1,
+          "downforce": 0.5,
+          "full_gp_outcomes": {
+            "minimum_grip": {
+              "final_state": {
+                "engine_temp": 136.43021428559345,
+                "fuel_mass": 68.75907155939797,
+                "tire_temp": 68.97547004134371,
+                "tire_wear": 0.4049726967362342
+              },
+              "ok": true,
+              "result_digest": "sha256:5f5c28099a02cc1a2bcdd80831bafd2f6093c75e8031fb729626dc7ce30d3182",
+              "time_s": 8673.138064988383
+            },
+            "reachable_wear_v1": {
+              "final_state": {
+                "engine_temp": 136.3269716408293,
+                "fuel_mass": 69.00548192702283,
+                "tire_temp": 68.76000840725177,
+                "tire_wear": 0.4029136983486737
+              },
+              "ok": true,
+              "result_digest": "sha256:c6a65d8e2ef92ac1628ffc7395f5c9b36583c4ffb61c4c50f10c8d540d89d079",
+              "time_s": 8645.083639845308
+            }
+          }
+        },
+        "diversified": {
+          "discretionary_allocation_aero_chassis_engine_cooling": [
+            0,
+            4,
+            5,
+            2
+          ],
+          "gear": 1,
+          "downforce": 0.5,
+          "full_gp_outcomes": {
+            "minimum_grip": {
+              "final_state": {
+                "engine_temp": 113.01995806409772,
+                "fuel_mass": 68.03631333648691,
+                "tire_temp": 69.51017902119274,
+                "tire_wear": 0.413860641145054
+              },
+              "ok": true,
+              "result_digest": "sha256:c54a8091f7b5df332900a412ba02a0821074c1dc9366732b25eae422e4d44672",
+              "time_s": 8613.80073128729
+            },
+            "reachable_wear_v1": {
+              "final_state": {
+                "engine_temp": 113.02876999858714,
+                "fuel_mass": 68.30066568637439,
+                "tire_temp": 69.28760452931786,
+                "tire_wear": 0.41163742165960693
+              },
+              "ok": true,
+              "result_digest": "sha256:d53a3cd25f8e5103280e4a5ffe444bd43eba720ebc0ec16d24eb4648400b88aa",
+              "time_s": 8587.290788209526
+            }
+          }
+        }
+      },
+      "concentrated_minus_diversified_time_s": {
+        "minimum_grip": 59.337333701092575,
+        "reachable_wear_v1": 57.79285163578243
+      },
+      "forecast_reverses_pair_ranking": false
+    },
+    {
+      "fixture": "craft_engineering:era1-exit",
+      "circuit": "ZANDVOORT",
+      "choices": {
+        "concentrated": {
+          "discretionary_allocation_aero_chassis_engine_cooling": [
+            0,
+            11,
+            0,
+            0
+          ],
+          "gear": 1,
+          "downforce": 0.5,
+          "full_gp_outcomes": {
+            "minimum_grip": {
+              "final_state": {
+                "engine_temp": 155.28770924508584,
+                "fuel_mass": 63.18496347422587,
+                "tire_temp": 69.944255283454,
+                "tire_wear": 0.5115891788948926
+              },
+              "ok": true,
+              "result_digest": "sha256:86e7a8ff3cc19971b057260b54a40bf81351b61024d715f73798340ce059a8ac",
+              "time_s": 9875.49987338244
+            },
+            "reachable_wear_v1": {
+              "final_state": {
+                "engine_temp": 155.28910411420696,
+                "fuel_mass": 63.184214971322,
+                "tire_temp": 69.9453958017326,
+                "tire_wear": 0.5116082978562313
+              },
+              "ok": true,
+              "result_digest": "sha256:a0c210dd6f8f9c07a1adb1a765afc42fc6ee1ad9d445ec3a6828d731cf06ce48",
+              "time_s": 9875.417213166296
+            }
+          }
+        },
+        "diversified": {
+          "discretionary_allocation_aero_chassis_engine_cooling": [
+            0,
+            4,
+            5,
+            2
+          ],
+          "gear": 1,
+          "downforce": 0.5,
+          "full_gp_outcomes": {
+            "minimum_grip": {
+              "final_state": {
+                "engine_temp": 130.73643006512418,
+                "fuel_mass": 61.59094503695482,
+                "tire_temp": 70.95705186338104,
+                "tire_wear": 0.5261118307317616
+              },
+              "ok": true,
+              "result_digest": "sha256:6475b37e692dfef73bf6dd4a247a259068a9b65f8b58051aad454527bb35bb1c",
+              "time_s": 9743.99428448661
+            },
+            "reachable_wear_v1": {
+              "final_state": {
+                "engine_temp": 130.73794669602106,
+                "fuel_mass": 61.59022210247037,
+                "tire_temp": 70.95812028178338,
+                "tire_wear": 0.5261294651991205
+              },
+              "ok": true,
+              "result_digest": "sha256:ec8f581ec83c9111a1f3902697ed9ce0e8e0e9bf414208e2b56b1950651e0b71",
+              "time_s": 9743.937410535536
+            }
+          }
+        }
+      },
+      "concentrated_minus_diversified_time_s": {
+        "minimum_grip": 131.50558889583044,
+        "reachable_wear_v1": 131.47980263075988
+      },
+      "forecast_reverses_pair_ranking": false
+    },
+    {
+      "fixture": "craft_engineering:era2-exit",
+      "circuit": "MONZA",
+      "choices": {
+        "concentrated": {
+          "discretionary_allocation_aero_chassis_engine_cooling": [
+            0,
+            0,
+            16,
+            0
+          ],
+          "gear": 1,
+          "downforce": 0,
+          "full_gp_outcomes": {
+            "minimum_grip": {
+              "final_state": {
+                "engine_temp": 109.43780785989223,
+                "fuel_mass": 24.374134900311347,
+                "tire_temp": 94.94954706388602,
+                "tire_wear": 0.4782249902727762
+              },
+              "ok": true,
+              "result_digest": "sha256:1edf203a8629c6b3e31f5dc91030d0eedc2d3fec17aa9daceff453cc1dbd5cd7",
+              "time_s": 6597.569444733297
+            },
+            "reachable_wear_v1": {
+              "final_state": {
+                "engine_temp": 111.12144354559508,
+                "fuel_mass": 25.21076977901334,
+                "tire_temp": 94.46917219668934,
+                "tire_wear": 0.47333108986891526
+              },
+              "ok": true,
+              "result_digest": "sha256:7240282b26d2f5f1207f4e22e8ffb33b1d14590a3df903e134113ed64248b354",
+              "time_s": 6567.031269678469
+            }
+          }
+        },
+        "diversified": {
+          "discretionary_allocation_aero_chassis_engine_cooling": [
+            0,
+            8,
+            7,
+            1
+          ],
+          "gear": 0,
+          "downforce": 0,
+          "full_gp_outcomes": {
+            "minimum_grip": {
+              "final_state": {
+                "engine_temp": 101.34319367654676,
+                "fuel_mass": 24.09826057433435,
+                "tire_temp": 94.27641998545654,
+                "tire_wear": 0.4704884908089595
+              },
+              "ok": true,
+              "result_digest": "sha256:4834f082cef1f26551e9da567e03c0ac4b608bfad1e3c7d39d90145384a94a46",
+              "time_s": 6604.124182031493
+            },
+            "reachable_wear_v1": {
+              "final_state": {
+                "engine_temp": 103.75294872930306,
+                "fuel_mass": 24.99764213550923,
+                "tire_temp": 93.87173098189837,
+                "tire_wear": 0.4661555589133842
+              },
+              "ok": true,
+              "result_digest": "sha256:5e6a4b1f431173213d7dc1283b8b33dcd0871ab59c9429c4be83c8ff6b1fb10a",
+              "time_s": 6571.727140398587
+            }
+          }
+        }
+      },
+      "concentrated_minus_diversified_time_s": {
+        "minimum_grip": -6.554737298195505,
+        "reachable_wear_v1": -4.695870720118364
+      },
+      "forecast_reverses_pair_ranking": false
+    },
+    {
+      "fixture": "craft_engineering:era2-exit",
+      "circuit": "ZANDVOORT",
+      "choices": {
+        "concentrated": {
+          "discretionary_allocation_aero_chassis_engine_cooling": [
+            0,
+            16,
+            0,
+            0
+          ],
+          "gear": 0.75,
+          "downforce": 0.5,
+          "full_gp_outcomes": {
+            "minimum_grip": {
+              "final_state": {
+                "engine_temp": 110.93706818430479,
+                "fuel_mass": 24.288256207313253,
+                "tire_temp": 95.25628775172775,
+                "tire_wear": 0.5708102082271342
+              },
+              "ok": true,
+              "result_digest": "sha256:8420a8cff86a992c0931bcac782b669f106928e97ef5e2838babf1e895d1256e",
+              "time_s": 7541.700930676139
+            },
+            "reachable_wear_v1": {
+              "final_state": {
+                "engine_temp": 110.93337206029298,
+                "fuel_mass": 24.292272683559762,
+                "tire_temp": 95.2516330424617,
+                "tire_wear": 0.5708772848452127
+              },
+              "ok": true,
+              "result_digest": "sha256:62ee5d9cdb32e0e106648f8acfa105aefaafc01654638260fe28590ec611e172",
+              "time_s": 7542.4208453180445
+            }
+          }
+        },
+        "diversified": {
+          "discretionary_allocation_aero_chassis_engine_cooling": [
+            0,
+            8,
+            7,
+            1
+          ],
+          "gear": 0.75,
+          "downforce": 0.5,
+          "full_gp_outcomes": {
+            "minimum_grip": {
+              "final_state": {
+                "engine_temp": 102.57185350346977,
+                "fuel_mass": 23.170402849271788,
+                "tire_temp": 95.53594288923797,
+                "tire_wear": 0.5815180258766124
+              },
+              "ok": true,
+              "result_digest": "sha256:12ef27b2179ed6dcfe60da5f5e344329c05d1cbb69d3a88de67c6ddcba894dea",
+              "time_s": 7561.145161318646
+            },
+            "reachable_wear_v1": {
+              "final_state": {
+                "engine_temp": 102.57014614982876,
+                "fuel_mass": 23.177192900114772,
+                "tire_temp": 95.53131607272833,
+                "tire_wear": 0.5815671580983673
+              },
+              "ok": true,
+              "result_digest": "sha256:efec5e44e5023b6dc9629b55ff98df252140d40c78844e5e58d9f57c4145d960",
+              "time_s": 7561.998281252317
+            }
+          }
+        }
+      },
+      "concentrated_minus_diversified_time_s": {
+        "minimum_grip": -19.444230642507137,
+        "reachable_wear_v1": -19.577435934272216
+      },
+      "forecast_reverses_pair_ranking": false
+    }
+  ]
+}
