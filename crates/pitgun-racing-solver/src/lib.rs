@@ -8,7 +8,7 @@
 use md5::{Digest, Md5};
 use rand::rngs::StdRng;
 use rand::{RngCore, SeedableRng};
-use std::cell::RefCell;
+use std::cell::{Cell, RefCell};
 use std::future::Future;
 use std::pin::Pin;
 use std::rc::Rc;
@@ -26,6 +26,7 @@ use lap_boundary::{
 };
 pub mod power_telemetry;
 pub mod thermal_physics;
+mod tire_reachability;
 use longitudinal_energy::{EnergyLedgerV1, LongitudinalEnergyModelV1, SegmentContext};
 use thermal_physics::{
     ThermalLapV2, ThermalLedgerV2, ThermalModelV2, ThermalPhysicsV2, ThermalResultV2,
@@ -1172,6 +1173,26 @@ impl ResolvedSimulationSessionV3 {
         {
             return Err("boundary diagnostic requires explicit energy/thermal V2".into());
         }
+        if request.forecast == BoundaryForecastV1::ReachableWearV1 {
+            if request.recompute_invariant {
+                return Err(
+                    "reachable wear forecast does not use the legacy invariant-work switch".into(),
+                );
+            }
+            for tire in std::iter::once(&request.input.vehicle.tire)
+                .chain(request.input.pit_plan.stops.iter().map(|s| &s.tire))
+            {
+                if tire.temp_min_k < 1e-6
+                    || tire.wear_min < 1e-6
+                    || !(tire.temp_opt + 10.0 * tire.temp_sigma.max(1e-3)).is_finite()
+                {
+                    return Err(
+                        "reachable wear forecast requires positive thermal/wear grip floors>=1e-6"
+                            .into(),
+                    );
+                }
+            }
+        }
         Self::new_inner(
             request.input,
             service_boundaries,
@@ -1973,6 +1994,10 @@ async fn run_resolved_simulation_kernel_incremental(
         }]
     };
 
+    let reachable_mode = boundary_diagnostic
+        .is_some_and(|(forecast, _)| forecast == BoundaryForecastV1::ReachableWearV1);
+    let mut previous_reachable: Option<tire_reachability::ReachableTireStates> = None;
+
     let mut pit_stops = input.pit_plan.stops.clone();
     pit_stops.sort_by_key(|stop| stop.lap);
 
@@ -2106,11 +2131,118 @@ async fn run_resolved_simulation_kernel_incremental(
                 ),
             )
         });
-        let mut energy_terminal_cap = f64::INFINITY;
+        let reachable_context = reachable_mode.then(|| tire_reachability::ReachabilityContext {
+            vehicle: &vehicle,
+            mechanical,
+            track: &input.track,
+            vertical_curvature: &slope_gradient,
+            tire: &tire_curr,
+            heat: tire_heat.unwrap(),
+            mass_upper_kg: mass,
+            air_c: input.config.tire_temp_amb,
+            road_c: thermal_model.unwrap().road_temperature_c,
+        });
+        // A terminal anchor valid for any following fixed-envelope control noise.
+        // Deformation resistance is intentionally NOT counted as brake assistance.
+        let forecast_calls = Cell::new(0u32);
+        let forecast_sweeps = Cell::new(0u32);
+        let forecast_reachable = |wear: &[f64],
+                                  corner: &[f64],
+                                  braking: &[f64],
+                                  terminal: Option<f64>|
+         -> Result<f64, String> {
+            forecast_calls.set(forecast_calls.get() + 1);
+            let rc = reachable_context.as_ref().unwrap();
+            let floor_temperature = tire_curr.temp_opt + 10.0 * tire_curr.temp_sigma.max(1e-3);
+            let temperatures = vec![floor_temperature; n];
+            let mut envelope = corner_speed_limit(
+                &input.track,
+                &vehicle,
+                &state_curr,
+                &input.config,
+                &tire_curr,
+                curvature_response,
+                TireEnvelopeState {
+                    dynamics: tire_dynamics,
+                    temperatures_c: &temperatures,
+                    wear,
+                    lateral_utilization: corner,
+                },
+            );
+            let speed_upper = rc.speed_upper_mps(input.config.max_speed);
+            for value in &mut envelope {
+                *value = value.min(speed_upper);
+            }
+            if let Some(cap) = terminal {
+                envelope[n - 1] = envelope[n - 1].min(cap);
+            }
+            for _ in 0..if terminal.is_some() { 1 } else { 16 } {
+                forecast_sweeps.set(forecast_sweeps.get() + 1);
+                if terminal.is_none() {
+                    envelope[n - 1] = envelope[n - 1].min(envelope[0]);
+                }
+                for i in (0..n - 1).rev() {
+                    let context = SegmentContext {
+                        vehicle: &vehicle,
+                        mechanical,
+                        contact: energy_contact.unwrap(),
+                        torque_knots_nm: None,
+                        thermal: None,
+                        tire_deformation_coefficient: 0.0,
+                        force_capacity_fraction: energy_force_capacity_fraction,
+                        mass_kg: mass,
+                        ds_m: segment_distance(spatial_integration, s, ds, i),
+                        dz_m: input.track.z[i + 1] - input.track.z[i],
+                        curvature_radpm: input.track.kappa[i],
+                        vertical_curvature_per_m: slope_gradient[i],
+                        mu: effective_mu(
+                            vehicle.chassis.mu0,
+                            wear[i],
+                            floor_temperature,
+                            &tire_curr,
+                        ),
+                        engine_effort_fraction: 1.0,
+                        traction_utilization: 0.0,
+                        braking_utilization: (braking[i] / energy_force_capacity_fraction)
+                            .clamp(0.0, 1.0),
+                    };
+                    envelope[i] = context.braking_start_limit(envelope[i + 1], envelope[i])?;
+                }
+                if terminal.is_some() || envelope[n - 1] <= envelope[0] + 1e-9 {
+                    return Ok(envelope[0]);
+                }
+            }
+            Err("reachable forecast: conservative anchor did not close".into())
+        };
+        let anchor = if reachable_mode && lap_idx < lap_count {
+            let min_corner = vec![
+                active_driver_control.requested_cornering_utilization
+                    * (1.0 - active_driver_control.driver_control.control_error);
+                n
+            ];
+            let min_braking = vec![
+                active_driver_control.requested_braking_utilization
+                    * (1.0 - active_driver_control.driver_control.control_error);
+                n
+            ];
+            Some(forecast_reachable(
+                &vec![1.0; n],
+                &min_corner,
+                &min_braking,
+                None,
+            )?)
+        } else {
+            None
+        };
+        let mut energy_terminal_cap = anchor.unwrap_or(f64::INFINITY);
+        let mut reachable_relaxed = false;
+        let mut reachable_updates = 0u32;
+        let mut reachable_fallback = false;
         let held_state_diagnostic = boundary_diagnostic
             .is_some_and(|(forecast, _)| forecast == BoundaryForecastV1::EndStateHeldDiagnostic);
         let cache_invariant = thermal_model.is_some()
             && !held_state_diagnostic
+            && !reachable_mode
             && !boundary_diagnostic.is_some_and(|(_, recompute)| recompute);
         let mut invariant_cap = None;
         if let Some(work) = &boundary_work
@@ -2118,12 +2250,16 @@ async fn run_resolved_simulation_kernel_incremental(
         {
             work.borrow_mut().laps.push(BoundaryLapWorkV1 {
                 lap: lap_idx,
-                forecast_evaluations: 0,
+                forecast_evaluations: forecast_calls.get(),
                 cache_hits: 0,
-                backward_sweeps: 0,
+                backward_sweeps: forecast_sweeps.get(),
                 last_forecast_cap_mps: 0.0,
                 last_assumed_temperature_c: 0.0,
                 last_assumed_wear: 0.0,
+                reachable: anchor.map(|cap| lap_boundary::ReachableBoundaryWorkV1 {
+                    anchor_cap_mps: cap,
+                    ..Default::default()
+                }),
             });
         }
         for coupling_iteration in 0..coupling_iterations {
@@ -2172,7 +2308,9 @@ async fn run_resolved_simulation_kernel_incremental(
                 // during coupling and must be recomputed. The diagnostic is not
                 // a lower bound on actual future grip. No path trims seam speed.
                 // Forecast coordinates never replace the physical tire state.
-                let next_cap = if let Some(cap) = invariant_cap {
+                let next_cap = if reachable_mode {
+                    energy_terminal_cap
+                } else if let Some(cap) = invariant_cap {
                     if let Some(work) = &boundary_work {
                         work.borrow_mut().laps.last_mut().unwrap().cache_hits += 1;
                     }
@@ -2272,8 +2410,12 @@ async fn run_resolved_simulation_kernel_incremental(
             let mut brake_force = vec![0.0; n];
             // Close the racing line at the lap seam. The historical kernel
             // could silently trim the next lap's initial speed instead.
-            for _boundary_sweep in 0..if energy_mode { 16 } else { 1 } {
-                if energy_mode {
+            for _boundary_sweep in 0..if energy_mode && !reachable_mode {
+                16
+            } else {
+                1
+            } {
+                if energy_mode && !reachable_mode {
                     v_bwd[n - 1] = v_bwd[n - 1].min(v_bwd[0]);
                 }
                 for i in (0..(n - 1)).rev() {
@@ -2369,11 +2511,11 @@ async fn run_resolved_simulation_kernel_incremental(
                     }
                 }
 
-                if !energy_mode || v_bwd[n - 1] <= v_bwd[0] + 1e-9 {
+                if !energy_mode || reachable_mode || v_bwd[n - 1] <= v_bwd[0] + 1e-9 {
                     break;
                 }
             }
-            if energy_mode && v_bwd[n - 1] > v_bwd[0] + 1e-9 {
+            if energy_mode && !reachable_mode && v_bwd[n - 1] > v_bwd[0] + 1e-9 {
                 return Err("energy V1: periodic braking envelope did not converge".into());
             }
 
@@ -2940,6 +3082,104 @@ async fn run_resolved_simulation_kernel_incremental(
                 continue;
             }
 
+            if reachable_mode {
+                if previous_reachable
+                    .as_ref()
+                    .is_some_and(|b| !b.contains(&tire_temp, &carcass_temp, &tire_wear))
+                {
+                    return Err(format!(
+                        "reachable forecast: accepted-state enclosure violated on lap {lap_idx}"
+                    )
+                    .into());
+                }
+                if let Some(anchor) = anchor {
+                    let service_reset = pit_stops.iter().any(|stop| stop.lap == lap_idx);
+                    if service_reset {
+                        previous_reachable = None;
+                        if let Some(work) = &boundary_work {
+                            work.borrow_mut()
+                                .laps
+                                .last_mut()
+                                .unwrap()
+                                .reachable
+                                .as_mut()
+                                .unwrap()
+                                .service_reset = true;
+                        }
+                    } else {
+                        let future = reachable_context.as_ref().unwrap().bound(
+                            *tire_temp.last().unwrap(),
+                            *carcass_temp.last().unwrap(),
+                            *tire_wear.last().unwrap(),
+                            input.config.max_speed,
+                        )?;
+                        let (corner, braking) = next_driver_limits.as_ref().unwrap();
+                        let cap =
+                            forecast_reachable(&future.wear_upper, corner, braking, Some(anchor))?;
+                        let end_speed = *v_fwd.last().unwrap();
+                        if let Some(work) = &boundary_work {
+                            let mut work = work.borrow_mut();
+                            let lap = work.laps.last_mut().unwrap();
+                            lap.forecast_evaluations = forecast_calls.get();
+                            lap.backward_sweeps = forecast_sweeps.get();
+                            let w = lap.reachable.as_mut().unwrap();
+                            w.certificate_checks += 1;
+                            w.certificate_cap_mps = cap;
+                            w.future_start_wear = *tire_wear.last().unwrap();
+                            w.future_end_wear_upper = *future.wear_upper.last().unwrap();
+                        }
+                        let relax = !reachable_relaxed && cap > energy_terminal_cap + 1e-9;
+                        reachable_relaxed = true;
+                        if relax || end_speed > cap + 1e-9 {
+                            if coupling_iteration + 1 == coupling_iterations {
+                                return Err(format!("reachable forecast: no uncommitted iteration left on lap {lap_idx}").into());
+                            }
+                            reachable_updates += 1;
+                            // One relaxation, then only tighten. A bounded conservative
+                            // recomputation is visible; no endpoint is trimmed or published.
+                            if reachable_updates > 4 {
+                                reachable_fallback = true;
+                            }
+                            energy_terminal_cap = if reachable_fallback {
+                                anchor
+                            } else {
+                                cap.min(if relax {
+                                    f64::INFINITY
+                                } else {
+                                    energy_terminal_cap
+                                })
+                            };
+                            if let Some(work) = &boundary_work {
+                                let mut work = work.borrow_mut();
+                                let w = work.laps.last_mut().unwrap().reachable.as_mut().unwrap();
+                                w.uncommitted_cap_updates = reachable_updates;
+                                w.conservative_recompute = reachable_fallback;
+                            }
+                            if reachable_updates > 5 {
+                                return Err(
+                                    "reachable forecast: conservative recomputation not certified"
+                                        .into(),
+                                );
+                            }
+                            tire_temp_reference = tire_temp;
+                            tire_wear_reference = tire_wear;
+                            continue;
+                        }
+                        if let Some(work) = &boundary_work {
+                            work.borrow_mut()
+                                .laps
+                                .last_mut()
+                                .unwrap()
+                                .reachable
+                                .as_mut()
+                                .unwrap()
+                                .committed_end_speed_mps = end_speed;
+                        }
+                        previous_reachable = Some(future);
+                    }
+                }
+            }
+
             let v_final: Vec<f64> = if energy_mode {
                 v_fwd.clone()
             } else {
@@ -3168,6 +3408,19 @@ async fn run_resolved_simulation_kernel_incremental(
             }
 
             if let Some(pit_stop) = pit_stops.iter().find(|stop| stop.lap == lap_idx) {
+                // A real service resets the next-set state and abstract motion,
+                // including a pit requested only at the pre-service frontier.
+                previous_reachable = None;
+                if reachable_mode
+                    && let Some(work) = &boundary_work
+                    && let Some(lap) = work
+                        .borrow_mut()
+                        .laps
+                        .last_mut()
+                        .filter(|l| l.lap == lap_idx)
+                {
+                    lap.reachable.as_mut().unwrap().service_reset = true;
+                }
                 if energy_mode {
                     let reset = iteration_energy.final_vehicle_kinetic_j;
                     iteration_energy.unresolved_service_velocity_reset_j = reset;

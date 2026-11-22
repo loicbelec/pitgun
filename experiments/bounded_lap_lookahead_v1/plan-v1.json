@@ -1,0 +1,200 @@
+{
+  "schema": "pitgun.bounded-lap-lookahead-plan/v1",
+  "status": "FROZEN_BEFORE_QUALIFICATION",
+  "scenarios": [
+    {
+      "id": "reference-budget-early8-monza-c0",
+      "frozen_case": "budget-early8-monza-c0",
+      "group": "exposed"
+    },
+    {
+      "id": "reference-budget-early8-monza-c2",
+      "frozen_case": "budget-early8-monza-c2",
+      "group": "exposed"
+    },
+    {
+      "id": "reference-budget-classic15-monza-c2",
+      "frozen_case": "budget-classic15-monza-c2",
+      "group": "exposed"
+    },
+    {
+      "id": "reference-budget-modern20-silverstone-c4",
+      "frozen_case": "budget-modern20-silverstone-c4",
+      "group": "exposed"
+    },
+    {
+      "id": "reference-tires-medium",
+      "frozen_case": "tires-medium",
+      "group": "exposed"
+    },
+    {
+      "id": "reference-tire-start-35",
+      "frozen_case": "tire-start-35",
+      "group": "exposed"
+    },
+    {
+      "id": "reference-soft-medium-pit10",
+      "frozen_case": "soft-medium-pit10",
+      "group": "exposed"
+    },
+    {
+      "id": "reference-full-classic15-c2",
+      "frozen_case": "full-classic15-c2",
+      "group": "exposed"
+    },
+    {
+      "id": "prepared-budget-modern20-monza-c4",
+      "frozen_case": "budget-modern20-monza-c4",
+      "group": "exposed",
+      "prepare_tires": true
+    },
+    {
+      "id": "prepared-budget-modern20-silverstone-c4",
+      "frozen_case": "budget-modern20-silverstone-c4",
+      "group": "exposed",
+      "prepare_tires": true
+    },
+    {
+      "id": "prepared-tires-medium",
+      "frozen_case": "tires-medium",
+      "group": "exposed",
+      "prepare_tires": true
+    },
+    {
+      "id": "initial-35",
+      "frozen_case": "tires-medium",
+      "group": "exposed",
+      "prepare_tires": true,
+      "initial_temperature_c": 35
+    },
+    {
+      "id": "initial-110",
+      "frozen_case": "tires-medium",
+      "group": "exposed",
+      "prepare_tires": true,
+      "initial_temperature_c": 110
+    },
+    {
+      "id": "worn-095",
+      "frozen_case": "tires-medium",
+      "group": "exposed",
+      "prepare_tires": true,
+      "initial_wear": 0.95
+    },
+    {
+      "id": "medium-manage",
+      "frozen_case": "tires-medium",
+      "group": "exposed",
+      "prepare_tires": true,
+      "mode": "manage"
+    },
+    {
+      "id": "medium-attack",
+      "frozen_case": "tires-medium",
+      "group": "exposed",
+      "prepare_tires": true,
+      "mode": "attack"
+    },
+    {
+      "id": "prepared-soft-medium-pit10",
+      "frozen_case": "soft-medium-pit10",
+      "group": "exposed",
+      "prepare_tires": true,
+      "compare_service": true
+    },
+    {
+      "id": "prepared-medium-soft-pit10",
+      "frozen_case": "medium-soft-pit10",
+      "group": "exposed",
+      "prepare_tires": true,
+      "compare_service": true
+    },
+    {
+      "id": "reserved-low-df",
+      "frozen_case": "setup-df02",
+      "group": "reserved_before_first_candidate_measurement",
+      "prepare_tires": true
+    },
+    {
+      "id": "reserved-high-df",
+      "frozen_case": "setup-df08",
+      "group": "reserved_before_first_candidate_measurement",
+      "prepare_tires": true
+    },
+    {
+      "id": "reserved-hot-track",
+      "frozen_case": "hot-modern-c4",
+      "group": "reserved_before_first_candidate_measurement",
+      "prepare_tires": true
+    },
+    {
+      "id": "reserved-late-stop",
+      "frozen_case": "medium-soft-pit15",
+      "group": "reserved_before_first_candidate_measurement",
+      "prepare_tires": true,
+      "seed": 2027,
+      "compare_service": true
+    },
+    {
+      "id": "reserved-full-gp",
+      "frozen_case": "full-classic15-c0",
+      "group": "reserved_before_first_candidate_measurement",
+      "prepare_tires": true,
+      "seed": 9181
+    },
+    {
+      "id": "reserved-chassis",
+      "frozen_case": "setup-chassis",
+      "group": "reserved_before_first_candidate_measurement",
+      "prepare_tires": true,
+      "initial_wear": 0.5
+    },
+    {
+      "id": "reserved-hot-worn-hard",
+      "frozen_case": "tires-hard",
+      "group": "reserved_before_first_candidate_measurement",
+      "prepare_tires": true,
+      "initial_temperature_c": 140.0,
+      "initial_wear": 0.85
+    },
+    {
+      "id": "reserved-cold-attack",
+      "frozen_case": "tires-medium",
+      "group": "reserved_before_first_candidate_measurement",
+      "prepare_tires": true,
+      "initial_temperature_c": 35.0,
+      "seed": 7181,
+      "mode": "attack"
+    }
+  ],
+  "modes": [
+    "minimum_grip",
+    "reachable_wear_v1"
+  ],
+  "repeats": 2,
+  "timeout_s": 180,
+  "source_counters": "attempts including rejected uncommitted passes; not race events",
+  "exposed_pilots": [
+    "budget-early8-monza-c0",
+    "budget-classic15-monza-c2",
+    "tires-medium",
+    "tire-start-35",
+    "full-classic15-c2"
+  ],
+  "criteria": {
+    "repeat": "exact data/input/result/counter/accepted-prefix replay, exclude advance-clock timings only",
+    "continuity": "exact speed/engine/surface/carcass/wear carry from actual post-service state, no clipping or rewriting accepted traces",
+    "feasibility": "all successful bounded-mode laps validate tire reachability enclosure; commit nonservice end only if speed<=fresh next-start brake certificate; no force/tolerance relaxation",
+    "regressions": "8previous cache references,56driver+22historical outcomes and8V1 event cases exact under normal constructors",
+    "reserved": "reserved inputs not executed under this algorithm before this plan; any failure discloses need to refine, not silently tune then relabel validation",
+    "seam_quality": "report native last300m brake work and line speeds; residual temperature-floor pessimism remains explicit, no claim of optimal braking merely because feasible",
+    "cost": "after tests finish,7serial paired advance-clock runs on early5/medium20/full53, same pinned binary/scenario; different physical outputs, not pure optimization or WASM/VPS/RSS claim"
+  },
+  "cost_scenarios": [
+    "reference-budget-early8-monza-c0",
+    "reference-tires-medium",
+    "reference-full-classic15-c2"
+  ],
+  "cost_repetitions": 7,
+  "scope": "Native opt-in fixed-driver energy/thermal candidate. No coefficient/sampling change, runtime/admission/current game/deployment. Existing abstract pit velocity reset is retained and ledger-accounted, not a physically resolved pit lane."
+}
