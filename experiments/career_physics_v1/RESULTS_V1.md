@@ -95,6 +95,12 @@ Les bonus HQ apportent déjà 1 point de cooling à ces allocations concentrées
 Un meilleur réglage sur cinq tours peut perdre sur GP : ne pas calibrer les
 adversaires seulement à partir du classement court.
 
+**Clarification du propriétaire après cette campagne :** ces victoires de fin
+d'ère II ne constituent pas un défaut en soi. Les bonus HQ et le moteur installé
+changent les besoins. La cible est une importance réelle et contextuelle de
+chaque axe disponible, sans répartition obligatoire ni obligation de faire perdre
+les dépenses concentrées. Voir les [critères détaillés](ACCEPTANCE_CRITERIA.md).
+
 Les valeurs de derating et températures par tour sont conservées. Sur les
 références héritées de l'ère I, le minimum de fraction de puissance varie selon
 le circuit jusqu'à environ 0,915 à Zandvoort ; les références de sortie d'ère II

@@ -150,6 +150,14 @@ report denominators/intervals and all failures rather than the surviving winner.
 
 ## Competitive acceptance
 
+Owner clarification after the actual-career screen: each available axis must
+have a real, measurable physical role in appropriate operating conditions, with
+different importance across engines, eras, circuits and race duration. A late-II
+concentrated spend can legitimately win when HQ bonuses already provide cooling.
+Do not require every axis to improve every run or every best setup to spend on
+all four. Audit unexplained structural inactivity, not every locally weak marginal
+return. [Detailed criteria](../career_physics_v1/ACCEPTANCE_CRITERIA.md).
+
 The owner's target is thoughtful point/slider choice rather than routine wins by
 motor/chassis concentration. Do not turn this into an arbitrary obligation to
 spend on all four axes. An engine-oriented setup can be legitimate at Monza, and

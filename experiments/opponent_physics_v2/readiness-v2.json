@@ -34,10 +34,14 @@
     "no forced spending on all four axes",
     "optimized motor/chassis split and legal sliders are a genuine baseline",
     "no AI tuning merely to create Engineer bubbles",
-    "no current game/Worker/WASM or deployment changes"
+    "no current game/Worker/WASM or deployment changes",
+    "each available axis has a meaningful contextual physical role; relative importance can vary across engines, eras, circuits and race duration",
+    "late-II concentrated spending with existing HQ cooling can be legitimate; no requirement to make every concentrated setup lose",
+    "distinguish discretionary allocation, HQ offsets, installed components and marginal physical response; unexplained structural inactivity needs audit"
   ],
   "boundary_evidence": "experiments/lap_boundary_v1/RESULTS_V1.md",
   "tire_operating_evidence": "experiments/tyre_operating_policy_v1/RESULTS_V1.md",
   "boundary_bounded_evidence": "experiments/bounded_lap_lookahead_v1/RESULTS_V1.md",
-  "career_component_evidence": "experiments/career_physics_v1/RESULTS_V1.md"
+  "career_component_evidence": "experiments/career_physics_v1/RESULTS_V1.md",
+  "acceptance_criteria": "experiments/career_physics_v1/ACCEPTANCE_CRITERIA.md"
 }

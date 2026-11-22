@@ -80,6 +80,11 @@ artificiellement dans sa fenêtre optimale.
 
 ## Interprétation et suite
 
+La [clarification des critères](ACCEPTANCE_CRITERIA.md) fixe la cible : une
+importance physique réelle mais contextuelle de chaque axe disponible. Des
+victoires moteur/châssis avec un cooling déjà apporté par le HQ peuvent être
+cohérentes ; elles ne constituent pas à elles seules un défaut à corriger.
+
 Cet écran compare un nombre limité d'allocations et de curseurs, avec une seule
 graine et des conditions fixes. Le meilleur temps sur cinq tours n'est pas un
 optimum GP. Un résultat favorable ne suffit pas à exclure un raccourci
