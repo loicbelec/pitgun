@@ -9,7 +9,7 @@ browser Worker, game UI, signed admission or deployment selects this capability.
 historical/F1 regulation or physical tank size:110kg maximum initial charge,
 1kg finish reserve,8% provisional uncertainty, upward0.5kg rounding, two pilot
 laps for each distinct compound already in the initial plan (at most3).
-The policy and12-case plan are committed before measurement. No BSFC, thermal,
+The policy and12-case plan are committed before measurement. A rejected estimate does not establish physical impossibility. No BSFC, thermal,
 driver, tire or tank coefficient is fitted to make the screen pass.
 
 Preparation uses the actual resolved vehicle/controls/states. Each pilot starts
@@ -22,7 +22,7 @@ A one-lap session necessarily needs its one-lap pilot; at most six laps are
 computed for a multi-compound full-GP estimate.
 
 Receipts bind source/policy/pilot/compound/prepared-input identities. The source
-request is not mutated. Excess demand returns `Infeasible`, without a prepared
+request is not mutated. Excess demand returns `EstimateExceedsLimit`, without a prepared
 request, bigger tank, suppressed consumption or in-race refuelling. Numerical
 pilot failure remains a technical error, not an estimate of fuel demand.
 
@@ -58,7 +58,7 @@ implement a full process checkpoint. Those require a new domain/runtime contract
 
 `fuel_preparation_probe` uses frozen thermal inputs and explicit V2 driver
 resolution. It records original-load outcomes separately from estimated-load
-outcomes and preserves any infeasible/technical/fuel result. The driver bank's
+outcomes and preserves any estimate-excess/technical/fuel result. The driver bank's
 56 original inputs/outcomes are compared exactly, including the five frozen
 thermal baselines and three full-GP unchanged-service comparisons.
 

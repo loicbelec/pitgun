@@ -51,8 +51,13 @@ pub struct FuelPilotV1 {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "kind", rename_all = "snake_case")]
 pub enum FuelPreparationOutcomeV1 {
-    Prepared { initial_kg: f64 },
-    Infeasible { required_kg: f64, maximum_kg: f64 },
+    Prepared {
+        initial_kg: f64,
+    },
+    EstimateExceedsLimit {
+        estimated_start_kg: f64,
+        maximum_start_kg: f64,
+    },
 }
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct FuelPreparationReceiptV1 {
@@ -153,9 +158,9 @@ pub fn prepare_fuel_v1(
     }
     let mut prepared = None;
     let outcome = if required > policy.maximum_start_kg {
-        FuelPreparationOutcomeV1::Infeasible {
-            required_kg: required,
-            maximum_kg: policy.maximum_start_kg,
+        FuelPreparationOutcomeV1::EstimateExceedsLimit {
+            estimated_start_kg: required,
+            maximum_start_kg: policy.maximum_start_kg,
         }
     } else {
         let mut resolved = input.clone();
@@ -297,7 +302,7 @@ mod tests {
         assert_eq!(prepared, input);
     }
     #[test]
-    fn infeasibility_never_expands_the_limit_or_changes_consumption() {
+    fn estimate_excess_never_expands_the_limit_or_changes_consumption() {
         let input = input("full-classic15-c2");
         let original = input.clone();
         let mut p = policy();
@@ -306,14 +311,14 @@ mod tests {
         assert!(prepared.is_none());
         assert!(receipt.prepared_input_digest.is_none());
         match receipt.outcome {
-            FuelPreparationOutcomeV1::Infeasible {
-                required_kg,
-                maximum_kg,
+            FuelPreparationOutcomeV1::EstimateExceedsLimit {
+                estimated_start_kg,
+                maximum_start_kg,
             } => {
-                assert!(required_kg > maximum_kg);
-                assert_eq!(maximum_kg, 5.0);
+                assert!(estimated_start_kg > maximum_start_kg);
+                assert_eq!(maximum_start_kg, 5.0);
             }
-            _ => panic!("expected infeasible"),
+            _ => panic!("expected estimate above limit"),
         }
         assert_eq!(input, original);
         p.uncertainty_fraction = f64::NAN;

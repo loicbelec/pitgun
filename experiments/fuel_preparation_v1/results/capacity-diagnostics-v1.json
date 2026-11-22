@@ -1,0 +1,1360 @@
+{
+  "schema": "pitgun.fuel-ceiling-diagnostic-receipt/v1",
+  "source_commit": "82dbf21908d0facc661ee047852edb3a5b0f4e66",
+  "plan_digest": "sha256:805494fac92045c308f66fc96203db0d0c412511037b631e4582ece537bb99f1",
+  "repeat_exact": true,
+  "results": [
+    {
+      "binary_digest": "sha256:824018fa4a3a6aa43c452af2e951ec41fac8b6d8186da7a1a6effdfbf313c8d6",
+      "catalog": {
+        "id": "pitgun.racing",
+        "manifest_digest": "sha256:c7eafd00de0e1257d82687d8f640e0e435f530746f0bfa805bba662df20110cf",
+        "schema_version": "pitgun.catalog-release-identity/v1",
+        "version": "1.8.1"
+      },
+      "driver": {
+        "controls": {
+          "braking_utilization": 0.92784,
+          "control_error_amplitude": 0.013192000000000002,
+          "cornering_utilization": 0.9344000000000001,
+          "correction_workload_multiplier": 1.003377152,
+          "driver_id": "balanced_reference",
+          "driver_traits": {
+            "consistency": 0.84,
+            "limit_exploitation": 0.84,
+            "tire_management": 0.84
+          },
+          "driving_mode": "balanced",
+          "requested_commitment": 0.8,
+          "traction_utilization": 0.94096
+        },
+        "correction_model": "energy_accounted_v1",
+        "driver_resource_digest": "sha256:f2942061f01370b277d2d9a875ac9059895314baaa4b4e2b863d78d8aa3f551e",
+        "lapse_profile": {
+          "exposure_cell_m": 500.0,
+          "hazard_per_100km": 0.4322304000000003,
+          "minimum_engine_request_fraction": 0.15,
+          "noise_stream_id": "fuel-preparation:player",
+          "recovery_distance_m": 250.0,
+          "schema_version": "pitgun.driver-throttle-lapse/v1"
+        },
+        "policy_digest": "sha256:1d1b20e6b402ab6b876368f2172711eec82890abb6c6a51273ac023cae00c85f"
+      },
+      "id": "full-modern20-c0-ceiling110",
+      "original": null,
+      "original_input_digest": "sha256:84d61b5a6643a6a2648fc3ee4ff7b4eb0f36999969c2e60f3acdd2825b2937f5",
+      "prepared": {
+        "diagnostic_ceiling_kg": 110.0,
+        "diagnostic_input_digest": "sha256:44e366faae8339928a0dffe3e81ed0a8d028000b79e73da341678d512481d721",
+        "outcome": {
+          "Ok": {
+            "digest": "sha256:165cdaf5ef3461295add78fd63d7e1d096b3c9e0c107b0d990c92d112b1d2bfd",
+            "energy": {
+              "clutch_slip_loss_j": 18667.023535024862,
+              "distance_m": 306658.0,
+              "drag_work_j": 646979184.3676912,
+              "driveline_loss_j": 77442871.59569529,
+              "driving_time_s": 6614.044494769624,
+              "engine_shaft_work_j": 1548876098.9374433,
+              "final_vehicle_kinetic_j": 666575.890098019,
+              "friction_brake_work_j": 673866682.7307647,
+              "fuel_mass_carried_kinetic_j": 47066.18789874199,
+              "generated_engine_heat_j": 1352418907.4969676,
+              "initial_vehicle_kinetic_j": 0.0,
+              "kinetic_change_j": 1083201.9297693484,
+              "maximum_driveline_balance_residual_j": 1.8189894035458565e-12,
+              "maximum_raw_contact_utilization": 0.9914515116974976,
+              "maximum_thermal_balance_residual_j": 1.419721229467541e-09,
+              "maximum_vehicle_balance_residual_j": 3.637978807091713e-12,
+              "potential_change_j": 0.0,
+              "rejected_engine_heat_signed_j": 1349952297.1812708,
+              "rolling_work_j": 149485491.2899876,
+              "segments": 306658,
+              "service_idle_fuel_kg": 0.0088,
+              "service_time_s": 22.0,
+              "unresolved_service_velocity_reset_j": 369559.85177260014,
+              "wheel_propulsion_work_j": 1471414560.3182116
+            },
+            "kind": "finished",
+            "laps": [
+              {
+                "completed_laps": 1,
+                "distance_m": 5786.0,
+                "elapsed_s": 108.4095406956182,
+                "state": {
+                  "engine_temp": 121.13398069230665,
+                  "fuel_mass": 107.70928620121211,
+                  "tire_temp": 85.09923949004212,
+                  "tire_wear": 0.032940389757858374
+                }
+              },
+              {
+                "completed_laps": 2,
+                "distance_m": 11572.0,
+                "elapsed_s": 216.21742151412246,
+                "state": {
+                  "engine_temp": 121.40957122676225,
+                  "fuel_mass": 105.50981309008897,
+                  "tire_temp": 89.0790415861987,
+                  "tire_wear": 0.06463656164226944
+                }
+              },
+              {
+                "completed_laps": 3,
+                "distance_m": 17358.0,
+                "elapsed_s": 323.69098864370017,
+                "state": {
+                  "engine_temp": 121.42736621547674,
+                  "fuel_mass": 103.30906854580527,
+                  "tire_temp": 93.10892683737103,
+                  "tire_wear": 0.0956675251333677
+                }
+              },
+              {
+                "completed_laps": 4,
+                "distance_m": 23144.0,
+                "elapsed_s": 431.54612241771093,
+                "state": {
+                  "engine_temp": 121.36825818598318,
+                  "fuel_mass": 101.11156568504246,
+                  "tire_temp": 96.79422947991804,
+                  "tire_wear": 0.12687170836153736
+                }
+              },
+              {
+                "completed_laps": 5,
+                "distance_m": 28930.0,
+                "elapsed_s": 540.416236975367,
+                "state": {
+                  "engine_temp": 121.23250308126855,
+                  "fuel_mass": 98.92156309340768,
+                  "tire_temp": 100.15417081128221,
+                  "tire_wear": 0.15901314969960725
+                }
+              },
+              {
+                "completed_laps": 6,
+                "distance_m": 34716.0,
+                "elapsed_s": 650.9344835969234,
+                "state": {
+                  "engine_temp": 113.9404498421252,
+                  "fuel_mass": 96.80543425406262,
+                  "tire_temp": 102.86453146057127,
+                  "tire_wear": 0.19219720008067695
+                }
+              },
+              {
+                "completed_laps": 7,
+                "distance_m": 40502.0,
+                "elapsed_s": 762.8228539294058,
+                "state": {
+                  "engine_temp": 120.69563677773331,
+                  "fuel_mass": 94.61600740921624,
+                  "tire_temp": 106.07368550451392,
+                  "tire_wear": 0.2284901636401189
+                }
+              },
+              {
+                "completed_laps": 8,
+                "distance_m": 46288.0,
+                "elapsed_s": 877.3690068839481,
+                "state": {
+                  "engine_temp": 120.23347089862922,
+                  "fuel_mass": 92.46869658435949,
+                  "tire_temp": 108.63845179096397,
+                  "tire_wear": 0.2669752206891697
+                }
+              },
+              {
+                "completed_laps": 9,
+                "distance_m": 52074.0,
+                "elapsed_s": 994.7653329167804,
+                "state": {
+                  "engine_temp": 119.38410309386518,
+                  "fuel_mass": 90.3520094037057,
+                  "tire_temp": 110.8937263796577,
+                  "tire_wear": 0.3082692891996764
+                }
+              },
+              {
+                "completed_laps": 10,
+                "distance_m": 57860.0,
+                "elapsed_s": 1115.3093677024015,
+                "state": {
+                  "engine_temp": 118.43248329576798,
+                  "fuel_mass": 88.26824876482918,
+                  "tire_temp": 112.90860200941589,
+                  "tire_wear": 0.3527819812834652
+                }
+              },
+              {
+                "completed_laps": 11,
+                "distance_m": 63646.0,
+                "elapsed_s": 1239.3615461120348,
+                "state": {
+                  "engine_temp": 117.30926810474166,
+                  "fuel_mass": 86.22419688819923,
+                  "tire_temp": 114.64911940109681,
+                  "tire_wear": 0.4005864920627038
+                }
+              },
+              {
+                "completed_laps": 12,
+                "distance_m": 69432.0,
+                "elapsed_s": 1367.1484788516555,
+                "state": {
+                  "engine_temp": 116.01285434646617,
+                  "fuel_mass": 84.22595467531418,
+                  "tire_temp": 116.06330005659527,
+                  "tire_wear": 0.4514444022766845
+                }
+              },
+              {
+                "completed_laps": 13,
+                "distance_m": 75218.0,
+                "elapsed_s": 1498.660403839685,
+                "state": {
+                  "engine_temp": 114.68329243539628,
+                  "fuel_mass": 82.27724556479707,
+                  "tire_temp": 117.07115459188714,
+                  "tire_wear": 0.5045485966223436
+                }
+              },
+              {
+                "completed_laps": 14,
+                "distance_m": 81004.0,
+                "elapsed_s": 1633.733284568238,
+                "state": {
+                  "engine_temp": 113.31487921248771,
+                  "fuel_mass": 80.37556315471626,
+                  "tire_temp": 117.75290589840019,
+                  "tire_wear": 0.5595381445303906
+                }
+              },
+              {
+                "completed_laps": 15,
+                "distance_m": 86790.0,
+                "elapsed_s": 1772.1733801570056,
+                "state": {
+                  "engine_temp": 112.09859542059904,
+                  "fuel_mass": 78.51569019032254,
+                  "tire_temp": 118.20676766896469,
+                  "tire_wear": 0.6162075264365711
+                }
+              },
+              {
+                "completed_laps": 16,
+                "distance_m": 92576.0,
+                "elapsed_s": 1913.790729821466,
+                "state": {
+                  "engine_temp": 110.84225265677571,
+                  "fuel_mass": 76.69927882983347,
+                  "tire_temp": 118.43235848496747,
+                  "tire_wear": 0.6741206158528474
+                }
+              },
+              {
+                "completed_laps": 17,
+                "distance_m": 98362.0,
+                "elapsed_s": 2058.466237337819,
+                "state": {
+                  "engine_temp": 109.64088355893935,
+                  "fuel_mass": 74.9255396145621,
+                  "tire_temp": 118.45793756872082,
+                  "tire_wear": 0.7328542933495461
+                }
+              },
+              {
+                "completed_laps": 18,
+                "distance_m": 104148.0,
+                "elapsed_s": 2206.0702074846427,
+                "state": {
+                  "engine_temp": 108.54454602655781,
+                  "fuel_mass": 73.1959661623536,
+                  "tire_temp": 118.30155538380124,
+                  "tire_wear": 0.7919809314926964
+                }
+              },
+              {
+                "completed_laps": 19,
+                "distance_m": 109934.0,
+                "elapsed_s": 2356.6183032858553,
+                "state": {
+                  "engine_temp": 107.46827810426647,
+                  "fuel_mass": 71.50933274360693,
+                  "tire_temp": 117.98815994865188,
+                  "tire_wear": 0.8513474253732036
+                }
+              },
+              {
+                "completed_laps": 20,
+                "distance_m": 115720.0,
+                "elapsed_s": 2510.1330086896173,
+                "state": {
+                  "engine_temp": 106.30518077970993,
+                  "fuel_mass": 69.8661461381993,
+                  "tire_temp": 117.5239037780355,
+                  "tire_wear": 0.9107227061566406
+                }
+              },
+              {
+                "completed_laps": 21,
+                "distance_m": 121506.0,
+                "elapsed_s": 2666.7348800189793,
+                "state": {
+                  "engine_temp": 105.02855882357873,
+                  "fuel_mass": 68.26765693030862,
+                  "tire_temp": 116.93203776421117,
+                  "tire_wear": 0.970007472983273
+                }
+              },
+              {
+                "completed_laps": 22,
+                "distance_m": 127292.0,
+                "elapsed_s": 2826.131969310896,
+                "state": {
+                  "engine_temp": 104.32103074821782,
+                  "fuel_mass": 66.70708008420475,
+                  "tire_temp": 116.13066364258351,
+                  "tire_wear": 1.0
+                }
+              },
+              {
+                "completed_laps": 23,
+                "distance_m": 133078.0,
+                "elapsed_s": 2984.6717759278827,
+                "state": {
+                  "engine_temp": 104.963309330251,
+                  "fuel_mass": 65.1327946437842,
+                  "tire_temp": 115.28167777448506,
+                  "tire_wear": 1.0
+                }
+              },
+              {
+                "completed_laps": 24,
+                "distance_m": 138864.0,
+                "elapsed_s": 3141.8638337277334,
+                "state": {
+                  "engine_temp": 105.4187162211035,
+                  "fuel_mass": 63.54110741143167,
+                  "tire_temp": 114.68216025349612,
+                  "tire_wear": 1.0
+                }
+              },
+              {
+                "completed_laps": 25,
+                "distance_m": 144650.0,
+                "elapsed_s": 3298.1073940447905,
+                "state": {
+                  "engine_temp": 105.75145493265767,
+                  "fuel_mass": 61.93825350280133,
+                  "tire_temp": 114.23974237393523,
+                  "tire_wear": 1.0
+                }
+              },
+              {
+                "completed_laps": 26,
+                "distance_m": 150436.0,
+                "elapsed_s": 3475.662086820894,
+                "state": {
+                  "engine_temp": 106.3430990293644,
+                  "fuel_mass": 60.318686557787444,
+                  "tire_temp": 90.0,
+                  "tire_wear": 0.0
+                }
+              },
+              {
+                "completed_laps": 27,
+                "distance_m": 156222.0,
+                "elapsed_s": 3585.66229423466,
+                "state": {
+                  "engine_temp": 120.93244601741965,
+                  "fuel_mass": 58.09029534403124,
+                  "tire_temp": 84.90133320502436,
+                  "tire_wear": 0.024093179753185055
+                }
+              },
+              {
+                "completed_laps": 28,
+                "distance_m": 162008.0,
+                "elapsed_s": 3694.472143148198,
+                "state": {
+                  "engine_temp": 121.11925690402015,
+                  "fuel_mass": 55.91757449634794,
+                  "tire_temp": 88.1487284014491,
+                  "tire_wear": 0.04768857146132436
+                }
+              },
+              {
+                "completed_laps": 29,
+                "distance_m": 167794.0,
+                "elapsed_s": 3802.3267744820014,
+                "state": {
+                  "engine_temp": 121.2536007531908,
+                  "fuel_mass": 53.73760231051447,
+                  "tire_temp": 91.60332423126829,
+                  "tire_wear": 0.07038764342387083
+                }
+              },
+              {
+                "completed_laps": 30,
+                "distance_m": 173580.0,
+                "elapsed_s": 3909.6844072606464,
+                "state": {
+                  "engine_temp": 121.26920059002575,
+                  "fuel_mass": 51.555100305534424,
+                  "tire_temp": 94.77638717947917,
+                  "tire_wear": 0.09255452044915428
+                }
+              },
+              {
+                "completed_laps": 31,
+                "distance_m": 179366.0,
+                "elapsed_s": 4016.913741618634,
+                "state": {
+                  "engine_temp": 121.26161444419617,
+                  "fuel_mass": 49.37191574239977,
+                  "tire_temp": 97.6727237737362,
+                  "tire_wear": 0.11453629146885196
+                }
+              },
+              {
+                "completed_laps": 32,
+                "distance_m": 185152.0,
+                "elapsed_s": 4124.365576234987,
+                "state": {
+                  "engine_temp": 121.25114775648599,
+                  "fuel_mass": 47.191081731620734,
+                  "tire_temp": 100.30633912360408,
+                  "tire_wear": 0.13657041832731093
+                }
+              },
+              {
+                "completed_laps": 33,
+                "distance_m": 190938.0,
+                "elapsed_s": 4232.277287335381,
+                "state": {
+                  "engine_temp": 121.18138132719315,
+                  "fuel_mass": 45.015056776339804,
+                  "tire_temp": 102.70234825834862,
+                  "tire_wear": 0.15886622044086096
+                }
+              },
+              {
+                "completed_laps": 34,
+                "distance_m": 196724.0,
+                "elapsed_s": 4340.880554442958,
+                "state": {
+                  "engine_temp": 121.04505336706957,
+                  "fuel_mass": 42.84418698358248,
+                  "tire_temp": 104.86939952760551,
+                  "tire_wear": 0.18157463468990395
+                }
+              },
+              {
+                "completed_laps": 35,
+                "distance_m": 202510.0,
+                "elapsed_s": 4450.349477948446,
+                "state": {
+                  "engine_temp": 120.87741005741924,
+                  "fuel_mass": 40.6815172088305,
+                  "tire_temp": 106.82815785324884,
+                  "tire_wear": 0.20481259485637102
+                }
+              },
+              {
+                "completed_laps": 36,
+                "distance_m": 208296.0,
+                "elapsed_s": 4560.6312411142,
+                "state": {
+                  "engine_temp": 120.83211690645692,
+                  "fuel_mass": 38.52367164810814,
+                  "tire_temp": 108.62552277161228,
+                  "tire_wear": 0.22872794640484814
+                }
+              },
+              {
+                "completed_laps": 37,
+                "distance_m": 214082.0,
+                "elapsed_s": 4671.915445281308,
+                "state": {
+                  "engine_temp": 120.67971209514751,
+                  "fuel_mass": 36.37055493623995,
+                  "tire_temp": 110.29022172377282,
+                  "tire_wear": 0.2535019762156085
+                }
+              },
+              {
+                "completed_laps": 38,
+                "distance_m": 219868.0,
+                "elapsed_s": 4784.352786500141,
+                "state": {
+                  "engine_temp": 120.47236395668592,
+                  "fuel_mass": 34.22853422691829,
+                  "tire_temp": 111.76395750043227,
+                  "tire_wear": 0.27904974938861593
+                }
+              },
+              {
+                "completed_laps": 39,
+                "distance_m": 225654.0,
+                "elapsed_s": 4898.035097398957,
+                "state": {
+                  "engine_temp": 120.04332071225117,
+                  "fuel_mass": 32.101288093005024,
+                  "tire_temp": 113.05569501287711,
+                  "tire_wear": 0.3053811492198499
+                }
+              },
+              {
+                "completed_laps": 40,
+                "distance_m": 231440.0,
+                "elapsed_s": 5013.030329035787,
+                "state": {
+                  "engine_temp": 119.65178535609208,
+                  "fuel_mass": 29.98683293690098,
+                  "tire_temp": 114.20042858291191,
+                  "tire_wear": 0.33253379860920435
+                }
+              },
+              {
+                "completed_laps": 41,
+                "distance_m": 237226.0,
+                "elapsed_s": 5129.369500495328,
+                "state": {
+                  "engine_temp": 119.19514464954985,
+                  "fuel_mass": 27.889554990097587,
+                  "tire_temp": 115.19876462006198,
+                  "tire_wear": 0.360494831605715
+                }
+              },
+              {
+                "completed_laps": 42,
+                "distance_m": 243012.0,
+                "elapsed_s": 5247.065101331493,
+                "state": {
+                  "engine_temp": 118.80134653992184,
+                  "fuel_mass": 25.805758965094686,
+                  "tire_temp": 116.07921284389897,
+                  "tire_wear": 0.38928641998202845
+                }
+              },
+              {
+                "completed_laps": 43,
+                "distance_m": 248798.0,
+                "elapsed_s": 5366.166779808724,
+                "state": {
+                  "engine_temp": 118.35069862017696,
+                  "fuel_mass": 23.737557464689093,
+                  "tire_temp": 116.83659785971076,
+                  "tire_wear": 0.418878109234302
+                }
+              },
+              {
+                "completed_laps": 44,
+                "distance_m": 254584.0,
+                "elapsed_s": 5486.670460370117,
+                "state": {
+                  "engine_temp": 117.86587056695161,
+                  "fuel_mass": 21.68662938330678,
+                  "tire_temp": 117.48399984168324,
+                  "tire_wear": 0.4492428828079532
+                }
+              },
+              {
+                "completed_laps": 45,
+                "distance_m": 260370.0,
+                "elapsed_s": 5608.588041262005,
+                "state": {
+                  "engine_temp": 117.36819426766702,
+                  "fuel_mass": 19.653012654523476,
+                  "tire_temp": 118.03425300899995,
+                  "tire_wear": 0.48036076911799586
+                }
+              },
+              {
+                "completed_laps": 46,
+                "distance_m": 266156.0,
+                "elapsed_s": 5731.93562137432,
+                "state": {
+                  "engine_temp": 116.86903945233887,
+                  "fuel_mass": 17.636870972216986,
+                  "tire_temp": 118.49414822651511,
+                  "tire_wear": 0.512201639784917
+                }
+              },
+              {
+                "completed_laps": 47,
+                "distance_m": 271942.0,
+                "elapsed_s": 5856.725491585153,
+                "state": {
+                  "engine_temp": 116.33612064332056,
+                  "fuel_mass": 15.639045238410999,
+                  "tire_temp": 118.87195004276418,
+                  "tire_wear": 0.5447357412582815
+                }
+              },
+              {
+                "completed_laps": 48,
+                "distance_m": 277728.0,
+                "elapsed_s": 5982.972961489647,
+                "state": {
+                  "engine_temp": 115.81631122964747,
+                  "fuel_mass": 13.659507660019058,
+                  "tire_temp": 119.1719792074534,
+                  "tire_wear": 0.577935054232091
+                }
+              },
+              {
+                "completed_laps": 49,
+                "distance_m": 283514.0,
+                "elapsed_s": 6112.521987172645,
+                "state": {
+                  "engine_temp": 114.56647226861602,
+                  "fuel_mass": 11.752505968770715,
+                  "tire_temp": 118.96607494247743,
+                  "tire_wear": 0.6108699917152371
+                }
+              },
+              {
+                "completed_laps": 50,
+                "distance_m": 289300.0,
+                "elapsed_s": 6241.280646645493,
+                "state": {
+                  "engine_temp": 114.79659110774425,
+                  "fuel_mass": 9.8079702091223,
+                  "tire_temp": 119.12986586459309,
+                  "tire_wear": 0.6447032723429764
+                }
+              },
+              {
+                "completed_laps": 51,
+                "distance_m": 295086.0,
+                "elapsed_s": 6371.5483381388185,
+                "state": {
+                  "engine_temp": 114.21401962660507,
+                  "fuel_mass": 7.885022691279072,
+                  "tire_temp": 119.19876255597416,
+                  "tire_wear": 0.6789108789858904
+                }
+              },
+              {
+                "completed_laps": 52,
+                "distance_m": 300872.0,
+                "elapsed_s": 6503.311532456802,
+                "state": {
+                  "engine_temp": 113.64427688214673,
+                  "fuel_mass": 5.98301224829563,
+                  "tire_temp": 119.20518901150712,
+                  "tire_wear": 0.7134787894624935
+                }
+              },
+              {
+                "completed_laps": 53,
+                "distance_m": 306658.0,
+                "elapsed_s": 6636.044494769624,
+                "state": {
+                  "engine_temp": 114.66610315698142,
+                  "fuel_mass": 4.087175606262595,
+                  "tire_temp": 119.0690158141541,
+                  "tire_wear": 0.7483142788550154
+                }
+              }
+            ],
+            "state": {
+              "engine_temp": 114.66610315698142,
+              "fuel_mass": 4.087175606262595,
+              "tire_temp": 119.0690158141541,
+              "tire_wear": 0.7483142788550154
+            },
+            "time_s": 6636.044494769624
+          }
+        }
+      },
+      "schema": "pitgun.fuel-preparation-probe/v1",
+      "sources": {
+        "helper": "sha256:302f79819f0113f9e118e6eb7998579e2806e9cda84f32e772448d1620303dbd",
+        "outcome": "sha256:c2fc01807ed415ec3c40510507de77761b586d1379665172acdb9433a63a8271",
+        "preparation": "sha256:62026a4cf87cf890a87398e24afc73e59380da63f9106aa4335f7137394ebba6",
+        "probe": "sha256:7cb94f27663443c9253e5e0cffb85f8b602861db98a6f249387f2cb54d29f5e6",
+        "solver": "sha256:acbc57ef13acdeb53b530f0248691376886fbb0e927773171b9c9cbca18a8e57"
+      }
+    },
+    {
+      "binary_digest": "sha256:824018fa4a3a6aa43c452af2e951ec41fac8b6d8186da7a1a6effdfbf313c8d6",
+      "catalog": {
+        "id": "pitgun.racing",
+        "manifest_digest": "sha256:c7eafd00de0e1257d82687d8f640e0e435f530746f0bfa805bba662df20110cf",
+        "schema_version": "pitgun.catalog-release-identity/v1",
+        "version": "1.8.1"
+      },
+      "driver": {
+        "controls": {
+          "braking_utilization": 0.92784,
+          "control_error_amplitude": 0.013192000000000002,
+          "cornering_utilization": 0.9344000000000001,
+          "correction_workload_multiplier": 1.003377152,
+          "driver_id": "balanced_reference",
+          "driver_traits": {
+            "consistency": 0.84,
+            "limit_exploitation": 0.84,
+            "tire_management": 0.84
+          },
+          "driving_mode": "balanced",
+          "requested_commitment": 0.8,
+          "traction_utilization": 0.94096
+        },
+        "correction_model": "energy_accounted_v1",
+        "driver_resource_digest": "sha256:f2942061f01370b277d2d9a875ac9059895314baaa4b4e2b863d78d8aa3f551e",
+        "lapse_profile": {
+          "exposure_cell_m": 500.0,
+          "hazard_per_100km": 0.4322304000000003,
+          "minimum_engine_request_fraction": 0.15,
+          "noise_stream_id": "fuel-preparation:player",
+          "recovery_distance_m": 250.0,
+          "schema_version": "pitgun.driver-throttle-lapse/v1"
+        },
+        "policy_digest": "sha256:1d1b20e6b402ab6b876368f2172711eec82890abb6c6a51273ac023cae00c85f"
+      },
+      "id": "full-modern20-c2-ceiling110",
+      "original": null,
+      "original_input_digest": "sha256:a73d77f6a17d1f28dc1b5ab9246c6e2cfb821e460a8b378f4933a5a7ced34a25",
+      "prepared": {
+        "diagnostic_ceiling_kg": 110.0,
+        "diagnostic_input_digest": "sha256:33fc257e3a90b08987eb7c5785ba5ea25e2c833a2c860c1d6880706bced78e64",
+        "outcome": {
+          "Ok": {
+            "digest": "sha256:bb73024b6a6e71778c8a69d4295e0c0e2f42c5e936aff43164ab3f8944aa5c30",
+            "energy": {
+              "clutch_slip_loss_j": 18656.87391187674,
+              "distance_m": 306658.0,
+              "drag_work_j": 662418651.4558743,
+              "driveline_loss_j": 79810637.14379765,
+              "driving_time_s": 6727.83773739507,
+              "engine_shaft_work_j": 1596231399.7498662,
+              "final_vehicle_kinetic_j": 603216.192168863,
+              "friction_brake_work_j": 699187500.6217614,
+              "fuel_mass_carried_kinetic_j": 48357.23324945185,
+              "generated_engine_heat_j": 1393078119.877326,
+              "initial_vehicle_kinetic_j": 0.0,
+              "kinetic_change_j": 1020926.784756765,
+              "maximum_driveline_balance_residual_j": 1.5916157281026244e-12,
+              "maximum_raw_contact_utilization": 0.9914194767876999,
+              "maximum_thermal_balance_residual_j": 3.434251993894577e-09,
+              "maximum_vehicle_balance_residual_j": 3.637978807091713e-12,
+              "potential_change_j": 0.0,
+              "rejected_engine_heat_signed_j": 1392239260.044257,
+              "rolling_work_j": 153775026.86976588,
+              "segments": 306658,
+              "service_idle_fuel_kg": 0.0088,
+              "service_time_s": 22.0,
+              "unresolved_service_velocity_reset_j": 369353.35933845176,
+              "wheel_propulsion_work_j": 1516402105.7321572
+            },
+            "kind": "finished",
+            "laps": [
+              {
+                "completed_laps": 1,
+                "distance_m": 5786.0,
+                "elapsed_s": 106.65113306855055,
+                "state": {
+                  "engine_temp": 105.53759362427209,
+                  "fuel_mass": 107.55748854277125,
+                  "tire_temp": 85.85057544038685,
+                  "tire_wear": 0.03434659016377349
+                }
+              },
+              {
+                "completed_laps": 2,
+                "distance_m": 11572.0,
+                "elapsed_s": 211.74055079131062,
+                "state": {
+                  "engine_temp": 105.67510766930941,
+                  "fuel_mass": 105.14453232591407,
+                  "tire_temp": 90.48394994508499,
+                  "tire_wear": 0.06819166862839042
+                }
+              },
+              {
+                "completed_laps": 3,
+                "distance_m": 17358.0,
+                "elapsed_s": 316.6297164694202,
+                "state": {
+                  "engine_temp": 105.67359723948114,
+                  "fuel_mass": 102.7312361329331,
+                  "tire_temp": 95.11311972952812,
+                  "tire_wear": 0.10154661094800851
+                }
+              },
+              {
+                "completed_laps": 4,
+                "distance_m": 23144.0,
+                "elapsed_s": 422.35527295059245,
+                "state": {
+                  "engine_temp": 105.57596340787725,
+                  "fuel_mass": 100.3256770899683,
+                  "tire_temp": 99.41451160771852,
+                  "tire_wear": 0.13563759770275183
+                }
+              },
+              {
+                "completed_laps": 5,
+                "distance_m": 28930.0,
+                "elapsed_s": 529.8336499885945,
+                "state": {
+                  "engine_temp": 105.26924537010927,
+                  "fuel_mass": 97.9408056671865,
+                  "tire_temp": 103.37241489132289,
+                  "tire_wear": 0.1714421486629422
+                }
+              },
+              {
+                "completed_laps": 6,
+                "distance_m": 34716.0,
+                "elapsed_s": 639.8774747593952,
+                "state": {
+                  "engine_temp": 97.74989647708232,
+                  "fuel_mass": 95.6402300736869,
+                  "tire_temp": 106.68656312258686,
+                  "tire_wear": 0.20967165866881224
+                }
+              },
+              {
+                "completed_laps": 7,
+                "distance_m": 40502.0,
+                "elapsed_s": 752.9362142195721,
+                "state": {
+                  "engine_temp": 103.88782638741553,
+                  "fuel_mass": 93.31749862898096,
+                  "tire_temp": 110.27918205439127,
+                  "tire_wear": 0.2516800103881907
+                }
+              },
+              {
+                "completed_laps": 8,
+                "distance_m": 46288.0,
+                "elapsed_s": 870.1746688420774,
+                "state": {
+                  "engine_temp": 102.60527980594743,
+                  "fuel_mass": 91.05998517600483,
+                  "tire_temp": 113.17686863211532,
+                  "tire_wear": 0.29761909009308735
+                }
+              },
+              {
+                "completed_laps": 9,
+                "distance_m": 52074.0,
+                "elapsed_s": 991.9909607697601,
+                "state": {
+                  "engine_temp": 101.1065804926305,
+                  "fuel_mass": 88.87656490754843,
+                  "tire_temp": 115.58871050709061,
+                  "tire_wear": 0.34764602319442617
+                }
+              },
+              {
+                "completed_laps": 10,
+                "distance_m": 57860.0,
+                "elapsed_s": 1118.6079318695395,
+                "state": {
+                  "engine_temp": 99.64999771089293,
+                  "fuel_mass": 86.77657516533071,
+                  "tire_temp": 117.4178755226253,
+                  "tire_wear": 0.40124186877356394
+                }
+              },
+              {
+                "completed_laps": 11,
+                "distance_m": 63646.0,
+                "elapsed_s": 1249.7375558955837,
+                "state": {
+                  "engine_temp": 98.62609596028669,
+                  "fuel_mass": 84.75776233205532,
+                  "tire_temp": 118.58883440550342,
+                  "tire_wear": 0.4571135831360216
+                }
+              },
+              {
+                "completed_laps": 12,
+                "distance_m": 69432.0,
+                "elapsed_s": 1384.877519600546,
+                "state": {
+                  "engine_temp": 97.84623761160536,
+                  "fuel_mass": 82.80758631456776,
+                  "tire_temp": 119.27732906183051,
+                  "tire_wear": 0.5146709207110887
+                }
+              },
+              {
+                "completed_laps": 13,
+                "distance_m": 75218.0,
+                "elapsed_s": 1523.4710908115258,
+                "state": {
+                  "engine_temp": 97.21954709629104,
+                  "fuel_mass": 80.91588708109474,
+                  "tire_temp": 119.61132443559018,
+                  "tire_wear": 0.5734469885913168
+                }
+              },
+              {
+                "completed_laps": 14,
+                "distance_m": 81004.0,
+                "elapsed_s": 1665.1701721373247,
+                "state": {
+                  "engine_temp": 96.70564064953358,
+                  "fuel_mass": 79.07495637413426,
+                  "tire_temp": 119.68267680092688,
+                  "tire_wear": 0.6330463719354744
+                }
+              },
+              {
+                "completed_laps": 15,
+                "distance_m": 86790.0,
+                "elapsed_s": 1809.7275270252007,
+                "state": {
+                  "engine_temp": 96.27600614115126,
+                  "fuel_mass": 77.2792458778833,
+                  "tire_temp": 119.55683806986963,
+                  "tire_wear": 0.6931445659287162
+                }
+              },
+              {
+                "completed_laps": 16,
+                "distance_m": 92576.0,
+                "elapsed_s": 1956.9264369268753,
+                "state": {
+                  "engine_temp": 95.92888805586624,
+                  "fuel_mass": 75.5299132009576,
+                  "tire_temp": 119.261805574112,
+                  "tire_wear": 0.7533408832124447
+                }
+              },
+              {
+                "completed_laps": 17,
+                "distance_m": 98362.0,
+                "elapsed_s": 2106.8075918073077,
+                "state": {
+                  "engine_temp": 95.56801033549914,
+                  "fuel_mass": 73.82160050827201,
+                  "tire_temp": 118.84354194437516,
+                  "tire_wear": 0.8135927690163023
+                }
+              },
+              {
+                "completed_laps": 18,
+                "distance_m": 104148.0,
+                "elapsed_s": 2259.419923604267,
+                "state": {
+                  "engine_temp": 95.20727173237168,
+                  "fuel_mass": 72.15546049591654,
+                  "tire_temp": 118.31250894393115,
+                  "tire_wear": 0.8737493781013234
+                }
+              },
+              {
+                "completed_laps": 19,
+                "distance_m": 109934.0,
+                "elapsed_s": 2414.859230307522,
+                "state": {
+                  "engine_temp": 94.84549495996002,
+                  "fuel_mass": 70.53241780449453,
+                  "tire_temp": 117.66615463190954,
+                  "tire_wear": 0.9336679917967852
+                }
+              },
+              {
+                "completed_laps": 20,
+                "distance_m": 115720.0,
+                "elapsed_s": 2573.3140871994683,
+                "state": {
+                  "engine_temp": 94.49534318579323,
+                  "fuel_mass": 68.95367370495774,
+                  "tire_temp": 116.91465024328984,
+                  "tire_wear": 0.9932868593454783
+                }
+              },
+              {
+                "completed_laps": 21,
+                "distance_m": 121506.0,
+                "elapsed_s": 2733.245941204752,
+                "state": {
+                  "engine_temp": 94.58570772266907,
+                  "fuel_mass": 67.39438072926774,
+                  "tire_temp": 115.91649756730949,
+                  "tire_wear": 1.0
+                }
+              },
+              {
+                "completed_laps": 22,
+                "distance_m": 127292.0,
+                "elapsed_s": 2891.4997229025503,
+                "state": {
+                  "engine_temp": 94.76304418216631,
+                  "fuel_mass": 65.8113184485713,
+                  "tire_temp": 115.17152792346471,
+                  "tire_wear": 1.0
+                }
+              },
+              {
+                "completed_laps": 23,
+                "distance_m": 133078.0,
+                "elapsed_s": 3048.5286265897803,
+                "state": {
+                  "engine_temp": 94.88177999519297,
+                  "fuel_mass": 64.21280181579439,
+                  "tire_temp": 114.63126152013709,
+                  "tire_wear": 1.0
+                }
+              },
+              {
+                "completed_laps": 24,
+                "distance_m": 138864.0,
+                "elapsed_s": 3204.716124830672,
+                "state": {
+                  "engine_temp": 94.94621859706592,
+                  "fuel_mass": 62.6032389034473,
+                  "tire_temp": 114.23954052528597,
+                  "tire_wear": 1.0
+                }
+              },
+              {
+                "completed_laps": 25,
+                "distance_m": 144650.0,
+                "elapsed_s": 3360.2751605144467,
+                "state": {
+                  "engine_temp": 95.01103576190307,
+                  "fuel_mass": 60.986460698518755,
+                  "tire_temp": 113.95083322437512,
+                  "tire_wear": 1.0
+                }
+              },
+              {
+                "completed_laps": 26,
+                "distance_m": 150436.0,
+                "elapsed_s": 3537.374181015734,
+                "state": {
+                  "engine_temp": 95.62484896375192,
+                  "fuel_mass": 59.355082315446346,
+                  "tire_temp": 90.0,
+                  "tire_wear": 0.0
+                }
+              },
+              {
+                "completed_laps": 27,
+                "distance_m": 156222.0,
+                "elapsed_s": 3645.2958403786233,
+                "state": {
+                  "engine_temp": 105.17529942329385,
+                  "fuel_mass": 56.9564064930597,
+                  "tire_temp": 85.71366181483609,
+                  "tire_wear": 0.025364520399757045
+                }
+              },
+              {
+                "completed_laps": 28,
+                "distance_m": 162008.0,
+                "elapsed_s": 3751.4151301558436,
+                "state": {
+                  "engine_temp": 105.34845221322475,
+                  "fuel_mass": 54.58504232653891,
+                  "tire_temp": 89.45610365544438,
+                  "tire_wear": 0.050333974729451496
+                }
+              },
+              {
+                "completed_laps": 29,
+                "distance_m": 167794.0,
+                "elapsed_s": 3856.5383857824777,
+                "state": {
+                  "engine_temp": 105.44688276350438,
+                  "fuel_mass": 52.203407961287674,
+                  "tire_temp": 93.36807944447577,
+                  "tire_wear": 0.07438331015434742
+                }
+              },
+              {
+                "completed_laps": 30,
+                "distance_m": 173580.0,
+                "elapsed_s": 3961.257325194849,
+                "state": {
+                  "engine_temp": 105.45661224611472,
+                  "fuel_mass": 49.818364410854784,
+                  "tire_temp": 96.98832570135944,
+                  "tire_wear": 0.09797905390985207
+                }
+              },
+              {
+                "completed_laps": 31,
+                "distance_m": 179366.0,
+                "elapsed_s": 4066.055824674932,
+                "state": {
+                  "engine_temp": 105.42131569898828,
+                  "fuel_mass": 47.43451896566976,
+                  "tire_temp": 100.32361421876283,
+                  "tire_wear": 0.12155405513808495
+                }
+              },
+              {
+                "completed_laps": 32,
+                "distance_m": 185152.0,
+                "elapsed_s": 4171.425963776905,
+                "state": {
+                  "engine_temp": 105.3625602523768,
+                  "fuel_mass": 45.05881013277693,
+                  "tire_temp": 103.37699666028415,
+                  "tire_wear": 0.14541583295967483
+                }
+              },
+              {
+                "completed_laps": 33,
+                "distance_m": 190938.0,
+                "elapsed_s": 4277.686777835552,
+                "state": {
+                  "engine_temp": 105.18031188147481,
+                  "fuel_mass": 42.69476605626815,
+                  "tire_temp": 106.16599676982707,
+                  "tire_wear": 0.16984543740328237
+                }
+              },
+              {
+                "completed_laps": 34,
+                "distance_m": 196724.0,
+                "elapsed_s": 4385.165045464833,
+                "state": {
+                  "engine_temp": 104.93032384472525,
+                  "fuel_mass": 40.34597798868889,
+                  "tire_temp": 108.69837813153536,
+                  "tire_wear": 0.19505122322849883
+                }
+              },
+              {
+                "completed_laps": 35,
+                "distance_m": 202510.0,
+                "elapsed_s": 4493.872593159987,
+                "state": {
+                  "engine_temp": 104.72135522137573,
+                  "fuel_mass": 38.00645280966757,
+                  "tire_temp": 111.0564290142469,
+                  "tire_wear": 0.22135679336431924
+                }
+              },
+              {
+                "completed_laps": 36,
+                "distance_m": 208296.0,
+                "elapsed_s": 4604.256417155641,
+                "state": {
+                  "engine_temp": 104.27855798090864,
+                  "fuel_mass": 35.6886739904812,
+                  "tire_temp": 113.14153758738736,
+                  "tire_wear": 0.2487657324914275
+                }
+              },
+              {
+                "completed_laps": 37,
+                "distance_m": 214082.0,
+                "elapsed_s": 4716.458336972266,
+                "state": {
+                  "engine_temp": 103.71740321876688,
+                  "fuel_mass": 33.39851669165572,
+                  "tire_temp": 114.95241738476435,
+                  "tire_wear": 0.2772769102198079
+                }
+              },
+              {
+                "completed_laps": 38,
+                "distance_m": 219868.0,
+                "elapsed_s": 4830.575912589472,
+                "state": {
+                  "engine_temp": 103.15029582424984,
+                  "fuel_mass": 31.137133977444364,
+                  "tire_temp": 116.52499235901814,
+                  "tire_wear": 0.3069272767803214
+                }
+              },
+              {
+                "completed_laps": 39,
+                "distance_m": 225654.0,
+                "elapsed_s": 4946.642546624622,
+                "state": {
+                  "engine_temp": 102.44152207468866,
+                  "fuel_mass": 28.910951250967432,
+                  "tire_temp": 117.84677145055905,
+                  "tire_wear": 0.3376511139004087
+                }
+              },
+              {
+                "completed_laps": 40,
+                "distance_m": 231440.0,
+                "elapsed_s": 5064.660694035629,
+                "state": {
+                  "engine_temp": 101.79595149974803,
+                  "fuel_mass": 26.71586015212054,
+                  "tire_temp": 118.9558762174198,
+                  "tire_wear": 0.3694308380490463
+                }
+              },
+              {
+                "completed_laps": 41,
+                "distance_m": 237226.0,
+                "elapsed_s": 5184.603095238004,
+                "state": {
+                  "engine_temp": 101.12695632385145,
+                  "fuel_mass": 24.5554146718739,
+                  "tire_temp": 119.84884306918907,
+                  "tire_wear": 0.40216750268396123
+                }
+              },
+              {
+                "completed_laps": 42,
+                "distance_m": 243012.0,
+                "elapsed_s": 5306.408919341529,
+                "state": {
+                  "engine_temp": 100.58538642185466,
+                  "fuel_mass": 22.424783193617305,
+                  "tire_temp": 120.57634173219719,
+                  "tire_wear": 0.43582474128035725
+                }
+              },
+              {
+                "completed_laps": 43,
+                "distance_m": 248798.0,
+                "elapsed_s": 5430.051170178236,
+                "state": {
+                  "engine_temp": 100.02652002828646,
+                  "fuel_mass": 20.32449947543413,
+                  "tire_temp": 121.1277623390281,
+                  "tire_wear": 0.4703036487721889
+                }
+              },
+              {
+                "completed_laps": 44,
+                "distance_m": 254584.0,
+                "elapsed_s": 5555.445883935502,
+                "state": {
+                  "engine_temp": 99.59531430552704,
+                  "fuel_mass": 18.256532283079576,
+                  "tire_temp": 121.50136459216215,
+                  "tire_wear": 0.5054228671419979
+                }
+              },
+              {
+                "completed_laps": 45,
+                "distance_m": 260370.0,
+                "elapsed_s": 5682.489904880747,
+                "state": {
+                  "engine_temp": 99.20529950154737,
+                  "fuel_mass": 16.220532726267184,
+                  "tire_temp": 121.69444950939341,
+                  "tire_wear": 0.5409148284678776
+                }
+              },
+              {
+                "completed_laps": 46,
+                "distance_m": 266156.0,
+                "elapsed_s": 5811.072268853141,
+                "state": {
+                  "engine_temp": 98.87522701495129,
+                  "fuel_mass": 14.21295910263375,
+                  "tire_temp": 121.76195828629179,
+                  "tire_wear": 0.5767229700706424
+                }
+              },
+              {
+                "completed_laps": 47,
+                "distance_m": 271942.0,
+                "elapsed_s": 5941.089913572056,
+                "state": {
+                  "engine_temp": 98.55924040472662,
+                  "fuel_mass": 12.232416384640588,
+                  "tire_temp": 121.72001003001488,
+                  "tire_wear": 0.6127572689008625
+                }
+              },
+              {
+                "completed_laps": 48,
+                "distance_m": 277728.0,
+                "elapsed_s": 6072.531710008043,
+                "state": {
+                  "engine_temp": 98.25406557053628,
+                  "fuel_mass": 10.2763612231181,
+                  "tire_temp": 121.5976184968245,
+                  "tire_wear": 0.6490113178859614
+                }
+              },
+              {
+                "completed_laps": 49,
+                "distance_m": 283514.0,
+                "elapsed_s": 6207.376167434536,
+                "state": {
+                  "engine_temp": 98.08686101705123,
+                  "fuel_mass": 8.416441630398348,
+                  "tire_temp": 120.75496191690907,
+                  "tire_wear": 0.6841091348815959
+                }
+              },
+              {
+                "completed_laps": 50,
+                "distance_m": 289300.0,
+                "elapsed_s": 6340.851291770413,
+                "state": {
+                  "engine_temp": 97.79124513507942,
+                  "fuel_mass": 6.4975662083532155,
+                  "tire_temp": 120.74597296239415,
+                  "tire_wear": 0.720342484152896
+                }
+              },
+              {
+                "completed_laps": 51,
+                "distance_m": 295086.0,
+                "elapsed_s": 6475.876528844042,
+                "state": {
+                  "engine_temp": 97.50155548722643,
+                  "fuel_mass": 4.60597604414641,
+                  "tire_temp": 120.53569084130854,
+                  "tire_wear": 0.7567312355877298
+                }
+              },
+              {
+                "completed_laps": 52,
+                "distance_m": 300872.0,
+                "elapsed_s": 6612.37096893344,
+                "state": {
+                  "engine_temp": 97.24345437200887,
+                  "fuel_mass": 2.7393433959772016,
+                  "tire_temp": 120.26712561320235,
+                  "tire_wear": 0.7932565281881861
+                }
+              },
+              {
+                "completed_laps": 53,
+                "distance_m": 306658.0,
+                "elapsed_s": 6749.83773739507,
+                "state": {
+                  "engine_temp": 98.38859833067725,
+                  "fuel_mass": 0.8846382550508836,
+                  "tire_temp": 119.92145450975335,
+                  "tire_wear": 0.8298573610551135
+                }
+              }
+            ],
+            "state": {
+              "engine_temp": 98.38859833067725,
+              "fuel_mass": 0.8846382550508836,
+              "tire_temp": 119.92145450975335,
+              "tire_wear": 0.8298573610551135
+            },
+            "time_s": 6749.83773739507
+          }
+        }
+      },
+      "schema": "pitgun.fuel-preparation-probe/v1",
+      "sources": {
+        "helper": "sha256:302f79819f0113f9e118e6eb7998579e2806e9cda84f32e772448d1620303dbd",
+        "outcome": "sha256:c2fc01807ed415ec3c40510507de77761b586d1379665172acdb9433a63a8271",
+        "preparation": "sha256:62026a4cf87cf890a87398e24afc73e59380da63f9106aa4335f7137394ebba6",
+        "probe": "sha256:7cb94f27663443c9253e5e0cffb85f8b602861db98a6f249387f2cb54d29f5e6",
+        "solver": "sha256:acbc57ef13acdeb53b530f0248691376886fbb0e927773171b9c9cbca18a8e57"
+      }
+    }
+  ]
+}
