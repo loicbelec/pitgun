@@ -10,6 +10,14 @@ Implementation sequence: [drivers#455](https://github.com/loicbelec/pitgun/issue
 [incidents#456](https://github.com/loicbelec/pitgun/issues/456), then
 [opponent fitting#457](https://github.com/loicbelec/pitgun/issues/457).
 
+Subsequent native implementation: [Thermal Driver V1](../thermal_driver_v1/README.md)
+and [equations/characteristics](../../docs/physics/THERMAL_DRIVER_V1.md). It adds
+strict V2 selection, physically accounted corrections and a first recoverable
+throttle hesitation. The findings below describe the pre-correction audit;
+existing career admission remains unchanged. Grip-dependent incidents, full
+journal/runtime qualification, fuel/finish gates and actual opponent fitting
+remain open. Do not treat the debug driver screen as a season balance verdict.
+
 ## What the code actually does
 
 There are three independent concerns: the physical driver, the opponent policy
