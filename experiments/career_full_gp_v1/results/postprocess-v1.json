@@ -4,7 +4,8 @@
   "campaign_digest": "sha256:bc7b59ba342946220f68b32740818649addef7b1521e60e8d5cf8d7bd33e4527",
   "source_digests": {
     "experiments/career_full_gp_v1/summarize.py": "sha256:a98e16f0f3fd1239e9b3d426ebc9589975e009a6878d6583caf8670745653795",
-    "experiments/career_full_gp_v1/plot_report.py": "sha256:0dd479f1107e57d75333124a50a7036603bf35d6f9513aaf471ae732a084d911"
+    "experiments/career_full_gp_v1/plot_report.py": "sha256:0dd479f1107e57d75333124a50a7036603bf35d6f9513aaf471ae732a084d911",
+    "experiments/career_full_gp_v1/repeat_campaign.py": "sha256:f9141b7685f2bb5dafa2299ca095f4a9c108d3af9d332f6375144bf95e37b352"
   },
   "derived_digests": {
     "experiments/career_full_gp_v1/results/summary-v1.json": "sha256:f80020fac96bb41857159f4b156ab45e95f61d74d26aee02d04d5ed6c2b03bf7",
@@ -25,5 +26,6 @@
     "retained_full_gp_controls": 2,
     "strict_rejections": 8
   },
-  "figure_renderer": "Matplotlib3.11.2 / static recorded native results; no simulation or selection during rendering"
+  "figure_renderer": "Matplotlib3.11.2 / static recorded native results; no simulation or selection during rendering",
+  "reproduction_helper_check": "pins and matrix preview pass; full helper re-execution not performed (fresh12+60 repeats already in campaign)"
 }

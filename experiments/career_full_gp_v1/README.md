@@ -79,3 +79,18 @@ MPLCONFIGDIR=/private/tmp/pitgun-mplconfig python3 \
 Le tracé utilise Matplotlib/Numpy. Il lit exclusivement les résultats enregistrés,
 sans relancer la simulation ni intervenir dans la sélection. Les données brutes
 restent séparées des synthèses/figures dérivées.
+
+Après archivage, refaire la campagne dans un répertoire neuf, sans retirer les
+reçus gelés :
+
+```sh
+python3 experiments/career_full_gp_v1/repeat_campaign.py \
+  target/release/examples/career_full_gp_probe \
+  --output /private/tmp/pitgun-gp-reproduction --cache /private/tmp/pitgun-gp-reproduction-cache
+```
+
+`--preview` vérifie les pins et décrit la matrice sans calcul. Si le binaire a été
+reconstruit, `--allow-rebuilt-binary` conserve sa nouvelle identité séparément et
+exige l'égalité des autres données physiques/numériques de toutes les phases et
+du choix final. Les hashes des sources gelées restent obligatoires. Le runner
+original est importé sans modification, et aucun reçu original n'est écrasé.
