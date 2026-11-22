@@ -234,6 +234,7 @@ fn map_tire(value: &crate::models::TireConfig) -> SolverTireParams {
         wear_load_k: value.wear_load_k,
         wear_grip_k: value.wear_grip_k,
         wear_min: value.wear_min,
+        wear_grip_curve: None,
         temp_opt: value.temp_opt_c,
         temp_sigma: value.temp_sigma_c,
         temp_min_k: value.temp_min_k,

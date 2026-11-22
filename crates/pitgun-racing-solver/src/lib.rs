@@ -27,10 +27,12 @@ use lap_boundary::{
 pub mod power_telemetry;
 pub mod thermal_physics;
 mod tire_reachability;
+pub mod wear_grip;
 use longitudinal_energy::{EnergyLedgerV1, LongitudinalEnergyModelV1, SegmentContext};
 use thermal_physics::{
     ThermalLapV2, ThermalLedgerV2, ThermalModelV2, ThermalPhysicsV2, ThermalResultV2,
 };
+pub use wear_grip::{TireWearGripCurveV1, tire_wear_grip_factor};
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct AeroParams {
@@ -77,6 +79,8 @@ pub struct TireParams {
     pub wear_load_k: f64,
     pub wear_grip_k: f64,
     pub wear_min: f64,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub wear_grip_curve: Option<TireWearGripCurveV1>,
     pub temp_opt: f64,
     pub temp_sigma: f64,
     pub temp_min_k: f64,
@@ -3998,7 +4002,7 @@ pub fn apply_tuning_with_response(
 }
 
 pub fn effective_mu(mu0: f64, tire_wear: f64, tire_temp: f64, tire: &TireParams) -> f64 {
-    let wear_k = (1.0 - tire.wear_grip_k * tire_wear).max(tire.wear_min);
+    let wear_k = tire_wear_grip_factor(tire_wear, tire);
     let temp_k = tire_temperature_grip_factor(tire_temp, tire);
     mu0 * tire.mu_scale * wear_k * temp_k
 }
@@ -4503,6 +4507,9 @@ pub fn validate_resolved_vehicle(vehicle: &VehicleParams) -> Result<(), String> 
 }
 
 fn validate_tire_params(tire: &TireParams) -> Result<(), String> {
+    if let Some(curve) = &tire.wear_grip_curve {
+        curve.validate()?;
+    }
     require_positive("vehicle.tire.grip_multiplier", tire.mu_scale)?;
     require_positive("vehicle.tire.optimal_temperature_c", tire.temp_opt)?;
     require_positive("vehicle.tire.temperature_sigma_c", tire.temp_sigma)?;

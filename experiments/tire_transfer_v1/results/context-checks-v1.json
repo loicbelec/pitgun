@@ -1,0 +1,2777 @@
+[
+  {
+    "era": 1,
+    "circuit": "MONZA",
+    "role": "best_sampled",
+    "anchor_case": {
+      "id": "299215cd3045021a472d8063a418e53b7a5bb0bad523fe9916f1658cc1ab6946",
+      "fixture_id": "craft_engineering:era1-exit",
+      "circuit": "MONZA",
+      "actor": "reference",
+      "kind": "field",
+      "budget": 8,
+      "allocation": [
+        0,
+        5,
+        0,
+        3
+      ],
+      "gear": 1.0,
+      "downforce": 0.5,
+      "strategy": {
+        "stints": [
+          {
+            "tire_id": "medium",
+            "laps": 26
+          },
+          {
+            "tire_id": "hard",
+            "laps": 27
+          }
+        ],
+        "pit_laps": [
+          26
+        ]
+      },
+      "seed": 73013,
+      "environment": null,
+      "elite_level": 0,
+      "performance_profile": "progressive4",
+      "audit": null,
+      "diagnostic_mode": false,
+      "diagnostic_laps": null,
+      "diagnostic_driving_mode": null
+    },
+    "best_one_two_case": {
+      "id": "129570407e8ad808e352fc77a4360be0d312e8639515c524630ed5a13f8aefa9",
+      "fixture_id": "craft_engineering:era1-exit",
+      "circuit": "MONZA",
+      "actor": "reference",
+      "kind": "field",
+      "budget": 8,
+      "allocation": [
+        0,
+        5,
+        0,
+        3
+      ],
+      "gear": 1.0,
+      "downforce": 0.5,
+      "strategy": {
+        "stints": [
+          {
+            "tire_id": "soft",
+            "laps": 26
+          },
+          {
+            "tire_id": "medium",
+            "laps": 27
+          }
+        ],
+        "pit_laps": [
+          26
+        ]
+      },
+      "seed": 73013,
+      "environment": null,
+      "elite_level": 0,
+      "performance_profile": "progressive4",
+      "audit": null,
+      "diagnostic_mode": false,
+      "diagnostic_laps": null,
+      "diagnostic_driving_mode": null
+    },
+    "best_extra_case": {
+      "id": "f1dc3978ccd882e4d2e5d427faac775130c85873157ecaa62ed63ddf0a0df018",
+      "fixture_id": "craft_engineering:era1-exit",
+      "circuit": "MONZA",
+      "actor": "reference",
+      "kind": "field",
+      "budget": 8,
+      "allocation": [
+        0,
+        5,
+        0,
+        3
+      ],
+      "gear": 1.0,
+      "downforce": 0.5,
+      "strategy": {
+        "stints": [
+          {
+            "tire_id": "medium",
+            "laps": 1
+          },
+          {
+            "tire_id": "soft",
+            "laps": 17
+          },
+          {
+            "tire_id": "soft",
+            "laps": 17
+          },
+          {
+            "tire_id": "soft",
+            "laps": 18
+          }
+        ],
+        "pit_laps": [
+          1,
+          18,
+          35
+        ]
+      },
+      "seed": 73013,
+      "environment": null,
+      "elite_level": 0,
+      "performance_profile": "progressive4",
+      "audit": null,
+      "diagnostic_mode": true,
+      "diagnostic_laps": null,
+      "diagnostic_driving_mode": null
+    },
+    "best_one_two_time_s": 7785.173399909272,
+    "best_extra_time_s": 7820.5694886981055,
+    "extra_stop_margin_s": 35.39608878883337,
+    "failed_simulations": 0,
+    "passed": true
+  },
+  {
+    "era": 1,
+    "circuit": "MONZA",
+    "role": "engine_chassis_only",
+    "anchor_case": {
+      "id": "349682e36159ac96f8f5d9b035563b8fcb2c847c214a887fba0f7764d50d33b1",
+      "fixture_id": "craft_engineering:era1-exit",
+      "circuit": "MONZA",
+      "actor": "reference",
+      "kind": "field",
+      "budget": 8,
+      "allocation": [
+        0,
+        8,
+        0,
+        0
+      ],
+      "gear": 1.0,
+      "downforce": 0.5,
+      "strategy": {
+        "stints": [
+          {
+            "tire_id": "medium",
+            "laps": 26
+          },
+          {
+            "tire_id": "hard",
+            "laps": 27
+          }
+        ],
+        "pit_laps": [
+          26
+        ]
+      },
+      "seed": 73013,
+      "environment": null,
+      "elite_level": 0,
+      "performance_profile": "progressive4",
+      "audit": null,
+      "diagnostic_mode": false,
+      "diagnostic_laps": null,
+      "diagnostic_driving_mode": null
+    },
+    "best_one_two_case": {
+      "id": "affd4cece70993c6df03921c6f9989a9e827272daf05352b7927ed52d96a9eff",
+      "fixture_id": "craft_engineering:era1-exit",
+      "circuit": "MONZA",
+      "actor": "reference",
+      "kind": "field",
+      "budget": 8,
+      "allocation": [
+        0,
+        8,
+        0,
+        0
+      ],
+      "gear": 1.0,
+      "downforce": 0.5,
+      "strategy": {
+        "stints": [
+          {
+            "tire_id": "soft",
+            "laps": 26
+          },
+          {
+            "tire_id": "medium",
+            "laps": 27
+          }
+        ],
+        "pit_laps": [
+          26
+        ]
+      },
+      "seed": 73013,
+      "environment": null,
+      "elite_level": 0,
+      "performance_profile": "progressive4",
+      "audit": null,
+      "diagnostic_mode": false,
+      "diagnostic_laps": null,
+      "diagnostic_driving_mode": null
+    },
+    "best_extra_case": {
+      "id": "c8dacfae5a55205600f9f4b9adb3be99ab9250dcd7df6c111f547e1e76401dd7",
+      "fixture_id": "craft_engineering:era1-exit",
+      "circuit": "MONZA",
+      "actor": "reference",
+      "kind": "field",
+      "budget": 8,
+      "allocation": [
+        0,
+        8,
+        0,
+        0
+      ],
+      "gear": 1.0,
+      "downforce": 0.5,
+      "strategy": {
+        "stints": [
+          {
+            "tire_id": "medium",
+            "laps": 1
+          },
+          {
+            "tire_id": "soft",
+            "laps": 17
+          },
+          {
+            "tire_id": "soft",
+            "laps": 17
+          },
+          {
+            "tire_id": "soft",
+            "laps": 18
+          }
+        ],
+        "pit_laps": [
+          1,
+          18,
+          35
+        ]
+      },
+      "seed": 73013,
+      "environment": null,
+      "elite_level": 0,
+      "performance_profile": "progressive4",
+      "audit": null,
+      "diagnostic_mode": true,
+      "diagnostic_laps": null,
+      "diagnostic_driving_mode": null
+    },
+    "best_one_two_time_s": 7825.177447779858,
+    "best_extra_time_s": 7861.248911639669,
+    "extra_stop_margin_s": 36.07146385981105,
+    "failed_simulations": 0,
+    "passed": true
+  },
+  {
+    "era": 1,
+    "circuit": "SILVERSTONE",
+    "role": "best_sampled",
+    "anchor_case": {
+      "id": "b48cd8125ae63a717102e98627c65680e662236205de64835f51f26b111f44b3",
+      "fixture_id": "craft_engineering:era1-exit",
+      "circuit": "SILVERSTONE",
+      "actor": "reference",
+      "kind": "field",
+      "budget": 8,
+      "allocation": [
+        0,
+        5,
+        0,
+        3
+      ],
+      "gear": 1.0,
+      "downforce": 0.5,
+      "strategy": {
+        "stints": [
+          {
+            "tire_id": "medium",
+            "laps": 26
+          },
+          {
+            "tire_id": "hard",
+            "laps": 26
+          }
+        ],
+        "pit_laps": [
+          26
+        ]
+      },
+      "seed": 73013,
+      "environment": null,
+      "elite_level": 0,
+      "performance_profile": "progressive4",
+      "audit": null,
+      "diagnostic_mode": false,
+      "diagnostic_laps": null,
+      "diagnostic_driving_mode": null
+    },
+    "best_one_two_case": {
+      "id": "df252d0fb83b73a8fdb751dbec835c2250009ca6504b067393e30298b00b2602",
+      "fixture_id": "craft_engineering:era1-exit",
+      "circuit": "SILVERSTONE",
+      "actor": "reference",
+      "kind": "field",
+      "budget": 8,
+      "allocation": [
+        0,
+        5,
+        0,
+        3
+      ],
+      "gear": 1.0,
+      "downforce": 0.5,
+      "strategy": {
+        "stints": [
+          {
+            "tire_id": "medium",
+            "laps": 26
+          },
+          {
+            "tire_id": "soft",
+            "laps": 26
+          }
+        ],
+        "pit_laps": [
+          26
+        ]
+      },
+      "seed": 73013,
+      "environment": null,
+      "elite_level": 0,
+      "performance_profile": "progressive4",
+      "audit": null,
+      "diagnostic_mode": false,
+      "diagnostic_laps": null,
+      "diagnostic_driving_mode": null
+    },
+    "best_extra_case": {
+      "id": "8fa8e693b0becf79c33b7861a4a5491c6f82ffd468dd43734ed9b6aca14652c6",
+      "fixture_id": "craft_engineering:era1-exit",
+      "circuit": "SILVERSTONE",
+      "actor": "reference",
+      "kind": "field",
+      "budget": 8,
+      "allocation": [
+        0,
+        5,
+        0,
+        3
+      ],
+      "gear": 1.0,
+      "downforce": 0.5,
+      "strategy": {
+        "stints": [
+          {
+            "tire_id": "medium",
+            "laps": 1
+          },
+          {
+            "tire_id": "soft",
+            "laps": 17
+          },
+          {
+            "tire_id": "soft",
+            "laps": 17
+          },
+          {
+            "tire_id": "soft",
+            "laps": 17
+          }
+        ],
+        "pit_laps": [
+          1,
+          18,
+          35
+        ]
+      },
+      "seed": 73013,
+      "environment": null,
+      "elite_level": 0,
+      "performance_profile": "progressive4",
+      "audit": null,
+      "diagnostic_mode": true,
+      "diagnostic_laps": null,
+      "diagnostic_driving_mode": null
+    },
+    "best_one_two_time_s": 7912.665536674077,
+    "best_extra_time_s": 7941.561868264534,
+    "extra_stop_margin_s": 28.89633159045661,
+    "failed_simulations": 0,
+    "passed": true
+  },
+  {
+    "era": 1,
+    "circuit": "SILVERSTONE",
+    "role": "engine_chassis_only",
+    "anchor_case": {
+      "id": "95b12866af7d4555766abbd9266723285c0081af644cc17c6cc4480240fa1d46",
+      "fixture_id": "craft_engineering:era1-exit",
+      "circuit": "SILVERSTONE",
+      "actor": "reference",
+      "kind": "field",
+      "budget": 8,
+      "allocation": [
+        0,
+        8,
+        0,
+        0
+      ],
+      "gear": 1.0,
+      "downforce": 0.5,
+      "strategy": {
+        "stints": [
+          {
+            "tire_id": "medium",
+            "laps": 26
+          },
+          {
+            "tire_id": "hard",
+            "laps": 26
+          }
+        ],
+        "pit_laps": [
+          26
+        ]
+      },
+      "seed": 73013,
+      "environment": null,
+      "elite_level": 0,
+      "performance_profile": "progressive4",
+      "audit": null,
+      "diagnostic_mode": false,
+      "diagnostic_laps": null,
+      "diagnostic_driving_mode": null
+    },
+    "best_one_two_case": {
+      "id": "e68ecef477dde06e6422d81fdcedaf200d44ee9220754f042ce5f1a62fc8ea52",
+      "fixture_id": "craft_engineering:era1-exit",
+      "circuit": "SILVERSTONE",
+      "actor": "reference",
+      "kind": "field",
+      "budget": 8,
+      "allocation": [
+        0,
+        8,
+        0,
+        0
+      ],
+      "gear": 1.0,
+      "downforce": 0.5,
+      "strategy": {
+        "stints": [
+          {
+            "tire_id": "medium",
+            "laps": 26
+          },
+          {
+            "tire_id": "soft",
+            "laps": 26
+          }
+        ],
+        "pit_laps": [
+          26
+        ]
+      },
+      "seed": 73013,
+      "environment": null,
+      "elite_level": 0,
+      "performance_profile": "progressive4",
+      "audit": null,
+      "diagnostic_mode": false,
+      "diagnostic_laps": null,
+      "diagnostic_driving_mode": null
+    },
+    "best_extra_case": {
+      "id": "9dd14ce4acb2822480bfb4deb239de1add160aed1135f456f9070063494100f3",
+      "fixture_id": "craft_engineering:era1-exit",
+      "circuit": "SILVERSTONE",
+      "actor": "reference",
+      "kind": "field",
+      "budget": 8,
+      "allocation": [
+        0,
+        8,
+        0,
+        0
+      ],
+      "gear": 1.0,
+      "downforce": 0.5,
+      "strategy": {
+        "stints": [
+          {
+            "tire_id": "medium",
+            "laps": 1
+          },
+          {
+            "tire_id": "soft",
+            "laps": 17
+          },
+          {
+            "tire_id": "soft",
+            "laps": 17
+          },
+          {
+            "tire_id": "soft",
+            "laps": 17
+          }
+        ],
+        "pit_laps": [
+          1,
+          18,
+          35
+        ]
+      },
+      "seed": 73013,
+      "environment": null,
+      "elite_level": 0,
+      "performance_profile": "progressive4",
+      "audit": null,
+      "diagnostic_mode": true,
+      "diagnostic_laps": null,
+      "diagnostic_driving_mode": null
+    },
+    "best_one_two_time_s": 7962.261791014901,
+    "best_extra_time_s": 7991.683029094445,
+    "extra_stop_margin_s": 29.42123807954431,
+    "failed_simulations": 0,
+    "passed": true
+  },
+  {
+    "era": 1,
+    "circuit": "ZANDVOORT",
+    "role": "best_sampled",
+    "anchor_case": {
+      "id": "f00f465da8c9886071ca7f90058934d36a71eba996343d509b917de9cb2f5108",
+      "fixture_id": "craft_engineering:era1-exit",
+      "circuit": "ZANDVOORT",
+      "actor": "reference",
+      "kind": "field",
+      "budget": 8,
+      "allocation": [
+        0,
+        3,
+        0,
+        5
+      ],
+      "gear": 1.0,
+      "downforce": 0.5,
+      "strategy": {
+        "stints": [
+          {
+            "tire_id": "medium",
+            "laps": 36
+          },
+          {
+            "tire_id": "hard",
+            "laps": 36
+          }
+        ],
+        "pit_laps": [
+          36
+        ]
+      },
+      "seed": 73013,
+      "environment": null,
+      "elite_level": 0,
+      "performance_profile": "progressive4",
+      "audit": null,
+      "diagnostic_mode": false,
+      "diagnostic_laps": null,
+      "diagnostic_driving_mode": null
+    },
+    "best_one_two_case": {
+      "id": "514d32e3b83bbec1b8b8aad1afa6d3865de5ea78778eb1971ba5cbdcfbb62706",
+      "fixture_id": "craft_engineering:era1-exit",
+      "circuit": "ZANDVOORT",
+      "actor": "reference",
+      "kind": "field",
+      "budget": 8,
+      "allocation": [
+        0,
+        3,
+        0,
+        5
+      ],
+      "gear": 1.0,
+      "downforce": 0.5,
+      "strategy": {
+        "stints": [
+          {
+            "tire_id": "medium",
+            "laps": 24
+          },
+          {
+            "tire_id": "soft",
+            "laps": 24
+          },
+          {
+            "tire_id": "soft",
+            "laps": 24
+          }
+        ],
+        "pit_laps": [
+          24,
+          48
+        ]
+      },
+      "seed": 73013,
+      "environment": null,
+      "elite_level": 0,
+      "performance_profile": "progressive4",
+      "audit": null,
+      "diagnostic_mode": false,
+      "diagnostic_laps": null,
+      "diagnostic_driving_mode": null
+    },
+    "best_extra_case": {
+      "id": "0444b69248e138220befbd54bb9bf70391476a6c5a3737cd2d74d1aafb0c9822",
+      "fixture_id": "craft_engineering:era1-exit",
+      "circuit": "ZANDVOORT",
+      "actor": "reference",
+      "kind": "field",
+      "budget": 8,
+      "allocation": [
+        0,
+        3,
+        0,
+        5
+      ],
+      "gear": 1.0,
+      "downforce": 0.5,
+      "strategy": {
+        "stints": [
+          {
+            "tire_id": "medium",
+            "laps": 1
+          },
+          {
+            "tire_id": "soft",
+            "laps": 23
+          },
+          {
+            "tire_id": "soft",
+            "laps": 24
+          },
+          {
+            "tire_id": "soft",
+            "laps": 24
+          }
+        ],
+        "pit_laps": [
+          1,
+          24,
+          48
+        ]
+      },
+      "seed": 73013,
+      "environment": null,
+      "elite_level": 0,
+      "performance_profile": "progressive4",
+      "audit": null,
+      "diagnostic_mode": true,
+      "diagnostic_laps": null,
+      "diagnostic_driving_mode": null
+    },
+    "best_one_two_time_s": 8410.685209642234,
+    "best_extra_time_s": 8425.486779129693,
+    "extra_stop_margin_s": 14.801569487459346,
+    "failed_simulations": 0,
+    "passed": true
+  },
+  {
+    "era": 1,
+    "circuit": "ZANDVOORT",
+    "role": "engine_chassis_only",
+    "anchor_case": {
+      "id": "06bbf971a5e080632d5f68d0b4d633eaa4398d8eb73eadf5ae9eebaf7b439ff8",
+      "fixture_id": "craft_engineering:era1-exit",
+      "circuit": "ZANDVOORT",
+      "actor": "reference",
+      "kind": "field",
+      "budget": 8,
+      "allocation": [
+        0,
+        8,
+        0,
+        0
+      ],
+      "gear": 1.0,
+      "downforce": 0.5,
+      "strategy": {
+        "stints": [
+          {
+            "tire_id": "medium",
+            "laps": 36
+          },
+          {
+            "tire_id": "hard",
+            "laps": 36
+          }
+        ],
+        "pit_laps": [
+          36
+        ]
+      },
+      "seed": 73013,
+      "environment": null,
+      "elite_level": 0,
+      "performance_profile": "progressive4",
+      "audit": null,
+      "diagnostic_mode": false,
+      "diagnostic_laps": null,
+      "diagnostic_driving_mode": null
+    },
+    "best_one_two_case": {
+      "id": "eb7213e9ed3a8e8c9df918536a7d38487894643ceb72035b50316fd44190c092",
+      "fixture_id": "craft_engineering:era1-exit",
+      "circuit": "ZANDVOORT",
+      "actor": "reference",
+      "kind": "field",
+      "budget": 8,
+      "allocation": [
+        0,
+        8,
+        0,
+        0
+      ],
+      "gear": 1.0,
+      "downforce": 0.5,
+      "strategy": {
+        "stints": [
+          {
+            "tire_id": "medium",
+            "laps": 24
+          },
+          {
+            "tire_id": "soft",
+            "laps": 24
+          },
+          {
+            "tire_id": "soft",
+            "laps": 24
+          }
+        ],
+        "pit_laps": [
+          24,
+          48
+        ]
+      },
+      "seed": 73013,
+      "environment": null,
+      "elite_level": 0,
+      "performance_profile": "progressive4",
+      "audit": null,
+      "diagnostic_mode": false,
+      "diagnostic_laps": null,
+      "diagnostic_driving_mode": null
+    },
+    "best_extra_case": {
+      "id": "f30dc3b5334931a4bd34fe9927c0db7ff176fade9ef459b847b49cab84cdd080",
+      "fixture_id": "craft_engineering:era1-exit",
+      "circuit": "ZANDVOORT",
+      "actor": "reference",
+      "kind": "field",
+      "budget": 8,
+      "allocation": [
+        0,
+        8,
+        0,
+        0
+      ],
+      "gear": 1.0,
+      "downforce": 0.5,
+      "strategy": {
+        "stints": [
+          {
+            "tire_id": "medium",
+            "laps": 1
+          },
+          {
+            "tire_id": "soft",
+            "laps": 23
+          },
+          {
+            "tire_id": "soft",
+            "laps": 24
+          },
+          {
+            "tire_id": "soft",
+            "laps": 24
+          }
+        ],
+        "pit_laps": [
+          1,
+          24,
+          48
+        ]
+      },
+      "seed": 73013,
+      "environment": null,
+      "elite_level": 0,
+      "performance_profile": "progressive4",
+      "audit": null,
+      "diagnostic_mode": true,
+      "diagnostic_laps": null,
+      "diagnostic_driving_mode": null
+    },
+    "best_one_two_time_s": 8525.37393920328,
+    "best_extra_time_s": 8540.097772991818,
+    "extra_stop_margin_s": 14.723833788537377,
+    "failed_simulations": 0,
+    "passed": true
+  },
+  {
+    "era": 2,
+    "circuit": "MEXICO",
+    "role": "best_sampled",
+    "anchor_case": {
+      "id": "a28f707a8006c929517d06fa6a51043f6bbd7dd26f86bd2ae41f811e49e616d4",
+      "fixture_id": "craft_engineering:era2-exit",
+      "circuit": "MEXICO",
+      "actor": "reference",
+      "kind": "field",
+      "budget": 16,
+      "allocation": [
+        0,
+        15,
+        0,
+        1
+      ],
+      "gear": 1.0,
+      "downforce": 0.5,
+      "strategy": {
+        "stints": [
+          {
+            "tire_id": "medium",
+            "laps": 35
+          },
+          {
+            "tire_id": "hard",
+            "laps": 36
+          }
+        ],
+        "pit_laps": [
+          35
+        ]
+      },
+      "seed": 73013,
+      "environment": null,
+      "elite_level": 0,
+      "performance_profile": "progressive4",
+      "audit": null,
+      "diagnostic_mode": false,
+      "diagnostic_laps": null,
+      "diagnostic_driving_mode": null
+    },
+    "best_one_two_case": {
+      "id": "bea8dc05437e098ef4ca0d0ecca43e94755771f5030112acfa899c98273c5239",
+      "fixture_id": "craft_engineering:era2-exit",
+      "circuit": "MEXICO",
+      "actor": "reference",
+      "kind": "field",
+      "budget": 16,
+      "allocation": [
+        0,
+        15,
+        0,
+        1
+      ],
+      "gear": 1.0,
+      "downforce": 0.5,
+      "strategy": {
+        "stints": [
+          {
+            "tire_id": "medium",
+            "laps": 23
+          },
+          {
+            "tire_id": "soft",
+            "laps": 24
+          },
+          {
+            "tire_id": "soft",
+            "laps": 24
+          }
+        ],
+        "pit_laps": [
+          23,
+          47
+        ]
+      },
+      "seed": 73013,
+      "environment": null,
+      "elite_level": 0,
+      "performance_profile": "progressive4",
+      "audit": null,
+      "diagnostic_mode": false,
+      "diagnostic_laps": null,
+      "diagnostic_driving_mode": null
+    },
+    "best_extra_case": {
+      "id": "a2968265b99096d47bb7d95f77029a82808ab3a485ae299ac516870fa441f299",
+      "fixture_id": "craft_engineering:era2-exit",
+      "circuit": "MEXICO",
+      "actor": "reference",
+      "kind": "field",
+      "budget": 16,
+      "allocation": [
+        0,
+        15,
+        0,
+        1
+      ],
+      "gear": 1.0,
+      "downforce": 0.5,
+      "strategy": {
+        "stints": [
+          {
+            "tire_id": "medium",
+            "laps": 17
+          },
+          {
+            "tire_id": "soft",
+            "laps": 18
+          },
+          {
+            "tire_id": "soft",
+            "laps": 18
+          },
+          {
+            "tire_id": "soft",
+            "laps": 18
+          }
+        ],
+        "pit_laps": [
+          17,
+          35,
+          53
+        ]
+      },
+      "seed": 73013,
+      "environment": null,
+      "elite_level": 0,
+      "performance_profile": "progressive4",
+      "audit": null,
+      "diagnostic_mode": true,
+      "diagnostic_laps": null,
+      "diagnostic_driving_mode": null
+    },
+    "best_one_two_time_s": 7371.5317942997435,
+    "best_extra_time_s": 7387.112510154145,
+    "extra_stop_margin_s": 15.580715854401205,
+    "failed_simulations": 0,
+    "passed": true
+  },
+  {
+    "era": 2,
+    "circuit": "MEXICO",
+    "role": "engine_chassis_only",
+    "anchor_case": {
+      "id": "c2470703a4db9935e87ac4b069ed93a5cb408aeb317a7b290beb841bde12de01",
+      "fixture_id": "craft_engineering:era2-exit",
+      "circuit": "MEXICO",
+      "actor": "reference",
+      "kind": "field",
+      "budget": 16,
+      "allocation": [
+        0,
+        16,
+        0,
+        0
+      ],
+      "gear": 1.0,
+      "downforce": 0.5,
+      "strategy": {
+        "stints": [
+          {
+            "tire_id": "medium",
+            "laps": 35
+          },
+          {
+            "tire_id": "hard",
+            "laps": 36
+          }
+        ],
+        "pit_laps": [
+          35
+        ]
+      },
+      "seed": 73013,
+      "environment": null,
+      "elite_level": 0,
+      "performance_profile": "progressive4",
+      "audit": null,
+      "diagnostic_mode": false,
+      "diagnostic_laps": null,
+      "diagnostic_driving_mode": null
+    },
+    "best_one_two_case": {
+      "id": "98f323f0c9c1b1b0d3d0206bcce42486e77f1e20e80ecd2df60a326519213fd8",
+      "fixture_id": "craft_engineering:era2-exit",
+      "circuit": "MEXICO",
+      "actor": "reference",
+      "kind": "field",
+      "budget": 16,
+      "allocation": [
+        0,
+        16,
+        0,
+        0
+      ],
+      "gear": 1.0,
+      "downforce": 0.5,
+      "strategy": {
+        "stints": [
+          {
+            "tire_id": "medium",
+            "laps": 23
+          },
+          {
+            "tire_id": "soft",
+            "laps": 24
+          },
+          {
+            "tire_id": "soft",
+            "laps": 24
+          }
+        ],
+        "pit_laps": [
+          23,
+          47
+        ]
+      },
+      "seed": 73013,
+      "environment": null,
+      "elite_level": 0,
+      "performance_profile": "progressive4",
+      "audit": null,
+      "diagnostic_mode": false,
+      "diagnostic_laps": null,
+      "diagnostic_driving_mode": null
+    },
+    "best_extra_case": {
+      "id": "ee1b941107d10835b75830632c4de03d035e1ff4ade177630c51f2212cbb0733",
+      "fixture_id": "craft_engineering:era2-exit",
+      "circuit": "MEXICO",
+      "actor": "reference",
+      "kind": "field",
+      "budget": 16,
+      "allocation": [
+        0,
+        16,
+        0,
+        0
+      ],
+      "gear": 1.0,
+      "downforce": 0.5,
+      "strategy": {
+        "stints": [
+          {
+            "tire_id": "medium",
+            "laps": 17
+          },
+          {
+            "tire_id": "soft",
+            "laps": 18
+          },
+          {
+            "tire_id": "soft",
+            "laps": 18
+          },
+          {
+            "tire_id": "soft",
+            "laps": 18
+          }
+        ],
+        "pit_laps": [
+          17,
+          35,
+          53
+        ]
+      },
+      "seed": 73013,
+      "environment": null,
+      "elite_level": 0,
+      "performance_profile": "progressive4",
+      "audit": null,
+      "diagnostic_mode": true,
+      "diagnostic_laps": null,
+      "diagnostic_driving_mode": null
+    },
+    "best_one_two_time_s": 7395.548341110691,
+    "best_extra_time_s": 7411.9681986132555,
+    "extra_stop_margin_s": 16.41985750256481,
+    "failed_simulations": 0,
+    "passed": true
+  },
+  {
+    "era": 2,
+    "circuit": "MONTREAL",
+    "role": "best_sampled",
+    "anchor_case": {
+      "id": "9cb49a57cbc18388bf59260cd3d1e99f4a0f01df844353ebbd32651467c80089",
+      "fixture_id": "craft_engineering:era2-exit",
+      "circuit": "MONTREAL",
+      "actor": "reference",
+      "kind": "field",
+      "budget": 16,
+      "allocation": [
+        0,
+        6,
+        8,
+        2
+      ],
+      "gear": 0.0,
+      "downforce": 0.25,
+      "strategy": {
+        "stints": [
+          {
+            "tire_id": "medium",
+            "laps": 35
+          },
+          {
+            "tire_id": "hard",
+            "laps": 35
+          }
+        ],
+        "pit_laps": [
+          35
+        ]
+      },
+      "seed": 73013,
+      "environment": null,
+      "elite_level": 0,
+      "performance_profile": "progressive4",
+      "audit": null,
+      "diagnostic_mode": false,
+      "diagnostic_laps": null,
+      "diagnostic_driving_mode": null
+    },
+    "best_one_two_case": {
+      "id": "28fb19dee2a433f06f9acde92e3e3785f599a6351b0f7c856091750ee5bda767",
+      "fixture_id": "craft_engineering:era2-exit",
+      "circuit": "MONTREAL",
+      "actor": "reference",
+      "kind": "field",
+      "budget": 16,
+      "allocation": [
+        0,
+        6,
+        8,
+        2
+      ],
+      "gear": 0.0,
+      "downforce": 0.25,
+      "strategy": {
+        "stints": [
+          {
+            "tire_id": "soft",
+            "laps": 24
+          },
+          {
+            "tire_id": "hard",
+            "laps": 46
+          }
+        ],
+        "pit_laps": [
+          24
+        ]
+      },
+      "seed": 73013,
+      "environment": null,
+      "elite_level": 0,
+      "performance_profile": "progressive4",
+      "audit": null,
+      "diagnostic_mode": false,
+      "diagnostic_laps": null,
+      "diagnostic_driving_mode": null
+    },
+    "best_extra_case": {
+      "id": "d6fd75aeeaadc9b6c466452db3ac962bd149b6db117313b23240035465418ae5",
+      "fixture_id": "craft_engineering:era2-exit",
+      "circuit": "MONTREAL",
+      "actor": "reference",
+      "kind": "field",
+      "budget": 16,
+      "allocation": [
+        0,
+        6,
+        8,
+        2
+      ],
+      "gear": 0.0,
+      "downforce": 0.25,
+      "strategy": {
+        "stints": [
+          {
+            "tire_id": "medium",
+            "laps": 1
+          },
+          {
+            "tire_id": "soft",
+            "laps": 23
+          },
+          {
+            "tire_id": "soft",
+            "laps": 23
+          },
+          {
+            "tire_id": "soft",
+            "laps": 23
+          }
+        ],
+        "pit_laps": [
+          1,
+          24,
+          47
+        ]
+      },
+      "seed": 73013,
+      "environment": null,
+      "elite_level": 0,
+      "performance_profile": "progressive4",
+      "audit": null,
+      "diagnostic_mode": true,
+      "diagnostic_laps": null,
+      "diagnostic_driving_mode": null
+    },
+    "best_one_two_time_s": 6752.3503121614785,
+    "best_extra_time_s": 6774.829968079,
+    "extra_stop_margin_s": 22.479655917521086,
+    "failed_simulations": 0,
+    "passed": true
+  },
+  {
+    "era": 2,
+    "circuit": "MONTREAL",
+    "role": "engine_chassis_only",
+    "anchor_case": {
+      "id": "659aa197679c5dfb8f7711915e8c525b010af6ee551a5d8bd27bcce7bcd36bc7",
+      "fixture_id": "craft_engineering:era2-exit",
+      "circuit": "MONTREAL",
+      "actor": "reference",
+      "kind": "field",
+      "budget": 16,
+      "allocation": [
+        0,
+        11,
+        5,
+        0
+      ],
+      "gear": 0.0,
+      "downforce": 0.0,
+      "strategy": {
+        "stints": [
+          {
+            "tire_id": "medium",
+            "laps": 35
+          },
+          {
+            "tire_id": "hard",
+            "laps": 35
+          }
+        ],
+        "pit_laps": [
+          35
+        ]
+      },
+      "seed": 73013,
+      "environment": null,
+      "elite_level": 0,
+      "performance_profile": "progressive4",
+      "audit": null,
+      "diagnostic_mode": false,
+      "diagnostic_laps": null,
+      "diagnostic_driving_mode": null
+    },
+    "best_one_two_case": {
+      "id": "e4e39c6c22183a69bf5a3fa0efb0256dadb67c853ed758d6df0c81efaf98675f",
+      "fixture_id": "craft_engineering:era2-exit",
+      "circuit": "MONTREAL",
+      "actor": "reference",
+      "kind": "field",
+      "budget": 16,
+      "allocation": [
+        0,
+        11,
+        5,
+        0
+      ],
+      "gear": 0.0,
+      "downforce": 0.0,
+      "strategy": {
+        "stints": [
+          {
+            "tire_id": "hard",
+            "laps": 45
+          },
+          {
+            "tire_id": "soft",
+            "laps": 25
+          }
+        ],
+        "pit_laps": [
+          45
+        ]
+      },
+      "seed": 73013,
+      "environment": null,
+      "elite_level": 0,
+      "performance_profile": "progressive4",
+      "audit": null,
+      "diagnostic_mode": false,
+      "diagnostic_laps": null,
+      "diagnostic_driving_mode": null
+    },
+    "best_extra_case": {
+      "id": "cc92b3d46ebff72be48a3718abd1a1679e9707dfe0fe81a27ab558ca58d06f10",
+      "fixture_id": "craft_engineering:era2-exit",
+      "circuit": "MONTREAL",
+      "actor": "reference",
+      "kind": "field",
+      "budget": 16,
+      "allocation": [
+        0,
+        11,
+        5,
+        0
+      ],
+      "gear": 0.0,
+      "downforce": 0.0,
+      "strategy": {
+        "stints": [
+          {
+            "tire_id": "medium",
+            "laps": 1
+          },
+          {
+            "tire_id": "soft",
+            "laps": 23
+          },
+          {
+            "tire_id": "soft",
+            "laps": 23
+          },
+          {
+            "tire_id": "soft",
+            "laps": 23
+          }
+        ],
+        "pit_laps": [
+          1,
+          24,
+          47
+        ]
+      },
+      "seed": 73013,
+      "environment": null,
+      "elite_level": 0,
+      "performance_profile": "progressive4",
+      "audit": null,
+      "diagnostic_mode": true,
+      "diagnostic_laps": null,
+      "diagnostic_driving_mode": null
+    },
+    "best_one_two_time_s": 6802.433137760803,
+    "best_extra_time_s": 6821.687705436085,
+    "extra_stop_margin_s": 19.254567675281578,
+    "failed_simulations": 0,
+    "passed": true
+  },
+  {
+    "era": 2,
+    "circuit": "MONZA",
+    "role": "best_sampled",
+    "anchor_case": {
+      "id": "beba1361471ba19a94af9857044e14fca1fec270e6387dba5458b2e4442a06ca",
+      "fixture_id": "craft_engineering:era2-exit",
+      "circuit": "MONZA",
+      "actor": "reference",
+      "kind": "field",
+      "budget": 16,
+      "allocation": [
+        0,
+        6,
+        8,
+        2
+      ],
+      "gear": 1.0,
+      "downforce": 0.25,
+      "strategy": {
+        "stints": [
+          {
+            "tire_id": "medium",
+            "laps": 26
+          },
+          {
+            "tire_id": "hard",
+            "laps": 27
+          }
+        ],
+        "pit_laps": [
+          26
+        ]
+      },
+      "seed": 73013,
+      "environment": null,
+      "elite_level": 0,
+      "performance_profile": "progressive4",
+      "audit": null,
+      "diagnostic_mode": false,
+      "diagnostic_laps": null,
+      "diagnostic_driving_mode": null
+    },
+    "best_one_two_case": {
+      "id": "72a10b42eb04c2370955ddde7ac1692379e854f7b4b0a70a5b9b0d840d785192",
+      "fixture_id": "craft_engineering:era2-exit",
+      "circuit": "MONZA",
+      "actor": "reference",
+      "kind": "field",
+      "budget": 16,
+      "allocation": [
+        0,
+        6,
+        8,
+        2
+      ],
+      "gear": 1.0,
+      "downforce": 0.25,
+      "strategy": {
+        "stints": [
+          {
+            "tire_id": "hard",
+            "laps": 34
+          },
+          {
+            "tire_id": "soft",
+            "laps": 19
+          }
+        ],
+        "pit_laps": [
+          34
+        ]
+      },
+      "seed": 73013,
+      "environment": null,
+      "elite_level": 0,
+      "performance_profile": "progressive4",
+      "audit": null,
+      "diagnostic_mode": false,
+      "diagnostic_laps": null,
+      "diagnostic_driving_mode": null
+    },
+    "best_extra_case": {
+      "id": "7f6d953a8dbe390082d621271d08e6367ef6539bf6257b2129209379f9baf949",
+      "fixture_id": "craft_engineering:era2-exit",
+      "circuit": "MONZA",
+      "actor": "reference",
+      "kind": "field",
+      "budget": 16,
+      "allocation": [
+        0,
+        6,
+        8,
+        2
+      ],
+      "gear": 1.0,
+      "downforce": 0.25,
+      "strategy": {
+        "stints": [
+          {
+            "tire_id": "medium",
+            "laps": 1
+          },
+          {
+            "tire_id": "soft",
+            "laps": 17
+          },
+          {
+            "tire_id": "soft",
+            "laps": 17
+          },
+          {
+            "tire_id": "soft",
+            "laps": 18
+          }
+        ],
+        "pit_laps": [
+          1,
+          18,
+          35
+        ]
+      },
+      "seed": 73013,
+      "environment": null,
+      "elite_level": 0,
+      "performance_profile": "progressive4",
+      "audit": null,
+      "diagnostic_mode": true,
+      "diagnostic_laps": null,
+      "diagnostic_driving_mode": null
+    },
+    "best_one_two_time_s": 6228.437794068866,
+    "best_extra_time_s": 6248.5498097264835,
+    "extra_stop_margin_s": 20.11201565761712,
+    "failed_simulations": 0,
+    "passed": true
+  },
+  {
+    "era": 2,
+    "circuit": "MONZA",
+    "role": "engine_chassis_only",
+    "anchor_case": {
+      "id": "5ecbb79cba2faec4e750439e8a08295e5d8df783f8fcf5060e5d0df0800247ad",
+      "fixture_id": "craft_engineering:era2-exit",
+      "circuit": "MONZA",
+      "actor": "reference",
+      "kind": "field",
+      "budget": 16,
+      "allocation": [
+        0,
+        0,
+        16,
+        0
+      ],
+      "gear": 0.0,
+      "downforce": 0.0,
+      "strategy": {
+        "stints": [
+          {
+            "tire_id": "medium",
+            "laps": 26
+          },
+          {
+            "tire_id": "hard",
+            "laps": 27
+          }
+        ],
+        "pit_laps": [
+          26
+        ]
+      },
+      "seed": 73013,
+      "environment": null,
+      "elite_level": 0,
+      "performance_profile": "progressive4",
+      "audit": null,
+      "diagnostic_mode": false,
+      "diagnostic_laps": null,
+      "diagnostic_driving_mode": null
+    },
+    "best_one_two_case": {
+      "id": "06298033e9d1f8ee09dce9633fdc9a6ccad19313e9cc93e1f20ee2b60cbc7bec",
+      "fixture_id": "craft_engineering:era2-exit",
+      "circuit": "MONZA",
+      "actor": "reference",
+      "kind": "field",
+      "budget": 16,
+      "allocation": [
+        0,
+        0,
+        16,
+        0
+      ],
+      "gear": 0.0,
+      "downforce": 0.0,
+      "strategy": {
+        "stints": [
+          {
+            "tire_id": "medium",
+            "laps": 18
+          },
+          {
+            "tire_id": "hard",
+            "laps": 35
+          }
+        ],
+        "pit_laps": [
+          18
+        ]
+      },
+      "seed": 73013,
+      "environment": null,
+      "elite_level": 0,
+      "performance_profile": "progressive4",
+      "audit": null,
+      "diagnostic_mode": false,
+      "diagnostic_laps": null,
+      "diagnostic_driving_mode": null
+    },
+    "best_extra_case": {
+      "id": "677fb82c3afe12176cd25f60a60c695c95f03ce33b7568a7f2e8a5d94b051e41",
+      "fixture_id": "craft_engineering:era2-exit",
+      "circuit": "MONZA",
+      "actor": "reference",
+      "kind": "field",
+      "budget": 16,
+      "allocation": [
+        0,
+        0,
+        16,
+        0
+      ],
+      "gear": 0.0,
+      "downforce": 0.0,
+      "strategy": {
+        "stints": [
+          {
+            "tire_id": "medium",
+            "laps": 13
+          },
+          {
+            "tire_id": "soft",
+            "laps": 13
+          },
+          {
+            "tire_id": "soft",
+            "laps": 13
+          },
+          {
+            "tire_id": "soft",
+            "laps": 14
+          }
+        ],
+        "pit_laps": [
+          13,
+          26,
+          39
+        ]
+      },
+      "seed": 73013,
+      "environment": null,
+      "elite_level": 0,
+      "performance_profile": "progressive4",
+      "audit": null,
+      "diagnostic_mode": true,
+      "diagnostic_laps": null,
+      "diagnostic_driving_mode": null
+    },
+    "best_one_two_time_s": 6252.3956410468845,
+    "best_extra_time_s": 6292.224674095602,
+    "extra_stop_margin_s": 39.829033048717065,
+    "failed_simulations": 0,
+    "passed": true
+  },
+  {
+    "era": 2,
+    "circuit": "SAOPAULO",
+    "role": "best_sampled",
+    "anchor_case": {
+      "id": "10550021a42e86cff899df963d82f6cf2e1473085d81583cf49beaa03087f538",
+      "fixture_id": "craft_engineering:era2-exit",
+      "circuit": "SAOPAULO",
+      "actor": "reference",
+      "kind": "field",
+      "budget": 16,
+      "allocation": [
+        0,
+        6,
+        8,
+        2
+      ],
+      "gear": 0.0,
+      "downforce": 0.25,
+      "strategy": {
+        "stints": [
+          {
+            "tire_id": "medium",
+            "laps": 35
+          },
+          {
+            "tire_id": "hard",
+            "laps": 36
+          }
+        ],
+        "pit_laps": [
+          35
+        ]
+      },
+      "seed": 73013,
+      "environment": null,
+      "elite_level": 0,
+      "performance_profile": "progressive4",
+      "audit": null,
+      "diagnostic_mode": false,
+      "diagnostic_laps": null,
+      "diagnostic_driving_mode": null
+    },
+    "best_one_two_case": {
+      "id": "171d0812967c85d1124424d95f1be4a945fccea70dee7a5da7818d425c15745e",
+      "fixture_id": "craft_engineering:era2-exit",
+      "circuit": "SAOPAULO",
+      "actor": "reference",
+      "kind": "field",
+      "budget": 16,
+      "allocation": [
+        0,
+        6,
+        8,
+        2
+      ],
+      "gear": 0.0,
+      "downforce": 0.25,
+      "strategy": {
+        "stints": [
+          {
+            "tire_id": "soft",
+            "laps": 24
+          },
+          {
+            "tire_id": "hard",
+            "laps": 47
+          }
+        ],
+        "pit_laps": [
+          24
+        ]
+      },
+      "seed": 73013,
+      "environment": null,
+      "elite_level": 0,
+      "performance_profile": "progressive4",
+      "audit": null,
+      "diagnostic_mode": false,
+      "diagnostic_laps": null,
+      "diagnostic_driving_mode": null
+    },
+    "best_extra_case": {
+      "id": "b73e4d89a5721f00f5d638165d337cf90dcb7646a64f063eccbe90139bfdb12e",
+      "fixture_id": "craft_engineering:era2-exit",
+      "circuit": "SAOPAULO",
+      "actor": "reference",
+      "kind": "field",
+      "budget": 16,
+      "allocation": [
+        0,
+        6,
+        8,
+        2
+      ],
+      "gear": 0.0,
+      "downforce": 0.25,
+      "strategy": {
+        "stints": [
+          {
+            "tire_id": "medium",
+            "laps": 17
+          },
+          {
+            "tire_id": "soft",
+            "laps": 18
+          },
+          {
+            "tire_id": "soft",
+            "laps": 18
+          },
+          {
+            "tire_id": "soft",
+            "laps": 18
+          }
+        ],
+        "pit_laps": [
+          17,
+          35,
+          53
+        ]
+      },
+      "seed": 73013,
+      "environment": null,
+      "elite_level": 0,
+      "performance_profile": "progressive4",
+      "audit": null,
+      "diagnostic_mode": true,
+      "diagnostic_laps": null,
+      "diagnostic_driving_mode": null
+    },
+    "best_one_two_time_s": 6619.056431742168,
+    "best_extra_time_s": 6639.5471550235925,
+    "extra_stop_margin_s": 20.490723281424835,
+    "failed_simulations": 0,
+    "passed": true
+  },
+  {
+    "era": 2,
+    "circuit": "SAOPAULO",
+    "role": "engine_chassis_only",
+    "anchor_case": {
+      "id": "66c066aa62c6865dfd0b94aa18318c176a9d237e9cdad2def1966b20a6dc4eaa",
+      "fixture_id": "craft_engineering:era2-exit",
+      "circuit": "SAOPAULO",
+      "actor": "reference",
+      "kind": "field",
+      "budget": 16,
+      "allocation": [
+        0,
+        16,
+        0,
+        0
+      ],
+      "gear": 0.0,
+      "downforce": 0.0,
+      "strategy": {
+        "stints": [
+          {
+            "tire_id": "medium",
+            "laps": 35
+          },
+          {
+            "tire_id": "hard",
+            "laps": 36
+          }
+        ],
+        "pit_laps": [
+          35
+        ]
+      },
+      "seed": 73013,
+      "environment": null,
+      "elite_level": 0,
+      "performance_profile": "progressive4",
+      "audit": null,
+      "diagnostic_mode": false,
+      "diagnostic_laps": null,
+      "diagnostic_driving_mode": null
+    },
+    "best_one_two_case": {
+      "id": "e03b453c6ea622611eeb60bdbb5f55916c805c53dc74a0391fb81e88b4a8d8e5",
+      "fixture_id": "craft_engineering:era2-exit",
+      "circuit": "SAOPAULO",
+      "actor": "reference",
+      "kind": "field",
+      "budget": 16,
+      "allocation": [
+        0,
+        16,
+        0,
+        0
+      ],
+      "gear": 0.0,
+      "downforce": 0.0,
+      "strategy": {
+        "stints": [
+          {
+            "tire_id": "soft",
+            "laps": 23
+          },
+          {
+            "tire_id": "medium",
+            "laps": 24
+          },
+          {
+            "tire_id": "soft",
+            "laps": 24
+          }
+        ],
+        "pit_laps": [
+          23,
+          47
+        ]
+      },
+      "seed": 73013,
+      "environment": null,
+      "elite_level": 0,
+      "performance_profile": "progressive4",
+      "audit": null,
+      "diagnostic_mode": false,
+      "diagnostic_laps": null,
+      "diagnostic_driving_mode": null
+    },
+    "best_extra_case": {
+      "id": "d1da3830a44d839f8833db3d8777b94ce98ecee89fb8e11ebe37d5391587a10d",
+      "fixture_id": "craft_engineering:era2-exit",
+      "circuit": "SAOPAULO",
+      "actor": "reference",
+      "kind": "field",
+      "budget": 16,
+      "allocation": [
+        0,
+        16,
+        0,
+        0
+      ],
+      "gear": 0.0,
+      "downforce": 0.0,
+      "strategy": {
+        "stints": [
+          {
+            "tire_id": "medium",
+            "laps": 17
+          },
+          {
+            "tire_id": "soft",
+            "laps": 18
+          },
+          {
+            "tire_id": "soft",
+            "laps": 18
+          },
+          {
+            "tire_id": "soft",
+            "laps": 18
+          }
+        ],
+        "pit_laps": [
+          17,
+          35,
+          53
+        ]
+      },
+      "seed": 73013,
+      "environment": null,
+      "elite_level": 0,
+      "performance_profile": "progressive4",
+      "audit": null,
+      "diagnostic_mode": true,
+      "diagnostic_laps": null,
+      "diagnostic_driving_mode": null
+    },
+    "best_one_two_time_s": 6666.859973208175,
+    "best_extra_time_s": 6681.876127790298,
+    "extra_stop_margin_s": 15.016154582122908,
+    "failed_simulations": 0,
+    "passed": true
+  },
+  {
+    "era": 2,
+    "circuit": "SILVERSTONE",
+    "role": "best_sampled",
+    "anchor_case": {
+      "id": "486c6cd1b93f932310c7088879876194672cf06ea17889b9b1fa3a7f835a04d1",
+      "fixture_id": "craft_engineering:era2-entry",
+      "circuit": "SILVERSTONE",
+      "actor": "reference",
+      "kind": "field",
+      "budget": 16,
+      "allocation": [
+        0,
+        15,
+        0,
+        1
+      ],
+      "gear": 0.5,
+      "downforce": 0.5,
+      "strategy": {
+        "stints": [
+          {
+            "tire_id": "medium",
+            "laps": 26
+          },
+          {
+            "tire_id": "hard",
+            "laps": 26
+          }
+        ],
+        "pit_laps": [
+          26
+        ]
+      },
+      "seed": 73013,
+      "environment": null,
+      "elite_level": 0,
+      "performance_profile": "progressive4",
+      "audit": null,
+      "diagnostic_mode": false,
+      "diagnostic_laps": null,
+      "diagnostic_driving_mode": null
+    },
+    "best_one_two_case": {
+      "id": "1c98bf7767201a040270f87fa079c8085673e9d47de72c6925ef312ff5213b69",
+      "fixture_id": "craft_engineering:era2-entry",
+      "circuit": "SILVERSTONE",
+      "actor": "reference",
+      "kind": "field",
+      "budget": 16,
+      "allocation": [
+        0,
+        15,
+        0,
+        1
+      ],
+      "gear": 0.5,
+      "downforce": 0.5,
+      "strategy": {
+        "stints": [
+          {
+            "tire_id": "soft",
+            "laps": 18
+          },
+          {
+            "tire_id": "hard",
+            "laps": 34
+          }
+        ],
+        "pit_laps": [
+          18
+        ]
+      },
+      "seed": 73013,
+      "environment": null,
+      "elite_level": 0,
+      "performance_profile": "progressive4",
+      "audit": null,
+      "diagnostic_mode": false,
+      "diagnostic_laps": null,
+      "diagnostic_driving_mode": null
+    },
+    "best_extra_case": {
+      "id": "645a697d7139aaef05249fccdda45896af9764c9b9df2ffdeba43c95a82c115e",
+      "fixture_id": "craft_engineering:era2-entry",
+      "circuit": "SILVERSTONE",
+      "actor": "reference",
+      "kind": "field",
+      "budget": 16,
+      "allocation": [
+        0,
+        15,
+        0,
+        1
+      ],
+      "gear": 0.5,
+      "downforce": 0.5,
+      "strategy": {
+        "stints": [
+          {
+            "tire_id": "medium",
+            "laps": 1
+          },
+          {
+            "tire_id": "soft",
+            "laps": 17
+          },
+          {
+            "tire_id": "soft",
+            "laps": 17
+          },
+          {
+            "tire_id": "soft",
+            "laps": 17
+          }
+        ],
+        "pit_laps": [
+          1,
+          18,
+          35
+        ]
+      },
+      "seed": 73013,
+      "environment": null,
+      "elite_level": 0,
+      "performance_profile": "progressive4",
+      "audit": null,
+      "diagnostic_mode": true,
+      "diagnostic_laps": null,
+      "diagnostic_driving_mode": null
+    },
+    "best_one_two_time_s": 6524.958548992781,
+    "best_extra_time_s": 6553.265023526112,
+    "extra_stop_margin_s": 28.3064745333304,
+    "failed_simulations": 0,
+    "passed": true
+  },
+  {
+    "era": 2,
+    "circuit": "SILVERSTONE",
+    "role": "engine_chassis_only",
+    "anchor_case": {
+      "id": "59641ec273ead7a4a627cc66c8af3483de01eda9387fe0a6e1edf7c0f55a3fca",
+      "fixture_id": "craft_engineering:era2-entry",
+      "circuit": "SILVERSTONE",
+      "actor": "reference",
+      "kind": "field",
+      "budget": 16,
+      "allocation": [
+        0,
+        16,
+        0,
+        0
+      ],
+      "gear": 0.5,
+      "downforce": 0.25,
+      "strategy": {
+        "stints": [
+          {
+            "tire_id": "medium",
+            "laps": 26
+          },
+          {
+            "tire_id": "hard",
+            "laps": 26
+          }
+        ],
+        "pit_laps": [
+          26
+        ]
+      },
+      "seed": 73013,
+      "environment": null,
+      "elite_level": 0,
+      "performance_profile": "progressive4",
+      "audit": null,
+      "diagnostic_mode": false,
+      "diagnostic_laps": null,
+      "diagnostic_driving_mode": null
+    },
+    "best_one_two_case": {
+      "id": "72854eda1931abf5856cd788324d2b580693ec7c12ad3647bebce3bfb92560ac",
+      "fixture_id": "craft_engineering:era2-entry",
+      "circuit": "SILVERSTONE",
+      "actor": "reference",
+      "kind": "field",
+      "budget": 16,
+      "allocation": [
+        0,
+        16,
+        0,
+        0
+      ],
+      "gear": 0.5,
+      "downforce": 0.25,
+      "strategy": {
+        "stints": [
+          {
+            "tire_id": "medium",
+            "laps": 17
+          },
+          {
+            "tire_id": "soft",
+            "laps": 17
+          },
+          {
+            "tire_id": "soft",
+            "laps": 18
+          }
+        ],
+        "pit_laps": [
+          17,
+          34
+        ]
+      },
+      "seed": 73013,
+      "environment": null,
+      "elite_level": 0,
+      "performance_profile": "progressive4",
+      "audit": null,
+      "diagnostic_mode": false,
+      "diagnostic_laps": null,
+      "diagnostic_driving_mode": null
+    },
+    "best_extra_case": {
+      "id": "879a267ff3d8bab2130446eb3ec1d12689bc1ffaea8307026cbc1cdbd35fc1cd",
+      "fixture_id": "craft_engineering:era2-entry",
+      "circuit": "SILVERSTONE",
+      "actor": "reference",
+      "kind": "field",
+      "budget": 16,
+      "allocation": [
+        0,
+        16,
+        0,
+        0
+      ],
+      "gear": 0.5,
+      "downforce": 0.25,
+      "strategy": {
+        "stints": [
+          {
+            "tire_id": "medium",
+            "laps": 1
+          },
+          {
+            "tire_id": "soft",
+            "laps": 17
+          },
+          {
+            "tire_id": "soft",
+            "laps": 17
+          },
+          {
+            "tire_id": "soft",
+            "laps": 17
+          }
+        ],
+        "pit_laps": [
+          1,
+          18,
+          35
+        ]
+      },
+      "seed": 73013,
+      "environment": null,
+      "elite_level": 0,
+      "performance_profile": "progressive4",
+      "audit": null,
+      "diagnostic_mode": true,
+      "diagnostic_laps": null,
+      "diagnostic_driving_mode": null
+    },
+    "best_one_two_time_s": 6523.321162238099,
+    "best_extra_time_s": 6539.240518689155,
+    "extra_stop_margin_s": 15.919356451056046,
+    "failed_simulations": 0,
+    "passed": true
+  },
+  {
+    "era": 2,
+    "circuit": "SPIELBERG",
+    "role": "best_sampled",
+    "anchor_case": {
+      "id": "ce3925e3d2148774c874af3843d4bcd8c3ac38f38b703d9b4b200f8450ae4569",
+      "fixture_id": "craft_engineering:era2-exit",
+      "circuit": "SPIELBERG",
+      "actor": "reference",
+      "kind": "field",
+      "budget": 16,
+      "allocation": [
+        0,
+        6,
+        8,
+        2
+      ],
+      "gear": 0.0,
+      "downforce": 0.25,
+      "strategy": {
+        "stints": [
+          {
+            "tire_id": "medium",
+            "laps": 35
+          },
+          {
+            "tire_id": "hard",
+            "laps": 36
+          }
+        ],
+        "pit_laps": [
+          35
+        ]
+      },
+      "seed": 73013,
+      "environment": null,
+      "elite_level": 0,
+      "performance_profile": "progressive4",
+      "audit": null,
+      "diagnostic_mode": false,
+      "diagnostic_laps": null,
+      "diagnostic_driving_mode": null
+    },
+    "best_one_two_case": {
+      "id": "a3ca0c1d2b4f6b20d48f310be7b3216e2c11ee009715bfabb7a12503f7093a10",
+      "fixture_id": "craft_engineering:era2-exit",
+      "circuit": "SPIELBERG",
+      "actor": "reference",
+      "kind": "field",
+      "budget": 16,
+      "allocation": [
+        0,
+        6,
+        8,
+        2
+      ],
+      "gear": 0.0,
+      "downforce": 0.25,
+      "strategy": {
+        "stints": [
+          {
+            "tire_id": "soft",
+            "laps": 24
+          },
+          {
+            "tire_id": "hard",
+            "laps": 47
+          }
+        ],
+        "pit_laps": [
+          24
+        ]
+      },
+      "seed": 73013,
+      "environment": null,
+      "elite_level": 0,
+      "performance_profile": "progressive4",
+      "audit": null,
+      "diagnostic_mode": false,
+      "diagnostic_laps": null,
+      "diagnostic_driving_mode": null
+    },
+    "best_extra_case": {
+      "id": "8bdfa8ac16d977489191f7dd59f7743eef9a11859e771b342501b0bbe3a7175f",
+      "fixture_id": "craft_engineering:era2-exit",
+      "circuit": "SPIELBERG",
+      "actor": "reference",
+      "kind": "field",
+      "budget": 16,
+      "allocation": [
+        0,
+        6,
+        8,
+        2
+      ],
+      "gear": 0.0,
+      "downforce": 0.25,
+      "strategy": {
+        "stints": [
+          {
+            "tire_id": "medium",
+            "laps": 17
+          },
+          {
+            "tire_id": "soft",
+            "laps": 18
+          },
+          {
+            "tire_id": "soft",
+            "laps": 18
+          },
+          {
+            "tire_id": "soft",
+            "laps": 18
+          }
+        ],
+        "pit_laps": [
+          17,
+          35,
+          53
+        ]
+      },
+      "seed": 73013,
+      "environment": null,
+      "elite_level": 0,
+      "performance_profile": "progressive4",
+      "audit": null,
+      "diagnostic_mode": true,
+      "diagnostic_laps": null,
+      "diagnostic_driving_mode": null
+    },
+    "best_one_two_time_s": 6485.4520112253185,
+    "best_extra_time_s": 6521.342658971854,
+    "extra_stop_margin_s": 35.89064774653525,
+    "failed_simulations": 0,
+    "passed": true
+  },
+  {
+    "era": 2,
+    "circuit": "SPIELBERG",
+    "role": "engine_chassis_only",
+    "anchor_case": {
+      "id": "86cfae7ae3b03ddf1f8e8cedc6842169b4bd0eb1817a7ca5397118b6639eb1ac",
+      "fixture_id": "craft_engineering:era2-exit",
+      "circuit": "SPIELBERG",
+      "actor": "reference",
+      "kind": "field",
+      "budget": 16,
+      "allocation": [
+        0,
+        16,
+        0,
+        0
+      ],
+      "gear": 0.0,
+      "downforce": 0.0,
+      "strategy": {
+        "stints": [
+          {
+            "tire_id": "medium",
+            "laps": 35
+          },
+          {
+            "tire_id": "hard",
+            "laps": 36
+          }
+        ],
+        "pit_laps": [
+          35
+        ]
+      },
+      "seed": 73013,
+      "environment": null,
+      "elite_level": 0,
+      "performance_profile": "progressive4",
+      "audit": null,
+      "diagnostic_mode": false,
+      "diagnostic_laps": null,
+      "diagnostic_driving_mode": null
+    },
+    "best_one_two_case": {
+      "id": "bad7089e230e0d8e28d17dfca1462d32ab2cafc6b6585f627153c2b62782b0bc",
+      "fixture_id": "craft_engineering:era2-exit",
+      "circuit": "SPIELBERG",
+      "actor": "reference",
+      "kind": "field",
+      "budget": 16,
+      "allocation": [
+        0,
+        16,
+        0,
+        0
+      ],
+      "gear": 0.0,
+      "downforce": 0.0,
+      "strategy": {
+        "stints": [
+          {
+            "tire_id": "soft",
+            "laps": 24
+          },
+          {
+            "tire_id": "hard",
+            "laps": 47
+          }
+        ],
+        "pit_laps": [
+          24
+        ]
+      },
+      "seed": 73013,
+      "environment": null,
+      "elite_level": 0,
+      "performance_profile": "progressive4",
+      "audit": null,
+      "diagnostic_mode": false,
+      "diagnostic_laps": null,
+      "diagnostic_driving_mode": null
+    },
+    "best_extra_case": {
+      "id": "21f477ea211431bf8ed4f75453bc197b4f0a88a5d1a1bc678a16463f7af67576",
+      "fixture_id": "craft_engineering:era2-exit",
+      "circuit": "SPIELBERG",
+      "actor": "reference",
+      "kind": "field",
+      "budget": 16,
+      "allocation": [
+        0,
+        16,
+        0,
+        0
+      ],
+      "gear": 0.0,
+      "downforce": 0.0,
+      "strategy": {
+        "stints": [
+          {
+            "tire_id": "medium",
+            "laps": 1
+          },
+          {
+            "tire_id": "soft",
+            "laps": 23
+          },
+          {
+            "tire_id": "soft",
+            "laps": 23
+          },
+          {
+            "tire_id": "soft",
+            "laps": 24
+          }
+        ],
+        "pit_laps": [
+          1,
+          24,
+          47
+        ]
+      },
+      "seed": 73013,
+      "environment": null,
+      "elite_level": 0,
+      "performance_profile": "progressive4",
+      "audit": null,
+      "diagnostic_mode": true,
+      "diagnostic_laps": null,
+      "diagnostic_driving_mode": null
+    },
+    "best_one_two_time_s": 6524.07190530714,
+    "best_extra_time_s": 6546.102475708248,
+    "extra_stop_margin_s": 22.03057040110798,
+    "failed_simulations": 0,
+    "passed": true
+  },
+  {
+    "era": 2,
+    "circuit": "ZANDVOORT",
+    "role": "best_sampled",
+    "anchor_case": {
+      "id": "d5cedf69fd5b3fd65accd96ef2c220ab4ba58710ddc59652c1a48e5f58d3b846",
+      "fixture_id": "craft_engineering:era2-exit",
+      "circuit": "ZANDVOORT",
+      "actor": "reference",
+      "kind": "field",
+      "budget": 16,
+      "allocation": [
+        0,
+        14,
+        0,
+        2
+      ],
+      "gear": 0.75,
+      "downforce": 0.5,
+      "strategy": {
+        "stints": [
+          {
+            "tire_id": "medium",
+            "laps": 36
+          },
+          {
+            "tire_id": "hard",
+            "laps": 36
+          }
+        ],
+        "pit_laps": [
+          36
+        ]
+      },
+      "seed": 73013,
+      "environment": null,
+      "elite_level": 0,
+      "performance_profile": "progressive4",
+      "audit": null,
+      "diagnostic_mode": false,
+      "diagnostic_laps": null,
+      "diagnostic_driving_mode": null
+    },
+    "best_one_two_case": {
+      "id": "b4d757921ef6d5e6c12e5cb38c986b6c421a17272f9103aa762c48eaed4aef7f",
+      "fixture_id": "craft_engineering:era2-exit",
+      "circuit": "ZANDVOORT",
+      "actor": "reference",
+      "kind": "field",
+      "budget": 16,
+      "allocation": [
+        0,
+        14,
+        0,
+        2
+      ],
+      "gear": 0.75,
+      "downforce": 0.5,
+      "strategy": {
+        "stints": [
+          {
+            "tire_id": "soft",
+            "laps": 25
+          },
+          {
+            "tire_id": "hard",
+            "laps": 47
+          }
+        ],
+        "pit_laps": [
+          25
+        ]
+      },
+      "seed": 73013,
+      "environment": null,
+      "elite_level": 0,
+      "performance_profile": "progressive4",
+      "audit": null,
+      "diagnostic_mode": false,
+      "diagnostic_laps": null,
+      "diagnostic_driving_mode": null
+    },
+    "best_extra_case": {
+      "id": "df60958638445f3369923c63af6c929d5fb936eec64f806c467a49671cecd365",
+      "fixture_id": "craft_engineering:era2-exit",
+      "circuit": "ZANDVOORT",
+      "actor": "reference",
+      "kind": "field",
+      "budget": 16,
+      "allocation": [
+        0,
+        14,
+        0,
+        2
+      ],
+      "gear": 0.75,
+      "downforce": 0.5,
+      "strategy": {
+        "stints": [
+          {
+            "tire_id": "medium",
+            "laps": 18
+          },
+          {
+            "tire_id": "soft",
+            "laps": 18
+          },
+          {
+            "tire_id": "soft",
+            "laps": 18
+          },
+          {
+            "tire_id": "soft",
+            "laps": 18
+          }
+        ],
+        "pit_laps": [
+          18,
+          36,
+          54
+        ]
+      },
+      "seed": 73013,
+      "environment": null,
+      "elite_level": 0,
+      "performance_profile": "progressive4",
+      "audit": null,
+      "diagnostic_mode": true,
+      "diagnostic_laps": null,
+      "diagnostic_driving_mode": null
+    },
+    "best_one_two_time_s": 6950.561009882208,
+    "best_extra_time_s": 6966.838502212016,
+    "extra_stop_margin_s": 16.2774923298075,
+    "failed_simulations": 0,
+    "passed": true
+  },
+  {
+    "era": 2,
+    "circuit": "ZANDVOORT",
+    "role": "engine_chassis_only",
+    "anchor_case": {
+      "id": "7046be9530b06d1c0bc1df185d6b428b4ec071135b33cd7a24d98f420dba5d7c",
+      "fixture_id": "craft_engineering:era2-exit",
+      "circuit": "ZANDVOORT",
+      "actor": "reference",
+      "kind": "field",
+      "budget": 16,
+      "allocation": [
+        0,
+        16,
+        0,
+        0
+      ],
+      "gear": 1.0,
+      "downforce": 0.5,
+      "strategy": {
+        "stints": [
+          {
+            "tire_id": "medium",
+            "laps": 36
+          },
+          {
+            "tire_id": "hard",
+            "laps": 36
+          }
+        ],
+        "pit_laps": [
+          36
+        ]
+      },
+      "seed": 73013,
+      "environment": null,
+      "elite_level": 0,
+      "performance_profile": "progressive4",
+      "audit": null,
+      "diagnostic_mode": false,
+      "diagnostic_laps": null,
+      "diagnostic_driving_mode": null
+    },
+    "best_one_two_case": {
+      "id": "b20741f4a0e6e4f997ebbcad5f182dbba7037ab59ca0adab70b968fd775b7efb",
+      "fixture_id": "craft_engineering:era2-exit",
+      "circuit": "ZANDVOORT",
+      "actor": "reference",
+      "kind": "field",
+      "budget": 16,
+      "allocation": [
+        0,
+        16,
+        0,
+        0
+      ],
+      "gear": 1.0,
+      "downforce": 0.5,
+      "strategy": {
+        "stints": [
+          {
+            "tire_id": "medium",
+            "laps": 24
+          },
+          {
+            "tire_id": "soft",
+            "laps": 24
+          },
+          {
+            "tire_id": "soft",
+            "laps": 24
+          }
+        ],
+        "pit_laps": [
+          24,
+          48
+        ]
+      },
+      "seed": 73013,
+      "environment": null,
+      "elite_level": 0,
+      "performance_profile": "progressive4",
+      "audit": null,
+      "diagnostic_mode": false,
+      "diagnostic_laps": null,
+      "diagnostic_driving_mode": null
+    },
+    "best_extra_case": {
+      "id": "0e35276aa0d2c7cbb6ca02f60fbf32b00382bdcb2b889cd923cfcf9250765b13",
+      "fixture_id": "craft_engineering:era2-exit",
+      "circuit": "ZANDVOORT",
+      "actor": "reference",
+      "kind": "field",
+      "budget": 16,
+      "allocation": [
+        0,
+        16,
+        0,
+        0
+      ],
+      "gear": 1.0,
+      "downforce": 0.5,
+      "strategy": {
+        "stints": [
+          {
+            "tire_id": "medium",
+            "laps": 18
+          },
+          {
+            "tire_id": "soft",
+            "laps": 18
+          },
+          {
+            "tire_id": "soft",
+            "laps": 18
+          },
+          {
+            "tire_id": "soft",
+            "laps": 18
+          }
+        ],
+        "pit_laps": [
+          18,
+          36,
+          54
+        ]
+      },
+      "seed": 73013,
+      "environment": null,
+      "elite_level": 0,
+      "performance_profile": "progressive4",
+      "audit": null,
+      "diagnostic_mode": true,
+      "diagnostic_laps": null,
+      "diagnostic_driving_mode": null
+    },
+    "best_one_two_time_s": 6970.829696770752,
+    "best_extra_time_s": 6981.396533498415,
+    "extra_stop_margin_s": 10.56683672766303,
+    "failed_simulations": 0,
+    "passed": true
+  }
+]

@@ -1,0 +1,15 @@
+{
+  "schema": "pitgun.tire-transfer-review/v1",
+  "source_campaign_digest": "sha256:d7805713315a56862f4a9ddcf88f218f113a7ea9298147ddfc0ae0f240433e88",
+  "report_source_digest": "sha256:62eb90ce7a8369d478f94ad74c4ada88068bb57545d6f1a214bcecc6639199c8",
+  "counterexamples": [],
+  "thermal_maxima": {
+    "maximum_contact_utilization_upper_bound": 0.9943075783262257,
+    "maximum_coupling_passes": 11,
+    "maximum_engine_balance_residual_j": 2.540400600992143e-08,
+    "maximum_fuel_balance_residual_j": 0.0,
+    "maximum_relative_grip_coupling_error": 0.0009999966124006887,
+    "maximum_tire_balance_residual_j": 6.93012225383427e-09
+  },
+  "minimum_extra_stop_margin_s": 10.56683672766303
+}

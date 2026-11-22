@@ -1,0 +1,133 @@
+{
+  "schema": "pitgun.racing-tire-performance-candidates/v1",
+  "status": "opt-in local hypotheses; not admitted or field-selected",
+  "rationale": {
+    "wear": "Controlled family: same linear loss.02 and late-life loss.18 for all three profiles, only integer power2/4/8 varies. All end at20% grip loss at wear1; reduced-model design hypotheses motivated by progressive/end-of-life shape, not identified tire data. Work, heat and accumulated wear are retained.",
+    "temperature": "Width factor3.1 makes the Gaussian retain>=97% grip at +/-20C for all3compounds, using dated FIA2025 design target as an explicit reference, not a universal2026/historical measurement. Thermal wear gain multiplied by3.1^2 preserves gain/sigma^2 and thus the existing wear-temperature penalty as a function of temperature.",
+    "compound": "Grip deviations from1scaled by.25 to avoid inherited6..9% raw grip gaps dominating full-GP strategy; validate resulting lap gaps and tradeoffs, not a direct time multiplier.",
+    "mount": "70C homogeneous surface/carcass game-preparation hypothesis; qualify all initial/pit boundaries, do not assert historical or node-resolved measurement."
+  },
+  "references": [
+    "https://repository.up.ac.za/server/api/core/bitstreams/a08bc69d-ba39-4611-b73d-905d3f494118/content",
+    "https://legal.fia.com/web/appeloffre.nsf/0F43EC70A0FACADFC1258991006043A9/%24FILE/ITT%20F1%20TYRES%202025-2027%20%28including%20F2%20and%20F3%29_UPDATE%2014.04.2023.pdf?openelement="
+  ],
+  "profiles": {
+    "progressive2": {
+      "schema_version": "pitgun.racing-tire-performance/v1",
+      "mount_temperature_c": 70.0,
+      "compounds": {
+        "soft": {
+          "wear_curve": {
+            "model": "progressive_v1",
+            "linear_loss": 0.02,
+            "late_life_loss": 0.18,
+            "late_life_power": 2
+          },
+          "mu_scale": 1.015,
+          "temperature_width_c": 117.8,
+          "thermal_wear_gain": 5.766
+        },
+        "medium": {
+          "wear_curve": {
+            "model": "progressive_v1",
+            "linear_loss": 0.02,
+            "late_life_loss": 0.18,
+            "late_life_power": 2
+          },
+          "mu_scale": 1.0,
+          "temperature_width_c": 130.2,
+          "thermal_wear_gain": 5.766
+        },
+        "hard": {
+          "wear_curve": {
+            "model": "progressive_v1",
+            "linear_loss": 0.02,
+            "late_life_loss": 0.18,
+            "late_life_power": 2
+          },
+          "mu_scale": 0.9925,
+          "temperature_width_c": 148.8,
+          "thermal_wear_gain": 5.766
+        }
+      }
+    },
+    "progressive4": {
+      "schema_version": "pitgun.racing-tire-performance/v1",
+      "mount_temperature_c": 70.0,
+      "compounds": {
+        "soft": {
+          "wear_curve": {
+            "model": "progressive_v1",
+            "linear_loss": 0.02,
+            "late_life_loss": 0.18,
+            "late_life_power": 4
+          },
+          "mu_scale": 1.015,
+          "temperature_width_c": 117.8,
+          "thermal_wear_gain": 5.766
+        },
+        "medium": {
+          "wear_curve": {
+            "model": "progressive_v1",
+            "linear_loss": 0.02,
+            "late_life_loss": 0.18,
+            "late_life_power": 4
+          },
+          "mu_scale": 1.0,
+          "temperature_width_c": 130.2,
+          "thermal_wear_gain": 5.766
+        },
+        "hard": {
+          "wear_curve": {
+            "model": "progressive_v1",
+            "linear_loss": 0.02,
+            "late_life_loss": 0.18,
+            "late_life_power": 4
+          },
+          "mu_scale": 0.9925,
+          "temperature_width_c": 148.8,
+          "thermal_wear_gain": 5.766
+        }
+      }
+    },
+    "progressive8": {
+      "schema_version": "pitgun.racing-tire-performance/v1",
+      "mount_temperature_c": 70.0,
+      "compounds": {
+        "soft": {
+          "wear_curve": {
+            "model": "progressive_v1",
+            "linear_loss": 0.02,
+            "late_life_loss": 0.18,
+            "late_life_power": 8
+          },
+          "mu_scale": 1.015,
+          "temperature_width_c": 117.8,
+          "thermal_wear_gain": 5.766
+        },
+        "medium": {
+          "wear_curve": {
+            "model": "progressive_v1",
+            "linear_loss": 0.02,
+            "late_life_loss": 0.18,
+            "late_life_power": 8
+          },
+          "mu_scale": 1.0,
+          "temperature_width_c": 130.2,
+          "thermal_wear_gain": 5.766
+        },
+        "hard": {
+          "wear_curve": {
+            "model": "progressive_v1",
+            "linear_loss": 0.02,
+            "late_life_loss": 0.18,
+            "late_life_power": 8
+          },
+          "mu_scale": 0.9925,
+          "temperature_width_c": 148.8,
+          "thermal_wear_gain": 5.766
+        }
+      }
+    }
+  }
+}
