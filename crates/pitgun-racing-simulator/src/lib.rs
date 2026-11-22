@@ -3,6 +3,7 @@ pub mod control_prototype;
 mod controlled_stream;
 pub mod evidence;
 mod fuel_contract;
+pub mod fuel_preparation;
 mod local_stream;
 pub mod physical_events;
 mod power_stream;
