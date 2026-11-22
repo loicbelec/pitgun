@@ -1,0 +1,93 @@
+{
+  "schema": "pitgun.fuel-preparation-screen/v1",
+  "status": "EXPLORATORY_NOT_ADMITTED",
+  "cases": [
+    {
+      "id": "budget-early8-monza-c0-balanced",
+      "frozen_case": "budget-early8-monza-c0",
+      "mode": "balanced",
+      "compare_original": false,
+      "isolation": false
+    },
+    {
+      "id": "budget-early8-monza-c2-balanced",
+      "frozen_case": "budget-early8-monza-c2",
+      "mode": "balanced",
+      "compare_original": false,
+      "isolation": true
+    },
+    {
+      "id": "full-modern20-c0-balanced",
+      "frozen_case": "full-modern20-c0",
+      "mode": "balanced",
+      "compare_original": true,
+      "isolation": false
+    },
+    {
+      "id": "full-modern20-c2-balanced",
+      "frozen_case": "full-modern20-c2",
+      "mode": "balanced",
+      "compare_original": true,
+      "isolation": false
+    },
+    {
+      "id": "full-classic15-c0-manage",
+      "frozen_case": "full-classic15-c0",
+      "mode": "manage",
+      "compare_original": true
+    },
+    {
+      "id": "full-classic15-c0-balanced",
+      "frozen_case": "full-classic15-c0",
+      "mode": "balanced",
+      "compare_original": true
+    },
+    {
+      "id": "full-classic15-c0-attack",
+      "frozen_case": "full-classic15-c0",
+      "mode": "attack",
+      "compare_original": true
+    },
+    {
+      "id": "full-classic15-c2-manage",
+      "frozen_case": "full-classic15-c2",
+      "mode": "manage",
+      "compare_original": true
+    },
+    {
+      "id": "full-classic15-c2-balanced",
+      "frozen_case": "full-classic15-c2",
+      "mode": "balanced",
+      "compare_original": true
+    },
+    {
+      "id": "full-classic15-c2-attack",
+      "frozen_case": "full-classic15-c2",
+      "mode": "attack",
+      "compare_original": true
+    },
+    {
+      "id": "tires-medium-balanced",
+      "frozen_case": "tires-medium",
+      "mode": "balanced",
+      "compare_original": true
+    },
+    {
+      "id": "tires-medium-attack",
+      "frozen_case": "tires-medium",
+      "mode": "attack",
+      "compare_original": true
+    }
+  ],
+  "repeats": 2,
+  "policy_scope": "Explicit110kg operational test limit, not a universal historical/F1 tank regulation. No posthoc tank/BSFC change. Fixed8% provisional uncertainty and1kg reserve.",
+  "criteria": [
+    "repeat exactly",
+    "retain all original fuel failures and all preparation/technical failures",
+    "no hidden extra fuel or refuelling",
+    "all prepared runs must finish with at least declared reserve before acceptance",
+    "same healthy result in mixed field",
+    "old result/error digests remain frozen"
+  ],
+  "reserved": "No fitting on this screen; separate career fixture and reserved evaluation precede opponent policy selection."
+}

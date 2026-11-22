@@ -17,6 +17,8 @@ use std::task::{Context, Poll, Waker};
 use serde::{Deserialize, Serialize};
 
 pub mod driver_lapses;
+pub mod fuel_outcome;
+use fuel_outcome::{FuelShortfallPhaseV1, FuelShortfallV1, NativeFailureV3};
 pub mod longitudinal_energy;
 pub mod power_telemetry;
 pub mod thermal_physics;
@@ -973,7 +975,7 @@ type ResolvedLapSlotV3 = Rc<RefCell<Option<ResolvedSimulationLapV3>>>;
 /// Each call to [`advance`](Self::advance) computes exactly one additional lap
 /// until the terminal canonical [`SimulationResult`] becomes available.
 pub struct ResolvedSimulationSessionV3 {
-    future: Pin<Box<dyn Future<Output = Result<SimulationResult, String>>>>,
+    future: Pin<Box<dyn Future<Output = Result<SimulationResult, NativeFailureV3>>>>,
     lap_slot: ResolvedLapSlotV3,
     pre_service_slot: Option<ResolvedLapSlotV3>,
     open_service_lap: Option<u16>,
@@ -1293,7 +1295,9 @@ impl ResolvedSimulationSessionV3 {
             }
             Poll::Ready(result) => {
                 self.complete = true;
-                result.map(|r| ResolvedServiceStepV3::Complete(Box::new(r)))
+                result
+                    .map(|r| ResolvedServiceStepV3::Complete(Box::new(r)))
+                    .map_err(|e| e.to_string())
             }
         }
     }
@@ -1330,14 +1334,18 @@ impl ResolvedSimulationSessionV3 {
 
     /// Advances by one deterministic lap, then returns the canonical result.
     pub fn advance(&mut self) -> Result<ResolvedSimulationStepV3, String> {
+        self.advance_typed().map_err(|e| e.to_string())
+    }
+
+    fn advance_typed(&mut self) -> Result<ResolvedSimulationStepV3, NativeFailureV3> {
         if self.pre_service_slot.is_some() {
             return Err("service-boundary sessions require advance_service".into());
         }
         if self.complete {
-            return Err("resolved V3 simulation session already completed".to_string());
+            return Err("resolved V3 simulation session already completed".into());
         }
         if self.lap_slot.borrow().is_some() {
-            return Err("resolved V3 simulation session has an unconsumed lap".to_string());
+            return Err("resolved V3 simulation session has an unconsumed lap".into());
         }
 
         let waker = Waker::noop();
@@ -1809,7 +1817,7 @@ async fn run_resolved_simulation_kernel_incremental(
     lap_slot: Option<ResolvedLapSlotV3>,
     pre_service_slot: Option<ResolvedLapSlotV3>,
     pending_pit: Rc<RefCell<Option<PitStop>>>,
-) -> Result<SimulationResult, String> {
+) -> Result<SimulationResult, NativeFailureV3> {
     let (
         mechanical,
         driver_control,
@@ -1939,7 +1947,7 @@ async fn run_resolved_simulation_kernel_incremental(
         // this lap. A command replaces the remaining plan, not past service.
         if let Some(stop) = pending_pit.borrow_mut().take() {
             if stop.lap != lap_idx {
-                return Err("pit command does not match the next physical lap".to_string());
+                return Err("pit command does not match the next physical lap".into());
             }
             pit_stops.retain(|previous| previous.lap < lap_idx);
             pit_stops.push(stop);
@@ -2828,7 +2836,7 @@ async fn run_resolved_simulation_kernel_incremental(
                 if !is_final_coupling_iteration && coupling_iteration + 1 == coupling_iterations {
                     return Err(format!(
                         "thermal V2: tire/velocity coupling did not converge on lap {lap_idx}: relative grip error={error}, contact bound={bound}"
-                    ));
+                    ).into());
                 }
                 iteration_thermal.maximum_relative_grip_coupling_error = error;
                 iteration_thermal.maximum_contact_utilization_upper_bound = bound;
@@ -2956,10 +2964,12 @@ async fn run_resolved_simulation_kernel_incremental(
                 None => vehicle.engine.fuel_burn_kg_per_s * lap_time_adj,
             };
             if fuel_mass.is_some() && requested_fuel_burn_kg > state_curr.fuel_mass + 1e-9 {
-                return Err(format!(
-                    "V3 fuel depleted on lap {lap_idx}: required {requested_fuel_burn_kg:.6} kg, available {:.6} kg",
-                    state_curr.fuel_mass
-                ));
+                return Err(NativeFailureV3::Fuel(FuelShortfallV1 {
+                    attempted_lap: lap_idx,
+                    phase: FuelShortfallPhaseV1::DrivingLap,
+                    required_kg: requested_fuel_burn_kg,
+                    available_kg: state_curr.fuel_mass,
+                }));
             }
             let mut fuel_left = (state_curr.fuel_mass - requested_fuel_burn_kg.max(0.0)).max(0.0);
             if !fuel_left.is_finite() {
@@ -3088,9 +3098,12 @@ async fn run_resolved_simulation_kernel_incremental(
                             .unwrap_or(vehicle.engine.fuel_burn_kg_per_s);
                         let burn = rate * duration;
                         if burn > fuel_left + 1e-9 {
-                            return Err(format!(
-                                "energy V1: fuel depleted during service after lap {lap_idx}"
-                            ));
+                            return Err(NativeFailureV3::Fuel(FuelShortfallV1 {
+                                attempted_lap: lap_idx,
+                                phase: FuelShortfallPhaseV1::Service,
+                                required_kg: burn,
+                                available_kg: fuel_left,
+                            }));
                         }
                         fuel_left = (fuel_left - burn).max(0.0);
                         let (temperature, rejected, service_heat) =

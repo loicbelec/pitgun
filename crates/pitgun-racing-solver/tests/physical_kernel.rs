@@ -1898,6 +1898,82 @@ fn energy_accounted_driver_fields_require_the_explicit_new_profile() {
 }
 
 #[test]
+fn fuel_domain_outcome_preserves_accepted_prefix_without_inventing_a_finish() {
+    use pitgun_racing_solver::fuel_outcome::{
+        FuelAwareSessionV1, FuelAwareStepV1, FuelShortfallPhaseV1,
+    };
+    let mut input = thermal_v2_request();
+    input.lap_count = 3;
+    let expected = run_resolved_simulation_v3(&input).unwrap();
+    let mut session = FuelAwareSessionV1::new(input.clone()).unwrap();
+    let complete = loop {
+        match session.advance().unwrap() {
+            FuelAwareStepV1::Lap { .. } => {}
+            FuelAwareStepV1::Finished { result } => break result,
+            other => panic!("unexpected {other:?}"),
+        }
+    };
+    assert_eq!(*complete, expected);
+    assert!(session.advance().is_err());
+    input.state.fuel_mass = 0.000001;
+    let legacy_error = run_resolved_simulation_v3(&input).unwrap_err();
+    let mut session = FuelAwareSessionV1::new(input.clone()).unwrap();
+    let outcome = session.advance().unwrap();
+    match &outcome {
+        FuelAwareStepV1::FuelNotCompleted {
+            progress,
+            shortfall,
+        } => {
+            assert_eq!(progress.completed_laps, 0);
+            assert_eq!(progress.elapsed_s, 0.0);
+            assert_eq!(progress.state, input.state);
+            assert_eq!(shortfall.phase, FuelShortfallPhaseV1::DrivingLap);
+            assert_eq!(shortfall.to_string(), legacy_error);
+            assert!(shortfall.required_kg > shortfall.available_kg);
+        }
+        other => panic!("unexpected {other:?}"),
+    }
+    let decoded = serde_json::from_str(&serde_json::to_string(&input).unwrap()).unwrap();
+    assert_eq!(
+        FuelAwareSessionV1::new(decoded).unwrap().advance().unwrap(),
+        outcome
+    );
+}
+
+#[test]
+fn fuel_outcome_distinguishes_service_shortfall_and_technical_failure() {
+    use pitgun_racing_solver::fuel_outcome::{
+        FuelAwareSessionV1, FuelAwareStepV1, FuelShortfallPhaseV1,
+    };
+    let mut input = thermal_v2_request();
+    input.state.fuel_mass = 2.0;
+    input.pit_plan.stops.push(pitgun_racing_solver::PitStop {
+        lap: 1,
+        tire: input.vehicle.tire.clone(),
+    });
+    input.config.pit_time_penalty_s = 20000.0;
+    let legacy_error = run_resolved_simulation_v3(&input).unwrap_err();
+    match FuelAwareSessionV1::new(input.clone())
+        .unwrap()
+        .advance()
+        .unwrap()
+    {
+        FuelAwareStepV1::FuelNotCompleted {
+            progress,
+            shortfall,
+        } => {
+            assert_eq!(shortfall.phase, FuelShortfallPhaseV1::Service);
+            assert_eq!(shortfall.to_string(), legacy_error);
+            assert_eq!(progress.completed_laps, 0); // Incomplete service never counts as a complete lap boundary.
+        }
+        other => panic!("unexpected {other:?}"),
+    }
+    input.pit_plan.stops.clear();
+    input.vehicle.engine.trq.fill(0.0);
+    assert!(FuelAwareSessionV1::new(input).unwrap().advance().is_err());
+}
+
+#[test]
 fn absent_thermal_candidate_does_not_add_historical_fields() {
     let input = resolved_v3_request(&synthetic_request());
     let input_json = serde_json::to_value(&input).unwrap();

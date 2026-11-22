@@ -1,0 +1,8 @@
+{
+  "schema_version": "pitgun.fuel-preparation/v1",
+  "maximum_start_kg": 110.0,
+  "finish_reserve_kg": 1.0,
+  "uncertainty_fraction": 0.08,
+  "rounding_quantum_kg": 0.5,
+  "pilot_laps_per_compound": 2
+}

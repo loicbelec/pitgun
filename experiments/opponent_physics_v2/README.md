@@ -1,6 +1,8 @@
 # Competitive opponents on the new physics — 22 November 2026
 
 **Protocol and resolution audit, not a fitted policy or balance verdict.**
+Current implementation readiness is tracked separately in
+[readiness-v2.json](readiness-v2.json); the original plan remains frozen.
 The event journal/axis is instrumentation. No event/display work changes an AI
 allocation, setup, driver, strategy or physical result. Further UI/runtime work
 is secondary to the driver/physics and competition work specified here.
@@ -165,6 +167,36 @@ Proposed checks, frozen before a full verdict:
 Win-rate/difficulty bands require an explicit design decision before final fitting;
 none is retroactively inferred from whichever coefficient set wins this screen.
 No balance ACCEPT, global optimum or real-world accident fidelity is claimed here.
+
+### Authored real-career fixture export
+
+`export_career_fixtures.mjs` now exports12 deterministic eraI/II entry/exit
+snapshots across the three doctrines through actual game reducers and
+`preparePitWallSession`:54 full-GP requests, each with nine fixed rivals. The
+export verifies that switching the player's allocation to all-engine leaves
+those rivals byte-identical. It records real discretionary points, HQ offsets,
+installed components, slider capability, calendars, game commit/imported source
+hashes and the authored purchase/accounting route. Two independent exports match
+exactly. [Fixture](results/career-fixtures-v1.json),
+[checksum](results/career-fixtures-v1.sha256).
+
+The bookkeeping path uses explicit synthetic two-lap P9 observations to earn
+announced rewards; it does not prove physical pace, difficulty, wins or actual
+play duration. No personal save, browser storage or leaderboard data is read.
+The exported race requests separately use full pinned catalog distances.
+Budgets in this route are8→11→16 discretionary points, plus recorded HQ offsets;
+eraII entry can still have the old engine until the V8 development is purchased.
+
+```sh
+node experiments/opponent_physics_v2/export_career_fixtures.mjs \
+  /path/to/clean/pitgun-game catalogs/racing/v1.8.1 /tmp/career-fixtures.json
+```
+
+This supplies the input-generation prerequisite, **not** a fitted policy or
+completed sensitivity campaign. Physical resolution must honor per-competitor
+installed components, rather than using era or the baseline vehicle ID to infer
+the engine. Native fuel feasibility and boundary-lookahead qualification remain
+gates before full-field fitting and reserved evaluation.
 
 ## Deterministic incident requirements
 

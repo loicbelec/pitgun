@@ -1,0 +1,34 @@
+{
+  "schema": "pitgun.opponent-physics-readiness/v2",
+  "date": "2026-11-22",
+  "supersedes_status_only": "plan-v1.json remains the frozen pre-implementation protocol, not a current progress report",
+  "evidence_prs": [
+    459,
+    460
+  ],
+  "gates": {
+    "effective_driver_resolution": "native opt-in qualified; signed/runtime admission open",
+    "thermal_trait_connection": "native accounted effects qualified",
+    "performance_risk": "native recoverable throttle hesitation qualified; grip-dependent incidents/shared journal/full-process qualification open",
+    "fuel_and_full_gp": "native per-car outcome isolation qualified; preparation/reserve REFINE, not universally infeasible above an estimate",
+    "career_fixtures": "12 authored real-reducer snapshots/54 prepared GP requests, exact repeat and fixed-field independence; bookkeeping not pace evidence",
+    "boundary_lookahead_cost": "open; mathematical minimum-grip seam still conservative",
+    "setup_screen": "inputs ready, not executed on the new real-career matrix",
+    "opponent_fit": "not started; no calibrated field or balance verdict",
+    "reserved_evaluation": "not performed",
+    "runtime_admission": "not performed"
+  },
+  "next": [
+    "qualify boundary look-ahead and isolated native cost",
+    "resolve actual installed components for the thermal campaign, not only era/baseline car ID",
+    "bounded real-career allocation/slider/tire response screen, erasI/II first",
+    "fixed-field fit and reserved full-GP/seasons after prerequisite acceptance"
+  ],
+  "retained_owner_constraints": [
+    "modest early cooling response is desired",
+    "no forced spending on all four axes",
+    "optimized motor/chassis split and legal sliders are a genuine baseline",
+    "no AI tuning merely to create Engineer bubbles",
+    "no current game/Worker/WASM or deployment changes"
+  ]
+}

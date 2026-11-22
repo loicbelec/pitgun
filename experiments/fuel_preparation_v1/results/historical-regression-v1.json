@@ -1,0 +1,469 @@
+{
+  "schema": "pitgun.fuel-history-regression/v1",
+  "binary_digest": "sha256:7a0cbd7278e4372d3ea2798c0cc9814a0037487a1e0361c9d96251766f24ff55",
+  "all_equal": true,
+  "results": [
+    {
+      "case": "monza-classic-5",
+      "mode": "legacy",
+      "equal": true,
+      "observed": {
+        "player": {
+          "input_digest": "sha256:c1b7cc259c9c0062d7b66a4ad40869f28b66eec018b2c30cd0b5ba26cdd498c9",
+          "ok": true,
+          "result_digest": "sha256:462c4869c3459a92f9545d29cb79ea9b1906b75a280bd38ec02867d9d262ca5f",
+          "error": null
+        }
+      },
+      "frozen": {
+        "player": {
+          "input_digest": "sha256:c1b7cc259c9c0062d7b66a4ad40869f28b66eec018b2c30cd0b5ba26cdd498c9",
+          "ok": true,
+          "result_digest": "sha256:462c4869c3459a92f9545d29cb79ea9b1906b75a280bd38ec02867d9d262ca5f",
+          "error": null
+        }
+      }
+    },
+    {
+      "case": "monza-classic-5",
+      "mode": "energy",
+      "equal": true,
+      "observed": {
+        "player": {
+          "input_digest": "sha256:3a78e37370748cf44a9473797394ae008a8970098a0d4d49a906e116ee495fc2",
+          "ok": true,
+          "result_digest": "sha256:1751b55380874b103fa47e97aa7041e909f964ca7d66d19c3a02fcdeca6f809a",
+          "error": null
+        }
+      },
+      "frozen": {
+        "player": {
+          "input_digest": "sha256:3a78e37370748cf44a9473797394ae008a8970098a0d4d49a906e116ee495fc2",
+          "ok": true,
+          "result_digest": "sha256:1751b55380874b103fa47e97aa7041e909f964ca7d66d19c3a02fcdeca6f809a",
+          "error": null
+        }
+      }
+    },
+    {
+      "case": "monza-classic-5-1hz",
+      "mode": "legacy",
+      "equal": true,
+      "observed": {
+        "player": {
+          "input_digest": "sha256:c1b7cc259c9c0062d7b66a4ad40869f28b66eec018b2c30cd0b5ba26cdd498c9",
+          "ok": true,
+          "result_digest": "sha256:462c4869c3459a92f9545d29cb79ea9b1906b75a280bd38ec02867d9d262ca5f",
+          "error": null
+        }
+      },
+      "frozen": {
+        "player": {
+          "input_digest": "sha256:c1b7cc259c9c0062d7b66a4ad40869f28b66eec018b2c30cd0b5ba26cdd498c9",
+          "ok": true,
+          "result_digest": "sha256:462c4869c3459a92f9545d29cb79ea9b1906b75a280bd38ec02867d9d262ca5f",
+          "error": null
+        }
+      }
+    },
+    {
+      "case": "monza-classic-5-1hz",
+      "mode": "energy",
+      "equal": true,
+      "observed": {
+        "player": {
+          "input_digest": "sha256:3a78e37370748cf44a9473797394ae008a8970098a0d4d49a906e116ee495fc2",
+          "ok": true,
+          "result_digest": "sha256:1751b55380874b103fa47e97aa7041e909f964ca7d66d19c3a02fcdeca6f809a",
+          "error": null
+        }
+      },
+      "frozen": {
+        "player": {
+          "input_digest": "sha256:3a78e37370748cf44a9473797394ae008a8970098a0d4d49a906e116ee495fc2",
+          "ok": true,
+          "result_digest": "sha256:1751b55380874b103fa47e97aa7041e909f964ca7d66d19c3a02fcdeca6f809a",
+          "error": null
+        }
+      }
+    },
+    {
+      "case": "silverstone-classic-5",
+      "mode": "legacy",
+      "equal": true,
+      "observed": {
+        "player": {
+          "input_digest": "sha256:33e292f3dd938f860cf6cf0f726c44e360805c6d0257422835fba7cc67397119",
+          "ok": true,
+          "result_digest": "sha256:5a5b7a90913fe6f3c5f49a3bdcb22beaa05192f68fd86193329aee0a712496ee",
+          "error": null
+        }
+      },
+      "frozen": {
+        "player": {
+          "input_digest": "sha256:33e292f3dd938f860cf6cf0f726c44e360805c6d0257422835fba7cc67397119",
+          "ok": true,
+          "result_digest": "sha256:5a5b7a90913fe6f3c5f49a3bdcb22beaa05192f68fd86193329aee0a712496ee",
+          "error": null
+        }
+      }
+    },
+    {
+      "case": "silverstone-classic-5",
+      "mode": "energy",
+      "equal": true,
+      "observed": {
+        "player": {
+          "input_digest": "sha256:3660222037bed4d194d513176c0de4aa4c8fd15460e7f016310ac7666b0f0b2a",
+          "ok": true,
+          "result_digest": "sha256:60d94d0e6c0718ef121291907924cf67809d05652d62cc0114ad5c852a877d2e",
+          "error": null
+        }
+      },
+      "frozen": {
+        "player": {
+          "input_digest": "sha256:3660222037bed4d194d513176c0de4aa4c8fd15460e7f016310ac7666b0f0b2a",
+          "ok": true,
+          "result_digest": "sha256:60d94d0e6c0718ef121291907924cf67809d05652d62cc0114ad5c852a877d2e",
+          "error": null
+        }
+      }
+    },
+    {
+      "case": "monaco-classic-5",
+      "mode": "legacy",
+      "equal": true,
+      "observed": {
+        "player": {
+          "input_digest": "sha256:6d783d2c5a00007e730b8c8f3e23f40e296f8966c9ac2841081658ea9f328fd8",
+          "ok": true,
+          "result_digest": "sha256:c73a47772c39635d87b576bdd3d75777dbdc263c1d0274fe5663feb129c034f1",
+          "error": null
+        }
+      },
+      "frozen": {
+        "player": {
+          "input_digest": "sha256:6d783d2c5a00007e730b8c8f3e23f40e296f8966c9ac2841081658ea9f328fd8",
+          "ok": true,
+          "result_digest": "sha256:c73a47772c39635d87b576bdd3d75777dbdc263c1d0274fe5663feb129c034f1",
+          "error": null
+        }
+      }
+    },
+    {
+      "case": "monaco-classic-5",
+      "mode": "energy",
+      "equal": true,
+      "observed": {
+        "player": {
+          "input_digest": "sha256:327613c2ddb6ba6402282d2d0b048d16e4222bf70a5039aa7c38fc4a063e1765",
+          "ok": true,
+          "result_digest": "sha256:ff96333fe5a33fa2c2486ae87899f416562c03d0856e73c302b0bef842c6352f",
+          "error": null
+        }
+      },
+      "frozen": {
+        "player": {
+          "input_digest": "sha256:327613c2ddb6ba6402282d2d0b048d16e4222bf70a5039aa7c38fc4a063e1765",
+          "ok": true,
+          "result_digest": "sha256:ff96333fe5a33fa2c2486ae87899f416562c03d0856e73c302b0bef842c6352f",
+          "error": null
+        }
+      }
+    },
+    {
+      "case": "suzuka-classic-5",
+      "mode": "legacy",
+      "equal": true,
+      "observed": {
+        "player": {
+          "input_digest": "sha256:eeb505596f179adf6ad5524d3b58d6ec18148a1bc150c56cc15a359cb41cd75e",
+          "ok": true,
+          "result_digest": "sha256:91987865cc3864c69fb4990b31391d8e814bcbb05db57f5a7c337e03f8e4ac94",
+          "error": null
+        }
+      },
+      "frozen": {
+        "player": {
+          "input_digest": "sha256:eeb505596f179adf6ad5524d3b58d6ec18148a1bc150c56cc15a359cb41cd75e",
+          "ok": true,
+          "result_digest": "sha256:91987865cc3864c69fb4990b31391d8e814bcbb05db57f5a7c337e03f8e4ac94",
+          "error": null
+        }
+      }
+    },
+    {
+      "case": "suzuka-classic-5",
+      "mode": "energy",
+      "equal": true,
+      "observed": {
+        "player": {
+          "input_digest": "sha256:02caecf9bbfc90e5e7409ead761bbc5b72f11e078343e4b617ef42a08af41d48",
+          "ok": true,
+          "result_digest": "sha256:9f5ec59ef5c0de48417ec65b42af8f094da5f5674d89e7503773107c258b4b93",
+          "error": null
+        }
+      },
+      "frozen": {
+        "player": {
+          "input_digest": "sha256:02caecf9bbfc90e5e7409ead761bbc5b72f11e078343e4b617ef42a08af41d48",
+          "ok": true,
+          "result_digest": "sha256:9f5ec59ef5c0de48417ec65b42af8f094da5f5674d89e7503773107c258b4b93",
+          "error": null
+        }
+      }
+    },
+    {
+      "case": "monza-classic-53",
+      "mode": "legacy",
+      "equal": true,
+      "observed": {
+        "player": {
+          "input_digest": "sha256:f4fa75472d9a4ac7a24bc8eaddd26c6861b21fa81b5ff7f5d03d4d505a003b18",
+          "ok": true,
+          "result_digest": "sha256:135c28c35cb15637cb99f209f9687c24ea47a8025ab46981777c9099cf872022",
+          "error": null
+        }
+      },
+      "frozen": {
+        "player": {
+          "input_digest": "sha256:f4fa75472d9a4ac7a24bc8eaddd26c6861b21fa81b5ff7f5d03d4d505a003b18",
+          "ok": true,
+          "result_digest": "sha256:135c28c35cb15637cb99f209f9687c24ea47a8025ab46981777c9099cf872022",
+          "error": null
+        }
+      }
+    },
+    {
+      "case": "monza-classic-53",
+      "mode": "energy",
+      "equal": true,
+      "observed": {
+        "player": {
+          "input_digest": "sha256:77ac4c8ea1b9146728badc2c26dc15878fa045201217ba80af0db357d4316213",
+          "ok": true,
+          "result_digest": "sha256:3e46c0c8cf1cb23cd4ed943de5757e0ee27cf800e36fb8aed35d53a961590100",
+          "error": null
+        }
+      },
+      "frozen": {
+        "player": {
+          "input_digest": "sha256:77ac4c8ea1b9146728badc2c26dc15878fa045201217ba80af0db357d4316213",
+          "ok": true,
+          "result_digest": "sha256:3e46c0c8cf1cb23cd4ed943de5757e0ee27cf800e36fb8aed35d53a961590100",
+          "error": null
+        }
+      }
+    },
+    {
+      "case": "monza-modern-5",
+      "mode": "legacy",
+      "equal": true,
+      "observed": {
+        "player": {
+          "input_digest": "sha256:aa395e57c64d549452c79923b7c6356edb8c783f4c52a4ae6002e3baa51de3c8",
+          "ok": true,
+          "result_digest": "sha256:dfd35c7f4b5982e609877866def5fa7d86a8f057990ca0edadca26d5cb70a235",
+          "error": null
+        }
+      },
+      "frozen": {
+        "player": {
+          "input_digest": "sha256:aa395e57c64d549452c79923b7c6356edb8c783f4c52a4ae6002e3baa51de3c8",
+          "ok": true,
+          "result_digest": "sha256:dfd35c7f4b5982e609877866def5fa7d86a8f057990ca0edadca26d5cb70a235",
+          "error": null
+        }
+      }
+    },
+    {
+      "case": "monza-modern-5",
+      "mode": "energy",
+      "equal": true,
+      "observed": {
+        "player": {
+          "input_digest": "sha256:147277bdf291a1a0fd0383ed366629946a640b87eaa52d88ffc0a7a44ad7a561",
+          "ok": true,
+          "result_digest": "sha256:55ff655f592474d55ed871c05d148536ab1dac2949474a2ba84c8538acc5600e",
+          "error": null
+        }
+      },
+      "frozen": {
+        "player": {
+          "input_digest": "sha256:147277bdf291a1a0fd0383ed366629946a640b87eaa52d88ffc0a7a44ad7a561",
+          "ok": true,
+          "result_digest": "sha256:55ff655f592474d55ed871c05d148536ab1dac2949474a2ba84c8538acc5600e",
+          "error": null
+        }
+      }
+    },
+    {
+      "case": "monza-hybrid-resource-5",
+      "mode": "legacy",
+      "equal": true,
+      "observed": {
+        "player": {
+          "input_digest": "sha256:0f609cc14edd91cfff79e76a14515ae611873d5ceab258736da3ff3d0c0c94e9",
+          "ok": true,
+          "result_digest": "sha256:c444a0f03e6baa954311fd87faa35ac60772841c82b5e09b8fde3b869621c1b9",
+          "error": null
+        }
+      },
+      "frozen": {
+        "player": {
+          "input_digest": "sha256:0f609cc14edd91cfff79e76a14515ae611873d5ceab258736da3ff3d0c0c94e9",
+          "ok": true,
+          "result_digest": "sha256:c444a0f03e6baa954311fd87faa35ac60772841c82b5e09b8fde3b869621c1b9",
+          "error": null
+        }
+      }
+    },
+    {
+      "case": "monza-hybrid-resource-5",
+      "mode": "energy",
+      "equal": true,
+      "observed": {
+        "player": {
+          "input_digest": "sha256:092277a37f88ba4a2fc4797e0e3c739412745a89b939ac8bcf9e07a20c033ed9",
+          "ok": true,
+          "result_digest": "sha256:c301f40891e68d3f7fea926c3ecaa0b2d58280240ebc5331ff82dd5dbf17cf24",
+          "error": null
+        }
+      },
+      "frozen": {
+        "player": {
+          "input_digest": "sha256:092277a37f88ba4a2fc4797e0e3c739412745a89b939ac8bcf9e07a20c033ed9",
+          "ok": true,
+          "result_digest": "sha256:c301f40891e68d3f7fea926c3ecaa0b2d58280240ebc5331ff82dd5dbf17cf24",
+          "error": null
+        }
+      }
+    },
+    {
+      "case": "monaco-classic-78",
+      "mode": "legacy",
+      "equal": true,
+      "observed": {
+        "player": {
+          "input_digest": "sha256:2dd7433e4a130bced27cd61e2a0cce23b359432e95b56d1f06b9c5437c802e98",
+          "ok": true,
+          "result_digest": "sha256:c4b5047dd624257acc2e1ed847569356d74167803241d629c1fe9d781f92d8b9",
+          "error": null
+        }
+      },
+      "frozen": {
+        "player": {
+          "input_digest": "sha256:2dd7433e4a130bced27cd61e2a0cce23b359432e95b56d1f06b9c5437c802e98",
+          "ok": true,
+          "result_digest": "sha256:c4b5047dd624257acc2e1ed847569356d74167803241d629c1fe9d781f92d8b9",
+          "error": null
+        }
+      }
+    },
+    {
+      "case": "monaco-classic-78",
+      "mode": "energy",
+      "equal": true,
+      "observed": {
+        "player": {
+          "input_digest": "sha256:77b16f2c01e510d01b037a0bba3c979ba901329b1c2cde4b51ab215e7311d01a",
+          "ok": true,
+          "result_digest": "sha256:4f2ecb00a46bda456dfa5a4a5f1dbad651c933a426afede550c0181b8e3bc117",
+          "error": null
+        }
+      },
+      "frozen": {
+        "player": {
+          "input_digest": "sha256:77b16f2c01e510d01b037a0bba3c979ba901329b1c2cde4b51ab215e7311d01a",
+          "ok": true,
+          "result_digest": "sha256:4f2ecb00a46bda456dfa5a4a5f1dbad651c933a426afede550c0181b8e3bc117",
+          "error": null
+        }
+      }
+    },
+    {
+      "case": "spa-classic-5-seed17",
+      "mode": "legacy",
+      "equal": true,
+      "observed": {
+        "player": {
+          "input_digest": "sha256:19e815bbbc4f46305ba5a02846c6680cd6cb36e781fc9e76a25aa1d25d4e4096",
+          "ok": true,
+          "result_digest": "sha256:1f687e4e4a38b41a39cf8d1517823bd4ff01ddfbe282f91147ead685737a367d",
+          "error": null
+        }
+      },
+      "frozen": {
+        "player": {
+          "input_digest": "sha256:19e815bbbc4f46305ba5a02846c6680cd6cb36e781fc9e76a25aa1d25d4e4096",
+          "ok": true,
+          "result_digest": "sha256:1f687e4e4a38b41a39cf8d1517823bd4ff01ddfbe282f91147ead685737a367d",
+          "error": null
+        }
+      }
+    },
+    {
+      "case": "spa-classic-5-seed17",
+      "mode": "energy",
+      "equal": true,
+      "observed": {
+        "player": {
+          "input_digest": "sha256:cc72a93b741eb46bef087f878a1ac865c3f02d8b355b561e73fe6a27594faf5f",
+          "ok": true,
+          "result_digest": "sha256:f8d81665235087e7fa3875de553c5450478633431535ea9fd81f33a81e42666c",
+          "error": null
+        }
+      },
+      "frozen": {
+        "player": {
+          "input_digest": "sha256:cc72a93b741eb46bef087f878a1ac865c3f02d8b355b561e73fe6a27594faf5f",
+          "ok": true,
+          "result_digest": "sha256:f8d81665235087e7fa3875de553c5450478633431535ea9fd81f33a81e42666c",
+          "error": null
+        }
+      }
+    },
+    {
+      "case": "barcelona-modern-66-fuel-feasibility",
+      "mode": "legacy",
+      "equal": true,
+      "observed": {
+        "player": {
+          "input_digest": "sha256:c23d73de6e76ae97225a8dd9d9d0d21e9fbe27fde33d353ea40f3dbf8027f285",
+          "ok": false,
+          "result_digest": null,
+          "error": "V3 fuel depleted on lap 62: required 1.740945 kg, available 1.410602 kg"
+        }
+      },
+      "frozen": {
+        "player": {
+          "input_digest": "sha256:c23d73de6e76ae97225a8dd9d9d0d21e9fbe27fde33d353ea40f3dbf8027f285",
+          "ok": false,
+          "result_digest": null,
+          "error": "V3 fuel depleted on lap 62: required 1.740945 kg, available 1.410602 kg"
+        }
+      }
+    },
+    {
+      "case": "barcelona-modern-66-fuel-feasibility",
+      "mode": "energy",
+      "equal": true,
+      "observed": {
+        "player": {
+          "input_digest": "sha256:c160c96157bff1e9f8fda39ed7dd27da1bfa3131b917c53b7a617dae53dfcfca",
+          "ok": false,
+          "result_digest": null,
+          "error": "V3 fuel depleted on lap 63: required 1.719240 kg, available 0.544623 kg"
+        }
+      },
+      "frozen": {
+        "player": {
+          "input_digest": "sha256:c160c96157bff1e9f8fda39ed7dd27da1bfa3131b917c53b7a617dae53dfcfca",
+          "ok": false,
+          "result_digest": null,
+          "error": "V3 fuel depleted on lap 63: required 1.719240 kg, available 0.544623 kg"
+        }
+      }
+    }
+  ]
+}
