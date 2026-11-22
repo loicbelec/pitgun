@@ -9,7 +9,8 @@
     464,
     465,
     467,
-    470
+    470,
+    471
   ],
   "gates": {
     "effective_driver_resolution": "native opt-in qualified; signed/runtime admission open",
@@ -19,16 +20,18 @@
     "career_fixtures": "12 authored real-reducer snapshots/54 prepared GP requests, exact repeat and fixed-field independence; bookkeeping not pace evidence",
     "boundary_lookahead_cost": "native reachable_wear_v1 qualified on26scenarios/2modes/2repeats including8reserved; actual-component I/II addition467:18GP references and12selected setups paired/exact repeats, no carry jumps/failures and six GP pair orders agree. Wider reserved career/strategy acceptance461 remains open. Native advance overhead1.8..32.2% on3prior cases; no WASM/VPS/RSS acceptance. Full-GP extension468 uses10controlled conservative lap recomputations after5cap updates; all certified, max15/24coupling passes and zero carry jumps. No new clock/RSS claim.",
     "setup_screen": "full-GP response468:240fixed-slider allocations,870slider cases including complete720integer concentrated split/grid combinations,54local cases,24off-budget one-axis pairs and96strategy recipes.1235semantic requests/1223diagnostic envelopes/1211physical inputs;1307native executions,0failures,zero carry jumps. Four axes connected; early aero weak in authored settings and chassis dominates sampled concentrated optima. No exhaustive alternate/continuous optimum or field balance verdict.",
-    "opponent_fit": "not started; initial fixed-field native I/II pilot Ready457 after response468; broader fine balance/season/admission not accepted",
-    "reserved_evaluation": "selected native setup/strategy responses468:60reserved seed/temperature/circuit-transfer cases, all finish and fresh repeats exact; selection sealed before opening. No held-out calibrated-opponent policy/season evaluation yet.",
+    "opponent_fit": "V1 completed6155trainingGP with0/27eligible calibrations (no informed exit-stage wins); V2 preserved4500strategy cases and690named adaptations, then stopped before seal/reserve on owner max2voluntary-stop requirement. No final9field selected/admitted; Franz Hermann and Charles LEclair remain intended persistent front-runners.",
+    "reserved_evaluation": "selected native setup/strategy responses468:60reserved seed/temperature/circuit-transfer cases, all finish and fresh repeats exact; selection sealed before opening. No held-out calibrated-opponent policy/season evaluation yet. Fixed-nine field reserved results not opened: V1 REFINE and V2 stopped before policy seal.",
     "runtime_admission": "not performed",
-    "tire_preparation_and_window": "explicit modern70C mount/pit and95% thermal-grip event policy qualified natively:23cases\u00d72exact repeats,4unchanged baselines,56driver+22historical outcomes and8old event cases exact; physical parameters, warm-up duration/compound balance and era applicability remain REFINE (#463)."
+    "tire_preparation_and_window": "explicit modern70C mount/pit and95% thermal-grip event policy qualified natively:23cases×2exact repeats,4unchanged baselines,56driver+22historical outcomes and8old event cases exact; physical parameters, warm-up duration/compound balance and era applicability remain REFINE (#463).",
+    "tire_stand_incentives": "native audit714GP:100source controls and14fresh repeats exact, zero failures/carry jumps. Source22s stop cost fully charged. Removing direct wear-grip loss makes1stop best tested in10/10contexts; doubling service44s still3..6stops. Review inherited linear wear-grip law, thermal window, compound gaps and mount policy before fitting."
   },
   "next": [
-    "start a bounded fixed-nine-opponent eraI/II native pilot using frozen physics, legal real-career budgets/components and multiple strategies",
-    "audit weak early-aero marginal response and legal gearbox endpoint saturation; no forced four-axis spend or automatic coefficient change",
-    "reserve opponent-policy season/circuit/seed evaluation before fine balance/admission",
-    "retain explicit tire preparation/fuel gates and separately qualify Worker/WASM/Authority/Verifier"
+    "qualify explicit wear-to-grip/thermal-window/compound/preparation parameters and operational tire-life semantics; preserve legacy identities and continuous lap boundaries",
+    "verify1..2-stop dry strategies and actual service costs; retain >2-stop plans as diagnostic counterexamples, not eligible game plans",
+    "resume persistent-nine I/II calibration only after corrected physical profile is frozen; fixed identities/traits/budgets, Franz Hermann and Charles LEclair strongest aggregate",
+    "audit weak early-aero and gearbox endpoint response without forced four-axis spend",
+    "reserve broader public eras/full-season evaluation and Worker/WASM/Authority/Verifier admission; align max2voluntary game stops across plan/live controls/replay"
   ],
   "retained_owner_constraints": [
     "modest early cooling response is desired",
@@ -38,7 +41,8 @@
     "no current game/Worker/WASM or deployment changes",
     "each available axis has a meaningful contextual physical role; relative importance can vary across engines, eras, circuits and race duration",
     "late-II concentrated spending with existing HQ cooling can be legitimate; no requirement to make every concentrated setup lose",
-    "distinguish discretionary allocation, HQ offsets, installed components and marginal physical response; unexplained structural inactivity needs audit"
+    "distinguish discretionary allocation, HQ offsets, installed components and marginal physical response; unexplained structural inactivity needs audit",
+    "normal game strategy uses at most two voluntary stops; diagnose excessive fresh-tire incentive before field fitting, not merely a hidden optimizer cap"
   ],
   "boundary_evidence": "experiments/lap_boundary_v1/RESULTS_V1.md",
   "tire_operating_evidence": "experiments/tyre_operating_policy_v1/RESULTS_V1.md",
@@ -46,5 +50,8 @@
   "career_component_evidence": "experiments/career_physics_v1/RESULTS_V1.md",
   "acceptance_criteria": "experiments/career_physics_v1/ACCEPTANCE_CRITERIA.md",
   "full_gp_response_evidence": "experiments/career_full_gp_v1/RESULTS_V1.md",
-  "point_value_audit": "issue469; early authored aero weak, concentrated sampled optimum fully chassis and5/6gearbox upper endpoint; contextual diagnosis before any mapping adjustment"
+  "point_value_audit": "issue469; early authored aero weak, concentrated sampled optimum fully chassis and5/6gearbox upper endpoint; contextual diagnosis before any mapping adjustment",
+  "fixed_field_failed_evidence": "experiments/fixed_opponents_v1/RESULTS_V1.md",
+  "fixed_field_stop_evidence": "experiments/fixed_opponents_v2/results/owner-stop-v2.json",
+  "tire_stand_evidence": "experiments/pit_strategy_audit_v1/RESULTS_V1.md"
 }

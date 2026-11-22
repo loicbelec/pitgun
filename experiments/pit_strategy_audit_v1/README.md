@@ -1,5 +1,10 @@
 # Audit causal — incitation excessive aux arrêts
 
+**Audit terminé : 714 GP, 100 contrôles source exacts et 14 répétitions exactes.**
+La perte directe d'adhérence liée à l'usure explique l'essentiel de l'incitation ;
+le doublement du temps de stand ne la corrige pas. Voir le
+[rapport et les figures](RESULTS_V1.md). Aucun coefficient modifié n'est promu.
+
 La calibration des neuf IA est interrompue avant sélection et avant les résultats
 réservés. Le propriétaire fixe désormais **deux arrêts volontaires maximum** pour
 le joueur comme pour les adversaires. Les diagnostics hors limite restent utiles
