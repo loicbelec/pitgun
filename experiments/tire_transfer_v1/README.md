@@ -5,7 +5,9 @@
 [#457](https://github.com/loicbelec/pitgun/issues/457), dans
 [la PR native #473](https://github.com/loicbelec/pitgun/pull/473).
 
-**Protocole enregistré avant calcul ; aucun nouveau profil ni plateau sélectionné.**
+**Étape terminée : `PASS_NATIVE_TRANSFER`, vingt comparaisons sur vingt.**
+Voir [les résultats et les courbes](RESULTS_V1.md). Le protocole était enregistré
+avant calcul ; aucun nouveau profil ni plateau de neuf pilotes n’est sélectionné ici.
 Le candidat global `progressive4` provient du
 [premier écran physique](../tire_performance_v1/RESULTS_V1.md). Ses coefficients,
 le coût des stands, les équations et les tolérances ne changent pas ici.
@@ -68,12 +70,20 @@ seule les paramètres d'un pneu réel.
 | Calculs de travail | Cache exact par entrée et fichiers temporaires | Cache local régénérable, distinct des preuves versionnées |
 | Télémétrie détaillée | Seulement si nécessaire à une anomalie précisément identifiée | Contre-exemple ciblé ; aucun export systématique point par point |
 
+Les campagnes beaucoup plus volumineuses pourront conserver leurs reçus dans
+un stockage d’artefacts immuable, avec protocole, synthèse et manifeste
+d’empreintes dans Git. Cette étape utilise les reçus compressés du dépôt ; elle
+ne crée aucun nouveau service de stockage.
+
 Le catalogue de runtime n'est pas un entrepôt de campagnes. Sa future publication
 peut référencer le rapport et ses empreintes, sans télécharger ces données chez
 chaque joueur. Une nouvelle physique doit recevoir une nouvelle identité et des
 ressources cohérentes côté navigateur et vérification ; changer les coefficients
 sous une ancienne version empêcherait d'interpréter correctement les résultats.
-Les versions historiques restent disponibles selon la politique de rétention des
+Les futures preuves et classements doivent rester liés aux identités exactes de
+leur exécution : une ancienne course conserve sa physique, même si la version de
+l’économie du jeu est identique. Les versions historiques restent disponibles
+selon la politique de rétention des
 modèles, indépendamment du cache temporaire de cette campagne.
 
 Le même kernel et le même cache que l'écran pneus permettent de réutiliser les

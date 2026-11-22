@@ -1,0 +1,26 @@
+{
+  "setup-search": {
+    "requests": 1551,
+    "cached": 0,
+    "fresh": 1551,
+    "receipt_digest": "sha256:957fd3da2e7cc32e9c212f70f9b2ad13c7bea221ad86dfe07d5f77fed10181fd"
+  },
+  "setup-refinement": {
+    "requests": 198,
+    "cached": 10,
+    "fresh": 188,
+    "receipt_digest": "sha256:6d74894c8b75da3898bd674ba39e3a49cd3d645fbe817b4b01b1fde740ae8691"
+  },
+  "strategy-comparison": {
+    "requests": 3960,
+    "cached": 611,
+    "fresh": 3349,
+    "receipt_digest": "sha256:1595a171aaf8789bfa7ad60269b2f02e653d26339dc37ba53772e5ead9179d54"
+  },
+  "exact-repeat": {
+    "requests": 40,
+    "cached": 0,
+    "fresh": 40,
+    "receipt_digest": "sha256:f53e0d3c719a9f1eb4fa40678c4d0456f86b32f5e88a1f4dd496b43c3074f8ce"
+  }
+}

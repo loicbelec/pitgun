@@ -1,0 +1,9 @@
+{
+  "schema": "pitgun.native-research-artifact/v1",
+  "role": "frozen screened research probe; not an admitted game/Verifier runtime",
+  "filename": "5c2c2fe65bf615ff5c3b5e9ad91b3db999d784fe550c1146b911ff7170c547c1-tire_performance_probe",
+  "sha256": "sha256:5c2c2fe65bf615ff5c3b5e9ad91b3db999d784fe550c1146b911ff7170c547c1",
+  "size_bytes": 3770704,
+  "retained_local_archive": true,
+  "distribution": "local maintenance artifact archive; source/toolchain/resource identities in provenance-v1.json; binary is not committed to source repository"
+}
