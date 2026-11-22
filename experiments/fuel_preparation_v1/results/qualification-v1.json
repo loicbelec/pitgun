@@ -14,12 +14,15 @@
   "evidence": {
     "discovery-v1.json": "sha256:b2d015f445a12b130e163bc7d27992d6b3266f9e42d26b86ef6d4d4ce2e5cfd5",
     "capacity-diagnostics-v1.json": "sha256:2ad92c57b8cfe9197fab6321008f5f83db0df3d4be82803e3a81d97cee6fef05",
-    "historical-regression-v1.json": "sha256:1437ee6298242e8c68997a112aa2f37a883280431be3ff09b64b0efdac19b9b8"
+    "historical-regression-v1.json": "sha256:1437ee6298242e8c68997a112aa2f37a883280431be3ff09b64b0efdac19b9b8",
+    "final-semantic-smoke-v1.json": "sha256:a50465d290b4998a6d04985a974a426c439e9ab7d570fe1a58edd03394d8efbc"
   },
   "limits": [
     "ceiling110 is explicit test policy, not an F1 rule or identified tank capacity",
     "typed shortfall outcome retains last fully committed boundary; no exact partial-lap stop",
     "only offline independent native field; no public standings/event/signed/runtime integration",
     "no calibration/season balance/native-WASM/performance verdict"
-  ]
+  ],
+  "final_api_source": "74fb1f4",
+  "final_semantic_smoke": true
 }

@@ -1,0 +1,251 @@
+{
+  "source_commit": "74fb1f4",
+  "cases": [
+    {
+      "binary_digest": "sha256:adad2172efd40a324522c9714289e1937f3b0b5258ce917a7cda0fa1a0cb04be",
+      "catalog": {
+        "id": "pitgun.racing",
+        "manifest_digest": "sha256:c7eafd00de0e1257d82687d8f640e0e435f530746f0bfa805bba662df20110cf",
+        "schema_version": "pitgun.catalog-release-identity/v1",
+        "version": "1.8.1"
+      },
+      "driver": {
+        "controls": {
+          "braking_utilization": 0.92784,
+          "control_error_amplitude": 0.013192000000000002,
+          "cornering_utilization": 0.9344000000000001,
+          "correction_workload_multiplier": 1.003377152,
+          "driver_id": "balanced_reference",
+          "driver_traits": {
+            "consistency": 0.84,
+            "limit_exploitation": 0.84,
+            "tire_management": 0.84
+          },
+          "driving_mode": "balanced",
+          "requested_commitment": 0.8,
+          "traction_utilization": 0.94096
+        },
+        "correction_model": "energy_accounted_v1",
+        "driver_resource_digest": "sha256:f2942061f01370b277d2d9a875ac9059895314baaa4b4e2b863d78d8aa3f551e",
+        "lapse_profile": {
+          "exposure_cell_m": 500.0,
+          "hazard_per_100km": 0.4322304000000003,
+          "minimum_engine_request_fraction": 0.15,
+          "noise_stream_id": "fuel-preparation:player",
+          "recovery_distance_m": 250.0,
+          "schema_version": "pitgun.driver-throttle-lapse/v1"
+        },
+        "policy_digest": "sha256:1d1b20e6b402ab6b876368f2172711eec82890abb6c6a51273ac023cae00c85f"
+      },
+      "id": "final-prepared",
+      "original": null,
+      "original_input_digest": "sha256:fddcbc8ba4652cc079ac44f27ee74640a5e708f2de0b76ebeb51b7ca87cbd119",
+      "prepared": {
+        "isolation": null,
+        "outcome": {
+          "Ok": {
+            "digest": "sha256:a2d801ea3d3d5c80e02fbc187316c376b67b9728e347358fb581361c629bd2c8",
+            "energy": {
+              "clutch_slip_loss_j": 13986.172362231742,
+              "distance_m": 28930.0,
+              "drag_work_j": 6427673.680141068,
+              "driveline_loss_j": 1601097.6600516385,
+              "driving_time_s": 805.815209146781,
+              "engine_shaft_work_j": 32035939.37339505,
+              "final_vehicle_kinetic_j": 603753.764430176,
+              "friction_brake_work_j": 17466978.259587694,
+              "fuel_mass_carried_kinetic_j": 1077.034183186717,
+              "generated_engine_heat_j": 33147198.792447694,
+              "initial_vehicle_kinetic_j": 0.0,
+              "kinetic_change_j": 604830.7986133622,
+              "maximum_driveline_balance_residual_j": 4.547473508864641e-13,
+              "maximum_raw_contact_utilization": 0.9910632893337833,
+              "maximum_thermal_balance_residual_j": 1.2150849215686321e-09,
+              "maximum_vehicle_balance_residual_j": 1.8189894035458565e-12,
+              "potential_change_j": 0.0,
+              "rejected_engine_heat_signed_j": 30122066.426271312,
+              "rolling_work_j": 5921372.802639266,
+              "segments": 28930,
+              "service_idle_fuel_kg": 0.0,
+              "service_time_s": 0.0,
+              "unresolved_service_velocity_reset_j": 0.0,
+              "wheel_propulsion_work_j": 30420855.540981095
+            },
+            "kind": "finished",
+            "laps": [
+              {
+                "completed_laps": 1,
+                "distance_m": 5786.0,
+                "elapsed_s": 160.6272130814286,
+                "state": {
+                  "engine_temp": 106.4580009489117,
+                  "fuel_mass": 3.5030497643204357,
+                  "tire_temp": 75.59900295421244,
+                  "tire_wear": 0.012784262733618792
+                }
+              },
+              {
+                "completed_laps": 2,
+                "distance_m": 11572.0,
+                "elapsed_s": 319.6557835367606,
+                "state": {
+                  "engine_temp": 113.4059679963023,
+                  "fuel_mass": 3.017424956826292,
+                  "tire_temp": 73.57732388173682,
+                  "tire_wear": 0.02760740091476491
+                }
+              },
+              {
+                "completed_laps": 3,
+                "distance_m": 17358.0,
+                "elapsed_s": 480.3104688577973,
+                "state": {
+                  "engine_temp": 116.9816081783771,
+                  "fuel_mass": 2.5289087893548343,
+                  "tire_temp": 72.03047714530614,
+                  "tire_wear": 0.04319918536061563
+                }
+              },
+              {
+                "completed_laps": 4,
+                "distance_m": 23144.0,
+                "elapsed_s": 642.4898077664768,
+                "state": {
+                  "engine_temp": 118.93173001471601,
+                  "fuel_mass": 2.0374375635921984,
+                  "tire_temp": 70.75070496276899,
+                  "tire_wear": 0.05950691599482323
+                }
+              },
+              {
+                "completed_laps": 5,
+                "distance_m": 28930.0,
+                "elapsed_s": 805.815209146781,
+                "state": {
+                  "engine_temp": 120.25132366176408,
+                  "fuel_mass": 1.5419446247816173,
+                  "tire_temp": 69.5124402627617,
+                  "tire_wear": 0.07623182676575724
+                }
+              }
+            ],
+            "state": {
+              "engine_temp": 120.25132366176408,
+              "fuel_mass": 1.5419446247816173,
+              "tire_temp": 69.5124402627617,
+              "tire_wear": 0.07623182676575724
+            },
+            "time_s": 805.815209146781
+          }
+        },
+        "receipt": {
+          "estimated_driving_kg": 2.6873944558810337,
+          "estimated_service_kg": 0.0,
+          "outcome": {
+            "initial_kg": 4.0,
+            "kind": "prepared"
+          },
+          "pilots": [
+            {
+              "completed_laps": 2,
+              "input_digest": "sha256:4e687ac866ee4027cca2056fe64aab7bc083f35ba6687e3a45818aff0a73750c",
+              "maximum_consumption_kg_per_m": 9.289299882063718e-05,
+              "tire_digest": "sha256:6090cf6b53c47d07c128946f4434007fee7b0228bd3a38446dbf66a665d3548c"
+            }
+          ],
+          "policy_digest": "sha256:f1f9eb41f68c86ad23d8665fedcc1d7c422354f1e6b580825abd562b4a5438b3",
+          "prepared_input_digest": "sha256:533aab0807ba52e144dfd046c1c918ffd2c4bd7236263c2cf83e83027a64b3ff",
+          "schema_version": "pitgun.fuel-preparation/v1",
+          "source_input_digest": "sha256:fddcbc8ba4652cc079ac44f27ee74640a5e708f2de0b76ebeb51b7ca87cbd119"
+        }
+      },
+      "schema": "pitgun.fuel-preparation-probe/v1",
+      "sources": {
+        "helper": "sha256:302f79819f0113f9e118e6eb7998579e2806e9cda84f32e772448d1620303dbd",
+        "outcome": "sha256:c2fc01807ed415ec3c40510507de77761b586d1379665172acdb9433a63a8271",
+        "preparation": "sha256:bb1068fc78fbcb0451eaa665357576abd00ff2fdabf3e53c24f571a108b41a72",
+        "probe": "sha256:7cb94f27663443c9253e5e0cffb85f8b602861db98a6f249387f2cb54d29f5e6",
+        "solver": "sha256:acbc57ef13acdeb53b530f0248691376886fbb0e927773171b9c9cbca18a8e57"
+      }
+    },
+    {
+      "binary_digest": "sha256:adad2172efd40a324522c9714289e1937f3b0b5258ce917a7cda0fa1a0cb04be",
+      "catalog": {
+        "id": "pitgun.racing",
+        "manifest_digest": "sha256:c7eafd00de0e1257d82687d8f640e0e435f530746f0bfa805bba662df20110cf",
+        "schema_version": "pitgun.catalog-release-identity/v1",
+        "version": "1.8.1"
+      },
+      "driver": {
+        "controls": {
+          "braking_utilization": 0.92784,
+          "control_error_amplitude": 0.013192000000000002,
+          "cornering_utilization": 0.9344000000000001,
+          "correction_workload_multiplier": 1.003377152,
+          "driver_id": "balanced_reference",
+          "driver_traits": {
+            "consistency": 0.84,
+            "limit_exploitation": 0.84,
+            "tire_management": 0.84
+          },
+          "driving_mode": "balanced",
+          "requested_commitment": 0.8,
+          "traction_utilization": 0.94096
+        },
+        "correction_model": "energy_accounted_v1",
+        "driver_resource_digest": "sha256:f2942061f01370b277d2d9a875ac9059895314baaa4b4e2b863d78d8aa3f551e",
+        "lapse_profile": {
+          "exposure_cell_m": 500.0,
+          "hazard_per_100km": 0.4322304000000003,
+          "minimum_engine_request_fraction": 0.15,
+          "noise_stream_id": "fuel-preparation:player",
+          "recovery_distance_m": 250.0,
+          "schema_version": "pitgun.driver-throttle-lapse/v1"
+        },
+        "policy_digest": "sha256:1d1b20e6b402ab6b876368f2172711eec82890abb6c6a51273ac023cae00c85f"
+      },
+      "id": "final-estimate-excess",
+      "original": null,
+      "original_input_digest": "sha256:a73d77f6a17d1f28dc1b5ab9246c6e2cfb821e460a8b378f4933a5a7ced34a25",
+      "prepared": {
+        "isolation": null,
+        "outcome": null,
+        "receipt": {
+          "estimated_driving_kg": 129.4531072331236,
+          "estimated_service_kg": 0.0088,
+          "outcome": {
+            "estimated_start_kg": 141.0,
+            "kind": "estimate_exceeds_limit",
+            "maximum_start_kg": 110.0
+          },
+          "pilots": [
+            {
+              "completed_laps": 2,
+              "input_digest": "sha256:02ba7fbf9291d0c9b8834c67ed7a55264186f06cdd906a21075ce5266d78a6ff",
+              "maximum_consumption_kg_per_m": 0.0004221416275887914,
+              "tire_digest": "sha256:6090cf6b53c47d07c128946f4434007fee7b0228bd3a38446dbf66a665d3548c"
+            },
+            {
+              "completed_laps": 2,
+              "input_digest": "sha256:2deaa87adec3f3562136e49a8ade86334702498c4a1effd609b8cd1e52a06304",
+              "maximum_consumption_kg_per_m": 0.00041743102631225983,
+              "tire_digest": "sha256:56b99f2d4e9b12c0deab4090ad20869736d1ae53607a3b4eab15371f8e9314c2"
+            }
+          ],
+          "policy_digest": "sha256:f1f9eb41f68c86ad23d8665fedcc1d7c422354f1e6b580825abd562b4a5438b3",
+          "prepared_input_digest": null,
+          "schema_version": "pitgun.fuel-preparation/v1",
+          "source_input_digest": "sha256:a73d77f6a17d1f28dc1b5ab9246c6e2cfb821e460a8b378f4933a5a7ced34a25"
+        }
+      },
+      "schema": "pitgun.fuel-preparation-probe/v1",
+      "sources": {
+        "helper": "sha256:302f79819f0113f9e118e6eb7998579e2806e9cda84f32e772448d1620303dbd",
+        "outcome": "sha256:c2fc01807ed415ec3c40510507de77761b586d1379665172acdb9433a63a8271",
+        "preparation": "sha256:bb1068fc78fbcb0451eaa665357576abd00ff2fdabf3e53c24f571a108b41a72",
+        "probe": "sha256:7cb94f27663443c9253e5e0cffb85f8b602861db98a6f249387f2cb54d29f5e6",
+        "solver": "sha256:acbc57ef13acdeb53b530f0248691376886fbb0e927773171b9c9cbca18a8e57"
+      }
+    }
+  ]
+}

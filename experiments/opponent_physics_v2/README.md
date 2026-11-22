@@ -1,6 +1,8 @@
 # Competitive opponents on the new physics — 22 November 2026
 
 **Protocol and resolution audit, not a fitted policy or balance verdict.**
+Current implementation readiness is tracked separately in
+[readiness-v2.json](readiness-v2.json); the original plan remains frozen.
 The event journal/axis is instrumentation. No event/display work changes an AI
 allocation, setup, driver, strategy or physical result. Further UI/runtime work
 is secondary to the driver/physics and competition work specified here.
