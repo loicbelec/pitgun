@@ -223,3 +223,26 @@ L'hybridation (#246) reste le module physique suivant ; les cas exigeant une
 capacité électrique ne sont pas déclarés validés par un simple supplément de
 carburant. L'admission Worker/WASM et le raccordement au jeu viennent après la
 qualification du profil physique et de ses états/export/replay.
+
+## Préparation et fenêtre opérationnelle —22novembre2026
+
+Le lot [tyre_operating_policy_v1](../../experiments/tyre_operating_policy_v1/README.md)
+sépare désormais la préparation des pneus, la dynamique thermique et la lecture
+des états. Une politique native explicite prépare les trains modernes slicks à70°C
+au montage et aux remplacements. Les prescriptions Pirelli/FIA justifient la
+référence de préchauffage externe ; la carcasse initialement homogène à70°C et
+l'absence de trajet couvertures→grille sont des simplifications déclarées. Aucune
+déduction automatique pour les premières ères, la pluie ou les intermédiaires.
+
+L'événement thermique V2 définit sa fenêtre à partir du facteur thermique réel
+`exp(-((T-Topt)/sigma)^2)` et du seuil proche du pic95%, convention Pitgun. Les
+paramètres de gommes du candidat restent exposés et non identifiés. Le facteur
+thermique est réversible ; le produit avec l'usure et le grip propre à la gomme
+est une autre grandeur. La température ne subit pas de clipping à la fenêtre.
+Un pneu usé dans cette bande n'est pas à95% de son grip neuf. La politique V1
+diagnostique +/-sigma et ses checkpoints/journaux ne changent pas rétroactivement.
+
+Le nouveau banc distingue surface/carcasse/usure/grip, états initiaux froids et
+chauds, temps natif dans les bandes et reset du train neuf aux stands. Les
+coefficients de chaleur/grip/usure, l'équilibre des stratégies et l'anticipation
+aux passages de ligne ne sont pas validés par la seule cohérence de cette lecture.

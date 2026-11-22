@@ -9,6 +9,7 @@ pub mod physical_events;
 mod power_stream;
 pub mod thermal_driver;
 pub mod tire_events;
+pub mod tire_preparation;
 pub use power_stream::{POWER_CHANNELS, power_telemetry_policy_identity};
 pub mod service_control;
 mod thermal_profile;

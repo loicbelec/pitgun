@@ -1,0 +1,11 @@
+{
+  "schema_version": "pitgun.racing-tire-preparation/v1",
+  "mount_surface_temperature_c": 70.0,
+  "mount_carcass_temperature_c": 70.0,
+  "maximum_external_preheat_temperature_c": 70.0,
+  "window": {
+    "schema_version": "pitgun.racing-tire-window-policy/v2",
+    "minimum_peak_grip_milli": 950,
+    "max_events_per_competitor": 8192
+  }
+}

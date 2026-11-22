@@ -5,7 +5,8 @@
   "evidence_prs": [
     459,
     460,
-    462
+    462,
+    464
   ],
   "gates": {
     "effective_driver_resolution": "native opt-in qualified; signed/runtime admission open",
@@ -17,9 +18,11 @@
     "setup_screen": "inputs ready, not executed on the new real-career matrix",
     "opponent_fit": "not started; no calibrated field or balance verdict",
     "reserved_evaluation": "not performed",
-    "runtime_admission": "not performed"
+    "runtime_admission": "not performed",
+    "tire_preparation_and_window": "explicit modern70C mount/pit and95% thermal-grip event policy qualified natively:23cases\u00d72exact repeats,4unchanged baselines,56driver+22historical outcomes and8old event cases exact; physical parameters, warm-up duration/compound balance and era applicability remain REFINE (#463)."
   },
   "next": [
+    "retain qualified sourced tire preparation/window #463 as explicit input; reserve unseen thermal validation before any further coefficient fitting",
     "derive and qualify bounded future tyre-state lookahead461 before committing current chunks; preserve cached conservative reference",
     "resolve actual installed components for the thermal campaign, not only era/baseline car ID",
     "bounded real-career allocation/slider/tire response screen, erasI/II first",
@@ -32,5 +35,6 @@
     "no AI tuning merely to create Engineer bubbles",
     "no current game/Worker/WASM or deployment changes"
   ],
-  "boundary_evidence": "experiments/lap_boundary_v1/RESULTS_V1.md"
+  "boundary_evidence": "experiments/lap_boundary_v1/RESULTS_V1.md",
+  "tire_operating_evidence": "experiments/tyre_operating_policy_v1/RESULTS_V1.md"
 }
