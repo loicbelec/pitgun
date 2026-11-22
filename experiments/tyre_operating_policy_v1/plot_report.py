@@ -35,7 +35,7 @@ for id,row in rows.items():
     previous = 0.0
     for i,l in enumerate(row["laps"]):
         drive_end = previous+l["time_s"]
-        ax.fill_between([previous/60,drive_end/60],l["window_c"][0],l["window_c"][1],color=green,alpha=.13,label="Near-peak thermal grip (>=95%)" if i==0 else None)
+        ax.fill_between([previous/60,drive_end/60],l["window_c"][0],l["window_c"][1],color=green,alpha=.13,edgecolor="none",label="Near-peak thermal grip (>=95%)" if i==0 else None)
         if l["pit"]:
             ax.axvline(l["elapsed_s"]/60,color="#777",ls=":",lw=.8)
             ax.annotate("New prepared set",(l["elapsed_s"]/60,l["after_service"]["tire_temp"]),xytext=(4,8),textcoords="offset points",fontsize=7)
@@ -60,8 +60,12 @@ for id,row in rows.items():
     if early:
         low,high=row["laps"][0]["window_c"]
         ax.axhspan(low,high,color=green,alpha=.13)
+        bottom,top=min(p[4] for p in early)-1.5,max(p[4] for p in early)+1.5
+        ax.set_ylim(bottom,top)
+        if low>top or high<bottom:
+            ax.text(.02,.96,f"Near-peak band: {low:.1f}–{high:.1f}°C (outside this zoom)",transform=ax.transAxes,va="top",fontsize=8,color=green)
     s=summary(row)
-    ax.set(title=f"Native heating {s['heating']:.1f}% / cooling {s['cooling']:.1f}% of driving",ylabel="Surface temperature (°C)")
+    ax.set(title=f"Whole run: heating {s['heating']:.1f}% / cooling {s['cooling']:.1f}%",ylabel="Surface temperature (°C)")
     for ax in axs.flat: decorate(ax)
     conditions=row["resolved_initial_conditions"]
     outcome="Completed" if row["outcome"]["ok"] else "FAILED — accepted prefix only"

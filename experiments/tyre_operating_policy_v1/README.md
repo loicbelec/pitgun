@@ -70,3 +70,9 @@ Pas de nouveau modèle publié, carrière/Worker/WASM/Authority ou staging/prod.
 Le calcul de bilan existant et les paramètres sont conservés. La qualification
 de préparation/événements ne vaut pas équilibre des stratégies ou précision
 industrielle. L'anticipation de freinage conservatrice reste le contrôle :#461.
+
+Résultats figés :[RESULTS_V1.md](RESULTS_V1.md). Inspection visuelle autonome :
+[index.html](index.html), à servir sur une interface locale ou ouvrir avec ses
+images voisines. Le navigateur affiche des données déjà calculées ; il n'exécute
+pas le nouveau modèle physique. Le générateur `plot_report.py` nécessite
+Matplotlib, uniquement pour reconstruire les figures hors navigateur.
