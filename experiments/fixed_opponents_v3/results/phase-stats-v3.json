@@ -1,0 +1,122 @@
+{
+  "named-driver-search": {
+    "requests": 810,
+    "cached": 0,
+    "fresh": 810,
+    "receipt_digest": "sha256:80f382e614b12cad61d3d5e105d1a7d525c850b3573dabcc811d37d1396770e8"
+  },
+  "named-driver-local": {
+    "requests": 892,
+    "cached": 82,
+    "fresh": 810,
+    "receipt_digest": "sha256:0daaabbf389c43c4aa2b60183912534d8b9d7eaa99819eada762bf48fd0ce469"
+  },
+  "named-driver-exact-repeat": {
+    "requests": 18,
+    "cached": 0,
+    "fresh": 18,
+    "receipt_digest": "sha256:d2b844046c6acd5e1f3f6126e6e35166e3e0ceb4b60bfe3248c3171de360ccb4"
+  },
+  "fixed-budget-calibration": {
+    "requests": 390,
+    "cached": 90,
+    "fresh": 300,
+    "receipt_digest": "sha256:7c431d678c4057268eb9634e730ccb1071c861b084d439e7115eaab84817bc37"
+  },
+  "player-training": {
+    "requests": 618,
+    "cached": 0,
+    "fresh": 618,
+    "receipt_digest": "sha256:820e355e9635e3e20c85b9ce489565a436a496034a36f052c7d6276844604f83"
+  },
+  "player-local-1": {
+    "requests": 432,
+    "cached": 52,
+    "fresh": 380,
+    "receipt_digest": "sha256:ed75f153f8618d644dfcb89778aa2d314b3d7e4b07bcdca418120be9596662ef"
+  },
+  "player-local-2": {
+    "requests": 315,
+    "cached": 101,
+    "fresh": 214,
+    "receipt_digest": "sha256:93f1ff65eff263cc4d6a3c3c6d2cbef94dd94d3b0e3be33a5fb448fbb29b5788"
+  },
+  "exit-player-strategies": {
+    "requests": 2052,
+    "cached": 44,
+    "fresh": 2008,
+    "receipt_digest": "sha256:949176ed1f3ecac971c53d5a4cebe255b9553a45af33d719b410a2f5c097359c"
+  },
+  "final-driver-strategies-1-era1-MONZA": {
+    "requests": 1785,
+    "cached": 24,
+    "fresh": 1761,
+    "receipt_digest": "sha256:a977d5f8aadea4d93f6d431fa4cafab7c4ed2904d62631326b5928340aacb2cd"
+  },
+  "final-driver-strategies-1-era1-SILVERSTONE": {
+    "requests": 1788,
+    "cached": 33,
+    "fresh": 1755,
+    "receipt_digest": "sha256:2b14a51dd5b16bfb9537e9eccbb2dec0e21e9cb4c463d59cf8627907d5187236"
+  },
+  "final-driver-strategies-1-era1-ZANDVOORT": {
+    "requests": 1782,
+    "cached": 25,
+    "fresh": 1757,
+    "receipt_digest": "sha256:923b50a83aeb7d9ab0e0823eb87d1804bc0acc4a824fc527918a6c30c2feca2f"
+  },
+  "final-driver-strategies-1-era2-MEXICO": {
+    "requests": 1785,
+    "cached": 26,
+    "fresh": 1759,
+    "receipt_digest": "sha256:7e9aa1fe62c5bbf2788e67832f4e1c9801b27349f84fa64316c9cab88b7e940c"
+  },
+  "final-driver-strategies-1-era2-MONTREAL": {
+    "requests": 1784,
+    "cached": 21,
+    "fresh": 1763,
+    "receipt_digest": "sha256:bb24c7d57e21b2c1b479a9b5610034ac991061992dc33156c0b517910caf3f04"
+  },
+  "final-driver-strategies-1-era2-MONZA": {
+    "requests": 1784,
+    "cached": 21,
+    "fresh": 1763,
+    "receipt_digest": "sha256:19216993ad95e42da25c22113badc103313dcf8be077797fa226e0e16377f0d5"
+  },
+  "final-driver-strategies-1-era2-SAOPAULO": {
+    "requests": 1784,
+    "cached": 19,
+    "fresh": 1765,
+    "receipt_digest": "sha256:6f94d2e306a7d44496473435c5366255e168363e06d4ab7077d266bfa6c3c700"
+  },
+  "final-driver-strategies-1-era2-SILVERSTONE": {
+    "requests": 1784,
+    "cached": 25,
+    "fresh": 1759,
+    "receipt_digest": "sha256:476a47afa95b11a19d07b8e551cb4f6bfc1fd459a1505bdda42d1267684067be"
+  },
+  "final-driver-strategies-1-era2-SPIELBERG": {
+    "requests": 1784,
+    "cached": 19,
+    "fresh": 1765,
+    "receipt_digest": "sha256:caf8ec590202ce1cd4c403eb461cff097a8bd982f535a3fb9af59f90f2d3c3ee"
+  },
+  "final-driver-strategies-1-era2-ZANDVOORT": {
+    "requests": 1782,
+    "cached": 17,
+    "fresh": 1765,
+    "receipt_digest": "sha256:78b7dee37e63be2f8c8202e3fc5d9020edeeb6ebdc8f5ec5264985694586a132"
+  },
+  "reserved-field-and-player": {
+    "requests": 1944,
+    "cached": 0,
+    "fresh": 1944,
+    "receipt_digest": "sha256:277e6b33369aa084ddde5960b2337cc63968507c47bc61c0bd0038fdbdd07de6"
+  },
+  "reserved-exact-repeat": {
+    "requests": 162,
+    "cached": 0,
+    "fresh": 162,
+    "receipt_digest": "sha256:87130049956f501d3d958aba8a948245c39a995689a3533e4b8d1c4063f8b0ed"
+  }
+}

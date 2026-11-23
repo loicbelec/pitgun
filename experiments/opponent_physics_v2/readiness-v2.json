@@ -1,6 +1,6 @@
 {
   "schema": "pitgun.opponent-physics-readiness/v2",
-  "date": "2026-11-22",
+  "date": "2026-11-23",
   "supersedes_status_only": "plan-v1.json remains the frozen pre-implementation protocol, not a current progress report",
   "evidence_prs": [
     459,
@@ -11,7 +11,8 @@
     467,
     470,
     471,
-    473
+    473,
+    474
   ],
   "gates": {
     "effective_driver_resolution": "native opt-in qualified; signed/runtime admission open",
@@ -21,8 +22,8 @@
     "career_fixtures": "12 authored real-reducer snapshots/54 prepared GP requests, exact repeat and fixed-field independence; bookkeeping not pace evidence",
     "boundary_lookahead_cost": "native reachable_wear_v1 qualified on26scenarios/2modes/2repeats including8reserved; actual-component I/II addition467:18GP references and12selected setups paired/exact repeats, no carry jumps/failures and six GP pair orders agree. Wider reserved career/strategy acceptance461 remains open. Native advance overhead1.8..32.2% on3prior cases; no WASM/VPS/RSS acceptance. Full-GP extension468 uses10controlled conservative lap recomputations after5cap updates; all certified, max15/24coupling passes and zero carry jumps. No new clock/RSS claim.",
     "setup_screen": "full-GP response468:240fixed-slider allocations,870slider cases including complete720integer concentrated split/grid combinations,54local cases,24off-budget one-axis pairs and96strategy recipes.1235semantic requests/1223diagnostic envelopes/1211physical inputs;1307native executions,0failures,zero carry jumps. Four axes connected; early aero weak in authored settings and chassis dominates sampled concentrated optima. No exhaustive alternate/continuous optimum or field balance verdict.",
-    "opponent_fit": "V1 completed6155trainingGP with0/27eligible calibrations (no informed exit-stage wins); V2 preserved4500strategy cases and690named adaptations, then stopped before seal/reserve on owner max2voluntary-stop requirement. No final9field selected/admitted; Franz Hermann and Charles LEclair remain intended persistent front-runners.",
-    "reserved_evaluation": "selected native setup/strategy responses468:60reserved seed/temperature/circuit-transfer cases, all finish and fresh repeats exact; selection sealed before opening. No held-out calibrated-opponent policy/season evaluation yet. Fixed-nine field reserved results not opened: V1 REFINE and V2 stopped before policy seal.",
+    "opponent_fit": "V3 NATIVE_I_II_CANDIDATE:24966native GP executions (24696ordinaryfresh,180forcedrepeats,90nativefield);0failures/carry jumps. First fixed budget pair8/16/base traits qualified;90/90actual-driver/context extra-stop checks pass,minimum margin3.78s,22s stop cost unchanged. Final sealed roster/setups/plans kept before reserved evaluation. No game/catalog/runtime admission.",
+    "reserved_evaluation": "V3:1944reserved cases across120fields (4seeds x3thermal environments x10contexts),162fresh reserved repeats exact;5native10car assemblies and2roster-order/player-change independence checks pass. Charles/Franz top2aggregate;allcases finish;informed exit player meanrank1.08I/2.69II versus sampledMC7.14I/5.00II,pooledgain3.56. EntryIIall4preparationsP10:explicit technology/progression playtest observation,not hidden by exit-stage criteria. Native Craft Engineering I/II only; no broader era/doctrine/season/runtime qualification.",
     "runtime_admission": "not performed",
     "tire_preparation_and_window": "explicit modern70C mount/pit and95% thermal-grip event policy qualified natively:23cases×2exact repeats,4unchanged baselines,56driver+22historical outcomes and8old event cases exact; physical parameters, warm-up duration/compound balance and era applicability remain REFINE (#463).",
     "tire_stand_incentives": "native audit714GP:100source controls and14fresh repeats exact, zero failures/carry jumps. Source22s stop cost fully charged. Removing direct wear-grip loss makes1stop best tested in10/10contexts; doubling service44s still3..6stops. Review inherited linear wear-grip law, thermal window, compound gaps and mount policy before fitting.",
@@ -30,11 +31,11 @@
     "tire_transfer": "PASS_NATIVE_TRANSFER under frozen4f8534b:10I/IIcontexts (7circuits),20anchors;5682unique semantic cases,5088new+594exact existing results,40fresh exact repeats=5128fresh native executions.0failures/carry jumps;20/20comparisons favor1/2stops over sampled3..12by10.57..39.83s; actual22s loss conserved (accounting residual3.64e-12s). Same referenceBalanced driver; only inherited environment/training seed73013. No final9fit/fieldholdout/all-era/runtime admission. Setup/strategy coupling changes best stop count in3IIcontexts; engine/chassis-only can legitimately be best inSilverstoneII after strategy reoptimization."
   },
   "next": [
-    "fit fixed-nine I/II under globally frozen progressive4, with fixed traits/budgets and FranzHermann/CharlesLEclair strongest aggregate; use completed transfer cases by exact identity, no old-physics driver imports",
-    "test extra-stop incentives under actual selected driver traits/modes and setups before accepting a field; reference Balanced transfer is not a full trait-domain qualification and game limits must not conceal a physical advantage",
-    "seal final nine-driver policy before reserved seeds/temperatures, then evaluate progression, independence, repeats and competitive hierarchy without retuning holdout",
+    "review qualified native I/II field and make a local WASM/Pit Wall candidate for owner playtest; preserve source identities,RNG namespaces,driver traits,budgets,components and three-compound profile",
+    "check readable/affordable technology transition at entryII (all four prepared snapshots P10),all other doctrines,cost and UI/Authority/Verifier parity before admission",
+    "owner prefers local campaigns,subsequent extensions one era at a time; implement/qualify hybrid battery/recovery/deployment before fitting motorisations requiring it; nonhybrid reference retained",
     "audit weak early-aero and gearbox endpoint response without forced four-axis spend",
-    "reserve broader public eras/full-season evaluation and Worker/WASM/Authority/Verifier admission; align max2voluntary game stops across plan/live controls/replay"
+    "reserve broader public eras/full-season evaluation and catalog/game deployment; no retune from sealed V3 reserved evaluation"
   ],
   "retained_owner_constraints": [
     "modest early cooling response is desired",
@@ -60,5 +61,8 @@
   "tire_stand_fix_issue": "https://github.com/loicbelec/pitgun/issues/472",
   "tire_performance_candidate_evidence": "experiments/tire_performance_v1/RESULTS_V1.md",
   "tire_transfer_protocol": "experiments/tire_transfer_v1/README.md",
-  "tire_transfer_evidence": "experiments/tire_transfer_v1/RESULTS_V1.md"
+  "tire_transfer_evidence": "experiments/tire_transfer_v1/RESULTS_V1.md",
+  "fixed_field_active_protocol": "experiments/fixed_opponents_v3/README.md",
+  "fixed_field_candidate_evidence": "experiments/fixed_opponents_v3/RESULTS_V3.md",
+  "fixed_field_policy_candidate": "experiments/fixed_opponents_v3/policy-candidate-v3.json"
 }

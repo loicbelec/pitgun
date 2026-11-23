@@ -1,0 +1,154 @@
+{
+  "schema": "pitgun.fixed-field-evidence-archive/v1",
+  "campaign": "fixed_opponents_v3",
+  "source_commit": "1d559b3f518d4ddc0e5de7ca5803bf56fb0b6ae0",
+  "release_tag": "research-fixed-opponents-v3-20261123",
+  "release_status": "draft; authenticated maintainer access until reviewed publication",
+  "asset": "fixed-opponents-v3-evidence-2026-11-23.tar",
+  "size_bytes": 286126080,
+  "sha256": "sha256:69ca35f3b5f5672872045391f6a458ec4d26eaf7418af432427e724e67d300b6",
+  "campaign_receipt_digest": "sha256:08239e0cdc251f8f4a18721a178f730d851eb212cff3d576bbd1167a5c8befcc",
+  "contents": {
+    "fixed-opponents-v3-evidence/results/calibration-candidates-v3.json": {
+      "size": 40748,
+      "sha256": "sha256:d32ea684c41cbad9a29f7441fbb823dd81da324f255386239721ed42df63d935"
+    },
+    "fixed-opponents-v3-evidence/results/campaign-v3.json": {
+      "size": 604862,
+      "sha256": "sha256:08239e0cdc251f8f4a18721a178f730d851eb212cff3d576bbd1167a5c8befcc"
+    },
+    "fixed-opponents-v3-evidence/results/derived-report-v3.json": {
+      "size": 668,
+      "sha256": "sha256:f31a8a4f89cc546259b41c81028bde09baf6983c5f251f4184ac2914c11df9aa"
+    },
+    "fixed-opponents-v3-evidence/results/exit-player-strategies-v3.json.gz": {
+      "size": 22165736,
+      "sha256": "sha256:949176ed1f3ecac971c53d5a4cebe255b9553a45af33d719b410a2f5c097359c"
+    },
+    "fixed-opponents-v3-evidence/results/final-driver-strategies-1-era1-MONZA-v3.json.gz": {
+      "size": 16675668,
+      "sha256": "sha256:a977d5f8aadea4d93f6d431fa4cafab7c4ed2904d62631326b5928340aacb2cd"
+    },
+    "fixed-opponents-v3-evidence/results/final-driver-strategies-1-era1-SILVERSTONE-v3.json.gz": {
+      "size": 16545137,
+      "sha256": "sha256:2b14a51dd5b16bfb9537e9eccbb2dec0e21e9cb4c463d59cf8627907d5187236"
+    },
+    "fixed-opponents-v3-evidence/results/final-driver-strategies-1-era1-ZANDVOORT-v3.json.gz": {
+      "size": 20708316,
+      "sha256": "sha256:923b50a83aeb7d9ab0e0823eb87d1804bc0acc4a824fc527918a6c30c2feca2f"
+    },
+    "fixed-opponents-v3-evidence/results/final-driver-strategies-1-era2-MEXICO-v3.json.gz": {
+      "size": 20674803,
+      "sha256": "sha256:7e9aa1fe62c5bbf2788e67832f4e1c9801b27349f84fa64316c9cab88b7e940c"
+    },
+    "fixed-opponents-v3-evidence/results/final-driver-strategies-1-era2-MONTREAL-v3.json.gz": {
+      "size": 20441692,
+      "sha256": "sha256:bb24c7d57e21b2c1b479a9b5610034ac991061992dc33156c0b517910caf3f04"
+    },
+    "fixed-opponents-v3-evidence/results/final-driver-strategies-1-era2-MONZA-v3.json.gz": {
+      "size": 16818241,
+      "sha256": "sha256:19216993ad95e42da25c22113badc103313dcf8be077797fa226e0e16377f0d5"
+    },
+    "fixed-opponents-v3-evidence/results/final-driver-strategies-1-era2-SAOPAULO-v3.json.gz": {
+      "size": 20651769,
+      "sha256": "sha256:6f94d2e306a7d44496473435c5366255e168363e06d4ab7077d266bfa6c3c700"
+    },
+    "fixed-opponents-v3-evidence/results/final-driver-strategies-1-era2-SILVERSTONE-v3.json.gz": {
+      "size": 16654045,
+      "sha256": "sha256:476a47afa95b11a19d07b8e551cb4f6bfc1fd459a1505bdda42d1267684067be"
+    },
+    "fixed-opponents-v3-evidence/results/final-driver-strategies-1-era2-SPIELBERG-v3.json.gz": {
+      "size": 20686867,
+      "sha256": "sha256:caf8ec590202ce1cd4c403eb461cff097a8bd982f535a3fb9af59f90f2d3c3ee"
+    },
+    "fixed-opponents-v3-evidence/results/final-driver-strategies-1-era2-ZANDVOORT-v3.json.gz": {
+      "size": 20807913,
+      "sha256": "sha256:78b7dee37e63be2f8c8202e3fc5d9020edeeb6ebdc8f5ec5264985694586a132"
+    },
+    "fixed-opponents-v3-evidence/results/fixed-budget-calibration-v3.json.gz": {
+      "size": 4214946,
+      "sha256": "sha256:7c431d678c4057268eb9634e730ccb1071c861b084d439e7115eaab84817bc37"
+    },
+    "fixed-opponents-v3-evidence/results/named-driver-exact-repeat-v3.json.gz": {
+      "size": 190951,
+      "sha256": "sha256:d2b844046c6acd5e1f3f6126e6e35166e3e0ceb4b60bfe3248c3171de360ccb4"
+    },
+    "fixed-opponents-v3-evidence/results/named-driver-local-v3.json.gz": {
+      "size": 9648082,
+      "sha256": "sha256:0daaabbf389c43c4aa2b60183912534d8b9d7eaa99819eada762bf48fd0ce469"
+    },
+    "fixed-opponents-v3-evidence/results/named-driver-search-v3.json.gz": {
+      "size": 8730679,
+      "sha256": "sha256:80f382e614b12cad61d3d5e105d1a7d525c850b3573dabcc811d37d1396770e8"
+    },
+    "fixed-opponents-v3-evidence/results/native-executions-v3.jsonl": {
+      "size": 6358827,
+      "sha256": "sha256:44e5b5857e6fc8069f199015ec678c0fbf4e3d686ff3e9789a950658834d5939"
+    },
+    "fixed-opponents-v3-evidence/results/native-field-audit-v3.json.gz": {
+      "size": 755152,
+      "sha256": "sha256:aee12bf11a6fa80ac288250fa4f0d44994e45f8a48e8a41994e974b5b7d346e2"
+    },
+    "fixed-opponents-v3-evidence/results/phase-stats-v3.json": {
+      "size": 3929,
+      "sha256": "sha256:696fa90c1d49b115e7955503b82993c64d0cb48aedabe802644377bcc86e37c1"
+    },
+    "fixed-opponents-v3-evidence/results/player-local-1-v3.json.gz": {
+      "size": 4676168,
+      "sha256": "sha256:ed75f153f8618d644dfcb89778aa2d314b3d7e4b07bcdca418120be9596662ef"
+    },
+    "fixed-opponents-v3-evidence/results/player-local-2-v3.json.gz": {
+      "size": 3425283,
+      "sha256": "sha256:93f1ff65eff263cc4d6a3c3c6d2cbef94dd94d3b0e3be33a5fb448fbb29b5788"
+    },
+    "fixed-opponents-v3-evidence/results/player-training-v3.json.gz": {
+      "size": 6636768,
+      "sha256": "sha256:820e355e9635e3e20c85b9ce489565a436a496034a36f052c7d6276844604f83"
+    },
+    "fixed-opponents-v3-evidence/results/provenance-v3.json": {
+      "size": 581215,
+      "sha256": "sha256:60519cd3f88ec3e3be3954f138d2a3065b1d38579a1aa13d0aeb88049899ead4"
+    },
+    "fixed-opponents-v3-evidence/results/reference-reuse-v3.json": {
+      "size": 204,
+      "sha256": "sha256:a22b26e4541da693c5cd539b43618b50c7297c1cf43081aedf20ea834ba22b7a"
+    },
+    "fixed-opponents-v3-evidence/results/reserved-exact-repeat-v3.json.gz": {
+      "size": 1747643,
+      "sha256": "sha256:87130049956f501d3d958aba8a948245c39a995689a3533e4b8d1c4063f8b0ed"
+    },
+    "fixed-opponents-v3-evidence/results/reserved-field-and-player-v3.json.gz": {
+      "size": 20999781,
+      "sha256": "sha256:277e6b33369aa084ddde5960b2337cc63968507c47bc61c0bd0038fdbdd07de6"
+    },
+    "fixed-opponents-v3-evidence/results/selection-lock-v3.json": {
+      "size": 197019,
+      "sha256": "sha256:a0316d34a8e4d86afc685dc5f1273a7117dec92bb70fc43de4cf1eb2a592e11f"
+    },
+    "fixed-opponents-v3-evidence/results/summary-v3.json": {
+      "size": 300156,
+      "sha256": "sha256:457806f1478c56b7ad319c5d927817f4ec1657634cd67ce5890ef1c1a32630af"
+    },
+    "fixed-opponents-v3-evidence/results/training-attempt-lock-v3.json": {
+      "size": 5069,
+      "sha256": "sha256:7904ca9d32ee80cfc34288bbc57938309c38e9fa01f693badbacbbb92d65b440"
+    },
+    "fixed-opponents-v3-evidence/results/training-qualification-v3.json": {
+      "size": 234782,
+      "sha256": "sha256:7f39a45a14b6df72ecc381e751e5f12895d11f168af766433464e2aacde53b6b"
+    },
+    "fixed-opponents-v3-evidence/native/tire_performance_probe": {
+      "size": 3770704,
+      "sha256": "sha256:5c2c2fe65bf615ff5c3b5e9ad91b3db999d784fe550c1146b911ff7170c547c1"
+    },
+    "fixed-opponents-v3-evidence/policy-candidate-v3.json": {
+      "size": 101884,
+      "sha256": "sha256:f4ad545da2f70664e15ba567bed97aff5126dc42b7122868384e58a35ce44f57"
+    }
+  },
+  "scope": "Offline research evidence and original macOS native binary; not a game/catalog/model release",
+  "release_api_id": 456052329,
+  "release_url": "https://github.com/loicbelec/pitgun/releases/tag/untagged-fa61df64f662d664dd17",
+  "asset_api_id": 784713801,
+  "remote_digest_verified": "sha256:69ca35f3b5f5672872045391f6a458ec4d26eaf7418af432427e724e67d300b6"
+}

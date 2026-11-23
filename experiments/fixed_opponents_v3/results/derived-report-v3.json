@@ -1,0 +1,12 @@
+{
+  "schema": "pitgun.fixed-field-derived-report/v1",
+  "time_utc": "2026-11-23T21:59:27.499941+00:00",
+  "source_commit": "1d559b3f518d4ddc0e5de7ca5803bf56fb0b6ae0",
+  "campaign_digest": "sha256:08239e0cdc251f8f4a18721a178f730d851eb212cff3d576bbd1167a5c8befcc",
+  "verdict": "NATIVE_I_II_CANDIDATE",
+  "report_sources": {
+    "report.py": "sha256:6cbae888fdf8f9250a6eb8cd14ffa53581aa2958919d37894f9bc289393c5fdd",
+    "plot_report.py": "sha256:53dab154173e5d32127bd793dddf5bd26bd11b4099b2c1af64c8f0b99b11b9a9"
+  },
+  "review_status": "Checked retained source/result identities and reviewed all three final figures; native I/II candidate only, no runtime admission"
+}

@@ -1,0 +1,2108 @@
+[
+  {
+    "budgets": {
+      "1": 6,
+      "2": 12
+    },
+    "elite_level": 0,
+    "eligible": true,
+    "all_finished": true,
+    "top_two": [
+      "charles_leclair",
+      "franz_hermann"
+    ],
+    "points": {
+      "franz_hermann": 215.0,
+      "charles_leclair": 215.0,
+      "luis_amilton": 130.0,
+      "smooth_operator": 136.0,
+      "isa_kadjar": 96.0,
+      "battery_voltas": 78.0,
+      "pedro_gaseoso": 64.0,
+      "daniel_enchantier": 46.0,
+      "goat_tifi": 20.0
+    },
+    "difficulty": {
+      "1": {
+        "positions": [
+          1,
+          1,
+          1
+        ],
+        "sampled_mc_positions": [
+          7,
+          6,
+          9
+        ],
+        "fixed_mc_positions": [
+          10,
+          10,
+          10
+        ],
+        "wins": 3,
+        "median": 1,
+        "mean_routine_gain_s": 375.9080946673457,
+        "mean_rank_gain_over_sampled_mc": 6.333333333333333
+      },
+      "2": {
+        "positions": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "sampled_mc_positions": [
+          3,
+          6,
+          1,
+          4,
+          7,
+          3
+        ],
+        "fixed_mc_positions": [
+          9,
+          10,
+          9,
+          10,
+          10,
+          9
+        ],
+        "wins": 6,
+        "median": 1,
+        "mean_routine_gain_s": 81.90692503397001,
+        "mean_rank_gain_over_sampled_mc": 3.0
+      }
+    },
+    "pooled_exit_rank_gain_over_sampled_mc": 4.111111111111111
+  },
+  {
+    "budgets": {
+      "1": 6,
+      "2": 12
+    },
+    "elite_level": 1,
+    "eligible": true,
+    "all_finished": true,
+    "top_two": [
+      "charles_leclair",
+      "franz_hermann"
+    ],
+    "points": {
+      "franz_hermann": 194.0,
+      "charles_leclair": 236.0,
+      "luis_amilton": 130.0,
+      "smooth_operator": 136.0,
+      "isa_kadjar": 96.0,
+      "battery_voltas": 78.0,
+      "pedro_gaseoso": 64.0,
+      "daniel_enchantier": 46.0,
+      "goat_tifi": 20.0
+    },
+    "difficulty": {
+      "1": {
+        "positions": [
+          1,
+          1,
+          1
+        ],
+        "sampled_mc_positions": [
+          7,
+          6,
+          9
+        ],
+        "fixed_mc_positions": [
+          10,
+          10,
+          10
+        ],
+        "wins": 3,
+        "median": 1,
+        "mean_routine_gain_s": 375.9080946673457,
+        "mean_rank_gain_over_sampled_mc": 6.333333333333333
+      },
+      "2": {
+        "positions": [
+          1,
+          2,
+          1,
+          1,
+          1,
+          1
+        ],
+        "sampled_mc_positions": [
+          3,
+          6,
+          1,
+          4,
+          7,
+          3
+        ],
+        "fixed_mc_positions": [
+          9,
+          10,
+          9,
+          10,
+          10,
+          9
+        ],
+        "wins": 5,
+        "median": 1,
+        "mean_routine_gain_s": 81.90692503397001,
+        "mean_rank_gain_over_sampled_mc": 2.8333333333333335
+      }
+    },
+    "pooled_exit_rank_gain_over_sampled_mc": 4.0
+  },
+  {
+    "budgets": {
+      "1": 6,
+      "2": 12
+    },
+    "elite_level": 2,
+    "eligible": true,
+    "all_finished": true,
+    "top_two": [
+      "charles_leclair",
+      "franz_hermann"
+    ],
+    "points": {
+      "charles_leclair": 250.0,
+      "franz_hermann": 180.0,
+      "luis_amilton": 130.0,
+      "smooth_operator": 136.0,
+      "isa_kadjar": 96.0,
+      "battery_voltas": 78.0,
+      "pedro_gaseoso": 64.0,
+      "daniel_enchantier": 46.0,
+      "goat_tifi": 20.0
+    },
+    "difficulty": {
+      "1": {
+        "positions": [
+          2,
+          1,
+          2
+        ],
+        "sampled_mc_positions": [
+          7,
+          6,
+          9
+        ],
+        "fixed_mc_positions": [
+          10,
+          10,
+          10
+        ],
+        "wins": 1,
+        "median": 2,
+        "mean_routine_gain_s": 375.9080946673457,
+        "mean_rank_gain_over_sampled_mc": 5.666666666666667
+      },
+      "2": {
+        "positions": [
+          3,
+          3,
+          3,
+          3,
+          1,
+          3
+        ],
+        "sampled_mc_positions": [
+          3,
+          6,
+          3,
+          4,
+          7,
+          3
+        ],
+        "fixed_mc_positions": [
+          9,
+          10,
+          9,
+          10,
+          10,
+          9
+        ],
+        "wins": 1,
+        "median": 3,
+        "mean_routine_gain_s": 81.90692503397001,
+        "mean_rank_gain_over_sampled_mc": 1.6666666666666667
+      }
+    },
+    "pooled_exit_rank_gain_over_sampled_mc": 3.0
+  },
+  {
+    "budgets": {
+      "1": 6,
+      "2": 14
+    },
+    "elite_level": 0,
+    "eligible": true,
+    "all_finished": true,
+    "top_two": [
+      "charles_leclair",
+      "franz_hermann"
+    ],
+    "points": {
+      "franz_hermann": 215.0,
+      "charles_leclair": 215.0,
+      "luis_amilton": 123.0,
+      "smooth_operator": 139.0,
+      "isa_kadjar": 104.0,
+      "battery_voltas": 78.0,
+      "pedro_gaseoso": 56.0,
+      "daniel_enchantier": 50.0,
+      "goat_tifi": 20.0
+    },
+    "difficulty": {
+      "1": {
+        "positions": [
+          1,
+          1,
+          1
+        ],
+        "sampled_mc_positions": [
+          7,
+          6,
+          9
+        ],
+        "fixed_mc_positions": [
+          10,
+          10,
+          10
+        ],
+        "wins": 3,
+        "median": 1,
+        "mean_routine_gain_s": 375.9080946673457,
+        "mean_rank_gain_over_sampled_mc": 6.333333333333333
+      },
+      "2": {
+        "positions": [
+          1,
+          2,
+          1,
+          1,
+          1,
+          1
+        ],
+        "sampled_mc_positions": [
+          3,
+          6,
+          1,
+          5,
+          7,
+          3
+        ],
+        "fixed_mc_positions": [
+          9,
+          10,
+          9,
+          10,
+          10,
+          9
+        ],
+        "wins": 5,
+        "median": 1,
+        "mean_routine_gain_s": 81.90692503397001,
+        "mean_rank_gain_over_sampled_mc": 3.0
+      }
+    },
+    "pooled_exit_rank_gain_over_sampled_mc": 4.111111111111111
+  },
+  {
+    "budgets": {
+      "1": 6,
+      "2": 14
+    },
+    "elite_level": 1,
+    "eligible": true,
+    "all_finished": true,
+    "top_two": [
+      "charles_leclair",
+      "franz_hermann"
+    ],
+    "points": {
+      "franz_hermann": 187.0,
+      "charles_leclair": 243.0,
+      "luis_amilton": 123.0,
+      "smooth_operator": 139.0,
+      "isa_kadjar": 104.0,
+      "battery_voltas": 78.0,
+      "pedro_gaseoso": 56.0,
+      "daniel_enchantier": 50.0,
+      "goat_tifi": 20.0
+    },
+    "difficulty": {
+      "1": {
+        "positions": [
+          1,
+          1,
+          1
+        ],
+        "sampled_mc_positions": [
+          7,
+          6,
+          9
+        ],
+        "fixed_mc_positions": [
+          10,
+          10,
+          10
+        ],
+        "wins": 3,
+        "median": 1,
+        "mean_routine_gain_s": 375.9080946673457,
+        "mean_rank_gain_over_sampled_mc": 6.333333333333333
+      },
+      "2": {
+        "positions": [
+          3,
+          3,
+          3,
+          3,
+          1,
+          3
+        ],
+        "sampled_mc_positions": [
+          3,
+          6,
+          3,
+          5,
+          7,
+          3
+        ],
+        "fixed_mc_positions": [
+          9,
+          10,
+          9,
+          10,
+          10,
+          9
+        ],
+        "wins": 1,
+        "median": 3,
+        "mean_routine_gain_s": 81.90692503397001,
+        "mean_rank_gain_over_sampled_mc": 1.8333333333333333
+      }
+    },
+    "pooled_exit_rank_gain_over_sampled_mc": 3.3333333333333335
+  },
+  {
+    "budgets": {
+      "1": 6,
+      "2": 14
+    },
+    "elite_level": 2,
+    "eligible": true,
+    "all_finished": true,
+    "top_two": [
+      "charles_leclair",
+      "franz_hermann"
+    ],
+    "points": {
+      "charles_leclair": 250.0,
+      "franz_hermann": 180.0,
+      "luis_amilton": 123.0,
+      "smooth_operator": 139.0,
+      "isa_kadjar": 104.0,
+      "battery_voltas": 78.0,
+      "pedro_gaseoso": 56.0,
+      "daniel_enchantier": 50.0,
+      "goat_tifi": 20.0
+    },
+    "difficulty": {
+      "1": {
+        "positions": [
+          2,
+          1,
+          2
+        ],
+        "sampled_mc_positions": [
+          7,
+          6,
+          9
+        ],
+        "fixed_mc_positions": [
+          10,
+          10,
+          10
+        ],
+        "wins": 1,
+        "median": 2,
+        "mean_routine_gain_s": 375.9080946673457,
+        "mean_rank_gain_over_sampled_mc": 5.666666666666667
+      },
+      "2": {
+        "positions": [
+          3,
+          3,
+          3,
+          3,
+          1,
+          3
+        ],
+        "sampled_mc_positions": [
+          3,
+          6,
+          3,
+          5,
+          7,
+          3
+        ],
+        "fixed_mc_positions": [
+          9,
+          10,
+          9,
+          10,
+          10,
+          9
+        ],
+        "wins": 1,
+        "median": 3,
+        "mean_routine_gain_s": 81.90692503397001,
+        "mean_rank_gain_over_sampled_mc": 1.8333333333333333
+      }
+    },
+    "pooled_exit_rank_gain_over_sampled_mc": 3.111111111111111
+  },
+  {
+    "budgets": {
+      "1": 6,
+      "2": 16
+    },
+    "elite_level": 0,
+    "eligible": true,
+    "all_finished": true,
+    "top_two": [
+      "charles_leclair",
+      "franz_hermann"
+    ],
+    "points": {
+      "franz_hermann": 208.0,
+      "charles_leclair": 222.0,
+      "luis_amilton": 123.0,
+      "smooth_operator": 139.0,
+      "isa_kadjar": 104.0,
+      "battery_voltas": 80.0,
+      "pedro_gaseoso": 56.0,
+      "daniel_enchantier": 48.0,
+      "goat_tifi": 20.0
+    },
+    "difficulty": {
+      "1": {
+        "positions": [
+          1,
+          1,
+          1
+        ],
+        "sampled_mc_positions": [
+          7,
+          6,
+          9
+        ],
+        "fixed_mc_positions": [
+          10,
+          10,
+          10
+        ],
+        "wins": 3,
+        "median": 1,
+        "mean_routine_gain_s": 375.9080946673457,
+        "mean_rank_gain_over_sampled_mc": 6.333333333333333
+      },
+      "2": {
+        "positions": [
+          3,
+          3,
+          3,
+          3,
+          1,
+          3
+        ],
+        "sampled_mc_positions": [
+          4,
+          8,
+          1,
+          6,
+          9,
+          3
+        ],
+        "fixed_mc_positions": [
+          10,
+          10,
+          9,
+          10,
+          10,
+          9
+        ],
+        "wins": 1,
+        "median": 3,
+        "mean_routine_gain_s": 81.90692503397001,
+        "mean_rank_gain_over_sampled_mc": 2.5
+      }
+    },
+    "pooled_exit_rank_gain_over_sampled_mc": 3.7777777777777777
+  },
+  {
+    "budgets": {
+      "1": 6,
+      "2": 16
+    },
+    "elite_level": 1,
+    "eligible": true,
+    "all_finished": true,
+    "top_two": [
+      "charles_leclair",
+      "franz_hermann"
+    ],
+    "points": {
+      "franz_hermann": 187.0,
+      "charles_leclair": 243.0,
+      "luis_amilton": 123.0,
+      "smooth_operator": 139.0,
+      "isa_kadjar": 104.0,
+      "battery_voltas": 80.0,
+      "pedro_gaseoso": 56.0,
+      "daniel_enchantier": 48.0,
+      "goat_tifi": 20.0
+    },
+    "difficulty": {
+      "1": {
+        "positions": [
+          1,
+          1,
+          1
+        ],
+        "sampled_mc_positions": [
+          7,
+          6,
+          9
+        ],
+        "fixed_mc_positions": [
+          10,
+          10,
+          10
+        ],
+        "wins": 3,
+        "median": 1,
+        "mean_routine_gain_s": 375.9080946673457,
+        "mean_rank_gain_over_sampled_mc": 6.333333333333333
+      },
+      "2": {
+        "positions": [
+          3,
+          3,
+          3,
+          3,
+          1,
+          3
+        ],
+        "sampled_mc_positions": [
+          4,
+          8,
+          3,
+          6,
+          9,
+          3
+        ],
+        "fixed_mc_positions": [
+          10,
+          10,
+          9,
+          10,
+          10,
+          9
+        ],
+        "wins": 1,
+        "median": 3,
+        "mean_routine_gain_s": 81.90692503397001,
+        "mean_rank_gain_over_sampled_mc": 2.8333333333333335
+      }
+    },
+    "pooled_exit_rank_gain_over_sampled_mc": 4.0
+  },
+  {
+    "budgets": {
+      "1": 6,
+      "2": 16
+    },
+    "elite_level": 2,
+    "eligible": true,
+    "all_finished": true,
+    "top_two": [
+      "charles_leclair",
+      "franz_hermann"
+    ],
+    "points": {
+      "charles_leclair": 243.0,
+      "franz_hermann": 187.0,
+      "luis_amilton": 123.0,
+      "smooth_operator": 139.0,
+      "isa_kadjar": 104.0,
+      "battery_voltas": 80.0,
+      "pedro_gaseoso": 56.0,
+      "daniel_enchantier": 48.0,
+      "goat_tifi": 20.0
+    },
+    "difficulty": {
+      "1": {
+        "positions": [
+          2,
+          1,
+          2
+        ],
+        "sampled_mc_positions": [
+          7,
+          6,
+          9
+        ],
+        "fixed_mc_positions": [
+          10,
+          10,
+          10
+        ],
+        "wins": 1,
+        "median": 2,
+        "mean_routine_gain_s": 375.9080946673457,
+        "mean_rank_gain_over_sampled_mc": 5.666666666666667
+      },
+      "2": {
+        "positions": [
+          3,
+          3,
+          3,
+          3,
+          1,
+          3
+        ],
+        "sampled_mc_positions": [
+          4,
+          8,
+          3,
+          6,
+          9,
+          3
+        ],
+        "fixed_mc_positions": [
+          10,
+          10,
+          9,
+          10,
+          10,
+          9
+        ],
+        "wins": 1,
+        "median": 3,
+        "mean_routine_gain_s": 81.90692503397001,
+        "mean_rank_gain_over_sampled_mc": 2.8333333333333335
+      }
+    },
+    "pooled_exit_rank_gain_over_sampled_mc": 3.7777777777777777
+  },
+  {
+    "budgets": {
+      "1": 7,
+      "2": 12
+    },
+    "elite_level": 0,
+    "eligible": true,
+    "all_finished": true,
+    "top_two": [
+      "charles_leclair",
+      "franz_hermann"
+    ],
+    "points": {
+      "franz_hermann": 215.0,
+      "charles_leclair": 215.0,
+      "smooth_operator": 142.0,
+      "luis_amilton": 124.0,
+      "isa_kadjar": 98.0,
+      "battery_voltas": 76.0,
+      "pedro_gaseoso": 64.0,
+      "daniel_enchantier": 46.0,
+      "goat_tifi": 20.0
+    },
+    "difficulty": {
+      "1": {
+        "positions": [
+          1,
+          1,
+          1
+        ],
+        "sampled_mc_positions": [
+          8,
+          8,
+          9
+        ],
+        "fixed_mc_positions": [
+          10,
+          10,
+          10
+        ],
+        "wins": 3,
+        "median": 1,
+        "mean_routine_gain_s": 375.9080946673457,
+        "mean_rank_gain_over_sampled_mc": 7.333333333333333
+      },
+      "2": {
+        "positions": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "sampled_mc_positions": [
+          3,
+          6,
+          1,
+          4,
+          7,
+          3
+        ],
+        "fixed_mc_positions": [
+          9,
+          10,
+          9,
+          10,
+          10,
+          9
+        ],
+        "wins": 6,
+        "median": 1,
+        "mean_routine_gain_s": 81.90692503397001,
+        "mean_rank_gain_over_sampled_mc": 3.0
+      }
+    },
+    "pooled_exit_rank_gain_over_sampled_mc": 4.444444444444445
+  },
+  {
+    "budgets": {
+      "1": 7,
+      "2": 12
+    },
+    "elite_level": 1,
+    "eligible": true,
+    "all_finished": true,
+    "top_two": [
+      "charles_leclair",
+      "franz_hermann"
+    ],
+    "points": {
+      "charles_leclair": 243.0,
+      "franz_hermann": 187.0,
+      "smooth_operator": 142.0,
+      "luis_amilton": 124.0,
+      "isa_kadjar": 98.0,
+      "battery_voltas": 76.0,
+      "pedro_gaseoso": 64.0,
+      "daniel_enchantier": 46.0,
+      "goat_tifi": 20.0
+    },
+    "difficulty": {
+      "1": {
+        "positions": [
+          1,
+          1,
+          1
+        ],
+        "sampled_mc_positions": [
+          8,
+          8,
+          9
+        ],
+        "fixed_mc_positions": [
+          10,
+          10,
+          10
+        ],
+        "wins": 3,
+        "median": 1,
+        "mean_routine_gain_s": 375.9080946673457,
+        "mean_rank_gain_over_sampled_mc": 7.333333333333333
+      },
+      "2": {
+        "positions": [
+          1,
+          2,
+          1,
+          1,
+          1,
+          1
+        ],
+        "sampled_mc_positions": [
+          3,
+          6,
+          1,
+          4,
+          7,
+          3
+        ],
+        "fixed_mc_positions": [
+          9,
+          10,
+          9,
+          10,
+          10,
+          9
+        ],
+        "wins": 5,
+        "median": 1,
+        "mean_routine_gain_s": 81.90692503397001,
+        "mean_rank_gain_over_sampled_mc": 2.8333333333333335
+      }
+    },
+    "pooled_exit_rank_gain_over_sampled_mc": 4.333333333333333
+  },
+  {
+    "budgets": {
+      "1": 7,
+      "2": 12
+    },
+    "elite_level": 2,
+    "eligible": false,
+    "all_finished": true,
+    "top_two": [
+      "charles_leclair",
+      "franz_hermann"
+    ],
+    "points": {
+      "charles_leclair": 250.0,
+      "franz_hermann": 180.0,
+      "smooth_operator": 142.0,
+      "luis_amilton": 124.0,
+      "isa_kadjar": 98.0,
+      "battery_voltas": 76.0,
+      "pedro_gaseoso": 64.0,
+      "daniel_enchantier": 46.0,
+      "goat_tifi": 20.0
+    },
+    "difficulty": {
+      "1": {
+        "positions": [
+          3,
+          3,
+          2
+        ],
+        "sampled_mc_positions": [
+          8,
+          8,
+          9
+        ],
+        "fixed_mc_positions": [
+          10,
+          10,
+          10
+        ],
+        "wins": 0,
+        "median": 3,
+        "mean_routine_gain_s": 375.9080946673457,
+        "mean_rank_gain_over_sampled_mc": 5.666666666666667
+      },
+      "2": {
+        "positions": [
+          3,
+          3,
+          3,
+          3,
+          1,
+          3
+        ],
+        "sampled_mc_positions": [
+          3,
+          6,
+          3,
+          4,
+          7,
+          3
+        ],
+        "fixed_mc_positions": [
+          9,
+          10,
+          9,
+          10,
+          10,
+          9
+        ],
+        "wins": 1,
+        "median": 3,
+        "mean_routine_gain_s": 81.90692503397001,
+        "mean_rank_gain_over_sampled_mc": 1.6666666666666667
+      }
+    },
+    "pooled_exit_rank_gain_over_sampled_mc": 3.0
+  },
+  {
+    "budgets": {
+      "1": 7,
+      "2": 14
+    },
+    "elite_level": 0,
+    "eligible": true,
+    "all_finished": true,
+    "top_two": [
+      "charles_leclair",
+      "franz_hermann"
+    ],
+    "points": {
+      "franz_hermann": 215.0,
+      "charles_leclair": 215.0,
+      "smooth_operator": 145.0,
+      "luis_amilton": 117.0,
+      "isa_kadjar": 106.0,
+      "battery_voltas": 76.0,
+      "pedro_gaseoso": 56.0,
+      "daniel_enchantier": 50.0,
+      "goat_tifi": 20.0
+    },
+    "difficulty": {
+      "1": {
+        "positions": [
+          1,
+          1,
+          1
+        ],
+        "sampled_mc_positions": [
+          8,
+          8,
+          9
+        ],
+        "fixed_mc_positions": [
+          10,
+          10,
+          10
+        ],
+        "wins": 3,
+        "median": 1,
+        "mean_routine_gain_s": 375.9080946673457,
+        "mean_rank_gain_over_sampled_mc": 7.333333333333333
+      },
+      "2": {
+        "positions": [
+          1,
+          2,
+          1,
+          1,
+          1,
+          1
+        ],
+        "sampled_mc_positions": [
+          3,
+          6,
+          1,
+          5,
+          7,
+          3
+        ],
+        "fixed_mc_positions": [
+          9,
+          10,
+          9,
+          10,
+          10,
+          9
+        ],
+        "wins": 5,
+        "median": 1,
+        "mean_routine_gain_s": 81.90692503397001,
+        "mean_rank_gain_over_sampled_mc": 3.0
+      }
+    },
+    "pooled_exit_rank_gain_over_sampled_mc": 4.444444444444445
+  },
+  {
+    "budgets": {
+      "1": 7,
+      "2": 14
+    },
+    "elite_level": 1,
+    "eligible": true,
+    "all_finished": true,
+    "top_two": [
+      "charles_leclair",
+      "franz_hermann"
+    ],
+    "points": {
+      "charles_leclair": 250.0,
+      "franz_hermann": 180.0,
+      "smooth_operator": 145.0,
+      "luis_amilton": 117.0,
+      "isa_kadjar": 106.0,
+      "battery_voltas": 76.0,
+      "pedro_gaseoso": 56.0,
+      "daniel_enchantier": 50.0,
+      "goat_tifi": 20.0
+    },
+    "difficulty": {
+      "1": {
+        "positions": [
+          1,
+          1,
+          1
+        ],
+        "sampled_mc_positions": [
+          8,
+          8,
+          9
+        ],
+        "fixed_mc_positions": [
+          10,
+          10,
+          10
+        ],
+        "wins": 3,
+        "median": 1,
+        "mean_routine_gain_s": 375.9080946673457,
+        "mean_rank_gain_over_sampled_mc": 7.333333333333333
+      },
+      "2": {
+        "positions": [
+          3,
+          3,
+          3,
+          3,
+          1,
+          3
+        ],
+        "sampled_mc_positions": [
+          3,
+          6,
+          3,
+          5,
+          7,
+          3
+        ],
+        "fixed_mc_positions": [
+          9,
+          10,
+          9,
+          10,
+          10,
+          9
+        ],
+        "wins": 1,
+        "median": 3,
+        "mean_routine_gain_s": 81.90692503397001,
+        "mean_rank_gain_over_sampled_mc": 1.8333333333333333
+      }
+    },
+    "pooled_exit_rank_gain_over_sampled_mc": 3.6666666666666665
+  },
+  {
+    "budgets": {
+      "1": 7,
+      "2": 14
+    },
+    "elite_level": 2,
+    "eligible": false,
+    "all_finished": true,
+    "top_two": [
+      "charles_leclair",
+      "franz_hermann"
+    ],
+    "points": {
+      "charles_leclair": 250.0,
+      "franz_hermann": 180.0,
+      "smooth_operator": 145.0,
+      "luis_amilton": 117.0,
+      "isa_kadjar": 106.0,
+      "battery_voltas": 76.0,
+      "pedro_gaseoso": 56.0,
+      "daniel_enchantier": 50.0,
+      "goat_tifi": 20.0
+    },
+    "difficulty": {
+      "1": {
+        "positions": [
+          3,
+          3,
+          2
+        ],
+        "sampled_mc_positions": [
+          8,
+          8,
+          9
+        ],
+        "fixed_mc_positions": [
+          10,
+          10,
+          10
+        ],
+        "wins": 0,
+        "median": 3,
+        "mean_routine_gain_s": 375.9080946673457,
+        "mean_rank_gain_over_sampled_mc": 5.666666666666667
+      },
+      "2": {
+        "positions": [
+          3,
+          3,
+          3,
+          3,
+          1,
+          3
+        ],
+        "sampled_mc_positions": [
+          3,
+          6,
+          3,
+          5,
+          7,
+          3
+        ],
+        "fixed_mc_positions": [
+          9,
+          10,
+          9,
+          10,
+          10,
+          9
+        ],
+        "wins": 1,
+        "median": 3,
+        "mean_routine_gain_s": 81.90692503397001,
+        "mean_rank_gain_over_sampled_mc": 1.8333333333333333
+      }
+    },
+    "pooled_exit_rank_gain_over_sampled_mc": 3.111111111111111
+  },
+  {
+    "budgets": {
+      "1": 7,
+      "2": 16
+    },
+    "elite_level": 0,
+    "eligible": true,
+    "all_finished": true,
+    "top_two": [
+      "charles_leclair",
+      "franz_hermann"
+    ],
+    "points": {
+      "franz_hermann": 208.0,
+      "charles_leclair": 222.0,
+      "smooth_operator": 145.0,
+      "luis_amilton": 117.0,
+      "isa_kadjar": 106.0,
+      "battery_voltas": 78.0,
+      "pedro_gaseoso": 56.0,
+      "daniel_enchantier": 48.0,
+      "goat_tifi": 20.0
+    },
+    "difficulty": {
+      "1": {
+        "positions": [
+          1,
+          1,
+          1
+        ],
+        "sampled_mc_positions": [
+          8,
+          8,
+          9
+        ],
+        "fixed_mc_positions": [
+          10,
+          10,
+          10
+        ],
+        "wins": 3,
+        "median": 1,
+        "mean_routine_gain_s": 375.9080946673457,
+        "mean_rank_gain_over_sampled_mc": 7.333333333333333
+      },
+      "2": {
+        "positions": [
+          3,
+          3,
+          3,
+          3,
+          1,
+          3
+        ],
+        "sampled_mc_positions": [
+          4,
+          8,
+          1,
+          6,
+          9,
+          3
+        ],
+        "fixed_mc_positions": [
+          10,
+          10,
+          9,
+          10,
+          10,
+          9
+        ],
+        "wins": 1,
+        "median": 3,
+        "mean_routine_gain_s": 81.90692503397001,
+        "mean_rank_gain_over_sampled_mc": 2.5
+      }
+    },
+    "pooled_exit_rank_gain_over_sampled_mc": 4.111111111111111
+  },
+  {
+    "budgets": {
+      "1": 7,
+      "2": 16
+    },
+    "elite_level": 1,
+    "eligible": true,
+    "all_finished": true,
+    "top_two": [
+      "charles_leclair",
+      "franz_hermann"
+    ],
+    "points": {
+      "charles_leclair": 250.0,
+      "franz_hermann": 180.0,
+      "smooth_operator": 145.0,
+      "luis_amilton": 117.0,
+      "isa_kadjar": 106.0,
+      "battery_voltas": 78.0,
+      "pedro_gaseoso": 56.0,
+      "daniel_enchantier": 48.0,
+      "goat_tifi": 20.0
+    },
+    "difficulty": {
+      "1": {
+        "positions": [
+          1,
+          1,
+          1
+        ],
+        "sampled_mc_positions": [
+          8,
+          8,
+          9
+        ],
+        "fixed_mc_positions": [
+          10,
+          10,
+          10
+        ],
+        "wins": 3,
+        "median": 1,
+        "mean_routine_gain_s": 375.9080946673457,
+        "mean_rank_gain_over_sampled_mc": 7.333333333333333
+      },
+      "2": {
+        "positions": [
+          3,
+          3,
+          3,
+          3,
+          1,
+          3
+        ],
+        "sampled_mc_positions": [
+          4,
+          8,
+          3,
+          6,
+          9,
+          3
+        ],
+        "fixed_mc_positions": [
+          10,
+          10,
+          9,
+          10,
+          10,
+          9
+        ],
+        "wins": 1,
+        "median": 3,
+        "mean_routine_gain_s": 81.90692503397001,
+        "mean_rank_gain_over_sampled_mc": 2.8333333333333335
+      }
+    },
+    "pooled_exit_rank_gain_over_sampled_mc": 4.333333333333333
+  },
+  {
+    "budgets": {
+      "1": 7,
+      "2": 16
+    },
+    "elite_level": 2,
+    "eligible": false,
+    "all_finished": true,
+    "top_two": [
+      "charles_leclair",
+      "franz_hermann"
+    ],
+    "points": {
+      "charles_leclair": 243.0,
+      "franz_hermann": 187.0,
+      "smooth_operator": 145.0,
+      "luis_amilton": 117.0,
+      "isa_kadjar": 106.0,
+      "battery_voltas": 78.0,
+      "pedro_gaseoso": 56.0,
+      "daniel_enchantier": 48.0,
+      "goat_tifi": 20.0
+    },
+    "difficulty": {
+      "1": {
+        "positions": [
+          3,
+          3,
+          2
+        ],
+        "sampled_mc_positions": [
+          8,
+          8,
+          9
+        ],
+        "fixed_mc_positions": [
+          10,
+          10,
+          10
+        ],
+        "wins": 0,
+        "median": 3,
+        "mean_routine_gain_s": 375.9080946673457,
+        "mean_rank_gain_over_sampled_mc": 5.666666666666667
+      },
+      "2": {
+        "positions": [
+          3,
+          3,
+          3,
+          3,
+          1,
+          3
+        ],
+        "sampled_mc_positions": [
+          4,
+          8,
+          3,
+          6,
+          9,
+          3
+        ],
+        "fixed_mc_positions": [
+          10,
+          10,
+          9,
+          10,
+          10,
+          9
+        ],
+        "wins": 1,
+        "median": 3,
+        "mean_routine_gain_s": 81.90692503397001,
+        "mean_rank_gain_over_sampled_mc": 2.8333333333333335
+      }
+    },
+    "pooled_exit_rank_gain_over_sampled_mc": 3.7777777777777777
+  },
+  {
+    "budgets": {
+      "1": 8,
+      "2": 12
+    },
+    "elite_level": 0,
+    "eligible": true,
+    "all_finished": true,
+    "top_two": [
+      "charles_leclair",
+      "franz_hermann"
+    ],
+    "points": {
+      "franz_hermann": 215.0,
+      "charles_leclair": 215.0,
+      "smooth_operator": 147.0,
+      "luis_amilton": 121.0,
+      "isa_kadjar": 96.0,
+      "pedro_gaseoso": 70.0,
+      "battery_voltas": 70.0,
+      "daniel_enchantier": 46.0,
+      "goat_tifi": 20.0
+    },
+    "difficulty": {
+      "1": {
+        "positions": [
+          1,
+          1,
+          1
+        ],
+        "sampled_mc_positions": [
+          8,
+          9,
+          10
+        ],
+        "fixed_mc_positions": [
+          10,
+          10,
+          10
+        ],
+        "wins": 3,
+        "median": 1,
+        "mean_routine_gain_s": 375.9080946673457,
+        "mean_rank_gain_over_sampled_mc": 8.0
+      },
+      "2": {
+        "positions": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "sampled_mc_positions": [
+          3,
+          6,
+          1,
+          4,
+          7,
+          3
+        ],
+        "fixed_mc_positions": [
+          9,
+          10,
+          9,
+          10,
+          10,
+          9
+        ],
+        "wins": 6,
+        "median": 1,
+        "mean_routine_gain_s": 81.90692503397001,
+        "mean_rank_gain_over_sampled_mc": 3.0
+      }
+    },
+    "pooled_exit_rank_gain_over_sampled_mc": 4.666666666666667
+  },
+  {
+    "budgets": {
+      "1": 8,
+      "2": 12
+    },
+    "elite_level": 1,
+    "eligible": true,
+    "all_finished": true,
+    "top_two": [
+      "charles_leclair",
+      "franz_hermann"
+    ],
+    "points": {
+      "charles_leclair": 243.0,
+      "franz_hermann": 187.0,
+      "smooth_operator": 147.0,
+      "luis_amilton": 121.0,
+      "isa_kadjar": 96.0,
+      "pedro_gaseoso": 70.0,
+      "battery_voltas": 70.0,
+      "daniel_enchantier": 46.0,
+      "goat_tifi": 20.0
+    },
+    "difficulty": {
+      "1": {
+        "positions": [
+          1,
+          2,
+          3
+        ],
+        "sampled_mc_positions": [
+          8,
+          9,
+          10
+        ],
+        "fixed_mc_positions": [
+          10,
+          10,
+          10
+        ],
+        "wins": 1,
+        "median": 2,
+        "mean_routine_gain_s": 375.9080946673457,
+        "mean_rank_gain_over_sampled_mc": 7.0
+      },
+      "2": {
+        "positions": [
+          1,
+          2,
+          1,
+          1,
+          1,
+          1
+        ],
+        "sampled_mc_positions": [
+          3,
+          6,
+          1,
+          4,
+          7,
+          3
+        ],
+        "fixed_mc_positions": [
+          9,
+          10,
+          9,
+          10,
+          10,
+          9
+        ],
+        "wins": 5,
+        "median": 1,
+        "mean_routine_gain_s": 81.90692503397001,
+        "mean_rank_gain_over_sampled_mc": 2.8333333333333335
+      }
+    },
+    "pooled_exit_rank_gain_over_sampled_mc": 4.222222222222222
+  },
+  {
+    "budgets": {
+      "1": 8,
+      "2": 12
+    },
+    "elite_level": 2,
+    "eligible": false,
+    "all_finished": true,
+    "top_two": [
+      "charles_leclair",
+      "franz_hermann"
+    ],
+    "points": {
+      "charles_leclair": 250.0,
+      "franz_hermann": 180.0,
+      "smooth_operator": 147.0,
+      "luis_amilton": 121.0,
+      "isa_kadjar": 96.0,
+      "pedro_gaseoso": 70.0,
+      "battery_voltas": 70.0,
+      "daniel_enchantier": 46.0,
+      "goat_tifi": 20.0
+    },
+    "difficulty": {
+      "1": {
+        "positions": [
+          3,
+          3,
+          3
+        ],
+        "sampled_mc_positions": [
+          8,
+          9,
+          10
+        ],
+        "fixed_mc_positions": [
+          10,
+          10,
+          10
+        ],
+        "wins": 0,
+        "median": 3,
+        "mean_routine_gain_s": 375.9080946673457,
+        "mean_rank_gain_over_sampled_mc": 6.0
+      },
+      "2": {
+        "positions": [
+          3,
+          3,
+          3,
+          3,
+          1,
+          3
+        ],
+        "sampled_mc_positions": [
+          3,
+          6,
+          3,
+          4,
+          7,
+          3
+        ],
+        "fixed_mc_positions": [
+          9,
+          10,
+          9,
+          10,
+          10,
+          9
+        ],
+        "wins": 1,
+        "median": 3,
+        "mean_routine_gain_s": 81.90692503397001,
+        "mean_rank_gain_over_sampled_mc": 1.6666666666666667
+      }
+    },
+    "pooled_exit_rank_gain_over_sampled_mc": 3.111111111111111
+  },
+  {
+    "budgets": {
+      "1": 8,
+      "2": 14
+    },
+    "elite_level": 0,
+    "eligible": true,
+    "all_finished": true,
+    "top_two": [
+      "charles_leclair",
+      "franz_hermann"
+    ],
+    "points": {
+      "franz_hermann": 215.0,
+      "charles_leclair": 215.0,
+      "smooth_operator": 150.0,
+      "luis_amilton": 114.0,
+      "isa_kadjar": 104.0,
+      "pedro_gaseoso": 62.0,
+      "battery_voltas": 70.0,
+      "daniel_enchantier": 50.0,
+      "goat_tifi": 20.0
+    },
+    "difficulty": {
+      "1": {
+        "positions": [
+          1,
+          1,
+          1
+        ],
+        "sampled_mc_positions": [
+          8,
+          9,
+          10
+        ],
+        "fixed_mc_positions": [
+          10,
+          10,
+          10
+        ],
+        "wins": 3,
+        "median": 1,
+        "mean_routine_gain_s": 375.9080946673457,
+        "mean_rank_gain_over_sampled_mc": 8.0
+      },
+      "2": {
+        "positions": [
+          1,
+          2,
+          1,
+          1,
+          1,
+          1
+        ],
+        "sampled_mc_positions": [
+          3,
+          6,
+          1,
+          5,
+          7,
+          3
+        ],
+        "fixed_mc_positions": [
+          9,
+          10,
+          9,
+          10,
+          10,
+          9
+        ],
+        "wins": 5,
+        "median": 1,
+        "mean_routine_gain_s": 81.90692503397001,
+        "mean_rank_gain_over_sampled_mc": 3.0
+      }
+    },
+    "pooled_exit_rank_gain_over_sampled_mc": 4.666666666666667
+  },
+  {
+    "budgets": {
+      "1": 8,
+      "2": 14
+    },
+    "elite_level": 1,
+    "eligible": true,
+    "all_finished": true,
+    "top_two": [
+      "charles_leclair",
+      "franz_hermann"
+    ],
+    "points": {
+      "charles_leclair": 250.0,
+      "franz_hermann": 180.0,
+      "smooth_operator": 150.0,
+      "luis_amilton": 114.0,
+      "isa_kadjar": 104.0,
+      "pedro_gaseoso": 62.0,
+      "battery_voltas": 70.0,
+      "daniel_enchantier": 50.0,
+      "goat_tifi": 20.0
+    },
+    "difficulty": {
+      "1": {
+        "positions": [
+          1,
+          2,
+          3
+        ],
+        "sampled_mc_positions": [
+          8,
+          9,
+          10
+        ],
+        "fixed_mc_positions": [
+          10,
+          10,
+          10
+        ],
+        "wins": 1,
+        "median": 2,
+        "mean_routine_gain_s": 375.9080946673457,
+        "mean_rank_gain_over_sampled_mc": 7.0
+      },
+      "2": {
+        "positions": [
+          3,
+          3,
+          3,
+          3,
+          1,
+          3
+        ],
+        "sampled_mc_positions": [
+          3,
+          6,
+          3,
+          5,
+          7,
+          3
+        ],
+        "fixed_mc_positions": [
+          9,
+          10,
+          9,
+          10,
+          10,
+          9
+        ],
+        "wins": 1,
+        "median": 3,
+        "mean_routine_gain_s": 81.90692503397001,
+        "mean_rank_gain_over_sampled_mc": 1.8333333333333333
+      }
+    },
+    "pooled_exit_rank_gain_over_sampled_mc": 3.5555555555555554
+  },
+  {
+    "budgets": {
+      "1": 8,
+      "2": 14
+    },
+    "elite_level": 2,
+    "eligible": false,
+    "all_finished": true,
+    "top_two": [
+      "charles_leclair",
+      "franz_hermann"
+    ],
+    "points": {
+      "charles_leclair": 250.0,
+      "franz_hermann": 180.0,
+      "smooth_operator": 150.0,
+      "luis_amilton": 114.0,
+      "isa_kadjar": 104.0,
+      "pedro_gaseoso": 62.0,
+      "battery_voltas": 70.0,
+      "daniel_enchantier": 50.0,
+      "goat_tifi": 20.0
+    },
+    "difficulty": {
+      "1": {
+        "positions": [
+          3,
+          3,
+          3
+        ],
+        "sampled_mc_positions": [
+          8,
+          9,
+          10
+        ],
+        "fixed_mc_positions": [
+          10,
+          10,
+          10
+        ],
+        "wins": 0,
+        "median": 3,
+        "mean_routine_gain_s": 375.9080946673457,
+        "mean_rank_gain_over_sampled_mc": 6.0
+      },
+      "2": {
+        "positions": [
+          3,
+          3,
+          3,
+          3,
+          1,
+          3
+        ],
+        "sampled_mc_positions": [
+          3,
+          6,
+          3,
+          5,
+          7,
+          3
+        ],
+        "fixed_mc_positions": [
+          9,
+          10,
+          9,
+          10,
+          10,
+          9
+        ],
+        "wins": 1,
+        "median": 3,
+        "mean_routine_gain_s": 81.90692503397001,
+        "mean_rank_gain_over_sampled_mc": 1.8333333333333333
+      }
+    },
+    "pooled_exit_rank_gain_over_sampled_mc": 3.2222222222222223
+  },
+  {
+    "budgets": {
+      "1": 8,
+      "2": 16
+    },
+    "elite_level": 0,
+    "eligible": true,
+    "all_finished": true,
+    "top_two": [
+      "charles_leclair",
+      "franz_hermann"
+    ],
+    "points": {
+      "franz_hermann": 208.0,
+      "charles_leclair": 222.0,
+      "smooth_operator": 150.0,
+      "luis_amilton": 114.0,
+      "isa_kadjar": 104.0,
+      "pedro_gaseoso": 62.0,
+      "battery_voltas": 72.0,
+      "daniel_enchantier": 48.0,
+      "goat_tifi": 20.0
+    },
+    "difficulty": {
+      "1": {
+        "positions": [
+          1,
+          1,
+          1
+        ],
+        "sampled_mc_positions": [
+          8,
+          9,
+          10
+        ],
+        "fixed_mc_positions": [
+          10,
+          10,
+          10
+        ],
+        "wins": 3,
+        "median": 1,
+        "mean_routine_gain_s": 375.9080946673457,
+        "mean_rank_gain_over_sampled_mc": 8.0
+      },
+      "2": {
+        "positions": [
+          3,
+          3,
+          3,
+          3,
+          1,
+          3
+        ],
+        "sampled_mc_positions": [
+          4,
+          8,
+          1,
+          6,
+          9,
+          3
+        ],
+        "fixed_mc_positions": [
+          10,
+          10,
+          9,
+          10,
+          10,
+          9
+        ],
+        "wins": 1,
+        "median": 3,
+        "mean_routine_gain_s": 81.90692503397001,
+        "mean_rank_gain_over_sampled_mc": 2.5
+      }
+    },
+    "pooled_exit_rank_gain_over_sampled_mc": 4.333333333333333
+  },
+  {
+    "budgets": {
+      "1": 8,
+      "2": 16
+    },
+    "elite_level": 1,
+    "eligible": true,
+    "all_finished": true,
+    "top_two": [
+      "charles_leclair",
+      "franz_hermann"
+    ],
+    "points": {
+      "charles_leclair": 250.0,
+      "franz_hermann": 180.0,
+      "smooth_operator": 150.0,
+      "luis_amilton": 114.0,
+      "isa_kadjar": 104.0,
+      "pedro_gaseoso": 62.0,
+      "battery_voltas": 72.0,
+      "daniel_enchantier": 48.0,
+      "goat_tifi": 20.0
+    },
+    "difficulty": {
+      "1": {
+        "positions": [
+          1,
+          2,
+          3
+        ],
+        "sampled_mc_positions": [
+          8,
+          9,
+          10
+        ],
+        "fixed_mc_positions": [
+          10,
+          10,
+          10
+        ],
+        "wins": 1,
+        "median": 2,
+        "mean_routine_gain_s": 375.9080946673457,
+        "mean_rank_gain_over_sampled_mc": 7.0
+      },
+      "2": {
+        "positions": [
+          3,
+          3,
+          3,
+          3,
+          1,
+          3
+        ],
+        "sampled_mc_positions": [
+          4,
+          8,
+          3,
+          6,
+          9,
+          3
+        ],
+        "fixed_mc_positions": [
+          10,
+          10,
+          9,
+          10,
+          10,
+          9
+        ],
+        "wins": 1,
+        "median": 3,
+        "mean_routine_gain_s": 81.90692503397001,
+        "mean_rank_gain_over_sampled_mc": 2.8333333333333335
+      }
+    },
+    "pooled_exit_rank_gain_over_sampled_mc": 4.222222222222222
+  },
+  {
+    "budgets": {
+      "1": 8,
+      "2": 16
+    },
+    "elite_level": 2,
+    "eligible": false,
+    "all_finished": true,
+    "top_two": [
+      "charles_leclair",
+      "franz_hermann"
+    ],
+    "points": {
+      "charles_leclair": 243.0,
+      "franz_hermann": 187.0,
+      "smooth_operator": 150.0,
+      "luis_amilton": 114.0,
+      "isa_kadjar": 104.0,
+      "pedro_gaseoso": 62.0,
+      "battery_voltas": 72.0,
+      "daniel_enchantier": 48.0,
+      "goat_tifi": 20.0
+    },
+    "difficulty": {
+      "1": {
+        "positions": [
+          3,
+          3,
+          3
+        ],
+        "sampled_mc_positions": [
+          8,
+          9,
+          10
+        ],
+        "fixed_mc_positions": [
+          10,
+          10,
+          10
+        ],
+        "wins": 0,
+        "median": 3,
+        "mean_routine_gain_s": 375.9080946673457,
+        "mean_rank_gain_over_sampled_mc": 6.0
+      },
+      "2": {
+        "positions": [
+          3,
+          3,
+          3,
+          3,
+          1,
+          3
+        ],
+        "sampled_mc_positions": [
+          4,
+          8,
+          3,
+          6,
+          9,
+          3
+        ],
+        "fixed_mc_positions": [
+          10,
+          10,
+          9,
+          10,
+          10,
+          9
+        ],
+        "wins": 1,
+        "median": 3,
+        "mean_routine_gain_s": 81.90692503397001,
+        "mean_rank_gain_over_sampled_mc": 2.8333333333333335
+      }
+    },
+    "pooled_exit_rank_gain_over_sampled_mc": 3.888888888888889
+  }
+]
