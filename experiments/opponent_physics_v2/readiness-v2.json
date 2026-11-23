@@ -1,6 +1,6 @@
 {
   "schema": "pitgun.opponent-physics-readiness/v2",
-  "date": "2026-11-22",
+  "date": "2026-11-23",
   "supersedes_status_only": "plan-v1.json remains the frozen pre-implementation protocol, not a current progress report",
   "evidence_prs": [
     459,
@@ -11,7 +11,8 @@
     467,
     470,
     471,
-    473
+    473,
+    474
   ],
   "gates": {
     "effective_driver_resolution": "native opt-in qualified; signed/runtime admission open",
@@ -21,7 +22,7 @@
     "career_fixtures": "12 authored real-reducer snapshots/54 prepared GP requests, exact repeat and fixed-field independence; bookkeeping not pace evidence",
     "boundary_lookahead_cost": "native reachable_wear_v1 qualified on26scenarios/2modes/2repeats including8reserved; actual-component I/II addition467:18GP references and12selected setups paired/exact repeats, no carry jumps/failures and six GP pair orders agree. Wider reserved career/strategy acceptance461 remains open. Native advance overhead1.8..32.2% on3prior cases; no WASM/VPS/RSS acceptance. Full-GP extension468 uses10controlled conservative lap recomputations after5cap updates; all certified, max15/24coupling passes and zero carry jumps. No new clock/RSS claim.",
     "setup_screen": "full-GP response468:240fixed-slider allocations,870slider cases including complete720integer concentrated split/grid combinations,54local cases,24off-budget one-axis pairs and96strategy recipes.1235semantic requests/1223diagnostic envelopes/1211physical inputs;1307native executions,0failures,zero carry jumps. Four axes connected; early aero weak in authored settings and chassis dominates sampled concentrated optima. No exhaustive alternate/continuous optimum or field balance verdict.",
-    "opponent_fit": "V1 completed6155trainingGP with0/27eligible calibrations (no informed exit-stage wins); V2 preserved4500strategy cases and690named adaptations, then stopped before seal/reserve on owner max2voluntary-stop requirement. No final9field selected/admitted; Franz Hermann and Charles LEclair remain intended persistent front-runners.",
+    "opponent_fit": "V1/V2 negative results retained. V3 frozen6ca2835/PR474 running under unchanged progressive4: named-driver adaptation,18fresh exact repeats,actual-career player preparation complete;21/27approximate training configurations eligible. Full actual-driver198strategy-family qualification per90driver/context checks underway on budgetsI/II8/16,then7/16,then8/14 if needed,base traits. Approximate results are provisional; no final9field selected/admitted and no field holdout opened.",
     "reserved_evaluation": "selected native setup/strategy responses468:60reserved seed/temperature/circuit-transfer cases, all finish and fresh repeats exact; selection sealed before opening. No held-out calibrated-opponent policy/season evaluation yet. Fixed-nine field reserved results not opened: V1 REFINE and V2 stopped before policy seal.",
     "runtime_admission": "not performed",
     "tire_preparation_and_window": "explicit modern70C mount/pit and95% thermal-grip event policy qualified natively:23cases×2exact repeats,4unchanged baselines,56driver+22historical outcomes and8old event cases exact; physical parameters, warm-up duration/compound balance and era applicability remain REFINE (#463).",
@@ -60,5 +61,6 @@
   "tire_stand_fix_issue": "https://github.com/loicbelec/pitgun/issues/472",
   "tire_performance_candidate_evidence": "experiments/tire_performance_v1/RESULTS_V1.md",
   "tire_transfer_protocol": "experiments/tire_transfer_v1/README.md",
-  "tire_transfer_evidence": "experiments/tire_transfer_v1/RESULTS_V1.md"
+  "tire_transfer_evidence": "experiments/tire_transfer_v1/RESULTS_V1.md",
+  "fixed_field_active_protocol": "experiments/fixed_opponents_v3/README.md"
 }

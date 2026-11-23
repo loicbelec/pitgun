@@ -61,3 +61,20 @@ python3 experiments/fixed_opponents_v3/run_local.py BINAIRE_NATIF_FIGE CACHE_KER
 ```
 
 Ne pas modifier common.py, run_local.py, plan-v3.json, les sources physiques, les ressources ou le binaire pendant le calcul. Une reprise conserve les phases terminées et leur identité. Les anciennes campagnes V1/V2 et le diagnostic des stands restent disponibles dans leurs dossiers et branches.
+
+## Restitution après achèvement
+
+`report.py` contrôle les empreintes du reçu final, des sources et des résultats avant de produire `RESULTS_V3.md` et `results/summary-v3.json`. Il restitue les configurations rejetées et leurs marges, les traits réellement exécutés, les résultats réservés et la progression du joueur. Il ne choisit aucun nouveau réglage. `plot_report.py` produit ensuite des figures PNG/SVG à partir de ces mêmes données. Ces commandes exigent une campagne terminée ; elles ne transforment pas une phase encore en cours en résultat validé.
+
+```sh
+python3 experiments/fixed_opponents_v3/report.py
+python3 experiments/fixed_opponents_v3/plot_report.py
+```
+
+Le statut `COMPLETE_NATIVE_EVALUATION` signifie que le protocole est terminé. Le rapport détermine séparément si les critères réservés passent (`NATIVE_I_II_CANDIDATE`) ou échouent (`REFINE_NO_ADMISSION`). Une campagne rejetée avant le scellement conserve `REFINE_TRAINING_NO_HOLDOUT`, sans consultation des seeds réservés.
+
+## Futur raccordement du plateau
+
+L'export candidat, lorsqu'il existe, reste explicitement non admis. Un futur raccordement devra conserver ensemble les ressources de pilotes avec leurs traits finaux déjà développés, le budget fixe de chaque ère, les composants et offsets distincts des dépenses, ainsi que les réglages et plans par contexte. Il devra aussi conserver les namespaces aléatoires `fixed-field:<driver_resource_id>` et `career-driver:player`, et compiler le même profil physique pour les trois gommes, au départ comme aux arrêts.
+
+La validation native n'autorise pas à déduire une identité de moteur du seul numéro d'ère ou du véhicule de base, à doubler le bonus de traits des favoris, ni à substituer l'ancien pneu lors d'un arrêt. L'identité du modèle et du SimPack, le coût et la parité WASM, les commandes en course et le replay Authority/Verifier restent à qualifier avant publication dans les catalogues et utilisation par le jeu.
