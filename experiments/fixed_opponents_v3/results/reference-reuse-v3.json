@@ -1,0 +1,6 @@
+{
+  "transfer_receipt_digest": "sha256:d7805713315a56862f4a9ddcf88f218f113a7ea9298147ddfc0ae0f240433e88",
+  "setup_cases": 1742,
+  "normal_strategy_cases": 2280,
+  "no_old_physics_driver_imports": true
+}

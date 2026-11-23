@@ -64,6 +64,12 @@ Ne pas modifier common.py, run_local.py, plan-v3.json, les sources physiques, le
 
 ## Restitution après achèvement
 
+La campagne complète représente environ 269 Mio de reçus. Les synthèses, le protocole, la politique scellée et le [manifeste d'archive](evidence-archive-v3.json) restent dans Git. Les reçus compressés, le journal de toutes les exécutions et le binaire macOS exact sont conservés dans une archive de recherche distincte, avec empreinte SHA-256 et empreintes de chacun des 34 fichiers. Aucun fichier de télémétrie point à point n'est ajouté.
+
+L'archive est attachée à la **release de recherche en brouillon** `research-fixed-opponents-v3-20261123` du dépôt `loicbelec/pitgun`. Elle demande donc un accès mainteneur authentifié tant qu'elle reste en brouillon ; sa publication n'est pas une admission de modèle. Garder ce statut visible et prévoir l'accès public aux preuves avant toute annonce publique de qualification. La copie locale reste également conservée ; le cache n'est pas l'unique exemplaire.
+
+Pour contrôler les preuves depuis un nouveau checkout, télécharger l'archive avec `gh release download research-fixed-opponents-v3-20261123 --repo loicbelec/pitgun --pattern fixed-opponents-v3-evidence-2026-11-23.tar --dir DOSSIER_TEMPORAIRE`, puis comparer son SHA-256 au manifeste avant extraction dans ce dossier temporaire. Copier ensuite les fichiers `results/*-v3.json.gz` et `results/native-executions-v3.jsonl` extraits dans ce dossier d'expérience. Les JSON compacts sont déjà dans Git. `report.py` contrôle alors les empreintes du reçu final avant toute restitution. Le binaire original extrait sous `native/` sert aux reproductions exactes sur une machine compatible ; un binaire reconstruit ou destiné à un autre système doit recevoir sa propre qualification, sans substitution silencieuse.
+
 `report.py` contrôle les empreintes du reçu final, des sources et des résultats avant de produire `RESULTS_V3.md` et `results/summary-v3.json`. Il restitue les configurations rejetées et leurs marges, les traits réellement exécutés, les résultats réservés et la progression du joueur. Il ne choisit aucun nouveau réglage. `plot_report.py` produit ensuite des figures PNG/SVG à partir de ces mêmes données. Ces commandes exigent une campagne terminée ; elles ne transforment pas une phase encore en cours en résultat validé.
 
 ```sh
