@@ -1,0 +1,151 @@
+{
+  "schema": "pitgun.fixed-field-campaign/v3",
+  "scope": "Native fixed-nine I/II calibration under globally selected progressive4; one/two-stop normal candidate plans, unrestricted extra-stop physical diagnostics. No current game/model admission/deployment change.",
+  "workers": 8,
+  "contexts": [
+    {
+      "era": 1,
+      "fixture_id": "craft_engineering:era1-exit",
+      "circuit": "MONZA",
+      "laps": 53,
+      "source_seed": 17041,
+      "base_budget": 8
+    },
+    {
+      "era": 1,
+      "fixture_id": "craft_engineering:era1-exit",
+      "circuit": "SILVERSTONE",
+      "laps": 52,
+      "source_seed": 17042,
+      "base_budget": 8
+    },
+    {
+      "era": 1,
+      "fixture_id": "craft_engineering:era1-exit",
+      "circuit": "ZANDVOORT",
+      "laps": 72,
+      "source_seed": 17043,
+      "base_budget": 8
+    },
+    {
+      "era": 2,
+      "fixture_id": "craft_engineering:era2-exit",
+      "circuit": "MEXICO",
+      "laps": 71,
+      "source_seed": 17043,
+      "base_budget": 16
+    },
+    {
+      "era": 2,
+      "fixture_id": "craft_engineering:era2-exit",
+      "circuit": "MONTREAL",
+      "laps": 70,
+      "source_seed": 17042,
+      "base_budget": 16
+    },
+    {
+      "era": 2,
+      "fixture_id": "craft_engineering:era2-exit",
+      "circuit": "MONZA",
+      "laps": 53,
+      "source_seed": 17046,
+      "base_budget": 16
+    },
+    {
+      "era": 2,
+      "fixture_id": "craft_engineering:era2-exit",
+      "circuit": "SAOPAULO",
+      "laps": 71,
+      "source_seed": 17044,
+      "base_budget": 16
+    },
+    {
+      "era": 2,
+      "fixture_id": "craft_engineering:era2-entry",
+      "circuit": "SILVERSTONE",
+      "laps": 52,
+      "source_seed": 17045,
+      "base_budget": 16
+    },
+    {
+      "era": 2,
+      "fixture_id": "craft_engineering:era2-exit",
+      "circuit": "SPIELBERG",
+      "laps": 71,
+      "source_seed": 17041,
+      "base_budget": 16
+    },
+    {
+      "era": 2,
+      "fixture_id": "craft_engineering:era2-exit",
+      "circuit": "ZANDVOORT",
+      "laps": 72,
+      "source_seed": 17045,
+      "base_budget": 16
+    }
+  ],
+  "roster": "experiments/fixed_opponents_v2/roster-v2.json",
+  "control": "player uses unchanged balanced_reference.84traits and balanced mode; all9balanced too; no hidden AI-only attack advantage",
+  "training_seed": 73013,
+  "validation_seeds": [
+    99173,
+    104729,
+    130363,
+    155921
+  ],
+  "validation_environments": [
+    null,
+    {
+      "air_c": 20,
+      "road_c": 30
+    },
+    {
+      "air_c": 40,
+      "road_c": 50
+    }
+  ],
+  "setup_search": "all integer engine/chassis splits; cooling0/2/4 with engine0/25%/50% and aero0/12.5%, remaining chassis; gear0/.5/1, downforce locked.5 inI and0/.5 inII. Full GP medium-hard50% source plan; one bounded point/slider refinement on top2",
+  "strategy_search": "All114 distinct-opening one/two-stop recipes from the separately frozen tire performance screen, including early/late first stops and one-lap middle stints. No3+stop strategy can become a fixed field plan.",
+  "driver_adaptation": "Top3distinct transferred setup x top3distinct transferred normal-plan pairs per named actor/context, then one all-one-point and +/-2lap pit-timing neighborhood. Fixed styles select near-best valid plans within0.15percent; named favorites select strict best. All nine and reference use Balanced .8.",
+  "budget_tiers": {
+    "1": [
+      6,
+      7,
+      8
+    ],
+    "2": [
+      12,
+      14,
+      16
+    ]
+  },
+  "budgets": "choose one constant discretionary budget per era for all9, fixed offsetsI0/0/0/0 andII2/1/4/1, fixed engineI1960 andII1970/basic aero; never player allocation/spend/result. Explicit candidate tiers, not a pace multiplier",
+  "player_benchmarks": "18 real craft-engineering preparations at entry/exit of I/II. Compare routine equal allocation/default MH, fixed50:50engine-chassis/default MH, sampled concentrated MC and informed recipes. Use actual earned budgets/HQ/components and slider locks. Informed and sampled MC both receive two all-legal one-point/slider/pit-timing local rounds (MC stays A=K=0), including two-point transfers in first round. Then sweep all114normal schedules on their final exit-stage setups (9GP x2styles); entry-stage recipes remain bounded sampled candidates. No exhaustive setup optimum claim. Initial informed/MC candidates cross top3 distinct transferred setups with top6 distinct transferred normal strategies; source points are scaled, then actual career locks/caps enforced. Keep incumbent sampled schedules when coarse final sweeps do not contain their locally shifted timings.",
+  "selection_targets": {
+    "elite_hierarchy": "FranzHermann andCharlesLEclair are the two highest aggregate championship scorers among the nine; never force individual arrivals.",
+    "attainability": "Informed exit-stage player wins >=1GP per era, median rank<=3 per era, improves mean time over routine per era.",
+    "meaningful_choices": "Informed mean rank no worse than sampled MC per era; pooled exit-stage mean rank gain over sampled MC >=0.5. Fixed50:50/default-MH recipe must not win all exit races in either era. No requirement that sampledMC lose everywhere or each era improve by0.5; late-II installed cooling may legitimately suffice.",
+    "failure": "Preserve REFINE, never adjust physical coefficients or finishing times. Reserved seeds stay closed unless all training gates pass."
+  },
+  "ranking": "independent-car elapsed times, laps completed and explicit failure. No traffic/drafting/collision model; true native10-car batch parity on selected contexts before claiming field composition",
+  "seal": "final9roster/setups/plans/budgets sealed before reserved seeds/temperatures. No retune after reserved results; retain all failed simulations. Exact fresh repeats for representative sealed fields, and reordered-roster/player-change independence tests",
+  "finish_criteria": "all outcomes preserved; continuity/work/thermal/energy closure checked; named elites strongest aggregate in reserved evaluation, and attainable informed player benefits over fixed recipes; limited initialI/II candidate if fail, never claim full all-era balance",
+  "non_goals": [
+    "no player historical setup ingestion",
+    "no forced all-axis spending",
+    "no tuning to generate Engineer bubbles",
+    "no ordinary constructor/catalog/schema admission,Worker/WASM,Authority/Verifier,staging/prod or personal browser/save changes",
+    "no real accident/VSC or rain dynamics claim; modeled mistakes are recoverable throttle hesitations",
+    "no timing/RSS/WASM/VPS performance claim from concurrent campaign"
+  ],
+  "elite_calibration": "Three globally fixed candidate levels for Franz/Charles only: base traits, +.02, +.04 to each trait capped.99. Same level across all eras/circuits. Expanded final resources and exact driver digests recorded. Choose on training only; not a time multiplier.",
+  "selection_objective": "Group eligible approximations by constant era budget pair, keep lowest eligible elite level per pair; sort by min(nI/8,nII/16),sum(nI/8+nII/16),lower elite level,nII,nI descending in that objective. At most3distinct pairs receive full qualification. No post-holdout retuning.",
+  "prerequisite": "Require PASS_NATIVE_TRANSFER and verify all retained transfer receipts plus the unchanged physical kernel. Reuse exact current-profile results only; no old-physics driver imports.",
+  "training_only_refine": "If no eligible calibration, preserve a REFINE receipt and do not open reserved seeds. Any further training protocol must be versioned, never retrospectively retune reserved evaluation.",
+  "field_extra_stop_audit": "Complete114+84strategy families under actual final named-driver traits and selected allocations at each attempted budget configuration, before seal/heldout. Keep exact failures; no interface cap hides 3+incentives.",
+  "reference_reuse": "Use all successful transferred setup-search/setup-refinement rows and all one/two-stop strategy-comparison rows. No repeat setup campaign. Named adaptation crosses top3 distinct sampled setups with top3 distinct transferred normal strategies per context.",
+  "final_training_qualification": "Choose up to3 approximate eligible configurations with distinct (eraIbudget,eraIIbudget), ordered by hardest normalized budget and lowest eligible global elite level. For each attempted configuration sweep114one/two-stop AND84extra-stop diagnostic plans under every actual selected driver/setup/context (90x198=17820family requests before reuse), plus the incumbent normal plan when absent from the coarse sweep. Reoptimize each normal plan by declared style, falling back to best normal if style would yield to an extra-stop plan. Recheck hierarchy/attainability/meaningful-choice criteria on these actual optimized outputs. Any extra-stop advantage blocks that configuration. Accept first fully qualified candidate; if all3 fail preserveREFINE before reserve. Record every attempted candidate and counterexample.",
+  "resume": "Content-pinned phase receipts; immutable initial cache snapshot permits separate new-unique/reused/exact-repeat counts. Do not edit protocol/common/runner/physics resources/native binary while active.",
+  "execution_and_memory": "Full named strategy qualification is chunked by circuit-era context (at most9x199requests per phase); only selected per-driver records retained across chunks. Completed native executions are journaled separately from cache reuse, including forced repeats and native ten-car audits. No browser/VPS performance claim.",
+  "repeat_and_identity": "Before budget selection repeat one selected base-driver case per actor in each era (18fresh nativeGP), exact full output comparison. Before sealing verify actual driver-resource digest constant across10contexts per actor and Balanced commitment.8. Held-out seed1/inherited-condition repeats cover90opponent+72playercases; native audits/invariance cover both eras."
+}
