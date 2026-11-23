@@ -1,6 +1,6 @@
 # Plateau fixe de neuf IA · campagne native V3
 
-**Protocole enregistré avant calcul. Aucun plateau final ni modèle jouable admis.**
+**Campagne terminée : candidat natif I/II qualifié. Aucun modèle jouable admis.** Voir [les résultats et limites](RESULTS_V3.md). Le protocole reste celui enregistré avant calcul ; aucune sélection n'a été retouchée après ouverture des données réservées.
 
 Cette campagne reprend après [le transfert pneus validé](../tire_transfer_v1/RESULTS_V1.md), sous le même profil global `progressive4`, le même binaire de recherche et les mêmes équations. Elle ne modifie ni le jeu, ni les catalogues publiés, ni les services. Suivi : [#457](https://github.com/loicbelec/pitgun/issues/457), prérequis [#472](https://github.com/loicbelec/pitgun/issues/472).
 

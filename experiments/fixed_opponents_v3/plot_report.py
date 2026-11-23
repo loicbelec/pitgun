@@ -48,7 +48,7 @@ def main():
         ax.set_ylim(10.4, .6)
         ax.set_ylabel("Rang moyen face aux mêmes neuf adversaires")
         ax.set_title("Progression observée · les préparations du joueur comptent\nBudgets, équipements, bonus et commandes réellement disponibles à chaque étape")
-        ax.legend(frameon=False, fontsize=9, loc="lower right")
+        ax.legend(frameon=False, fontsize=9, loc="upper center", bbox_to_anchor=(.5, -.14), ncol=2)
         save(fig, out, "player-progression-v3")
     else:
         candidates = load(OUT / "calibration-candidates-v3.json")

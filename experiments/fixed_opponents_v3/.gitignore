@@ -1,0 +1,4 @@
+# Full receipts and execution journal are retained in the checksummed evidence
+# archive referenced by evidence-archive-v3.json, not duplicated in Git history.
+results/*-v3.json.gz
+results/native-executions-v3.jsonl
