@@ -146,5 +146,9 @@
       "sha256": "sha256:f4ad545da2f70664e15ba567bed97aff5126dc42b7122868384e58a35ce44f57"
     }
   },
-  "scope": "Offline research evidence and original macOS native binary; not a game/catalog/model release"
+  "scope": "Offline research evidence and original macOS native binary; not a game/catalog/model release",
+  "release_api_id": 456052329,
+  "release_url": "https://github.com/loicbelec/pitgun/releases/tag/untagged-fa61df64f662d664dd17",
+  "asset_api_id": 784713801,
+  "remote_digest_verified": "sha256:69ca35f3b5f5672872045391f6a458ec4d26eaf7418af432427e724e67d300b6"
 }
