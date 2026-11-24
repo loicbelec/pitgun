@@ -113,6 +113,17 @@ pub fn prepare_request(
     snapshot: &RacingCatalogSnapshot,
 ) -> Result<RunRaceRequest, String> {
     let p = profile(snapshot)?;
+    // The qualified field was measured on the catalog's physical geometry and
+    // service loss. Presentation-path reconstruction must not replace either.
+    if request.input.track_profile.is_some()
+        || request
+            .input
+            .pit_strategy
+            .as_ref()
+            .is_some_and(|plan| plan.pit_loss_ms.is_some())
+    {
+        return Err("qualified career requires catalog geometry and pit loss".into());
+    }
     let era = request.era.unwrap_or(request.input.era);
     let context = p
         .contexts
@@ -558,5 +569,29 @@ mod tests {
         let mut req = request(1, true);
         req.era = Some(3);
         assert!(prepare_request(req, &catalog).is_err());
+    }
+    #[test]
+    fn presentation_geometry_and_service_loss_cannot_override_qualification() {
+        let catalog = RacingCatalogSnapshot::embedded_qualified_career().unwrap();
+        let mut req = request(1, true);
+        req.input.pit_strategy = Some(PitStrategyConfig {
+            player_pit_laps: vec![],
+            pit_loss_ms: Some(0),
+        });
+        assert!(
+            prepare_request(req, &catalog)
+                .unwrap_err()
+                .contains("catalog geometry")
+        );
+        let mut wire = serde_json::to_value(request(1, true)).unwrap();
+        wire["input"]["track_profile"] = serde_json::json!({
+            "s":[0.,100.],"x":[0.,100.],"y":[0.,0.]
+        });
+        let req = serde_json::from_value(wire).unwrap();
+        assert!(
+            prepare_request(req, &catalog)
+                .unwrap_err()
+                .contains("catalog geometry")
+        );
     }
 }

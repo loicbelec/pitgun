@@ -13,9 +13,40 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         "../../../experiments/qualified_career_v1/native-reference-v1.json"
     ))?;
     let mut rows = Vec::new();
+    let field_only = std::env::args().any(|a| a == "--incremental-fields");
     for vector in refs["vectors"].as_array().unwrap() {
         let request: RunRaceRequest = serde_json::from_value(vector["request"].clone())?;
         let prepared = qualified_career::prepare_request(request, &catalog)?;
+        if field_only {
+            let began = std::time::Instant::now();
+            let output = qualified_career::run(prepared.clone(), &catalog)?;
+            for row in &output.standings {
+                let car = prepared
+                    .input
+                    .race
+                    .competitors
+                    .iter()
+                    .find(|c| c.id == row.competitor_id)
+                    .unwrap();
+                let pits = &car.stint_strategy.as_ref().unwrap().pit_laps;
+                let expected: u64 = vector["expected"][&row.competitor_id]["lap_times_s"]
+                    .as_array()
+                    .unwrap()
+                    .iter()
+                    .enumerate()
+                    .map(|(index, t)| {
+                        (t.as_f64().unwrap() * 1000.).round() as u64
+                            + if pits.contains(&(index as u16 + 1)) {
+                                22000
+                            } else {
+                                0
+                            }
+                    })
+                    .sum();
+                rows.push(json!({"circuit":vector["circuit"],"actor":row.competitor_id,"total_time_ms":row.total_time_ms,"expected_time_ms":expected,"passed":row.total_time_ms==expected,"elapsed_ms":began.elapsed().as_secs_f64()*1000.}));
+            }
+            continue;
+        }
         for (actor, input) in qualified_career::resolve_inputs(&prepared, &catalog)? {
             let input_digest = canonical_json_digest(&input)?;
             let began = std::time::Instant::now();
@@ -45,7 +76,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!(
         "{}",
         serde_json::to_string_pretty(
-            &json!({"schema":"pitgun.qualified-career-native-conformance/v1","passed":passed,"metadata":serde_json::from_str::<Value>(&qualified_career::qualified_career_metadata_json())?,"checks":rows})
+            &json!({"schema":"pitgun.qualified-career-native-conformance/v1","passed":passed,"incremental_fields":field_only,"metadata":serde_json::from_str::<Value>(&qualified_career::qualified_career_metadata_json())?,"checks":rows})
         )?
     );
     if !passed {
