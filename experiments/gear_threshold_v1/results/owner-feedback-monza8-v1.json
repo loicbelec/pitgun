@@ -1,0 +1,305 @@
+{
+  "metadata": {
+    "control_policy": {
+      "digest": "sha256:0f1e83c95f38c4c5e80f261e613c49d60c39a1d38553f31a88c115bc66eb2214",
+      "id": "pitgun.racing-service-control-policy",
+      "version": "3.0.0"
+    },
+    "model": {
+      "digest": "sha256:fcce2427ec1f0d27b5d8a04be8664f1c90ea8be222ba988028b6080cdb2b6abe",
+      "id": "pitgun.racing-v3-candidate",
+      "version": "0.16.1"
+    },
+    "physics": "pitgun.local-qualified-career/v1",
+    "profile": {
+      "digest": "sha256:eac926be88a0dab8902efe921d89c7f865b0079e3c082b9e64dfdc6bda6b1556",
+      "id": "pitgun.racing.qualified-career.profile-v1",
+      "version": "1.0.0"
+    },
+    "scope": "local I/II candidate, not deployed",
+    "telemetry_policy": {
+      "digest": "sha256:cc4928a1f2aa0fc2a3a807cbb9e406708f04c1eebbaebe9c131aaf0c84f0a0ad",
+      "id": "pitgun.racing-power-channel-policy",
+      "version": "2.0.0"
+    }
+  },
+  "opponents": [
+    {
+      "actor": "battery_voltas",
+      "physical_input_digest": "sha256:2cd1efd858994fc10afadae144c9d14485e96451729a1f56470747eae9125cef",
+      "result": {
+        "carcass_laps3_5_time_mean_c": 76.45161212739136,
+        "elapsed_with_service_s": 7314.818902285833,
+        "max_gear": 3,
+        "result_digest": "sha256:abb8e49d1f0d2f01b615dbe3c38b787c9ceb37478912706ac3669e46d98b704e",
+        "surface_laps3_5_max_c": 69.40446530150176,
+        "surface_laps3_5_min_c": 65.71629746997246,
+        "surface_laps3_5_time_mean_c": 67.78790110774587,
+        "total_time_ms": 7314815
+      }
+    },
+    {
+      "actor": "charles_leclair",
+      "physical_input_digest": "sha256:4e59a27b6608c7473abcd03f453fac0f464ae3db334938d16f4f392ce00402dc",
+      "result": {
+        "carcass_laps3_5_time_mean_c": 76.37351370702793,
+        "elapsed_with_service_s": 7313.533537963889,
+        "max_gear": 3,
+        "result_digest": "sha256:793fa19f411daeb2028c98bd7a4689723fd2fc051f57b359d473b4e8a5ad8d91",
+        "surface_laps3_5_max_c": 69.38383621106058,
+        "surface_laps3_5_min_c": 65.6871908340232,
+        "surface_laps3_5_time_mean_c": 67.72151137439567,
+        "total_time_ms": 7313530
+      }
+    },
+    {
+      "actor": "daniel_enchantier",
+      "physical_input_digest": "sha256:2ff0603bd7940275dfef00b2839887433651dd595db627fa93c5360daf17950b",
+      "result": {
+        "carcass_laps3_5_time_mean_c": 76.13327403742103,
+        "elapsed_with_service_s": 7411.35904823124,
+        "max_gear": 3,
+        "result_digest": "sha256:9beed7b398db2d0c26ff35516c0ece4043da11030b408a78ae69b88263e3367f",
+        "surface_laps3_5_max_c": 68.976180809729,
+        "surface_laps3_5_min_c": 65.51192041797444,
+        "surface_laps3_5_time_mean_c": 67.44928906941553,
+        "total_time_ms": 7411361
+      }
+    },
+    {
+      "actor": "franz_hermann",
+      "physical_input_digest": "sha256:91a77f110521c0db56b5065e60460eb56fb2955005d53b9197f01267fbaab1cb",
+      "result": {
+        "carcass_laps3_5_time_mean_c": 76.49609917824098,
+        "elapsed_with_service_s": 7314.050871797312,
+        "max_gear": 3,
+        "result_digest": "sha256:83dda18fa915a5d91bf9979c8dc7a7c548c96fc10833d893aaeecef3a9e246ee",
+        "surface_laps3_5_max_c": 69.43596342321992,
+        "surface_laps3_5_min_c": 65.75113944426711,
+        "surface_laps3_5_time_mean_c": 67.81779457521179,
+        "total_time_ms": 7314054
+      }
+    },
+    {
+      "actor": "goat_tifi",
+      "physical_input_digest": "sha256:19a7fe7b7f3dddc1d4f12a9ea9a5c51972ba420acddb5675c3e8f381571b4ab7",
+      "result": {
+        "carcass_laps3_5_time_mean_c": 76.14394022609531,
+        "elapsed_with_service_s": 7395.208350383342,
+        "max_gear": 3,
+        "result_digest": "sha256:4f35d70385f01be6f111b96552cb402c3256bfc1cb6308f5ca87d94edf2e7ecc",
+        "surface_laps3_5_max_c": 69.01576555662733,
+        "surface_laps3_5_min_c": 65.51599989631957,
+        "surface_laps3_5_time_mean_c": 67.47814255469031,
+        "total_time_ms": 7395208
+      }
+    },
+    {
+      "actor": "isa_kadjar",
+      "physical_input_digest": "sha256:c13001209cae6c7a9f291ff5891e0d0d10cf1a0d5ff7c98f2b4893e6f2ba2378",
+      "result": {
+        "carcass_laps3_5_time_mean_c": 76.34679205915684,
+        "elapsed_with_service_s": 7350.320516270077,
+        "max_gear": 3,
+        "result_digest": "sha256:d3e9bc855495cc91cea645cafce3c1acb28a655fce611405d4e7c2a627ccafaf",
+        "surface_laps3_5_max_c": 69.30256309173618,
+        "surface_laps3_5_min_c": 65.64940774461289,
+        "surface_laps3_5_time_mean_c": 67.69539316649089,
+        "total_time_ms": 7350319
+      }
+    },
+    {
+      "actor": "luis_amilton",
+      "physical_input_digest": "sha256:9ad161f7ad89d40d36088fc4e78f06137a68292e3662da936a1a852d118873a2",
+      "result": {
+        "carcass_laps3_5_time_mean_c": 76.5282874454684,
+        "elapsed_with_service_s": 7300.858841838198,
+        "max_gear": 3,
+        "result_digest": "sha256:73331e8dd9653081d9b8a647feb0f86183b220ac4d164d7c0da9a159f4ab8299",
+        "surface_laps3_5_max_c": 69.49844678304835,
+        "surface_laps3_5_min_c": 65.77213484481108,
+        "surface_laps3_5_time_mean_c": 67.86336558020788,
+        "total_time_ms": 7300860
+      }
+    },
+    {
+      "actor": "pedro_gaseoso",
+      "physical_input_digest": "sha256:7178fc731e8842725fb3e97a0783ce2a3d796ae879bc6cd285bdc4bdee008bf5",
+      "result": {
+        "carcass_laps3_5_time_mean_c": 76.34580924636062,
+        "elapsed_with_service_s": 7351.163360382239,
+        "max_gear": 3,
+        "result_digest": "sha256:96c750a887edf98b4709b85a81fedbe148b36e10c9fca6ff5e396e2ebf80e360",
+        "surface_laps3_5_max_c": 69.25447909471093,
+        "surface_laps3_5_min_c": 65.6490226962124,
+        "surface_laps3_5_time_mean_c": 67.67245605005924,
+        "total_time_ms": 7351161
+      }
+    },
+    {
+      "actor": "smooth_operator",
+      "physical_input_digest": "sha256:3f6a21da72661c1acbc7f18d5160a4754f6fb45ed48b015a651e1b7bb67339e0",
+      "result": {
+        "carcass_laps3_5_time_mean_c": 76.39032375850815,
+        "elapsed_with_service_s": 7339.382170567704,
+        "max_gear": 3,
+        "result_digest": "sha256:475bbe25fabad610abc9cf1f3cbb4f4bb2e36675692ec1addda8c38124182ce1",
+        "surface_laps3_5_max_c": 69.3089501744457,
+        "surface_laps3_5_min_c": 65.67504891895184,
+        "surface_laps3_5_time_mean_c": 67.71387773579588,
+        "total_time_ms": 7339383
+      }
+    }
+  ],
+  "player_cases": [
+    {
+      "allocation_aero_chassis_engine_cooling": [
+        2,
+        2,
+        2,
+        2
+      ],
+      "budget": 8,
+      "case": "balanced",
+      "gear_slider": 0.5,
+      "physical_input_digest": "sha256:a46bf5e4a798692190e81e6662ee5fa78d55c32174434542a0021de4c1dc8513",
+      "position": 8,
+      "result": {
+        "carcass_laps3_5_time_mean_c": 76.51883728470935,
+        "elapsed_with_service_s": 7357.374805030569,
+        "max_gear": 3,
+        "result_digest": "sha256:01ef7376c2dc0da4743c132964bba95b8ae3e1aef10d6050db0a402c925bcb7b",
+        "surface_laps3_5_max_c": 69.48763695387211,
+        "surface_laps3_5_min_c": 65.75169061686309,
+        "surface_laps3_5_time_mean_c": 67.84771427957318,
+        "total_time_ms": 7357377
+      }
+    },
+    {
+      "allocation_aero_chassis_engine_cooling": [
+        0,
+        4,
+        4,
+        0
+      ],
+      "budget": 8,
+      "case": "engine_chassis",
+      "gear_slider": 0.5,
+      "physical_input_digest": "sha256:39c622fe59d55eef902f8c1226131c91fb2e6efb4ad02ebef017f07e58a45fba",
+      "position": 10,
+      "result": {
+        "carcass_laps3_5_time_mean_c": 76.10580329840116,
+        "elapsed_with_service_s": 7510.604782520322,
+        "max_gear": 3,
+        "result_digest": "sha256:f153d6546df1b583281942329d6d175997bb437b271a1efdba986b2678ab9f91",
+        "surface_laps3_5_max_c": 68.87427350246979,
+        "surface_laps3_5_min_c": 65.56951913757437,
+        "surface_laps3_5_time_mean_c": 67.42069394128458,
+        "total_time_ms": 7510603
+      }
+    },
+    {
+      "allocation_aero_chassis_engine_cooling": [
+        0,
+        3,
+        3,
+        2
+      ],
+      "budget": 8,
+      "case": "engine_chassis_cooling",
+      "gear_slider": 0.5,
+      "physical_input_digest": "sha256:3dfdb527535866d950cd4c8134e16f00c3af966f81225cafefeb190175f8fac2",
+      "position": 8,
+      "result": {
+        "carcass_laps3_5_time_mean_c": 76.52964238560571,
+        "elapsed_with_service_s": 7351.560214481945,
+        "max_gear": 3,
+        "result_digest": "sha256:6a09df4501e3e82fca47311b902c280e563617472c0c6d0e026d7cbf7be82a2b",
+        "surface_laps3_5_max_c": 69.49635753625948,
+        "surface_laps3_5_min_c": 65.75494053089284,
+        "surface_laps3_5_time_mean_c": 67.85394077713006,
+        "total_time_ms": 7351559
+      }
+    },
+    {
+      "allocation_aero_chassis_engine_cooling": [
+        0,
+        6,
+        0,
+        2
+      ],
+      "budget": 8,
+      "case": "chassis_cooling_long",
+      "gear_slider": 1.0,
+      "physical_input_digest": "sha256:3d6c8e8417dbbf84c435936075a43512979d89d8a6fdec0627366cd85c15b07b",
+      "position": 8,
+      "result": {
+        "carcass_laps3_5_time_mean_c": 76.30223955682594,
+        "elapsed_with_service_s": 7368.733105861068,
+        "max_gear": 3,
+        "result_digest": "sha256:213996111a30f832b062216a1e78f0f44d604b845d9da6087241907efb339693",
+        "surface_laps3_5_max_c": 69.17436166611407,
+        "surface_laps3_5_min_c": 65.62031140514502,
+        "surface_laps3_5_time_mean_c": 67.61226294088783,
+        "total_time_ms": 7368730
+      }
+    },
+    {
+      "allocation_aero_chassis_engine_cooling": [
+        0,
+        6,
+        0,
+        2
+      ],
+      "budget": 8,
+      "case": "chassis_cooling_mid",
+      "gear_slider": 0.5,
+      "physical_input_digest": "sha256:aa56a3844d6616854ab5a26ed4bc3c030070238cc9a748e3970ed1376bdc26ac",
+      "position": 8,
+      "result": {
+        "carcass_laps3_5_time_mean_c": 76.4850973814503,
+        "elapsed_with_service_s": 7351.606479621718,
+        "max_gear": 3,
+        "result_digest": "sha256:4281c218397d314da32599a1be41b506289bd28605f6c831049f99a5807cf902",
+        "surface_laps3_5_max_c": 69.43435282630195,
+        "surface_laps3_5_min_c": 65.71393919408997,
+        "surface_laps3_5_time_mean_c": 67.80242631863479,
+        "total_time_ms": 7351607
+      }
+    },
+    {
+      "allocation_aero_chassis_engine_cooling": [
+        2,
+        3,
+        2,
+        1
+      ],
+      "budget": 8,
+      "case": "mixed_long",
+      "gear_slider": 1.0,
+      "physical_input_digest": "sha256:d8cf4e2836d0366ec896d4f32dcaf43da1cb70f30828ce93cc693f2d46ab4d4d",
+      "position": 10,
+      "result": {
+        "carcass_laps3_5_time_mean_c": 76.14511408285888,
+        "elapsed_with_service_s": 7425.447710895566,
+        "max_gear": 3,
+        "result_digest": "sha256:eb3ee7b047f280f3750df1b763d9108d4f6cc62f823d18c9b6a000e9cc5f37de",
+        "surface_laps3_5_max_c": 69.01249225205615,
+        "surface_laps3_5_min_c": 65.53312601581841,
+        "surface_laps3_5_time_mean_c": 67.45477186063,
+        "total_time_ms": 7425451
+      }
+    }
+  ],
+  "schema": "pitgun.owner-feedback-bounded-probe/v1",
+  "scope": "15 serial native GP: fixed nine solved once plus six prespecified player setups, Monza I, seed1960, 8 effective points each, same baseline car, common 53-lap soft26/medium27 player plan. No new fit, winning-probability estimate, all-circuit claim or thermal parameter change. Laps3-5 temperatures are pre-stop soft tires.",
+  "provenance": {
+    "framework_base_commit": "bd5395f",
+    "example_source_sha256": "sha256:97059afb4513ffbcffc6737330fdc1a0f6bd2cbfedb8ad5bd26ee907ce85a58e",
+    "native_executable_sha256": "sha256:c80aa21bfa9dafa8b4e1da3b4b333a5e6c7ccf2f6509856de8dd538455e32e5e",
+    "serial_executions": 15,
+    "opponents_computed_once": 9,
+    "prespecified_player_cases": 6,
+    "runtime_or_parameter_changes": false
+  }
+}
