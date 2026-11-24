@@ -40,6 +40,8 @@ pub struct RacingHostedExecutionRequestV1 {
 /// Wire version of explicit catalog-backed execution lineage.
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Deserialize, Serialize)]
 pub enum RacingExecutionResolutionVersion {
+    #[serde(rename = "pitgun.racing-execution-resolution/v5")]
+    V5,
     /// First lineage block for a catalog-owned model-parameter resource.
     #[serde(rename = "pitgun.racing-execution-resolution/v1")]
     V1,
@@ -62,6 +64,9 @@ pub enum RacingExecutionResolutionVersion {
 #[derive(Clone, Debug, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub struct RacingExecutionResolutionV1 {
+    /// Explicit energy/thermal/tire/fixed-field overrides to the baseline resources.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub qualified_career_profile: Option<ArtifactIdentity>,
     /// Exact lineage wire semantics.
     pub schema_version: RacingExecutionResolutionVersion,
     /// Immutable catalog release from which execution resources were resolved.
@@ -105,7 +110,11 @@ impl RacingExecutionResolutionV1 {
             return None;
         }
         Some(Self {
-            schema_version: if fuel_contract.is_some() {
+            qualified_career_profile: (model == &crate::qualified_career::model_identity())
+                .then(crate::qualified_career::profile_identity),
+            schema_version: if model == &crate::qualified_career::model_identity() {
+                RacingExecutionResolutionVersion::V5
+            } else if fuel_contract.is_some() {
                 RacingExecutionResolutionVersion::V4
             } else if power_unit_thermal_profile.is_some() || component_capability_profile.is_some()
             {

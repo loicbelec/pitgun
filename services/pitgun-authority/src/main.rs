@@ -324,7 +324,13 @@ fn build_signed_racing_service_authorization(
             "service-control runtime is not admitted".into(),
         ));
     }
-    let model = pitgun_racing_simulator::racing_model_v3_component_candidate_identity();
+    let model = if catalog.qualified_career_profile_bytes().is_some() {
+        pitgun_racing_simulator::qualified_career::profile(catalog)
+            .map_err(ContractError::BadRequest)?;
+        pitgun_racing_simulator::qualified_career::model_identity()
+    } else {
+        pitgun_racing_simulator::racing_model_v3_component_candidate_identity()
+    };
     let prepared = prepare_racing_run_with(
         RacingPreparationContext {
             state,
@@ -1080,10 +1086,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let service_catalog = match std::env::var_os("PITGUN_RACING_SERVICE_CATALOG_RELEASE_DIR") {
         Some(path) => {
             let catalog = RacingCatalogSnapshot::from_release_dir(PathBuf::from(path))?;
-            catalog.manifest().compatibility.validate_for(
-                &pitgun_racing_simulator::racing_model_v3_component_candidate_identity(),
-                ContractVersion::V1,
-            )?;
+            let service_model = if catalog.qualified_career_profile_bytes().is_some() {
+                pitgun_racing_simulator::qualified_career::profile(&catalog)?;
+                pitgun_racing_simulator::qualified_career::model_identity()
+            } else {
+                pitgun_racing_simulator::racing_model_v3_component_candidate_identity()
+            };
+            catalog
+                .manifest()
+                .compatibility
+                .validate_for(&service_model, ContractVersion::V1)?;
             Some(catalog)
         }
         None => None,

@@ -689,6 +689,10 @@ fn default_lap_count() -> u16 {
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq)]
 pub struct SimulationSolution {
+    /// Accepted per-segment powers for a live lap only. Not serialized into the
+    /// historical solution/result identity and not accumulated into final history.
+    #[serde(skip)]
+    pub energy_power_points: Vec<longitudinal_energy::EnergyPowerPointV1>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub driver_lapse_profile_v1: Option<driver_lapses::DriverLapseParamsV1>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
@@ -1747,6 +1751,7 @@ fn run_compatibility_simulation_kernel(
     }
 
     let solution = SimulationSolution {
+        energy_power_points: Vec::new(),
         driver_lapse_profile_v1: None,
         driver_lapses_v1: Vec::new(),
         longitudinal_model: None,
@@ -2530,6 +2535,11 @@ async fn run_resolved_simulation_kernel_incremental(
             let mut tire_wear = vec![0.0; n];
             let mut gear = vec![1u8; n];
             let mut power = vec![0.0; n];
+            let mut energy_power_points = if energy_mode {
+                vec![longitudinal_energy::EnergyPowerPointV1::default(); n]
+            } else {
+                Vec::new()
+            };
             let mut tire_utilization = vec![0.0; n];
             let mut tire_normal_load = vec![0.0; n];
             let mut tire_available_force = vec![0.0; n];
@@ -2645,6 +2655,7 @@ async fn run_resolved_simulation_kernel_incremental(
                     dt = step.duration_s;
                     v_fwd[i + 1] = step.end_speed_mps;
                     power[i] = step.engine_budget_kw;
+                    energy_power_points[i] = step.power_point;
                     engine_load_power_kw = step.engine_shaft_power_w / 1000.0;
                     temp[i + 1] = step.end_temperature_c;
                     shift_power_fraction[i] = step.delivered_shift_fraction;
@@ -3351,6 +3362,7 @@ async fn run_resolved_simulation_kernel_incremental(
             }
             out_driver_lapses.extend(accepted_lapses.iter().cloned());
             let mut lap_solution = Some(SimulationSolution {
+                energy_power_points,
                 driver_lapse_profile_v1: driver_lapses.cloned(),
                 driver_lapses_v1: accepted_lapses,
                 longitudinal_model: energy_model,
@@ -3548,6 +3560,7 @@ async fn run_resolved_simulation_kernel_incremental(
     }
 
     let solution = SimulationSolution {
+        energy_power_points: Vec::new(),
         driver_lapse_profile_v1: driver_lapses.cloned(),
         driver_lapses_v1: out_driver_lapses,
         longitudinal_model: energy_model,
@@ -3715,7 +3728,40 @@ pub fn resample_telemetry_with_engine_thermal(
     hz: f64,
     engine_thermal: Option<EngineThermalParamsV3>,
 ) -> Result<ResampledTelemetry, String> {
-    if solution.longitudinal_model.is_some() || solution.thermal_model.is_some() {
+    resample_telemetry_inner(track, solution, vehicle, hz, engine_thermal, None)
+}
+
+/// Read-only projection of accepted energy-model state. No invented pedal or
+/// brake command; shaft power comes from the accepted segment work trace.
+pub fn resample_energy_telemetry_v1(
+    track: &Track,
+    solution: &SimulationSolution,
+    vehicle: &VehicleParams,
+    hz: f64,
+    efficiency: f64,
+) -> Result<ResampledTelemetry, String> {
+    if solution.longitudinal_model != Some(LongitudinalEnergyModelV1::V1)
+        || !efficiency.is_finite()
+        || !(0.0 < efficiency && efficiency <= 1.0)
+    {
+        return Err(
+            "energy telemetry requires the explicit model and physical driveline efficiency".into(),
+        );
+    }
+    resample_telemetry_inner(track, solution, vehicle, hz, None, Some(efficiency))
+}
+
+fn resample_telemetry_inner(
+    track: &Track,
+    solution: &SimulationSolution,
+    vehicle: &VehicleParams,
+    hz: f64,
+    engine_thermal: Option<EngineThermalParamsV3>,
+    energy_efficiency: Option<f64>,
+) -> Result<ResampledTelemetry, String> {
+    if energy_efficiency.is_none()
+        && (solution.longitudinal_model.is_some() || solution.thermal_model.is_some())
+    {
         return Err("legacy telemetry exporter cannot reinterpret energy V1 physics".into());
     }
 
@@ -3834,6 +3880,11 @@ pub fn resample_telemetry_with_engine_thermal(
             .unwrap_or(0.0);
         rpm[i] = rpm_from_speed_gear(v, ratio, &vehicle.chassis);
 
+        if let Some(efficiency) = energy_efficiency {
+            power_out[i] = power_t[i] / efficiency;
+            continue;
+        }
+
         let p_theo = power_kw_from_rpm(rpm[i], &vehicle.engine);
         let derating = engine_thermal.map_or_else(
             || derating_factor(temp_t[i], &vehicle.engine),
@@ -3887,8 +3938,16 @@ pub fn resample_telemetry_with_engine_thermal(
         speed_kph: v_t.iter().map(|value| value * 3.6).collect(),
         rpm,
         gear: gear_t,
-        throttle_pct: throttle.iter().map(|value| value * 100.0).collect(),
-        brake_pct: brake.iter().map(|value| value * 100.0).collect(),
+        throttle_pct: if energy_efficiency.is_some() {
+            Vec::new()
+        } else {
+            throttle.iter().map(|value| value * 100.0).collect()
+        },
+        brake_pct: if energy_efficiency.is_some() {
+            Vec::new()
+        } else {
+            brake.iter().map(|value| value * 100.0).collect()
+        },
         g_lat,
         g_long,
         g_vert,

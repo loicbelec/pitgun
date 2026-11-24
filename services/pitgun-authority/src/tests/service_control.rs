@@ -103,7 +103,15 @@ fn verifier(state: &AppState) -> pitgun_verifier::RacingVerifier {
     pitgun_verifier::RacingVerifier::new(
         ring,
         state.config.audience.clone(),
-        pitgun_racing_simulator::racing_model_v3_component_candidate_identity(),
+        if state
+            .service_catalog
+            .as_ref()
+            .is_some_and(|c| c.qualified_career_profile_bytes().is_some())
+        {
+            pitgun_racing_simulator::qualified_career::model_identity()
+        } else {
+            pitgun_racing_simulator::racing_model_v3_component_candidate_identity()
+        },
         state.policy_identity.clone(),
         state.service_catalog.clone(),
         ArtifactIdentity {
@@ -113,6 +121,60 @@ fn verifier(state: &AppState) -> pitgun_verifier::RacingVerifier {
         },
     )
     .with_service_runtime(state.service_runtime.unwrap())
+}
+
+#[test]
+fn qualified_career_signs_new_model_and_replays_changed_compound() {
+    let (mut state, mut request) = fixture();
+    let catalog = RacingCatalogSnapshot::embedded_qualified_career().unwrap();
+    let vectors: serde_json::Value = serde_json::from_str(include_str!(
+        "../../../../experiments/qualified_career_v1/native-reference-v1.json"
+    ))
+    .unwrap();
+    let mut run: pitgun_racing_simulator::RunRaceRequest =
+        serde_json::from_value(vectors["vectors"][0]["request"].clone()).unwrap();
+    run.input.race.laps = 5;
+    run.input.pit_strategy = None;
+    run.input.race.competitors.iter_mut().find(|c|c.is_player).unwrap().stint_strategy=Some(serde_json::from_value(json!({"stints":[{"tire_id":"soft","laps":3},{"tire_id":"medium","laps":2}],"pit_laps":[3]})).unwrap());
+    let run = pitgun_racing_simulator::qualified_career::prepare_request(run, &catalog).unwrap();
+    request.input = run.input;
+    request.catalog_release = catalog.release_identity().clone();
+    state.service_catalog = Some(catalog);
+    let authorization = build_signed_racing_service_authorization(1000, &state, request).unwrap();
+    assert_eq!(
+        authorization.signed.authorization.initial_contract.model,
+        pitgun_racing_simulator::qualified_career::model_identity()
+    );
+    assert_eq!(
+        authorization.decision_envelope.control_policy,
+        pitgun_racing_simulator::service_control::qualified_service_control_policy_identity()
+    );
+    let (history, output) = execute(&state, &authorization, "pit");
+    assert!(!history.is_empty());
+    assert_eq!(output.player_pit_laps, vec![2]);
+    let mut proof = service_control_evidence(
+        authorization,
+        state.service_catalog.as_ref().unwrap(),
+        history,
+        &output,
+    )
+    .unwrap();
+    assert_eq!(
+        verifier(&state)
+            .verify_service_native_reference(&proof, 1100)
+            .unwrap()
+            .status,
+        VerificationStatus::Verified
+    );
+    proof.decision_envelope.control_policy =
+        pitgun_racing_simulator::service_control::power_service_control_policy_identity();
+    assert_eq!(
+        verifier(&state)
+            .verify_service_native_reference(&proof, 1100)
+            .unwrap()
+            .status,
+        VerificationStatus::Rejected
+    );
 }
 fn execute(
     state: &AppState,

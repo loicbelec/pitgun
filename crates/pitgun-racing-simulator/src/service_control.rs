@@ -88,6 +88,18 @@ pub fn power_service_control_policy_identity() -> ArtifactIdentity {
     }
 }
 
+pub fn qualified_service_control_policy_identity() -> ArtifactIdentity {
+    let mut control = policy_template();
+    control["physics"] = serde_json::json!("pitgun.local-qualified-career/v1");
+    let manifest = serde_json::json!({"control":control,"profile":crate::qualified_career::profile_identity(),
+        "telemetry":crate::power_stream::energy_power_telemetry_policy_identity()});
+    ArtifactIdentity {
+        id: "pitgun.racing-service-control-policy".parse().unwrap(),
+        version: "3.0.0".parse().unwrap(),
+        digest: canonical_json_digest(&manifest).unwrap(),
+    }
+}
+
 pub fn service_control_policy_for_envelope(
     envelope: &RacingServiceAuthorizationV1,
 ) -> Result<ArtifactIdentity, String> {
@@ -95,6 +107,8 @@ pub fn service_control_policy_for_envelope(
         Ok(service_control_policy_identity())
     } else if envelope.control_policy == power_service_control_policy_identity() {
         Ok(power_service_control_policy_identity())
+    } else if envelope.control_policy == qualified_service_control_policy_identity() {
+        Ok(qualified_service_control_policy_identity())
     } else {
         Err("unknown Racing service control policy".into())
     }
@@ -107,6 +121,10 @@ pub fn service_control_config(
     let mut value = policy_template();
     if service_control_policy_for_envelope(envelope)? == power_service_control_policy_identity() {
         value["physics"] = serde_json::json!("pitgun.local-career-power-unit-thermal/v2");
+    } else if service_control_policy_for_envelope(envelope)?
+        == qualified_service_control_policy_identity()
+    {
+        value["physics"] = serde_json::json!("pitgun.local-qualified-career/v1");
     }
     value["execution_id"] = serde_json::json!(execution.to_string());
     value["runtime_digest"] = serde_json::json!(envelope.runtime_digest);
@@ -154,7 +172,8 @@ pub fn resolve_service_authorization_with_power_telemetry(
     runtime_digest: Digest,
     power: bool,
 ) -> Result<RacingServiceAuthorizationV1, String> {
-    if initial.model != racing_model_v3_component_candidate_identity() {
+    let qualified = initial.model == crate::qualified_career::model_identity();
+    if initial.model != racing_model_v3_component_candidate_identity() && !qualified {
         return Err("service control requires the exact component/V9 thermal model".into());
     }
     catalog
@@ -190,7 +209,9 @@ pub fn resolve_service_authorization_with_power_telemetry(
     let envelope = RacingServiceAuthorizationV1 {
         schema_version: RacingServiceAuthorizationVersion::V1,
         authorized_input: initial.input.clone(),
-        control_policy: if power {
+        control_policy: if qualified {
+            qualified_service_control_policy_identity()
+        } else if power {
             power_service_control_policy_identity()
         } else {
             service_control_policy_identity()

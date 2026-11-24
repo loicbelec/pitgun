@@ -13,6 +13,16 @@ pub enum LongitudinalEnergyModelV1 {
     V1,
 }
 
+/// Read-only mean powers for one accepted spatial segment. Not a pedal command.
+#[derive(Debug, Clone, Copy, Default, PartialEq)]
+pub struct EnergyPowerPointV1 {
+    pub available_engine_w: f64,
+    pub shaft_w: f64,
+    pub wheel_w: f64,
+    pub driveline_loss_w: f64,
+    pub clutch_loss_w: f64,
+}
+
 #[derive(Debug, Clone, Copy, Default, Serialize, Deserialize, PartialEq)]
 pub struct EnergyLedgerV1 {
     pub initial_vehicle_kinetic_j: f64,
@@ -121,6 +131,7 @@ pub(crate) struct SegmentContext<'a> {
 }
 #[derive(Debug, PartialEq)]
 pub(crate) struct SegmentAdvance {
+    pub power_point: EnergyPowerPointV1,
     pub end_speed_mps: f64,
     pub duration_s: f64,
     pub engine_budget_kw: f64,
@@ -249,7 +260,7 @@ impl SegmentContext<'_> {
                 torque(r)
             }
         };
-        let shaft_torque_limit = |end: f64| {
+        let held_torque = |end: f64| {
             // Same held minimum across RPM endpoints and interior map knots.
             let low = rpm(start.min(end));
             let high = rpm(start.max(end));
@@ -262,8 +273,11 @@ impl SegmentContext<'_> {
                     minimum = minimum.min(at_knot);
                 }
             }
-            let shift_fraction = (shift_remaining_s / duration(end)).clamp(0.0, 1.0);
             minimum
+        };
+        let shaft_torque_limit = |end: f64| {
+            let shift_fraction = (shift_remaining_s / duration(end)).clamp(0.0, 1.0);
+            held_torque(end)
                 * derating
                 * self.engine_effort_fraction
                 * (1.0 - shift_fraction * (1.0 - self.mechanical.shift_power_fraction))
@@ -426,6 +440,18 @@ impl SegmentContext<'_> {
         };
         let shift_time = shift_remaining_s.min(dt);
         Ok(SegmentAdvance {
+            power_point: EnergyPowerPointV1 {
+                available_engine_w: held_torque(end)
+                    * derating
+                    * ratio
+                    * (self.ds_m + slip_distance)
+                    / self.vehicle.chassis.r_wheel
+                    / dt,
+                shaft_w: shaft / dt,
+                wheel_w: wheel / dt,
+                driveline_loss_w: loss / dt,
+                clutch_loss_w: clutch / dt,
+            },
             thermal_ledger,
             end_speed_mps: end,
             duration_s: dt,

@@ -141,8 +141,9 @@ impl RacingVerifier {
             return reject(VerificationReasonCode::InvalidAuthorization);
         }
         if initial.model != self.expected_model
-            || initial.model
+            || (initial.model
                 != pitgun_racing_simulator::racing_model_v3_component_candidate_identity()
+                && initial.model != pitgun_racing_simulator::qualified_career::model_identity())
         {
             return reject(VerificationReasonCode::UnknownModel);
         }

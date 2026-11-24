@@ -29,7 +29,13 @@ pub fn start_local_racing_session_with_catalog_and_v3_power_unit_thermal_profile
     catalog_bundle_json: String,
     candidate_json: String,
 ) -> String {
-    start_local_with_power(input_json, catalog_bundle_json, candidate_json, false)
+    start_local_with_power(
+        input_json,
+        catalog_bundle_json,
+        candidate_json,
+        false,
+        false,
+    )
 }
 
 /// Explicit new export policy; legacy entry point keeps its historical bytes.
@@ -39,7 +45,15 @@ pub fn start_local_racing_session_with_catalog_and_v3_power_unit_thermal_and_pow
     catalog_bundle_json: String,
     candidate_json: String,
 ) -> String {
-    start_local_with_power(input_json, catalog_bundle_json, candidate_json, true)
+    start_local_with_power(input_json, catalog_bundle_json, candidate_json, true, false)
+}
+
+#[cfg_attr(feature = "wasm", wasm_bindgen)]
+pub fn start_local_qualified_career_session_json(
+    input_json: String,
+    catalog_bundle_json: String,
+) -> String {
+    start_local_with_power(input_json, catalog_bundle_json, String::new(), true, true)
 }
 
 fn start_local_with_power(
@@ -47,11 +61,15 @@ fn start_local_with_power(
     catalog_bundle_json: String,
     candidate_json: String,
     power: bool,
+    qualified: bool,
 ) -> String {
     let create = || -> Result<IncrementalRacingSession, String> {
         let request = parse_run_race_request(&input_json)?;
         let catalog = RacingCatalogSnapshot::from_bundle_json(&catalog_bundle_json)
             .map_err(|error| format!("invalid Racing catalog: {error}"))?;
+        if qualified {
+            return crate::qualified_career::start(request, &catalog, false);
+        }
         let candidate = V3PowerUnitThermalProfileCandidateV2::from_exact_json(&candidate_json)?;
         candidate.validate()?;
         let profile = V3CandidateExperimentProfile {

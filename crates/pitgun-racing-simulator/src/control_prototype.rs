@@ -103,6 +103,8 @@ pub struct PlannedStopReview {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum CareerControlPhysics {
+    #[serde(rename = "pitgun.local-qualified-career/v1")]
+    QualifiedCareerV1,
     #[serde(rename = "pitgun.local-career-power-unit-thermal/v1")]
     PowerUnitThermalV1,
     #[serde(rename = "pitgun.local-career-power-unit-thermal/v2")]
@@ -334,9 +336,22 @@ impl LocalControlledRacingSession {
                 return Err("delegated tires must be unique".to_string());
             }
         }
+        if config.physics == Some(CareerControlPhysics::QualifiedCareerV1) {
+            let profile = crate::qualified_career::profile(snapshot)?;
+            let compiled = crate::tire_performance::compile_tire_performance_v1(
+                snapshot,
+                &profile.thermal,
+                &profile.tires,
+            )?;
+            for (id, tire) in &mut tires {
+                *tire = compiled.tire(id)?.clone();
+            }
+        }
         let run_digest = canonical_json_digest(&(
             PrototypeVersion::V1,
-            if config.physics.is_some() {
+            if config.physics == Some(CareerControlPhysics::QualifiedCareerV1) {
+                crate::qualified_career::model_identity()
+            } else if config.physics.is_some() {
                 crate::workload::racing_model_v3_component_candidate_identity()
             } else {
                 racing_model_v3_fuel_contract_candidate_identity()
@@ -354,7 +369,12 @@ impl LocalControlledRacingSession {
         {
             return Err("service closing margin exceeds 30 seconds".into());
         }
-        let mut session = if config.physics.is_some() {
+        let mut session = if config.physics == Some(CareerControlPhysics::QualifiedCareerV1) {
+            if !timeline.events.is_empty() {
+                return Err("qualified career currently uses fixed Balanced driving mode".into());
+            }
+            crate::qualified_career::start(request, snapshot, config.service_windows.is_some())?
+        } else if config.physics.is_some() {
             if !timeline.events.is_empty() {
                 return Err("career thermal control does not accept driver instructions".into());
             }

@@ -1,0 +1,9 @@
+{
+  "schema_version": "pitgun.racing-driver/v2",
+  "id": "pedro_gaseoso",
+  "traits": {
+    "limit_exploitation": 0.78,
+    "consistency": 0.79,
+    "tire_management": 0.79
+  }
+}

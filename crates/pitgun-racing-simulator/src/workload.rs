@@ -298,6 +298,7 @@ pub fn racing_model_identity_for_version(version: &str) -> Result<ArtifactIdenti
         "0.11.0" => Ok(racing_model_v3_component_candidate_identity()),
         "0.14.0" => Ok(racing_model_v3_timeline_candidate_identity()),
         "0.15.0" => Ok(racing_model_v3_fuel_contract_candidate_identity()),
+        "0.16.0" => Ok(crate::qualified_career::model_identity()),
         _ => Err(format!(
             "unsupported Racing model version {version:?}; expected 1.0.0, 2.0.0, 0.10.0, 0.11.0, 0.14.0 or 0.15.0"
         )),
@@ -406,6 +407,13 @@ impl RacingWorkload {
             Ok(Self::v3_timeline_with_catalog(catalog))
         } else if *model == racing_model_v3_fuel_contract_candidate_identity() {
             Ok(Self::v3_fuel_contract_with_catalog(catalog))
+        } else if *model == crate::qualified_career::model_identity() {
+            crate::qualified_career::profile(&catalog)?;
+            Ok(Self {
+                model: model.clone(),
+                catalog: Some(catalog),
+                curvature_response: CurvatureAeroResponse::ContinuousV1,
+            })
         } else {
             Err(format!(
                 "unsupported Racing model identity {}@{} {}",
@@ -456,7 +464,9 @@ impl LinkedWorkload for RacingWorkload {
                     .compatibility
                     .validate_for(&self.model, pitgun_contract::ContractVersion::V1)
                     .map_err(|error| RacingWorkloadError::Simulation(error.to_string()))?;
-                if self.model == racing_model_v3_thermal_candidate_identity() {
+                if self.model == crate::qualified_career::model_identity() {
+                    crate::qualified_career::run(request, catalog)
+                } else if self.model == racing_model_v3_thermal_candidate_identity() {
                     let thermal_profile = catalog.thermal_family_profile().ok_or_else(|| {
                         RacingWorkloadError::Simulation(
                             "Model V3 thermal catalog has no reviewed thermal-family profile"

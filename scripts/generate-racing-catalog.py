@@ -28,6 +28,7 @@ MODEL_V3_TIMELINE_EMBEDDED_RUST = (
 MODEL_V3_FUEL_CONTRACT_EMBEDDED_RUST = (
     ROOT / "generated" / "racing_catalog_model_v3_fuel_contract.rs"
 )
+QUALIFIED_CAREER_EMBEDDED_RUST = ROOT / "generated" / "racing_catalog_qualified_career.rs"
 
 DIGEST_PREFIX = "sha256:"
 MODEL_COMPATIBILITY_BY_RELEASE = {
@@ -42,6 +43,7 @@ MODEL_COMPATIBILITY_BY_RELEASE = {
     "1.8.0": ("pitgun.racing-v3-candidate", ["0.14.0"]),
     "1.8.1": ("pitgun.racing-v3-candidate", ["0.11.0", "0.14.0"]),
     "1.9.0": ("pitgun.racing-v3-candidate", ["0.15.0"]),
+    "1.10.0": ("pitgun.racing-v3-candidate", ["0.11.0", "0.14.0", "0.16.0"]),
 }
 
 CANONICAL_RESOURCE_IDS = {
@@ -342,6 +344,9 @@ def generated_artifacts() -> dict[Path, bytes]:
     )
     artifacts[MODEL_V3_FUEL_CONTRACT_EMBEDDED_RUST] = generated_embedded_artifact(
         CATALOG_ROOT / "v1.9.0", "MODEL_V3_FUEL_CONTRACT_EMBEDDED_FILES"
+    )
+    artifacts[QUALIFIED_CAREER_EMBEDDED_RUST] = generated_embedded_artifact(
+        CATALOG_ROOT / "v1.10.0", "QUALIFIED_CAREER_EMBEDDED_FILES"
     )
     return artifacts
 

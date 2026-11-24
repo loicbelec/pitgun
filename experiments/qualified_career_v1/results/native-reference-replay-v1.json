@@ -1,0 +1,232 @@
+{
+  "checks": [
+    {
+      "actor": "battery_voltas",
+      "circuit": "MONZA",
+      "elapsed_ms": 2797.384917,
+      "era": 1,
+      "passed": true,
+      "physical_input_digest": "sha256:a96fa5bfa076592f9b742d5638c400f6462e3dee292c35f54963c6eb4bde8006",
+      "result_digest": "sha256:a0d65352aad6bddfa80557bac398d08b77d766a06437faa8c292edaa6d8ed629",
+      "time_s": 7811.733333509957
+    },
+    {
+      "actor": "charles_leclair",
+      "circuit": "MONZA",
+      "elapsed_ms": 2823.130834,
+      "era": 1,
+      "passed": true,
+      "physical_input_digest": "sha256:9989d53b85865ac62c1993e8019173e4974530ec5446ed0cc0f1c041401a5df1",
+      "result_digest": "sha256:65bc9e7fba8a9708fe4f82d81f71d943c17ae01a972bf6068bcd0ed8219de814",
+      "time_s": 7783.573591886488
+    },
+    {
+      "actor": "daniel_enchantier",
+      "circuit": "MONZA",
+      "elapsed_ms": 2822.6978750000003,
+      "era": 1,
+      "passed": true,
+      "physical_input_digest": "sha256:bf8d8c2abe7ace4d3cf23a7da7ae86f3fdf7a06bf4c112a7fe472a2d92551c23",
+      "result_digest": "sha256:643bf22815972d17222dff88cc5a59749efed86e347be81086cdb107cca7ec97",
+      "time_s": 7821.738799282059
+    },
+    {
+      "actor": "franz_hermann",
+      "circuit": "MONZA",
+      "elapsed_ms": 2813.263834,
+      "era": 1,
+      "passed": true,
+      "physical_input_digest": "sha256:f7a4a69879cb9ccb5bce7b6cb266f126d148ac3d7cb4c0abbe1448c2d660d3a4",
+      "result_digest": "sha256:fa58a270fa1fb89a7eba0645fe337e34370de8b1d4020c75513618e7498c6ee7",
+      "time_s": 7782.295131402968
+    },
+    {
+      "actor": "goat_tifi",
+      "circuit": "MONZA",
+      "elapsed_ms": 2820.578917,
+      "era": 1,
+      "passed": true,
+      "physical_input_digest": "sha256:b94c9b8c523e131b00584283b31710a7134a0005653bdfee03560a244c6d470f",
+      "result_digest": "sha256:266030efc6267168b9bbd78949c0d1844daf4d5f8fda145f504299c94b80a477",
+      "time_s": 7851.763692919567
+    },
+    {
+      "actor": "isa_kadjar",
+      "circuit": "MONZA",
+      "elapsed_ms": 2830.8498750000003,
+      "era": 1,
+      "passed": true,
+      "physical_input_digest": "sha256:adc1a500942987719cd46b7a9538f3ca53990a15577b9aba4639d5b69dc2242a",
+      "result_digest": "sha256:1813bed10ecf4b7d02018b3dde5f693b3f4c69c0c44212c591e4bf5cddce4612",
+      "time_s": 7809.111362469207
+    },
+    {
+      "actor": "luis_amilton",
+      "circuit": "MONZA",
+      "elapsed_ms": 2842.775417,
+      "era": 1,
+      "passed": true,
+      "physical_input_digest": "sha256:0c5b8a20a51d894436adbeb2675ea7ecac0b179c15b91fd581eb3cabc563ebcd",
+      "result_digest": "sha256:1b49daf0c8ba18267e5e0b94dd7352e9332611f87ca3ec90bfe66648348141d6",
+      "time_s": 7802.339657456017
+    },
+    {
+      "actor": "pedro_gaseoso",
+      "circuit": "MONZA",
+      "elapsed_ms": 2858.34325,
+      "era": 1,
+      "passed": true,
+      "physical_input_digest": "sha256:b3bb6acc7f71a0b6c372af52ea0f8519bafcaf57627ae1cbd7a6da53a7950bec",
+      "result_digest": "sha256:e604b98083eea7b222a88ddc827c806fe8833afe7d814564c4cdfe7077ad9820",
+      "time_s": 7815.3086613054675
+    },
+    {
+      "actor": "player",
+      "circuit": "MONZA",
+      "elapsed_ms": 2889.8334999999997,
+      "era": 1,
+      "passed": true,
+      "physical_input_digest": "sha256:98762ca8f4b24a422b7d5b4e1b7e658e7593b131aaf9401d5136b7dded11710d",
+      "result_digest": "sha256:15e6264b34f116a8f49cc376fd67d7de028f483076ecc0f49d4478d4405c126d",
+      "time_s": 7775.223529831741
+    },
+    {
+      "actor": "smooth_operator",
+      "circuit": "MONZA",
+      "elapsed_ms": 2843.113125,
+      "era": 1,
+      "passed": true,
+      "physical_input_digest": "sha256:b3f1ff828f752dbf4be7fb10de585ab18c68def9bc16c53d30c3fbaa0c72f589",
+      "result_digest": "sha256:64955211d0a6e6c92ed9e624cba8985c8086f983a0f448be42299eeabb16136d",
+      "time_s": 7802.119664903358
+    },
+    {
+      "actor": "battery_voltas",
+      "circuit": "MONTREAL",
+      "elapsed_ms": 2257.045083,
+      "era": 2,
+      "passed": true,
+      "physical_input_digest": "sha256:eaa8fb443e1dc412106eedfd7f2ec1d41a0f1651c7df6f5cedcf8a9854d294b1",
+      "result_digest": "sha256:76ab2a918f9079da9986a97f0c5af1211eafd07561ad8ef6411b9b9771085a32",
+      "time_s": 6778.02071925059
+    },
+    {
+      "actor": "charles_leclair",
+      "circuit": "MONTREAL",
+      "elapsed_ms": 2333.701208,
+      "era": 2,
+      "passed": true,
+      "physical_input_digest": "sha256:951c9bb79a6fd7ce9802940c957bdec92f22da959edc373a1b968b28f25ff8f9",
+      "result_digest": "sha256:b683f68ae84d928df0b6091f2d4448f646891f49491ce65af10bc3c07bd54b36",
+      "time_s": 6738.318484050703
+    },
+    {
+      "actor": "daniel_enchantier",
+      "circuit": "MONTREAL",
+      "elapsed_ms": 2406.550708,
+      "era": 2,
+      "passed": true,
+      "physical_input_digest": "sha256:0a7f5d40e453b90cf2359173f963407197de1cabfa1b3d5ce542546028231a19",
+      "result_digest": "sha256:dc59b98ad7204d2a8fbda69984d3a7a84e9341fdb92931ce6e2a2ca5ea3ed523",
+      "time_s": 6772.989974058151
+    },
+    {
+      "actor": "franz_hermann",
+      "circuit": "MONTREAL",
+      "elapsed_ms": 2317.105167,
+      "era": 2,
+      "passed": true,
+      "physical_input_digest": "sha256:d6de7e47a7adeb10baf5d0297e195d190e8886decf711fcfd63e89e32bd031db",
+      "result_digest": "sha256:f0f198c91f7595c502f4edfeb74b474724432831d58a9d0f5465736351eba077",
+      "time_s": 6740.796905707889
+    },
+    {
+      "actor": "goat_tifi",
+      "circuit": "MONTREAL",
+      "elapsed_ms": 2417.405917,
+      "era": 2,
+      "passed": true,
+      "physical_input_digest": "sha256:0a68ec2cc9b43f0f53c3ef5f8cbb893dd26b8e718c44f5d0f84ec70f305c7778",
+      "result_digest": "sha256:edfb346e78e25fdd6dc09a2e7a5923ae0d4521698abea5e0c2994bd0ec63fda6",
+      "time_s": 6814.22345348718
+    },
+    {
+      "actor": "isa_kadjar",
+      "circuit": "MONTREAL",
+      "elapsed_ms": 2285.544583,
+      "era": 2,
+      "passed": true,
+      "physical_input_digest": "sha256:11264b6d31afcfe4bd7ebd1a981b06c10ad6b7ade4135de40e12063ad65abb86",
+      "result_digest": "sha256:6856e8509ac327b466021c0e5d8b433566c670c8909ff2868f70e87154df45fb",
+      "time_s": 6770.544420532049
+    },
+    {
+      "actor": "luis_amilton",
+      "circuit": "MONTREAL",
+      "elapsed_ms": 2273.216292,
+      "era": 2,
+      "passed": true,
+      "physical_input_digest": "sha256:93cba9d86df0e1a837b65706400b419e5d65ae4c1eb4b4af2695b6e2e9e9a2fa",
+      "result_digest": "sha256:9611d866b8c72cc91c4f1292d95eec71e1455e3cca6d40d358ece6141e55b787",
+      "time_s": 6770.594249278369
+    },
+    {
+      "actor": "pedro_gaseoso",
+      "circuit": "MONTREAL",
+      "elapsed_ms": 2430.12575,
+      "era": 2,
+      "passed": true,
+      "physical_input_digest": "sha256:9851c852fbccf640a059e3f2964bfed76eeb9e97023310a286778ad2c506aabf",
+      "result_digest": "sha256:b61d27cb855ca06d7e690223c91eefaa872fafa39cc10046d87e68e33b7f6da1",
+      "time_s": 6778.115389157252
+    },
+    {
+      "actor": "player",
+      "circuit": "MONTREAL",
+      "elapsed_ms": 2338.538125,
+      "era": 2,
+      "passed": true,
+      "physical_input_digest": "sha256:b395e4964f69de1764d5913fc78cbdb7867b8ae6064b8c3312cfafb862f17905",
+      "result_digest": "sha256:f89fb90d99a169a9caa9a794235753346b103d70d3a31557fc7fb5f3b92e2626",
+      "time_s": 6747.319633614348
+    },
+    {
+      "actor": "smooth_operator",
+      "circuit": "MONTREAL",
+      "elapsed_ms": 2464.873125,
+      "era": 2,
+      "passed": true,
+      "physical_input_digest": "sha256:bd9728db408b7d9835ecd2fbdc20f2efcd4bc0b98da2e4a8b41f0ee66b68f47d",
+      "result_digest": "sha256:60e352414be25830f47f49bcb022b47375e74e8cb6b4624d500168bbeae73627",
+      "time_s": 6760.303562235192
+    }
+  ],
+  "metadata": {
+    "control_policy": {
+      "digest": "sha256:f558428af4d8ea5f22a1f2bfe937f1fe787d2b74dfbc26db03ac8aa8a8c7133c",
+      "id": "pitgun.racing-service-control-policy",
+      "version": "3.0.0"
+    },
+    "model": {
+      "digest": "sha256:06471e8fd5c43622a77483c1f3999cc1451c523f590c0af6831cdf03bafca918",
+      "id": "pitgun.racing-v3-candidate",
+      "version": "0.16.0"
+    },
+    "physics": "pitgun.local-qualified-career/v1",
+    "profile": {
+      "digest": "sha256:7b8a9cd549433d68993bd816fed0fed9a7f9c1795210a39556b0d93a4055ac48",
+      "id": "pitgun.racing.qualified-career.profile-v1",
+      "version": "1.0.0"
+    },
+    "scope": "local I/II candidate, not deployed",
+    "telemetry_policy": {
+      "digest": "sha256:cc4928a1f2aa0fc2a3a807cbb9e406708f04c1eebbaebe9c131aaf0c84f0a0ad",
+      "id": "pitgun.racing-power-channel-policy",
+      "version": "2.0.0"
+    }
+  },
+  "passed": true,
+  "schema": "pitgun.qualified-career-native-conformance/v1",
+  "binary_digest": "sha256:32e56efbfa307e0e6ee2dc8d02693a2136f594db76d2d5bdaa654cda978eda93",
+  "scope": "20 serial native reference GP, exact input and result identities, not a new fitting campaign or browser/VPS cost verdict"
+}

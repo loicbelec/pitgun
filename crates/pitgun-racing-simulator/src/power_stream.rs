@@ -29,8 +29,22 @@ pub fn power_telemetry_policy_identity() -> ArtifactIdentity {
     }
 }
 
+pub fn energy_power_telemetry_policy_identity() -> ArtifactIdentity {
+    let policy = serde_json::json!({"schema":"pitgun.racing-energy-power-channel-policy/v1",
+        "channels":POWER_CHANNELS,"source":"accepted-spatial-segment-work/divided-by-shared-duration",
+        "availability":"mean-held-torque-thermal-cap-before-driver-and-shift",
+        "sampling":"causal-hold-in-driving-interval-only","pedal_and_brake_commands":"absent",
+        "launch_channel":"actual-clutch-slip-loss","full_history":"not-retained"});
+    ArtifactIdentity {
+        id: "pitgun.racing-power-channel-policy".parse().unwrap(),
+        version: "2.0.0".parse().unwrap(),
+        digest: canonical_json_digest(&policy).unwrap(),
+    }
+}
+
 /// Compact exported rows, not a second native history or full frame archive.
 pub(crate) struct PowerLapCache {
+    energy: bool,
     start_us: i64,
     end_us: i64,
     rows: Vec<(i64, PowerPointV1)>,
@@ -44,6 +58,63 @@ impl PowerLapCache {
         times: &[f64],
         offset: f64,
     ) -> Result<Self, String> {
+        if lap.solution.longitudinal_model.is_some() {
+            let solution = &lap.solution;
+            if solution.t.len() < 2 || solution.energy_power_points.len() != solution.t.len() {
+                return Err(
+                    "energy power projection requires the accepted native segment powers".into(),
+                );
+            }
+            let mut rows = Vec::with_capacity(times.len());
+            for &time in times {
+                if !time.is_finite() || time < solution.t[0] || time > *solution.t.last().unwrap() {
+                    return Err("energy power sample outside accepted lap".into());
+                }
+                let i = solution
+                    .t
+                    .partition_point(|t| *t <= time)
+                    .saturating_sub(1)
+                    .min(solution.t.len() - 2);
+                let p = solution.energy_power_points[i];
+                if [
+                    p.available_engine_w,
+                    p.shaft_w,
+                    p.wheel_w,
+                    p.driveline_loss_w,
+                    p.clutch_loss_w,
+                ]
+                .iter()
+                .any(|x| !x.is_finite() || *x < 0.0)
+                    || p.shaft_w > p.available_engine_w + 1e-6 + p.available_engine_w.abs() * 1e-9
+                {
+                    return Err("accepted energy power exceeds its physical request cap".into());
+                }
+                rows.push((
+                    ((time + offset) * 1e6).round() as i64,
+                    PowerPointV1 {
+                        time_s: time,
+                        engine_available_w: p.available_engine_w,
+                        engine_delivered_w: p.shaft_w,
+                        drive_budget_w: p.shaft_w * mechanical.driveline_efficiency,
+                        wheel_propulsion_w: p.wheel_w,
+                        driveline_loss_w: p.driveline_loss_w,
+                        launch_regularization_w: p.clutch_loss_w,
+                        equivalent_engine_load_pct: if p.available_engine_w > 0.0 {
+                            (p.shaft_w / p.available_engine_w).min(1.0) * 100.0
+                        } else {
+                            0.0
+                        },
+                        shift_power_fraction: solution.shift_power_fraction[i],
+                    },
+                ));
+            }
+            return Ok(Self {
+                energy: true,
+                start_us: ((solution.t[0] + offset) * 1e6).round() as i64,
+                end_us: ((solution.t.last().unwrap() + offset) * 1e6).round() as i64,
+                rows,
+            });
+        }
         let projection = project_lap_power_v1(&lap.solution, vehicle, mechanical, fuel)?;
         let us = |t: f64| ((t + offset) * 1e6).round() as i64;
         let start_us = us(*lap.solution.t.first().ok_or("missing power lap start")?);
@@ -54,6 +125,7 @@ impl PowerLapCache {
             .map(|p| (us(p.time_s), p))
             .collect();
         Ok(Self {
+            energy: false,
             start_us,
             end_us,
             rows,
@@ -69,7 +141,12 @@ impl PowerLapCache {
 }
 
 pub(crate) fn apply_power_frames(frames: &mut [TelemetryFrame], caches: &[PowerLapCache]) {
-    let policy = power_telemetry_policy_identity();
+    let energy = caches.first().is_some_and(|c| c.energy);
+    let policy = if energy {
+        energy_power_telemetry_policy_identity()
+    } else {
+        power_telemetry_policy_identity()
+    };
     for frame in frames {
         frame
             .samples
@@ -79,7 +156,12 @@ pub(crate) fn apply_power_frames(frames: &mut [TelemetryFrame], caches: &[PowerL
             .insert("power_telemetry_policy".into(), policy.digest.to_string());
         frame.metadata.insert(
             "power_telemetry_version".into(),
-            "pitgun.racing-power-channel-policy/v1".into(),
+            if energy {
+                "pitgun.racing-energy-power-channel-policy/v1"
+            } else {
+                "pitgun.racing-power-channel-policy/v1"
+            }
+            .into(),
         );
         let index = caches.partition_point(|c| c.start_us <= frame.timestamp_us);
         let point = index
@@ -123,6 +205,7 @@ mod tests {
             shift_power_fraction: 1.0,
         };
         let cache = PowerLapCache {
+            energy: false,
             start_us: 10,
             end_us: 30,
             rows: vec![(10, p.clone()), (20, p)],

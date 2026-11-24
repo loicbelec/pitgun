@@ -34,13 +34,14 @@ use crate::{
     racing_model_v3_thermal_candidate_identity, racing_model_v3_timeline_candidate_identity,
 };
 
-const KNOWN_RACING_MODELS: [(&str, &str); 6] = [
+const KNOWN_RACING_MODELS: [(&str, &str); 7] = [
     ("pitgun.racing", "1.0.0"),
     ("pitgun.racing", "2.0.0"),
     ("pitgun.racing-v3-candidate", "0.10.0"),
     ("pitgun.racing-v3-candidate", "0.11.0"),
     ("pitgun.racing-v3-candidate", "0.14.0"),
     ("pitgun.racing-v3-candidate", "0.15.0"),
+    ("pitgun.racing-v3-candidate", "0.16.0"),
 ];
 const MODEL_PARAMETERS_ID_PREFIX: &str = "pitgun.racing.model-parameters.";
 const MODEL_PARAMETERS_PATH_PREFIX: &str = "simulation/model-parameters/";
@@ -307,6 +308,38 @@ pub enum RacingCatalogResolutionError {
 }
 
 impl RacingCatalogSnapshot {
+    /// Local I/II candidate. Does not replace LATEST or an older embedded pack.
+    pub fn embedded_qualified_career() -> Result<Self, RacingCatalogResolutionError> {
+        let resources = crate::QUALIFIED_CAREER_EMBEDDED_FILES
+            .iter()
+            .map(|(path, bytes)| (format!("simulation/{path}"), bytes.to_vec()));
+        Self::from_bytes(
+            include_bytes!(concat!(
+                env!("CARGO_MANIFEST_DIR"),
+                "/../../catalogs/racing/v1.10.0/catalog.json"
+            )),
+            include_bytes!(concat!(
+                env!("CARGO_MANIFEST_DIR"),
+                "/../../catalogs/racing/v1.10.0/release.json"
+            )),
+            include_bytes!(concat!(
+                env!("CARGO_MANIFEST_DIR"),
+                "/../../catalogs/racing/v1.10.0/simulation/index.json"
+            )),
+            include_bytes!(concat!(
+                env!("CARGO_MANIFEST_DIR"),
+                "/../../catalogs/racing/v1.10.0/presentation/index.json"
+            )),
+            resources,
+        )
+    }
+
+    /// Exact indexed bytes, already verified by the catalog boundary.
+    pub fn qualified_career_profile_bytes(&self) -> Option<&[u8]> {
+        self.resources
+            .get(&CatalogPath::new("simulation/qualified-career/profile-v1.json").unwrap())
+            .map(Vec::as_slice)
+    }
     /// Validates one immutable release from caller-provided bytes.
     ///
     /// No simulation state is created until every document, digest, resource
@@ -477,6 +510,10 @@ impl RacingCatalogSnapshot {
             drivers_v2: driver_control_package.drivers,
             driver_v2_identities: driver_control_package.driver_identities,
         };
+        if snapshot.qualified_career_profile_bytes().is_some() {
+            crate::qualified_career::profile(&snapshot)
+                .map_err(RacingCatalogResolutionError::InvalidResolvedResources)?;
+        }
         crate::EmbeddedCatalog::from_snapshot(&snapshot)
             .map_err(RacingCatalogResolutionError::InvalidResolvedResources)?;
         Ok(snapshot)

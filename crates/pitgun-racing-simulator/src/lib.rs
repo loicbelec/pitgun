@@ -7,6 +7,7 @@ pub mod fuel_preparation;
 mod local_stream;
 pub mod physical_events;
 mod power_stream;
+pub mod qualified_career;
 pub mod thermal_career;
 pub mod thermal_driver;
 pub mod tire_events;
@@ -19,7 +20,7 @@ pub mod workload;
 
 pub use local_stream::{
     complete_local_racing_session_json, pull_local_racing_session_json,
-    release_local_racing_session_json,
+    release_local_racing_session_json, start_local_qualified_career_session_json,
     start_local_racing_session_with_catalog_and_v3_power_unit_thermal_and_power_v1_json,
     start_local_racing_session_with_catalog_and_v3_power_unit_thermal_profile_json,
 };
@@ -67,6 +68,10 @@ pub use workload::{
 };
 
 use std::cell::{Cell, RefCell};
+include!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../generated/racing_catalog_qualified_career.rs"
+));
 use std::collections::hash_map::DefaultHasher;
 use std::collections::{BTreeMap, BTreeSet, HashMap, VecDeque};
 use std::hash::{Hash, Hasher};
@@ -2576,6 +2581,60 @@ struct IncrementalV3Competitor {
     result: Option<SimulationResult>,
 }
 
+fn resample_competitor_state(
+    track: &Track,
+    solution: &pitgun_racing_solver::SimulationSolution,
+    vehicle: &VehicleParams,
+    hz: f64,
+    engine_thermal: Option<EngineThermalParamsV3>,
+    mechanical: MechanicalParamsV3,
+    pit_plan: &PitPlan,
+) -> Result<pitgun_racing_solver::ResampledTelemetry, String> {
+    if solution.longitudinal_model.is_none() {
+        return resample_telemetry_with_engine_thermal(
+            track,
+            solution,
+            vehicle,
+            hz,
+            engine_thermal,
+        );
+    }
+    let mut telemetry = pitgun_racing_solver::resample_energy_telemetry_v1(
+        track,
+        solution,
+        vehicle,
+        hz,
+        mechanical.driveline_efficiency,
+    )?;
+    if let (Some(laps), Some(temperature), Some(wear)) = (
+        &telemetry.n_lap,
+        &telemetry.tire_temp_c,
+        &telemetry.tire_wear_pct,
+    ) {
+        telemetry.tire_mu = Some(
+            laps.iter()
+                .zip(temperature)
+                .zip(wear)
+                .map(|((lap, temp), wear)| {
+                    let tire = pit_plan
+                        .stops
+                        .iter()
+                        .filter(|s| s.lap < *lap)
+                        .max_by_key(|s| s.lap)
+                        .map(|s| &s.tire)
+                        .unwrap_or(&vehicle.tire);
+                    pitgun_racing_solver::effective_mu(
+                        vehicle.chassis.mu0,
+                        *wear / 100.0,
+                        *temp,
+                        tire,
+                    )
+                })
+                .collect(),
+        );
+    }
+    Ok(telemetry)
+}
 impl IncrementalV3Competitor {
     fn tire_context_after(&self, lap: u16) -> Result<tire_events::TireEventContextV1, String> {
         let tire = self
@@ -3490,12 +3549,14 @@ impl IncrementalRacingSession {
                 .as_ref()
                 .ok_or_else(|| "incremental player has no completed lap".to_string())?;
             let telemetry_hz = 5.0;
-            let mut resampled = resample_telemetry_with_engine_thermal(
+            let mut resampled = resample_competitor_state(
                 &self.track,
                 &player_lap.solution,
                 &player.physical_vehicle,
                 telemetry_hz,
                 player.engine_thermal,
+                player.power_projection_mechanical,
+                &player.request.pit_plan,
             )
             .map_err(|error| format!("incremental telemetry resampling failed: {error}"))?;
             let power_cache = if self.power_telemetry_v1 {
@@ -3827,12 +3888,14 @@ impl IncrementalRacingSession {
 
             if competitor.is_player {
                 let telemetry_hz = 5.0;
-                let resampled = resample_telemetry_with_engine_thermal(
+                let resampled = resample_competitor_state(
                     &competitor.request.track,
                     &result.solution,
                     &result.applied_vehicle,
                     telemetry_hz,
                     competitor.engine_thermal,
+                    competitor.power_projection_mechanical,
+                    &competitor.request.pit_plan,
                 )
                 .map_err(|error| format!("telemetry resampling failed: {error}"))?;
                 player_frames = gateway_frames_from_resampled(
@@ -4895,7 +4958,11 @@ pub fn start_authorized_dynamic_racing_session(
     let initial_contract = &signed.authorization.initial_contract;
     let timeline_model = racing_model_v3_timeline_candidate_identity();
     let fuel_contract_model = racing_model_v3_fuel_contract_candidate_identity();
-    if initial_contract.model != timeline_model && initial_contract.model != fuel_contract_model {
+    let qualified_model = qualified_career::model_identity();
+    if initial_contract.model != timeline_model
+        && initial_contract.model != fuel_contract_model
+        && initial_contract.model != qualified_model
+    {
         return Err(format!(
             "dynamic Racing execution requires model {} or {}, got {}@{} {}",
             timeline_model.version,
@@ -4957,7 +5024,12 @@ pub fn start_authorized_dynamic_racing_session(
         .driver_instructions
         .applied_timeline
         .clone();
-    let mut session = if initial_contract.model == fuel_contract_model {
+    let mut session = if initial_contract.model == qualified_model {
+        if !timeline.events.is_empty() {
+            return Err("qualified I/II practice does not accept driver instructions".into());
+        }
+        qualified_career::start(run_request, catalog, false)
+    } else if initial_contract.model == fuel_contract_model {
         start_incremental_race_with_catalog_and_v3_fuel_contract_candidate(
             run_request,
             catalog,
@@ -5614,6 +5686,16 @@ impl EmbeddedCatalog {
                 // Parsed and identity-validated by `RacingCatalogSnapshot`.
                 // Published-shaped V3 workloads consume the resolved contract.
             }
+            "qualified-career" => {
+                if stem != "profile-v1"
+                    || value.get("schema_version").and_then(Value::as_str)
+                        != Some("pitgun.racing-qualified-career/v1")
+                {
+                    return Err("unsupported qualified career resource".into());
+                }
+                // Exact compiled profile bytes are checked by the snapshot and
+                // selected only by the explicit qualified-career workload.
+            }
             _ => {
                 return Err(format!(
                     "unsupported Racing simulation resource category '{category}'"
@@ -6087,8 +6169,14 @@ fn gateway_frames_from_resampled(
                 gateway_sample(PARAM_SPEED_KPH, telemetry.speed_kph[idx]),
                 gateway_sample(PARAM_RPM, telemetry.rpm[idx]),
                 gateway_sample(PARAM_GEAR, telemetry.gear[idx] as f64),
-                gateway_sample(PARAM_THROTTLE_PCT, telemetry.throttle_pct[idx]),
-                gateway_sample(PARAM_BRAKE_PCT, telemetry.brake_pct[idx]),
+                gateway_sample(
+                    PARAM_THROTTLE_PCT,
+                    telemetry.throttle_pct.get(idx).copied().unwrap_or(0.0),
+                ),
+                gateway_sample(
+                    PARAM_BRAKE_PCT,
+                    telemetry.brake_pct.get(idx).copied().unwrap_or(0.0),
+                ),
                 gateway_sample(PARAM_G_LAT, telemetry.g_lat[idx]),
                 gateway_sample(PARAM_G_LONG, telemetry.g_long[idx]),
                 gateway_sample(PARAM_G_VERT, telemetry.g_vert[idx]),
@@ -6103,6 +6191,12 @@ fn gateway_frames_from_resampled(
             progress_m: Some(telemetry.s_m[idx] as f32),
             metadata: metadata.clone(),
         });
+        if telemetry.throttle_pct.is_empty() || telemetry.brake_pct.is_empty() {
+            frames.last_mut().unwrap().samples.retain(|s| {
+                !((s.parameter_id == PARAM_THROTTLE_PCT && telemetry.throttle_pct.is_empty())
+                    || (s.parameter_id == PARAM_BRAKE_PCT && telemetry.brake_pct.is_empty()))
+            });
+        }
     }
     frames
 }

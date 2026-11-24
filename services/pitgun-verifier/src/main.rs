@@ -378,6 +378,7 @@ fn load_policy_identity() -> Result<ArtifactIdentity, String> {
 
 fn load_catalog(env_var: &str, model_version: &str) -> Option<RacingCatalogSnapshot> {
     let loaded = match std::env::var_os(env_var) {
+        None if model_version == "0.16.0" => RacingCatalogSnapshot::embedded_qualified_career(),
         Some(path) => RacingCatalogSnapshot::from_release_dir(PathBuf::from(path)),
         None if model_version == "0.15.0" => {
             RacingCatalogSnapshot::embedded_model_v3_fuel_contract()
@@ -476,10 +477,13 @@ fn load_state() -> Result<AppState, String> {
     let service_verifier = match (service_catalog_path, service_runtime) {
         (None, None) => None,
         (Some(path), Some(digest)) => {
-            let service_model =
-                pitgun_racing_simulator::racing_model_v3_component_candidate_identity();
             let service_catalog = RacingCatalogSnapshot::from_release_dir(PathBuf::from(path))
                 .map_err(|e| e.to_string())?;
+            let service_model = if service_catalog.qualified_career_profile_bytes().is_some() {
+                pitgun_racing_simulator::qualified_career::model_identity()
+            } else {
+                pitgun_racing_simulator::racing_model_v3_component_candidate_identity()
+            };
             service_catalog
                 .manifest()
                 .compatibility
@@ -534,10 +538,13 @@ fn load_state() -> Result<AppState, String> {
             .ok_or("retained service replays require a configured primary service verifier")?;
         let manifest = service_replay_config::RetainedReplays::load(PathBuf::from(path))?;
         for config in manifest.replays {
-            let service_model =
-                pitgun_racing_simulator::racing_model_v3_component_candidate_identity();
             let catalog = RacingCatalogSnapshot::from_release_dir(config.catalog_release_dir)
                 .map_err(|e| e.to_string())?;
+            let service_model = if catalog.qualified_career_profile_bytes().is_some() {
+                pitgun_racing_simulator::qualified_career::model_identity()
+            } else {
+                pitgun_racing_simulator::racing_model_v3_component_candidate_identity()
+            };
             catalog
                 .manifest()
                 .compatibility
