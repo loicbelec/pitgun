@@ -1,5 +1,7 @@
 # Qualified career I/II · local runtime integration
 
+Historical model 0.16.0 evidence below: owner review subsequently identified a physical first-gear lock. See [gear-threshold correction](../gear_threshold_v1/README.md). Model 0.16.1 retains the old evidence but requires new balancing qualification; do not relabel old native results or timing diagnostics as passing corrected outcomes.
+
 This slice connects the frozen [fixed-nine native candidate](../fixed_opponents_v3/RESULTS_V3.md) to the existing incremental Racing host. It does not recalibrate physics or opponents. The scientific campaign and its original binary remain in their separate worktree/archive.
 
 ## Identities and scope
