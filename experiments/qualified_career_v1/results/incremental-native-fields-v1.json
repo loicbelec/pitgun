@@ -1,0 +1,191 @@
+{
+  "checks": [
+    {
+      "actor": "player",
+      "circuit": "MONZA",
+      "elapsed_ms": 21070.420875,
+      "expected_time_ms": 7775225,
+      "passed": true,
+      "total_time_ms": 7775225
+    },
+    {
+      "actor": "franz_hermann",
+      "circuit": "MONZA",
+      "elapsed_ms": 21070.422542,
+      "expected_time_ms": 7782297,
+      "passed": true,
+      "total_time_ms": 7782297
+    },
+    {
+      "actor": "charles_leclair",
+      "circuit": "MONZA",
+      "elapsed_ms": 21070.424,
+      "expected_time_ms": 7783573,
+      "passed": true,
+      "total_time_ms": 7783573
+    },
+    {
+      "actor": "smooth_operator",
+      "circuit": "MONZA",
+      "elapsed_ms": 21070.425875,
+      "expected_time_ms": 7802120,
+      "passed": true,
+      "total_time_ms": 7802120
+    },
+    {
+      "actor": "luis_amilton",
+      "circuit": "MONZA",
+      "elapsed_ms": 21070.426417,
+      "expected_time_ms": 7802340,
+      "passed": true,
+      "total_time_ms": 7802340
+    },
+    {
+      "actor": "isa_kadjar",
+      "circuit": "MONZA",
+      "elapsed_ms": 21070.428541999998,
+      "expected_time_ms": 7809113,
+      "passed": true,
+      "total_time_ms": 7809113
+    },
+    {
+      "actor": "battery_voltas",
+      "circuit": "MONZA",
+      "elapsed_ms": 21070.429958999997,
+      "expected_time_ms": 7811731,
+      "passed": true,
+      "total_time_ms": 7811731
+    },
+    {
+      "actor": "pedro_gaseoso",
+      "circuit": "MONZA",
+      "elapsed_ms": 21070.430500000002,
+      "expected_time_ms": 7815307,
+      "passed": true,
+      "total_time_ms": 7815307
+    },
+    {
+      "actor": "daniel_enchantier",
+      "circuit": "MONZA",
+      "elapsed_ms": 21070.433417,
+      "expected_time_ms": 7821743,
+      "passed": true,
+      "total_time_ms": 7821743
+    },
+    {
+      "actor": "goat_tifi",
+      "circuit": "MONZA",
+      "elapsed_ms": 21070.435,
+      "expected_time_ms": 7851767,
+      "passed": true,
+      "total_time_ms": 7851767
+    },
+    {
+      "actor": "charles_leclair",
+      "circuit": "MONTREAL",
+      "elapsed_ms": 16121.479417,
+      "expected_time_ms": 6738318,
+      "passed": true,
+      "total_time_ms": 6738318
+    },
+    {
+      "actor": "franz_hermann",
+      "circuit": "MONTREAL",
+      "elapsed_ms": 16121.480709,
+      "expected_time_ms": 6740798,
+      "passed": true,
+      "total_time_ms": 6740798
+    },
+    {
+      "actor": "player",
+      "circuit": "MONTREAL",
+      "elapsed_ms": 16121.481584000001,
+      "expected_time_ms": 6747322,
+      "passed": true,
+      "total_time_ms": 6747322
+    },
+    {
+      "actor": "smooth_operator",
+      "circuit": "MONTREAL",
+      "elapsed_ms": 16121.483833999999,
+      "expected_time_ms": 6760306,
+      "passed": true,
+      "total_time_ms": 6760306
+    },
+    {
+      "actor": "isa_kadjar",
+      "circuit": "MONTREAL",
+      "elapsed_ms": 16121.484459000001,
+      "expected_time_ms": 6770546,
+      "passed": true,
+      "total_time_ms": 6770546
+    },
+    {
+      "actor": "luis_amilton",
+      "circuit": "MONTREAL",
+      "elapsed_ms": 16121.485042,
+      "expected_time_ms": 6770592,
+      "passed": true,
+      "total_time_ms": 6770592
+    },
+    {
+      "actor": "daniel_enchantier",
+      "circuit": "MONTREAL",
+      "elapsed_ms": 16121.485917000002,
+      "expected_time_ms": 6772993,
+      "passed": true,
+      "total_time_ms": 6772993
+    },
+    {
+      "actor": "battery_voltas",
+      "circuit": "MONTREAL",
+      "elapsed_ms": 16121.487917,
+      "expected_time_ms": 6778022,
+      "passed": true,
+      "total_time_ms": 6778022
+    },
+    {
+      "actor": "pedro_gaseoso",
+      "circuit": "MONTREAL",
+      "elapsed_ms": 16121.488667000001,
+      "expected_time_ms": 6778118,
+      "passed": true,
+      "total_time_ms": 6778118
+    },
+    {
+      "actor": "goat_tifi",
+      "circuit": "MONTREAL",
+      "elapsed_ms": 16121.489209,
+      "expected_time_ms": 6814224,
+      "passed": true,
+      "total_time_ms": 6814224
+    }
+  ],
+  "incremental_fields": true,
+  "metadata": {
+    "control_policy": {
+      "digest": "sha256:f558428af4d8ea5f22a1f2bfe937f1fe787d2b74dfbc26db03ac8aa8a8c7133c",
+      "id": "pitgun.racing-service-control-policy",
+      "version": "3.0.0"
+    },
+    "model": {
+      "digest": "sha256:06471e8fd5c43622a77483c1f3999cc1451c523f590c0af6831cdf03bafca918",
+      "id": "pitgun.racing-v3-candidate",
+      "version": "0.16.0"
+    },
+    "physics": "pitgun.local-qualified-career/v1",
+    "profile": {
+      "digest": "sha256:7b8a9cd549433d68993bd816fed0fed9a7f9c1795210a39556b0d93a4055ac48",
+      "id": "pitgun.racing.qualified-career.profile-v1",
+      "version": "1.0.0"
+    },
+    "scope": "local I/II candidate, not deployed",
+    "telemetry_policy": {
+      "digest": "sha256:cc4928a1f2aa0fc2a3a807cbb9e406708f04c1eebbaebe9c131aaf0c84f0a0ad",
+      "id": "pitgun.racing-power-channel-policy",
+      "version": "2.0.0"
+    }
+  },
+  "passed": true,
+  "schema": "pitgun.qualified-career-native-conformance/v1"
+}

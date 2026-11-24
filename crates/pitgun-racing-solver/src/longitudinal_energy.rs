@@ -776,12 +776,12 @@ mod tests {
             hesitation.power_point.available_engine_w,
             2. * protected.power_point.available_engine_w,
         );
-        let mut physical_hesitation = hesitation;
-        physical_hesitation.power_point = protected.power_point;
-        assert_eq!(physical_hesitation, protected);
         assert!(hesitation.end_speed_mps < nominal.end_speed_mps);
         assert!(hesitation.duration_s > nominal.duration_s);
         balances(&hesitation);
+        let mut physical_hesitation = hesitation;
+        physical_hesitation.power_point = protected.power_point;
+        assert_eq!(physical_hesitation, protected);
     }
     #[test]
     fn energy_v1_launch_uses_finite_wheel_torque_and_records_physical_clutch_slip() {
