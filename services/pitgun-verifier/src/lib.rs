@@ -620,23 +620,30 @@ impl RacingVerifier {
             .driver_instructions
             .applied_timeline
             .clone();
-        let replay =
-            match if initial_contract.model == racing_model_v3_fuel_contract_candidate_identity() {
-                run_race_with_catalog_and_v3_fuel_contract_candidate(run_request, catalog, timeline)
+        let replay = match if initial_contract.model
+            == pitgun_racing_simulator::qualified_career::model_identity()
+        {
+            if timeline.events.is_empty() {
+                pitgun_racing_simulator::qualified_career::run(run_request, catalog)
             } else {
-                run_race_with_catalog_and_v3_timeline_candidate(run_request, catalog, timeline)
-            } {
-                Ok(output) => output,
-                Err(_) => {
-                    return self.rejected_attempt(
-                        final_run_id,
-                        attempt.execution_id,
-                        submitted_evidence,
-                        VerificationReasonCode::ReplayMismatch,
-                        now_ms,
-                    );
-                }
-            };
+                Err("qualified practice does not accept driver instructions".into())
+            }
+        } else if initial_contract.model == racing_model_v3_fuel_contract_candidate_identity() {
+            run_race_with_catalog_and_v3_fuel_contract_candidate(run_request, catalog, timeline)
+        } else {
+            run_race_with_catalog_and_v3_timeline_candidate(run_request, catalog, timeline)
+        } {
+            Ok(output) => output,
+            Err(_) => {
+                return self.rejected_attempt(
+                    final_run_id,
+                    attempt.execution_id,
+                    submitted_evidence,
+                    VerificationReasonCode::ReplayMismatch,
+                    now_ms,
+                );
+            }
+        };
         let replay_evidence = match RacingRunEvidenceV1::from_race_output(&replay) {
             Ok(evidence) => evidence,
             Err(_) => {
@@ -1156,6 +1163,30 @@ mod tests {
             .join(catalog_version);
         let catalog =
             RacingCatalogSnapshot::from_release_dir(catalog_path).expect("dynamic catalog");
+        let qualified = model == pitgun_racing_simulator::qualified_career::model_identity();
+        if qualified {
+            input.era = 1;
+            input.hz = 5.;
+            input.vehicle_id = Some("classic_v8_1960".into());
+            input.race.track_id = "MONZA".into();
+            input.race.competitors[0].stint_strategy = Some(
+                serde_json::from_value(serde_json::json!({
+                    "stints":[{"tire_id":"medium","laps":3}],"pit_laps":[]
+                }))
+                .unwrap(),
+            );
+            input = pitgun_racing_simulator::qualified_career::prepare_request(
+                RunRaceRequest {
+                    input,
+                    seed: 376,
+                    era: Some(1),
+                    hz: Some(5.),
+                },
+                &catalog,
+            )
+            .unwrap()
+            .input;
+        }
         let policy = ArtifactIdentity {
             id: "pitgun.racing.tuning".parse().expect("policy id"),
             version: "1.0.0".parse().expect("policy version"),
@@ -1175,7 +1206,8 @@ mod tests {
                 algorithm: RandomAlgorithm::PitgunSplitMix64V1,
                 stream_derivation: StreamDerivation::Sha256LabelV1,
             },
-            clock: LogicalClockV1::new(0, 50_000, 1).expect("clock"),
+            clock: LogicalClockV1::new(0, if qualified { 200_000 } else { 50_000 }, 1)
+                .expect("clock"),
             event_ordering: EventOrderingV1::v1(),
             input: InputIdentity {
                 media_type: InputMediaType::ApplicationJson,
@@ -1235,7 +1267,7 @@ mod tests {
         };
         let signing_key = SigningKey::from_secret(SECRET).expect("signing key");
         let signature = signing_key.sign(&authorization.signing_bytes().expect("signing bytes"));
-        let completed_input = RacingCompletedRunInputV1 {
+        let mut completed_input = RacingCompletedRunInputV1 {
             schema_version: RacingCompletedRunInputVersion::V1,
             authorized_input: authorization.initial_contract.input.clone(),
             driver_instructions: RacingCompletedDriverInstructionHistoryV1 {
@@ -1267,6 +1299,13 @@ mod tests {
                 },
             },
         };
+        if qualified {
+            completed_input
+                .driver_instructions
+                .applied_timeline
+                .events
+                .clear();
+        }
         let submission = execute_authorized_dynamic_race(
             RacingDynamicExecutionRequestV1 {
                 schema_version: RacingDynamicExecutionRequestVersion::V1,
@@ -1360,6 +1399,24 @@ mod tests {
         let mut keyring = VerificationKeyring::new();
         keyring.insert(KEY_ID.parse::<Identifier>().expect("key id"), key.clone());
         keyring
+    }
+
+    #[test]
+    fn qualified_practice_replays_its_own_model_and_rejects_tampering() {
+        let fixture = dynamic_fixture_for(
+            "v1.10.0",
+            pitgun_racing_simulator::qualified_career::model_identity(),
+        );
+        assert_eq!(
+            dynamic_reason(&fixture.verifier, &fixture.submission),
+            (VerificationStatus::Verified, None)
+        );
+        let mut changed = fixture.submission.clone();
+        changed.output.player_lap_times_ms[0] += 1;
+        assert_eq!(
+            dynamic_reason(&fixture.verifier, &changed).0,
+            VerificationStatus::Rejected
+        );
     }
 
     #[test]

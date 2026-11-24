@@ -770,7 +770,15 @@ mod tests {
         let nominal = full.advance(20., 50., 1, 1., 0., 90.).unwrap();
         let hesitation = reduced.advance(20., 50., 1, 1., 0., 90.).unwrap();
         let protected = full.advance(20., 50., 1, 0.5, 0., 90.).unwrap();
-        assert_eq!(hesitation, protected);
+        // Same physical motion/work, but request restraint is not lost engine
+        // capacity: the read-only power channel must distinguish their cause.
+        close(
+            hesitation.power_point.available_engine_w,
+            2. * protected.power_point.available_engine_w,
+        );
+        let mut physical_hesitation = hesitation;
+        physical_hesitation.power_point = protected.power_point;
+        assert_eq!(physical_hesitation, protected);
         assert!(hesitation.end_speed_mps < nominal.end_speed_mps);
         assert!(hesitation.duration_s > nominal.duration_s);
         balances(&hesitation);
