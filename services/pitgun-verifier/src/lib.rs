@@ -1404,7 +1404,7 @@ mod tests {
     #[test]
     fn qualified_practice_replays_its_own_model_and_rejects_tampering() {
         let fixture = dynamic_fixture_for(
-            "v1.10.0",
+            "v1.10.1",
             pitgun_racing_simulator::qualified_career::model_identity(),
         );
         assert_eq!(

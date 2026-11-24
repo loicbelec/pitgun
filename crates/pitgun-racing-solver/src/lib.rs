@@ -2579,7 +2579,12 @@ async fn run_resolved_simulation_kernel_incremental(
                 let mut dt = segment_ds / v_safe.max(1.0);
 
                 let previous_gear = gear[i].clamp(1, vehicle.engine.gear_ratios.len() as u8);
-                let (selected_gear, shifted) = select_sequential_gear_v3(
+                let select_gear = if energy_mode {
+                    select_energy_sequential_gear_v1
+                } else {
+                    select_sequential_gear_v3
+                };
+                let (selected_gear, shifted) = select_gear(
                     v_safe,
                     previous_gear,
                     &vehicle.engine,
@@ -4203,6 +4208,40 @@ pub fn select_sequential_gear_v3(
     } else {
         (current, false)
     }
+}
+
+/// The energy integrator caps speed at the exact mechanical redline. Converting
+/// that speed back to RPM can land a few floating-point ULPs below the shift
+/// threshold. Admit that representational equality, without moving the authored
+/// shift point by a physically meaningful RPM interval. Legacy selection stays
+/// byte-for-byte unchanged; this belongs to a newly versioned energy runtime.
+pub fn select_energy_sequential_gear_v1(
+    speed_mps: f64,
+    current_gear: u8,
+    engine: &EngineParams,
+    chassis: &ChassisParams,
+    mechanical: &MechanicalParamsV3,
+    shift_available: bool,
+) -> (u8, bool) {
+    let maximum = engine.gear_ratios.len().max(1) as u8;
+    let current = current_gear.clamp(1, maximum);
+    let rpm = rpm_from_speed_gear(
+        speed_mps,
+        engine.gear_ratios[usize::from(current) - 1],
+        chassis,
+    );
+    let roundoff = 8. * f64::EPSILON * rpm.abs().max(mechanical.upshift_rpm);
+    if shift_available && current < maximum && (rpm - mechanical.upshift_rpm).abs() <= roundoff {
+        return (current + 1, true);
+    }
+    select_sequential_gear_v3(
+        speed_mps,
+        current,
+        engine,
+        chassis,
+        mechanical,
+        shift_available,
+    )
 }
 
 fn resolved_driver_utilization_profile(

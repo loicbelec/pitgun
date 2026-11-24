@@ -44,6 +44,7 @@ MODEL_COMPATIBILITY_BY_RELEASE = {
     "1.8.1": ("pitgun.racing-v3-candidate", ["0.11.0", "0.14.0"]),
     "1.9.0": ("pitgun.racing-v3-candidate", ["0.15.0"]),
     "1.10.0": ("pitgun.racing-v3-candidate", ["0.11.0", "0.14.0", "0.16.0"]),
+    "1.10.1": ("pitgun.racing-v3-candidate", ["0.11.0", "0.14.0", "0.16.1"]),
 }
 
 CANONICAL_RESOURCE_IDS = {
@@ -346,7 +347,7 @@ def generated_artifacts() -> dict[Path, bytes]:
         CATALOG_ROOT / "v1.9.0", "MODEL_V3_FUEL_CONTRACT_EMBEDDED_FILES"
     )
     artifacts[QUALIFIED_CAREER_EMBEDDED_RUST] = generated_embedded_artifact(
-        CATALOG_ROOT / "v1.10.0", "QUALIFIED_CAREER_EMBEDDED_FILES"
+        CATALOG_ROOT / "v1.10.1", "QUALIFIED_CAREER_EMBEDDED_FILES"
     )
     return artifacts
 

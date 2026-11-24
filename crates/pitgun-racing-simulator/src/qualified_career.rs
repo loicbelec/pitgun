@@ -13,7 +13,7 @@ use pitgun_racing_solver::lap_boundary::{
 
 const PROFILE_BYTES: &[u8] = include_bytes!(concat!(
     env!("CARGO_MANIFEST_DIR"),
-    "/../../catalogs/racing/v1.10.0/simulation/qualified-career/profile-v1.json"
+    "/../../catalogs/racing/v1.10.1/simulation/qualified-career/profile-v1.json"
 ));
 
 #[derive(Clone, Deserialize)]
@@ -60,12 +60,12 @@ pub struct QualifiedComponents {
 
 pub fn model_identity() -> ArtifactIdentity {
     let manifest = format!(
-        "pitgun.racing-v3-candidate:0.16.0:energy-v1:thermal-v2:reachable-wear-v1:fixed-nine-v3:accepted-energy-power-v1:causal-export-v1:peak-grip-window-v2:{}",
+        "pitgun.racing-v3-candidate:0.16.1:energy-v1:gear-threshold-8eps-v1:thermal-v2:reachable-wear-v1:fixed-nine-v3:accepted-energy-power-v1:causal-export-v1:peak-grip-window-v2:{}",
         Digest::from_bytes(PROFILE_BYTES)
     );
     ArtifactIdentity {
         id: "pitgun.racing-v3-candidate".parse().unwrap(),
-        version: "0.16.0".parse().unwrap(),
+        version: "0.16.1".parse().unwrap(),
         digest: Digest::from_bytes(manifest.as_bytes()),
     }
 }

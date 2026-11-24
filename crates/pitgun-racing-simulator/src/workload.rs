@@ -298,7 +298,7 @@ pub fn racing_model_identity_for_version(version: &str) -> Result<ArtifactIdenti
         "0.11.0" => Ok(racing_model_v3_component_candidate_identity()),
         "0.14.0" => Ok(racing_model_v3_timeline_candidate_identity()),
         "0.15.0" => Ok(racing_model_v3_fuel_contract_candidate_identity()),
-        "0.16.0" => Ok(crate::qualified_career::model_identity()),
+        "0.16.1" => Ok(crate::qualified_career::model_identity()),
         _ => Err(format!(
             "unsupported Racing model version {version:?}; expected 1.0.0, 2.0.0, 0.10.0, 0.11.0, 0.14.0 or 0.15.0"
         )),

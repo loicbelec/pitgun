@@ -378,7 +378,7 @@ fn load_policy_identity() -> Result<ArtifactIdentity, String> {
 
 fn load_catalog(env_var: &str, model_version: &str) -> Option<RacingCatalogSnapshot> {
     let loaded = match std::env::var_os(env_var) {
-        None if model_version == "0.16.0" => RacingCatalogSnapshot::embedded_qualified_career(),
+        None if model_version == "0.16.1" => RacingCatalogSnapshot::embedded_qualified_career(),
         Some(path) => RacingCatalogSnapshot::from_release_dir(PathBuf::from(path)),
         None if model_version == "0.15.0" => {
             RacingCatalogSnapshot::embedded_model_v3_fuel_contract()

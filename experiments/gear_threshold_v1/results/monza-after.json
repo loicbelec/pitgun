@@ -1,0 +1,16 @@
+{
+  "gear_ratios": [
+    8.640077929072728,
+    6.9682302717325815,
+    5.619883699949625,
+    4.532441031560034,
+    3.6554175853769237
+  ],
+  "max_gear": 3,
+  "max_rpm": 10999.905106418728,
+  "max_speed_kph": 229.45337836602917,
+  "redline_rpm": 11000.0,
+  "scope": "One actual Monza I player lap; diagnostic only",
+  "time_s": 142.97118474076754,
+  "upshift_rpm": 11000.0
+}

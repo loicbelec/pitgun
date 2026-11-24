@@ -2221,3 +2221,65 @@ fn thermal_v2_service_boundary_reports_driving_before_committing_replacement() {
         }
     }
 }
+
+#[test]
+fn energy_redline_round_trip_does_not_lock_the_gearbox_in_first() {
+    use pitgun_racing_solver::{select_energy_sequential_gear_v1, select_sequential_gear_v3};
+    let mut vehicle = synthetic_request().vehicle;
+    vehicle.engine.n_max = 11_000.;
+    vehicle.engine.gear_ratios = vec![
+        8.640077929072728,
+        6.9682302717325815,
+        5.619883699949625,
+        4.532441031560034,
+        3.6554175853769237,
+    ];
+    vehicle.chassis.r_wheel = 0.34;
+    let mechanical = MechanicalParamsV3::default();
+    let speed = |rpm: f64, gear: usize| {
+        rpm * std::f64::consts::TAU * vehicle.chassis.r_wheel
+            / (60. * vehicle.engine.gear_ratios[gear - 1])
+    };
+    let select = |rpm: f64, gear: u8, available: bool| {
+        select_energy_sequential_gear_v1(
+            speed(rpm, usize::from(gear)),
+            gear,
+            &vehicle.engine,
+            &vehicle.chassis,
+            &mechanical,
+            available,
+        )
+    };
+    // Exact observed Monza rounding is below the authored 11,000 RPM threshold.
+    assert_eq!(select(10999.999999999998, 1, true), (2, true));
+    assert_eq!(
+        select_sequential_gear_v3(
+            speed(10999.999999999998, 1),
+            1,
+            &vehicle.engine,
+            &vehicle.chassis,
+            &mechanical,
+            true
+        ),
+        (1, false)
+    );
+    assert_eq!(
+        select(10_999.999, 1, true),
+        (1, false),
+        "Do not introduce an earlier physical shift point"
+    );
+    assert_eq!(
+        select(11_000., 1, false),
+        (1, false),
+        "An active shift must still finish first"
+    );
+    for gear in 1..5 {
+        assert_eq!(select(11_000., gear, true), (gear + 1, true));
+    }
+    assert_eq!(select(11_000., 5, true), (5, false));
+    assert_eq!(
+        select(5_000., 3, true),
+        (2, true),
+        "Downshifting remains sequential"
+    );
+}

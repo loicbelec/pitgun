@@ -34,7 +34,7 @@ use crate::{
     racing_model_v3_thermal_candidate_identity, racing_model_v3_timeline_candidate_identity,
 };
 
-const KNOWN_RACING_MODELS: [(&str, &str); 7] = [
+const KNOWN_RACING_MODELS: [(&str, &str); 8] = [
     ("pitgun.racing", "1.0.0"),
     ("pitgun.racing", "2.0.0"),
     ("pitgun.racing-v3-candidate", "0.10.0"),
@@ -42,6 +42,7 @@ const KNOWN_RACING_MODELS: [(&str, &str); 7] = [
     ("pitgun.racing-v3-candidate", "0.14.0"),
     ("pitgun.racing-v3-candidate", "0.15.0"),
     ("pitgun.racing-v3-candidate", "0.16.0"),
+    ("pitgun.racing-v3-candidate", "0.16.1"),
 ];
 const MODEL_PARAMETERS_ID_PREFIX: &str = "pitgun.racing.model-parameters.";
 const MODEL_PARAMETERS_PATH_PREFIX: &str = "simulation/model-parameters/";
@@ -316,19 +317,19 @@ impl RacingCatalogSnapshot {
         Self::from_bytes(
             include_bytes!(concat!(
                 env!("CARGO_MANIFEST_DIR"),
-                "/../../catalogs/racing/v1.10.0/catalog.json"
+                "/../../catalogs/racing/v1.10.1/catalog.json"
             )),
             include_bytes!(concat!(
                 env!("CARGO_MANIFEST_DIR"),
-                "/../../catalogs/racing/v1.10.0/release.json"
+                "/../../catalogs/racing/v1.10.1/release.json"
             )),
             include_bytes!(concat!(
                 env!("CARGO_MANIFEST_DIR"),
-                "/../../catalogs/racing/v1.10.0/simulation/index.json"
+                "/../../catalogs/racing/v1.10.1/simulation/index.json"
             )),
             include_bytes!(concat!(
                 env!("CARGO_MANIFEST_DIR"),
-                "/../../catalogs/racing/v1.10.0/presentation/index.json"
+                "/../../catalogs/racing/v1.10.1/presentation/index.json"
             )),
             resources,
         )

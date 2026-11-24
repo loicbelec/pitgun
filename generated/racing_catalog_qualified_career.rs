@@ -4,518 +4,518 @@ const QUALIFIED_CAREER_EMBEDDED_FILES: &[(&str, &[u8])] = &[
         "aero/active.json",
         include_bytes!(concat!(
             env!("CARGO_MANIFEST_DIR"),
-            "/../../catalogs/racing/v1.10.0/simulation/aero/active.json"
+            "/../../catalogs/racing/v1.10.1/simulation/aero/active.json"
         )),
     ),
     (
         "aero/basic.json",
         include_bytes!(concat!(
             env!("CARGO_MANIFEST_DIR"),
-            "/../../catalogs/racing/v1.10.0/simulation/aero/basic.json"
+            "/../../catalogs/racing/v1.10.1/simulation/aero/basic.json"
         )),
     ),
     (
         "aero/none.json",
         include_bytes!(concat!(
             env!("CARGO_MANIFEST_DIR"),
-            "/../../catalogs/racing/v1.10.0/simulation/aero/none.json"
+            "/../../catalogs/racing/v1.10.1/simulation/aero/none.json"
         )),
     ),
     (
         "chassis/default.json",
         include_bytes!(concat!(
             env!("CARGO_MANIFEST_DIR"),
-            "/../../catalogs/racing/v1.10.0/simulation/chassis/default.json"
+            "/../../catalogs/racing/v1.10.1/simulation/chassis/default.json"
         )),
     ),
     (
         "chassis/f1_2026.json",
         include_bytes!(concat!(
             env!("CARGO_MANIFEST_DIR"),
-            "/../../catalogs/racing/v1.10.0/simulation/chassis/f1_2026.json"
+            "/../../catalogs/racing/v1.10.1/simulation/chassis/f1_2026.json"
         )),
     ),
     (
         "circuits/austin.json",
         include_bytes!(concat!(
             env!("CARGO_MANIFEST_DIR"),
-            "/../../catalogs/racing/v1.10.0/simulation/circuits/austin.json"
+            "/../../catalogs/racing/v1.10.1/simulation/circuits/austin.json"
         )),
     ),
     (
         "circuits/baku.json",
         include_bytes!(concat!(
             env!("CARGO_MANIFEST_DIR"),
-            "/../../catalogs/racing/v1.10.0/simulation/circuits/baku.json"
+            "/../../catalogs/racing/v1.10.1/simulation/circuits/baku.json"
         )),
     ),
     (
         "circuits/barcelona.json",
         include_bytes!(concat!(
             env!("CARGO_MANIFEST_DIR"),
-            "/../../catalogs/racing/v1.10.0/simulation/circuits/barcelona.json"
+            "/../../catalogs/racing/v1.10.1/simulation/circuits/barcelona.json"
         )),
     ),
     (
         "circuits/budapest.json",
         include_bytes!(concat!(
             env!("CARGO_MANIFEST_DIR"),
-            "/../../catalogs/racing/v1.10.0/simulation/circuits/budapest.json"
+            "/../../catalogs/racing/v1.10.1/simulation/circuits/budapest.json"
         )),
     ),
     (
         "circuits/default.json",
         include_bytes!(concat!(
             env!("CARGO_MANIFEST_DIR"),
-            "/../../catalogs/racing/v1.10.0/simulation/circuits/default.json"
+            "/../../catalogs/racing/v1.10.1/simulation/circuits/default.json"
         )),
     ),
     (
         "circuits/jeddah.json",
         include_bytes!(concat!(
             env!("CARGO_MANIFEST_DIR"),
-            "/../../catalogs/racing/v1.10.0/simulation/circuits/jeddah.json"
+            "/../../catalogs/racing/v1.10.1/simulation/circuits/jeddah.json"
         )),
     ),
     (
         "circuits/las_vegas.json",
         include_bytes!(concat!(
             env!("CARGO_MANIFEST_DIR"),
-            "/../../catalogs/racing/v1.10.0/simulation/circuits/las_vegas.json"
+            "/../../catalogs/racing/v1.10.1/simulation/circuits/las_vegas.json"
         )),
     ),
     (
         "circuits/lusail.json",
         include_bytes!(concat!(
             env!("CARGO_MANIFEST_DIR"),
-            "/../../catalogs/racing/v1.10.0/simulation/circuits/lusail.json"
+            "/../../catalogs/racing/v1.10.1/simulation/circuits/lusail.json"
         )),
     ),
     (
         "circuits/madrid.json",
         include_bytes!(concat!(
             env!("CARGO_MANIFEST_DIR"),
-            "/../../catalogs/racing/v1.10.0/simulation/circuits/madrid.json"
+            "/../../catalogs/racing/v1.10.1/simulation/circuits/madrid.json"
         )),
     ),
     (
         "circuits/melbourne.json",
         include_bytes!(concat!(
             env!("CARGO_MANIFEST_DIR"),
-            "/../../catalogs/racing/v1.10.0/simulation/circuits/melbourne.json"
+            "/../../catalogs/racing/v1.10.1/simulation/circuits/melbourne.json"
         )),
     ),
     (
         "circuits/mexico.json",
         include_bytes!(concat!(
             env!("CARGO_MANIFEST_DIR"),
-            "/../../catalogs/racing/v1.10.0/simulation/circuits/mexico.json"
+            "/../../catalogs/racing/v1.10.1/simulation/circuits/mexico.json"
         )),
     ),
     (
         "circuits/miami.json",
         include_bytes!(concat!(
             env!("CARGO_MANIFEST_DIR"),
-            "/../../catalogs/racing/v1.10.0/simulation/circuits/miami.json"
+            "/../../catalogs/racing/v1.10.1/simulation/circuits/miami.json"
         )),
     ),
     (
         "circuits/monaco.json",
         include_bytes!(concat!(
             env!("CARGO_MANIFEST_DIR"),
-            "/../../catalogs/racing/v1.10.0/simulation/circuits/monaco.json"
+            "/../../catalogs/racing/v1.10.1/simulation/circuits/monaco.json"
         )),
     ),
     (
         "circuits/montreal.json",
         include_bytes!(concat!(
             env!("CARGO_MANIFEST_DIR"),
-            "/../../catalogs/racing/v1.10.0/simulation/circuits/montreal.json"
+            "/../../catalogs/racing/v1.10.1/simulation/circuits/montreal.json"
         )),
     ),
     (
         "circuits/monza.json",
         include_bytes!(concat!(
             env!("CARGO_MANIFEST_DIR"),
-            "/../../catalogs/racing/v1.10.0/simulation/circuits/monza.json"
+            "/../../catalogs/racing/v1.10.1/simulation/circuits/monza.json"
         )),
     ),
     (
         "circuits/sakhir.json",
         include_bytes!(concat!(
             env!("CARGO_MANIFEST_DIR"),
-            "/../../catalogs/racing/v1.10.0/simulation/circuits/sakhir.json"
+            "/../../catalogs/racing/v1.10.1/simulation/circuits/sakhir.json"
         )),
     ),
     (
         "circuits/sao_paulo.json",
         include_bytes!(concat!(
             env!("CARGO_MANIFEST_DIR"),
-            "/../../catalogs/racing/v1.10.0/simulation/circuits/sao_paulo.json"
+            "/../../catalogs/racing/v1.10.1/simulation/circuits/sao_paulo.json"
         )),
     ),
     (
         "circuits/shanghai.json",
         include_bytes!(concat!(
             env!("CARGO_MANIFEST_DIR"),
-            "/../../catalogs/racing/v1.10.0/simulation/circuits/shanghai.json"
+            "/../../catalogs/racing/v1.10.1/simulation/circuits/shanghai.json"
         )),
     ),
     (
         "circuits/silverstone.json",
         include_bytes!(concat!(
             env!("CARGO_MANIFEST_DIR"),
-            "/../../catalogs/racing/v1.10.0/simulation/circuits/silverstone.json"
+            "/../../catalogs/racing/v1.10.1/simulation/circuits/silverstone.json"
         )),
     ),
     (
         "circuits/singapore.json",
         include_bytes!(concat!(
             env!("CARGO_MANIFEST_DIR"),
-            "/../../catalogs/racing/v1.10.0/simulation/circuits/singapore.json"
+            "/../../catalogs/racing/v1.10.1/simulation/circuits/singapore.json"
         )),
     ),
     (
         "circuits/spa.json",
         include_bytes!(concat!(
             env!("CARGO_MANIFEST_DIR"),
-            "/../../catalogs/racing/v1.10.0/simulation/circuits/spa.json"
+            "/../../catalogs/racing/v1.10.1/simulation/circuits/spa.json"
         )),
     ),
     (
         "circuits/spielberg.json",
         include_bytes!(concat!(
             env!("CARGO_MANIFEST_DIR"),
-            "/../../catalogs/racing/v1.10.0/simulation/circuits/spielberg.json"
+            "/../../catalogs/racing/v1.10.1/simulation/circuits/spielberg.json"
         )),
     ),
     (
         "circuits/suzuka.json",
         include_bytes!(concat!(
             env!("CARGO_MANIFEST_DIR"),
-            "/../../catalogs/racing/v1.10.0/simulation/circuits/suzuka.json"
+            "/../../catalogs/racing/v1.10.1/simulation/circuits/suzuka.json"
         )),
     ),
     (
         "circuits/yas_marina.json",
         include_bytes!(concat!(
             env!("CARGO_MANIFEST_DIR"),
-            "/../../catalogs/racing/v1.10.0/simulation/circuits/yas_marina.json"
+            "/../../catalogs/racing/v1.10.1/simulation/circuits/yas_marina.json"
         )),
     ),
     (
         "circuits/zandvoort.json",
         include_bytes!(concat!(
             env!("CARGO_MANIFEST_DIR"),
-            "/../../catalogs/racing/v1.10.0/simulation/circuits/zandvoort.json"
+            "/../../catalogs/racing/v1.10.1/simulation/circuits/zandvoort.json"
         )),
     ),
     (
         "component-capabilities/v1.json",
         include_bytes!(concat!(
             env!("CARGO_MANIFEST_DIR"),
-            "/../../catalogs/racing/v1.10.0/simulation/component-capabilities/v1.json"
+            "/../../catalogs/racing/v1.10.1/simulation/component-capabilities/v1.json"
         )),
     ),
     (
         "driver-control/profile-v1.json",
         include_bytes!(concat!(
             env!("CARGO_MANIFEST_DIR"),
-            "/../../catalogs/racing/v1.10.0/simulation/driver-control/profile-v1.json"
+            "/../../catalogs/racing/v1.10.1/simulation/driver-control/profile-v1.json"
         )),
     ),
     (
         "driver-instructions/profile-v1.json",
         include_bytes!(concat!(
             env!("CARGO_MANIFEST_DIR"),
-            "/../../catalogs/racing/v1.10.0/simulation/driver-instructions/profile-v1.json"
+            "/../../catalogs/racing/v1.10.1/simulation/driver-instructions/profile-v1.json"
         )),
     ),
     (
         "drivers-v2/balanced_reference.json",
         include_bytes!(concat!(
             env!("CARGO_MANIFEST_DIR"),
-            "/../../catalogs/racing/v1.10.0/simulation/drivers-v2/balanced_reference.json"
+            "/../../catalogs/racing/v1.10.1/simulation/drivers-v2/balanced_reference.json"
         )),
     ),
     (
         "drivers-v2/battery_voltas.json",
         include_bytes!(concat!(
             env!("CARGO_MANIFEST_DIR"),
-            "/../../catalogs/racing/v1.10.0/simulation/drivers-v2/battery_voltas.json"
+            "/../../catalogs/racing/v1.10.1/simulation/drivers-v2/battery_voltas.json"
         )),
     ),
     (
         "drivers-v2/charles_leclair.json",
         include_bytes!(concat!(
             env!("CARGO_MANIFEST_DIR"),
-            "/../../catalogs/racing/v1.10.0/simulation/drivers-v2/charles_leclair.json"
+            "/../../catalogs/racing/v1.10.1/simulation/drivers-v2/charles_leclair.json"
         )),
     ),
     (
         "drivers-v2/daniel_enchantier.json",
         include_bytes!(concat!(
             env!("CARGO_MANIFEST_DIR"),
-            "/../../catalogs/racing/v1.10.0/simulation/drivers-v2/daniel_enchantier.json"
+            "/../../catalogs/racing/v1.10.1/simulation/drivers-v2/daniel_enchantier.json"
         )),
     ),
     (
         "drivers-v2/franz_hermann.json",
         include_bytes!(concat!(
             env!("CARGO_MANIFEST_DIR"),
-            "/../../catalogs/racing/v1.10.0/simulation/drivers-v2/franz_hermann.json"
+            "/../../catalogs/racing/v1.10.1/simulation/drivers-v2/franz_hermann.json"
         )),
     ),
     (
         "drivers-v2/goat_tifi.json",
         include_bytes!(concat!(
             env!("CARGO_MANIFEST_DIR"),
-            "/../../catalogs/racing/v1.10.0/simulation/drivers-v2/goat_tifi.json"
+            "/../../catalogs/racing/v1.10.1/simulation/drivers-v2/goat_tifi.json"
         )),
     ),
     (
         "drivers-v2/isa_kadjar.json",
         include_bytes!(concat!(
             env!("CARGO_MANIFEST_DIR"),
-            "/../../catalogs/racing/v1.10.0/simulation/drivers-v2/isa_kadjar.json"
+            "/../../catalogs/racing/v1.10.1/simulation/drivers-v2/isa_kadjar.json"
         )),
     ),
     (
         "drivers-v2/limit_specialist.json",
         include_bytes!(concat!(
             env!("CARGO_MANIFEST_DIR"),
-            "/../../catalogs/racing/v1.10.0/simulation/drivers-v2/limit_specialist.json"
+            "/../../catalogs/racing/v1.10.1/simulation/drivers-v2/limit_specialist.json"
         )),
     ),
     (
         "drivers-v2/luis_amilton.json",
         include_bytes!(concat!(
             env!("CARGO_MANIFEST_DIR"),
-            "/../../catalogs/racing/v1.10.0/simulation/drivers-v2/luis_amilton.json"
+            "/../../catalogs/racing/v1.10.1/simulation/drivers-v2/luis_amilton.json"
         )),
     ),
     (
         "drivers-v2/pedro_gaseoso.json",
         include_bytes!(concat!(
             env!("CARGO_MANIFEST_DIR"),
-            "/../../catalogs/racing/v1.10.0/simulation/drivers-v2/pedro_gaseoso.json"
+            "/../../catalogs/racing/v1.10.1/simulation/drivers-v2/pedro_gaseoso.json"
         )),
     ),
     (
         "drivers-v2/smooth_operator.json",
         include_bytes!(concat!(
             env!("CARGO_MANIFEST_DIR"),
-            "/../../catalogs/racing/v1.10.0/simulation/drivers-v2/smooth_operator.json"
+            "/../../catalogs/racing/v1.10.1/simulation/drivers-v2/smooth_operator.json"
         )),
     ),
     (
         "drivers-v2/tire_manager.json",
         include_bytes!(concat!(
             env!("CARGO_MANIFEST_DIR"),
-            "/../../catalogs/racing/v1.10.0/simulation/drivers-v2/tire_manager.json"
+            "/../../catalogs/racing/v1.10.1/simulation/drivers-v2/tire_manager.json"
         )),
     ),
     (
         "drivers/aggressive.json",
         include_bytes!(concat!(
             env!("CARGO_MANIFEST_DIR"),
-            "/../../catalogs/racing/v1.10.0/simulation/drivers/aggressive.json"
+            "/../../catalogs/racing/v1.10.1/simulation/drivers/aggressive.json"
         )),
     ),
     (
         "drivers/balanced.json",
         include_bytes!(concat!(
             env!("CARGO_MANIFEST_DIR"),
-            "/../../catalogs/racing/v1.10.0/simulation/drivers/balanced.json"
+            "/../../catalogs/racing/v1.10.1/simulation/drivers/balanced.json"
         )),
     ),
     (
         "drivers/battery_voltas.json",
         include_bytes!(concat!(
             env!("CARGO_MANIFEST_DIR"),
-            "/../../catalogs/racing/v1.10.0/simulation/drivers/battery_voltas.json"
+            "/../../catalogs/racing/v1.10.1/simulation/drivers/battery_voltas.json"
         )),
     ),
     (
         "drivers/charles_leclair.json",
         include_bytes!(concat!(
             env!("CARGO_MANIFEST_DIR"),
-            "/../../catalogs/racing/v1.10.0/simulation/drivers/charles_leclair.json"
+            "/../../catalogs/racing/v1.10.1/simulation/drivers/charles_leclair.json"
         )),
     ),
     (
         "drivers/conservative.json",
         include_bytes!(concat!(
             env!("CARGO_MANIFEST_DIR"),
-            "/../../catalogs/racing/v1.10.0/simulation/drivers/conservative.json"
+            "/../../catalogs/racing/v1.10.1/simulation/drivers/conservative.json"
         )),
     ),
     (
         "drivers/daniel_enchantier.json",
         include_bytes!(concat!(
             env!("CARGO_MANIFEST_DIR"),
-            "/../../catalogs/racing/v1.10.0/simulation/drivers/daniel_enchantier.json"
+            "/../../catalogs/racing/v1.10.1/simulation/drivers/daniel_enchantier.json"
         )),
     ),
     (
         "drivers/default.json",
         include_bytes!(concat!(
             env!("CARGO_MANIFEST_DIR"),
-            "/../../catalogs/racing/v1.10.0/simulation/drivers/default.json"
+            "/../../catalogs/racing/v1.10.1/simulation/drivers/default.json"
         )),
     ),
     (
         "drivers/franz_hermann.json",
         include_bytes!(concat!(
             env!("CARGO_MANIFEST_DIR"),
-            "/../../catalogs/racing/v1.10.0/simulation/drivers/franz_hermann.json"
+            "/../../catalogs/racing/v1.10.1/simulation/drivers/franz_hermann.json"
         )),
     ),
     (
         "drivers/goat_tifi.json",
         include_bytes!(concat!(
             env!("CARGO_MANIFEST_DIR"),
-            "/../../catalogs/racing/v1.10.0/simulation/drivers/goat_tifi.json"
+            "/../../catalogs/racing/v1.10.1/simulation/drivers/goat_tifi.json"
         )),
     ),
     (
         "drivers/isa_kadjar.json",
         include_bytes!(concat!(
             env!("CARGO_MANIFEST_DIR"),
-            "/../../catalogs/racing/v1.10.0/simulation/drivers/isa_kadjar.json"
+            "/../../catalogs/racing/v1.10.1/simulation/drivers/isa_kadjar.json"
         )),
     ),
     (
         "drivers/luis_amilton.json",
         include_bytes!(concat!(
             env!("CARGO_MANIFEST_DIR"),
-            "/../../catalogs/racing/v1.10.0/simulation/drivers/luis_amilton.json"
+            "/../../catalogs/racing/v1.10.1/simulation/drivers/luis_amilton.json"
         )),
     ),
     (
         "drivers/pedro_gaseoso.json",
         include_bytes!(concat!(
             env!("CARGO_MANIFEST_DIR"),
-            "/../../catalogs/racing/v1.10.0/simulation/drivers/pedro_gaseoso.json"
+            "/../../catalogs/racing/v1.10.1/simulation/drivers/pedro_gaseoso.json"
         )),
     ),
     (
         "drivers/smooth_operator.json",
         include_bytes!(concat!(
             env!("CARGO_MANIFEST_DIR"),
-            "/../../catalogs/racing/v1.10.0/simulation/drivers/smooth_operator.json"
+            "/../../catalogs/racing/v1.10.1/simulation/drivers/smooth_operator.json"
         )),
     ),
     (
         "engines/v6t.json",
         include_bytes!(concat!(
             env!("CARGO_MANIFEST_DIR"),
-            "/../../catalogs/racing/v1.10.0/simulation/engines/v6t.json"
+            "/../../catalogs/racing/v1.10.1/simulation/engines/v6t.json"
         )),
     ),
     (
         "engines/v6t_hybrid.json",
         include_bytes!(concat!(
             env!("CARGO_MANIFEST_DIR"),
-            "/../../catalogs/racing/v1.10.0/simulation/engines/v6t_hybrid.json"
+            "/../../catalogs/racing/v1.10.1/simulation/engines/v6t_hybrid.json"
         )),
     ),
     (
         "engines/v8_1960.json",
         include_bytes!(concat!(
             env!("CARGO_MANIFEST_DIR"),
-            "/../../catalogs/racing/v1.10.0/simulation/engines/v8_1960.json"
+            "/../../catalogs/racing/v1.10.1/simulation/engines/v8_1960.json"
         )),
     ),
     (
         "engines/v8_1970.json",
         include_bytes!(concat!(
             env!("CARGO_MANIFEST_DIR"),
-            "/../../catalogs/racing/v1.10.0/simulation/engines/v8_1970.json"
+            "/../../catalogs/racing/v1.10.1/simulation/engines/v8_1970.json"
         )),
     ),
     (
         "policies/competitive.json",
         include_bytes!(concat!(
             env!("CARGO_MANIFEST_DIR"),
-            "/../../catalogs/racing/v1.10.0/simulation/policies/competitive.json"
+            "/../../catalogs/racing/v1.10.1/simulation/policies/competitive.json"
         )),
     ),
     (
         "policies/reference.json",
         include_bytes!(concat!(
             env!("CARGO_MANIFEST_DIR"),
-            "/../../catalogs/racing/v1.10.0/simulation/policies/reference.json"
+            "/../../catalogs/racing/v1.10.1/simulation/policies/reference.json"
         )),
     ),
     (
         "qualified-career/profile-v1.json",
         include_bytes!(concat!(
             env!("CARGO_MANIFEST_DIR"),
-            "/../../catalogs/racing/v1.10.0/simulation/qualified-career/profile-v1.json"
+            "/../../catalogs/racing/v1.10.1/simulation/qualified-career/profile-v1.json"
         )),
     ),
     (
         "thermal-profiles/family-v2.json",
         include_bytes!(concat!(
             env!("CARGO_MANIFEST_DIR"),
-            "/../../catalogs/racing/v1.10.0/simulation/thermal-profiles/family-v2.json"
+            "/../../catalogs/racing/v1.10.1/simulation/thermal-profiles/family-v2.json"
         )),
     ),
     (
         "tires/hard.json",
         include_bytes!(concat!(
             env!("CARGO_MANIFEST_DIR"),
-            "/../../catalogs/racing/v1.10.0/simulation/tires/hard.json"
+            "/../../catalogs/racing/v1.10.1/simulation/tires/hard.json"
         )),
     ),
     (
         "tires/medium.json",
         include_bytes!(concat!(
             env!("CARGO_MANIFEST_DIR"),
-            "/../../catalogs/racing/v1.10.0/simulation/tires/medium.json"
+            "/../../catalogs/racing/v1.10.1/simulation/tires/medium.json"
         )),
     ),
     (
         "tires/soft.json",
         include_bytes!(concat!(
             env!("CARGO_MANIFEST_DIR"),
-            "/../../catalogs/racing/v1.10.0/simulation/tires/soft.json"
+            "/../../catalogs/racing/v1.10.1/simulation/tires/soft.json"
         )),
     ),
     (
         "vehicles/classic_v8_1960.json",
         include_bytes!(concat!(
             env!("CARGO_MANIFEST_DIR"),
-            "/../../catalogs/racing/v1.10.0/simulation/vehicles/classic_v8_1960.json"
+            "/../../catalogs/racing/v1.10.1/simulation/vehicles/classic_v8_1960.json"
         )),
     ),
     (
         "vehicles/classic_v8_1970.json",
         include_bytes!(concat!(
             env!("CARGO_MANIFEST_DIR"),
-            "/../../catalogs/racing/v1.10.0/simulation/vehicles/classic_v8_1970.json"
+            "/../../catalogs/racing/v1.10.1/simulation/vehicles/classic_v8_1970.json"
         )),
     ),
     (
         "vehicles/default.json",
         include_bytes!(concat!(
             env!("CARGO_MANIFEST_DIR"),
-            "/../../catalogs/racing/v1.10.0/simulation/vehicles/default.json"
+            "/../../catalogs/racing/v1.10.1/simulation/vehicles/default.json"
         )),
     ),
     (
         "vehicles/f1_2026.json",
         include_bytes!(concat!(
             env!("CARGO_MANIFEST_DIR"),
-            "/../../catalogs/racing/v1.10.0/simulation/vehicles/f1_2026.json"
+            "/../../catalogs/racing/v1.10.1/simulation/vehicles/f1_2026.json"
         )),
     ),
     (
         "vehicles/modern_v6t.json",
         include_bytes!(concat!(
             env!("CARGO_MANIFEST_DIR"),
-            "/../../catalogs/racing/v1.10.0/simulation/vehicles/modern_v6t.json"
+            "/../../catalogs/racing/v1.10.1/simulation/vehicles/modern_v6t.json"
         )),
     ),
 ];
