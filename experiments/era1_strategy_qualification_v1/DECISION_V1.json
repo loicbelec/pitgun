@@ -1,0 +1,35 @@
+{
+  "schema": "pitgun.era1-strategy-qualification-decision/v1",
+  "status": "bounded-native-numerical-pass-owner-review-pending",
+  "physical_policy_changed": false,
+  "counts": {
+    "primary_cases": 114,
+    "gear_only_cases": 18,
+    "unique_physical_inputs": 126,
+    "full_result_repeats": 12,
+    "retained_full_gp": 144,
+    "driven_laps": 8496,
+    "legacy_controls_rejected_before_solving": 6,
+    "physical_failures": 0
+  },
+  "maximum_carry_jump": 0.0,
+  "maximum_tire_segment_residual_j": 4.3714862840715796e-09,
+  "maximum_elapsed_accounting_residual_s": 1.8189894035458565e-12,
+  "findings": [
+    "Sampled engine/chassis-only0440 loses to0332 on all three circuits, including same-SM gear controls",
+    "One-stop SM wins the sampled balanced core recipes across all three circuits; no manufactured strategy crossover",
+    "Three-stop sampled controls do not beat one/two-stop recipes of the same preparation",
+    "Legal gear preference changes across circuits in the sampled set",
+    "Attack is faster with more recoverable errors; broad risk balance not established"
+  ],
+  "not_claimed": [
+    "Global setup/strategy optimum or exclusion of all concentrated configurations",
+    "Nine-AI competitiveness or win probability",
+    "Measured tire identification, universally correct warm-up time constants or industrial validation",
+    "Different boundary algorithm equivalence",
+    "New runtime/model/catalog admission or deployed leaderboard-only verification"
+  ],
+  "next": "Freeze the same physical candidate for a bounded era-II batch respecting actual components and bonus floors; then budget-aware imperfect fixed-nine preparation. Keep separate native/WASM/replay admission and owner local testing.",
+  "result_report": "RESULTS_V1.md",
+  "analysis_script_sha256": "9297b180eff094fd2d4323ba5c1c46f15981a9e2e1b2963abb8620a6f4f6b71f"
+}

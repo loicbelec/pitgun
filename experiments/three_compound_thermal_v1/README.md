@@ -40,3 +40,7 @@ Two retained contexts (Monza I and Montreal II), three compounds, five laps, fiv
 ## Follow-up gates
 
 Native cold/hot/stop/continuity, setup/driver/track sensitivity and whole-GP zero/one/two-stop comparisons (with three-stop counter-tests) precede AI fitting. Then new model/catalog/artifact, native/WASM/recovery/replay and separately authorized local activation. No need to freeze AI optima: selected setups should be competitive and imperfect.
+
+## Strategic follow-up
+
+The owner accepts circuit-dependent operating behavior as part of the challenge; there is no requirement to equalize temperatures or make every compound competitive everywhere. [Era-I qualification](../era1_strategy_qualification_v1/RESULTS_V1.md) now retains144full GP/8496laps under this same frozen candidate. It supports meaningful sampled setup/stop/gearing tradeoffs; broader physical identification, eraII, budget-aware AI fitting and runtime admission remain separate gates. The earlier dated thermal trial and its criteria are preserved as historical evidence.

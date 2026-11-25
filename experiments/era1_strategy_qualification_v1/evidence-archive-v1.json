@@ -1,0 +1,16 @@
+{
+  "schema": "pitgun.era1-strategy-evidence-archive/v1",
+  "native_source_commit": "c5972a6e404f4bf816db13dd000c6ba52e459792",
+  "native_binary_sha256": "da3b9a20e7430826513f7287a62aaa2231a117a43aba30afc38b23753d2f6f42",
+  "operating_policy_sha256": "0021bd8ead91698de49de297b1760cc3225a54c9e61adfeb07bab8250ab16439",
+  "reports": {
+    "gear-controls-v1.json.gz": "0d8c2e3db259dabd1057f94a16e0c34e844ef3381e4ad56715d21b8b8ffd6321",
+    "compatible-validation-v1.json.gz": "f0b9455fa416bd587ff3bdd56843d00c04dfe8d585d9d7444c65e95218c3ad5f",
+    "main-v1.json.gz": "a29e6e831664dd7fe1ee4b732d4aac656dc34967c0e8b7ce6e2344f4ab392087"
+  },
+  "rustc": "rustc 1.89.0 (29483883e 2025-08-04)",
+  "cargo": "cargo 1.89.0 (c24e10642 2025-06-23)",
+  "platform": "arm64",
+  "scope": "132 named successful primary/control cases resolve to126distinct physical inputs.12prescribed full-result repeats add144retained complete GP/8496laps.6rejected-before-solve legacy switches remain retained. Native eraI only; no AI fit or activation.",
+  "execution_note": "Each runner is sequential. The tail of primary validations and initial gear controls overlapped briefly (at most two native processes). Per-case wall times are diagnostics, not a strict single-worker performance benchmark. Compatible repeats followed gear completion."
+}

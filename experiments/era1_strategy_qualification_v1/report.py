@@ -22,9 +22,14 @@ def main():
     if not report["complete"]:
         raise SystemExit("Incomplete checkpoint: no final qualification report generated.")
     plan, rows = report["plan"], report["rows"]
+    controls = load(args.gear_controls) if args.gear_controls else {"rows": [], "complete": True}
+    if not controls["complete"]:
+        raise SystemExit("Incomplete gear controls")
+    if args.gear_controls and controls["provenance"]["identity"]["binary_sha256"] != report["provenance"]["identity"]["binary_sha256"]:
+        raise SystemExit("Gear-control executable mismatch")
     lookup = {r["case"]["id"]: r for r in rows}
     circuits = [c["circuit"] for c in plan["contexts"]]
-    failures = [r for r in rows if r["checks"]]
+    failures = [r for r in rows + controls["rows"] if r["checks"]]
     legacy_rejections = [v for v in report["validations"] if v["kind"] == "recompute" and
                          v["fresh"]["data"]["outcome"].get("error") == "reachable wear forecast does not use the legacy invariant-work switch"]
     active_validations = [v for v in report["validations"] if v not in legacy_rejections]
@@ -32,6 +37,8 @@ def main():
         compatible = load(args.compatible_validation)
         if not compatible["complete"] or len(compatible["validations"]) != 6:
             raise SystemExit("Incomplete compatible validation")
+        if compatible["provenance"]["identity"]["binary_sha256"] != report["provenance"]["identity"]["binary_sha256"]:
+            raise SystemExit("Compatible-validation executable mismatch")
         active_validations += compatible["validations"]
     failed_validations = [v for v in active_validations if not v["exact"]]
 
@@ -58,8 +65,8 @@ def main():
     lines = ["# Era-I strategy qualification — frozen operating candidate", "",
              "Tracking: #482 / #479 / draft#481. No physical parameters changed during this campaign.", "",
              f"Numerical gate: **{'PASS' if numerical_pass else 'REFINE'}**. "
-             f"{len(rows)} main cases and {len(active_validations)} applicable validation executions; "
-             f"{len(failures)} main cases with failures/check violations, {len(failed_validations)} failed equality checks.", "",
+             f"{len(rows)} main cases, {len(controls['rows'])} gear-only controls and {len(active_validations)} applicable validation executions; "
+             f"{len(failures)} cases with failures/check violations, {len(failed_validations)} failed equality checks.", "",
              "## Scope", "",
              "Single-car full-distance native runs, eight effective points, same baseline engine/car/110kg/reference traits. "
              "The five preparation samples include three allocation profiles and two paired slider contrasts. "
@@ -128,6 +135,9 @@ def main():
             lines.append(f"| {circuit} | {mode} | {time_s(r):.3f} | {time_s(r)-time_s(baseline):+.3f} | "
                          f"{m['min_power']:.3f} | {m['derated_s']:.1f} | {m['errors']} |")
 
+    lines += ["", "Attack remains faster in all three primary-seed comparisons, despite more recoverable errors. "
+              "This does not establish an economically balanced risk/reward tradeoff over many seeds; no accident/VSC claim is made."]
+
     lines += ["", "## Timing and slider response", "",
               "Each contrast keeps eight points. Slider variants change downforce and gearing together; differences do not isolate a single coefficient.", "",
               "| Circuit | SM early minus midpoint s | SM late minus midpoint s | Low drag/long gear minus default SM s | High downforce/short gear minus default SM s |",
@@ -172,6 +182,11 @@ def main():
               "- No player win probability or nine-AI competitiveness claim: only one car is solved. No new game runtime, physics/catalog admission, provider call, verification submission or deployment.",
               f"- Native source commit: `{report['provenance']['source_commit']}`; binary SHA256 `{report['provenance']['identity']['binary_sha256']}`.",
               f"- Frozen operating-policy file SHA256: `{plan['policy_sha256']}`. Full pin, cases, receipts, per-lap scalars and failure records are retained in the compressed dataset."]
+    unique = len({r["data"]["receipt"]["physical_input_digest"] for r in rows + controls["rows"] if not r["checks"]})
+    lines += [f"- {len(rows)+len(controls['rows'])} named primary/control cases resolve to {unique} distinct physical inputs. "
+              "Six paired slider cases resolve identically to the legal gear-only controls: the baseline aero does neutralize the unavailable downforce setting.",
+              "- Each runner is serial. The tail of primary validations and the initial gear controls briefly overlapped, at most two native processes. "
+              "Wall times are diagnostic, not a strict single-worker performance benchmark."]
     if failures:
         lines += ["", "### Retained failures", ""] + [f"- {r['case']['id']}: {r['checks']} / {r['data']['outcome']}" for r in failures]
     if failed_validations:
@@ -185,9 +200,6 @@ def main():
                   "Together with the original six repeats,12full-result repeats are assessed above. "
                   "No solver change or full-campaign rerun was used to hide the harness mistake."]
     if args.gear_controls:
-        controls = load(args.gear_controls)
-        if not controls["complete"]:
-            raise SystemExit("Incomplete gear controls")
         lines += ["", "## Legal gear-only control", "",
                   "Post-plan extension, frozen before its runs: original paired sliders confound gearing with downforce, "
                   "and baseline era-I downforce is locked in the game.18additional SM runs keep downforce.5 and cover "
