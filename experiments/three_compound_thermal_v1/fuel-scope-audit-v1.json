@@ -1,0 +1,32 @@
+{
+  "schema": "pitgun.fuel-scope-audit/v1",
+  "initial_fuel_mass_kg": 100,
+  "retained_receipts": 345,
+  "archives": [
+    {
+      "archive": "experiments/era1_strategy_qualification_v1/results/compatible-validation-v1.json.gz",
+      "sha256": "f0b9455fa416bd587ff3bdd56843d00c04dfe8d585d9d7444c65e95218c3ad5f",
+      "receipts": 6,
+      "initial_fuel_mass_kg": 100
+    },
+    {
+      "archive": "experiments/era1_strategy_qualification_v1/results/gear-controls-v1.json.gz",
+      "sha256": "0d8c2e3db259dabd1057f94a16e0c34e844ef3381e4ad56715d21b8b8ffd6321",
+      "receipts": 18,
+      "initial_fuel_mass_kg": 100
+    },
+    {
+      "archive": "experiments/era1_strategy_qualification_v1/results/main-v1.json.gz",
+      "sha256": "a29e6e831664dd7fe1ee4b732d4aac656dc34967c0e8b7ce6e2344f4ab392087",
+      "receipts": 120,
+      "initial_fuel_mass_kg": 100
+    },
+    {
+      "archive": "experiments/era2_strategy_qualification_v1/results/main-v1.json.gz",
+      "sha256": "079ef5ebd2639a3c3e7a93c84d47416ed7b979e9c2ef40d0ce178e213537d515",
+      "receipts": 201,
+      "initial_fuel_mass_kg": 100
+    }
+  ],
+  "physical_inputs_changed": false
+}
