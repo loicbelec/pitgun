@@ -1,0 +1,27 @@
+{
+  "schema": "pitgun.thermal-balance-sensitivity-evidence/v1",
+  "source_commits": {
+    "development": "d7f56da0b79c063e51d1455eab3ae4a6c0e8c584",
+    "frozen_selection_and_validation": "9bb5a9c2b0db35980d0ebbae8b9861f937032d3a"
+  },
+  "native_binary_sha256": "3d745b32eb71eb22a3046ce7010909590242e1f4eb6df3151eee73bbd18c44ed",
+  "selected_policy": "rolling-heat-065",
+  "selected_policy_sha256": "8b303f0189e3e174138a877d0eada425b37c672fe66dd07efcbc86b8d861e771",
+  "reports": {
+    "selection-v1.json": "a53e328549995b66cb7f9243b40a9a7b3b5645a493fa390890b604ebd7b9a04e",
+    "validation-v1.json": "e6b0943dabe207b0e0f92c7c0ab83e3e4aecc82ac70f2e64c64ca5215d08b52e",
+    "RESULTS_V1.md": "175a513500193ee7318b92a01764bfeb99d2b203e20f207de88d46a1dd5732f6",
+    "INTERPRETATION.md": "b324932fe3aedc013aaadf3ab69a595eb57fba25681e0c797ca465d312659178",
+    "results/development-v1.json.gz": "aa339c07eb9139a06125a6cd6f79ff6eb7e461f79dc2b8268cf48c46d73fd7aa",
+    "results/validation-v1.json.gz": "1b89dd3167bf549a74f293e00c9e09284037dadd74381d1d2e2f10aedc96ef1f"
+  },
+  "full_gp": 54,
+  "accepted_laps": 3360,
+  "numerical_failures": 0,
+  "fresh_exact_repeats": 6,
+  "maximum_tire_balance_residual_j": 6.687940867777797e-09,
+  "maximum_carry_jump": 0.0,
+  "bounded_screening_pass": true,
+  "release_admitted": false,
+  "scope": "Offline four-policy sensitivity, frozen selection before reserved contexts; no game/runtime/catalog/AI/deployment change. Broader era-I/II qualification remains open."
+}
