@@ -20,3 +20,7 @@ python3 experiments/era1_attainability_audit_v1/run.py \
 Use the existing V1/pilot native-worker parent so the lock is shared. Preserve the executable hash from plan-v1.json and all frozen sources. The runner exports an era-I-specific schema and field provenance when complete; partial progress stays in its private cache. A changed program/source/matrix requires a new namespace, never relabeling old evidence. Tests: `python3 -m unittest discover -s experiments/era1_attainability_audit_v1 -v`; shared journal/batch tests remain in `experiments/fixed_nine_refinement_v2`.
 
 Next after complete development review: era-II same-opportunity named-driver preparation, genuinely new reserved evaluation after a complete policy freeze, native/WASM/recovery/performance and versioned local admission. Later-eraIII–V scope remains #492. The owner-facing preview is unchanged by this offline audit.
+
+## Current progress
+
+Batch1 complete:20/153fresh GP,1,060accepted laps, zero observed numerical failures;133jobs remain. All81frozen rival reuse inputs bridge. The runner stopped at its20new-GP limit; no automatic continuation or final audit verdict. Source/protocol freeze `77e2f0a`; case/identity hashes and partial status are in [batch-01-progress.json](results/batch-01-progress.json). Resume the same pinned namespace at the21stcase. The full audit and local-game integration are still pending.
