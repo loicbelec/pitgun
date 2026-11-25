@@ -33,6 +33,20 @@ Charles and Franz both average rank1.50 among the nine over the ten exit context
 
 No general human win rate, global setup optimum, all-budget fairness, traffic interaction or broad incident-risk calibration follows from these samples. Later eras, invitations and Monaco remain outside this campaign. Reference player traits are .84/.84/.84. Initial fuel is100kg throughout. Current browser preview :5252 and deployed services remain unchanged.
 
+## Reserved-result clarification: beating the field is not setup dominance
+
+The concentrated player beats the nine rivals in all three reserved era-II groups, but the prepared alternative is faster in all three **against the same frozen field**:
+
+| Circuit / effective cap | Alternative faster than concentrated by |
+|---|---:|
+| Silverstone / 16 | 0.705 s |
+| Mexico / 16 | 4.535 s |
+| Sao Paulo / 24 | 14.495 s |
+
+Mexico supplies the closest controlled point-allocation comparison: same reference driver, seed271828, fuel, installed equipment, gear0.5, downforce0.4 and one-stop medium/hard plan at lap35. Effective A/C/E/K changes from **[2,6,7,1] to [2,5,6,3]**, keeping cap16. The extra cooling trades one chassis and one engine point for two cooling points. Minimum engine thermal power factor is0.942 versus1.000; the concentrated preparation is thermally limited during76.9% of driving time versus0% for the alternative. The alternative finishes4.535s sooner. This tests a legal allocation tradeoff, not the isolated derivative of cooling at constant engine/chassis.
+
+Silverstone and Sao Paulo also change the stint schedule, so their gains cannot be attributed to cooling alone. These observations do not rescue the failed non-sweep gate or establish universal physical balance. They show that the sweep is not evidence that motor/chassis is the best physical preparation everywhere. Rival preparation is the first hypothesis to test: rivals were selected from two retained joint proposals; each player family also received four local adjustments. The successor comparison should give rival preparation a comparable coupled setup/strategy opportunity, retaining fixed budgets/traits and genuinely new validation cases.
+
 ## Next bounded iteration
 
 1. Preserve V1 as negative qualification evidence; never relabel its reserved cases as fresh validation. Keep the physical policy and roster frozen.
