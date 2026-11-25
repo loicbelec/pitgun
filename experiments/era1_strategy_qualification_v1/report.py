@@ -16,6 +16,7 @@ def main():
     parser.add_argument("input", type=Path)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--gear-controls", type=Path)
+    parser.add_argument("--compatible-validation", type=Path)
     args = parser.parse_args()
     report = load(args.input)
     if not report["complete"]:
@@ -24,7 +25,15 @@ def main():
     lookup = {r["case"]["id"]: r for r in rows}
     circuits = [c["circuit"] for c in plan["contexts"]]
     failures = [r for r in rows if r["checks"]]
-    failed_validations = [v for v in report["validations"] if not v["exact"]]
+    legacy_rejections = [v for v in report["validations"] if v["kind"] == "recompute" and
+                         v["fresh"]["data"]["outcome"].get("error") == "reachable wear forecast does not use the legacy invariant-work switch"]
+    active_validations = [v for v in report["validations"] if v not in legacy_rejections]
+    if args.compatible_validation:
+        compatible = load(args.compatible_validation)
+        if not compatible["complete"] or len(compatible["validations"]) != 6:
+            raise SystemExit("Incomplete compatible validation")
+        active_validations += compatible["validations"]
+    failed_validations = [v for v in active_validations if not v["exact"]]
 
     def row(circuit, setup, recipe, suffix=""):
         return lookup[f"{circuit}/{setup}/{recipe}{suffix}"]
@@ -45,11 +54,11 @@ def main():
                 "derated_s": sum(l["derated_time_s"] for l in laps),
                 "errors": sum(l["driver_lapses"] for l in laps)}
 
-    numerical_pass = not failures and not failed_validations
+    numerical_pass = not failures and not failed_validations and len(active_validations) == 12
     lines = ["# Era-I strategy qualification — frozen operating candidate", "",
              "Tracking: #482 / #479 / draft#481. No physical parameters changed during this campaign.", "",
              f"Numerical gate: **{'PASS' if numerical_pass else 'REFINE'}**. "
-             f"{len(rows)} main cases and {len(report['validations'])} validation executions; "
+             f"{len(rows)} main cases and {len(active_validations)} applicable validation executions; "
              f"{len(failures)} main cases with failures/check violations, {len(failed_validations)} failed equality checks.", "",
              "## Scope", "",
              "Single-car full-distance native runs, eight effective points, same baseline engine/car/110kg/reference traits. "
@@ -154,7 +163,8 @@ def main():
             lines.append(f"| {circuit} | {time_s(reserve)-time_s(primary):+.3f} | {driving_metrics(reserve)['errors']} |")
 
     lines += ["", "## Decision and limits", "",
-              f"- Selected repeat and recomputed-invariant checks: {sum(v['exact'] for v in report['validations'])}/{len(report['validations'])} exact.",
+              f"- Fresh full-result repeats (including corrected controls): {sum(v['exact'] for v in active_validations)}/{len(active_validations)} exact. "
+              "This is repeatability, not equivalence to a different boundary algorithm.",
               f"- Three-stop counterexamples beating the sampled one/two-stop recipes: {len(three_stop_counters)}. " + (", ".join(three_stop_counters) if three_stop_counters else "None in this matrix; not a proof against other three-stop schedules."),
               f"- The sampled0440 setup dominates the two other core profiles on every circuit: {concentrated_dominates}. "
               "This is a narrow setup test, not an exclusion of all concentrated configurations.",
@@ -166,6 +176,14 @@ def main():
         lines += ["", "### Retained failures", ""] + [f"- {r['case']['id']}: {r['checks']} / {r['data']['outcome']}" for r in failures]
     if failed_validations:
         lines += ["", "### Equality checks requiring investigation", ""] + [f"- {v['kind']} / {v['baseline_id']}" for v in failed_validations]
+    if legacy_rejections:
+        lines += ["", "### Retained harness error and corrected validation", "",
+                  f"The frozen plan mistakenly selected {len(legacy_rejections)} legacy invariant-work recomputation checks "
+                  "for ReachableWearV1, which explicitly rejects that option before solving. "
+                  "All six rejections remain in the primary dataset; they are not physical failures or equal-output comparisons. "
+                  "A separately frozen control repeats those same six physical cases with the supported mode. "
+                  "Together with the original six repeats,12full-result repeats are assessed above. "
+                  "No solver change or full-campaign rerun was used to hide the harness mistake."]
     if args.gear_controls:
         controls = load(args.gear_controls)
         if not controls["complete"]:

@@ -22,3 +22,7 @@ No release/model switch, WASM rebuild, hosted verification, provider calls or de
 The baseline `none` aero component has no adjustable_downforce; the game clamps it to.5. The original18paired downforce/gearing cases therefore remain offline physical sensitivity diagnostics, never legal era-I career recommendations. Original0/3-stop cases similarly do not change ranked/session sporting rules.
 
 A post-plan confound control is separately frozen before execution by `gear_controls.py`:18SM runs, all3point profiles x3circuits xgear.35/.85, downforce kept.5. The cases derive from original definitions, not selected results. Its manifest, runner hash and new immutable cache namespace are retained separately; no primary plan or coefficients are changed. It reuses the exact native executable.
+
+## Validation correction
+
+The frozen plan mistakenly requested the legacy invariant-work switch in6ReachableWearV1 cases. The solver explicitly rejects this combination before any lap; all6rejections stay in the primary dataset. This is a harness error, not a physical failure or a result mismatch. `validation_controls.py` separately freezes and repeats those same6physical cases using the supported mode, in addition to the original6exact repeats. No alternative boundary-algorithm equivalence is claimed. Primary plan/results are preserved unchanged.
