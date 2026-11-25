@@ -1,0 +1,56 @@
+{
+  "schema": "pitgun.aero-plan-followup/v1",
+  "policies": {
+    "rolling-heat-065": {
+      "path": "experiments/thermal_balance_sensitivity_v1/rolling-heat-065.json",
+      "sha256": "8b303f0189e3e174138a877d0eada425b37c672fe66dd07efcbc86b8d861e771"
+    }
+  },
+  "policy_id": "rolling-heat-065",
+  "fixtures": "experiments/opponent_physics_v2/results/career-fixtures-v1.json",
+  "fixtures_sha256": "858cce40ccb942b5667bab84f99af9e1231711d6cf13afca472537051ef3c6d9",
+  "baseline_archive": "experiments/thermal_candidate_qualification_v1/results/era2-v1.json.gz",
+  "baseline_archive_sha256": "a1d648c183e3c249365fda85d9e38d05d1edb6e8cb024cc08d1d551f9ae0b7bd",
+  "retained_files": {
+    "experiments/thermal_candidate_qualification_v1/results/era2-v1.json.gz": "a1d648c183e3c249365fda85d9e38d05d1edb6e8cb024cc08d1d551f9ae0b7bd",
+    "experiments/aero_tradeoff_audit_v1/results/main-v1.json.gz": "796f9d059cbf4a7c7cf445811b2965b67dddbb8529b0798260905b6bf80d4ae3"
+  },
+  "contexts": [
+    {
+      "circuit": "MONZA",
+      "laps": 53
+    },
+    {
+      "circuit": "SILVERSTONE",
+      "laps": 52
+    },
+    {
+      "circuit": "SAOPAULO",
+      "laps": 71
+    }
+  ],
+  "sliders": [
+    0.0,
+    0.5,
+    1.0
+  ],
+  "controls": [
+    0.8
+  ],
+  "curvature_bins_rad_per_m": [
+    0.001,
+    0.003
+  ],
+  "seed": 73013,
+  "expected_cases": 12,
+  "expected_repeats": 3,
+  "fixture_id": "craft_engineering:era2-exit",
+  "allocation": [
+    4,
+    4,
+    4,
+    4
+  ],
+  "reference_slider": 0.5,
+  "native_binary_sha256": "25776d1529da153740c26b4e8db56146e05935df938a3ed256490117283e8b2f"
+}
