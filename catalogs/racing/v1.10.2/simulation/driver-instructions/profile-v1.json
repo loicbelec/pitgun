@@ -1,0 +1,6 @@
+{
+  "schema_version": "pitgun.racing-driver-instruction-profile/v1",
+  "default_mode": "balanced",
+  "boundary_granularity": "lap_start",
+  "max_events_per_session": 64
+}

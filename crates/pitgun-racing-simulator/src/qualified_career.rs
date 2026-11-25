@@ -11,6 +11,11 @@ use pitgun_racing_solver::lap_boundary::{
     BoundaryDiagnosticRequestV1, BoundaryDiagnosticVersionV1, BoundaryForecastV1,
 };
 
+const THREE_COMPOUND_BYTES: &[u8] = include_bytes!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../catalogs/racing/v1.10.2/simulation/qualified-career/profile-v1.json"
+));
+
 const PROFILE_BYTES: &[u8] = include_bytes!(concat!(
     env!("CARGO_MANIFEST_DIR"),
     "/../../catalogs/racing/v1.10.1/simulation/qualified-career/profile-v1.json"
@@ -25,6 +30,8 @@ pub struct QualifiedCareerProfile {
     pub initial_fuel_mass_kg: f64,
     pub thermal: ThermalCareerPolicyV1,
     pub tires: TirePerformanceProfileV1,
+    #[serde(default)]
+    pub tire_operating: Option<crate::tire_operating::TireOperatingPolicyV1>,
     pub roster: BTreeMap<String, QualifiedPerson>,
     pub contexts: Vec<QualifiedContext>,
     pub derating_events: physical_events::DeratingEventPolicyV1,
@@ -69,6 +76,51 @@ pub fn model_identity() -> ArtifactIdentity {
         digest: Digest::from_bytes(manifest.as_bytes()),
     }
 }
+/// Explicit local preview identity. Signed/leaderboard admission is separate.
+pub fn three_compound_model_identity() -> ArtifactIdentity {
+    let manifest = format!(
+        "pitgun.racing-v3-candidate:0.16.2:three-compound-operating-v1:energy-gear-8eps:reachable-wear:readable-power-v3:{}",
+        Digest::from_bytes(THREE_COMPOUND_BYTES)
+    );
+    ArtifactIdentity {
+        id: "pitgun.racing-v3-candidate".parse().unwrap(),
+        version: "0.16.2".parse().unwrap(),
+        digest: Digest::from_bytes(manifest.as_bytes()),
+    }
+}
+pub fn model_identity_for(snapshot: &RacingCatalogSnapshot) -> Result<ArtifactIdentity, String> {
+    profile(snapshot)?;
+    Ok(
+        if snapshot.qualified_career_profile_bytes() == Some(THREE_COMPOUND_BYTES) {
+            three_compound_model_identity()
+        } else {
+            model_identity()
+        },
+    )
+}
+pub fn three_compound_profile_identity() -> ArtifactIdentity {
+    ArtifactIdentity {
+        id: "pitgun.racing.qualified-career.profile-v1".parse().unwrap(),
+        version: "1.1.0".parse().unwrap(),
+        digest: canonical_json_digest(
+            &serde_json::from_slice::<Value>(THREE_COMPOUND_BYTES).unwrap(),
+        )
+        .unwrap(),
+    }
+}
+pub fn compile_tires(
+    snapshot: &RacingCatalogSnapshot,
+    p: &QualifiedCareerProfile,
+) -> Result<crate::tire_performance::CompiledTirePerformanceV1, String> {
+    match &p.tire_operating {
+        Some(policy) => Ok(crate::tire_operating::compile_tire_operating_v1(
+            snapshot, &p.thermal, policy,
+        )?
+        .performance),
+        None => compile_tire_performance_v1(snapshot, &p.thermal, &p.tires),
+    }
+}
+
 pub fn profile_identity() -> ArtifactIdentity {
     ArtifactIdentity {
         id: "pitgun.racing.qualified-career.profile-v1".parse().unwrap(),
@@ -87,11 +139,22 @@ pub fn qualified_career_metadata_json() -> String {
         "physics":"pitgun.local-qualified-career/v1","scope":"local I/II candidate, not deployed"}),
     )
 }
+/// Local unranked preview metadata. Public signed-service admission stays closed.
+#[cfg_attr(feature = "wasm", wasm_bindgen)]
+pub fn three_compound_career_metadata_json() -> String {
+    let control = crate::service_control::three_compound_local_control_policy_identity();
+    serialize_json(
+        &serde_json::json!({"model":three_compound_model_identity(),"profile":three_compound_profile_identity(),"control_policy":control,
+        "telemetry_policy":crate::power_stream::readable_power_telemetry_policy_identity(),"physics":"pitgun.local-qualified-career/v1",
+        "scope":"local I/II three-compound preview; provisional AI; not leaderboard admitted","signed_service_admitted":false}),
+    )
+}
+
 pub fn profile(snapshot: &RacingCatalogSnapshot) -> Result<QualifiedCareerProfile, String> {
     let bytes = snapshot
         .qualified_career_profile_bytes()
         .ok_or("qualified career profile missing")?;
-    if bytes != PROFILE_BYTES {
+    if bytes != PROFILE_BYTES && bytes != THREE_COMPOUND_BYTES {
         return Err("qualified career profile differs from the compiled candidate".into());
     }
     let p: QualifiedCareerProfile = serde_json::from_slice(bytes).map_err(|e| e.to_string())?;
@@ -103,6 +166,15 @@ pub fn profile(snapshot: &RacingCatalogSnapshot) -> Result<QualifiedCareerProfil
     }
     p.thermal.validate()?;
     p.tires.validate()?;
+    if (bytes == THREE_COMPOUND_BYTES) != p.tire_operating.is_some() {
+        return Err("operating policy/profile identity mismatch".into());
+    }
+    if p.tire_operating
+        .as_ref()
+        .is_some_and(|t| t.performance != p.tires)
+    {
+        return Err("conflicting tire performance policy".into());
+    }
     Ok(p)
 }
 
@@ -215,7 +287,7 @@ pub fn resolve_inputs(
         &driver_policy,
         &BTreeMap::new(),
     )?;
-    let tires = compile_tire_performance_v1(snapshot, &p.thermal, &p.tires)?;
+    let tires = compile_tires(snapshot, &p)?;
     field
         .competitors
         .into_iter()
@@ -316,6 +388,7 @@ pub fn start(
     session.competitor_power_unit_thermal_resolutions_v3.clear();
     session.align_player_horizon = true;
     session.enable_power_telemetry_v1()?;
+    session.readable_power_telemetry = p.tire_operating.is_some();
     Ok(session)
 }
 
@@ -355,6 +428,67 @@ pub fn prepare_qualified_career_request_json(input_json: String, catalog_json: S
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn operating_catalog_inputs_equal_the_frozen_offline_compilation() {
+        let old = RacingCatalogSnapshot::embedded_qualified_career().unwrap();
+        let next = RacingCatalogSnapshot::embedded_three_compound().unwrap();
+        assert_eq!(
+            model_identity().digest.to_string(),
+            "sha256:fcce2427ec1f0d27b5d8a04be8664f1c90ea8be222ba988028b6080cdb2b6abe"
+        );
+        assert_eq!(model_identity_for(&old).unwrap(), model_identity());
+        assert_eq!(
+            model_identity_for(&next).unwrap(),
+            three_compound_model_identity()
+        );
+        let candidate = profile(&next).unwrap();
+        let compiled = compile_tires(&next, &candidate).unwrap();
+        let fixtures: Value = serde_json::from_str(include_str!(
+            "../../../experiments/opponent_physics_v2/results/career-fixtures-v1.json"
+        ))
+        .unwrap();
+        for id in [
+            "craft_engineering:era1-entry",
+            "craft_engineering:era2-entry",
+            "craft_engineering:era2-exit",
+        ] {
+            let f = fixtures["fixtures"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .find(|f| f["id"] == id)
+                .unwrap();
+            let req: RunRaceRequest =
+                serde_json::from_value(f["preparedRequests"][0]["request"].clone()).unwrap();
+            let req = prepare_request(req, &old).unwrap();
+            let mut baseline = resolve_inputs(&req, &old).unwrap();
+            let actual = resolve_inputs(&req, &next).unwrap();
+            for (actor, input) in &mut baseline {
+                let c = req
+                    .input
+                    .race
+                    .competitors
+                    .iter()
+                    .find(|c| c.id == *actor)
+                    .unwrap();
+                let ids: Vec<_> = c
+                    .stint_strategy
+                    .as_ref()
+                    .unwrap()
+                    .stints
+                    .iter()
+                    .map(|s| s.tire_id.clone())
+                    .collect();
+                compiled.apply_initial_to_input(input, &ids).unwrap();
+                assert_eq!(
+                    canonical_json_digest(input).unwrap(),
+                    canonical_json_digest(&actual[actor]).unwrap(),
+                    "{id}/{actor}"
+                );
+            }
+        }
+    }
+
     fn request(era: i32, short: bool) -> RunRaceRequest {
         let fixtures: Value = serde_json::from_str(include_str!(concat!(
             env!("CARGO_MANIFEST_DIR"),

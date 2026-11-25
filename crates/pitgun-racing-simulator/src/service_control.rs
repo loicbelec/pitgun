@@ -100,6 +100,18 @@ pub fn qualified_service_control_policy_identity() -> ArtifactIdentity {
     }
 }
 
+/// Identity for local previews only. Not accepted by signed-service dispatch.
+pub fn three_compound_local_control_policy_identity() -> ArtifactIdentity {
+    let mut control = policy_template();
+    control["physics"] = serde_json::json!("pitgun.local-qualified-career/v1");
+    let manifest = serde_json::json!({"control":control,"profile":crate::qualified_career::three_compound_profile_identity(),"telemetry":crate::power_stream::readable_power_telemetry_policy_identity()});
+    ArtifactIdentity {
+        id: "pitgun.racing-service-control-policy".parse().unwrap(),
+        version: "3.1.0".parse().unwrap(),
+        digest: canonical_json_digest(&manifest).unwrap(),
+    }
+}
+
 pub fn service_control_policy_for_envelope(
     envelope: &RacingServiceAuthorizationV1,
 ) -> Result<ArtifactIdentity, String> {

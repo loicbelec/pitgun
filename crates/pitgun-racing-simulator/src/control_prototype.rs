@@ -338,11 +338,7 @@ impl LocalControlledRacingSession {
         }
         if config.physics == Some(CareerControlPhysics::QualifiedCareerV1) {
             let profile = crate::qualified_career::profile(snapshot)?;
-            let compiled = crate::tire_performance::compile_tire_performance_v1(
-                snapshot,
-                &profile.thermal,
-                &profile.tires,
-            )?;
+            let compiled = crate::qualified_career::compile_tires(snapshot, &profile)?;
             for (id, tire) in &mut tires {
                 *tire = compiled.tire(id)?.clone();
             }
@@ -350,7 +346,7 @@ impl LocalControlledRacingSession {
         let run_digest = canonical_json_digest(&(
             PrototypeVersion::V1,
             if config.physics == Some(CareerControlPhysics::QualifiedCareerV1) {
-                crate::qualified_career::model_identity()
+                crate::qualified_career::model_identity_for(snapshot)?
             } else if config.physics.is_some() {
                 crate::workload::racing_model_v3_component_candidate_identity()
             } else {

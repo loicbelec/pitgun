@@ -73,6 +73,10 @@ include!(concat!(
     env!("CARGO_MANIFEST_DIR"),
     "/../../generated/racing_catalog_qualified_career.rs"
 ));
+include!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../generated/racing_catalog_three_compound.rs"
+));
 use std::collections::hash_map::DefaultHasher;
 use std::collections::{BTreeMap, BTreeSet, HashMap, VecDeque};
 use std::hash::{Hash, Hasher};
@@ -2833,6 +2837,7 @@ fn take_playback_prefix(points: &mut Vec<[f64; 2]>, horizon: f64) -> Vec<[f64; 2
 pub struct IncrementalRacingSession {
     physical_event_failure: Option<String>,
     power_telemetry_v1: bool,
+    readable_power_telemetry: bool,
     power_caches: Vec<power_stream::PowerLapCache>,
     track_id: String,
     track: Track,
@@ -3317,6 +3322,7 @@ impl IncrementalRacingSession {
             physical_event_failure: None,
             track_id,
             power_telemetry_v1: false,
+            readable_power_telemetry: false,
             power_caches: Vec::new(),
             track: track_record.track,
             vehicle_id: vehicle_id.to_string(),
@@ -3568,6 +3574,7 @@ impl IncrementalRacingSession {
                     player.power_projection_fuel,
                     &resampled.time_s,
                     player_time_offset,
+                    self.readable_power_telemetry,
                 )?)
             } else {
                 None
