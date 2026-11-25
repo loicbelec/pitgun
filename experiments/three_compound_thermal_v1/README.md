@@ -43,4 +43,6 @@ Native cold/hot/stop/continuity, setup/driver/track sensitivity and whole-GP zer
 
 ## Strategic follow-up
 
+The bounded [era-II stop diagnostic](../era2_stop_diagnostic_v1/RESULTS_V1.md) now retains 48 full GP / 2,976 laps at 100 kg initial fuel on Monza/São Paulo. Equal compound exposure preserves three-stop counterexamples; temperature-only grip-loss ablation reverses the MH ranking on both circuits, whereas wear-only grip-loss ablation does not. See [the interpretation](../era2_stop_diagnostic_v1/INTERPRETATION.md) before final nine-AI fitting. The nominal policy is unchanged and the strategic gate remains open; counterfactuals are offline diagnostics, not runtime candidates.
+
 The owner accepts circuit-dependent operating behavior as part of the challenge; there is no requirement to equalize temperatures or make every compound competitive everywhere. [Era-I qualification](../era1_strategy_qualification_v1/RESULTS_V1.md) now retains144full GP/8496laps under this same frozen candidate. It supports meaningful sampled setup/stop/gearing tradeoffs; broader physical identification, eraII, budget-aware AI fitting and runtime admission remain separate gates. The earlier dated thermal trial and its criteria are preserved as historical evidence.

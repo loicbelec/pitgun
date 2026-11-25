@@ -1,0 +1,15 @@
+{
+  "schema": "pitgun.era2-stop-diagnostic-evidence/v1",
+  "native_source_commit": "ecd7c801c3169fb2cbbc19d6d8c6f0710bcc817e",
+  "native_binary_sha256": "4025a03ccb89b5c94dedde5448418386ceb1b62a6437e4bd5970b323cd06dfba",
+  "operating_policy_sha256": "0021bd8ead91698de49de297b1760cc3225a54c9e61adfeb07bab8250ab16439",
+  "archive_sha256": "7329147d906024f94ac0ae32ecf90fe8ed98659750f115b9a73a5e37015a047c",
+  "reports": {
+    "report.py": "099681659b18c385dd42c28a7b94dccbbd10fb30c5d27569d2b51f8e83461465",
+    "RESULTS_V1.md": "61cfa6dadf3bbbf20564e53d46db66165bb5eb36ffb0376e9f51ddef7abc48fe",
+    "DECISION_V1.json": "c9f05eadd61fb1a702f5e46b48d51286f1d87c117d96fd1a17d3076e706c39c6",
+    "INTERPRETATION.md": "ce5bfc22802be26ba9d53b36d1d25dd0a125e65bd44b1d07a43d57b090280a4f"
+  },
+  "scope": "44 main +4 fresh full GP; 2976 laps; Monza and Sao Paulo; developed Craft era II; 100 kg initial fuel; nominal policy immutable; diagnostics offline only; no AI fit/admission/deployment",
+  "status": "numerical-pass-strategic-gate-open"
+}
