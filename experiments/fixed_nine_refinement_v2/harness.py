@@ -6,6 +6,7 @@ from copy import deepcopy
 import hashlib
 import importlib.util
 import json
+import math
 import os
 from pathlib import Path
 import sys
@@ -119,8 +120,55 @@ class Journal:
                          journal_sha256=sha(self.path), journal_entries=len(self.records)))
 
 
-def execute_matrix(plan_path, binary, cache, output, matrix, preflight=None):
-    plan_path, cache = Path(plan_path), Path(cache)
+def validate_limits(max_new_gp, max_wall_seconds):
+    if isinstance(max_new_gp, bool) or not isinstance(max_new_gp, int) or max_new_gp < 1:
+        raise ValueError('max_new_gp must be a positive integer')
+    if not math.isfinite(max_wall_seconds) or max_wall_seconds <= 0:
+        raise ValueError('max_wall_seconds must be finite and positive')
+
+
+def advance_batch(worker, journal, matrix, progress_path, max_new_gp=20,
+                  max_wall_seconds=300., clock=time.monotonic, started=None):
+    """Stop between cases. A cache hit never consumes a new-GP allowance."""
+    validate_limits(max_new_gp, max_wall_seconds)
+    started = clock() if started is None else started
+    timings, new_gp, stop_reason = [], 0, None
+    for i, item in enumerate(matrix):
+        if i < len(journal.records):
+            continue
+        if clock() - started >= max_wall_seconds:
+            stop_reason = 'wall_time_limit'
+            break
+        cached = (worker.cache / key(item['case'], fresh=item['fresh'])).is_file()
+        if not cached and new_gp >= max_new_gp:
+            stop_reason = 'new_gp_limit'
+            break
+        before = clock()
+        row = worker.execute(item['case'], fresh=item['fresh'])
+        native = clock() - before
+        if not cached:
+            new_gp += 1
+        before = clock()
+        journal.append(i, row)
+        elapsed = clock() - before
+        timings.append({'index': i, 'native_or_cache_wall_s': native, 'checkpoint_wall_s': elapsed})
+        write(progress_path, {'completed': i + 1, 'expected': len(matrix),
+              'last_case': item['case']['id'], 'last_checks': row['checks']})
+        print(f'{i+1}/{len(matrix)} {item["case"]["id"]} {row["checks"] or "OK"}', flush=True)
+    complete = len(journal.records) == len(matrix)
+    return {'schema': 'pitgun.offline-native-batch-progress/v1',
+            'complete': complete, 'completed': len(journal.records), 'expected': len(matrix),
+            'remaining': len(matrix) - len(journal.records), 'new_gp_this_batch': new_gp,
+            'stop_reason': None if complete else stop_reason,
+            'limits': {'max_new_gp': max_new_gp, 'max_wall_seconds': max_wall_seconds},
+            'timings': timings}
+
+
+def execute_matrix(plan_path, binary, cache, output, matrix, preflight=None,
+                   max_new_gp=20, max_wall_seconds=300.):
+    validate_limits(max_new_gp, max_wall_seconds)
+    started = time.monotonic()
+    plan_path, cache, output = Path(plan_path), Path(cache), Path(output)
     p = load(plan_path)
     # Include this new orchestration and protocol without altering the V1 runner.
     p['retained_files'] = dict(p['retained_files'])
@@ -130,29 +178,27 @@ def execute_matrix(plan_path, binary, cache, output, matrix, preflight=None):
     worker = BASE.Campaign(Path(binary), cache / 'native', p)
     if worker.identity['binary_sha256'] != p['native_binary_sha256']:
         raise ValueError('not the frozen native executable')
+    matrix_digest = hashlib.sha256(encoded(matrix)).hexdigest()
+    if output.exists():
+        previous = load(output)
+        if (previous.get('provenance', {}).get('identity') != worker.identity
+            or previous.get('source_matrix_sha256') != matrix_digest):
+            raise ValueError('archive belongs to another source/matrix; use a new results namespace')
     if preflight is not None:
         preflight(worker, p, matrix, cache)
     journal = Journal(cache / 'journal', worker.cache, worker.identity, matrix)
-    timings = []
-    for i, item in enumerate(matrix):
-        if i < len(journal.records):
-            continue
-        before = time.monotonic()
-        row = worker.execute(item['case'], fresh=item['fresh'])
-        native = time.monotonic() - before
-        before = time.monotonic()
-        journal.append(i, row)
-        elapsed = time.monotonic() - before
-        timings.append({'index': i, 'native_or_cache_wall_s': native, 'checkpoint_wall_s': elapsed})
-        # Tiny progress only; all result bodies stay in the immutable native rows.
-        write(cache / 'progress.json', {'completed': i + 1, 'expected': len(matrix),
-              'last_case': item['case']['id'], 'last_checks': row['checks']})
-        print(f'{i+1}/{len(matrix)} {item["case"]["id"]} {row["checks"] or "OK"}', flush=True)
+    progress = advance_batch(worker, journal, matrix, cache / 'progress.json',
+        max_new_gp=max_new_gp, max_wall_seconds=max_wall_seconds, started=started)
     worker.verify()
     # Timings are operational observations; keep resume segments separately.
-    if timings:
-        write(cache / ('timings-' + hashlib.sha256(encoded(timings)).hexdigest() + '.json'), timings)
+    if progress['timings']:
+        write(cache / ('timings-' + hashlib.sha256(encoded(progress['timings'])).hexdigest() + '.json'), progress['timings'])
+    summary = {k: v for k, v in progress.items() if k != 'timings'}
+    write(cache / 'progress.json', summary)
+    if not progress['complete']:
+        # A bounded partial batch never publishes a complete archive or decision.
+        return summary
     journal.export(output, {'schema': 'pitgun.fixed-nine-mexico-pilot-results/v2',
         'plan': load(plan_path), 'provenance': worker.pin,
-        'source_matrix_sha256': hashlib.sha256(encoded(matrix)).hexdigest()})
+        'source_matrix_sha256': matrix_digest})
     return load(output)

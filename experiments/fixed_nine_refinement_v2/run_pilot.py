@@ -138,16 +138,21 @@ def main():
     parser.add_argument('--binary', type=Path, required=True)
     parser.add_argument('--cache', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True)
+    parser.add_argument('--max-new-gp', type=int, default=20)
+    parser.add_argument('--max-wall-seconds', type=float, default=300.)
     args = parser.parse_args()
     args.cache.parent.mkdir(parents=True, exist_ok=True)
-    lock = (args.cache.parent / 'fixed-nine-worker.lock').open('a')
-    fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
-    plan_path = HERE / 'pilot-plan-v2.json'; plan = load(plan_path)
-    data = execute_matrix(plan_path, args.binary, args.cache, args.output, cases(plan), preflight=preflight)
-    result = analyze(data)
-    result['results_sha256'] = sha(args.output)
-    write(args.output.parent / 'pilot-decision-v2.json', result)
-    print({k: result[k] for k in ['numerical_pass', 'preparation_hypothesis_supported', 'accepted_laps']}, flush=True)
-
+    with (args.cache.parent / 'fixed-nine-worker.lock').open('a') as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        plan_path = HERE / 'pilot-plan-v2.json'; plan = load(plan_path)
+        data = execute_matrix(plan_path, args.binary, args.cache, args.output, cases(plan), preflight=preflight,
+            max_new_gp=args.max_new_gp, max_wall_seconds=args.max_wall_seconds)
+        if not data['complete']:
+            print(data, flush=True)
+            return
+        result = analyze(data)
+        result['results_sha256'] = sha(args.output)
+        write(args.output.parent / 'pilot-decision-v2.json', result)
+        print({k: result[k] for k in ['numerical_pass', 'preparation_hypothesis_supported', 'accepted_laps']}, flush=True)
 
 if __name__ == '__main__': main()
