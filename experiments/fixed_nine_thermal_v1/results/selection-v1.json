@@ -1,0 +1,5043 @@
+{
+  "schema": "pitgun.fixed-nine-thermal-selection/v1",
+  "training_pass": true,
+  "numerical_pass": true,
+  "gates": {
+    "1": {
+      "informed_wins": 1,
+      "median_informed_rank": 3,
+      "concentrated_wins": 0,
+      "informed_faster_than_routine": true
+    },
+    "2": {
+      "informed_wins": 6,
+      "median_informed_rank": 1,
+      "concentrated_wins": 4,
+      "informed_faster_than_routine": true
+    }
+  },
+  "training_archive_sha256": "bf5e67ef118dc105bed98c6409c31b611df2bf4c4098dc548dc95a568e8aad78",
+  "policy": {
+    "schema": "pitgun.fixed-nine-budget-policy/v1",
+    "admitted": false,
+    "roster_sha256": "cf8a427975c321b724d0f10d4654f48ae54db43442afa84658b6ee768efaaac4",
+    "physics_sha256": "8b303f0189e3e174138a877d0eada425b37c672fe66dd07efcbc86b8d861e771",
+    "contexts": [
+      {
+        "era": 1,
+        "circuit": "MONZA",
+        "floors": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "components": null,
+        "actors": {
+          "franz_hermann": {
+            "proposal_index": 0,
+            "anchors": {
+              "8": [
+                0,
+                3,
+                3,
+                2
+              ],
+              "10": [
+                0,
+                4,
+                4,
+                2
+              ],
+              "12": [
+                0,
+                5,
+                4,
+                3
+              ]
+            },
+            "gear": 0.35,
+            "downforce": 0.5,
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "soft",
+                  "laps": 26
+                },
+                {
+                  "tire_id": "medium",
+                  "laps": 27
+                }
+              ],
+              "pit_laps": [
+                26
+              ]
+            }
+          },
+          "charles_leclair": {
+            "proposal_index": 0,
+            "anchors": {
+              "8": [
+                0,
+                3,
+                3,
+                2
+              ],
+              "10": [
+                0,
+                4,
+                4,
+                2
+              ],
+              "12": [
+                0,
+                5,
+                4,
+                3
+              ]
+            },
+            "gear": 0.35,
+            "downforce": 0.5,
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "soft",
+                  "laps": 26
+                },
+                {
+                  "tire_id": "medium",
+                  "laps": 27
+                }
+              ],
+              "pit_laps": [
+                26
+              ]
+            }
+          },
+          "luis_amilton": {
+            "proposal_index": 0,
+            "anchors": {
+              "8": [
+                0,
+                3,
+                3,
+                2
+              ],
+              "10": [
+                0,
+                4,
+                4,
+                2
+              ],
+              "12": [
+                0,
+                5,
+                4,
+                3
+              ]
+            },
+            "gear": 0.35,
+            "downforce": 0.5,
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "soft",
+                  "laps": 26
+                },
+                {
+                  "tire_id": "medium",
+                  "laps": 27
+                }
+              ],
+              "pit_laps": [
+                26
+              ]
+            }
+          },
+          "smooth_operator": {
+            "proposal_index": 0,
+            "anchors": {
+              "8": [
+                0,
+                3,
+                3,
+                2
+              ],
+              "10": [
+                0,
+                4,
+                4,
+                2
+              ],
+              "12": [
+                0,
+                5,
+                4,
+                3
+              ]
+            },
+            "gear": 0.35,
+            "downforce": 0.5,
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "soft",
+                  "laps": 26
+                },
+                {
+                  "tire_id": "medium",
+                  "laps": 27
+                }
+              ],
+              "pit_laps": [
+                26
+              ]
+            }
+          },
+          "isa_kadjar": {
+            "proposal_index": 0,
+            "anchors": {
+              "8": [
+                0,
+                3,
+                3,
+                2
+              ],
+              "10": [
+                0,
+                4,
+                4,
+                2
+              ],
+              "12": [
+                0,
+                5,
+                4,
+                3
+              ]
+            },
+            "gear": 0.35,
+            "downforce": 0.5,
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "soft",
+                  "laps": 26
+                },
+                {
+                  "tire_id": "medium",
+                  "laps": 27
+                }
+              ],
+              "pit_laps": [
+                26
+              ]
+            }
+          },
+          "pedro_gaseoso": {
+            "proposal_index": 1,
+            "anchors": {
+              "8": [
+                2,
+                2,
+                2,
+                2
+              ],
+              "10": [
+                3,
+                3,
+                2,
+                2
+              ],
+              "12": [
+                3,
+                3,
+                3,
+                3
+              ]
+            },
+            "gear": 0.35,
+            "downforce": 0.5,
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "soft",
+                  "laps": 26
+                },
+                {
+                  "tire_id": "medium",
+                  "laps": 27
+                }
+              ],
+              "pit_laps": [
+                26
+              ]
+            }
+          },
+          "battery_voltas": {
+            "proposal_index": 0,
+            "anchors": {
+              "8": [
+                0,
+                3,
+                3,
+                2
+              ],
+              "10": [
+                0,
+                4,
+                4,
+                2
+              ],
+              "12": [
+                0,
+                5,
+                4,
+                3
+              ]
+            },
+            "gear": 0.35,
+            "downforce": 0.5,
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "soft",
+                  "laps": 26
+                },
+                {
+                  "tire_id": "medium",
+                  "laps": 27
+                }
+              ],
+              "pit_laps": [
+                26
+              ]
+            }
+          },
+          "daniel_enchantier": {
+            "proposal_index": 0,
+            "anchors": {
+              "8": [
+                0,
+                3,
+                3,
+                2
+              ],
+              "10": [
+                0,
+                4,
+                4,
+                2
+              ],
+              "12": [
+                0,
+                5,
+                4,
+                3
+              ]
+            },
+            "gear": 0.35,
+            "downforce": 0.5,
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "soft",
+                  "laps": 26
+                },
+                {
+                  "tire_id": "medium",
+                  "laps": 27
+                }
+              ],
+              "pit_laps": [
+                26
+              ]
+            }
+          },
+          "goat_tifi": {
+            "proposal_index": 1,
+            "anchors": {
+              "8": [
+                2,
+                2,
+                2,
+                2
+              ],
+              "10": [
+                3,
+                3,
+                2,
+                2
+              ],
+              "12": [
+                3,
+                3,
+                3,
+                3
+              ]
+            },
+            "gear": 0.35,
+            "downforce": 0.5,
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "soft",
+                  "laps": 26
+                },
+                {
+                  "tire_id": "medium",
+                  "laps": 27
+                }
+              ],
+              "pit_laps": [
+                26
+              ]
+            }
+          }
+        }
+      },
+      {
+        "era": 1,
+        "circuit": "SILVERSTONE",
+        "floors": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "components": null,
+        "actors": {
+          "franz_hermann": {
+            "proposal_index": 0,
+            "anchors": {
+              "8": [
+                0,
+                3,
+                3,
+                2
+              ],
+              "10": [
+                0,
+                4,
+                4,
+                2
+              ],
+              "12": [
+                0,
+                5,
+                4,
+                3
+              ]
+            },
+            "gear": 0.35,
+            "downforce": 0.5,
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "soft",
+                  "laps": 26
+                },
+                {
+                  "tire_id": "medium",
+                  "laps": 26
+                }
+              ],
+              "pit_laps": [
+                26
+              ]
+            }
+          },
+          "charles_leclair": {
+            "proposal_index": 0,
+            "anchors": {
+              "8": [
+                0,
+                3,
+                3,
+                2
+              ],
+              "10": [
+                0,
+                4,
+                4,
+                2
+              ],
+              "12": [
+                0,
+                5,
+                4,
+                3
+              ]
+            },
+            "gear": 0.35,
+            "downforce": 0.5,
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "soft",
+                  "laps": 26
+                },
+                {
+                  "tire_id": "medium",
+                  "laps": 26
+                }
+              ],
+              "pit_laps": [
+                26
+              ]
+            }
+          },
+          "luis_amilton": {
+            "proposal_index": 0,
+            "anchors": {
+              "8": [
+                0,
+                3,
+                3,
+                2
+              ],
+              "10": [
+                0,
+                4,
+                4,
+                2
+              ],
+              "12": [
+                0,
+                5,
+                4,
+                3
+              ]
+            },
+            "gear": 0.35,
+            "downforce": 0.5,
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "soft",
+                  "laps": 26
+                },
+                {
+                  "tire_id": "medium",
+                  "laps": 26
+                }
+              ],
+              "pit_laps": [
+                26
+              ]
+            }
+          },
+          "smooth_operator": {
+            "proposal_index": 0,
+            "anchors": {
+              "8": [
+                0,
+                3,
+                3,
+                2
+              ],
+              "10": [
+                0,
+                4,
+                4,
+                2
+              ],
+              "12": [
+                0,
+                5,
+                4,
+                3
+              ]
+            },
+            "gear": 0.35,
+            "downforce": 0.5,
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "soft",
+                  "laps": 26
+                },
+                {
+                  "tire_id": "medium",
+                  "laps": 26
+                }
+              ],
+              "pit_laps": [
+                26
+              ]
+            }
+          },
+          "isa_kadjar": {
+            "proposal_index": 1,
+            "anchors": {
+              "8": [
+                0,
+                3,
+                3,
+                2
+              ],
+              "10": [
+                0,
+                4,
+                4,
+                2
+              ],
+              "12": [
+                0,
+                5,
+                4,
+                3
+              ]
+            },
+            "gear": 0.5,
+            "downforce": 0.5,
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "soft",
+                  "laps": 26
+                },
+                {
+                  "tire_id": "medium",
+                  "laps": 26
+                }
+              ],
+              "pit_laps": [
+                26
+              ]
+            }
+          },
+          "pedro_gaseoso": {
+            "proposal_index": 0,
+            "anchors": {
+              "8": [
+                0,
+                3,
+                3,
+                2
+              ],
+              "10": [
+                0,
+                4,
+                4,
+                2
+              ],
+              "12": [
+                0,
+                5,
+                4,
+                3
+              ]
+            },
+            "gear": 0.35,
+            "downforce": 0.5,
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "soft",
+                  "laps": 26
+                },
+                {
+                  "tire_id": "medium",
+                  "laps": 26
+                }
+              ],
+              "pit_laps": [
+                26
+              ]
+            }
+          },
+          "battery_voltas": {
+            "proposal_index": 0,
+            "anchors": {
+              "8": [
+                0,
+                3,
+                3,
+                2
+              ],
+              "10": [
+                0,
+                4,
+                4,
+                2
+              ],
+              "12": [
+                0,
+                5,
+                4,
+                3
+              ]
+            },
+            "gear": 0.35,
+            "downforce": 0.5,
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "soft",
+                  "laps": 26
+                },
+                {
+                  "tire_id": "medium",
+                  "laps": 26
+                }
+              ],
+              "pit_laps": [
+                26
+              ]
+            }
+          },
+          "daniel_enchantier": {
+            "proposal_index": 0,
+            "anchors": {
+              "8": [
+                0,
+                3,
+                3,
+                2
+              ],
+              "10": [
+                0,
+                4,
+                4,
+                2
+              ],
+              "12": [
+                0,
+                5,
+                4,
+                3
+              ]
+            },
+            "gear": 0.35,
+            "downforce": 0.5,
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "soft",
+                  "laps": 26
+                },
+                {
+                  "tire_id": "medium",
+                  "laps": 26
+                }
+              ],
+              "pit_laps": [
+                26
+              ]
+            }
+          },
+          "goat_tifi": {
+            "proposal_index": 1,
+            "anchors": {
+              "8": [
+                0,
+                3,
+                3,
+                2
+              ],
+              "10": [
+                0,
+                4,
+                4,
+                2
+              ],
+              "12": [
+                0,
+                5,
+                4,
+                3
+              ]
+            },
+            "gear": 0.5,
+            "downforce": 0.5,
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "soft",
+                  "laps": 26
+                },
+                {
+                  "tire_id": "medium",
+                  "laps": 26
+                }
+              ],
+              "pit_laps": [
+                26
+              ]
+            }
+          }
+        }
+      },
+      {
+        "era": 1,
+        "circuit": "ZANDVOORT",
+        "floors": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "components": null,
+        "actors": {
+          "franz_hermann": {
+            "proposal_index": 1,
+            "anchors": {
+              "8": [
+                0,
+                3,
+                3,
+                2
+              ],
+              "10": [
+                0,
+                4,
+                4,
+                2
+              ],
+              "12": [
+                0,
+                5,
+                4,
+                3
+              ]
+            },
+            "gear": 0.5,
+            "downforce": 0.5,
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "soft",
+                  "laps": 36
+                },
+                {
+                  "tire_id": "medium",
+                  "laps": 36
+                }
+              ],
+              "pit_laps": [
+                36
+              ]
+            }
+          },
+          "charles_leclair": {
+            "proposal_index": 1,
+            "anchors": {
+              "8": [
+                0,
+                3,
+                3,
+                2
+              ],
+              "10": [
+                0,
+                4,
+                4,
+                2
+              ],
+              "12": [
+                0,
+                5,
+                4,
+                3
+              ]
+            },
+            "gear": 0.5,
+            "downforce": 0.5,
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "soft",
+                  "laps": 36
+                },
+                {
+                  "tire_id": "medium",
+                  "laps": 36
+                }
+              ],
+              "pit_laps": [
+                36
+              ]
+            }
+          },
+          "luis_amilton": {
+            "proposal_index": 1,
+            "anchors": {
+              "8": [
+                0,
+                3,
+                3,
+                2
+              ],
+              "10": [
+                0,
+                4,
+                4,
+                2
+              ],
+              "12": [
+                0,
+                5,
+                4,
+                3
+              ]
+            },
+            "gear": 0.5,
+            "downforce": 0.5,
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "soft",
+                  "laps": 36
+                },
+                {
+                  "tire_id": "medium",
+                  "laps": 36
+                }
+              ],
+              "pit_laps": [
+                36
+              ]
+            }
+          },
+          "smooth_operator": {
+            "proposal_index": 1,
+            "anchors": {
+              "8": [
+                0,
+                3,
+                3,
+                2
+              ],
+              "10": [
+                0,
+                4,
+                4,
+                2
+              ],
+              "12": [
+                0,
+                5,
+                4,
+                3
+              ]
+            },
+            "gear": 0.5,
+            "downforce": 0.5,
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "soft",
+                  "laps": 36
+                },
+                {
+                  "tire_id": "medium",
+                  "laps": 36
+                }
+              ],
+              "pit_laps": [
+                36
+              ]
+            }
+          },
+          "isa_kadjar": {
+            "proposal_index": 1,
+            "anchors": {
+              "8": [
+                0,
+                3,
+                3,
+                2
+              ],
+              "10": [
+                0,
+                4,
+                4,
+                2
+              ],
+              "12": [
+                0,
+                5,
+                4,
+                3
+              ]
+            },
+            "gear": 0.5,
+            "downforce": 0.5,
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "soft",
+                  "laps": 36
+                },
+                {
+                  "tire_id": "medium",
+                  "laps": 36
+                }
+              ],
+              "pit_laps": [
+                36
+              ]
+            }
+          },
+          "pedro_gaseoso": {
+            "proposal_index": 0,
+            "anchors": {
+              "8": [
+                0,
+                3,
+                3,
+                2
+              ],
+              "10": [
+                0,
+                4,
+                4,
+                2
+              ],
+              "12": [
+                0,
+                5,
+                4,
+                3
+              ]
+            },
+            "gear": 0.35,
+            "downforce": 0.5,
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "soft",
+                  "laps": 36
+                },
+                {
+                  "tire_id": "medium",
+                  "laps": 36
+                }
+              ],
+              "pit_laps": [
+                36
+              ]
+            }
+          },
+          "battery_voltas": {
+            "proposal_index": 0,
+            "anchors": {
+              "8": [
+                0,
+                3,
+                3,
+                2
+              ],
+              "10": [
+                0,
+                4,
+                4,
+                2
+              ],
+              "12": [
+                0,
+                5,
+                4,
+                3
+              ]
+            },
+            "gear": 0.35,
+            "downforce": 0.5,
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "soft",
+                  "laps": 36
+                },
+                {
+                  "tire_id": "medium",
+                  "laps": 36
+                }
+              ],
+              "pit_laps": [
+                36
+              ]
+            }
+          },
+          "daniel_enchantier": {
+            "proposal_index": 0,
+            "anchors": {
+              "8": [
+                0,
+                3,
+                3,
+                2
+              ],
+              "10": [
+                0,
+                4,
+                4,
+                2
+              ],
+              "12": [
+                0,
+                5,
+                4,
+                3
+              ]
+            },
+            "gear": 0.35,
+            "downforce": 0.5,
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "soft",
+                  "laps": 36
+                },
+                {
+                  "tire_id": "medium",
+                  "laps": 36
+                }
+              ],
+              "pit_laps": [
+                36
+              ]
+            }
+          },
+          "goat_tifi": {
+            "proposal_index": 0,
+            "anchors": {
+              "8": [
+                0,
+                3,
+                3,
+                2
+              ],
+              "10": [
+                0,
+                4,
+                4,
+                2
+              ],
+              "12": [
+                0,
+                5,
+                4,
+                3
+              ]
+            },
+            "gear": 0.35,
+            "downforce": 0.5,
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "soft",
+                  "laps": 36
+                },
+                {
+                  "tire_id": "medium",
+                  "laps": 36
+                }
+              ],
+              "pit_laps": [
+                36
+              ]
+            }
+          }
+        }
+      },
+      {
+        "era": 2,
+        "circuit": "MONTREAL",
+        "floors": [
+          2,
+          1,
+          4,
+          1
+        ],
+        "components": {
+          "schema_version": "pitgun.racing-vehicle-components/v1",
+          "engine_id": "v8_1970",
+          "aero_id": "basic"
+        },
+        "actors": {
+          "franz_hermann": {
+            "proposal_index": 0,
+            "anchors": {
+              "12": [
+                2,
+                3,
+                5,
+                2
+              ],
+              "18": [
+                2,
+                5,
+                7,
+                4
+              ],
+              "24": [
+                2,
+                7,
+                10,
+                5
+              ]
+            },
+            "gear": 0.5,
+            "downforce": 0.5,
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "medium",
+                  "laps": 35
+                },
+                {
+                  "tire_id": "hard",
+                  "laps": 35
+                }
+              ],
+              "pit_laps": [
+                35
+              ]
+            }
+          },
+          "charles_leclair": {
+            "proposal_index": 0,
+            "anchors": {
+              "12": [
+                2,
+                3,
+                5,
+                2
+              ],
+              "18": [
+                2,
+                5,
+                7,
+                4
+              ],
+              "24": [
+                2,
+                7,
+                10,
+                5
+              ]
+            },
+            "gear": 0.5,
+            "downforce": 0.5,
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "medium",
+                  "laps": 35
+                },
+                {
+                  "tire_id": "hard",
+                  "laps": 35
+                }
+              ],
+              "pit_laps": [
+                35
+              ]
+            }
+          },
+          "luis_amilton": {
+            "proposal_index": 0,
+            "anchors": {
+              "12": [
+                2,
+                3,
+                5,
+                2
+              ],
+              "18": [
+                2,
+                5,
+                7,
+                4
+              ],
+              "24": [
+                2,
+                7,
+                10,
+                5
+              ]
+            },
+            "gear": 0.5,
+            "downforce": 0.5,
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "medium",
+                  "laps": 35
+                },
+                {
+                  "tire_id": "hard",
+                  "laps": 35
+                }
+              ],
+              "pit_laps": [
+                35
+              ]
+            }
+          },
+          "smooth_operator": {
+            "proposal_index": 0,
+            "anchors": {
+              "12": [
+                2,
+                3,
+                5,
+                2
+              ],
+              "18": [
+                2,
+                5,
+                7,
+                4
+              ],
+              "24": [
+                2,
+                7,
+                10,
+                5
+              ]
+            },
+            "gear": 0.5,
+            "downforce": 0.5,
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "medium",
+                  "laps": 35
+                },
+                {
+                  "tire_id": "hard",
+                  "laps": 35
+                }
+              ],
+              "pit_laps": [
+                35
+              ]
+            }
+          },
+          "isa_kadjar": {
+            "proposal_index": 0,
+            "anchors": {
+              "12": [
+                2,
+                3,
+                5,
+                2
+              ],
+              "18": [
+                2,
+                5,
+                7,
+                4
+              ],
+              "24": [
+                2,
+                7,
+                10,
+                5
+              ]
+            },
+            "gear": 0.5,
+            "downforce": 0.5,
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "medium",
+                  "laps": 35
+                },
+                {
+                  "tire_id": "hard",
+                  "laps": 35
+                }
+              ],
+              "pit_laps": [
+                35
+              ]
+            }
+          },
+          "pedro_gaseoso": {
+            "proposal_index": 1,
+            "anchors": {
+              "12": [
+                3,
+                3,
+                4,
+                2
+              ],
+              "18": [
+                4,
+                4,
+                6,
+                4
+              ],
+              "24": [
+                6,
+                5,
+                8,
+                5
+              ]
+            },
+            "gear": 0.5,
+            "downforce": 0.5,
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "medium",
+                  "laps": 35
+                },
+                {
+                  "tire_id": "hard",
+                  "laps": 35
+                }
+              ],
+              "pit_laps": [
+                35
+              ]
+            }
+          },
+          "battery_voltas": {
+            "proposal_index": 0,
+            "anchors": {
+              "12": [
+                2,
+                3,
+                5,
+                2
+              ],
+              "18": [
+                2,
+                5,
+                7,
+                4
+              ],
+              "24": [
+                2,
+                7,
+                10,
+                5
+              ]
+            },
+            "gear": 0.5,
+            "downforce": 0.5,
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "medium",
+                  "laps": 35
+                },
+                {
+                  "tire_id": "hard",
+                  "laps": 35
+                }
+              ],
+              "pit_laps": [
+                35
+              ]
+            }
+          },
+          "daniel_enchantier": {
+            "proposal_index": 0,
+            "anchors": {
+              "12": [
+                2,
+                3,
+                5,
+                2
+              ],
+              "18": [
+                2,
+                5,
+                7,
+                4
+              ],
+              "24": [
+                2,
+                7,
+                10,
+                5
+              ]
+            },
+            "gear": 0.5,
+            "downforce": 0.5,
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "medium",
+                  "laps": 35
+                },
+                {
+                  "tire_id": "hard",
+                  "laps": 35
+                }
+              ],
+              "pit_laps": [
+                35
+              ]
+            }
+          },
+          "goat_tifi": {
+            "proposal_index": 1,
+            "anchors": {
+              "12": [
+                3,
+                3,
+                4,
+                2
+              ],
+              "18": [
+                4,
+                4,
+                6,
+                4
+              ],
+              "24": [
+                6,
+                5,
+                8,
+                5
+              ]
+            },
+            "gear": 0.5,
+            "downforce": 0.5,
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "medium",
+                  "laps": 35
+                },
+                {
+                  "tire_id": "hard",
+                  "laps": 35
+                }
+              ],
+              "pit_laps": [
+                35
+              ]
+            }
+          }
+        }
+      },
+      {
+        "era": 2,
+        "circuit": "SPIELBERG",
+        "floors": [
+          2,
+          1,
+          4,
+          1
+        ],
+        "components": {
+          "schema_version": "pitgun.racing-vehicle-components/v1",
+          "engine_id": "v8_1970",
+          "aero_id": "basic"
+        },
+        "actors": {
+          "franz_hermann": {
+            "proposal_index": 0,
+            "anchors": {
+              "12": [
+                2,
+                3,
+                5,
+                2
+              ],
+              "18": [
+                2,
+                5,
+                7,
+                4
+              ],
+              "24": [
+                2,
+                7,
+                10,
+                5
+              ]
+            },
+            "gear": 0.5,
+            "downforce": 0.5,
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "medium",
+                  "laps": 35
+                },
+                {
+                  "tire_id": "hard",
+                  "laps": 36
+                }
+              ],
+              "pit_laps": [
+                35
+              ]
+            }
+          },
+          "charles_leclair": {
+            "proposal_index": 0,
+            "anchors": {
+              "12": [
+                2,
+                3,
+                5,
+                2
+              ],
+              "18": [
+                2,
+                5,
+                7,
+                4
+              ],
+              "24": [
+                2,
+                7,
+                10,
+                5
+              ]
+            },
+            "gear": 0.5,
+            "downforce": 0.5,
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "medium",
+                  "laps": 35
+                },
+                {
+                  "tire_id": "hard",
+                  "laps": 36
+                }
+              ],
+              "pit_laps": [
+                35
+              ]
+            }
+          },
+          "luis_amilton": {
+            "proposal_index": 0,
+            "anchors": {
+              "12": [
+                2,
+                3,
+                5,
+                2
+              ],
+              "18": [
+                2,
+                5,
+                7,
+                4
+              ],
+              "24": [
+                2,
+                7,
+                10,
+                5
+              ]
+            },
+            "gear": 0.5,
+            "downforce": 0.5,
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "medium",
+                  "laps": 35
+                },
+                {
+                  "tire_id": "hard",
+                  "laps": 36
+                }
+              ],
+              "pit_laps": [
+                35
+              ]
+            }
+          },
+          "smooth_operator": {
+            "proposal_index": 0,
+            "anchors": {
+              "12": [
+                2,
+                3,
+                5,
+                2
+              ],
+              "18": [
+                2,
+                5,
+                7,
+                4
+              ],
+              "24": [
+                2,
+                7,
+                10,
+                5
+              ]
+            },
+            "gear": 0.5,
+            "downforce": 0.5,
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "medium",
+                  "laps": 35
+                },
+                {
+                  "tire_id": "hard",
+                  "laps": 36
+                }
+              ],
+              "pit_laps": [
+                35
+              ]
+            }
+          },
+          "isa_kadjar": {
+            "proposal_index": 0,
+            "anchors": {
+              "12": [
+                2,
+                3,
+                5,
+                2
+              ],
+              "18": [
+                2,
+                5,
+                7,
+                4
+              ],
+              "24": [
+                2,
+                7,
+                10,
+                5
+              ]
+            },
+            "gear": 0.5,
+            "downforce": 0.5,
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "medium",
+                  "laps": 35
+                },
+                {
+                  "tire_id": "hard",
+                  "laps": 36
+                }
+              ],
+              "pit_laps": [
+                35
+              ]
+            }
+          },
+          "pedro_gaseoso": {
+            "proposal_index": 1,
+            "anchors": {
+              "12": [
+                3,
+                3,
+                4,
+                2
+              ],
+              "18": [
+                4,
+                4,
+                6,
+                4
+              ],
+              "24": [
+                6,
+                5,
+                8,
+                5
+              ]
+            },
+            "gear": 0.5,
+            "downforce": 0.5,
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "medium",
+                  "laps": 35
+                },
+                {
+                  "tire_id": "hard",
+                  "laps": 36
+                }
+              ],
+              "pit_laps": [
+                35
+              ]
+            }
+          },
+          "battery_voltas": {
+            "proposal_index": 0,
+            "anchors": {
+              "12": [
+                2,
+                3,
+                5,
+                2
+              ],
+              "18": [
+                2,
+                5,
+                7,
+                4
+              ],
+              "24": [
+                2,
+                7,
+                10,
+                5
+              ]
+            },
+            "gear": 0.5,
+            "downforce": 0.5,
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "medium",
+                  "laps": 35
+                },
+                {
+                  "tire_id": "hard",
+                  "laps": 36
+                }
+              ],
+              "pit_laps": [
+                35
+              ]
+            }
+          },
+          "daniel_enchantier": {
+            "proposal_index": 0,
+            "anchors": {
+              "12": [
+                2,
+                3,
+                5,
+                2
+              ],
+              "18": [
+                2,
+                5,
+                7,
+                4
+              ],
+              "24": [
+                2,
+                7,
+                10,
+                5
+              ]
+            },
+            "gear": 0.5,
+            "downforce": 0.5,
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "medium",
+                  "laps": 35
+                },
+                {
+                  "tire_id": "hard",
+                  "laps": 36
+                }
+              ],
+              "pit_laps": [
+                35
+              ]
+            }
+          },
+          "goat_tifi": {
+            "proposal_index": 1,
+            "anchors": {
+              "12": [
+                3,
+                3,
+                4,
+                2
+              ],
+              "18": [
+                4,
+                4,
+                6,
+                4
+              ],
+              "24": [
+                6,
+                5,
+                8,
+                5
+              ]
+            },
+            "gear": 0.5,
+            "downforce": 0.5,
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "medium",
+                  "laps": 35
+                },
+                {
+                  "tire_id": "hard",
+                  "laps": 36
+                }
+              ],
+              "pit_laps": [
+                35
+              ]
+            }
+          }
+        }
+      },
+      {
+        "era": 2,
+        "circuit": "MEXICO",
+        "floors": [
+          2,
+          1,
+          4,
+          1
+        ],
+        "components": {
+          "schema_version": "pitgun.racing-vehicle-components/v1",
+          "engine_id": "v8_1970",
+          "aero_id": "basic"
+        },
+        "actors": {
+          "franz_hermann": {
+            "proposal_index": 0,
+            "anchors": {
+              "12": [
+                2,
+                3,
+                5,
+                2
+              ],
+              "18": [
+                2,
+                5,
+                7,
+                4
+              ],
+              "24": [
+                2,
+                7,
+                10,
+                5
+              ]
+            },
+            "gear": 0.5,
+            "downforce": 0.5,
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "medium",
+                  "laps": 35
+                },
+                {
+                  "tire_id": "hard",
+                  "laps": 36
+                }
+              ],
+              "pit_laps": [
+                35
+              ]
+            }
+          },
+          "charles_leclair": {
+            "proposal_index": 0,
+            "anchors": {
+              "12": [
+                2,
+                3,
+                5,
+                2
+              ],
+              "18": [
+                2,
+                5,
+                7,
+                4
+              ],
+              "24": [
+                2,
+                7,
+                10,
+                5
+              ]
+            },
+            "gear": 0.5,
+            "downforce": 0.5,
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "medium",
+                  "laps": 35
+                },
+                {
+                  "tire_id": "hard",
+                  "laps": 36
+                }
+              ],
+              "pit_laps": [
+                35
+              ]
+            }
+          },
+          "luis_amilton": {
+            "proposal_index": 0,
+            "anchors": {
+              "12": [
+                2,
+                3,
+                5,
+                2
+              ],
+              "18": [
+                2,
+                5,
+                7,
+                4
+              ],
+              "24": [
+                2,
+                7,
+                10,
+                5
+              ]
+            },
+            "gear": 0.5,
+            "downforce": 0.5,
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "medium",
+                  "laps": 35
+                },
+                {
+                  "tire_id": "hard",
+                  "laps": 36
+                }
+              ],
+              "pit_laps": [
+                35
+              ]
+            }
+          },
+          "smooth_operator": {
+            "proposal_index": 1,
+            "anchors": {
+              "12": [
+                2,
+                4,
+                5,
+                1
+              ],
+              "18": [
+                2,
+                6,
+                9,
+                1
+              ],
+              "24": [
+                2,
+                9,
+                12,
+                1
+              ]
+            },
+            "gear": 0.5,
+            "downforce": 0.5,
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "medium",
+                  "laps": 35
+                },
+                {
+                  "tire_id": "hard",
+                  "laps": 36
+                }
+              ],
+              "pit_laps": [
+                35
+              ]
+            }
+          },
+          "isa_kadjar": {
+            "proposal_index": 1,
+            "anchors": {
+              "12": [
+                2,
+                4,
+                5,
+                1
+              ],
+              "18": [
+                2,
+                6,
+                9,
+                1
+              ],
+              "24": [
+                2,
+                9,
+                12,
+                1
+              ]
+            },
+            "gear": 0.5,
+            "downforce": 0.5,
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "medium",
+                  "laps": 35
+                },
+                {
+                  "tire_id": "hard",
+                  "laps": 36
+                }
+              ],
+              "pit_laps": [
+                35
+              ]
+            }
+          },
+          "pedro_gaseoso": {
+            "proposal_index": 0,
+            "anchors": {
+              "12": [
+                2,
+                3,
+                5,
+                2
+              ],
+              "18": [
+                2,
+                5,
+                7,
+                4
+              ],
+              "24": [
+                2,
+                7,
+                10,
+                5
+              ]
+            },
+            "gear": 0.5,
+            "downforce": 0.5,
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "medium",
+                  "laps": 35
+                },
+                {
+                  "tire_id": "hard",
+                  "laps": 36
+                }
+              ],
+              "pit_laps": [
+                35
+              ]
+            }
+          },
+          "battery_voltas": {
+            "proposal_index": 0,
+            "anchors": {
+              "12": [
+                2,
+                3,
+                5,
+                2
+              ],
+              "18": [
+                2,
+                5,
+                7,
+                4
+              ],
+              "24": [
+                2,
+                7,
+                10,
+                5
+              ]
+            },
+            "gear": 0.5,
+            "downforce": 0.5,
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "medium",
+                  "laps": 35
+                },
+                {
+                  "tire_id": "hard",
+                  "laps": 36
+                }
+              ],
+              "pit_laps": [
+                35
+              ]
+            }
+          },
+          "daniel_enchantier": {
+            "proposal_index": 1,
+            "anchors": {
+              "12": [
+                2,
+                4,
+                5,
+                1
+              ],
+              "18": [
+                2,
+                6,
+                9,
+                1
+              ],
+              "24": [
+                2,
+                9,
+                12,
+                1
+              ]
+            },
+            "gear": 0.5,
+            "downforce": 0.5,
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "medium",
+                  "laps": 35
+                },
+                {
+                  "tire_id": "hard",
+                  "laps": 36
+                }
+              ],
+              "pit_laps": [
+                35
+              ]
+            }
+          },
+          "goat_tifi": {
+            "proposal_index": 0,
+            "anchors": {
+              "12": [
+                2,
+                3,
+                5,
+                2
+              ],
+              "18": [
+                2,
+                5,
+                7,
+                4
+              ],
+              "24": [
+                2,
+                7,
+                10,
+                5
+              ]
+            },
+            "gear": 0.5,
+            "downforce": 0.5,
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "medium",
+                  "laps": 35
+                },
+                {
+                  "tire_id": "hard",
+                  "laps": 36
+                }
+              ],
+              "pit_laps": [
+                35
+              ]
+            }
+          }
+        }
+      },
+      {
+        "era": 2,
+        "circuit": "SAOPAULO",
+        "floors": [
+          2,
+          1,
+          4,
+          1
+        ],
+        "components": {
+          "schema_version": "pitgun.racing-vehicle-components/v1",
+          "engine_id": "v8_1970",
+          "aero_id": "basic"
+        },
+        "actors": {
+          "franz_hermann": {
+            "proposal_index": 0,
+            "anchors": {
+              "12": [
+                3,
+                3,
+                4,
+                2
+              ],
+              "18": [
+                4,
+                4,
+                6,
+                4
+              ],
+              "24": [
+                6,
+                5,
+                8,
+                5
+              ]
+            },
+            "gear": 0.5,
+            "downforce": 0.5,
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "medium",
+                  "laps": 17
+                },
+                {
+                  "tire_id": "hard",
+                  "laps": 36
+                },
+                {
+                  "tire_id": "medium",
+                  "laps": 18
+                }
+              ],
+              "pit_laps": [
+                17,
+                53
+              ]
+            }
+          },
+          "charles_leclair": {
+            "proposal_index": 0,
+            "anchors": {
+              "12": [
+                3,
+                3,
+                4,
+                2
+              ],
+              "18": [
+                4,
+                4,
+                6,
+                4
+              ],
+              "24": [
+                6,
+                5,
+                8,
+                5
+              ]
+            },
+            "gear": 0.5,
+            "downforce": 0.5,
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "medium",
+                  "laps": 17
+                },
+                {
+                  "tire_id": "hard",
+                  "laps": 36
+                },
+                {
+                  "tire_id": "medium",
+                  "laps": 18
+                }
+              ],
+              "pit_laps": [
+                17,
+                53
+              ]
+            }
+          },
+          "luis_amilton": {
+            "proposal_index": 0,
+            "anchors": {
+              "12": [
+                3,
+                3,
+                4,
+                2
+              ],
+              "18": [
+                4,
+                4,
+                6,
+                4
+              ],
+              "24": [
+                6,
+                5,
+                8,
+                5
+              ]
+            },
+            "gear": 0.5,
+            "downforce": 0.5,
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "medium",
+                  "laps": 17
+                },
+                {
+                  "tire_id": "hard",
+                  "laps": 36
+                },
+                {
+                  "tire_id": "medium",
+                  "laps": 18
+                }
+              ],
+              "pit_laps": [
+                17,
+                53
+              ]
+            }
+          },
+          "smooth_operator": {
+            "proposal_index": 0,
+            "anchors": {
+              "12": [
+                3,
+                3,
+                4,
+                2
+              ],
+              "18": [
+                4,
+                4,
+                6,
+                4
+              ],
+              "24": [
+                6,
+                5,
+                8,
+                5
+              ]
+            },
+            "gear": 0.5,
+            "downforce": 0.5,
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "medium",
+                  "laps": 17
+                },
+                {
+                  "tire_id": "hard",
+                  "laps": 36
+                },
+                {
+                  "tire_id": "medium",
+                  "laps": 18
+                }
+              ],
+              "pit_laps": [
+                17,
+                53
+              ]
+            }
+          },
+          "isa_kadjar": {
+            "proposal_index": 0,
+            "anchors": {
+              "12": [
+                3,
+                3,
+                4,
+                2
+              ],
+              "18": [
+                4,
+                4,
+                6,
+                4
+              ],
+              "24": [
+                6,
+                5,
+                8,
+                5
+              ]
+            },
+            "gear": 0.5,
+            "downforce": 0.5,
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "medium",
+                  "laps": 17
+                },
+                {
+                  "tire_id": "hard",
+                  "laps": 36
+                },
+                {
+                  "tire_id": "medium",
+                  "laps": 18
+                }
+              ],
+              "pit_laps": [
+                17,
+                53
+              ]
+            }
+          },
+          "pedro_gaseoso": {
+            "proposal_index": 0,
+            "anchors": {
+              "12": [
+                3,
+                3,
+                4,
+                2
+              ],
+              "18": [
+                4,
+                4,
+                6,
+                4
+              ],
+              "24": [
+                6,
+                5,
+                8,
+                5
+              ]
+            },
+            "gear": 0.5,
+            "downforce": 0.5,
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "medium",
+                  "laps": 17
+                },
+                {
+                  "tire_id": "hard",
+                  "laps": 36
+                },
+                {
+                  "tire_id": "medium",
+                  "laps": 18
+                }
+              ],
+              "pit_laps": [
+                17,
+                53
+              ]
+            }
+          },
+          "battery_voltas": {
+            "proposal_index": 0,
+            "anchors": {
+              "12": [
+                3,
+                3,
+                4,
+                2
+              ],
+              "18": [
+                4,
+                4,
+                6,
+                4
+              ],
+              "24": [
+                6,
+                5,
+                8,
+                5
+              ]
+            },
+            "gear": 0.5,
+            "downforce": 0.5,
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "medium",
+                  "laps": 17
+                },
+                {
+                  "tire_id": "hard",
+                  "laps": 36
+                },
+                {
+                  "tire_id": "medium",
+                  "laps": 18
+                }
+              ],
+              "pit_laps": [
+                17,
+                53
+              ]
+            }
+          },
+          "daniel_enchantier": {
+            "proposal_index": 0,
+            "anchors": {
+              "12": [
+                3,
+                3,
+                4,
+                2
+              ],
+              "18": [
+                4,
+                4,
+                6,
+                4
+              ],
+              "24": [
+                6,
+                5,
+                8,
+                5
+              ]
+            },
+            "gear": 0.5,
+            "downforce": 0.5,
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "medium",
+                  "laps": 17
+                },
+                {
+                  "tire_id": "hard",
+                  "laps": 36
+                },
+                {
+                  "tire_id": "medium",
+                  "laps": 18
+                }
+              ],
+              "pit_laps": [
+                17,
+                53
+              ]
+            }
+          },
+          "goat_tifi": {
+            "proposal_index": 0,
+            "anchors": {
+              "12": [
+                3,
+                3,
+                4,
+                2
+              ],
+              "18": [
+                4,
+                4,
+                6,
+                4
+              ],
+              "24": [
+                6,
+                5,
+                8,
+                5
+              ]
+            },
+            "gear": 0.5,
+            "downforce": 0.5,
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "medium",
+                  "laps": 17
+                },
+                {
+                  "tire_id": "hard",
+                  "laps": 36
+                },
+                {
+                  "tire_id": "medium",
+                  "laps": 18
+                }
+              ],
+              "pit_laps": [
+                17,
+                53
+              ]
+            }
+          }
+        }
+      },
+      {
+        "era": 2,
+        "circuit": "SILVERSTONE",
+        "floors": [
+          2,
+          1,
+          4,
+          1
+        ],
+        "components": {
+          "schema_version": "pitgun.racing-vehicle-components/v1",
+          "engine_id": "v8_1970",
+          "aero_id": "basic"
+        },
+        "actors": {
+          "franz_hermann": {
+            "proposal_index": 0,
+            "anchors": {
+              "12": [
+                3,
+                3,
+                4,
+                2
+              ],
+              "18": [
+                4,
+                4,
+                6,
+                4
+              ],
+              "24": [
+                6,
+                5,
+                8,
+                5
+              ]
+            },
+            "gear": 0.5,
+            "downforce": 0.5,
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "medium",
+                  "laps": 13
+                },
+                {
+                  "tire_id": "hard",
+                  "laps": 26
+                },
+                {
+                  "tire_id": "medium",
+                  "laps": 13
+                }
+              ],
+              "pit_laps": [
+                13,
+                39
+              ]
+            }
+          },
+          "charles_leclair": {
+            "proposal_index": 1,
+            "anchors": {
+              "12": [
+                2,
+                4,
+                5,
+                1
+              ],
+              "18": [
+                2,
+                6,
+                9,
+                1
+              ],
+              "24": [
+                2,
+                9,
+                12,
+                1
+              ]
+            },
+            "gear": 0.5,
+            "downforce": 0.5,
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "medium",
+                  "laps": 26
+                },
+                {
+                  "tire_id": "hard",
+                  "laps": 26
+                }
+              ],
+              "pit_laps": [
+                26
+              ]
+            }
+          },
+          "luis_amilton": {
+            "proposal_index": 1,
+            "anchors": {
+              "12": [
+                2,
+                4,
+                5,
+                1
+              ],
+              "18": [
+                2,
+                6,
+                9,
+                1
+              ],
+              "24": [
+                2,
+                9,
+                12,
+                1
+              ]
+            },
+            "gear": 0.5,
+            "downforce": 0.5,
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "medium",
+                  "laps": 26
+                },
+                {
+                  "tire_id": "hard",
+                  "laps": 26
+                }
+              ],
+              "pit_laps": [
+                26
+              ]
+            }
+          },
+          "smooth_operator": {
+            "proposal_index": 0,
+            "anchors": {
+              "12": [
+                3,
+                3,
+                4,
+                2
+              ],
+              "18": [
+                4,
+                4,
+                6,
+                4
+              ],
+              "24": [
+                6,
+                5,
+                8,
+                5
+              ]
+            },
+            "gear": 0.5,
+            "downforce": 0.5,
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "medium",
+                  "laps": 13
+                },
+                {
+                  "tire_id": "hard",
+                  "laps": 26
+                },
+                {
+                  "tire_id": "medium",
+                  "laps": 13
+                }
+              ],
+              "pit_laps": [
+                13,
+                39
+              ]
+            }
+          },
+          "isa_kadjar": {
+            "proposal_index": 1,
+            "anchors": {
+              "12": [
+                2,
+                4,
+                5,
+                1
+              ],
+              "18": [
+                2,
+                6,
+                9,
+                1
+              ],
+              "24": [
+                2,
+                9,
+                12,
+                1
+              ]
+            },
+            "gear": 0.5,
+            "downforce": 0.5,
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "medium",
+                  "laps": 26
+                },
+                {
+                  "tire_id": "hard",
+                  "laps": 26
+                }
+              ],
+              "pit_laps": [
+                26
+              ]
+            }
+          },
+          "pedro_gaseoso": {
+            "proposal_index": 0,
+            "anchors": {
+              "12": [
+                3,
+                3,
+                4,
+                2
+              ],
+              "18": [
+                4,
+                4,
+                6,
+                4
+              ],
+              "24": [
+                6,
+                5,
+                8,
+                5
+              ]
+            },
+            "gear": 0.5,
+            "downforce": 0.5,
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "medium",
+                  "laps": 13
+                },
+                {
+                  "tire_id": "hard",
+                  "laps": 26
+                },
+                {
+                  "tire_id": "medium",
+                  "laps": 13
+                }
+              ],
+              "pit_laps": [
+                13,
+                39
+              ]
+            }
+          },
+          "battery_voltas": {
+            "proposal_index": 1,
+            "anchors": {
+              "12": [
+                2,
+                4,
+                5,
+                1
+              ],
+              "18": [
+                2,
+                6,
+                9,
+                1
+              ],
+              "24": [
+                2,
+                9,
+                12,
+                1
+              ]
+            },
+            "gear": 0.5,
+            "downforce": 0.5,
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "medium",
+                  "laps": 26
+                },
+                {
+                  "tire_id": "hard",
+                  "laps": 26
+                }
+              ],
+              "pit_laps": [
+                26
+              ]
+            }
+          },
+          "daniel_enchantier": {
+            "proposal_index": 1,
+            "anchors": {
+              "12": [
+                2,
+                4,
+                5,
+                1
+              ],
+              "18": [
+                2,
+                6,
+                9,
+                1
+              ],
+              "24": [
+                2,
+                9,
+                12,
+                1
+              ]
+            },
+            "gear": 0.5,
+            "downforce": 0.5,
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "medium",
+                  "laps": 26
+                },
+                {
+                  "tire_id": "hard",
+                  "laps": 26
+                }
+              ],
+              "pit_laps": [
+                26
+              ]
+            }
+          },
+          "goat_tifi": {
+            "proposal_index": 0,
+            "anchors": {
+              "12": [
+                3,
+                3,
+                4,
+                2
+              ],
+              "18": [
+                4,
+                4,
+                6,
+                4
+              ],
+              "24": [
+                6,
+                5,
+                8,
+                5
+              ]
+            },
+            "gear": 0.5,
+            "downforce": 0.5,
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "medium",
+                  "laps": 13
+                },
+                {
+                  "tire_id": "hard",
+                  "laps": 26
+                },
+                {
+                  "tire_id": "medium",
+                  "laps": 13
+                }
+              ],
+              "pit_laps": [
+                13,
+                39
+              ]
+            }
+          }
+        }
+      },
+      {
+        "era": 2,
+        "circuit": "MONZA",
+        "floors": [
+          2,
+          1,
+          4,
+          1
+        ],
+        "components": {
+          "schema_version": "pitgun.racing-vehicle-components/v1",
+          "engine_id": "v8_1970",
+          "aero_id": "basic"
+        },
+        "actors": {
+          "franz_hermann": {
+            "proposal_index": 0,
+            "anchors": {
+              "12": [
+                3,
+                3,
+                4,
+                2
+              ],
+              "18": [
+                4,
+                4,
+                6,
+                4
+              ],
+              "24": [
+                6,
+                5,
+                8,
+                5
+              ]
+            },
+            "gear": 0.5,
+            "downforce": 0.0,
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "medium",
+                  "laps": 13
+                },
+                {
+                  "tire_id": "hard",
+                  "laps": 27
+                },
+                {
+                  "tire_id": "medium",
+                  "laps": 13
+                }
+              ],
+              "pit_laps": [
+                13,
+                40
+              ]
+            }
+          },
+          "charles_leclair": {
+            "proposal_index": 0,
+            "anchors": {
+              "12": [
+                3,
+                3,
+                4,
+                2
+              ],
+              "18": [
+                4,
+                4,
+                6,
+                4
+              ],
+              "24": [
+                6,
+                5,
+                8,
+                5
+              ]
+            },
+            "gear": 0.5,
+            "downforce": 0.0,
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "medium",
+                  "laps": 13
+                },
+                {
+                  "tire_id": "hard",
+                  "laps": 27
+                },
+                {
+                  "tire_id": "medium",
+                  "laps": 13
+                }
+              ],
+              "pit_laps": [
+                13,
+                40
+              ]
+            }
+          },
+          "luis_amilton": {
+            "proposal_index": 1,
+            "anchors": {
+              "12": [
+                2,
+                4,
+                5,
+                1
+              ],
+              "18": [
+                2,
+                6,
+                9,
+                1
+              ],
+              "24": [
+                2,
+                9,
+                12,
+                1
+              ]
+            },
+            "gear": 0.5,
+            "downforce": 0.5,
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "medium",
+                  "laps": 26
+                },
+                {
+                  "tire_id": "hard",
+                  "laps": 27
+                }
+              ],
+              "pit_laps": [
+                26
+              ]
+            }
+          },
+          "smooth_operator": {
+            "proposal_index": 0,
+            "anchors": {
+              "12": [
+                3,
+                3,
+                4,
+                2
+              ],
+              "18": [
+                4,
+                4,
+                6,
+                4
+              ],
+              "24": [
+                6,
+                5,
+                8,
+                5
+              ]
+            },
+            "gear": 0.5,
+            "downforce": 0.0,
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "medium",
+                  "laps": 13
+                },
+                {
+                  "tire_id": "hard",
+                  "laps": 27
+                },
+                {
+                  "tire_id": "medium",
+                  "laps": 13
+                }
+              ],
+              "pit_laps": [
+                13,
+                40
+              ]
+            }
+          },
+          "isa_kadjar": {
+            "proposal_index": 1,
+            "anchors": {
+              "12": [
+                2,
+                4,
+                5,
+                1
+              ],
+              "18": [
+                2,
+                6,
+                9,
+                1
+              ],
+              "24": [
+                2,
+                9,
+                12,
+                1
+              ]
+            },
+            "gear": 0.5,
+            "downforce": 0.5,
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "medium",
+                  "laps": 26
+                },
+                {
+                  "tire_id": "hard",
+                  "laps": 27
+                }
+              ],
+              "pit_laps": [
+                26
+              ]
+            }
+          },
+          "pedro_gaseoso": {
+            "proposal_index": 0,
+            "anchors": {
+              "12": [
+                3,
+                3,
+                4,
+                2
+              ],
+              "18": [
+                4,
+                4,
+                6,
+                4
+              ],
+              "24": [
+                6,
+                5,
+                8,
+                5
+              ]
+            },
+            "gear": 0.5,
+            "downforce": 0.0,
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "medium",
+                  "laps": 13
+                },
+                {
+                  "tire_id": "hard",
+                  "laps": 27
+                },
+                {
+                  "tire_id": "medium",
+                  "laps": 13
+                }
+              ],
+              "pit_laps": [
+                13,
+                40
+              ]
+            }
+          },
+          "battery_voltas": {
+            "proposal_index": 1,
+            "anchors": {
+              "12": [
+                2,
+                4,
+                5,
+                1
+              ],
+              "18": [
+                2,
+                6,
+                9,
+                1
+              ],
+              "24": [
+                2,
+                9,
+                12,
+                1
+              ]
+            },
+            "gear": 0.5,
+            "downforce": 0.5,
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "medium",
+                  "laps": 26
+                },
+                {
+                  "tire_id": "hard",
+                  "laps": 27
+                }
+              ],
+              "pit_laps": [
+                26
+              ]
+            }
+          },
+          "daniel_enchantier": {
+            "proposal_index": 1,
+            "anchors": {
+              "12": [
+                2,
+                4,
+                5,
+                1
+              ],
+              "18": [
+                2,
+                6,
+                9,
+                1
+              ],
+              "24": [
+                2,
+                9,
+                12,
+                1
+              ]
+            },
+            "gear": 0.5,
+            "downforce": 0.5,
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "medium",
+                  "laps": 26
+                },
+                {
+                  "tire_id": "hard",
+                  "laps": 27
+                }
+              ],
+              "pit_laps": [
+                26
+              ]
+            }
+          },
+          "goat_tifi": {
+            "proposal_index": 0,
+            "anchors": {
+              "12": [
+                3,
+                3,
+                4,
+                2
+              ],
+              "18": [
+                4,
+                4,
+                6,
+                4
+              ],
+              "24": [
+                6,
+                5,
+                8,
+                5
+              ]
+            },
+            "gear": 0.5,
+            "downforce": 0.0,
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "medium",
+                  "laps": 13
+                },
+                {
+                  "tire_id": "hard",
+                  "laps": 27
+                },
+                {
+                  "tire_id": "medium",
+                  "laps": 13
+                }
+              ],
+              "pit_laps": [
+                13,
+                40
+              ]
+            }
+          }
+        }
+      },
+      {
+        "era": 2,
+        "circuit": "ZANDVOORT",
+        "floors": [
+          2,
+          1,
+          4,
+          1
+        ],
+        "components": {
+          "schema_version": "pitgun.racing-vehicle-components/v1",
+          "engine_id": "v8_1970",
+          "aero_id": "basic"
+        },
+        "actors": {
+          "franz_hermann": {
+            "proposal_index": 0,
+            "anchors": {
+              "12": [
+                3,
+                3,
+                4,
+                2
+              ],
+              "18": [
+                4,
+                4,
+                6,
+                4
+              ],
+              "24": [
+                6,
+                5,
+                8,
+                5
+              ]
+            },
+            "gear": 0.5,
+            "downforce": 0.5,
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "medium",
+                  "laps": 18
+                },
+                {
+                  "tire_id": "hard",
+                  "laps": 36
+                },
+                {
+                  "tire_id": "medium",
+                  "laps": 18
+                }
+              ],
+              "pit_laps": [
+                18,
+                54
+              ]
+            }
+          },
+          "charles_leclair": {
+            "proposal_index": 0,
+            "anchors": {
+              "12": [
+                3,
+                3,
+                4,
+                2
+              ],
+              "18": [
+                4,
+                4,
+                6,
+                4
+              ],
+              "24": [
+                6,
+                5,
+                8,
+                5
+              ]
+            },
+            "gear": 0.5,
+            "downforce": 0.5,
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "medium",
+                  "laps": 18
+                },
+                {
+                  "tire_id": "hard",
+                  "laps": 36
+                },
+                {
+                  "tire_id": "medium",
+                  "laps": 18
+                }
+              ],
+              "pit_laps": [
+                18,
+                54
+              ]
+            }
+          },
+          "luis_amilton": {
+            "proposal_index": 1,
+            "anchors": {
+              "12": [
+                2,
+                4,
+                5,
+                1
+              ],
+              "18": [
+                2,
+                6,
+                9,
+                1
+              ],
+              "24": [
+                2,
+                9,
+                12,
+                1
+              ]
+            },
+            "gear": 0.5,
+            "downforce": 0.5,
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "medium",
+                  "laps": 36
+                },
+                {
+                  "tire_id": "hard",
+                  "laps": 36
+                }
+              ],
+              "pit_laps": [
+                36
+              ]
+            }
+          },
+          "smooth_operator": {
+            "proposal_index": 0,
+            "anchors": {
+              "12": [
+                3,
+                3,
+                4,
+                2
+              ],
+              "18": [
+                4,
+                4,
+                6,
+                4
+              ],
+              "24": [
+                6,
+                5,
+                8,
+                5
+              ]
+            },
+            "gear": 0.5,
+            "downforce": 0.5,
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "medium",
+                  "laps": 18
+                },
+                {
+                  "tire_id": "hard",
+                  "laps": 36
+                },
+                {
+                  "tire_id": "medium",
+                  "laps": 18
+                }
+              ],
+              "pit_laps": [
+                18,
+                54
+              ]
+            }
+          },
+          "isa_kadjar": {
+            "proposal_index": 1,
+            "anchors": {
+              "12": [
+                2,
+                4,
+                5,
+                1
+              ],
+              "18": [
+                2,
+                6,
+                9,
+                1
+              ],
+              "24": [
+                2,
+                9,
+                12,
+                1
+              ]
+            },
+            "gear": 0.5,
+            "downforce": 0.5,
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "medium",
+                  "laps": 36
+                },
+                {
+                  "tire_id": "hard",
+                  "laps": 36
+                }
+              ],
+              "pit_laps": [
+                36
+              ]
+            }
+          },
+          "pedro_gaseoso": {
+            "proposal_index": 0,
+            "anchors": {
+              "12": [
+                3,
+                3,
+                4,
+                2
+              ],
+              "18": [
+                4,
+                4,
+                6,
+                4
+              ],
+              "24": [
+                6,
+                5,
+                8,
+                5
+              ]
+            },
+            "gear": 0.5,
+            "downforce": 0.5,
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "medium",
+                  "laps": 18
+                },
+                {
+                  "tire_id": "hard",
+                  "laps": 36
+                },
+                {
+                  "tire_id": "medium",
+                  "laps": 18
+                }
+              ],
+              "pit_laps": [
+                18,
+                54
+              ]
+            }
+          },
+          "battery_voltas": {
+            "proposal_index": 1,
+            "anchors": {
+              "12": [
+                2,
+                4,
+                5,
+                1
+              ],
+              "18": [
+                2,
+                6,
+                9,
+                1
+              ],
+              "24": [
+                2,
+                9,
+                12,
+                1
+              ]
+            },
+            "gear": 0.5,
+            "downforce": 0.5,
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "medium",
+                  "laps": 36
+                },
+                {
+                  "tire_id": "hard",
+                  "laps": 36
+                }
+              ],
+              "pit_laps": [
+                36
+              ]
+            }
+          },
+          "daniel_enchantier": {
+            "proposal_index": 1,
+            "anchors": {
+              "12": [
+                2,
+                4,
+                5,
+                1
+              ],
+              "18": [
+                2,
+                6,
+                9,
+                1
+              ],
+              "24": [
+                2,
+                9,
+                12,
+                1
+              ]
+            },
+            "gear": 0.5,
+            "downforce": 0.5,
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "medium",
+                  "laps": 36
+                },
+                {
+                  "tire_id": "hard",
+                  "laps": 36
+                }
+              ],
+              "pit_laps": [
+                36
+              ]
+            }
+          },
+          "goat_tifi": {
+            "proposal_index": 0,
+            "anchors": {
+              "12": [
+                3,
+                3,
+                4,
+                2
+              ],
+              "18": [
+                4,
+                4,
+                6,
+                4
+              ],
+              "24": [
+                6,
+                5,
+                8,
+                5
+              ]
+            },
+            "gear": 0.5,
+            "downforce": 0.5,
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "medium",
+                  "laps": 18
+                },
+                {
+                  "tire_id": "hard",
+                  "laps": 36
+                },
+                {
+                  "tire_id": "medium",
+                  "laps": 18
+                }
+              ],
+              "pit_laps": [
+                18,
+                54
+              ]
+            }
+          }
+        }
+      }
+    ]
+  },
+  "player_templates": [
+    {
+      "era": 1,
+      "circuit": "MONZA",
+      "exit_budget": 12,
+      "field_times_s": {
+        "franz_hermann": 7342.179223537227,
+        "charles_leclair": 7343.949221600393,
+        "luis_amilton": 7367.681436559232,
+        "smooth_operator": 7362.368332209989,
+        "isa_kadjar": 7373.13897618453,
+        "pedro_gaseoso": 7395.11725869316,
+        "battery_voltas": 7380.190880509448,
+        "daniel_enchantier": 7385.885544110717,
+        "goat_tifi": 7443.405177808887
+      },
+      "player": {
+        "informed": {
+          "rank": 1,
+          "time_s": 7340.72037634764,
+          "case_id": "1/MONZA/balanced_reference/12/informed/neighbor1"
+        },
+        "concentrated": {
+          "rank": 10,
+          "time_s": 7550.967743850345,
+          "case_id": "1/MONZA/balanced_reference/12/concentrated/neighbor1"
+        }
+      },
+      "routine": {
+        "rank": 10,
+        "time_s": 7525.207625186875
+      },
+      "entry_player": {
+        "entry-informed": {
+          "rank": 3,
+          "time_s": 7412.8904363856145
+        },
+        "entry-routine": {
+          "rank": 10,
+          "time_s": 7532.4999442765275
+        }
+      },
+      "player_templates": {
+        "informed": {
+          "id": "1/MONZA/balanced_reference/12/informed/neighbor1",
+          "policy_id": "rolling-heat-065",
+          "circuit": "MONZA",
+          "fixture_id": "craft_engineering:era1-exit",
+          "actor": "balanced_reference",
+          "kind": "career",
+          "effective_budget": 12,
+          "effective_allocation": [
+            0,
+            5,
+            4,
+            3
+          ],
+          "gear": 0.25,
+          "downforce": 0.5,
+          "mode": "balanced",
+          "strategy": {
+            "stints": [
+              {
+                "tire_id": "soft",
+                "laps": 26
+              },
+              {
+                "tire_id": "medium",
+                "laps": 27
+              }
+            ],
+            "pit_laps": [
+              26
+            ]
+          },
+          "seed": 73013
+        },
+        "concentrated": {
+          "id": "1/MONZA/balanced_reference/12/concentrated/neighbor1",
+          "policy_id": "rolling-heat-065",
+          "circuit": "MONZA",
+          "fixture_id": "craft_engineering:era1-exit",
+          "actor": "balanced_reference",
+          "kind": "career",
+          "effective_budget": 12,
+          "effective_allocation": [
+            0,
+            6,
+            6,
+            0
+          ],
+          "gear": 0.25,
+          "downforce": 0.5,
+          "mode": "balanced",
+          "strategy": {
+            "stints": [
+              {
+                "tire_id": "soft",
+                "laps": 26
+              },
+              {
+                "tire_id": "medium",
+                "laps": 27
+              }
+            ],
+            "pit_laps": [
+              26
+            ]
+          },
+          "seed": 73013
+        }
+      }
+    },
+    {
+      "era": 1,
+      "circuit": "SILVERSTONE",
+      "exit_budget": 12,
+      "field_times_s": {
+        "franz_hermann": 7720.560810506427,
+        "charles_leclair": 7717.692730357745,
+        "luis_amilton": 7750.0010075724695,
+        "smooth_operator": 7745.489985483583,
+        "isa_kadjar": 7763.5252287804915,
+        "pedro_gaseoso": 7762.7331565458,
+        "battery_voltas": 7765.976990430856,
+        "daniel_enchantier": 7772.886562934192,
+        "goat_tifi": 7818.125979713132
+      },
+      "player": {
+        "informed": {
+          "rank": 3,
+          "time_s": 7724.488921652136,
+          "case_id": "1/SILVERSTONE/balanced_reference/12/informed/neighbor1"
+        },
+        "concentrated": {
+          "rank": 10,
+          "time_s": 7893.117409920204,
+          "case_id": "1/SILVERSTONE/balanced_reference/12/concentrated/neighbor4"
+        }
+      },
+      "routine": {
+        "rank": 10,
+        "time_s": 7905.768409261178
+      },
+      "entry_player": {
+        "entry-informed": {
+          "rank": 3,
+          "time_s": 7788.000705536569
+        },
+        "entry-routine": {
+          "rank": 10,
+          "time_s": 7914.996569150781
+        }
+      },
+      "player_templates": {
+        "informed": {
+          "id": "1/SILVERSTONE/balanced_reference/12/informed/neighbor1",
+          "policy_id": "rolling-heat-065",
+          "circuit": "SILVERSTONE",
+          "fixture_id": "craft_engineering:era1-exit",
+          "actor": "balanced_reference",
+          "kind": "career",
+          "effective_budget": 12,
+          "effective_allocation": [
+            0,
+            5,
+            4,
+            3
+          ],
+          "gear": 0.25,
+          "downforce": 0.5,
+          "mode": "balanced",
+          "strategy": {
+            "stints": [
+              {
+                "tire_id": "soft",
+                "laps": 26
+              },
+              {
+                "tire_id": "medium",
+                "laps": 26
+              }
+            ],
+            "pit_laps": [
+              26
+            ]
+          },
+          "seed": 73013
+        },
+        "concentrated": {
+          "id": "1/SILVERSTONE/balanced_reference/12/concentrated/neighbor4",
+          "policy_id": "rolling-heat-065",
+          "circuit": "SILVERSTONE",
+          "fixture_id": "craft_engineering:era1-exit",
+          "actor": "balanced_reference",
+          "kind": "career",
+          "effective_budget": 12,
+          "effective_allocation": [
+            0,
+            7,
+            5,
+            0
+          ],
+          "gear": 0.85,
+          "downforce": 0.5,
+          "mode": "balanced",
+          "strategy": {
+            "stints": [
+              {
+                "tire_id": "soft",
+                "laps": 26
+              },
+              {
+                "tire_id": "medium",
+                "laps": 26
+              }
+            ],
+            "pit_laps": [
+              26
+            ]
+          },
+          "seed": 73013
+        }
+      }
+    },
+    {
+      "era": 1,
+      "circuit": "ZANDVOORT",
+      "exit_budget": 12,
+      "field_times_s": {
+        "franz_hermann": 8318.0701805625,
+        "charles_leclair": 8313.221813120212,
+        "luis_amilton": 8352.229557407205,
+        "smooth_operator": 8346.717470452473,
+        "isa_kadjar": 8361.341908774819,
+        "pedro_gaseoso": 8373.159311803467,
+        "battery_voltas": 8375.136169549847,
+        "daniel_enchantier": 8382.071428235575,
+        "goat_tifi": 8441.64706284686
+      },
+      "player": {
+        "informed": {
+          "rank": 3,
+          "time_s": 8322.313840529328,
+          "case_id": "1/ZANDVOORT/balanced_reference/12/informed/neighbor1"
+        },
+        "concentrated": {
+          "rank": 10,
+          "time_s": 8489.274662786776,
+          "case_id": "1/ZANDVOORT/balanced_reference/12/concentrated/neighbor4"
+        }
+      },
+      "routine": {
+        "rank": 10,
+        "time_s": 8522.433383006599
+      },
+      "entry_player": {
+        "entry-informed": {
+          "rank": 3,
+          "time_s": 8383.10957701026
+        },
+        "entry-routine": {
+          "rank": 10,
+          "time_s": 8535.12998564381
+        }
+      },
+      "player_templates": {
+        "informed": {
+          "id": "1/ZANDVOORT/balanced_reference/12/informed/neighbor1",
+          "policy_id": "rolling-heat-065",
+          "circuit": "ZANDVOORT",
+          "fixture_id": "craft_engineering:era1-exit",
+          "actor": "balanced_reference",
+          "kind": "career",
+          "effective_budget": 12,
+          "effective_allocation": [
+            0,
+            5,
+            4,
+            3
+          ],
+          "gear": 0.25,
+          "downforce": 0.5,
+          "mode": "balanced",
+          "strategy": {
+            "stints": [
+              {
+                "tire_id": "soft",
+                "laps": 36
+              },
+              {
+                "tire_id": "medium",
+                "laps": 36
+              }
+            ],
+            "pit_laps": [
+              36
+            ]
+          },
+          "seed": 73013
+        },
+        "concentrated": {
+          "id": "1/ZANDVOORT/balanced_reference/12/concentrated/neighbor4",
+          "policy_id": "rolling-heat-065",
+          "circuit": "ZANDVOORT",
+          "fixture_id": "craft_engineering:era1-exit",
+          "actor": "balanced_reference",
+          "kind": "career",
+          "effective_budget": 12,
+          "effective_allocation": [
+            0,
+            7,
+            5,
+            0
+          ],
+          "gear": 0.35,
+          "downforce": 0.5,
+          "mode": "balanced",
+          "strategy": {
+            "stints": [
+              {
+                "tire_id": "soft",
+                "laps": 36
+              },
+              {
+                "tire_id": "medium",
+                "laps": 36
+              }
+            ],
+            "pit_laps": [
+              36
+            ]
+          },
+          "seed": 73013
+        }
+      }
+    },
+    {
+      "era": 2,
+      "circuit": "MONTREAL",
+      "exit_budget": 24,
+      "field_times_s": {
+        "franz_hermann": 6902.698282494205,
+        "charles_leclair": 6900.829270294665,
+        "luis_amilton": 6919.251731118824,
+        "smooth_operator": 6915.270197826635,
+        "isa_kadjar": 6921.699018213931,
+        "pedro_gaseoso": 6936.448703416099,
+        "battery_voltas": 6925.94460388986,
+        "daniel_enchantier": 6929.538563110965,
+        "goat_tifi": 6966.762289871384
+      },
+      "player": {
+        "informed": {
+          "rank": 1,
+          "time_s": 6891.500488089956,
+          "case_id": "2/MONTREAL/balanced_reference/24/informed/neighbor3"
+        },
+        "concentrated": {
+          "rank": 2,
+          "time_s": 6901.290589216325,
+          "case_id": "2/MONTREAL/balanced_reference/24/concentrated/neighbor3"
+        }
+      },
+      "routine": {
+        "rank": 4,
+        "time_s": 6915.637653870842
+      },
+      "entry_player": {
+        "entry-informed": {
+          "rank": 10,
+          "time_s": 8281.202139677838
+        },
+        "entry-routine": {
+          "rank": 10,
+          "time_s": 8288.179215672346
+        }
+      },
+      "player_templates": {
+        "informed": {
+          "id": "2/MONTREAL/balanced_reference/24/informed/neighbor3",
+          "policy_id": "rolling-heat-065",
+          "circuit": "MONTREAL",
+          "fixture_id": "craft_engineering:era2-exit",
+          "actor": "balanced_reference",
+          "kind": "career",
+          "effective_budget": 24,
+          "effective_allocation": [
+            2,
+            7,
+            10,
+            5
+          ],
+          "gear": 0.5,
+          "downforce": 0.4,
+          "mode": "balanced",
+          "strategy": {
+            "stints": [
+              {
+                "tire_id": "medium",
+                "laps": 35
+              },
+              {
+                "tire_id": "hard",
+                "laps": 35
+              }
+            ],
+            "pit_laps": [
+              35
+            ]
+          },
+          "seed": 73013
+        },
+        "concentrated": {
+          "id": "2/MONTREAL/balanced_reference/24/concentrated/neighbor3",
+          "policy_id": "rolling-heat-065",
+          "circuit": "MONTREAL",
+          "fixture_id": "craft_engineering:era2-exit",
+          "actor": "balanced_reference",
+          "kind": "career",
+          "effective_budget": 24,
+          "effective_allocation": [
+            2,
+            9,
+            12,
+            1
+          ],
+          "gear": 0.5,
+          "downforce": 0.4,
+          "mode": "balanced",
+          "strategy": {
+            "stints": [
+              {
+                "tire_id": "medium",
+                "laps": 35
+              },
+              {
+                "tire_id": "hard",
+                "laps": 35
+              }
+            ],
+            "pit_laps": [
+              35
+            ]
+          },
+          "seed": 73013
+        }
+      }
+    },
+    {
+      "era": 2,
+      "circuit": "SPIELBERG",
+      "exit_budget": 24,
+      "field_times_s": {
+        "franz_hermann": 6651.893144974904,
+        "charles_leclair": 6650.675593342663,
+        "luis_amilton": 6665.617191252247,
+        "smooth_operator": 6662.4842488910635,
+        "isa_kadjar": 6673.3082771313075,
+        "pedro_gaseoso": 6678.617266791954,
+        "battery_voltas": 6670.786981305494,
+        "daniel_enchantier": 6676.814238501712,
+        "goat_tifi": 6718.242044733782
+      },
+      "player": {
+        "informed": {
+          "rank": 1,
+          "time_s": 6637.32767854798,
+          "case_id": "2/SPIELBERG/balanced_reference/24/informed/neighbor3"
+        },
+        "concentrated": {
+          "rank": 1,
+          "time_s": 6637.499762074067,
+          "case_id": "2/SPIELBERG/balanced_reference/24/concentrated/neighbor3"
+        }
+      },
+      "routine": {
+        "rank": 3,
+        "time_s": 6660.9242541265985
+      },
+      "entry_player": {
+        "entry-informed": {
+          "rank": 10,
+          "time_s": 7982.383382625178
+        },
+        "entry-routine": {
+          "rank": 10,
+          "time_s": 7989.534328824631
+        }
+      },
+      "player_templates": {
+        "informed": {
+          "id": "2/SPIELBERG/balanced_reference/24/informed/neighbor3",
+          "policy_id": "rolling-heat-065",
+          "circuit": "SPIELBERG",
+          "fixture_id": "craft_engineering:era2-exit",
+          "actor": "balanced_reference",
+          "kind": "career",
+          "effective_budget": 24,
+          "effective_allocation": [
+            2,
+            7,
+            10,
+            5
+          ],
+          "gear": 0.5,
+          "downforce": 0.4,
+          "mode": "balanced",
+          "strategy": {
+            "stints": [
+              {
+                "tire_id": "medium",
+                "laps": 35
+              },
+              {
+                "tire_id": "hard",
+                "laps": 36
+              }
+            ],
+            "pit_laps": [
+              35
+            ]
+          },
+          "seed": 73013
+        },
+        "concentrated": {
+          "id": "2/SPIELBERG/balanced_reference/24/concentrated/neighbor3",
+          "policy_id": "rolling-heat-065",
+          "circuit": "SPIELBERG",
+          "fixture_id": "craft_engineering:era2-exit",
+          "actor": "balanced_reference",
+          "kind": "career",
+          "effective_budget": 24,
+          "effective_allocation": [
+            2,
+            9,
+            12,
+            1
+          ],
+          "gear": 0.5,
+          "downforce": 0.4,
+          "mode": "balanced",
+          "strategy": {
+            "stints": [
+              {
+                "tire_id": "medium",
+                "laps": 35
+              },
+              {
+                "tire_id": "hard",
+                "laps": 36
+              }
+            ],
+            "pit_laps": [
+              35
+            ]
+          },
+          "seed": 73013
+        }
+      }
+    },
+    {
+      "era": 2,
+      "circuit": "MEXICO",
+      "exit_budget": 24,
+      "field_times_s": {
+        "franz_hermann": 7538.248298711927,
+        "charles_leclair": 7538.396469341032,
+        "luis_amilton": 7553.2338872568935,
+        "smooth_operator": 7555.280391280556,
+        "isa_kadjar": 7565.7508855443,
+        "pedro_gaseoso": 7563.738784715444,
+        "battery_voltas": 7563.306732187862,
+        "daniel_enchantier": 7572.946630675241,
+        "goat_tifi": 7599.607746239131
+      },
+      "player": {
+        "informed": {
+          "rank": 1,
+          "time_s": 7525.201115392735,
+          "case_id": "2/MEXICO/balanced_reference/24/informed/neighbor3"
+        },
+        "concentrated": {
+          "rank": 1,
+          "time_s": 7524.822174438814,
+          "case_id": "2/MEXICO/balanced_reference/24/concentrated/neighbor3"
+        }
+      },
+      "routine": {
+        "rank": 3,
+        "time_s": 7547.594319244318
+      },
+      "entry_player": {
+        "entry-informed": {
+          "rank": 10,
+          "time_s": 8924.499432598019
+        },
+        "entry-routine": {
+          "rank": 10,
+          "time_s": 8930.254099220938
+        }
+      },
+      "player_templates": {
+        "informed": {
+          "id": "2/MEXICO/balanced_reference/24/informed/neighbor3",
+          "policy_id": "rolling-heat-065",
+          "circuit": "MEXICO",
+          "fixture_id": "craft_engineering:era2-exit",
+          "actor": "balanced_reference",
+          "kind": "career",
+          "effective_budget": 24,
+          "effective_allocation": [
+            2,
+            7,
+            10,
+            5
+          ],
+          "gear": 0.5,
+          "downforce": 0.4,
+          "mode": "balanced",
+          "strategy": {
+            "stints": [
+              {
+                "tire_id": "medium",
+                "laps": 35
+              },
+              {
+                "tire_id": "hard",
+                "laps": 36
+              }
+            ],
+            "pit_laps": [
+              35
+            ]
+          },
+          "seed": 73013
+        },
+        "concentrated": {
+          "id": "2/MEXICO/balanced_reference/24/concentrated/neighbor3",
+          "policy_id": "rolling-heat-065",
+          "circuit": "MEXICO",
+          "fixture_id": "craft_engineering:era2-exit",
+          "actor": "balanced_reference",
+          "kind": "career",
+          "effective_budget": 24,
+          "effective_allocation": [
+            2,
+            9,
+            12,
+            1
+          ],
+          "gear": 0.5,
+          "downforce": 0.4,
+          "mode": "balanced",
+          "strategy": {
+            "stints": [
+              {
+                "tire_id": "medium",
+                "laps": 35
+              },
+              {
+                "tire_id": "hard",
+                "laps": 36
+              }
+            ],
+            "pit_laps": [
+              35
+            ]
+          },
+          "seed": 73013
+        }
+      }
+    },
+    {
+      "era": 2,
+      "circuit": "SAOPAULO",
+      "exit_budget": 24,
+      "field_times_s": {
+        "franz_hermann": 6828.009838799384,
+        "charles_leclair": 6828.255571041637,
+        "luis_amilton": 6849.259799742527,
+        "smooth_operator": 6841.978129143995,
+        "isa_kadjar": 6848.30353253695,
+        "pedro_gaseoso": 6852.298337847569,
+        "battery_voltas": 6853.361441031144,
+        "daniel_enchantier": 6860.141498014027,
+        "goat_tifi": 6895.441485772857
+      },
+      "player": {
+        "informed": {
+          "rank": 1,
+          "time_s": 6814.273126059295,
+          "case_id": "2/SAOPAULO/balanced_reference/24/informed/neighbor3"
+        },
+        "concentrated": {
+          "rank": 3,
+          "time_s": 6828.640287593556,
+          "case_id": "2/SAOPAULO/balanced_reference/24/concentrated/neighbor3"
+        }
+      },
+      "routine": {
+        "rank": 8,
+        "time_s": 6855.23342531804
+      },
+      "entry_player": {
+        "entry-informed": {
+          "rank": 10,
+          "time_s": 8181.717247856427
+        },
+        "entry-routine": {
+          "rank": 10,
+          "time_s": 8111.878363133688
+        }
+      },
+      "player_templates": {
+        "informed": {
+          "id": "2/SAOPAULO/balanced_reference/24/informed/neighbor3",
+          "policy_id": "rolling-heat-065",
+          "circuit": "SAOPAULO",
+          "fixture_id": "craft_engineering:era2-exit",
+          "actor": "balanced_reference",
+          "kind": "career",
+          "effective_budget": 24,
+          "effective_allocation": [
+            6,
+            5,
+            8,
+            5
+          ],
+          "gear": 0.5,
+          "downforce": 0.4,
+          "mode": "balanced",
+          "strategy": {
+            "stints": [
+              {
+                "tire_id": "medium",
+                "laps": 17
+              },
+              {
+                "tire_id": "hard",
+                "laps": 36
+              },
+              {
+                "tire_id": "medium",
+                "laps": 18
+              }
+            ],
+            "pit_laps": [
+              17,
+              53
+            ]
+          },
+          "seed": 73013
+        },
+        "concentrated": {
+          "id": "2/SAOPAULO/balanced_reference/24/concentrated/neighbor3",
+          "policy_id": "rolling-heat-065",
+          "circuit": "SAOPAULO",
+          "fixture_id": "craft_engineering:era2-exit",
+          "actor": "balanced_reference",
+          "kind": "career",
+          "effective_budget": 24,
+          "effective_allocation": [
+            2,
+            9,
+            12,
+            1
+          ],
+          "gear": 0.5,
+          "downforce": 0.4,
+          "mode": "balanced",
+          "strategy": {
+            "stints": [
+              {
+                "tire_id": "medium",
+                "laps": 35
+              },
+              {
+                "tire_id": "hard",
+                "laps": 36
+              }
+            ],
+            "pit_laps": [
+              35
+            ]
+          },
+          "seed": 73013
+        }
+      }
+    },
+    {
+      "era": 2,
+      "circuit": "SILVERSTONE",
+      "exit_budget": 24,
+      "field_times_s": {
+        "franz_hermann": 6666.486086952141,
+        "charles_leclair": 6667.257935476201,
+        "luis_amilton": 6685.6645116537575,
+        "smooth_operator": 6682.631104806013,
+        "isa_kadjar": 6692.188507882199,
+        "pedro_gaseoso": 6695.5715279132055,
+        "battery_voltas": 6693.007903490292,
+        "daniel_enchantier": 6698.746533284656,
+        "goat_tifi": 6739.643697238753
+      },
+      "player": {
+        "informed": {
+          "rank": 1,
+          "time_s": 6658.457991844176,
+          "case_id": "2/SILVERSTONE/balanced_reference/24/informed/neighbor3"
+        },
+        "concentrated": {
+          "rank": 1,
+          "time_s": 6652.697448104941,
+          "case_id": "2/SILVERSTONE/balanced_reference/24/concentrated/neighbor3"
+        }
+      },
+      "routine": {
+        "rank": 4,
+        "time_s": 6684.893807487717
+      },
+      "entry_player": {
+        "entry-informed": {
+          "rank": 10,
+          "time_s": 7969.297866456573
+        },
+        "entry-routine": {
+          "rank": 10,
+          "time_s": 7905.768409261178
+        }
+      },
+      "player_templates": {
+        "informed": {
+          "id": "2/SILVERSTONE/balanced_reference/24/informed/neighbor3",
+          "policy_id": "rolling-heat-065",
+          "circuit": "SILVERSTONE",
+          "fixture_id": "craft_engineering:era2-exit",
+          "actor": "balanced_reference",
+          "kind": "career",
+          "effective_budget": 24,
+          "effective_allocation": [
+            6,
+            5,
+            8,
+            5
+          ],
+          "gear": 0.5,
+          "downforce": 0.4,
+          "mode": "balanced",
+          "strategy": {
+            "stints": [
+              {
+                "tire_id": "medium",
+                "laps": 13
+              },
+              {
+                "tire_id": "hard",
+                "laps": 26
+              },
+              {
+                "tire_id": "medium",
+                "laps": 13
+              }
+            ],
+            "pit_laps": [
+              13,
+              39
+            ]
+          },
+          "seed": 73013
+        },
+        "concentrated": {
+          "id": "2/SILVERSTONE/balanced_reference/24/concentrated/neighbor3",
+          "policy_id": "rolling-heat-065",
+          "circuit": "SILVERSTONE",
+          "fixture_id": "craft_engineering:era2-exit",
+          "actor": "balanced_reference",
+          "kind": "career",
+          "effective_budget": 24,
+          "effective_allocation": [
+            2,
+            9,
+            12,
+            1
+          ],
+          "gear": 0.5,
+          "downforce": 0.4,
+          "mode": "balanced",
+          "strategy": {
+            "stints": [
+              {
+                "tire_id": "medium",
+                "laps": 26
+              },
+              {
+                "tire_id": "hard",
+                "laps": 26
+              }
+            ],
+            "pit_laps": [
+              26
+            ]
+          },
+          "seed": 73013
+        }
+      }
+    },
+    {
+      "era": 2,
+      "circuit": "MONZA",
+      "exit_budget": 24,
+      "field_times_s": {
+        "franz_hermann": 6389.6890853020595,
+        "charles_leclair": 6392.094988283101,
+        "luis_amilton": 6418.758921181532,
+        "smooth_operator": 6404.426132412185,
+        "isa_kadjar": 6422.749480533748,
+        "pedro_gaseoso": 6425.09149408747,
+        "battery_voltas": 6425.675840370461,
+        "daniel_enchantier": 6429.817911468458,
+        "goat_tifi": 6458.676197146367
+      },
+      "player": {
+        "informed": {
+          "rank": 1,
+          "time_s": 6379.0287282327145,
+          "case_id": "2/MONZA/balanced_reference/24/informed/neighbor3"
+        },
+        "concentrated": {
+          "rank": 1,
+          "time_s": 6380.631623732763,
+          "case_id": "2/MONZA/balanced_reference/24/concentrated/neighbor3"
+        }
+      },
+      "routine": {
+        "rank": 5,
+        "time_s": 6421.216713792708
+      },
+      "entry_player": {
+        "entry-informed": {
+          "rank": 10,
+          "time_s": 7582.441119905884
+        },
+        "entry-routine": {
+          "rank": 10,
+          "time_s": 7525.207625186875
+        }
+      },
+      "player_templates": {
+        "informed": {
+          "id": "2/MONZA/balanced_reference/24/informed/neighbor3",
+          "policy_id": "rolling-heat-065",
+          "circuit": "MONZA",
+          "fixture_id": "craft_engineering:era2-exit",
+          "actor": "balanced_reference",
+          "kind": "career",
+          "effective_budget": 24,
+          "effective_allocation": [
+            6,
+            5,
+            8,
+            5
+          ],
+          "gear": 0.5,
+          "downforce": 0.1,
+          "mode": "balanced",
+          "strategy": {
+            "stints": [
+              {
+                "tire_id": "medium",
+                "laps": 13
+              },
+              {
+                "tire_id": "hard",
+                "laps": 27
+              },
+              {
+                "tire_id": "medium",
+                "laps": 13
+              }
+            ],
+            "pit_laps": [
+              13,
+              40
+            ]
+          },
+          "seed": 73013
+        },
+        "concentrated": {
+          "id": "2/MONZA/balanced_reference/24/concentrated/neighbor3",
+          "policy_id": "rolling-heat-065",
+          "circuit": "MONZA",
+          "fixture_id": "craft_engineering:era2-exit",
+          "actor": "balanced_reference",
+          "kind": "career",
+          "effective_budget": 24,
+          "effective_allocation": [
+            2,
+            9,
+            12,
+            1
+          ],
+          "gear": 0.5,
+          "downforce": 0.4,
+          "mode": "balanced",
+          "strategy": {
+            "stints": [
+              {
+                "tire_id": "medium",
+                "laps": 26
+              },
+              {
+                "tire_id": "hard",
+                "laps": 27
+              }
+            ],
+            "pit_laps": [
+              26
+            ]
+          },
+          "seed": 73013
+        }
+      }
+    },
+    {
+      "era": 2,
+      "circuit": "ZANDVOORT",
+      "exit_budget": 24,
+      "field_times_s": {
+        "franz_hermann": 7127.9726772982085,
+        "charles_leclair": 7127.350760624433,
+        "luis_amilton": 7160.550053534005,
+        "smooth_operator": 7143.514483815929,
+        "isa_kadjar": 7167.3440946736155,
+        "pedro_gaseoso": 7159.172019907997,
+        "battery_voltas": 7169.436537539504,
+        "daniel_enchantier": 7174.692256995113,
+        "goat_tifi": 7200.568629326445
+      },
+      "player": {
+        "informed": {
+          "rank": 3,
+          "time_s": 7128.218131875707,
+          "case_id": "2/ZANDVOORT/balanced_reference/24/informed/neighbor2"
+        },
+        "concentrated": {
+          "rank": 3,
+          "time_s": 7142.842741511555,
+          "case_id": "2/ZANDVOORT/balanced_reference/24/concentrated/neighbor3"
+        }
+      },
+      "routine": {
+        "rank": 6,
+        "time_s": 7165.655230689582
+      },
+      "entry_player": {
+        "entry-informed": {
+          "rank": 10,
+          "time_s": 8592.579059427831
+        },
+        "entry-routine": {
+          "rank": 10,
+          "time_s": 8522.433383006599
+        }
+      },
+      "player_templates": {
+        "informed": {
+          "id": "2/ZANDVOORT/balanced_reference/24/informed/neighbor2",
+          "policy_id": "rolling-heat-065",
+          "circuit": "ZANDVOORT",
+          "fixture_id": "craft_engineering:era2-exit",
+          "actor": "balanced_reference",
+          "kind": "career",
+          "effective_budget": 24,
+          "effective_allocation": [
+            6,
+            5,
+            8,
+            5
+          ],
+          "gear": 0.6,
+          "downforce": 0.5,
+          "mode": "balanced",
+          "strategy": {
+            "stints": [
+              {
+                "tire_id": "medium",
+                "laps": 18
+              },
+              {
+                "tire_id": "hard",
+                "laps": 36
+              },
+              {
+                "tire_id": "medium",
+                "laps": 18
+              }
+            ],
+            "pit_laps": [
+              18,
+              54
+            ]
+          },
+          "seed": 73013
+        },
+        "concentrated": {
+          "id": "2/ZANDVOORT/balanced_reference/24/concentrated/neighbor3",
+          "policy_id": "rolling-heat-065",
+          "circuit": "ZANDVOORT",
+          "fixture_id": "craft_engineering:era2-exit",
+          "actor": "balanced_reference",
+          "kind": "career",
+          "effective_budget": 24,
+          "effective_allocation": [
+            2,
+            9,
+            12,
+            1
+          ],
+          "gear": 0.5,
+          "downforce": 0.4,
+          "mode": "balanced",
+          "strategy": {
+            "stints": [
+              {
+                "tire_id": "medium",
+                "laps": 36
+              },
+              {
+                "tire_id": "hard",
+                "laps": 36
+              }
+            ],
+            "pit_laps": [
+              36
+            ]
+          },
+          "seed": 73013
+        }
+      }
+    }
+  ]
+}
