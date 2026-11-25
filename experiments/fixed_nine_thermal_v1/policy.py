@@ -1,4 +1,5 @@
 """Pure pre-weekend field construction: no player setup or result input."""
+from copy import deepcopy
 from fractions import Fraction
 
 
@@ -30,4 +31,4 @@ def preparation(policy,era,circuit,budget,actor):
     ctx=next(c for c in policy['contexts'] if c['era']==era and c['circuit']==circuit)
     p=ctx['actors'][actor]
     return {'actor':actor,'effective_budget':budget,'effective_allocation':allocate(p['anchors'],budget,ctx['floors']),
-            'downforce':p['downforce'],'gear':p['gear'],'strategy':p['strategy'],'mode':'balanced'}
+            'downforce':p['downforce'],'gear':p['gear'],'strategy':deepcopy(p['strategy']),'mode':'balanced'}

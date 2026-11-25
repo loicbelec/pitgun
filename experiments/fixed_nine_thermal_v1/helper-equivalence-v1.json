@@ -1,0 +1,7 @@
+{
+  "change": "defensive copy of returned strategy only; no simulation or selection change",
+  "frozen_campaign_source_commit": "5d46019",
+  "equivalent_preparations": 954,
+  "all_values_exact": true,
+  "outputs_sha256": "d8d46f3b23f64aae9216d1891a6c0b1aafc7311fe466ab16ee723ff364859d73"
+}

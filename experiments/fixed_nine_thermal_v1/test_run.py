@@ -22,6 +22,8 @@ class BudgetTests(unittest.TestCase):
         p={'contexts':[{'era':2,'circuit':'MONZA','floors':[2,1,4,1],'actors':{'franz':{'anchors':{'12':[2,3,5,2],'24':[6,5,8,5]},'gear':.5,'downforce':.2,'strategy':{'stints':[]}}}}]}
         r=preparation(p,2,'MONZA',16,'franz');self.assertEqual(sum(r['effective_allocation']),16)
         r['effective_allocation'][0]=99;self.assertNotEqual(r,preparation(p,2,'MONZA',16,'franz'))
+        r['strategy']['stints'].append({'tire_id':'soft','laps':1})
+        self.assertEqual(preparation(p,2,'MONZA',16,'franz')['strategy']['stints'],[])
     def test_equal_player_search_allowance_and_legal_bounds(self):
         for era,f,b,pts in [(1,[0,1,0,0],12,[0,6,6,0]),(2,[2,1,4,1],24,[2,9,12,1])]:
             c={'id':'p','effective_allocation':pts,'gear':0.,'downforce':.5 if era==1 else 0.,'effective_budget':b}
