@@ -1,0 +1,1635 @@
+{
+  "schema": "pitgun.fixed-nine-thermal-plan/v1",
+  "policy": "experiments/thermal_balance_sensitivity_v1/rolling-heat-065.json",
+  "roster": "experiments/fixed_opponents_v2/roster-v2.json",
+  "retained_files": {
+    "experiments/thermal_candidate_qualification_v1/results/era1-v1.json.gz": "878aa559dd72b0f866b34f91b55bf52993d6b049ce0b666753d5d618df0e2b62",
+    "experiments/thermal_candidate_qualification_v1/results/era2-v1.json.gz": "a1d648c183e3c249365fda85d9e38d05d1edb6e8cb024cc08d1d551f9ae0b7bd",
+    "experiments/aero_tradeoff_audit_v1/results/main-v1.json.gz": "796f9d059cbf4a7c7cf445811b2965b67dddbb8529b0798260905b6bf80d4ae3",
+    "experiments/aero_plan_followup_v1/results/main-v1.json.gz": "e720ef3a897b3ed1e18189818050acc178066e516e9a5aa729aef258051aa18f",
+    "experiments/fixed_opponents_v2/roster-v2.json": "cf8a427975c321b724d0f10d4654f48ae54db43442afa84658b6ee768efaaac4",
+    "experiments/thermal_balance_sensitivity_v1/rolling-heat-065.json": "8b303f0189e3e174138a877d0eada425b37c672fe66dd07efcbc86b8d861e771",
+    "experiments/opponent_physics_v2/results/career-fixtures-v1.json": "858cce40ccb942b5667bab84f99af9e1231711d6cf13afca472537051ef3c6d9",
+    "experiments/qualified_career_v1/native-reference-v1.json": "304bc52c72770109d4e8338ba87f0e5b26c32276b0c8d94d6567f5f3a80f0b19"
+  },
+  "contexts": [
+    {
+      "era": 1,
+      "circuit": "MONZA",
+      "laps": 53,
+      "proposals": [
+        {
+          "points": [
+            0,
+            3,
+            3,
+            2
+          ],
+          "gear": 0.35,
+          "downforce": 0.5,
+          "strategy": {
+            "stints": [
+              {
+                "tire_id": "soft",
+                "laps": 26
+              },
+              {
+                "tire_id": "medium",
+                "laps": 27
+              }
+            ],
+            "pit_laps": [
+              26
+            ]
+          },
+          "source_archive": "experiments/thermal_candidate_qualification_v1/results/era1-v1.json.gz",
+          "source_case_id": "era1/MONZA/cooling/SM-50/gear-0.35",
+          "source_physical_input_digest": "sha256:d9c8e2e740d7a0ca21ec3066c99bf64d684c4008de703de3ec2e72e3a146e90e",
+          "source_result_digest": "sha256:1bc38199901d2ebda10231a9613a2ba69427bbbcc80cc4fd1723b26dcf3ce85b",
+          "source_time_s": 7412.8904363856145
+        },
+        {
+          "points": [
+            2,
+            2,
+            2,
+            2
+          ],
+          "gear": 0.35,
+          "downforce": 0.5,
+          "strategy": {
+            "stints": [
+              {
+                "tire_id": "soft",
+                "laps": 26
+              },
+              {
+                "tire_id": "medium",
+                "laps": 27
+              }
+            ],
+            "pit_laps": [
+              26
+            ]
+          },
+          "source_archive": "experiments/thermal_candidate_qualification_v1/results/era1-v1.json.gz",
+          "source_case_id": "era1/MONZA/balanced/SM-50/gear-0.35",
+          "source_physical_input_digest": "sha256:270292f00bf6d92af4d6a9ae4ef52f2a98d55eefb90ae49c4490bd2b0c4b3cb7",
+          "source_result_digest": "sha256:f7be6ece2131799815a3f7cb2c94d3577bb8955b679946076e9973b1c7b5de56",
+          "source_time_s": 7418.884803308154
+        }
+      ],
+      "informed": {
+        "points": [
+          0,
+          3,
+          3,
+          2
+        ],
+        "gear": 0.35,
+        "downforce": 0.5,
+        "strategy": {
+          "stints": [
+            {
+              "tire_id": "soft",
+              "laps": 26
+            },
+            {
+              "tire_id": "medium",
+              "laps": 27
+            }
+          ],
+          "pit_laps": [
+            26
+          ]
+        },
+        "source_archive": "experiments/thermal_candidate_qualification_v1/results/era1-v1.json.gz",
+        "source_case_id": "era1/MONZA/cooling/SM-50/gear-0.35",
+        "source_physical_input_digest": "sha256:d9c8e2e740d7a0ca21ec3066c99bf64d684c4008de703de3ec2e72e3a146e90e",
+        "source_result_digest": "sha256:1bc38199901d2ebda10231a9613a2ba69427bbbcc80cc4fd1723b26dcf3ce85b",
+        "source_time_s": 7412.8904363856145
+      },
+      "concentrated": {
+        "points": [
+          0,
+          4,
+          4,
+          0
+        ],
+        "gear": 0.35,
+        "downforce": 0.5,
+        "strategy": {
+          "stints": [
+            {
+              "tire_id": "soft",
+              "laps": 26
+            },
+            {
+              "tire_id": "medium",
+              "laps": 27
+            }
+          ],
+          "pit_laps": [
+            26
+          ]
+        },
+        "source_archive": "experiments/thermal_candidate_qualification_v1/results/era1-v1.json.gz",
+        "source_case_id": "era1/MONZA/engine_chassis/SM-50/gear-0.35",
+        "source_physical_input_digest": "sha256:ecac70a2987f32eeb44b69d2f72cca40cf8fcc8bb52dcc6b099b87f0beeeb653",
+        "source_result_digest": "sha256:de74f7e739804617e9b0e42182801cc2e010ad908324a58ff81a35a3a6e66519",
+        "source_time_s": 7582.036280868686
+      },
+      "routine": {
+        "points": [
+          2,
+          2,
+          2,
+          2
+        ],
+        "gear": 0.5,
+        "downforce": 0.5,
+        "strategy": {
+          "stints": [
+            {
+              "tire_id": "medium",
+              "laps": 26
+            },
+            {
+              "tire_id": "hard",
+              "laps": 27
+            }
+          ],
+          "pit_laps": [
+            26
+          ]
+        }
+      }
+    },
+    {
+      "era": 1,
+      "circuit": "SILVERSTONE",
+      "laps": 52,
+      "proposals": [
+        {
+          "points": [
+            0,
+            3,
+            3,
+            2
+          ],
+          "gear": 0.35,
+          "downforce": 0.5,
+          "strategy": {
+            "stints": [
+              {
+                "tire_id": "soft",
+                "laps": 26
+              },
+              {
+                "tire_id": "medium",
+                "laps": 26
+              }
+            ],
+            "pit_laps": [
+              26
+            ]
+          },
+          "source_archive": "experiments/thermal_candidate_qualification_v1/results/era1-v1.json.gz",
+          "source_case_id": "era1/SILVERSTONE/cooling/SM-50/gear-0.35",
+          "source_physical_input_digest": "sha256:5238db251222995703a8797ec9c38f5ef3628281b721a5ec73f6159a6aac53b5",
+          "source_result_digest": "sha256:7fc994e109442ad1e752e1749a6b14c75853582b601d8b169f8ee58473a47d5d",
+          "source_time_s": 7788.000705536569
+        },
+        {
+          "points": [
+            0,
+            3,
+            3,
+            2
+          ],
+          "gear": 0.5,
+          "downforce": 0.5,
+          "strategy": {
+            "stints": [
+              {
+                "tire_id": "soft",
+                "laps": 26
+              },
+              {
+                "tire_id": "medium",
+                "laps": 26
+              }
+            ],
+            "pit_laps": [
+              26
+            ]
+          },
+          "source_archive": "experiments/thermal_candidate_qualification_v1/results/era1-v1.json.gz",
+          "source_case_id": "era1/SILVERSTONE/cooling/SM-50",
+          "source_physical_input_digest": "sha256:14d7032f006cf52a602c9cb017de8a53b8f5827f1410f7224c1f3ed5025f3c46",
+          "source_result_digest": "sha256:bfaa351ec2fd9933271fb52ff4ded802f2edfa0c531f6c56a013346c053ea3fc",
+          "source_time_s": 7789.872551496859
+        }
+      ],
+      "informed": {
+        "points": [
+          0,
+          3,
+          3,
+          2
+        ],
+        "gear": 0.35,
+        "downforce": 0.5,
+        "strategy": {
+          "stints": [
+            {
+              "tire_id": "soft",
+              "laps": 26
+            },
+            {
+              "tire_id": "medium",
+              "laps": 26
+            }
+          ],
+          "pit_laps": [
+            26
+          ]
+        },
+        "source_archive": "experiments/thermal_candidate_qualification_v1/results/era1-v1.json.gz",
+        "source_case_id": "era1/SILVERSTONE/cooling/SM-50/gear-0.35",
+        "source_physical_input_digest": "sha256:5238db251222995703a8797ec9c38f5ef3628281b721a5ec73f6159a6aac53b5",
+        "source_result_digest": "sha256:7fc994e109442ad1e752e1749a6b14c75853582b601d8b169f8ee58473a47d5d",
+        "source_time_s": 7788.000705536569
+      },
+      "concentrated": {
+        "points": [
+          0,
+          4,
+          4,
+          0
+        ],
+        "gear": 0.85,
+        "downforce": 0.5,
+        "strategy": {
+          "stints": [
+            {
+              "tire_id": "soft",
+              "laps": 26
+            },
+            {
+              "tire_id": "medium",
+              "laps": 26
+            }
+          ],
+          "pit_laps": [
+            26
+          ]
+        },
+        "source_archive": "experiments/thermal_candidate_qualification_v1/results/era1-v1.json.gz",
+        "source_case_id": "era1/SILVERSTONE/engine_chassis/SM-50/gear-0.85",
+        "source_physical_input_digest": "sha256:93e7e3ed37aeedf89374244812223db032bc2a8d92423f99a6328204efe589ab",
+        "source_result_digest": "sha256:fcfffc53614ad441f7a11fa582db56b1c7d6a0d9b8fbcefc690d8b27bffb656e",
+        "source_time_s": 7907.748460282987
+      },
+      "routine": {
+        "points": [
+          2,
+          2,
+          2,
+          2
+        ],
+        "gear": 0.5,
+        "downforce": 0.5,
+        "strategy": {
+          "stints": [
+            {
+              "tire_id": "medium",
+              "laps": 26
+            },
+            {
+              "tire_id": "hard",
+              "laps": 26
+            }
+          ],
+          "pit_laps": [
+            26
+          ]
+        }
+      }
+    },
+    {
+      "era": 1,
+      "circuit": "ZANDVOORT",
+      "laps": 72,
+      "proposals": [
+        {
+          "points": [
+            0,
+            3,
+            3,
+            2
+          ],
+          "gear": 0.35,
+          "downforce": 0.5,
+          "strategy": {
+            "stints": [
+              {
+                "tire_id": "soft",
+                "laps": 36
+              },
+              {
+                "tire_id": "medium",
+                "laps": 36
+              }
+            ],
+            "pit_laps": [
+              36
+            ]
+          },
+          "source_archive": "experiments/thermal_candidate_qualification_v1/results/era1-v1.json.gz",
+          "source_case_id": "era1/ZANDVOORT/cooling/SM-50/gear-0.35",
+          "source_physical_input_digest": "sha256:afeb18867d3aefaed4106158f1529698e662763ce03c2b769844f362d01f405c",
+          "source_result_digest": "sha256:cbcc3b00bfabb59065459c41f398a084e248b8c10fdde62133be140cc0a68d32",
+          "source_time_s": 8383.10957701026
+        },
+        {
+          "points": [
+            0,
+            3,
+            3,
+            2
+          ],
+          "gear": 0.5,
+          "downforce": 0.5,
+          "strategy": {
+            "stints": [
+              {
+                "tire_id": "soft",
+                "laps": 36
+              },
+              {
+                "tire_id": "medium",
+                "laps": 36
+              }
+            ],
+            "pit_laps": [
+              36
+            ]
+          },
+          "source_archive": "experiments/thermal_candidate_qualification_v1/results/era1-v1.json.gz",
+          "source_case_id": "era1/ZANDVOORT/cooling/SM-50",
+          "source_physical_input_digest": "sha256:2dc6c9d6d5fe281181e83480af43e8d812f462cd8564538da46f11a0aeead4b0",
+          "source_result_digest": "sha256:8a16c3716d7f98d44db98163fb5ee77c4ba064ba4e9705816a51ff8720563673",
+          "source_time_s": 8383.556273390808
+        }
+      ],
+      "informed": {
+        "points": [
+          0,
+          3,
+          3,
+          2
+        ],
+        "gear": 0.35,
+        "downforce": 0.5,
+        "strategy": {
+          "stints": [
+            {
+              "tire_id": "soft",
+              "laps": 36
+            },
+            {
+              "tire_id": "medium",
+              "laps": 36
+            }
+          ],
+          "pit_laps": [
+            36
+          ]
+        },
+        "source_archive": "experiments/thermal_candidate_qualification_v1/results/era1-v1.json.gz",
+        "source_case_id": "era1/ZANDVOORT/cooling/SM-50/gear-0.35",
+        "source_physical_input_digest": "sha256:afeb18867d3aefaed4106158f1529698e662763ce03c2b769844f362d01f405c",
+        "source_result_digest": "sha256:cbcc3b00bfabb59065459c41f398a084e248b8c10fdde62133be140cc0a68d32",
+        "source_time_s": 8383.10957701026
+      },
+      "concentrated": {
+        "points": [
+          0,
+          4,
+          4,
+          0
+        ],
+        "gear": 0.35,
+        "downforce": 0.5,
+        "strategy": {
+          "stints": [
+            {
+              "tire_id": "soft",
+              "laps": 36
+            },
+            {
+              "tire_id": "medium",
+              "laps": 36
+            }
+          ],
+          "pit_laps": [
+            36
+          ]
+        },
+        "source_archive": "experiments/thermal_candidate_qualification_v1/results/era1-v1.json.gz",
+        "source_case_id": "era1/ZANDVOORT/engine_chassis/SM-50/gear-0.35",
+        "source_physical_input_digest": "sha256:afb923e9c8296eda66dc29b5ba24ac90704cdcb969a6190940e8f2d67347f297",
+        "source_result_digest": "sha256:3b6b723f2fbdcd0afbce6803addca33a5deca0b7e920185f230a0ba20dcfd298",
+        "source_time_s": 8504.378879767039
+      },
+      "routine": {
+        "points": [
+          2,
+          2,
+          2,
+          2
+        ],
+        "gear": 0.5,
+        "downforce": 0.5,
+        "strategy": {
+          "stints": [
+            {
+              "tire_id": "medium",
+              "laps": 36
+            },
+            {
+              "tire_id": "hard",
+              "laps": 36
+            }
+          ],
+          "pit_laps": [
+            36
+          ]
+        }
+      }
+    },
+    {
+      "era": 2,
+      "circuit": "MONTREAL",
+      "laps": 70,
+      "proposals": [
+        {
+          "points": [
+            2,
+            7,
+            10,
+            5
+          ],
+          "gear": 0.5,
+          "downforce": 0.5,
+          "strategy": {
+            "stints": [
+              {
+                "tire_id": "medium",
+                "laps": 35
+              },
+              {
+                "tire_id": "hard",
+                "laps": 35
+              }
+            ],
+            "pit_laps": [
+              35
+            ]
+          },
+          "source_archive": "experiments/thermal_candidate_qualification_v1/results/era2-v1.json.gz",
+          "source_case_id": "era2/MONTREAL/exit/cooling/MH-50",
+          "source_physical_input_digest": "sha256:02695dd3a245b7795541333bdc23320c3fec400b666088e6cae9da66f7a65a78",
+          "source_result_digest": "sha256:de45f712b3d83f81a8cd16094d667a199f8f9c46f426ae824a32385354218504",
+          "source_time_s": 6908.34350869985
+        },
+        {
+          "points": [
+            6,
+            5,
+            8,
+            5
+          ],
+          "gear": 0.5,
+          "downforce": 0.5,
+          "strategy": {
+            "stints": [
+              {
+                "tire_id": "medium",
+                "laps": 35
+              },
+              {
+                "tire_id": "hard",
+                "laps": 35
+              }
+            ],
+            "pit_laps": [
+              35
+            ]
+          },
+          "source_archive": "experiments/thermal_candidate_qualification_v1/results/era2-v1.json.gz",
+          "source_case_id": "era2/MONTREAL/exit/balanced/MH-50",
+          "source_physical_input_digest": "sha256:043befe46fb5dc891130ef8a125fd995a751b988b46dc668f123e878704a8428",
+          "source_result_digest": "sha256:9e5032593f0e18f12e8bfac3d6e91d8791799e3ab17a917cfec0d86e8710b0ca",
+          "source_time_s": 6915.637653870842
+        }
+      ],
+      "informed": {
+        "points": [
+          2,
+          7,
+          10,
+          5
+        ],
+        "gear": 0.5,
+        "downforce": 0.5,
+        "strategy": {
+          "stints": [
+            {
+              "tire_id": "medium",
+              "laps": 35
+            },
+            {
+              "tire_id": "hard",
+              "laps": 35
+            }
+          ],
+          "pit_laps": [
+            35
+          ]
+        },
+        "source_archive": "experiments/thermal_candidate_qualification_v1/results/era2-v1.json.gz",
+        "source_case_id": "era2/MONTREAL/exit/cooling/MH-50",
+        "source_physical_input_digest": "sha256:02695dd3a245b7795541333bdc23320c3fec400b666088e6cae9da66f7a65a78",
+        "source_result_digest": "sha256:de45f712b3d83f81a8cd16094d667a199f8f9c46f426ae824a32385354218504",
+        "source_time_s": 6908.34350869985
+      },
+      "concentrated": {
+        "points": [
+          2,
+          9,
+          12,
+          1
+        ],
+        "gear": 0.5,
+        "downforce": 0.5,
+        "strategy": {
+          "stints": [
+            {
+              "tire_id": "medium",
+              "laps": 35
+            },
+            {
+              "tire_id": "hard",
+              "laps": 35
+            }
+          ],
+          "pit_laps": [
+            35
+          ]
+        },
+        "source_archive": "experiments/thermal_candidate_qualification_v1/results/era2-v1.json.gz",
+        "source_case_id": "era2/MONTREAL/exit/no_discretionary_cooling/MH-50",
+        "source_physical_input_digest": "sha256:85f0b98c43585ef7073f1403288b54d698600556f41cfe0e9e10d20f8c279742",
+        "source_result_digest": "sha256:f6b5b8f3fb92ad1a84413d586b1d7a788303ede86b93bddde2bc20d7289c71a4",
+        "source_time_s": 6925.495470964754
+      },
+      "routine": {
+        "points": [
+          6,
+          5,
+          8,
+          5
+        ],
+        "gear": 0.5,
+        "downforce": 0.5,
+        "strategy": {
+          "stints": [
+            {
+              "tire_id": "medium",
+              "laps": 35
+            },
+            {
+              "tire_id": "hard",
+              "laps": 35
+            }
+          ],
+          "pit_laps": [
+            35
+          ]
+        }
+      }
+    },
+    {
+      "era": 2,
+      "circuit": "SPIELBERG",
+      "laps": 71,
+      "proposals": [
+        {
+          "points": [
+            2,
+            7,
+            10,
+            5
+          ],
+          "gear": 0.5,
+          "downforce": 0.5,
+          "strategy": {
+            "stints": [
+              {
+                "tire_id": "medium",
+                "laps": 35
+              },
+              {
+                "tire_id": "hard",
+                "laps": 36
+              }
+            ],
+            "pit_laps": [
+              35
+            ]
+          },
+          "source_archive": "experiments/thermal_candidate_qualification_v1/results/era2-v1.json.gz",
+          "source_case_id": "era2/SPIELBERG/exit/cooling/MH-50",
+          "source_physical_input_digest": "sha256:3ce6221bac307b95028f458e6efc1b7e495887df8e29eb9e0697ea7b0c88583f",
+          "source_result_digest": "sha256:651cdc1dac0ad92b9007f6767931efa6e08db529a238e71e565e623a0a3e4a56",
+          "source_time_s": 6654.030360680631
+        },
+        {
+          "points": [
+            6,
+            5,
+            8,
+            5
+          ],
+          "gear": 0.5,
+          "downforce": 0.5,
+          "strategy": {
+            "stints": [
+              {
+                "tire_id": "medium",
+                "laps": 35
+              },
+              {
+                "tire_id": "hard",
+                "laps": 36
+              }
+            ],
+            "pit_laps": [
+              35
+            ]
+          },
+          "source_archive": "experiments/thermal_candidate_qualification_v1/results/era2-v1.json.gz",
+          "source_case_id": "era2/SPIELBERG/exit/balanced/MH-50",
+          "source_physical_input_digest": "sha256:2217808e67926dee4f2d670051527d4979da5e39ced2e503d198b8467f658959",
+          "source_result_digest": "sha256:01ea1cff3058d1674da998965bd229f44517a008c7ea0fcd4a3bdd6f5c48a3e3",
+          "source_time_s": 6660.9242541265985
+        }
+      ],
+      "informed": {
+        "points": [
+          2,
+          7,
+          10,
+          5
+        ],
+        "gear": 0.5,
+        "downforce": 0.5,
+        "strategy": {
+          "stints": [
+            {
+              "tire_id": "medium",
+              "laps": 35
+            },
+            {
+              "tire_id": "hard",
+              "laps": 36
+            }
+          ],
+          "pit_laps": [
+            35
+          ]
+        },
+        "source_archive": "experiments/thermal_candidate_qualification_v1/results/era2-v1.json.gz",
+        "source_case_id": "era2/SPIELBERG/exit/cooling/MH-50",
+        "source_physical_input_digest": "sha256:3ce6221bac307b95028f458e6efc1b7e495887df8e29eb9e0697ea7b0c88583f",
+        "source_result_digest": "sha256:651cdc1dac0ad92b9007f6767931efa6e08db529a238e71e565e623a0a3e4a56",
+        "source_time_s": 6654.030360680631
+      },
+      "concentrated": {
+        "points": [
+          2,
+          9,
+          12,
+          1
+        ],
+        "gear": 0.5,
+        "downforce": 0.5,
+        "strategy": {
+          "stints": [
+            {
+              "tire_id": "medium",
+              "laps": 35
+            },
+            {
+              "tire_id": "hard",
+              "laps": 36
+            }
+          ],
+          "pit_laps": [
+            35
+          ]
+        },
+        "source_archive": "experiments/thermal_candidate_qualification_v1/results/era2-v1.json.gz",
+        "source_case_id": "era2/SPIELBERG/exit/no_discretionary_cooling/MH-50",
+        "source_physical_input_digest": "sha256:e152e71d394451b5cd804491ac706850c6e4be393e062a19cd5257cd0e8bcc9b",
+        "source_result_digest": "sha256:137ba343dce44d42ab11ee40463ae893e6d3890a441907440911eb94c22732f7",
+        "source_time_s": 6662.809532419155
+      },
+      "routine": {
+        "points": [
+          6,
+          5,
+          8,
+          5
+        ],
+        "gear": 0.5,
+        "downforce": 0.5,
+        "strategy": {
+          "stints": [
+            {
+              "tire_id": "medium",
+              "laps": 35
+            },
+            {
+              "tire_id": "hard",
+              "laps": 36
+            }
+          ],
+          "pit_laps": [
+            35
+          ]
+        }
+      }
+    },
+    {
+      "era": 2,
+      "circuit": "MEXICO",
+      "laps": 71,
+      "proposals": [
+        {
+          "points": [
+            2,
+            7,
+            10,
+            5
+          ],
+          "gear": 0.5,
+          "downforce": 0.5,
+          "strategy": {
+            "stints": [
+              {
+                "tire_id": "medium",
+                "laps": 35
+              },
+              {
+                "tire_id": "hard",
+                "laps": 36
+              }
+            ],
+            "pit_laps": [
+              35
+            ]
+          },
+          "source_archive": "experiments/thermal_candidate_qualification_v1/results/era2-v1.json.gz",
+          "source_case_id": "era2/MEXICO/exit/cooling/MH-50",
+          "source_physical_input_digest": "sha256:e90ac36f7299231e7e575b24b5ae5fcc2475bb03ccedfa22a17695f1b19418a9",
+          "source_result_digest": "sha256:4eef497d291b16fc8cceba531bf1226c36136e239fe9cd37c8c15a035b7f95c1",
+          "source_time_s": 7541.405824755818
+        },
+        {
+          "points": [
+            2,
+            9,
+            12,
+            1
+          ],
+          "gear": 0.5,
+          "downforce": 0.5,
+          "strategy": {
+            "stints": [
+              {
+                "tire_id": "medium",
+                "laps": 35
+              },
+              {
+                "tire_id": "hard",
+                "laps": 36
+              }
+            ],
+            "pit_laps": [
+              35
+            ]
+          },
+          "source_archive": "experiments/thermal_candidate_qualification_v1/results/era2-v1.json.gz",
+          "source_case_id": "era2/MEXICO/exit/no_discretionary_cooling/MH-50",
+          "source_physical_input_digest": "sha256:93f7f3d8b7e6a1af4f1923c858567d9d90bc9c3a9c289b4cd0a6183a89ba4f33",
+          "source_result_digest": "sha256:b21f3f59ab5e48e4b3a759768b55a722fe0e630e1d887c310ebba67b41e3eacb",
+          "source_time_s": 7543.299607426751
+        }
+      ],
+      "informed": {
+        "points": [
+          2,
+          7,
+          10,
+          5
+        ],
+        "gear": 0.5,
+        "downforce": 0.5,
+        "strategy": {
+          "stints": [
+            {
+              "tire_id": "medium",
+              "laps": 35
+            },
+            {
+              "tire_id": "hard",
+              "laps": 36
+            }
+          ],
+          "pit_laps": [
+            35
+          ]
+        },
+        "source_archive": "experiments/thermal_candidate_qualification_v1/results/era2-v1.json.gz",
+        "source_case_id": "era2/MEXICO/exit/cooling/MH-50",
+        "source_physical_input_digest": "sha256:e90ac36f7299231e7e575b24b5ae5fcc2475bb03ccedfa22a17695f1b19418a9",
+        "source_result_digest": "sha256:4eef497d291b16fc8cceba531bf1226c36136e239fe9cd37c8c15a035b7f95c1",
+        "source_time_s": 7541.405824755818
+      },
+      "concentrated": {
+        "points": [
+          2,
+          9,
+          12,
+          1
+        ],
+        "gear": 0.5,
+        "downforce": 0.5,
+        "strategy": {
+          "stints": [
+            {
+              "tire_id": "medium",
+              "laps": 35
+            },
+            {
+              "tire_id": "hard",
+              "laps": 36
+            }
+          ],
+          "pit_laps": [
+            35
+          ]
+        },
+        "source_archive": "experiments/thermal_candidate_qualification_v1/results/era2-v1.json.gz",
+        "source_case_id": "era2/MEXICO/exit/no_discretionary_cooling/MH-50",
+        "source_physical_input_digest": "sha256:93f7f3d8b7e6a1af4f1923c858567d9d90bc9c3a9c289b4cd0a6183a89ba4f33",
+        "source_result_digest": "sha256:b21f3f59ab5e48e4b3a759768b55a722fe0e630e1d887c310ebba67b41e3eacb",
+        "source_time_s": 7543.299607426751
+      },
+      "routine": {
+        "points": [
+          6,
+          5,
+          8,
+          5
+        ],
+        "gear": 0.5,
+        "downforce": 0.5,
+        "strategy": {
+          "stints": [
+            {
+              "tire_id": "medium",
+              "laps": 35
+            },
+            {
+              "tire_id": "hard",
+              "laps": 36
+            }
+          ],
+          "pit_laps": [
+            35
+          ]
+        }
+      }
+    },
+    {
+      "era": 2,
+      "circuit": "SAOPAULO",
+      "laps": 71,
+      "proposals": [
+        {
+          "points": [
+            6,
+            5,
+            8,
+            5
+          ],
+          "gear": 0.5,
+          "downforce": 0.5,
+          "strategy": {
+            "stints": [
+              {
+                "tire_id": "medium",
+                "laps": 17
+              },
+              {
+                "tire_id": "hard",
+                "laps": 36
+              },
+              {
+                "tire_id": "medium",
+                "laps": 18
+              }
+            ],
+            "pit_laps": [
+              17,
+              53
+            ]
+          },
+          "source_archive": "experiments/aero_plan_followup_v1/results/main-v1.json.gz",
+          "source_case_id": "MH2/SAOPAULO/coupled/0.5",
+          "source_physical_input_digest": "sha256:fcfcc1d2c0652dc3e7c4109960a15a29c9a917bd3024df86e18969c331c61b0e",
+          "source_result_digest": "sha256:08aff0d49a2af9e1bed67598a2ae723d75bdb557debb5d62c9f4a0d8584d1e91",
+          "source_time_s": 6832.635666117885
+        },
+        {
+          "points": [
+            6,
+            5,
+            8,
+            5
+          ],
+          "gear": 0.5,
+          "downforce": 0.0,
+          "strategy": {
+            "stints": [
+              {
+                "tire_id": "medium",
+                "laps": 17
+              },
+              {
+                "tire_id": "hard",
+                "laps": 36
+              },
+              {
+                "tire_id": "medium",
+                "laps": 18
+              }
+            ],
+            "pit_laps": [
+              17,
+              53
+            ]
+          },
+          "source_archive": "experiments/aero_plan_followup_v1/results/main-v1.json.gz",
+          "source_case_id": "MH2/SAOPAULO/coupled/0.0",
+          "source_physical_input_digest": "sha256:bd6b87fdb2d76b92a274b88a4ee2ffe3332ca0b872e3375e31958f1113446cfd",
+          "source_result_digest": "sha256:8350aa5463691e49b354a89bd351027bae10e59d670f77e8f0d7e82e0dda91d4",
+          "source_time_s": 6836.060885770684
+        }
+      ],
+      "informed": {
+        "points": [
+          6,
+          5,
+          8,
+          5
+        ],
+        "gear": 0.5,
+        "downforce": 0.5,
+        "strategy": {
+          "stints": [
+            {
+              "tire_id": "medium",
+              "laps": 17
+            },
+            {
+              "tire_id": "hard",
+              "laps": 36
+            },
+            {
+              "tire_id": "medium",
+              "laps": 18
+            }
+          ],
+          "pit_laps": [
+            17,
+            53
+          ]
+        },
+        "source_archive": "experiments/aero_plan_followup_v1/results/main-v1.json.gz",
+        "source_case_id": "MH2/SAOPAULO/coupled/0.5",
+        "source_physical_input_digest": "sha256:fcfcc1d2c0652dc3e7c4109960a15a29c9a917bd3024df86e18969c331c61b0e",
+        "source_result_digest": "sha256:08aff0d49a2af9e1bed67598a2ae723d75bdb557debb5d62c9f4a0d8584d1e91",
+        "source_time_s": 6832.635666117885
+      },
+      "concentrated": {
+        "points": [
+          2,
+          9,
+          12,
+          1
+        ],
+        "gear": 0.5,
+        "downforce": 0.5,
+        "strategy": {
+          "stints": [
+            {
+              "tire_id": "medium",
+              "laps": 35
+            },
+            {
+              "tire_id": "hard",
+              "laps": 36
+            }
+          ],
+          "pit_laps": [
+            35
+          ]
+        },
+        "source_archive": "experiments/thermal_candidate_qualification_v1/results/era2-v1.json.gz",
+        "source_case_id": "era2/SAOPAULO/exit/no_discretionary_cooling/MH-50",
+        "source_physical_input_digest": "sha256:bcb8133f8eee52f16d601c34f28184a63fa7b179ecf7ce7ea8970d038572558c",
+        "source_result_digest": "sha256:90e24cecc3f00008f881bbf28d7c2fe766b8fc4384a8fc3884b10b5b6c9c450d",
+        "source_time_s": 6850.501489263464
+      },
+      "routine": {
+        "points": [
+          6,
+          5,
+          8,
+          5
+        ],
+        "gear": 0.5,
+        "downforce": 0.5,
+        "strategy": {
+          "stints": [
+            {
+              "tire_id": "medium",
+              "laps": 35
+            },
+            {
+              "tire_id": "hard",
+              "laps": 36
+            }
+          ],
+          "pit_laps": [
+            35
+          ]
+        }
+      }
+    },
+    {
+      "era": 2,
+      "circuit": "SILVERSTONE",
+      "laps": 52,
+      "proposals": [
+        {
+          "points": [
+            6,
+            5,
+            8,
+            5
+          ],
+          "gear": 0.5,
+          "downforce": 0.5,
+          "strategy": {
+            "stints": [
+              {
+                "tire_id": "medium",
+                "laps": 13
+              },
+              {
+                "tire_id": "hard",
+                "laps": 26
+              },
+              {
+                "tire_id": "medium",
+                "laps": 13
+              }
+            ],
+            "pit_laps": [
+              13,
+              39
+            ]
+          },
+          "source_archive": "experiments/aero_plan_followup_v1/results/main-v1.json.gz",
+          "source_case_id": "MH2/SILVERSTONE/coupled/0.5",
+          "source_physical_input_digest": "sha256:5058955c6e37e7281120b258a8c6521ab0ada7457adcb7ee9179646afdf81775",
+          "source_result_digest": "sha256:1fe586ffed2ae5345e26d70cb47464a868187b1656a3ed8e2c174d63bf2612e5",
+          "source_time_s": 6670.306266879667
+        },
+        {
+          "points": [
+            2,
+            9,
+            12,
+            1
+          ],
+          "gear": 0.5,
+          "downforce": 0.5,
+          "strategy": {
+            "stints": [
+              {
+                "tire_id": "medium",
+                "laps": 26
+              },
+              {
+                "tire_id": "hard",
+                "laps": 26
+              }
+            ],
+            "pit_laps": [
+              26
+            ]
+          },
+          "source_archive": "experiments/thermal_candidate_qualification_v1/results/era2-v1.json.gz",
+          "source_case_id": "era2/SILVERSTONE/exit/no_discretionary_cooling/MH-50",
+          "source_physical_input_digest": "sha256:3734b66a8ff9aad7f309339ba343ca3a215cae969809026786533e388a63c316",
+          "source_result_digest": "sha256:973a3edcfd2f06c22d486c1490d94fa48c51f870f7074b9d7c1ac1e1eed48575",
+          "source_time_s": 6671.064109453875
+        }
+      ],
+      "informed": {
+        "points": [
+          6,
+          5,
+          8,
+          5
+        ],
+        "gear": 0.5,
+        "downforce": 0.5,
+        "strategy": {
+          "stints": [
+            {
+              "tire_id": "medium",
+              "laps": 13
+            },
+            {
+              "tire_id": "hard",
+              "laps": 26
+            },
+            {
+              "tire_id": "medium",
+              "laps": 13
+            }
+          ],
+          "pit_laps": [
+            13,
+            39
+          ]
+        },
+        "source_archive": "experiments/aero_plan_followup_v1/results/main-v1.json.gz",
+        "source_case_id": "MH2/SILVERSTONE/coupled/0.5",
+        "source_physical_input_digest": "sha256:5058955c6e37e7281120b258a8c6521ab0ada7457adcb7ee9179646afdf81775",
+        "source_result_digest": "sha256:1fe586ffed2ae5345e26d70cb47464a868187b1656a3ed8e2c174d63bf2612e5",
+        "source_time_s": 6670.306266879667
+      },
+      "concentrated": {
+        "points": [
+          2,
+          9,
+          12,
+          1
+        ],
+        "gear": 0.5,
+        "downforce": 0.5,
+        "strategy": {
+          "stints": [
+            {
+              "tire_id": "medium",
+              "laps": 26
+            },
+            {
+              "tire_id": "hard",
+              "laps": 26
+            }
+          ],
+          "pit_laps": [
+            26
+          ]
+        },
+        "source_archive": "experiments/thermal_candidate_qualification_v1/results/era2-v1.json.gz",
+        "source_case_id": "era2/SILVERSTONE/exit/no_discretionary_cooling/MH-50",
+        "source_physical_input_digest": "sha256:3734b66a8ff9aad7f309339ba343ca3a215cae969809026786533e388a63c316",
+        "source_result_digest": "sha256:973a3edcfd2f06c22d486c1490d94fa48c51f870f7074b9d7c1ac1e1eed48575",
+        "source_time_s": 6671.064109453875
+      },
+      "routine": {
+        "points": [
+          6,
+          5,
+          8,
+          5
+        ],
+        "gear": 0.5,
+        "downforce": 0.5,
+        "strategy": {
+          "stints": [
+            {
+              "tire_id": "medium",
+              "laps": 26
+            },
+            {
+              "tire_id": "hard",
+              "laps": 26
+            }
+          ],
+          "pit_laps": [
+            26
+          ]
+        }
+      }
+    },
+    {
+      "era": 2,
+      "circuit": "MONZA",
+      "laps": 53,
+      "proposals": [
+        {
+          "points": [
+            6,
+            5,
+            8,
+            5
+          ],
+          "gear": 0.5,
+          "downforce": 0.0,
+          "strategy": {
+            "stints": [
+              {
+                "tire_id": "medium",
+                "laps": 13
+              },
+              {
+                "tire_id": "hard",
+                "laps": 27
+              },
+              {
+                "tire_id": "medium",
+                "laps": 13
+              }
+            ],
+            "pit_laps": [
+              13,
+              40
+            ]
+          },
+          "source_archive": "experiments/aero_plan_followup_v1/results/main-v1.json.gz",
+          "source_case_id": "MH2/MONZA/coupled/0.0",
+          "source_physical_input_digest": "sha256:570a6bcec521cab0ce2578988ba1e70b5830aa9894b4689603ea3f35462cb938",
+          "source_result_digest": "sha256:f9f12d391c1b24cbec107f58e38f324651a0066de5d04327845383a4adef0817",
+          "source_time_s": 6393.555400168236
+        },
+        {
+          "points": [
+            2,
+            9,
+            12,
+            1
+          ],
+          "gear": 0.5,
+          "downforce": 0.5,
+          "strategy": {
+            "stints": [
+              {
+                "tire_id": "medium",
+                "laps": 26
+              },
+              {
+                "tire_id": "hard",
+                "laps": 27
+              }
+            ],
+            "pit_laps": [
+              26
+            ]
+          },
+          "source_archive": "experiments/thermal_candidate_qualification_v1/results/era2-v1.json.gz",
+          "source_case_id": "era2/MONZA/exit/no_discretionary_cooling/MH-50",
+          "source_physical_input_digest": "sha256:29b772d9ed81e22c902d7ee92d826a5374d758a87b04a0cbcf313bec32455a46",
+          "source_result_digest": "sha256:8781a30c4d4df5a6382726e796c0f8a485970ef4b07aaf9d7874c61cfbf02715",
+          "source_time_s": 6405.711891974933
+        }
+      ],
+      "informed": {
+        "points": [
+          6,
+          5,
+          8,
+          5
+        ],
+        "gear": 0.5,
+        "downforce": 0.0,
+        "strategy": {
+          "stints": [
+            {
+              "tire_id": "medium",
+              "laps": 13
+            },
+            {
+              "tire_id": "hard",
+              "laps": 27
+            },
+            {
+              "tire_id": "medium",
+              "laps": 13
+            }
+          ],
+          "pit_laps": [
+            13,
+            40
+          ]
+        },
+        "source_archive": "experiments/aero_plan_followup_v1/results/main-v1.json.gz",
+        "source_case_id": "MH2/MONZA/coupled/0.0",
+        "source_physical_input_digest": "sha256:570a6bcec521cab0ce2578988ba1e70b5830aa9894b4689603ea3f35462cb938",
+        "source_result_digest": "sha256:f9f12d391c1b24cbec107f58e38f324651a0066de5d04327845383a4adef0817",
+        "source_time_s": 6393.555400168236
+      },
+      "concentrated": {
+        "points": [
+          2,
+          9,
+          12,
+          1
+        ],
+        "gear": 0.5,
+        "downforce": 0.5,
+        "strategy": {
+          "stints": [
+            {
+              "tire_id": "medium",
+              "laps": 26
+            },
+            {
+              "tire_id": "hard",
+              "laps": 27
+            }
+          ],
+          "pit_laps": [
+            26
+          ]
+        },
+        "source_archive": "experiments/thermal_candidate_qualification_v1/results/era2-v1.json.gz",
+        "source_case_id": "era2/MONZA/exit/no_discretionary_cooling/MH-50",
+        "source_physical_input_digest": "sha256:29b772d9ed81e22c902d7ee92d826a5374d758a87b04a0cbcf313bec32455a46",
+        "source_result_digest": "sha256:8781a30c4d4df5a6382726e796c0f8a485970ef4b07aaf9d7874c61cfbf02715",
+        "source_time_s": 6405.711891974933
+      },
+      "routine": {
+        "points": [
+          6,
+          5,
+          8,
+          5
+        ],
+        "gear": 0.5,
+        "downforce": 0.5,
+        "strategy": {
+          "stints": [
+            {
+              "tire_id": "medium",
+              "laps": 26
+            },
+            {
+              "tire_id": "hard",
+              "laps": 27
+            }
+          ],
+          "pit_laps": [
+            26
+          ]
+        }
+      }
+    },
+    {
+      "era": 2,
+      "circuit": "ZANDVOORT",
+      "laps": 72,
+      "proposals": [
+        {
+          "points": [
+            6,
+            5,
+            8,
+            5
+          ],
+          "gear": 0.5,
+          "downforce": 0.5,
+          "strategy": {
+            "stints": [
+              {
+                "tire_id": "medium",
+                "laps": 18
+              },
+              {
+                "tire_id": "hard",
+                "laps": 36
+              },
+              {
+                "tire_id": "medium",
+                "laps": 18
+              }
+            ],
+            "pit_laps": [
+              18,
+              54
+            ]
+          },
+          "source_archive": "experiments/thermal_candidate_qualification_v1/results/era2-v1.json.gz",
+          "source_case_id": "era2/ZANDVOORT/exit/balanced/MH-matched-2",
+          "source_physical_input_digest": "sha256:80b32752dfb2e809ce3227ab9449dd963b8cd9e356e1d969e32c73ba14c5d6f5",
+          "source_result_digest": "sha256:2acfe590404a927dbab29b08fa7c677356586473c3aefd77b3834b837d01d3d6",
+          "source_time_s": 7132.3203470943035
+        },
+        {
+          "points": [
+            2,
+            9,
+            12,
+            1
+          ],
+          "gear": 0.5,
+          "downforce": 0.5,
+          "strategy": {
+            "stints": [
+              {
+                "tire_id": "medium",
+                "laps": 36
+              },
+              {
+                "tire_id": "hard",
+                "laps": 36
+              }
+            ],
+            "pit_laps": [
+              36
+            ]
+          },
+          "source_archive": "experiments/thermal_candidate_qualification_v1/results/era2-v1.json.gz",
+          "source_case_id": "era2/ZANDVOORT/exit/no_discretionary_cooling/MH-50",
+          "source_physical_input_digest": "sha256:786843b190b0bc9ef4331abd33122b45248cbffc616e3e714bacf358ccb61f27",
+          "source_result_digest": "sha256:113db91038fe4ea8f8739b921cf9ce0dc46d5ad18e535177599ead2e8616b17f",
+          "source_time_s": 7150.890525987277
+        }
+      ],
+      "informed": {
+        "points": [
+          6,
+          5,
+          8,
+          5
+        ],
+        "gear": 0.5,
+        "downforce": 0.5,
+        "strategy": {
+          "stints": [
+            {
+              "tire_id": "medium",
+              "laps": 18
+            },
+            {
+              "tire_id": "hard",
+              "laps": 36
+            },
+            {
+              "tire_id": "medium",
+              "laps": 18
+            }
+          ],
+          "pit_laps": [
+            18,
+            54
+          ]
+        },
+        "source_archive": "experiments/thermal_candidate_qualification_v1/results/era2-v1.json.gz",
+        "source_case_id": "era2/ZANDVOORT/exit/balanced/MH-matched-2",
+        "source_physical_input_digest": "sha256:80b32752dfb2e809ce3227ab9449dd963b8cd9e356e1d969e32c73ba14c5d6f5",
+        "source_result_digest": "sha256:2acfe590404a927dbab29b08fa7c677356586473c3aefd77b3834b837d01d3d6",
+        "source_time_s": 7132.3203470943035
+      },
+      "concentrated": {
+        "points": [
+          2,
+          9,
+          12,
+          1
+        ],
+        "gear": 0.5,
+        "downforce": 0.5,
+        "strategy": {
+          "stints": [
+            {
+              "tire_id": "medium",
+              "laps": 36
+            },
+            {
+              "tire_id": "hard",
+              "laps": 36
+            }
+          ],
+          "pit_laps": [
+            36
+          ]
+        },
+        "source_archive": "experiments/thermal_candidate_qualification_v1/results/era2-v1.json.gz",
+        "source_case_id": "era2/ZANDVOORT/exit/no_discretionary_cooling/MH-50",
+        "source_physical_input_digest": "sha256:786843b190b0bc9ef4331abd33122b45248cbffc616e3e714bacf358ccb61f27",
+        "source_result_digest": "sha256:113db91038fe4ea8f8739b921cf9ce0dc46d5ad18e535177599ead2e8616b17f",
+        "source_time_s": 7150.890525987277
+      },
+      "routine": {
+        "points": [
+          6,
+          5,
+          8,
+          5
+        ],
+        "gear": 0.5,
+        "downforce": 0.5,
+        "strategy": {
+          "stints": [
+            {
+              "tire_id": "medium",
+              "laps": 36
+            },
+            {
+              "tire_id": "hard",
+              "laps": 36
+            }
+          ],
+          "pit_laps": [
+            36
+          ]
+        }
+      }
+    }
+  ],
+  "anchor_budgets": {
+    "1": [
+      8,
+      10,
+      12
+    ],
+    "2": [
+      12,
+      18,
+      24
+    ]
+  },
+  "training_seed": 73013,
+  "workers": 1,
+  "maximum_gp": 603,
+  "validation_contexts": [
+    {
+      "era": 1,
+      "circuit": "MONZA",
+      "budget": 9,
+      "seed": 271828
+    },
+    {
+      "era": 1,
+      "circuit": "ZANDVOORT",
+      "budget": 9,
+      "seed": 271828
+    },
+    {
+      "era": 2,
+      "circuit": "SILVERSTONE",
+      "budget": 16,
+      "seed": 271828
+    },
+    {
+      "era": 2,
+      "circuit": "MEXICO",
+      "budget": 16,
+      "seed": 271828
+    },
+    {
+      "era": 1,
+      "circuit": "SILVERSTONE",
+      "budget": 12,
+      "seed": 314159
+    },
+    {
+      "era": 2,
+      "circuit": "SAOPAULO",
+      "budget": 24,
+      "seed": 314159
+    }
+  ]
+}
