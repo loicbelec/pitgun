@@ -1,6 +1,6 @@
 # Era-I attainable player preparation audit
 
-Current delivery: freeze and launch **one bounded batch** of the approved era-I audit. [Protocol](ACCEPTANCE.md), [plan](plan-v1.json). No local-game, physical-model, driver-trait, catalog or deployed-service changes.
+Current delivery: resume the frozen era-I audit in **bounded batches**. [Protocol](ACCEPTANCE.md), [plan](plan-v1.json). No local-game, physical-model, driver-trait, catalog or deployed-service changes.
 
 - Three regular circuits x caps8/10/12 x three preparation families x six proposals =162logical comparisons.
 - Fifteen exact id-only aliases removed:147unique player GPs +6fresh repeats =153maximum fresh solves, below the approved168ceiling.
@@ -23,4 +23,11 @@ Next after complete development review: era-II same-opportunity named-driver pre
 
 ## Current progress
 
-Batch1 complete:20/153fresh GP,1,060accepted laps, zero observed numerical failures;133jobs remain. All81frozen rival reuse inputs bridge. The runner stopped at its20new-GP limit; no automatic continuation or final audit verdict. Source/protocol freeze `77e2f0a`; case/identity hashes and partial status are in [batch-01-progress.json](results/batch-01-progress.json). Resume the same pinned namespace at the21stcase. The full audit and local-game integration are still pending.
+| Batch | New GP | Cumulative GP | Cumulative accepted laps | Observed numerical failures |
+|---|---:|---:|---:|---:|
+| 1 | 20 | 20/153 | 1,060 | 0 |
+| 2 | 20 | 40/153 | 2,120 | 0 |
+
+The second invocation stopped at its20new-GP limit;113jobs remain. Previous20native row files/mtimes and the journal prefix are unchanged: no recomputation of the first batch. All81frozen rival input bridges pass. No automatic continuation, full audit verdict or preview update. Source/protocol freeze `77e2f0a`; evidence: [batch1](results/batch-01-progress.json), [batch2](results/batch-02-progress.json). Resume the same pinned namespace at case41.
+
+The owner should test the new field only after a qualified candidate is assembled in the actual local Pit Wall; this partial native audit is not that playable delivery. The existing local preview remains the earlier intermediate model/field.
