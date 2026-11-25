@@ -173,8 +173,9 @@ def execute_matrix(plan_path, binary, cache, output, matrix, preflight=None,
     # Include this new orchestration and protocol without altering the V1 runner.
     p['retained_files'] = dict(p['retained_files'])
     p['retained_files'][str(plan_path.resolve().relative_to(ROOT))] = sha(plan_path)
-    for path in HERE.glob('*.py'):
-        p['retained_files'][str(path.relative_to(ROOT))] = sha(path)
+    for folder in {HERE, plan_path.resolve().parent}:
+        for path in folder.glob('*.py'):
+            p['retained_files'][str(path.relative_to(ROOT))] = sha(path)
     worker = BASE.Campaign(Path(binary), cache / 'native', p)
     if worker.identity['binary_sha256'] != p['native_binary_sha256']:
         raise ValueError('not the frozen native executable')
@@ -184,8 +185,7 @@ def execute_matrix(plan_path, binary, cache, output, matrix, preflight=None,
         if (previous.get('provenance', {}).get('identity') != worker.identity
             or previous.get('source_matrix_sha256') != matrix_digest):
             raise ValueError('archive belongs to another source/matrix; use a new results namespace')
-    if preflight is not None:
-        preflight(worker, p, matrix, cache)
+    preflight_metadata = preflight(worker, p, matrix, cache) if preflight is not None else None
     journal = Journal(cache / 'journal', worker.cache, worker.identity, matrix)
     progress = advance_batch(worker, journal, matrix, cache / 'progress.json',
         max_new_gp=max_new_gp, max_wall_seconds=max_wall_seconds, started=started)
@@ -198,7 +198,9 @@ def execute_matrix(plan_path, binary, cache, output, matrix, preflight=None,
     if not progress['complete']:
         # A bounded partial batch never publishes a complete archive or decision.
         return summary
-    journal.export(output, {'schema': 'pitgun.fixed-nine-mexico-pilot-results/v2',
-        'plan': load(plan_path), 'provenance': worker.pin,
-        'source_matrix_sha256': matrix_digest})
+    metadata = {'schema': p.get('results_schema', 'pitgun.fixed-nine-mexico-pilot-results/v2'),
+        'plan': load(plan_path), 'provenance': worker.pin, 'source_matrix_sha256': matrix_digest}
+    if preflight_metadata is not None:
+        metadata['preflight'] = preflight_metadata
+    journal.export(output, metadata)
     return load(output)
