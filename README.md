@@ -115,6 +115,10 @@ Its [paired local experiment](experiments/longitudinal_energy/README.md) records
 energy balances, sensitivity, explicit failure cases and compute cost; it does
 not claim experimental model validation or native/WASM admission.
 
+The current [physics qualification sequence](docs/physics/DELIVERY_2026-11-25.md)
+keeps thermal/strategy experiments, budget-aware opponents and runtime admission
+as separate gates, with immutable policies and retained native evidence.
+
 ## Try the Deterministic Boundary
 
 ### Prerequisites
