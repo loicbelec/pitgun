@@ -1,0 +1,183 @@
+{
+  "numerical_pass": true,
+  "validation_pass": false,
+  "review": {
+    "1": {
+      "informed_wins": 0,
+      "concentrated_wins": 0,
+      "contexts": 3
+    },
+    "2": {
+      "informed_wins": 3,
+      "concentrated_wins": 3,
+      "contexts": 3
+    }
+  },
+  "selection_sha256": "664472389a92db521c53995fe134f664b6b849949266e6a2c89750b4c9aef529",
+  "gp": 66,
+  "summaries": [
+    {
+      "era": 1,
+      "circuit": "MONZA",
+      "budget": 9,
+      "seed": 271828,
+      "player": {
+        "informed": {
+          "rank": 3,
+          "time_s": 7406.668095924614
+        },
+        "concentrated": {
+          "rank": 10,
+          "time_s": 7568.174440879554
+        }
+      },
+      "field_times_s": {
+        "franz_hermann": 7405.040514742322,
+        "charles_leclair": 7400.421518242788,
+        "luis_amilton": 7432.017343995712,
+        "smooth_operator": 7425.101892709545,
+        "isa_kadjar": 7436.07259786424,
+        "pedro_gaseoso": 7452.12827959493,
+        "battery_voltas": 7444.190498827621,
+        "daniel_enchantier": 7455.22167354162,
+        "goat_tifi": 7494.581576720894
+      }
+    },
+    {
+      "era": 1,
+      "circuit": "ZANDVOORT",
+      "budget": 9,
+      "seed": 271828,
+      "player": {
+        "informed": {
+          "rank": 2,
+          "time_s": 8375.64992499998
+        },
+        "concentrated": {
+          "rank": 10,
+          "time_s": 8501.944815673862
+        }
+      },
+      "field_times_s": {
+        "franz_hermann": 8375.762111183652,
+        "charles_leclair": 8368.056851637173,
+        "luis_amilton": 8407.160849924318,
+        "smooth_operator": 8401.77848887831,
+        "isa_kadjar": 8419.135798211437,
+        "pedro_gaseoso": 8425.120815993048,
+        "battery_voltas": 8426.914660385191,
+        "daniel_enchantier": 8438.237043411456,
+        "goat_tifi": 8481.928669617213
+      }
+    },
+    {
+      "era": 2,
+      "circuit": "SILVERSTONE",
+      "budget": 16,
+      "seed": 271828,
+      "player": {
+        "informed": {
+          "rank": 1,
+          "time_s": 6677.468348511754
+        },
+        "concentrated": {
+          "rank": 1,
+          "time_s": 6678.173631193857
+        }
+      },
+      "field_times_s": {
+        "franz_hermann": 6683.054475983553,
+        "charles_leclair": 6690.481517149599,
+        "luis_amilton": 6706.55606083981,
+        "smooth_operator": 6696.142456189793,
+        "isa_kadjar": 6713.001748860632,
+        "pedro_gaseoso": 6711.350856871209,
+        "battery_voltas": 6719.290244268859,
+        "daniel_enchantier": 6723.161835024195,
+        "goat_tifi": 6746.361613516967
+      }
+    },
+    {
+      "era": 2,
+      "circuit": "MEXICO",
+      "budget": 16,
+      "seed": 271828,
+      "player": {
+        "informed": {
+          "rank": 1,
+          "time_s": 7548.222932576277
+        },
+        "concentrated": {
+          "rank": 1,
+          "time_s": 7552.7581221081455
+        }
+      },
+      "field_times_s": {
+        "franz_hermann": 7555.502285928824,
+        "charles_leclair": 7555.095672773441,
+        "luis_amilton": 7569.127960173594,
+        "smooth_operator": 7577.196247087305,
+        "isa_kadjar": 7585.6139303770715,
+        "pedro_gaseoso": 7580.653758508106,
+        "battery_voltas": 7579.928421871616,
+        "daniel_enchantier": 7596.534193662114,
+        "goat_tifi": 7607.275971010655
+      }
+    },
+    {
+      "era": 1,
+      "circuit": "SILVERSTONE",
+      "budget": 12,
+      "seed": 314159,
+      "player": {
+        "informed": {
+          "rank": 3,
+          "time_s": 7724.304010070329
+        },
+        "concentrated": {
+          "rank": 10,
+          "time_s": 7892.9562953326795
+        }
+      },
+      "field_times_s": {
+        "franz_hermann": 7723.226928242304,
+        "charles_leclair": 7716.617406815606,
+        "luis_amilton": 7748.950001814846,
+        "smooth_operator": 7745.0345341067095,
+        "isa_kadjar": 7764.111819201803,
+        "pedro_gaseoso": 7766.3844278458955,
+        "battery_voltas": 7765.301924322762,
+        "daniel_enchantier": 7773.4698408877775,
+        "goat_tifi": 7818.522840859809
+      }
+    },
+    {
+      "era": 2,
+      "circuit": "SAOPAULO",
+      "budget": 24,
+      "seed": 314159,
+      "player": {
+        "informed": {
+          "rank": 1,
+          "time_s": 6812.509616140447
+        },
+        "concentrated": {
+          "rank": 1,
+          "time_s": 6827.004679319213
+        }
+      },
+      "field_times_s": {
+        "franz_hermann": 6829.9469797951715,
+        "charles_leclair": 6829.907253837,
+        "luis_amilton": 6843.894372648362,
+        "smooth_operator": 6841.886710361574,
+        "isa_kadjar": 6865.545476492051,
+        "pedro_gaseoso": 6855.1182374164,
+        "battery_voltas": 6853.086279802104,
+        "daniel_enchantier": 6865.183734952491,
+        "goat_tifi": 6884.2001747828
+      }
+    }
+  ],
+  "release_admitted": false
+}
