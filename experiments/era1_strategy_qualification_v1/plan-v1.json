@@ -1,0 +1,231 @@
+{
+  "schema": "pitgun.era1-strategy-qualification-plan/v1",
+  "scope": "Player-only native qualification; fixed three-compound candidate; no AI fit, coefficient changes or game activation. Era I only.",
+  "policy": "experiments/three_compound_thermal_v1/candidate-v1.json",
+  "policy_sha256": "0021bd8ead91698de49de297b1760cc3225a54c9e61adfeb07bab8250ab16439",
+  "seed": 73013,
+  "reserved_seed": 104729,
+  "contexts": [
+    {
+      "circuit": "MONZA",
+      "laps": 53
+    },
+    {
+      "circuit": "SILVERSTONE",
+      "laps": 52
+    },
+    {
+      "circuit": "ZANDVOORT",
+      "laps": 72
+    }
+  ],
+  "setups": {
+    "balanced": {
+      "allocation": [
+        2,
+        2,
+        2,
+        2
+      ],
+      "downforce": 0.5,
+      "gear": 0.5
+    },
+    "engine_chassis": {
+      "allocation": [
+        0,
+        4,
+        4,
+        0
+      ],
+      "downforce": 0.5,
+      "gear": 0.5
+    },
+    "cooling": {
+      "allocation": [
+        0,
+        3,
+        3,
+        2
+      ],
+      "downforce": 0.5,
+      "gear": 0.5
+    }
+  },
+  "slider_variants": {
+    "low_drag_long": {
+      "allocation": [
+        2,
+        2,
+        2,
+        2
+      ],
+      "downforce": 0.2,
+      "gear": 0.85
+    },
+    "high_downforce_short": {
+      "allocation": [
+        2,
+        2,
+        2,
+        2
+      ],
+      "downforce": 0.8,
+      "gear": 0.35
+    }
+  },
+  "plans": {
+    "S0": {
+      "tires": [
+        "soft"
+      ],
+      "fractions": []
+    },
+    "M0": {
+      "tires": [
+        "medium"
+      ],
+      "fractions": []
+    },
+    "H0": {
+      "tires": [
+        "hard"
+      ],
+      "fractions": []
+    },
+    "SM-50": {
+      "tires": [
+        "soft",
+        "medium"
+      ],
+      "fractions": [
+        [
+          1,
+          2
+        ]
+      ]
+    },
+    "MH-50": {
+      "tires": [
+        "medium",
+        "hard"
+      ],
+      "fractions": [
+        [
+          1,
+          2
+        ]
+      ]
+    },
+    "HS-50": {
+      "tires": [
+        "hard",
+        "soft"
+      ],
+      "fractions": [
+        [
+          1,
+          2
+        ]
+      ]
+    },
+    "SMS-thirds": {
+      "tires": [
+        "soft",
+        "medium",
+        "soft"
+      ],
+      "fractions": [
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          3
+        ]
+      ]
+    },
+    "MHM-thirds": {
+      "tires": [
+        "medium",
+        "hard",
+        "medium"
+      ],
+      "fractions": [
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          3
+        ]
+      ]
+    },
+    "SMSM-quarters": {
+      "tires": [
+        "soft",
+        "medium",
+        "soft",
+        "medium"
+      ],
+      "fractions": [
+        [
+          1,
+          4
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          4
+        ]
+      ]
+    }
+  },
+  "slider_plans": [
+    "SM-50",
+    "MH-50",
+    "HS-50"
+  ],
+  "timing_variants": {
+    "SM-early": [
+      1,
+      3
+    ],
+    "SM-late": [
+      2,
+      3
+    ]
+  },
+  "modes": [
+    "manage",
+    "attack"
+  ],
+  "repeat_selection": [
+    [
+      "balanced",
+      "SM-50"
+    ],
+    [
+      "engine_chassis",
+      "MH-50"
+    ]
+  ],
+  "recompute_selection": [
+    [
+      "balanced",
+      "MHM-thirds"
+    ],
+    [
+      "engine_chassis",
+      "SM-50"
+    ]
+  ],
+  "workers": 1,
+  "expected_cases": 114,
+  "expected_validation_runs": 12,
+  "comparability": "8 effective allocated points, same installed baseline vehicle, fixed initial110kg, same .84 reference traits, paired seed and driver RNG stream. Alternate mode/seed explicit. No rivals solved. Zero-stop and three-stop are diagnostic physical controls, not changes to ranked sporting eligibility. Coarse asymmetric setup sampling does not establish a global optimum or eliminate all concentrated MC setups."
+}
