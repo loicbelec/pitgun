@@ -11,6 +11,7 @@ pub mod qualified_career;
 pub mod thermal_career;
 pub mod thermal_driver;
 pub mod tire_events;
+pub mod tire_operating;
 pub mod tire_performance;
 pub mod tire_preparation;
 pub use power_stream::{POWER_CHANNELS, power_telemetry_policy_identity};

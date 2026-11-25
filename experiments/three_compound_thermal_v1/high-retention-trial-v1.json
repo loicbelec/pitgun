@@ -1,0 +1,116 @@
+{
+  "schema_version": "pitgun.racing-tire-operating/v1",
+  "performance": {
+    "schema_version": "pitgun.racing-tire-performance/v1",
+    "mount_temperature_c": 70.0,
+    "compounds": {
+      "soft": {
+        "wear_curve": {
+          "model": "progressive_v1",
+          "linear_loss": 0.02,
+          "late_life_loss": 0.18,
+          "late_life_power": 4
+        },
+        "mu_scale": 1.015,
+        "temperature_width_c": 66.23094664052694,
+        "thermal_wear_gain": 1.8226613405403025
+      },
+      "medium": {
+        "wear_curve": {
+          "model": "progressive_v1",
+          "linear_loss": 0.02,
+          "late_life_loss": 0.18,
+          "late_life_power": 4
+        },
+        "mu_scale": 1.0,
+        "temperature_width_c": 66.23094664052694,
+        "thermal_wear_gain": 1.4920198275171177
+      },
+      "hard": {
+        "wear_curve": {
+          "model": "progressive_v1",
+          "linear_loss": 0.02,
+          "late_life_loss": 0.18,
+          "late_life_power": 4
+        },
+        "mu_scale": 0.9925,
+        "temperature_width_c": 66.23094664052694,
+        "thermal_wear_gain": 1.142327680442793
+      }
+    }
+  },
+  "compounds": {
+    "soft": {
+      "reference_compound": "C5",
+      "peak_grip_window_c": [
+        85,
+        115
+      ],
+      "minimum_temperature_grip_factor": 0.65,
+      "heat": {
+        "surface_capacity_j_per_k": 10200.0,
+        "carcass_capacity_j_per_k": 59500.0,
+        "surface_carcass_conductance_w_per_k": 400,
+        "surface_air_idle_conductance_w_per_k": 20.0,
+        "surface_air_speed_conductance_w_per_k_mps": 0.7,
+        "carcass_air_conductance_w_per_k": 30.0,
+        "surface_road_conductance_w_per_k": 40.0,
+        "deformation_resistance_coefficient": 0.018,
+        "rolling_heat_fraction": 0.85,
+        "deformation_heat_fraction": 0.9,
+        "deformation_surface_fraction": 0.8,
+        "deformation_energy_to_full_wear_j": 16000000.0,
+        "rolling_wear_fraction": 0.05,
+        "thermal_wear_gain": 1.8226613405403025
+      }
+    },
+    "medium": {
+      "reference_compound": "C4",
+      "peak_grip_window_c": [
+        90,
+        120
+      ],
+      "minimum_temperature_grip_factor": 0.65,
+      "heat": {
+        "surface_capacity_j_per_k": 12000.0,
+        "carcass_capacity_j_per_k": 70000.0,
+        "surface_carcass_conductance_w_per_k": 400,
+        "surface_air_idle_conductance_w_per_k": 20.0,
+        "surface_air_speed_conductance_w_per_k_mps": 0.7,
+        "carcass_air_conductance_w_per_k": 30.0,
+        "surface_road_conductance_w_per_k": 40.0,
+        "deformation_resistance_coefficient": 0.018,
+        "rolling_heat_fraction": 0.85,
+        "deformation_heat_fraction": 0.9,
+        "deformation_surface_fraction": 0.8,
+        "deformation_energy_to_full_wear_j": 24000000.0,
+        "rolling_wear_fraction": 0.05,
+        "thermal_wear_gain": 1.4920198275171177
+      }
+    },
+    "hard": {
+      "reference_compound": "C3",
+      "peak_grip_window_c": [
+        95,
+        125
+      ],
+      "minimum_temperature_grip_factor": 0.65,
+      "heat": {
+        "surface_capacity_j_per_k": 13799.999999999998,
+        "carcass_capacity_j_per_k": 80500.0,
+        "surface_carcass_conductance_w_per_k": 400,
+        "surface_air_idle_conductance_w_per_k": 20.0,
+        "surface_air_speed_conductance_w_per_k_mps": 0.7,
+        "carcass_air_conductance_w_per_k": 30.0,
+        "surface_road_conductance_w_per_k": 40.0,
+        "deformation_resistance_coefficient": 0.018,
+        "rolling_heat_fraction": 0.85,
+        "deformation_heat_fraction": 0.9,
+        "deformation_surface_fraction": 0.8,
+        "deformation_energy_to_full_wear_j": 34000000.0,
+        "rolling_wear_fraction": 0.05,
+        "thermal_wear_gain": 1.142327680442793
+      }
+    }
+  }
+}
