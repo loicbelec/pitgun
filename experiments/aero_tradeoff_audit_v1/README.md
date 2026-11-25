@@ -2,6 +2,8 @@
 
 Focused follow-up [#488](https://github.com/loicbelec/pitgun/issues/488) under #469, after [selected thermal qualification](../thermal_candidate_qualification_v1/INTERPRETATION.md). Read [ACCEPTANCE.md](ACCEPTANCE.md), [RESULTS_V1.md](RESULTS_V1.md) and [INTERPRETATION.md](INTERPRETATION.md). The Solver, current game and admitted policy are unchanged.
 
+The separately registered [matched-MH follow-up](../aero_plan_followup_v1/RESULTS_V1.md) now completes the strategy check proposed by the original interpretation. It retains15 additional GP without changing this48-GP matrix or its source/coefficients. Extra downforce becomes useful over the adapted full race, and the coupled slider preference differs between circuits. Do not infer a universal aero setting from the opened SM-one-stop conditions alone.
+
 ## Resolved mapping and reference convention
 
 With `u` the slider, `p` effective aero points divided by20, and catalog reference areas `Lref`/`Dref`, the current reduced mapping is:

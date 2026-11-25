@@ -1,0 +1,149 @@
+{
+  "schema": "pitgun.aero-plan-followup-decision/v1",
+  "numerical_pass": true,
+  "main_gp": 12,
+  "fresh_repeats": 3,
+  "exact_repeats": 3,
+  "accepted_laps": 880,
+  "bridges": [
+    {
+      "circuit": "MONZA",
+      "physical_input_exact": true,
+      "result_exact": true
+    },
+    {
+      "circuit": "SILVERSTONE",
+      "physical_input_exact": true,
+      "result_exact": true
+    },
+    {
+      "circuit": "SAOPAULO",
+      "physical_input_exact": true,
+      "result_exact": true
+    }
+  ],
+  "summaries": [
+    {
+      "circuit": "MONZA",
+      "baseline": {
+        "total_s": 6412.205508670765,
+        "first_five_s": 611.7599328208223,
+        "surface_mean_c": 109.22829173449884,
+        "temperature_grip_mean": 0.9448054600760935,
+        "wear_grip_mean": 0.9954151451096358
+      },
+      "extra_downforce": {
+        "total_s": 6380.588526286856,
+        "first_five_s": 604.6346989687455,
+        "surface_mean_c": 113.08435463478536,
+        "temperature_grip_mean": 0.927307271774352,
+        "wear_grip_mean": 0.9951391928790995
+      },
+      "coupled": {
+        "0.0": {
+          "total_s": 6393.555400168236,
+          "first_five_s": 612.1556978017666,
+          "surface_mean_c": 105.34646284996538,
+          "temperature_grip_mean": 0.9563994097114696,
+          "wear_grip_mean": 0.9953606574548591
+        },
+        "0.5": {
+          "total_s": 6412.205508670765,
+          "first_five_s": 611.7599328208223,
+          "surface_mean_c": 109.22829173449884,
+          "temperature_grip_mean": 0.9448054600760935,
+          "wear_grip_mean": 0.9954151451096358
+        },
+        "1.0": {
+          "total_s": 6627.7533785408295,
+          "first_five_s": 633.7544086135596,
+          "surface_mean_c": 109.64898550861878,
+          "temperature_grip_mean": 0.9428430217276428,
+          "wear_grip_mean": 0.9955620480273231
+        }
+      }
+    },
+    {
+      "circuit": "SILVERSTONE",
+      "baseline": {
+        "total_s": 6670.306266879667,
+        "first_five_s": 649.9255857219462,
+        "surface_mean_c": 108.75296021639237,
+        "temperature_grip_mean": 0.9490533418159671,
+        "wear_grip_mean": 0.9946664008909519
+      },
+      "extra_downforce": {
+        "total_s": 6633.215803737677,
+        "first_five_s": 640.9165080885256,
+        "surface_mean_c": 112.13938207381044,
+        "temperature_grip_mean": 0.9349377004376659,
+        "wear_grip_mean": 0.9944184064595288
+      },
+      "coupled": {
+        "0.0": {
+          "total_s": 6682.177164096446,
+          "first_five_s": 654.1872305275058,
+          "surface_mean_c": 104.94443866006469,
+          "temperature_grip_mean": 0.9582894059401457,
+          "wear_grip_mean": 0.9946152798290928
+        },
+        "0.5": {
+          "total_s": 6670.306266879667,
+          "first_five_s": 649.9255857219462,
+          "surface_mean_c": 108.75296021639237,
+          "temperature_grip_mean": 0.9490533418159671,
+          "wear_grip_mean": 0.9946664008909519
+        },
+        "1.0": {
+          "total_s": 6804.781445778959,
+          "first_five_s": 664.6656806125482,
+          "surface_mean_c": 109.70671477726415,
+          "temperature_grip_mean": 0.9437765675314106,
+          "wear_grip_mean": 0.9949212120358395
+        }
+      }
+    },
+    {
+      "circuit": "SAOPAULO",
+      "baseline": {
+        "total_s": 6832.635666117885,
+        "first_five_s": 491.96629603002106,
+        "surface_mean_c": 109.84529601792507,
+        "temperature_grip_mean": 0.9464736719465439,
+        "wear_grip_mean": 0.9939360554125992
+      },
+      "extra_downforce": {
+        "total_s": 6807.423003026236,
+        "first_five_s": 486.8532392515376,
+        "surface_mean_c": 113.11868405609208,
+        "temperature_grip_mean": 0.931865855153385,
+        "wear_grip_mean": 0.9936268100582271
+      },
+      "coupled": {
+        "0.0": {
+          "total_s": 6836.060885770684,
+          "first_five_s": 496.2852809871038,
+          "surface_mean_c": 106.2747907240253,
+          "temperature_grip_mean": 0.9562505993766232,
+          "wear_grip_mean": 0.9938500851979915
+        },
+        "0.5": {
+          "total_s": 6832.635666117885,
+          "first_five_s": 491.96629603002106,
+          "surface_mean_c": 109.84529601792507,
+          "temperature_grip_mean": 0.9464736719465439,
+          "wear_grip_mean": 0.9939360554125992
+        },
+        "1.0": {
+          "total_s": 7027.881841326206,
+          "first_five_s": 506.267226738214,
+          "surface_mean_c": 109.0870860736829,
+          "temperature_grip_mean": 0.9499254344714978,
+          "wear_grip_mean": 0.9945864722578258
+        }
+      }
+    }
+  ],
+  "model_changed": false,
+  "release_admitted": false
+}
