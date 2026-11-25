@@ -25,7 +25,9 @@ def write(p,v):
     raw=json.dumps(v,indent=2,allow_nan=False).encode()+b'\n'
     if p.suffix=='.gz':raw=gzip.compress(raw,mtime=0)
     tmp=p.with_name(p.name+'.tmp');tmp.write_bytes(raw);tmp.replace(p)
-def load(p):return json.load(gzip.open(p) if str(p).endswith('.gz') else open(p))
+def load(p):
+    with (gzip.open(p) if str(p).endswith('.gz') else open(p)) as stream:
+        return json.load(stream)
 def fixture(era,stage):return f'craft_engineering:era{era}-{stage}'
 def floors(era):return [0,0,0,0] if era==1 else [2,1,4,1]
 def order(r):return (r['data']['outcome'].get('time_s',float('inf')),r['case']['id'])
