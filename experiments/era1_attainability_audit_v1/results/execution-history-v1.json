@@ -1,0 +1,39 @@
+{
+  "schema": "pitgun.era1-attainability-execution-history/v1",
+  "era_campaign_complete": true,
+  "frozen_source_commit": "77e2f0a",
+  "execution_segments": [
+    {
+      "first_case": 1,
+      "last_case": 20,
+      "completed_jobs": 20,
+      "observed_execution_and_cache_call_s": 83.42894820599997,
+      "checkpoint_s": 0.027463377000003675
+    },
+    {
+      "first_case": 21,
+      "last_case": 40,
+      "completed_jobs": 20,
+      "observed_execution_and_cache_call_s": 83.06893870800002,
+      "checkpoint_s": 0.02750349700000765
+    },
+    {
+      "first_case": 41,
+      "last_case": 100,
+      "completed_jobs": 60,
+      "observed_execution_and_cache_call_s": 249.59281699799996,
+      "checkpoint_s": 0.0858172929999439
+    },
+    {
+      "first_case": 101,
+      "last_case": 153,
+      "completed_jobs": 53,
+      "observed_execution_and_cache_call_s": 204.18689912299988,
+      "checkpoint_s": 0.08894616900004859
+    }
+  ],
+  "prior_40_gp_files_and_mtimes_unchanged": true,
+  "prior_journal_prefix_unchanged": true,
+  "policy_update": "Owner approved completing one whole era at a time; smaller operational limits remain optional recovery controls. Never run multiple eras concurrently.",
+  "scope": "Operational observations only; no comparison to browser/WASM performance."
+}

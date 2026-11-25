@@ -23,11 +23,12 @@ Next after complete development review: era-II same-opportunity named-driver pre
 
 ## Current progress
 
-| Batch | New GP | Cumulative GP | Cumulative accepted laps | Observed numerical failures |
-|---|---:|---:|---:|---:|
-| 1 | 20 | 20/153 | 1,060 | 0 |
-| 2 | 20 | 40/153 | 2,120 | 0 |
+**Era-I development audit complete:**153fresh GP /9,027laps, zero numerical failures,6/6exact repeats and81/81frozen-field input bridges. The best free-preparation player finishesP1/P1/P3at actual exit means; the zero-extra family isP10in every sampled context. [Full results and limits](RESULTS_V1.md), [machine decision](results/decision-v1.json).
 
-The second invocation stopped at its20new-GP limit;113jobs remain. Previous20native row files/mtimes and the journal prefix are unchanged: no recomputation of the first batch. All81frozen rival input bridges pass. No automatic continuation, full audit verdict or preview update. Source/protocol freeze `77e2f0a`; evidence: [batch1](results/batch-01-progress.json), [batch2](results/batch-02-progress.json). Resume the same pinned namespace at case41.
+Source/protocol remains `77e2f0a`. Early partial snapshots remain historical: [first20](results/batch-01-progress.json), [first40](results/batch-02-progress.json). Execution segments were20+20+60+53; the earlier40result files/mtimes and journal prefix are unchanged. [Execution history](results/execution-history-v1.json). V1's failed reserves are retained; this is not new holdout or runtime admission.
 
-The owner should test the new field only after a qualified candidate is assembled in the actual local Pit Wall; this partial native audit is not that playable delivery. The existing local preview remains the earlier intermediate model/field.
+## Updated owner execution preference
+
+Complete **one whole era campaign at a time**, not owner-driven20-GP microbatches. Keep one native process and separate I/II/III/IV/V campaigns. The runner's smaller defaults remain optional safety/recovery controls; explicitly pass the finite remaining era matrix as `--max-new-gp` with a suitable operational time budget. For this audit, `--max-new-gp 153 --max-wall-seconds 3600` completes all remaining jobs while preserving source identity and prior cache. Do not launch another era concurrently or alter the frozen generator to change scheduling.
+
+Playtest readiness is still pending the consolidated candidate's qualification and assembly in the local Pit Wall. This offline audit has not changed the intermediate owner preview. The owner will receive an explicit ready-to-test signal and a single clear link.
