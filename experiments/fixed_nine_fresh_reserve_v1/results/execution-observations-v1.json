@@ -1,0 +1,28 @@
+{
+  "schema": "pitgun.fixed-nine-fresh-reserve-execution/v1",
+  "candidate_sha256": "2a538c3f116f23a177bedf73a2ca397cc24df57d89a8585ca644bc924f01a205",
+  "eras": [
+    {
+      "era": 1,
+      "native_files_checked": 206,
+      "native_bytes_and_mtimes_unchanged_on_resume": true,
+      "archive_decision_journal_bytes_unchanged_on_resume": true,
+      "new_gp_on_completed_resume": 0,
+      "new_native_wall_s": 438.98570321400024,
+      "source_commit": "441c8e00697d7319ee49355b18e6dd58a56cbe61",
+      "source_matrix_sha256": "aee3dfda8ab0df09944f0c7c0f60220206b36f100e9646b3b345b1a22634538a",
+      "results_sha256": "878b518d9fcd7ea835672ddbdc36372c6651271de41320f407ad73790ac85dd1"
+    },
+    {
+      "era": 2,
+      "native_files_checked": 464,
+      "native_bytes_and_mtimes_unchanged_on_resume": true,
+      "archive_decision_journal_bytes_unchanged_on_resume": true,
+      "new_gp_on_completed_resume": 0,
+      "new_native_wall_s": 1008.4459832100006,
+      "source_commit": "441c8e00697d7319ee49355b18e6dd58a56cbe61",
+      "source_matrix_sha256": "c3b0c5efa1259b5ddff48eedfcc7db7ee05bb73a9c228cbc2aa8077b83db0181",
+      "results_sha256": "1c40d4f3ad187e0405f3e80c900016f9d147aa807ea521aacfa9fc68493603fc"
+    }
+  ]
+}
