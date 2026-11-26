@@ -1,0 +1,2101 @@
+{
+  "schema": "pitgun.fixed-nine-consolidated-candidate/v1",
+  "admitted": false,
+  "policy": "experiments/thermal_balance_sensitivity_v1/rolling-heat-065.json",
+  "policy_sha256": "8b303f0189e3e174138a877d0eada425b37c672fe66dd07efcbc86b8d861e771",
+  "roster": "experiments/fixed_opponents_v2/roster-v2.json",
+  "roster_sha256": "cf8a427975c321b724d0f10d4654f48ae54db43442afa84658b6ee768efaaac4",
+  "reference_scaling": "nearest-preparation-family-preserving-integer-projection/v1",
+  "field_sources": {
+    "1": {
+      "policy": "experiments/fixed_nine_thermal_v1/policy-v1.json",
+      "decision": "experiments/era1_attainability_audit_v1/results/decision-v1.json",
+      "archive": "experiments/era1_attainability_audit_v1/results/era1-v1.json.gz",
+      "method": "retained-point-interpolation/v1",
+      "policy_sha256": "78705a99d71e739d7caf4614dcc480a118231bd1094e655c19fb8a78eb64e198",
+      "decision_sha256": "8fe993ac1aefe09479ec9e35752691d3e459ed943d9ee83499c8b8748050487b",
+      "archive_sha256": "1eff27eaa2a7b4a269a1618388f916f8942f95484c269c1c9af2c33a6fa4ccca"
+    },
+    "2": {
+      "policy": "experiments/joint_era2_preparation_v1/results/policy-v1.json",
+      "decision": "experiments/joint_era2_preparation_v1/results/decision-v1.json",
+      "archive": "experiments/joint_era2_preparation_v1/results/era2-v1.json.gz",
+      "method": "nearest-complete-anchor/v1",
+      "policy_sha256": "727ee9dc37a8397277cc3dce23151991780e1692f5d1816be34f11dff25b05ac",
+      "decision_sha256": "458d74146f7fc884dd0bfe6b6ae32220609d3a9f640f3f5a870de418957ab87a",
+      "archive_sha256": "9d54841ed2d97e0c0dcb5fa58e02e8fe31e81bf9ac811b3fb126cc3953017d45"
+    }
+  },
+  "contexts": [
+    {
+      "era": 1,
+      "circuit": "MONZA",
+      "references": {
+        "free": {
+          "8": {
+            "preparation": {
+              "effective_budget": 8,
+              "effective_allocation": [
+                0,
+                3,
+                3,
+                2
+              ],
+              "downforce": 0.5,
+              "gear": 0.15,
+              "strategy": {
+                "stints": [
+                  {
+                    "tire_id": "soft",
+                    "laps": 26
+                  },
+                  {
+                    "tire_id": "medium",
+                    "laps": 27
+                  }
+                ],
+                "pit_laps": [
+                  26
+                ]
+              },
+              "mode": "balanced"
+            },
+            "source_case_id": "era1-audit/MONZA/8/free/gear015",
+            "physical_input_digest": "sha256:c147b9bbc6cc930a9a8250192aca8b80bba94d064ce0d6a1e86686c2e298e6b4",
+            "result_digest": "sha256:ef6b6be840e1e27dffea3a3f76e4606af949c8afbf707ee4d023a12e262588ef"
+          },
+          "10": {
+            "preparation": {
+              "effective_budget": 10,
+              "effective_allocation": [
+                0,
+                4,
+                3,
+                3
+              ],
+              "downforce": 0.5,
+              "gear": 0.25,
+              "strategy": {
+                "stints": [
+                  {
+                    "tire_id": "soft",
+                    "laps": 26
+                  },
+                  {
+                    "tire_id": "medium",
+                    "laps": 27
+                  }
+                ],
+                "pit_laps": [
+                  26
+                ]
+              },
+              "mode": "balanced"
+            },
+            "source_case_id": "era1-audit/MONZA/10/free/baseline",
+            "physical_input_digest": "sha256:2190cc0ec1efc5503adb8e937bc919b5a3adcf872022cfd84eff34d1d9c44883",
+            "result_digest": "sha256:5a5459c591178a7f3738b367b8feafeccc39250be1e565234136b96b1ca6fdbd"
+          },
+          "12": {
+            "preparation": {
+              "effective_budget": 12,
+              "effective_allocation": [
+                0,
+                5,
+                4,
+                3
+              ],
+              "downforce": 0.5,
+              "gear": 0.25,
+              "strategy": {
+                "stints": [
+                  {
+                    "tire_id": "soft",
+                    "laps": 26
+                  },
+                  {
+                    "tire_id": "medium",
+                    "laps": 27
+                  }
+                ],
+                "pit_laps": [
+                  26
+                ]
+              },
+              "mode": "balanced"
+            },
+            "source_case_id": "era1-audit/MONZA/12/free/baseline",
+            "physical_input_digest": "sha256:4b95783a5b33e2618a67419234f45f62375a1fbde249851a8fad68b04bbbb5d2",
+            "result_digest": "sha256:f7bf0a3863b41f7bb9f00896c7c75d6fda9fce59072fda65cb7d842beb5084be"
+          }
+        },
+        "zero_extra": {
+          "8": {
+            "preparation": {
+              "effective_budget": 8,
+              "effective_allocation": [
+                0,
+                4,
+                4,
+                0
+              ],
+              "downforce": 0.5,
+              "gear": 0.05,
+              "strategy": {
+                "stints": [
+                  {
+                    "tire_id": "soft",
+                    "laps": 26
+                  },
+                  {
+                    "tire_id": "medium",
+                    "laps": 27
+                  }
+                ],
+                "pit_laps": [
+                  26
+                ]
+              },
+              "mode": "balanced"
+            },
+            "source_case_id": "era1-audit/MONZA/8/zero_extra/gear005",
+            "physical_input_digest": "sha256:69596506aeae95f18a25e658a7fbc82dd5ced06b90cb9668fdf8fe0265573cd0",
+            "result_digest": "sha256:c9a5166ac8023fcca8cfce0d49aad7a8641b5654f235b38c1a926e3211fbb16f"
+          },
+          "10": {
+            "preparation": {
+              "effective_budget": 10,
+              "effective_allocation": [
+                0,
+                5,
+                5,
+                0
+              ],
+              "downforce": 0.5,
+              "gear": 0.05,
+              "strategy": {
+                "stints": [
+                  {
+                    "tire_id": "soft",
+                    "laps": 26
+                  },
+                  {
+                    "tire_id": "medium",
+                    "laps": 27
+                  }
+                ],
+                "pit_laps": [
+                  26
+                ]
+              },
+              "mode": "balanced"
+            },
+            "source_case_id": "era1-audit/MONZA/10/zero_extra/gear005",
+            "physical_input_digest": "sha256:c7b920000a918663e1891999078103bd0d48e2d0c909480d773dc7be8635994d",
+            "result_digest": "sha256:c6a010818f927d9d48004eb130fda13590b6549891e832968cfe2d6dfa5c1e69"
+          },
+          "12": {
+            "preparation": {
+              "effective_budget": 12,
+              "effective_allocation": [
+                0,
+                6,
+                6,
+                0
+              ],
+              "downforce": 0.5,
+              "gear": 0.05,
+              "strategy": {
+                "stints": [
+                  {
+                    "tire_id": "soft",
+                    "laps": 26
+                  },
+                  {
+                    "tire_id": "medium",
+                    "laps": 27
+                  }
+                ],
+                "pit_laps": [
+                  26
+                ]
+              },
+              "mode": "balanced"
+            },
+            "source_case_id": "era1-audit/MONZA/12/zero_extra/gear005",
+            "physical_input_digest": "sha256:08051f6b46c745fdbf26670f77bd74538dcc8fcbd4f4f3e717ba4b59e29e7173",
+            "result_digest": "sha256:1c53b03801317b3ad4495f860f18b6d8dff575152ca95e08bc9122bf1a1e4322"
+          }
+        }
+      }
+    },
+    {
+      "era": 1,
+      "circuit": "SILVERSTONE",
+      "references": {
+        "free": {
+          "8": {
+            "preparation": {
+              "effective_budget": 8,
+              "effective_allocation": [
+                0,
+                3,
+                3,
+                2
+              ],
+              "downforce": 0.5,
+              "gear": 0.15,
+              "strategy": {
+                "stints": [
+                  {
+                    "tire_id": "soft",
+                    "laps": 26
+                  },
+                  {
+                    "tire_id": "medium",
+                    "laps": 26
+                  }
+                ],
+                "pit_laps": [
+                  26
+                ]
+              },
+              "mode": "balanced"
+            },
+            "source_case_id": "era1-audit/SILVERSTONE/8/free/gear015",
+            "physical_input_digest": "sha256:66cb44a7e4a03add5951f9aee76589601c593bba7bd5b680389eed7102aac45e",
+            "result_digest": "sha256:951024a87812c276d2b2bb4dacc3de2cc7f9df10f3dff58c493a00ac082773ee"
+          },
+          "10": {
+            "preparation": {
+              "effective_budget": 10,
+              "effective_allocation": [
+                0,
+                4,
+                3,
+                3
+              ],
+              "downforce": 0.5,
+              "gear": 0.15,
+              "strategy": {
+                "stints": [
+                  {
+                    "tire_id": "soft",
+                    "laps": 26
+                  },
+                  {
+                    "tire_id": "medium",
+                    "laps": 26
+                  }
+                ],
+                "pit_laps": [
+                  26
+                ]
+              },
+              "mode": "balanced"
+            },
+            "source_case_id": "era1-audit/SILVERSTONE/10/free/gear015",
+            "physical_input_digest": "sha256:bdf2e7548919fde09aab4e9fb430ded48747d5fac7130d24d7c6b3952f93faa2",
+            "result_digest": "sha256:14b7ab74200a8f5ba868072b8d418987f7f9ae0a0de82c680ea48c5315cb515a"
+          },
+          "12": {
+            "preparation": {
+              "effective_budget": 12,
+              "effective_allocation": [
+                0,
+                5,
+                4,
+                3
+              ],
+              "downforce": 0.5,
+              "gear": 0.15,
+              "strategy": {
+                "stints": [
+                  {
+                    "tire_id": "soft",
+                    "laps": 26
+                  },
+                  {
+                    "tire_id": "medium",
+                    "laps": 26
+                  }
+                ],
+                "pit_laps": [
+                  26
+                ]
+              },
+              "mode": "balanced"
+            },
+            "source_case_id": "era1-audit/SILVERSTONE/12/free/gear015",
+            "physical_input_digest": "sha256:75845053214d5e092c7a7bc7174ca960d0622ee6bc240f92b2e3422e312ac447",
+            "result_digest": "sha256:f5c5313123b48829eb64e20cd79ba196882d4696231e08e29ef674d854fd1daa"
+          }
+        },
+        "zero_extra": {
+          "8": {
+            "preparation": {
+              "effective_budget": 8,
+              "effective_allocation": [
+                0,
+                4,
+                4,
+                0
+              ],
+              "downforce": 0.5,
+              "gear": 0.85,
+              "strategy": {
+                "stints": [
+                  {
+                    "tire_id": "soft",
+                    "laps": 26
+                  },
+                  {
+                    "tire_id": "medium",
+                    "laps": 26
+                  }
+                ],
+                "pit_laps": [
+                  26
+                ]
+              },
+              "mode": "balanced"
+            },
+            "source_case_id": "era1-audit/SILVERSTONE/8/zero_extra/baseline",
+            "physical_input_digest": "sha256:93e7e3ed37aeedf89374244812223db032bc2a8d92423f99a6328204efe589ab",
+            "result_digest": "sha256:fcfffc53614ad441f7a11fa582db56b1c7d6a0d9b8fbcefc690d8b27bffb656e"
+          },
+          "10": {
+            "preparation": {
+              "effective_budget": 10,
+              "effective_allocation": [
+                0,
+                6,
+                4,
+                0
+              ],
+              "downforce": 0.5,
+              "gear": 0.85,
+              "strategy": {
+                "stints": [
+                  {
+                    "tire_id": "soft",
+                    "laps": 26
+                  },
+                  {
+                    "tire_id": "medium",
+                    "laps": 26
+                  }
+                ],
+                "pit_laps": [
+                  26
+                ]
+              },
+              "mode": "balanced"
+            },
+            "source_case_id": "era1-audit/SILVERSTONE/10/zero_extra/baseline",
+            "physical_input_digest": "sha256:fcf492ad6d6ddaec795d9f82190c835b99d53f0b6b4582687396c71647939852",
+            "result_digest": "sha256:546acfae2fcded4817024923879bc86b0f86837bf36535e472ed1e243755a987"
+          },
+          "12": {
+            "preparation": {
+              "effective_budget": 12,
+              "effective_allocation": [
+                0,
+                7,
+                5,
+                0
+              ],
+              "downforce": 0.5,
+              "gear": 0.85,
+              "strategy": {
+                "stints": [
+                  {
+                    "tire_id": "soft",
+                    "laps": 26
+                  },
+                  {
+                    "tire_id": "medium",
+                    "laps": 26
+                  }
+                ],
+                "pit_laps": [
+                  26
+                ]
+              },
+              "mode": "balanced"
+            },
+            "source_case_id": "era1-audit/SILVERSTONE/12/zero_extra/baseline",
+            "physical_input_digest": "sha256:532d276fe9710a32f0de1e8aa4812872bbf83065cc2f8eb61b7631c9b6d3e257",
+            "result_digest": "sha256:8a3325902bb89f074e97c1d1ed925c36c0e6a300e1654239cf344cfd56c24fce"
+          }
+        }
+      }
+    },
+    {
+      "era": 1,
+      "circuit": "ZANDVOORT",
+      "references": {
+        "free": {
+          "8": {
+            "preparation": {
+              "effective_budget": 8,
+              "effective_allocation": [
+                0,
+                3,
+                3,
+                2
+              ],
+              "downforce": 0.5,
+              "gear": 0.35,
+              "strategy": {
+                "stints": [
+                  {
+                    "tire_id": "soft",
+                    "laps": 33
+                  },
+                  {
+                    "tire_id": "medium",
+                    "laps": 39
+                  }
+                ],
+                "pit_laps": [
+                  33
+                ]
+              },
+              "mode": "balanced"
+            },
+            "source_case_id": "era1-audit/ZANDVOORT/8/free/pit_early3",
+            "physical_input_digest": "sha256:a75053ea33bd3e737ad2f4bde37117fad735af42cae27992c8ca11d9bfd8553f",
+            "result_digest": "sha256:0480a86a828f08614e06e9cf2417c06188631d8b2334f9f13be29c4e60e62a00"
+          },
+          "10": {
+            "preparation": {
+              "effective_budget": 10,
+              "effective_allocation": [
+                0,
+                4,
+                3,
+                3
+              ],
+              "downforce": 0.5,
+              "gear": 0.25,
+              "strategy": {
+                "stints": [
+                  {
+                    "tire_id": "soft",
+                    "laps": 33
+                  },
+                  {
+                    "tire_id": "medium",
+                    "laps": 39
+                  }
+                ],
+                "pit_laps": [
+                  33
+                ]
+              },
+              "mode": "balanced"
+            },
+            "source_case_id": "era1-audit/ZANDVOORT/10/free/pit_early3",
+            "physical_input_digest": "sha256:82cd5fcc41c5fb0bfe9e8a2ee680ac5017609acaf859875f034f8e6a611f455d",
+            "result_digest": "sha256:b7c1bc5ef40559167408c545426cddecf6a2d593965ac9cdfdab98cb757d3865"
+          },
+          "12": {
+            "preparation": {
+              "effective_budget": 12,
+              "effective_allocation": [
+                0,
+                5,
+                4,
+                3
+              ],
+              "downforce": 0.5,
+              "gear": 0.25,
+              "strategy": {
+                "stints": [
+                  {
+                    "tire_id": "soft",
+                    "laps": 33
+                  },
+                  {
+                    "tire_id": "medium",
+                    "laps": 39
+                  }
+                ],
+                "pit_laps": [
+                  33
+                ]
+              },
+              "mode": "balanced"
+            },
+            "source_case_id": "era1-audit/ZANDVOORT/12/free/pit_early3",
+            "physical_input_digest": "sha256:19d72d1282cf15fb0faa8f7aad61cc56b0797bb1046c03c74923786dec6fad19",
+            "result_digest": "sha256:f014bb33bf968e428c4ca51d9fc8a55c4808036619d50cf33de6d3c69eecdc99"
+          }
+        },
+        "zero_extra": {
+          "8": {
+            "preparation": {
+              "effective_budget": 8,
+              "effective_allocation": [
+                0,
+                5,
+                3,
+                0
+              ],
+              "downforce": 0.5,
+              "gear": 0.15,
+              "strategy": {
+                "stints": [
+                  {
+                    "tire_id": "soft",
+                    "laps": 36
+                  },
+                  {
+                    "tire_id": "medium",
+                    "laps": 36
+                  }
+                ],
+                "pit_laps": [
+                  36
+                ]
+              },
+              "mode": "balanced"
+            },
+            "source_case_id": "era1-audit/ZANDVOORT/8/zero_extra/engine_to_chassis",
+            "physical_input_digest": "sha256:101824823cd3d74e6945581cb9896d1335226dfb9ac6d1426de850b5baae818b",
+            "result_digest": "sha256:0b5aadec8c7a37c08b85cf95af1918704e1e6719cb80bfbac2cb0bd7a6899da4"
+          },
+          "10": {
+            "preparation": {
+              "effective_budget": 10,
+              "effective_allocation": [
+                0,
+                7,
+                3,
+                0
+              ],
+              "downforce": 0.5,
+              "gear": 0.15,
+              "strategy": {
+                "stints": [
+                  {
+                    "tire_id": "soft",
+                    "laps": 36
+                  },
+                  {
+                    "tire_id": "medium",
+                    "laps": 36
+                  }
+                ],
+                "pit_laps": [
+                  36
+                ]
+              },
+              "mode": "balanced"
+            },
+            "source_case_id": "era1-audit/ZANDVOORT/10/zero_extra/engine_to_chassis",
+            "physical_input_digest": "sha256:557a039e584ac5ff58036d88ae8961c64a5571485265b24d29334745d5108c19",
+            "result_digest": "sha256:5df048fb5c96a3f5cf852965c943d55f94f28c546bcc1c8533ae6c477ae3f37a"
+          },
+          "12": {
+            "preparation": {
+              "effective_budget": 12,
+              "effective_allocation": [
+                0,
+                8,
+                4,
+                0
+              ],
+              "downforce": 0.5,
+              "gear": 0.15,
+              "strategy": {
+                "stints": [
+                  {
+                    "tire_id": "soft",
+                    "laps": 36
+                  },
+                  {
+                    "tire_id": "medium",
+                    "laps": 36
+                  }
+                ],
+                "pit_laps": [
+                  36
+                ]
+              },
+              "mode": "balanced"
+            },
+            "source_case_id": "era1-audit/ZANDVOORT/12/zero_extra/engine_to_chassis",
+            "physical_input_digest": "sha256:2a63d32adc82e0bcdd6ce4ca6fe66121ef837a8128e79660a612ba5241e5ab20",
+            "result_digest": "sha256:0da6a718f0fabc35d23e1acb18c8dc8e3576a03a0d40add938bd77b554408ab9"
+          }
+        }
+      }
+    },
+    {
+      "era": 2,
+      "circuit": "MONTREAL",
+      "references": {
+        "free": {
+          "12": {
+            "preparation": {
+              "effective_budget": 12,
+              "effective_allocation": [
+                2,
+                3,
+                5,
+                2
+              ],
+              "downforce": 0.4,
+              "gear": 0.5,
+              "strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 35
+                  },
+                  {
+                    "tire_id": "hard",
+                    "laps": 35
+                  }
+                ],
+                "pit_laps": [
+                  35
+                ]
+              },
+              "mode": "balanced"
+            },
+            "source_case_id": "2/MONTREAL/balanced_reference/12/joint-v1-proposal2",
+            "physical_input_digest": "sha256:54eeed65dc9ced613f192a8f4d381aea9ecfd9ae99949155859207eedc447d86",
+            "result_digest": "sha256:7a52562e8cbc393c4cfea8c0b1d190d1239cae4cfd10ef42e8754f96edd45623"
+          },
+          "18": {
+            "preparation": {
+              "effective_budget": 18,
+              "effective_allocation": [
+                2,
+                5,
+                7,
+                4
+              ],
+              "downforce": 0.4,
+              "gear": 0.5,
+              "strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 35
+                  },
+                  {
+                    "tire_id": "hard",
+                    "laps": 35
+                  }
+                ],
+                "pit_laps": [
+                  35
+                ]
+              },
+              "mode": "balanced"
+            },
+            "source_case_id": "2/MONTREAL/balanced_reference/18/joint-v1-proposal2",
+            "physical_input_digest": "sha256:e6e9e00860b20836d0ff01ec5089205149d971effee8d24f5d2d433bb1f388a1",
+            "result_digest": "sha256:8e8026a7f1905416addb6626f7ae9b16d3d23c8fe1c450c4d1320588c2b05fa0"
+          },
+          "24": {
+            "preparation": {
+              "effective_budget": 24,
+              "effective_allocation": [
+                2,
+                7,
+                10,
+                5
+              ],
+              "downforce": 0.4,
+              "gear": 0.5,
+              "strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 35
+                  },
+                  {
+                    "tire_id": "hard",
+                    "laps": 35
+                  }
+                ],
+                "pit_laps": [
+                  35
+                ]
+              },
+              "mode": "balanced"
+            },
+            "source_case_id": "2/MONTREAL/balanced_reference/24/informed/neighbor3",
+            "physical_input_digest": "sha256:8cee36c7c8232eabe574c58b0e8e667171381b0d6ee5f05e8dba44db735b0271",
+            "result_digest": "sha256:1a70079953a6ab75810481a206f44e2c90cf3618be306e35ad1faccd4dab0f20"
+          }
+        },
+        "zero_extra": {
+          "12": {
+            "preparation": {
+              "effective_budget": 12,
+              "effective_allocation": [
+                2,
+                4,
+                5,
+                1
+              ],
+              "downforce": 0.4,
+              "gear": 0.5,
+              "strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 35
+                  },
+                  {
+                    "tire_id": "hard",
+                    "laps": 35
+                  }
+                ],
+                "pit_laps": [
+                  35
+                ]
+              },
+              "mode": "balanced"
+            },
+            "source_case_id": "2/MONTREAL/balanced_reference/12/joint-v1-proposal3",
+            "physical_input_digest": "sha256:f22b3230c63505f75c1882c7b4f779a534baf1b82fc45df039a853aa692734f2",
+            "result_digest": "sha256:4786211bef92bf53778c54b03d3828be4b9759c08e4430acc54a7c39a92572ac"
+          },
+          "18": {
+            "preparation": {
+              "effective_budget": 18,
+              "effective_allocation": [
+                2,
+                6,
+                9,
+                1
+              ],
+              "downforce": 0.4,
+              "gear": 0.5,
+              "strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 35
+                  },
+                  {
+                    "tire_id": "hard",
+                    "laps": 35
+                  }
+                ],
+                "pit_laps": [
+                  35
+                ]
+              },
+              "mode": "balanced"
+            },
+            "source_case_id": "2/MONTREAL/balanced_reference/18/joint-v1-proposal3",
+            "physical_input_digest": "sha256:3b993c2a0f64724c2d869ad922fc727479651e3f4a1cb221ef31f2c5b7ca2f75",
+            "result_digest": "sha256:3ffd2e7ac93e46798caad77f6115f62019be46614eeb34073503dbfa11c297f3"
+          },
+          "24": {
+            "preparation": {
+              "effective_budget": 24,
+              "effective_allocation": [
+                2,
+                9,
+                12,
+                1
+              ],
+              "downforce": 0.4,
+              "gear": 0.5,
+              "strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 35
+                  },
+                  {
+                    "tire_id": "hard",
+                    "laps": 35
+                  }
+                ],
+                "pit_laps": [
+                  35
+                ]
+              },
+              "mode": "balanced"
+            },
+            "source_case_id": "2/MONTREAL/balanced_reference/24/concentrated/neighbor3",
+            "physical_input_digest": "sha256:92b1d3ee32a20b902f298273d97883ae6f1efb57572e075c1ac885e4990b24c5",
+            "result_digest": "sha256:f7b6fffba5ed162bff4f8aac6f3ec33383bf3861274d588269aeed0558f0fbd8"
+          }
+        }
+      }
+    },
+    {
+      "era": 2,
+      "circuit": "SPIELBERG",
+      "references": {
+        "free": {
+          "12": {
+            "preparation": {
+              "effective_budget": 12,
+              "effective_allocation": [
+                2,
+                3,
+                5,
+                2
+              ],
+              "downforce": 0.4,
+              "gear": 0.5,
+              "strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 35
+                  },
+                  {
+                    "tire_id": "hard",
+                    "laps": 36
+                  }
+                ],
+                "pit_laps": [
+                  35
+                ]
+              },
+              "mode": "balanced"
+            },
+            "source_case_id": "2/SPIELBERG/balanced_reference/12/joint-v1-proposal2",
+            "physical_input_digest": "sha256:c9ef2d600de6d03a9004fcbffc5448613c892090fd7119845c240265d7d3e38e",
+            "result_digest": "sha256:2b6d329b1e5e778cd2c0b7cfe4e028b9349b69270854542be87786412442d757"
+          },
+          "18": {
+            "preparation": {
+              "effective_budget": 18,
+              "effective_allocation": [
+                2,
+                5,
+                7,
+                4
+              ],
+              "downforce": 0.4,
+              "gear": 0.5,
+              "strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 35
+                  },
+                  {
+                    "tire_id": "hard",
+                    "laps": 36
+                  }
+                ],
+                "pit_laps": [
+                  35
+                ]
+              },
+              "mode": "balanced"
+            },
+            "source_case_id": "2/SPIELBERG/balanced_reference/18/joint-v1-proposal2",
+            "physical_input_digest": "sha256:8457f30f67701b4fbea18f1582764cbc246500060c375259d6628abfa1a4adc4",
+            "result_digest": "sha256:218f8effafa6c5721643d4a6dbd1a595b5008806de916cf951dcd2b690ceaaf9"
+          },
+          "24": {
+            "preparation": {
+              "effective_budget": 24,
+              "effective_allocation": [
+                2,
+                7,
+                10,
+                5
+              ],
+              "downforce": 0.4,
+              "gear": 0.5,
+              "strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 35
+                  },
+                  {
+                    "tire_id": "hard",
+                    "laps": 36
+                  }
+                ],
+                "pit_laps": [
+                  35
+                ]
+              },
+              "mode": "balanced"
+            },
+            "source_case_id": "2/SPIELBERG/balanced_reference/24/informed/neighbor3",
+            "physical_input_digest": "sha256:d763c12f33848192bb1cec8701f8774256fa6498590d8beea80302c7ac343743",
+            "result_digest": "sha256:ae1785de3f4f0bb744b2e980a768899023052eac577caf2fae44a374ebeba9f6"
+          }
+        },
+        "zero_extra": {
+          "12": {
+            "preparation": {
+              "effective_budget": 12,
+              "effective_allocation": [
+                2,
+                4,
+                5,
+                1
+              ],
+              "downforce": 0.4,
+              "gear": 0.5,
+              "strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 35
+                  },
+                  {
+                    "tire_id": "hard",
+                    "laps": 36
+                  }
+                ],
+                "pit_laps": [
+                  35
+                ]
+              },
+              "mode": "balanced"
+            },
+            "source_case_id": "2/SPIELBERG/balanced_reference/12/joint-v1-proposal3",
+            "physical_input_digest": "sha256:d0d146aa6827c0d8d3bebf0189daba6cd5e5300dcdc9b8e71b91d4b7b58801cb",
+            "result_digest": "sha256:e481192451accd8f3938fb9aea545b6a555bf14d1d4144a4c44adaf2c7282332"
+          },
+          "18": {
+            "preparation": {
+              "effective_budget": 18,
+              "effective_allocation": [
+                2,
+                6,
+                9,
+                1
+              ],
+              "downforce": 0.4,
+              "gear": 0.5,
+              "strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 35
+                  },
+                  {
+                    "tire_id": "hard",
+                    "laps": 36
+                  }
+                ],
+                "pit_laps": [
+                  35
+                ]
+              },
+              "mode": "balanced"
+            },
+            "source_case_id": "2/SPIELBERG/balanced_reference/18/joint-v1-proposal3",
+            "physical_input_digest": "sha256:8da0afd5e8ffd05697ac3a241d21edfc1d1c0fb1184206b714a3da1bccf93a48",
+            "result_digest": "sha256:ae59ace80646a11d63ed27dc98ca006b00b10ed428d15e6efe0092c9d016d75f"
+          },
+          "24": {
+            "preparation": {
+              "effective_budget": 24,
+              "effective_allocation": [
+                2,
+                9,
+                12,
+                1
+              ],
+              "downforce": 0.4,
+              "gear": 0.5,
+              "strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 35
+                  },
+                  {
+                    "tire_id": "hard",
+                    "laps": 36
+                  }
+                ],
+                "pit_laps": [
+                  35
+                ]
+              },
+              "mode": "balanced"
+            },
+            "source_case_id": "2/SPIELBERG/balanced_reference/24/concentrated/neighbor3",
+            "physical_input_digest": "sha256:1bb01e7edc144309fdf5f66b518a42e5c7a41cbd5bebb093bb44beea68d823b6",
+            "result_digest": "sha256:771ced77c1be055fc9338f7ed9718e4fab7d7c70e749ac031d35c5b5dfe97e1b"
+          }
+        }
+      }
+    },
+    {
+      "era": 2,
+      "circuit": "MEXICO",
+      "references": {
+        "free": {
+          "12": {
+            "preparation": {
+              "effective_budget": 12,
+              "effective_allocation": [
+                2,
+                3,
+                5,
+                2
+              ],
+              "downforce": 0.4,
+              "gear": 0.5,
+              "strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 35
+                  },
+                  {
+                    "tire_id": "hard",
+                    "laps": 36
+                  }
+                ],
+                "pit_laps": [
+                  35
+                ]
+              },
+              "mode": "balanced"
+            },
+            "source_case_id": "2/MEXICO/balanced_reference/12/joint-v1-proposal2",
+            "physical_input_digest": "sha256:380041a4c7f500c88b512583ad714f66039f48c9282aa56a7a85fc1d150628df",
+            "result_digest": "sha256:121775d7ce29379839afeb20bb52f05ac0b9ef1683fdca8afcfd7264e248eea6"
+          },
+          "18": {
+            "preparation": {
+              "effective_budget": 18,
+              "effective_allocation": [
+                2,
+                5,
+                7,
+                4
+              ],
+              "downforce": 0.4,
+              "gear": 0.5,
+              "strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 35
+                  },
+                  {
+                    "tire_id": "hard",
+                    "laps": 36
+                  }
+                ],
+                "pit_laps": [
+                  35
+                ]
+              },
+              "mode": "balanced"
+            },
+            "source_case_id": "2/MEXICO/balanced_reference/18/joint-v1-proposal2",
+            "physical_input_digest": "sha256:690a744128bd54a0e3a6e1b4662cb90b5ff8ac1e71358560107fc3a4d7c8c20f",
+            "result_digest": "sha256:19ef4963d1b843f442ecb8489a1f1f3a68d7c0edd50b51b7261efc980566f05c"
+          },
+          "24": {
+            "preparation": {
+              "effective_budget": 24,
+              "effective_allocation": [
+                2,
+                9,
+                12,
+                1
+              ],
+              "downforce": 0.4,
+              "gear": 0.5,
+              "strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 35
+                  },
+                  {
+                    "tire_id": "hard",
+                    "laps": 36
+                  }
+                ],
+                "pit_laps": [
+                  35
+                ]
+              },
+              "mode": "balanced"
+            },
+            "source_case_id": "2/MEXICO/balanced_reference/24/concentrated/neighbor3",
+            "physical_input_digest": "sha256:a7b139d5fd679f8073a1d7dc1f151a1af9ce237ef99b27b5284239991db80e15",
+            "result_digest": "sha256:6de24304f08ff5f399aba8d556f05d2e55ff54c7a542598d59f2458da7195a7c"
+          }
+        },
+        "zero_extra": {
+          "12": {
+            "preparation": {
+              "effective_budget": 12,
+              "effective_allocation": [
+                2,
+                4,
+                5,
+                1
+              ],
+              "downforce": 0.4,
+              "gear": 0.5,
+              "strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 35
+                  },
+                  {
+                    "tire_id": "hard",
+                    "laps": 36
+                  }
+                ],
+                "pit_laps": [
+                  35
+                ]
+              },
+              "mode": "balanced"
+            },
+            "source_case_id": "2/MEXICO/balanced_reference/12/joint-v1-proposal3",
+            "physical_input_digest": "sha256:b0aa6cfd99908ec51352997968466a4e19cd32896ffa47d88671dfe4340e5f2e",
+            "result_digest": "sha256:3119dc98a18bd436990c20af990122242a8fe4ce6f1c8e4dea0005bedaa914ba"
+          },
+          "18": {
+            "preparation": {
+              "effective_budget": 18,
+              "effective_allocation": [
+                2,
+                6,
+                9,
+                1
+              ],
+              "downforce": 0.4,
+              "gear": 0.5,
+              "strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 35
+                  },
+                  {
+                    "tire_id": "hard",
+                    "laps": 36
+                  }
+                ],
+                "pit_laps": [
+                  35
+                ]
+              },
+              "mode": "balanced"
+            },
+            "source_case_id": "2/MEXICO/balanced_reference/18/joint-v1-proposal3",
+            "physical_input_digest": "sha256:393d8644d08b5c838b737cdccafe5c07e1a4dd41f6ad300a37ff67c4faae28e1",
+            "result_digest": "sha256:e0bf4a454f6e8706523a2ecd3c662f00cf9548a79a1c31f305c2ba5f1796dc72"
+          },
+          "24": {
+            "preparation": {
+              "effective_budget": 24,
+              "effective_allocation": [
+                2,
+                9,
+                12,
+                1
+              ],
+              "downforce": 0.4,
+              "gear": 0.5,
+              "strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 35
+                  },
+                  {
+                    "tire_id": "hard",
+                    "laps": 36
+                  }
+                ],
+                "pit_laps": [
+                  35
+                ]
+              },
+              "mode": "balanced"
+            },
+            "source_case_id": "2/MEXICO/balanced_reference/24/concentrated/neighbor3",
+            "physical_input_digest": "sha256:a7b139d5fd679f8073a1d7dc1f151a1af9ce237ef99b27b5284239991db80e15",
+            "result_digest": "sha256:6de24304f08ff5f399aba8d556f05d2e55ff54c7a542598d59f2458da7195a7c"
+          }
+        }
+      }
+    },
+    {
+      "era": 2,
+      "circuit": "SAOPAULO",
+      "references": {
+        "free": {
+          "12": {
+            "preparation": {
+              "effective_budget": 12,
+              "effective_allocation": [
+                3,
+                3,
+                4,
+                2
+              ],
+              "downforce": 0.4,
+              "gear": 0.5,
+              "strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 17
+                  },
+                  {
+                    "tire_id": "hard",
+                    "laps": 36
+                  },
+                  {
+                    "tire_id": "medium",
+                    "laps": 18
+                  }
+                ],
+                "pit_laps": [
+                  17,
+                  53
+                ]
+              },
+              "mode": "balanced"
+            },
+            "source_case_id": "2/SAOPAULO/balanced_reference/12/joint-v1-proposal2",
+            "physical_input_digest": "sha256:e0ab26894ed062ed1d1bd74ef5c2a8000c962e648bc768d62995e9fc6a6fe60b",
+            "result_digest": "sha256:30a735ca8b06b87b16c087b05d790d39f3e52f848210f0fbe9f3aa7b96212a80"
+          },
+          "18": {
+            "preparation": {
+              "effective_budget": 18,
+              "effective_allocation": [
+                4,
+                4,
+                6,
+                4
+              ],
+              "downforce": 0.4,
+              "gear": 0.5,
+              "strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 17
+                  },
+                  {
+                    "tire_id": "hard",
+                    "laps": 36
+                  },
+                  {
+                    "tire_id": "medium",
+                    "laps": 18
+                  }
+                ],
+                "pit_laps": [
+                  17,
+                  53
+                ]
+              },
+              "mode": "balanced"
+            },
+            "source_case_id": "2/SAOPAULO/balanced_reference/18/joint-v1-proposal2",
+            "physical_input_digest": "sha256:285fe8a0381616a12939f6c1c1ae0c254e56e0613b3b04465c2654fd89ac419e",
+            "result_digest": "sha256:120bfdadface0b3761a98c62510c8ab2737344190d9b0adfd8f2bf998bb47d87"
+          },
+          "24": {
+            "preparation": {
+              "effective_budget": 24,
+              "effective_allocation": [
+                6,
+                5,
+                8,
+                5
+              ],
+              "downforce": 0.4,
+              "gear": 0.5,
+              "strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 17
+                  },
+                  {
+                    "tire_id": "hard",
+                    "laps": 36
+                  },
+                  {
+                    "tire_id": "medium",
+                    "laps": 18
+                  }
+                ],
+                "pit_laps": [
+                  17,
+                  53
+                ]
+              },
+              "mode": "balanced"
+            },
+            "source_case_id": "2/SAOPAULO/balanced_reference/24/informed/neighbor3",
+            "physical_input_digest": "sha256:d2b188e602d88239b5729afe6143cd488dd725e474d6a9553a454bf33cd2e247",
+            "result_digest": "sha256:d3f89abf31d7fec5a898e197461fb217741e6a8237acd1bd604b9c65c9022f12"
+          }
+        },
+        "zero_extra": {
+          "12": {
+            "preparation": {
+              "effective_budget": 12,
+              "effective_allocation": [
+                2,
+                4,
+                5,
+                1
+              ],
+              "downforce": 0.4,
+              "gear": 0.5,
+              "strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 35
+                  },
+                  {
+                    "tire_id": "hard",
+                    "laps": 36
+                  }
+                ],
+                "pit_laps": [
+                  35
+                ]
+              },
+              "mode": "balanced"
+            },
+            "source_case_id": "2/SAOPAULO/balanced_reference/12/joint-v1-proposal3",
+            "physical_input_digest": "sha256:42e93a2a66b6f28a2b5094595f4be0ed2333559ace73572a61d8a4269881a623",
+            "result_digest": "sha256:42a76454b115e8155a794aff7cb17870daab3aa1309ad436700b7dde5e5885bc"
+          },
+          "18": {
+            "preparation": {
+              "effective_budget": 18,
+              "effective_allocation": [
+                2,
+                6,
+                9,
+                1
+              ],
+              "downforce": 0.4,
+              "gear": 0.5,
+              "strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 35
+                  },
+                  {
+                    "tire_id": "hard",
+                    "laps": 36
+                  }
+                ],
+                "pit_laps": [
+                  35
+                ]
+              },
+              "mode": "balanced"
+            },
+            "source_case_id": "2/SAOPAULO/balanced_reference/18/joint-v1-proposal3",
+            "physical_input_digest": "sha256:e52bcf1165ce6e4d489462e4360dad96b4658a2cad1553486dad0811136ee8d6",
+            "result_digest": "sha256:d0a5442f02e3d47f0242d1e74f50d33cc25dc644c7898c4cbdf7c5b3ef833a68"
+          },
+          "24": {
+            "preparation": {
+              "effective_budget": 24,
+              "effective_allocation": [
+                2,
+                9,
+                12,
+                1
+              ],
+              "downforce": 0.4,
+              "gear": 0.5,
+              "strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 35
+                  },
+                  {
+                    "tire_id": "hard",
+                    "laps": 36
+                  }
+                ],
+                "pit_laps": [
+                  35
+                ]
+              },
+              "mode": "balanced"
+            },
+            "source_case_id": "2/SAOPAULO/balanced_reference/24/concentrated/neighbor3",
+            "physical_input_digest": "sha256:e64b9f0caf79f891bb2a15f59fbeb37c7f7aa1d75767d89ec64959ec54809412",
+            "result_digest": "sha256:90d7d651130e9fbd78c78bb4ddbb0eca751d7063a106cc390881dca1f52b60d3"
+          }
+        }
+      }
+    },
+    {
+      "era": 2,
+      "circuit": "SILVERSTONE",
+      "references": {
+        "free": {
+          "12": {
+            "preparation": {
+              "effective_budget": 12,
+              "effective_allocation": [
+                3,
+                3,
+                4,
+                2
+              ],
+              "downforce": 0.4,
+              "gear": 0.5,
+              "strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 13
+                  },
+                  {
+                    "tire_id": "hard",
+                    "laps": 26
+                  },
+                  {
+                    "tire_id": "medium",
+                    "laps": 13
+                  }
+                ],
+                "pit_laps": [
+                  13,
+                  39
+                ]
+              },
+              "mode": "balanced"
+            },
+            "source_case_id": "2/SILVERSTONE/balanced_reference/12/joint-v1-proposal2",
+            "physical_input_digest": "sha256:2246ef475035087f098c2e75229ea80b2064943bdedf7b17e59b665406174bf1",
+            "result_digest": "sha256:3f4a139d9c85fa9f2d57c773156310cb85580049f15ccb7d11879c637ee725c6"
+          },
+          "18": {
+            "preparation": {
+              "effective_budget": 18,
+              "effective_allocation": [
+                2,
+                6,
+                9,
+                1
+              ],
+              "downforce": 0.4,
+              "gear": 0.5,
+              "strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 26
+                  },
+                  {
+                    "tire_id": "hard",
+                    "laps": 26
+                  }
+                ],
+                "pit_laps": [
+                  26
+                ]
+              },
+              "mode": "balanced"
+            },
+            "source_case_id": "2/SILVERSTONE/balanced_reference/18/joint-v1-proposal3",
+            "physical_input_digest": "sha256:d75d4186f2d1642e3f3961c16d19e1eb1330f0a248c44184b074f9b876c5d443",
+            "result_digest": "sha256:4f2a83e2b82d741dbeeb568000a4d186a7713b80b1a244ece4fe1d61130b9e7c"
+          },
+          "24": {
+            "preparation": {
+              "effective_budget": 24,
+              "effective_allocation": [
+                2,
+                9,
+                12,
+                1
+              ],
+              "downforce": 0.4,
+              "gear": 0.5,
+              "strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 26
+                  },
+                  {
+                    "tire_id": "hard",
+                    "laps": 26
+                  }
+                ],
+                "pit_laps": [
+                  26
+                ]
+              },
+              "mode": "balanced"
+            },
+            "source_case_id": "2/SILVERSTONE/balanced_reference/24/concentrated/neighbor3",
+            "physical_input_digest": "sha256:32ea7abe474f0e5836142513d674be5a7da83342e222a768a2f7f5daa650316d",
+            "result_digest": "sha256:991ffa0f18000889988b3a5687ac43f764e7bb86a0053bab4b8e932bcb69ce3b"
+          }
+        },
+        "zero_extra": {
+          "12": {
+            "preparation": {
+              "effective_budget": 12,
+              "effective_allocation": [
+                2,
+                4,
+                5,
+                1
+              ],
+              "downforce": 0.4,
+              "gear": 0.5,
+              "strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 26
+                  },
+                  {
+                    "tire_id": "hard",
+                    "laps": 26
+                  }
+                ],
+                "pit_laps": [
+                  26
+                ]
+              },
+              "mode": "balanced"
+            },
+            "source_case_id": "2/SILVERSTONE/balanced_reference/12/joint-v1-proposal3",
+            "physical_input_digest": "sha256:6ffc62448f88ced00c1a71285c1b62c98ed06a69451bbd466cd21b4e9af8b0d0",
+            "result_digest": "sha256:008252b05accc54d4191c9a2ba88633e93d4b345d7531211a8a5edd973c76b9f"
+          },
+          "18": {
+            "preparation": {
+              "effective_budget": 18,
+              "effective_allocation": [
+                2,
+                6,
+                9,
+                1
+              ],
+              "downforce": 0.4,
+              "gear": 0.5,
+              "strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 26
+                  },
+                  {
+                    "tire_id": "hard",
+                    "laps": 26
+                  }
+                ],
+                "pit_laps": [
+                  26
+                ]
+              },
+              "mode": "balanced"
+            },
+            "source_case_id": "2/SILVERSTONE/balanced_reference/18/joint-v1-proposal3",
+            "physical_input_digest": "sha256:d75d4186f2d1642e3f3961c16d19e1eb1330f0a248c44184b074f9b876c5d443",
+            "result_digest": "sha256:4f2a83e2b82d741dbeeb568000a4d186a7713b80b1a244ece4fe1d61130b9e7c"
+          },
+          "24": {
+            "preparation": {
+              "effective_budget": 24,
+              "effective_allocation": [
+                2,
+                9,
+                12,
+                1
+              ],
+              "downforce": 0.4,
+              "gear": 0.5,
+              "strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 26
+                  },
+                  {
+                    "tire_id": "hard",
+                    "laps": 26
+                  }
+                ],
+                "pit_laps": [
+                  26
+                ]
+              },
+              "mode": "balanced"
+            },
+            "source_case_id": "2/SILVERSTONE/balanced_reference/24/concentrated/neighbor3",
+            "physical_input_digest": "sha256:32ea7abe474f0e5836142513d674be5a7da83342e222a768a2f7f5daa650316d",
+            "result_digest": "sha256:991ffa0f18000889988b3a5687ac43f764e7bb86a0053bab4b8e932bcb69ce3b"
+          }
+        }
+      }
+    },
+    {
+      "era": 2,
+      "circuit": "MONZA",
+      "references": {
+        "free": {
+          "12": {
+            "preparation": {
+              "effective_budget": 12,
+              "effective_allocation": [
+                3,
+                3,
+                4,
+                2
+              ],
+              "downforce": 0.1,
+              "gear": 0.5,
+              "strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 13
+                  },
+                  {
+                    "tire_id": "hard",
+                    "laps": 27
+                  },
+                  {
+                    "tire_id": "medium",
+                    "laps": 13
+                  }
+                ],
+                "pit_laps": [
+                  13,
+                  40
+                ]
+              },
+              "mode": "balanced"
+            },
+            "source_case_id": "2/MONZA/balanced_reference/12/joint-v1-proposal2",
+            "physical_input_digest": "sha256:f3971ccc874e202126e3057f1d6ff613576a9e36d8ec83595064b3eaadaf4260",
+            "result_digest": "sha256:7e054a2547550f1662d6b6ed6acb93d1a8be5a519113689bc7faa2b30439641e"
+          },
+          "18": {
+            "preparation": {
+              "effective_budget": 18,
+              "effective_allocation": [
+                4,
+                4,
+                6,
+                4
+              ],
+              "downforce": 0.1,
+              "gear": 0.5,
+              "strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 13
+                  },
+                  {
+                    "tire_id": "hard",
+                    "laps": 27
+                  },
+                  {
+                    "tire_id": "medium",
+                    "laps": 13
+                  }
+                ],
+                "pit_laps": [
+                  13,
+                  40
+                ]
+              },
+              "mode": "balanced"
+            },
+            "source_case_id": "2/MONZA/balanced_reference/18/joint-v1-proposal2",
+            "physical_input_digest": "sha256:4eaab873b73a9f2d7088710a5c0da2bd6d3c51ceafecc00267cfda2150f803c7",
+            "result_digest": "sha256:17e9f69c396e9096c4f06078a36f86465046c7ead61710e0600b4fd0ddba5434"
+          },
+          "24": {
+            "preparation": {
+              "effective_budget": 24,
+              "effective_allocation": [
+                6,
+                5,
+                8,
+                5
+              ],
+              "downforce": 0.1,
+              "gear": 0.5,
+              "strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 13
+                  },
+                  {
+                    "tire_id": "hard",
+                    "laps": 27
+                  },
+                  {
+                    "tire_id": "medium",
+                    "laps": 13
+                  }
+                ],
+                "pit_laps": [
+                  13,
+                  40
+                ]
+              },
+              "mode": "balanced"
+            },
+            "source_case_id": "2/MONZA/balanced_reference/24/informed/neighbor3",
+            "physical_input_digest": "sha256:a0334f79714a571c2b029731b69e44ff333d86cf1714d25718f5b5ce651770db",
+            "result_digest": "sha256:7d9a6baa3f8aeac2cb107ff545cf22c409de30f3ed5552b61107f42550cfc808"
+          }
+        },
+        "zero_extra": {
+          "12": {
+            "preparation": {
+              "effective_budget": 12,
+              "effective_allocation": [
+                2,
+                4,
+                5,
+                1
+              ],
+              "downforce": 0.4,
+              "gear": 0.5,
+              "strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 26
+                  },
+                  {
+                    "tire_id": "hard",
+                    "laps": 27
+                  }
+                ],
+                "pit_laps": [
+                  26
+                ]
+              },
+              "mode": "balanced"
+            },
+            "source_case_id": "2/MONZA/balanced_reference/12/joint-v1-proposal3",
+            "physical_input_digest": "sha256:968e02ef33351bb61bf96887d523c12c04506c97b1174379edebe32ec4b328b9",
+            "result_digest": "sha256:43fd0f42165e725243dbb175d6d3bbc633a36cdb66fd502141160f6480ec4d16"
+          },
+          "18": {
+            "preparation": {
+              "effective_budget": 18,
+              "effective_allocation": [
+                2,
+                6,
+                9,
+                1
+              ],
+              "downforce": 0.4,
+              "gear": 0.5,
+              "strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 26
+                  },
+                  {
+                    "tire_id": "hard",
+                    "laps": 27
+                  }
+                ],
+                "pit_laps": [
+                  26
+                ]
+              },
+              "mode": "balanced"
+            },
+            "source_case_id": "2/MONZA/balanced_reference/18/joint-v1-proposal3",
+            "physical_input_digest": "sha256:c3b50e5c97271e086ca726ad3ee5c81bd624789b5dd9ef982c0c5b5277901988",
+            "result_digest": "sha256:eee7acab4e1ee4e6c74e7497ddf8a1a857f10dd02db9f46871a4f7e83924a2d6"
+          },
+          "24": {
+            "preparation": {
+              "effective_budget": 24,
+              "effective_allocation": [
+                2,
+                9,
+                12,
+                1
+              ],
+              "downforce": 0.4,
+              "gear": 0.5,
+              "strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 26
+                  },
+                  {
+                    "tire_id": "hard",
+                    "laps": 27
+                  }
+                ],
+                "pit_laps": [
+                  26
+                ]
+              },
+              "mode": "balanced"
+            },
+            "source_case_id": "2/MONZA/balanced_reference/24/concentrated/neighbor3",
+            "physical_input_digest": "sha256:7722efafef267675dd82fcd0ea3224c20180b67bfe9a00205c06da4606972bcc",
+            "result_digest": "sha256:a29afc6a7812fcd4e42cad1b46a665fe19e74ad4dcd12eb16860b7568eea8d70"
+          }
+        }
+      }
+    },
+    {
+      "era": 2,
+      "circuit": "ZANDVOORT",
+      "references": {
+        "free": {
+          "12": {
+            "preparation": {
+              "effective_budget": 12,
+              "effective_allocation": [
+                3,
+                3,
+                4,
+                2
+              ],
+              "downforce": 0.5,
+              "gear": 0.6,
+              "strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 18
+                  },
+                  {
+                    "tire_id": "hard",
+                    "laps": 36
+                  },
+                  {
+                    "tire_id": "medium",
+                    "laps": 18
+                  }
+                ],
+                "pit_laps": [
+                  18,
+                  54
+                ]
+              },
+              "mode": "balanced"
+            },
+            "source_case_id": "2/ZANDVOORT/balanced_reference/12/joint-v1-proposal2",
+            "physical_input_digest": "sha256:c91727d7420a8901a4e9f0c9fa57c18ce51a3556371625e2cc6c16d17a7c8a38",
+            "result_digest": "sha256:4104e8a9a473a466d106de9c96fabb98e3a7b6a7b4aed9579aec88ab964eca7a"
+          },
+          "18": {
+            "preparation": {
+              "effective_budget": 18,
+              "effective_allocation": [
+                4,
+                4,
+                6,
+                4
+              ],
+              "downforce": 0.5,
+              "gear": 0.6,
+              "strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 18
+                  },
+                  {
+                    "tire_id": "hard",
+                    "laps": 36
+                  },
+                  {
+                    "tire_id": "medium",
+                    "laps": 18
+                  }
+                ],
+                "pit_laps": [
+                  18,
+                  54
+                ]
+              },
+              "mode": "balanced"
+            },
+            "source_case_id": "2/ZANDVOORT/balanced_reference/18/joint-v1-proposal2",
+            "physical_input_digest": "sha256:29def65c89c677f98dce90e813cb8c0a0fe4c848a1cea68d9aace88adbc75248",
+            "result_digest": "sha256:4903572a060cfb53a656d49060c9e8753d825cf0a36aa21ca5753be0aa506d3f"
+          },
+          "24": {
+            "preparation": {
+              "effective_budget": 24,
+              "effective_allocation": [
+                6,
+                5,
+                8,
+                5
+              ],
+              "downforce": 0.5,
+              "gear": 0.6,
+              "strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 18
+                  },
+                  {
+                    "tire_id": "hard",
+                    "laps": 36
+                  },
+                  {
+                    "tire_id": "medium",
+                    "laps": 18
+                  }
+                ],
+                "pit_laps": [
+                  18,
+                  54
+                ]
+              },
+              "mode": "balanced"
+            },
+            "source_case_id": "2/ZANDVOORT/balanced_reference/24/informed/neighbor2",
+            "physical_input_digest": "sha256:16dc3838658c400110d0d8a0075f8ee9b081fad8df0e6e5bc4e5a863f7ba9537",
+            "result_digest": "sha256:5705b6829183efa7e087a79cdd87640325fe05c483ee7c80a824d3c1a6df1695"
+          }
+        },
+        "zero_extra": {
+          "12": {
+            "preparation": {
+              "effective_budget": 12,
+              "effective_allocation": [
+                2,
+                4,
+                5,
+                1
+              ],
+              "downforce": 0.4,
+              "gear": 0.5,
+              "strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 36
+                  },
+                  {
+                    "tire_id": "hard",
+                    "laps": 36
+                  }
+                ],
+                "pit_laps": [
+                  36
+                ]
+              },
+              "mode": "balanced"
+            },
+            "source_case_id": "2/ZANDVOORT/balanced_reference/12/joint-v1-proposal3",
+            "physical_input_digest": "sha256:659921d7b0a3b348c421c83d81dcd1200d678b7c6bbe41f236886c96f7d864a5",
+            "result_digest": "sha256:9b969c4f7db689d84f1406ac19ff8b81d357edea89982a73098b3996c7411355"
+          },
+          "18": {
+            "preparation": {
+              "effective_budget": 18,
+              "effective_allocation": [
+                2,
+                6,
+                9,
+                1
+              ],
+              "downforce": 0.4,
+              "gear": 0.5,
+              "strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 36
+                  },
+                  {
+                    "tire_id": "hard",
+                    "laps": 36
+                  }
+                ],
+                "pit_laps": [
+                  36
+                ]
+              },
+              "mode": "balanced"
+            },
+            "source_case_id": "2/ZANDVOORT/balanced_reference/18/joint-v1-proposal3",
+            "physical_input_digest": "sha256:924bc495a1183d7415ac4ecd3e0ae79d9b720f61f9adcd4f8d190e5be8ce9977",
+            "result_digest": "sha256:72f41510e221572db784c4dce8c495203f95afafb419358a875df0560e2c7616"
+          },
+          "24": {
+            "preparation": {
+              "effective_budget": 24,
+              "effective_allocation": [
+                2,
+                9,
+                12,
+                1
+              ],
+              "downforce": 0.4,
+              "gear": 0.5,
+              "strategy": {
+                "stints": [
+                  {
+                    "tire_id": "medium",
+                    "laps": 36
+                  },
+                  {
+                    "tire_id": "hard",
+                    "laps": 36
+                  }
+                ],
+                "pit_laps": [
+                  36
+                ]
+              },
+              "mode": "balanced"
+            },
+            "source_case_id": "2/ZANDVOORT/balanced_reference/24/concentrated/neighbor3",
+            "physical_input_digest": "sha256:930ab889c026c17fa4bfc9a84dccfbae393d0fc404dfb02390f84cb1ee952a7b",
+            "result_digest": "sha256:bc1f5854ff79473fcfe17259651bf84df53f702951275b5f8e387833bae3721f"
+          }
+        }
+      }
+    }
+  ]
+}
