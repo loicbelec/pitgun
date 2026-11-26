@@ -1,0 +1,20 @@
+{
+  "schema": "pitgun.aero-tradeoff-audit-evidence/v1",
+  "source_commit": "a3818da15976be5a3f5a93494f93d2e7dcbb8cdb",
+  "native_binary_sha256": "25776d1529da153740c26b4e8db56146e05935df938a3ed256490117283e8b2f",
+  "native_binary_retained_separately": true,
+  "policy_sha256": "8b303f0189e3e174138a877d0eada425b37c672fe66dd07efcbc86b8d861e771",
+  "numerical_pass": true,
+  "full_gp": 48,
+  "accepted_laps": 2796,
+  "exact_fresh_repeats": 6,
+  "exact_prior_bridges": 9,
+  "reports": {
+    "DECISION_V1.json": "9814299cf58177b4e2432b3ec0b4e23caad3d8ec3fa46b48d8ad7a92bd732018",
+    "RESULTS_V1.md": "eab7f2e093d945147e7e1938be006fca01b740b9871f18bd9671f76934aeba1a",
+    "INTERPRETATION.md": "acbb1369d4eba691064829454c920ddabf16fc1ad970d13b109b673e7766801e",
+    "results/main-v1.json.gz": "796f9d059cbf4a7c7cf445811b2965b67dddbb8529b0798260905b6bf80d4ae3"
+  },
+  "model_changed": false,
+  "release_admitted": false
+}

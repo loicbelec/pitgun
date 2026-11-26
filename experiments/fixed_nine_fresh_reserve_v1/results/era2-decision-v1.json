@@ -1,0 +1,1295 @@
+{
+  "schema": "pitgun.fixed-nine-fresh-reserve-decision/v1",
+  "era": 2,
+  "complete": true,
+  "candidate_sha256": "2a538c3f116f23a177bedf73a2ca397cc24df57d89a8585ca644bc924f01a205",
+  "numerical_pass": true,
+  "reserved_review_pass": true,
+  "gates": {
+    "numerical_and_exact_repeats": true,
+    "cap14_prepared_median": true,
+    "cap14_shortcut_not_sweep": true,
+    "cap14_prepared_time_gain": true,
+    "cap20_prepared_median": true,
+    "cap20_shortcut_not_sweep": true,
+    "cap20_prepared_time_gain": true,
+    "cap24_prepared_median": true,
+    "cap24_shortcut_not_sweep": true,
+    "cap24_prepared_time_gain": true,
+    "actual_exit_prepared_can_win": true
+  },
+  "fresh_native_gp": 234,
+  "logical_evaluations": 231,
+  "id_only_reference_aliases": 3,
+  "fresh_native_laps": 15397,
+  "fresh_repeats": [
+    {
+      "case_id": "2/MEXICO/franz_hermann/24/fresh-reserve-v1/franz_hermann/2601155921",
+      "exact": true
+    },
+    {
+      "case_id": "2/MEXICO/charles_leclair/24/fresh-reserve-v1/charles_leclair/2601155921",
+      "exact": true
+    },
+    {
+      "case_id": "2/MONZA/franz_hermann/24/fresh-reserve-v1/franz_hermann/2601155921",
+      "exact": true
+    },
+    {
+      "case_id": "2/MONZA/charles_leclair/24/fresh-reserve-v1/charles_leclair/2601155921",
+      "exact": true
+    },
+    {
+      "case_id": "2/ZANDVOORT/franz_hermann/24/fresh-reserve-v1/franz_hermann/2601155921",
+      "exact": true
+    },
+    {
+      "case_id": "2/ZANDVOORT/charles_leclair/24/fresh-reserve-v1/charles_leclair/2601155921",
+      "exact": true
+    }
+  ],
+  "summaries": [
+    {
+      "era": 2,
+      "circuit": "MEXICO",
+      "budget": 14,
+      "seed": 2601104729,
+      "scope": "controlled common-era equipment",
+      "reference": {
+        "free": {
+          "time_s": 7543.207384371853,
+          "rank": 1,
+          "gap_to_best_ai_s": -10.999602710779982,
+          "native_case_id": "2/MEXICO/balanced_reference/14/fresh-reserve-v1/free/2601104729"
+        },
+        "zero_extra": {
+          "time_s": 7551.0165857559105,
+          "rank": 1,
+          "gap_to_best_ai_s": -3.190401326722167,
+          "native_case_id": "2/MEXICO/balanced_reference/14/fresh-reserve-v1/zero_extra/2601104729"
+        }
+      },
+      "field": {
+        "franz_hermann": {
+          "time_s": 7561.0534381143825,
+          "rank": 2
+        },
+        "charles_leclair": {
+          "time_s": 7554.206987082633,
+          "rank": 1
+        },
+        "luis_amilton": {
+          "time_s": 7570.030404758074,
+          "rank": 4
+        },
+        "smooth_operator": {
+          "time_s": 7561.872780269696,
+          "rank": 3
+        },
+        "isa_kadjar": {
+          "time_s": 7575.562874498735,
+          "rank": 5
+        },
+        "pedro_gaseoso": {
+          "time_s": 7578.436150277238,
+          "rank": 6
+        },
+        "battery_voltas": {
+          "time_s": 7581.691309865386,
+          "rank": 8
+        },
+        "daniel_enchantier": {
+          "time_s": 7579.107612111342,
+          "rank": 7
+        },
+        "goat_tifi": {
+          "time_s": 7619.927939303021,
+          "rank": 9
+        }
+      }
+    },
+    {
+      "era": 2,
+      "circuit": "MEXICO",
+      "budget": 20,
+      "seed": 2601130363,
+      "scope": "controlled common-era equipment",
+      "reference": {
+        "free": {
+          "time_s": 7534.800056409071,
+          "rank": 1,
+          "gap_to_best_ai_s": -13.898012233665213,
+          "native_case_id": "2/MEXICO/balanced_reference/20/fresh-reserve-v1/free/2601130363"
+        },
+        "zero_extra": {
+          "time_s": 7537.616619188426,
+          "rank": 1,
+          "gap_to_best_ai_s": -11.081449454310132,
+          "native_case_id": "2/MEXICO/balanced_reference/20/fresh-reserve-v1/zero_extra/2601130363"
+        }
+      },
+      "field": {
+        "franz_hermann": {
+          "time_s": 7548.698068642736,
+          "rank": 1
+        },
+        "charles_leclair": {
+          "time_s": 7550.619319185287,
+          "rank": 2
+        },
+        "luis_amilton": {
+          "time_s": 7564.956326093793,
+          "rank": 4
+        },
+        "smooth_operator": {
+          "time_s": 7567.284936945972,
+          "rank": 6
+        },
+        "isa_kadjar": {
+          "time_s": 7555.521568078599,
+          "rank": 3
+        },
+        "pedro_gaseoso": {
+          "time_s": 7567.196871165496,
+          "rank": 5
+        },
+        "battery_voltas": {
+          "time_s": 7570.363471097458,
+          "rank": 7
+        },
+        "daniel_enchantier": {
+          "time_s": 7575.121421113869,
+          "rank": 8
+        },
+        "goat_tifi": {
+          "time_s": 7613.906069008387,
+          "rank": 9
+        }
+      }
+    },
+    {
+      "era": 2,
+      "circuit": "MEXICO",
+      "budget": 24,
+      "seed": 2601155921,
+      "scope": "actual career exit",
+      "reference": {
+        "free": {
+          "time_s": 7525.504683575752,
+          "rank": 1,
+          "gap_to_best_ai_s": -10.931568356269963,
+          "native_case_id": "2/MEXICO/balanced_reference/24/fresh-reserve-v1/free/2601155921"
+        },
+        "zero_extra": {
+          "time_s": 7525.504683575752,
+          "rank": 1,
+          "gap_to_best_ai_s": -10.931568356269963,
+          "native_case_id": "2/MEXICO/balanced_reference/24/fresh-reserve-v1/free/2601155921"
+        }
+      },
+      "field": {
+        "franz_hermann": {
+          "time_s": 7538.382068335483,
+          "rank": 2
+        },
+        "charles_leclair": {
+          "time_s": 7536.436251932022,
+          "rank": 1
+        },
+        "luis_amilton": {
+          "time_s": 7554.875914309476,
+          "rank": 3
+        },
+        "smooth_operator": {
+          "time_s": 7555.596770787181,
+          "rank": 4
+        },
+        "isa_kadjar": {
+          "time_s": 7565.566902806566,
+          "rank": 6
+        },
+        "pedro_gaseoso": {
+          "time_s": 7560.647809643722,
+          "rank": 5
+        },
+        "battery_voltas": {
+          "time_s": 7573.172035302272,
+          "rank": 7
+        },
+        "daniel_enchantier": {
+          "time_s": 7574.3472618238875,
+          "rank": 8
+        },
+        "goat_tifi": {
+          "time_s": 7594.554133348817,
+          "rank": 9
+        }
+      }
+    },
+    {
+      "era": 2,
+      "circuit": "MONTREAL",
+      "budget": 14,
+      "seed": 2601104729,
+      "scope": "controlled common-era equipment",
+      "reference": {
+        "free": {
+          "time_s": 6908.19030602717,
+          "rank": 1,
+          "gap_to_best_ai_s": -10.52008632615889,
+          "native_case_id": "2/MONTREAL/balanced_reference/14/fresh-reserve-v1/free/2601104729"
+        },
+        "zero_extra": {
+          "time_s": 6926.733884656978,
+          "rank": 3,
+          "gap_to_best_ai_s": 8.023492303649618,
+          "native_case_id": "2/MONTREAL/balanced_reference/14/fresh-reserve-v1/zero_extra/2601104729"
+        }
+      },
+      "field": {
+        "franz_hermann": {
+          "time_s": 6922.813288935147,
+          "rank": 2
+        },
+        "charles_leclair": {
+          "time_s": 6918.710392353329,
+          "rank": 1
+        },
+        "luis_amilton": {
+          "time_s": 6936.091366279495,
+          "rank": 4
+        },
+        "smooth_operator": {
+          "time_s": 6935.982820947252,
+          "rank": 3
+        },
+        "isa_kadjar": {
+          "time_s": 6941.838437599693,
+          "rank": 5
+        },
+        "pedro_gaseoso": {
+          "time_s": 6943.41364275707,
+          "rank": 6
+        },
+        "battery_voltas": {
+          "time_s": 6948.401624750752,
+          "rank": 7
+        },
+        "daniel_enchantier": {
+          "time_s": 6957.644690137404,
+          "rank": 8
+        },
+        "goat_tifi": {
+          "time_s": 6974.441739199148,
+          "rank": 9
+        }
+      }
+    },
+    {
+      "era": 2,
+      "circuit": "MONTREAL",
+      "budget": 20,
+      "seed": 2601130363,
+      "scope": "controlled common-era equipment",
+      "reference": {
+        "free": {
+          "time_s": 6897.689095887362,
+          "rank": 1,
+          "gap_to_best_ai_s": -8.392326689862784,
+          "native_case_id": "2/MONTREAL/balanced_reference/20/fresh-reserve-v1/free/2601130363"
+        },
+        "zero_extra": {
+          "time_s": 6910.662860419038,
+          "rank": 2,
+          "gap_to_best_ai_s": 4.5814378418135675,
+          "native_case_id": "2/MONTREAL/balanced_reference/20/fresh-reserve-v1/zero_extra/2601130363"
+        }
+      },
+      "field": {
+        "franz_hermann": {
+          "time_s": 6910.970732849251,
+          "rank": 2
+        },
+        "charles_leclair": {
+          "time_s": 6906.081422577225,
+          "rank": 1
+        },
+        "luis_amilton": {
+          "time_s": 6926.568917804041,
+          "rank": 5
+        },
+        "smooth_operator": {
+          "time_s": 6923.448403002198,
+          "rank": 3
+        },
+        "isa_kadjar": {
+          "time_s": 6925.684119663294,
+          "rank": 4
+        },
+        "pedro_gaseoso": {
+          "time_s": 6936.218941584552,
+          "rank": 6
+        },
+        "battery_voltas": {
+          "time_s": 6939.09707666888,
+          "rank": 7
+        },
+        "daniel_enchantier": {
+          "time_s": 6948.185352304048,
+          "rank": 8
+        },
+        "goat_tifi": {
+          "time_s": 6982.1714462775735,
+          "rank": 9
+        }
+      }
+    },
+    {
+      "era": 2,
+      "circuit": "MONTREAL",
+      "budget": 24,
+      "seed": 2601155921,
+      "scope": "actual career exit",
+      "reference": {
+        "free": {
+          "time_s": 6888.253048743987,
+          "rank": 1,
+          "gap_to_best_ai_s": -4.869799564869027,
+          "native_case_id": "2/MONTREAL/balanced_reference/24/fresh-reserve-v1/free/2601155921"
+        },
+        "zero_extra": {
+          "time_s": 6898.594286214474,
+          "rank": 2,
+          "gap_to_best_ai_s": 5.471437905617677,
+          "native_case_id": "2/MONTREAL/balanced_reference/24/fresh-reserve-v1/zero_extra/2601155921"
+        }
+      },
+      "field": {
+        "franz_hermann": {
+          "time_s": 6902.883384703723,
+          "rank": 2
+        },
+        "charles_leclair": {
+          "time_s": 6893.122848308856,
+          "rank": 1
+        },
+        "luis_amilton": {
+          "time_s": 6920.844851184395,
+          "rank": 4
+        },
+        "smooth_operator": {
+          "time_s": 6909.70150113045,
+          "rank": 3
+        },
+        "isa_kadjar": {
+          "time_s": 6924.005955156228,
+          "rank": 5
+        },
+        "pedro_gaseoso": {
+          "time_s": 6924.319392823617,
+          "rank": 6
+        },
+        "battery_voltas": {
+          "time_s": 6929.946596697942,
+          "rank": 8
+        },
+        "daniel_enchantier": {
+          "time_s": 6925.102151572207,
+          "rank": 7
+        },
+        "goat_tifi": {
+          "time_s": 6958.94784122809,
+          "rank": 9
+        }
+      }
+    },
+    {
+      "era": 2,
+      "circuit": "MONZA",
+      "budget": 14,
+      "seed": 2601104729,
+      "scope": "controlled common-era equipment",
+      "reference": {
+        "free": {
+          "time_s": 6395.329545641999,
+          "rank": 2,
+          "gap_to_best_ai_s": 3.5583553305132227,
+          "native_case_id": "2/MONZA/balanced_reference/14/fresh-reserve-v1/free/2601104729"
+        },
+        "zero_extra": {
+          "time_s": 6406.58870574633,
+          "rank": 4,
+          "gap_to_best_ai_s": 14.817515434843699,
+          "native_case_id": "2/MONZA/balanced_reference/14/fresh-reserve-v1/zero_extra/2601104729"
+        }
+      },
+      "field": {
+        "franz_hermann": {
+          "time_s": 6391.771190311486,
+          "rank": 1
+        },
+        "charles_leclair": {
+          "time_s": 6401.074052817471,
+          "rank": 2
+        },
+        "luis_amilton": {
+          "time_s": 6416.800307155867,
+          "rank": 4
+        },
+        "smooth_operator": {
+          "time_s": 6406.575917799084,
+          "rank": 3
+        },
+        "isa_kadjar": {
+          "time_s": 6423.833736620933,
+          "rank": 6
+        },
+        "pedro_gaseoso": {
+          "time_s": 6420.565601802869,
+          "rank": 5
+        },
+        "battery_voltas": {
+          "time_s": 6429.20438225035,
+          "rank": 7
+        },
+        "daniel_enchantier": {
+          "time_s": 6432.920092111761,
+          "rank": 8
+        },
+        "goat_tifi": {
+          "time_s": 6455.521689035697,
+          "rank": 9
+        }
+      }
+    },
+    {
+      "era": 2,
+      "circuit": "MONZA",
+      "budget": 20,
+      "seed": 2601130363,
+      "scope": "controlled common-era equipment",
+      "reference": {
+        "free": {
+          "time_s": 6385.266826122813,
+          "rank": 2,
+          "gap_to_best_ai_s": 1.568732046556761,
+          "native_case_id": "2/MONZA/balanced_reference/20/fresh-reserve-v1/free/2601130363"
+        },
+        "zero_extra": {
+          "time_s": 6390.379994944145,
+          "rank": 3,
+          "gap_to_best_ai_s": 6.681900867889453,
+          "native_case_id": "2/MONZA/balanced_reference/20/fresh-reserve-v1/zero_extra/2601130363"
+        }
+      },
+      "field": {
+        "franz_hermann": {
+          "time_s": 6383.698094076256,
+          "rank": 1
+        },
+        "charles_leclair": {
+          "time_s": 6389.580258851339,
+          "rank": 2
+        },
+        "luis_amilton": {
+          "time_s": 6407.246202389649,
+          "rank": 6
+        },
+        "smooth_operator": {
+          "time_s": 6397.441072868604,
+          "rank": 3
+        },
+        "isa_kadjar": {
+          "time_s": 6406.587768496505,
+          "rank": 4
+        },
+        "pedro_gaseoso": {
+          "time_s": 6406.867297216294,
+          "rank": 5
+        },
+        "battery_voltas": {
+          "time_s": 6414.343736317158,
+          "rank": 7
+        },
+        "daniel_enchantier": {
+          "time_s": 6426.944119301542,
+          "rank": 8
+        },
+        "goat_tifi": {
+          "time_s": 6448.7361720077315,
+          "rank": 9
+        }
+      }
+    },
+    {
+      "era": 2,
+      "circuit": "MONZA",
+      "budget": 24,
+      "seed": 2601155921,
+      "scope": "actual career exit",
+      "reference": {
+        "free": {
+          "time_s": 6378.712282514609,
+          "rank": 3,
+          "gap_to_best_ai_s": 3.2754156770279224,
+          "native_case_id": "2/MONZA/balanced_reference/24/fresh-reserve-v1/free/2601155921"
+        },
+        "zero_extra": {
+          "time_s": 6380.321740908346,
+          "rank": 3,
+          "gap_to_best_ai_s": 4.884874070765363,
+          "native_case_id": "2/MONZA/balanced_reference/24/fresh-reserve-v1/zero_extra/2601155921"
+        }
+      },
+      "field": {
+        "franz_hermann": {
+          "time_s": 6375.436866837581,
+          "rank": 1
+        },
+        "charles_leclair": {
+          "time_s": 6378.493392083154,
+          "rank": 2
+        },
+        "luis_amilton": {
+          "time_s": 6392.292617082557,
+          "rank": 4
+        },
+        "smooth_operator": {
+          "time_s": 6390.624880503448,
+          "rank": 3
+        },
+        "isa_kadjar": {
+          "time_s": 6400.175489879258,
+          "rank": 5
+        },
+        "pedro_gaseoso": {
+          "time_s": 6401.809775889253,
+          "rank": 6
+        },
+        "battery_voltas": {
+          "time_s": 6404.270812306663,
+          "rank": 7
+        },
+        "daniel_enchantier": {
+          "time_s": 6405.193475059909,
+          "rank": 8
+        },
+        "goat_tifi": {
+          "time_s": 6443.59749044327,
+          "rank": 9
+        }
+      }
+    },
+    {
+      "era": 2,
+      "circuit": "SAOPAULO",
+      "budget": 14,
+      "seed": 2601104729,
+      "scope": "controlled common-era equipment",
+      "reference": {
+        "free": {
+          "time_s": 6828.946284968323,
+          "rank": 1,
+          "gap_to_best_ai_s": -15.419810553488787,
+          "native_case_id": "2/SAOPAULO/balanced_reference/14/fresh-reserve-v1/free/2601104729"
+        },
+        "zero_extra": {
+          "time_s": 6851.623225019622,
+          "rank": 3,
+          "gap_to_best_ai_s": 7.2571294978097285,
+          "native_case_id": "2/SAOPAULO/balanced_reference/14/fresh-reserve-v1/zero_extra/2601104729"
+        }
+      },
+      "field": {
+        "franz_hermann": {
+          "time_s": 6844.615563907033,
+          "rank": 2
+        },
+        "charles_leclair": {
+          "time_s": 6844.366095521812,
+          "rank": 1
+        },
+        "luis_amilton": {
+          "time_s": 6861.913531171165,
+          "rank": 4
+        },
+        "smooth_operator": {
+          "time_s": 6857.461104440489,
+          "rank": 3
+        },
+        "isa_kadjar": {
+          "time_s": 6868.270879291111,
+          "rank": 6
+        },
+        "pedro_gaseoso": {
+          "time_s": 6868.211016516703,
+          "rank": 5
+        },
+        "battery_voltas": {
+          "time_s": 6873.62458019588,
+          "rank": 7
+        },
+        "daniel_enchantier": {
+          "time_s": 6878.335907573976,
+          "rank": 8
+        },
+        "goat_tifi": {
+          "time_s": 6901.538135887233,
+          "rank": 9
+        }
+      }
+    },
+    {
+      "era": 2,
+      "circuit": "SAOPAULO",
+      "budget": 20,
+      "seed": 2601130363,
+      "scope": "controlled common-era equipment",
+      "reference": {
+        "free": {
+          "time_s": 6819.6030993578925,
+          "rank": 1,
+          "gap_to_best_ai_s": -13.901798694675563,
+          "native_case_id": "2/SAOPAULO/balanced_reference/20/fresh-reserve-v1/free/2601130363"
+        },
+        "zero_extra": {
+          "time_s": 6837.211554699459,
+          "rank": 3,
+          "gap_to_best_ai_s": 3.7066566468911333,
+          "native_case_id": "2/SAOPAULO/balanced_reference/20/fresh-reserve-v1/zero_extra/2601130363"
+        }
+      },
+      "field": {
+        "franz_hermann": {
+          "time_s": 6835.886473485807,
+          "rank": 2
+        },
+        "charles_leclair": {
+          "time_s": 6833.504898052568,
+          "rank": 1
+        },
+        "luis_amilton": {
+          "time_s": 6849.475852276207,
+          "rank": 3
+        },
+        "smooth_operator": {
+          "time_s": 6850.6006156173435,
+          "rank": 4
+        },
+        "isa_kadjar": {
+          "time_s": 6852.79085585538,
+          "rank": 5
+        },
+        "pedro_gaseoso": {
+          "time_s": 6857.786882354328,
+          "rank": 6
+        },
+        "battery_voltas": {
+          "time_s": 6860.237011018584,
+          "rank": 7
+        },
+        "daniel_enchantier": {
+          "time_s": 6874.584901173267,
+          "rank": 8
+        },
+        "goat_tifi": {
+          "time_s": 6900.306554663026,
+          "rank": 9
+        }
+      }
+    },
+    {
+      "era": 2,
+      "circuit": "SAOPAULO",
+      "budget": 24,
+      "seed": 2601155921,
+      "scope": "actual career exit",
+      "reference": {
+        "free": {
+          "time_s": 6816.593626969895,
+          "rank": 1,
+          "gap_to_best_ai_s": -6.9965606745809055,
+          "native_case_id": "2/SAOPAULO/balanced_reference/24/fresh-reserve-v1/free/2601155921"
+        },
+        "zero_extra": {
+          "time_s": 6828.963280706239,
+          "rank": 3,
+          "gap_to_best_ai_s": 5.373093061763029,
+          "native_case_id": "2/SAOPAULO/balanced_reference/24/fresh-reserve-v1/zero_extra/2601155921"
+        }
+      },
+      "field": {
+        "franz_hermann": {
+          "time_s": 6828.224329520925,
+          "rank": 2
+        },
+        "charles_leclair": {
+          "time_s": 6823.590187644476,
+          "rank": 1
+        },
+        "luis_amilton": {
+          "time_s": 6839.031283107063,
+          "rank": 3
+        },
+        "smooth_operator": {
+          "time_s": 6841.744717057701,
+          "rank": 4
+        },
+        "isa_kadjar": {
+          "time_s": 6846.3504985882155,
+          "rank": 5
+        },
+        "pedro_gaseoso": {
+          "time_s": 6850.649915896404,
+          "rank": 7
+        },
+        "battery_voltas": {
+          "time_s": 6847.278603317134,
+          "rank": 6
+        },
+        "daniel_enchantier": {
+          "time_s": 6855.302117192948,
+          "rank": 8
+        },
+        "goat_tifi": {
+          "time_s": 6889.932525941424,
+          "rank": 9
+        }
+      }
+    },
+    {
+      "era": 2,
+      "circuit": "SILVERSTONE",
+      "budget": 14,
+      "seed": 2601104729,
+      "scope": "controlled common-era equipment",
+      "reference": {
+        "free": {
+          "time_s": 6676.678549332126,
+          "rank": 2,
+          "gap_to_best_ai_s": 2.9894999560265205,
+          "native_case_id": "2/SILVERSTONE/balanced_reference/14/fresh-reserve-v1/free/2601104729"
+        },
+        "zero_extra": {
+          "time_s": 6680.170348265197,
+          "rank": 2,
+          "gap_to_best_ai_s": 6.4812988890980705,
+          "native_case_id": "2/SILVERSTONE/balanced_reference/14/fresh-reserve-v1/zero_extra/2601104729"
+        }
+      },
+      "field": {
+        "franz_hermann": {
+          "time_s": 6685.244339891613,
+          "rank": 2
+        },
+        "charles_leclair": {
+          "time_s": 6673.689049376099,
+          "rank": 1
+        },
+        "luis_amilton": {
+          "time_s": 6709.637656484574,
+          "rank": 4
+        },
+        "smooth_operator": {
+          "time_s": 6699.707426845342,
+          "rank": 3
+        },
+        "isa_kadjar": {
+          "time_s": 6717.915090206556,
+          "rank": 6
+        },
+        "pedro_gaseoso": {
+          "time_s": 6715.264286057134,
+          "rank": 5
+        },
+        "battery_voltas": {
+          "time_s": 6720.519613738551,
+          "rank": 7
+        },
+        "daniel_enchantier": {
+          "time_s": 6728.79446280584,
+          "rank": 8
+        },
+        "goat_tifi": {
+          "time_s": 6750.5075524001195,
+          "rank": 9
+        }
+      }
+    },
+    {
+      "era": 2,
+      "circuit": "SILVERSTONE",
+      "budget": 20,
+      "seed": 2601130363,
+      "scope": "controlled common-era equipment",
+      "reference": {
+        "free": {
+          "time_s": 6665.377951204017,
+          "rank": 1,
+          "gap_to_best_ai_s": -11.267377654178745,
+          "native_case_id": "2/SILVERSTONE/balanced_reference/20/fresh-reserve-v1/free/2601130363"
+        },
+        "zero_extra": {
+          "time_s": 6665.377951204017,
+          "rank": 1,
+          "gap_to_best_ai_s": -11.267377654178745,
+          "native_case_id": "2/SILVERSTONE/balanced_reference/20/fresh-reserve-v1/free/2601130363"
+        }
+      },
+      "field": {
+        "franz_hermann": {
+          "time_s": 6676.645328858196,
+          "rank": 1
+        },
+        "charles_leclair": {
+          "time_s": 6677.8121088948465,
+          "rank": 2
+        },
+        "luis_amilton": {
+          "time_s": 6696.593270047304,
+          "rank": 4
+        },
+        "smooth_operator": {
+          "time_s": 6690.97288129906,
+          "rank": 3
+        },
+        "isa_kadjar": {
+          "time_s": 6699.940498743531,
+          "rank": 5
+        },
+        "pedro_gaseoso": {
+          "time_s": 6701.704054408462,
+          "rank": 6
+        },
+        "battery_voltas": {
+          "time_s": 6708.505346752117,
+          "rank": 7
+        },
+        "daniel_enchantier": {
+          "time_s": 6720.325864364974,
+          "rank": 8
+        },
+        "goat_tifi": {
+          "time_s": 6739.5705683206925,
+          "rank": 9
+        }
+      }
+    },
+    {
+      "era": 2,
+      "circuit": "SILVERSTONE",
+      "budget": 24,
+      "seed": 2601155921,
+      "scope": "actual career exit",
+      "reference": {
+        "free": {
+          "time_s": 6653.554295766313,
+          "rank": 1,
+          "gap_to_best_ai_s": -11.916179574058333,
+          "native_case_id": "2/SILVERSTONE/balanced_reference/24/fresh-reserve-v1/free/2601155921"
+        },
+        "zero_extra": {
+          "time_s": 6653.554295766313,
+          "rank": 1,
+          "gap_to_best_ai_s": -11.916179574058333,
+          "native_case_id": "2/SILVERSTONE/balanced_reference/24/fresh-reserve-v1/free/2601155921"
+        }
+      },
+      "field": {
+        "franz_hermann": {
+          "time_s": 6666.727617704138,
+          "rank": 2
+        },
+        "charles_leclair": {
+          "time_s": 6665.470475340371,
+          "rank": 1
+        },
+        "luis_amilton": {
+          "time_s": 6684.242407023293,
+          "rank": 3
+        },
+        "smooth_operator": {
+          "time_s": 6684.819330569314,
+          "rank": 4
+        },
+        "isa_kadjar": {
+          "time_s": 6691.199299945872,
+          "rank": 5
+        },
+        "pedro_gaseoso": {
+          "time_s": 6691.933312488832,
+          "rank": 6
+        },
+        "battery_voltas": {
+          "time_s": 6695.962412580728,
+          "rank": 7
+        },
+        "daniel_enchantier": {
+          "time_s": 6700.17535903906,
+          "rank": 8
+        },
+        "goat_tifi": {
+          "time_s": 6734.824308786918,
+          "rank": 9
+        }
+      }
+    },
+    {
+      "era": 2,
+      "circuit": "SPIELBERG",
+      "budget": 14,
+      "seed": 2601104729,
+      "scope": "controlled common-era equipment",
+      "reference": {
+        "free": {
+          "time_s": 6656.348582775996,
+          "rank": 1,
+          "gap_to_best_ai_s": -14.53090358051486,
+          "native_case_id": "2/SPIELBERG/balanced_reference/14/fresh-reserve-v1/free/2601104729"
+        },
+        "zero_extra": {
+          "time_s": 6665.339214441025,
+          "rank": 1,
+          "gap_to_best_ai_s": -5.540271915485391,
+          "native_case_id": "2/SPIELBERG/balanced_reference/14/fresh-reserve-v1/zero_extra/2601104729"
+        }
+      },
+      "field": {
+        "franz_hermann": {
+          "time_s": 6674.6499602030335,
+          "rank": 3
+        },
+        "charles_leclair": {
+          "time_s": 6670.879486356511,
+          "rank": 1
+        },
+        "luis_amilton": {
+          "time_s": 6680.844869640962,
+          "rank": 4
+        },
+        "smooth_operator": {
+          "time_s": 6671.413010305108,
+          "rank": 2
+        },
+        "isa_kadjar": {
+          "time_s": 6689.315143371191,
+          "rank": 7
+        },
+        "pedro_gaseoso": {
+          "time_s": 6688.6853733777325,
+          "rank": 5
+        },
+        "battery_voltas": {
+          "time_s": 6689.035841447494,
+          "rank": 6
+        },
+        "daniel_enchantier": {
+          "time_s": 6691.927568674315,
+          "rank": 8
+        },
+        "goat_tifi": {
+          "time_s": 6719.915847282903,
+          "rank": 9
+        }
+      }
+    },
+    {
+      "era": 2,
+      "circuit": "SPIELBERG",
+      "budget": 20,
+      "seed": 2601130363,
+      "scope": "controlled common-era equipment",
+      "reference": {
+        "free": {
+          "time_s": 6648.281394092278,
+          "rank": 2,
+          "gap_to_best_ai_s": 1.4505375750068197,
+          "native_case_id": "2/SPIELBERG/balanced_reference/20/fresh-reserve-v1/free/2601130363"
+        },
+        "zero_extra": {
+          "time_s": 6650.691033264613,
+          "rank": 2,
+          "gap_to_best_ai_s": 3.8601767473419386,
+          "native_case_id": "2/SPIELBERG/balanced_reference/20/fresh-reserve-v1/zero_extra/2601130363"
+        }
+      },
+      "field": {
+        "franz_hermann": {
+          "time_s": 6665.672603914983,
+          "rank": 4
+        },
+        "charles_leclair": {
+          "time_s": 6646.830856517271,
+          "rank": 1
+        },
+        "luis_amilton": {
+          "time_s": 6674.5474744239955,
+          "rank": 5
+        },
+        "smooth_operator": {
+          "time_s": 6658.595921865289,
+          "rank": 2
+        },
+        "isa_kadjar": {
+          "time_s": 6662.932774315304,
+          "rank": 3
+        },
+        "pedro_gaseoso": {
+          "time_s": 6681.616925474168,
+          "rank": 7
+        },
+        "battery_voltas": {
+          "time_s": 6680.831943915715,
+          "rank": 6
+        },
+        "daniel_enchantier": {
+          "time_s": 6683.131935646233,
+          "rank": 8
+        },
+        "goat_tifi": {
+          "time_s": 6724.846843025609,
+          "rank": 9
+        }
+      }
+    },
+    {
+      "era": 2,
+      "circuit": "SPIELBERG",
+      "budget": 24,
+      "seed": 2601155921,
+      "scope": "actual career exit",
+      "reference": {
+        "free": {
+          "time_s": 6639.895145944703,
+          "rank": 2,
+          "gap_to_best_ai_s": 6.7501378735150865,
+          "native_case_id": "2/SPIELBERG/balanced_reference/24/fresh-reserve-v1/free/2601155921"
+        },
+        "zero_extra": {
+          "time_s": 6640.457449702723,
+          "rank": 2,
+          "gap_to_best_ai_s": 7.312441631535876,
+          "native_case_id": "2/SPIELBERG/balanced_reference/24/fresh-reserve-v1/zero_extra/2601155921"
+        }
+      },
+      "field": {
+        "franz_hermann": {
+          "time_s": 6651.824343946526,
+          "rank": 4
+        },
+        "charles_leclair": {
+          "time_s": 6633.1450080711875,
+          "rank": 1
+        },
+        "luis_amilton": {
+          "time_s": 6665.44233199348,
+          "rank": 6
+        },
+        "smooth_operator": {
+          "time_s": 6646.727018990451,
+          "rank": 2
+        },
+        "isa_kadjar": {
+          "time_s": 6651.550175263091,
+          "rank": 3
+        },
+        "pedro_gaseoso": {
+          "time_s": 6669.631764504756,
+          "rank": 7
+        },
+        "battery_voltas": {
+          "time_s": 6678.272903611439,
+          "rank": 8
+        },
+        "daniel_enchantier": {
+          "time_s": 6663.20794571719,
+          "rank": 5
+        },
+        "goat_tifi": {
+          "time_s": 6701.742631823596,
+          "rank": 9
+        }
+      }
+    },
+    {
+      "era": 2,
+      "circuit": "ZANDVOORT",
+      "budget": 14,
+      "seed": 2601104729,
+      "scope": "controlled common-era equipment",
+      "reference": {
+        "free": {
+          "time_s": 7145.230689377565,
+          "rank": 3,
+          "gap_to_best_ai_s": 6.65653618514807,
+          "native_case_id": "2/ZANDVOORT/balanced_reference/14/fresh-reserve-v1/free/2601104729"
+        },
+        "zero_extra": {
+          "time_s": 7167.894857289753,
+          "rank": 6,
+          "gap_to_best_ai_s": 29.320704097336602,
+          "native_case_id": "2/ZANDVOORT/balanced_reference/14/fresh-reserve-v1/zero_extra/2601104729"
+        }
+      },
+      "field": {
+        "franz_hermann": {
+          "time_s": 7143.715681380267,
+          "rank": 2
+        },
+        "charles_leclair": {
+          "time_s": 7138.574153192417,
+          "rank": 1
+        },
+        "luis_amilton": {
+          "time_s": 7163.272608426405,
+          "rank": 4
+        },
+        "smooth_operator": {
+          "time_s": 7159.763035317277,
+          "rank": 3
+        },
+        "isa_kadjar": {
+          "time_s": 7163.691405064952,
+          "rank": 5
+        },
+        "pedro_gaseoso": {
+          "time_s": 7171.79660101249,
+          "rank": 6
+        },
+        "battery_voltas": {
+          "time_s": 7178.696822121497,
+          "rank": 7
+        },
+        "daniel_enchantier": {
+          "time_s": 7181.446255977764,
+          "rank": 8
+        },
+        "goat_tifi": {
+          "time_s": 7214.111158169409,
+          "rank": 9
+        }
+      }
+    },
+    {
+      "era": 2,
+      "circuit": "ZANDVOORT",
+      "budget": 20,
+      "seed": 2601130363,
+      "scope": "controlled common-era equipment",
+      "reference": {
+        "free": {
+          "time_s": 7135.854477422895,
+          "rank": 1,
+          "gap_to_best_ai_s": -0.09442626870259119,
+          "native_case_id": "2/ZANDVOORT/balanced_reference/20/fresh-reserve-v1/free/2601130363"
+        },
+        "zero_extra": {
+          "time_s": 7153.608307348545,
+          "rank": 4,
+          "gap_to_best_ai_s": 17.65940365694769,
+          "native_case_id": "2/ZANDVOORT/balanced_reference/20/fresh-reserve-v1/zero_extra/2601130363"
+        }
+      },
+      "field": {
+        "franz_hermann": {
+          "time_s": 7135.9489036915975,
+          "rank": 1
+        },
+        "charles_leclair": {
+          "time_s": 7149.177391677018,
+          "rank": 2
+        },
+        "luis_amilton": {
+          "time_s": 7171.273511820665,
+          "rank": 5
+        },
+        "smooth_operator": {
+          "time_s": 7151.68127794986,
+          "rank": 3
+        },
+        "isa_kadjar": {
+          "time_s": 7175.75100749913,
+          "rank": 6
+        },
+        "pedro_gaseoso": {
+          "time_s": 7161.0289410212345,
+          "rank": 4
+        },
+        "battery_voltas": {
+          "time_s": 7183.346725057669,
+          "rank": 7
+        },
+        "daniel_enchantier": {
+          "time_s": 7188.884972392824,
+          "rank": 8
+        },
+        "goat_tifi": {
+          "time_s": 7210.742255882954,
+          "rank": 9
+        }
+      }
+    },
+    {
+      "era": 2,
+      "circuit": "ZANDVOORT",
+      "budget": 24,
+      "seed": 2601155921,
+      "scope": "actual career exit",
+      "reference": {
+        "free": {
+          "time_s": 7127.490313304976,
+          "rank": 2,
+          "gap_to_best_ai_s": 0.3471768371773578,
+          "native_case_id": "2/ZANDVOORT/balanced_reference/24/fresh-reserve-v1/free/2601155921"
+        },
+        "zero_extra": {
+          "time_s": 7142.145412422976,
+          "rank": 3,
+          "gap_to_best_ai_s": 15.002275955177538,
+          "native_case_id": "2/ZANDVOORT/balanced_reference/24/fresh-reserve-v1/zero_extra/2601155921"
+        }
+      },
+      "field": {
+        "franz_hermann": {
+          "time_s": 7127.143136467798,
+          "rank": 1
+        },
+        "charles_leclair": {
+          "time_s": 7141.993620996584,
+          "rank": 2
+        },
+        "luis_amilton": {
+          "time_s": 7159.146793555718,
+          "rank": 5
+        },
+        "smooth_operator": {
+          "time_s": 7143.458178924817,
+          "rank": 3
+        },
+        "isa_kadjar": {
+          "time_s": 7168.857457524327,
+          "rank": 6
+        },
+        "pedro_gaseoso": {
+          "time_s": 7152.476319805022,
+          "rank": 4
+        },
+        "battery_voltas": {
+          "time_s": 7172.896018618785,
+          "rank": 7
+        },
+        "daniel_enchantier": {
+          "time_s": 7178.245274182465,
+          "rank": 8
+        },
+        "goat_tifi": {
+          "time_s": 7197.58312120791,
+          "rank": 9
+        }
+      }
+    }
+  ],
+  "release_admitted": false,
+  "scope": "one frozen preparation per role; new seeds and budget probes, no refit or global-optimum claim",
+  "results_sha256": "1c40d4f3ad187e0405f3e80c900016f9d147aa807ea521aacfa9fc68493603fc"
+}

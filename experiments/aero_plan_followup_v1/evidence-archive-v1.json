@@ -1,0 +1,17 @@
+{
+  "schema": "pitgun.aero-plan-followup-evidence/v1",
+  "source_commit": "ac6e809755bb3709131667f9e6517b2b4f1352d9",
+  "native_binary_sha256": "25776d1529da153740c26b4e8db56146e05935df938a3ed256490117283e8b2f",
+  "full_gp": 15,
+  "accepted_laps": 880,
+  "exact_repeats": 3,
+  "exact_prior_bridges": 3,
+  "model_changed": false,
+  "release_admitted": false,
+  "reports": {
+    "DECISION_V1.json": "b6fb2ce04e6286e2ab417b1190f61726c3d351cf7d2e20b398713ed1ba669f01",
+    "RESULTS_V1.md": "516d043666df1e85b7a3e063abc4d434c8f0e68eec5ba65187b4a00fbccf9685",
+    "report.py": "001001423415daa0a7db66635e7f218d4d2547d50dfeef076d0cfd6da8cb9338",
+    "results/main-v1.json.gz": "e720ef3a897b3ed1e18189818050acc178066e516e9a5aa729aef258051aa18f"
+  }
+}

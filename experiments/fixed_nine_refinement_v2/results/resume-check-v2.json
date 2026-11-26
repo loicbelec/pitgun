@@ -1,0 +1,6 @@
+{
+  "native_gp_rows": 30,
+  "same_gp_cache_files_and_mtimes": true,
+  "same_journal": true,
+  "same_final_archive": true
+}

@@ -1,0 +1,159 @@
+{
+  "scope": "Operational journal append observations only; excludes preflight, progress writes and final export. No native/WASM speedup claim.",
+  "checkpoint_count": 30,
+  "journal_append_total_s": 0.052418578999985144,
+  "journal_bytes": 8210,
+  "native_or_cache_call_total_s": 108.51914258599999,
+  "records": [
+    {
+      "index": 0,
+      "native_or_cache_wall_s": 3.5594951249999998,
+      "checkpoint_wall_s": 0.0017876250000004035
+    },
+    {
+      "index": 1,
+      "native_or_cache_wall_s": 3.550463209000002,
+      "checkpoint_wall_s": 0.0015673750000004816
+    },
+    {
+      "index": 2,
+      "native_or_cache_wall_s": 3.575851833999998,
+      "checkpoint_wall_s": 0.0017235410000004947
+    },
+    {
+      "index": 3,
+      "native_or_cache_wall_s": 3.537995584000001,
+      "checkpoint_wall_s": 0.0016945000000028188
+    },
+    {
+      "index": 4,
+      "native_or_cache_wall_s": 3.5648120839999997,
+      "checkpoint_wall_s": 0.0017008329999974592
+    },
+    {
+      "index": 5,
+      "native_or_cache_wall_s": 3.5930722919999987,
+      "checkpoint_wall_s": 0.0017498330000016438
+    },
+    {
+      "index": 6,
+      "native_or_cache_wall_s": 3.6275154170000015,
+      "checkpoint_wall_s": 0.0017245419999980527
+    },
+    {
+      "index": 7,
+      "native_or_cache_wall_s": 3.6517710409999964,
+      "checkpoint_wall_s": 0.0019011669999997594
+    },
+    {
+      "index": 8,
+      "native_or_cache_wall_s": 3.7365868750000004,
+      "checkpoint_wall_s": 0.0017609999999947945
+    },
+    {
+      "index": 9,
+      "native_or_cache_wall_s": 3.582102958,
+      "checkpoint_wall_s": 0.001747666999996511
+    },
+    {
+      "index": 10,
+      "native_or_cache_wall_s": 3.629498499999997,
+      "checkpoint_wall_s": 0.0017737080000017613
+    },
+    {
+      "index": 11,
+      "native_or_cache_wall_s": 3.600100249999997,
+      "checkpoint_wall_s": 0.0017358750000013856
+    },
+    {
+      "index": 12,
+      "native_or_cache_wall_s": 3.6216690829999933,
+      "checkpoint_wall_s": 0.001559708000002047
+    },
+    {
+      "index": 13,
+      "native_or_cache_wall_s": 3.6156277500000016,
+      "checkpoint_wall_s": 0.0016945830000025808
+    },
+    {
+      "index": 14,
+      "native_or_cache_wall_s": 3.6023467089999954,
+      "checkpoint_wall_s": 0.0021762920000014674
+    },
+    {
+      "index": 15,
+      "native_or_cache_wall_s": 3.5781539170000087,
+      "checkpoint_wall_s": 0.001787124999992784
+    },
+    {
+      "index": 16,
+      "native_or_cache_wall_s": 3.6210129999999907,
+      "checkpoint_wall_s": 0.0017247499999939464
+    },
+    {
+      "index": 17,
+      "native_or_cache_wall_s": 3.605665875000014,
+      "checkpoint_wall_s": 0.0017786659999927679
+    },
+    {
+      "index": 18,
+      "native_or_cache_wall_s": 3.5979474999999894,
+      "checkpoint_wall_s": 0.0016657910000077436
+    },
+    {
+      "index": 19,
+      "native_or_cache_wall_s": 3.5914288750000054,
+      "checkpoint_wall_s": 0.001822708000005946
+    },
+    {
+      "index": 20,
+      "native_or_cache_wall_s": 3.6686468750000074,
+      "checkpoint_wall_s": 0.0015980830000046353
+    },
+    {
+      "index": 21,
+      "native_or_cache_wall_s": 3.614719750000006,
+      "checkpoint_wall_s": 0.0017393329999890739
+    },
+    {
+      "index": 22,
+      "native_or_cache_wall_s": 3.667764790999996,
+      "checkpoint_wall_s": 0.00165983299999084
+    },
+    {
+      "index": 23,
+      "native_or_cache_wall_s": 3.6639514169999927,
+      "checkpoint_wall_s": 0.001675250000005235
+    },
+    {
+      "index": 24,
+      "native_or_cache_wall_s": 3.6255050420000003,
+      "checkpoint_wall_s": 0.0017614159999936874
+    },
+    {
+      "index": 25,
+      "native_or_cache_wall_s": 3.633377791000001,
+      "checkpoint_wall_s": 0.0017505839999927275
+    },
+    {
+      "index": 26,
+      "native_or_cache_wall_s": 3.6334387499999963,
+      "checkpoint_wall_s": 0.0018344159999941212
+    },
+    {
+      "index": 27,
+      "native_or_cache_wall_s": 3.668636124999992,
+      "checkpoint_wall_s": 0.0016160000000127184
+    },
+    {
+      "index": 28,
+      "native_or_cache_wall_s": 3.6442701250000056,
+      "checkpoint_wall_s": 0.00184341599999982
+    },
+    {
+      "index": 29,
+      "native_or_cache_wall_s": 3.6557140419999996,
+      "checkpoint_wall_s": 0.0018629590000074359
+    }
+  ]
+}

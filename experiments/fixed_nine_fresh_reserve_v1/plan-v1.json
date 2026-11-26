@@ -1,0 +1,96 @@
+{
+  "schema": "pitgun.fixed-nine-fresh-reserve-plan/v1",
+  "results_schema": "pitgun.fixed-nine-fresh-reserve-results/v1",
+  "candidate": "experiments/fixed_nine_fresh_reserve_v1/candidate-v1.json",
+  "native_binary_sha256": "c5443499621214c6a58b099f75897ce46a3341ab6b86fcd7fc5d20b39486a912",
+  "policy": "experiments/thermal_balance_sensitivity_v1/rolling-heat-065.json",
+  "retained_files": {
+    "experiments/thermal_candidate_qualification_v1/results/era1-v1.json.gz": "878aa559dd72b0f866b34f91b55bf52993d6b049ce0b666753d5d618df0e2b62",
+    "experiments/thermal_candidate_qualification_v1/results/era2-v1.json.gz": "a1d648c183e3c249365fda85d9e38d05d1edb6e8cb024cc08d1d551f9ae0b7bd",
+    "experiments/aero_tradeoff_audit_v1/results/main-v1.json.gz": "796f9d059cbf4a7c7cf445811b2965b67dddbb8529b0798260905b6bf80d4ae3",
+    "experiments/aero_plan_followup_v1/results/main-v1.json.gz": "e720ef3a897b3ed1e18189818050acc178066e516e9a5aa729aef258051aa18f",
+    "experiments/fixed_opponents_v2/roster-v2.json": "cf8a427975c321b724d0f10d4654f48ae54db43442afa84658b6ee768efaaac4",
+    "experiments/thermal_balance_sensitivity_v1/rolling-heat-065.json": "8b303f0189e3e174138a877d0eada425b37c672fe66dd07efcbc86b8d861e771",
+    "experiments/opponent_physics_v2/results/career-fixtures-v1.json": "858cce40ccb942b5667bab84f99af9e1231711d6cf13afca472537051ef3c6d9",
+    "experiments/qualified_career_v1/native-reference-v1.json": "304bc52c72770109d4e8338ba87f0e5b26c32276b0c8d94d6567f5f3a80f0b19",
+    "experiments/fixed_nine_thermal_v1/plan-v1.json": "283759e2fd967d262026a8753a17ba6f33233243ca72240f4818b91adb99a480",
+    "experiments/fixed_nine_thermal_v1/results/training-v1.json.gz": "bf5e67ef118dc105bed98c6409c31b611df2bf4c4098dc548dc95a568e8aad78",
+    "experiments/fixed_nine_thermal_v1/results/selection-v1.json": "664472389a92db521c53995fe134f664b6b849949266e6a2c89750b4c9aef529",
+    "experiments/fixed_nine_thermal_v1/results/validation-v1.json.gz": "be444e91ed805301b7e9afe009c67b5998dc7948da65d83d6d8a65970a6ce33e",
+    "experiments/fixed_nine_thermal_v1/results/validation-decision-v1.json": "95772eb093624fba74f856e16626ab559d5340296bc29d3f686de2601305da3f",
+    "experiments/fixed_nine_refinement_v2/PILOT_PROTOCOL.md": "e634614b984a88a4f1ee0a6061a33491a6fe9326acd5448795749019fd614432",
+    "experiments/fixed_nine_thermal_v1/policy-v1.json": "78705a99d71e739d7caf4614dcc480a118231bd1094e655c19fb8a78eb64e198",
+    "experiments/fixed_nine_refinement_v2/results/mexico-pilot-v2.json.gz": "533ecfaaac75a2710dcdc3caf113ad6be7ab5516e107f65f54928b596c420171",
+    "experiments/fixed_nine_refinement_v2/results/pilot-decision-v2.json": "10d8896443f520a2955cacafb7deedb11df3a8f4e3998c71759a136efdce49b6",
+    "experiments/joint_era2_preparation_v1/ACCEPTANCE.md": "4aad05ab610e15e2230d36ec84349c0542a871f4b22e9e2e83637d5177e6b247",
+    "experiments/era1_attainability_audit_v1/results/era1-v1.json.gz": "1eff27eaa2a7b4a269a1618388f916f8942f95484c269c1c9af2c33a6fa4ccca",
+    "experiments/era1_attainability_audit_v1/results/decision-v1.json": "8fe993ac1aefe09479ec9e35752691d3e459ed943d9ee83499c8b8748050487b",
+    "experiments/joint_era2_preparation_v1/results/era2-v1.json.gz": "9d54841ed2d97e0c0dcb5fa58e02e8fe31e81bf9ac811b3fb126cc3953017d45",
+    "experiments/joint_era2_preparation_v1/results/policy-v1.json": "727ee9dc37a8397277cc3dce23151991780e1692f5d1816be34f11dff25b05ac",
+    "experiments/joint_era2_preparation_v1/results/decision-v1.json": "458d74146f7fc884dd0bfe6b6ae32220609d3a9f640f3f5a870de418957ab87a",
+    "experiments/fixed_nine_fresh_reserve_v1/candidate-v1.json": "2a538c3f116f23a177bedf73a2ca397cc24df57d89a8585ca644bc924f01a205",
+    "experiments/joint_era2_preparation_v1/selection.py": "d03bb20b700eded9cf6459de30b554f5e8efcf5b32cb8a337e85dbfd9f75df1a",
+    "experiments/fixed_nine_fresh_reserve_v1/ACCEPTANCE.md": "ac6ae457b2180c8b43c0096248448a45e3d23f0695b0fa8e2e6c79b01e93b281"
+  },
+  "prior_archives": [
+    "experiments/era1_attainability_audit_v1/results/era1-v1.json.gz",
+    "experiments/joint_era2_preparation_v1/results/era2-v1.json.gz",
+    "experiments/fixed_nine_thermal_v1/results/training-v1.json.gz",
+    "experiments/fixed_nine_thermal_v1/results/validation-v1.json.gz",
+    "experiments/fixed_nine_refinement_v2/results/mexico-pilot-v2.json.gz"
+  ],
+  "groups": {
+    "1": [
+      {
+        "budget": 9,
+        "seed": 2601104729
+      },
+      {
+        "budget": 11,
+        "seed": 2601130363
+      },
+      {
+        "budget": 12,
+        "seed": 2601155921
+      }
+    ],
+    "2": [
+      {
+        "budget": 14,
+        "seed": 2601104729
+      },
+      {
+        "budget": 20,
+        "seed": 2601130363
+      },
+      {
+        "budget": 24,
+        "seed": 2601155921
+      }
+    ]
+  },
+  "repeat_circuits": {
+    "1": [
+      "MONZA",
+      "SILVERSTONE",
+      "ZANDVOORT"
+    ],
+    "2": [
+      "MEXICO",
+      "MONZA",
+      "ZANDVOORT"
+    ]
+  },
+  "expected": {
+    "1": {
+      "logical": 99,
+      "native": 105
+    },
+    "2": {
+      "logical": 231,
+      "native": 234
+    }
+  },
+  "workers": 1,
+  "fitting": false
+}

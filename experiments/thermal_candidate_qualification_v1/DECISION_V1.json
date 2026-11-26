@@ -1,0 +1,1612 @@
+{
+  "phases": [
+    {
+      "schema": "pitgun.thermal-candidate-qualification-decision/v1",
+      "era": "era1",
+      "policy_id": "rolling-heat-065",
+      "numerical_pass": true,
+      "qualified_for_ai_preparation": true,
+      "main_gp": 120,
+      "fresh_repeats": 6,
+      "exact_repeats": 6,
+      "laps": 7434,
+      "bridges": [
+        {
+          "screen_id": "rolling-heat-065/craft_engineering:era1-entry/MONZA/1",
+          "case_id": "era1/MONZA/balanced/SM-50",
+          "physical_input_exact": true,
+          "result_exact": true
+        },
+        {
+          "screen_id": "rolling-heat-065/craft_engineering:era1-entry/SILVERSTONE/1",
+          "case_id": "era1/SILVERSTONE/balanced/SM-50",
+          "physical_input_exact": true,
+          "result_exact": true
+        },
+        {
+          "screen_id": "rolling-heat-065/craft_engineering:era1-entry/ZANDVOORT/1",
+          "case_id": "era1/ZANDVOORT/balanced/SM-50",
+          "physical_input_exact": true,
+          "result_exact": true
+        }
+      ],
+      "failures": [],
+      "review_flags": [],
+      "cooling_comparisons": [
+        {
+          "circuit": "MONZA",
+          "stage": "entry",
+          "profile_winners": {
+            "balanced": {
+              "id": "era1/MONZA/balanced/SM-50",
+              "time_s": 7430.525065707953
+            },
+            "engine_chassis": {
+              "id": "era1/MONZA/engine_chassis/SM-50",
+              "time_s": 7596.529064968305
+            },
+            "cooling": {
+              "id": "era1/MONZA/cooling/SM-50",
+              "time_s": 7424.863642429865
+            }
+          },
+          "concentrated_minus_best_other_s": 171.66542253844,
+          "legal_SM_gear_concentrated_minus_other_s": 169.14584448307141
+        },
+        {
+          "circuit": "SILVERSTONE",
+          "stage": "entry",
+          "profile_winners": {
+            "balanced": {
+              "id": "era1/SILVERSTONE/balanced/SM-50",
+              "time_s": 7795.883486026603
+            },
+            "engine_chassis": {
+              "id": "era1/SILVERSTONE/engine_chassis/SM-50",
+              "time_s": 7920.115413004218
+            },
+            "cooling": {
+              "id": "era1/SILVERSTONE/cooling/SM-50",
+              "time_s": 7789.872551496859
+            }
+          },
+          "concentrated_minus_best_other_s": 130.2428615073586,
+          "legal_SM_gear_concentrated_minus_other_s": 119.74775474641865
+        },
+        {
+          "circuit": "ZANDVOORT",
+          "stage": "entry",
+          "profile_winners": {
+            "balanced": {
+              "id": "era1/ZANDVOORT/balanced/SM-50",
+              "time_s": 8390.593179843454
+            },
+            "engine_chassis": {
+              "id": "era1/ZANDVOORT/engine_chassis/SM-50",
+              "time_s": 8518.005732393702
+            },
+            "cooling": {
+              "id": "era1/ZANDVOORT/cooling/SM-50",
+              "time_s": 8383.556273390808
+            }
+          },
+          "concentrated_minus_best_other_s": 134.4494590028935,
+          "legal_SM_gear_concentrated_minus_other_s": 121.26930275677842
+        }
+      ],
+      "stop_comparisons": [
+        {
+          "circuit": "MONZA",
+          "stage": "entry",
+          "best_by_stops": {
+            "0": {
+              "id": "era1/MONZA/balanced/M0",
+              "time_s": 7476.007739103098,
+              "service_s": 0.0
+            },
+            "1": {
+              "id": "era1/MONZA/balanced/SM-50",
+              "time_s": 7430.525065707953,
+              "service_s": 22.0
+            },
+            "2": {
+              "id": "era1/MONZA/balanced/SMS-thirds",
+              "time_s": 7459.819878398183,
+              "service_s": 44.0
+            },
+            "3": {
+              "id": "era1/MONZA/balanced/SMSM-quarters",
+              "time_s": 7532.250634721087,
+              "service_s": 66.0
+            }
+          },
+          "three_beats_one_two": false
+        },
+        {
+          "circuit": "SILVERSTONE",
+          "stage": "entry",
+          "best_by_stops": {
+            "0": {
+              "id": "era1/SILVERSTONE/balanced/S0",
+              "time_s": 7887.776662555003,
+              "service_s": 0.0
+            },
+            "1": {
+              "id": "era1/SILVERSTONE/balanced/SM-50",
+              "time_s": 7795.883486026603,
+              "service_s": 22.0
+            },
+            "2": {
+              "id": "era1/SILVERSTONE/balanced/SMS-thirds",
+              "time_s": 7817.685373570857,
+              "service_s": 44.0
+            },
+            "3": {
+              "id": "era1/SILVERSTONE/balanced/SMSM-quarters",
+              "time_s": 7898.60389337343,
+              "service_s": 66.0
+            }
+          },
+          "three_beats_one_two": false
+        },
+        {
+          "circuit": "ZANDVOORT",
+          "stage": "entry",
+          "best_by_stops": {
+            "0": {
+              "id": "era1/ZANDVOORT/balanced/S0",
+              "time_s": 8546.67713135875,
+              "service_s": 0.0
+            },
+            "1": {
+              "id": "era1/ZANDVOORT/balanced/SM-50",
+              "time_s": 8390.593179843454,
+              "service_s": 22.0
+            },
+            "2": {
+              "id": "era1/ZANDVOORT/balanced/SMS-thirds",
+              "time_s": 8396.138397273213,
+              "service_s": 44.0
+            },
+            "3": {
+              "id": "era1/ZANDVOORT/balanced/SMSM-quarters",
+              "time_s": 8487.962359964587,
+              "service_s": 66.0
+            }
+          },
+          "three_beats_one_two": false
+        }
+      ],
+      "sliders": [
+        {
+          "circuit": "MONZA",
+          "stage": "entry",
+          "variant": "reserved-seed",
+          "delta_s": 1.845482161259497,
+          "driver_lapses": 3
+        },
+        {
+          "circuit": "MONZA",
+          "stage": "entry",
+          "variant": "gear-0.35",
+          "delta_s": -11.640262399799212,
+          "driver_lapses": 1
+        },
+        {
+          "circuit": "MONZA",
+          "stage": "entry",
+          "variant": "gear-0.85",
+          "delta_s": 21.76735846657084,
+          "driver_lapses": 1
+        },
+        {
+          "circuit": "SILVERSTONE",
+          "stage": "entry",
+          "variant": "reserved-seed",
+          "delta_s": 1.8797773459864402,
+          "driver_lapses": 3
+        },
+        {
+          "circuit": "SILVERSTONE",
+          "stage": "entry",
+          "variant": "gear-0.35",
+          "delta_s": -1.476759643744117,
+          "driver_lapses": 1
+        },
+        {
+          "circuit": "SILVERSTONE",
+          "stage": "entry",
+          "variant": "gear-0.85",
+          "delta_s": 0.9826497403819303,
+          "driver_lapses": 1
+        },
+        {
+          "circuit": "ZANDVOORT",
+          "stage": "entry",
+          "variant": "reserved-seed",
+          "delta_s": 2.9251372053822706,
+          "driver_lapses": 3
+        },
+        {
+          "circuit": "ZANDVOORT",
+          "stage": "entry",
+          "variant": "gear-0.35",
+          "delta_s": -0.5880198448394367,
+          "driver_lapses": 1
+        },
+        {
+          "circuit": "ZANDVOORT",
+          "stage": "entry",
+          "variant": "gear-0.85",
+          "delta_s": 43.145167025950286,
+          "driver_lapses": 1
+        }
+      ],
+      "modes": [
+        {
+          "circuit": "MONZA",
+          "stage": "entry",
+          "variant": "manage",
+          "delta_s": 64.98323287921903,
+          "driver_lapses": 0
+        },
+        {
+          "circuit": "MONZA",
+          "stage": "entry",
+          "variant": "attack",
+          "delta_s": -50.15787579002426,
+          "driver_lapses": 2
+        },
+        {
+          "circuit": "SILVERSTONE",
+          "stage": "entry",
+          "variant": "manage",
+          "delta_s": 75.29361604881524,
+          "driver_lapses": 0
+        },
+        {
+          "circuit": "SILVERSTONE",
+          "stage": "entry",
+          "variant": "attack",
+          "delta_s": -66.72279155585511,
+          "driver_lapses": 2
+        },
+        {
+          "circuit": "ZANDVOORT",
+          "stage": "entry",
+          "variant": "manage",
+          "delta_s": 104.38874839610253,
+          "driver_lapses": 0
+        },
+        {
+          "circuit": "ZANDVOORT",
+          "stage": "entry",
+          "variant": "attack",
+          "delta_s": -85.37994404341225,
+          "driver_lapses": 2
+        }
+      ],
+      "thermal": [
+        {
+          "circuit": "MONZA",
+          "stage": "entry",
+          "time_s": 7430.525065707953,
+          "service_s": 22.0,
+          "surface_mean_c": 86.32202865307137,
+          "carcass_mean_c": 93.96348945784787,
+          "hot_fraction": 0.0,
+          "cold_fraction": 0.6052487552706068,
+          "window_fraction": 0.3947512447293928,
+          "temperature_grip_mean": 0.9386052394457103,
+          "maximum_surface_c": 89.87512094246028,
+          "maximum_carcass_c": 96.89949693953928,
+          "maximum_wear": 0.6759539614655413,
+          "minimum_engine_capacity": 0.8601316396497848,
+          "derated_time_s": 7347.766948445381,
+          "driver_lapses": 1,
+          "final_fuel_kg": 58.5878810656933
+        },
+        {
+          "circuit": "SILVERSTONE",
+          "stage": "entry",
+          "time_s": 7795.883486026603,
+          "service_s": 22.0,
+          "surface_mean_c": 86.53625862950015,
+          "carcass_mean_c": 93.740932935726,
+          "hot_fraction": 0.0,
+          "cold_fraction": 0.5846158212981555,
+          "window_fraction": 0.41538417870184435,
+          "temperature_grip_mean": 0.9404192167431922,
+          "maximum_surface_c": 89.88372746491272,
+          "maximum_carcass_c": 96.7001873413676,
+          "maximum_wear": 0.7533903775100915,
+          "minimum_engine_capacity": 0.8582209402794352,
+          "derated_time_s": 7716.72270221732,
+          "driver_lapses": 1,
+          "final_fuel_kg": 58.70940313709824
+        },
+        {
+          "circuit": "ZANDVOORT",
+          "stage": "entry",
+          "time_s": 8390.593179843454,
+          "service_s": 22.0,
+          "surface_mean_c": 86.99505371560238,
+          "carcass_mean_c": 93.52256537877078,
+          "hot_fraction": 0.0,
+          "cold_fraction": 0.5796793595370401,
+          "window_fraction": 0.4203206404629602,
+          "temperature_grip_mean": 0.9428319496098609,
+          "maximum_surface_c": 90.5788954104956,
+          "maximum_carcass_c": 96.8579959807391,
+          "maximum_wear": 0.8743031542292105,
+          "minimum_engine_capacity": 0.8527034010488954,
+          "derated_time_s": 8308.883103228049,
+          "driver_lapses": 1,
+          "final_fuel_kg": 57.36216132904819
+        }
+      ],
+      "release_admitted": false,
+      "maximum_tire_balance_residual_j": 5.667516234098002e-09,
+      "maximum_carry_jump": 0.0
+    },
+    {
+      "schema": "pitgun.thermal-candidate-qualification-decision/v1",
+      "era": "era2",
+      "policy_id": "rolling-heat-065",
+      "numerical_pass": true,
+      "qualified_for_ai_preparation": true,
+      "main_gp": 237,
+      "fresh_repeats": 6,
+      "exact_repeats": 6,
+      "laps": 15918,
+      "bridges": [
+        {
+          "screen_id": "rolling-heat-065/craft_engineering:era2-exit/MONZA/1",
+          "case_id": "era2/MONZA/exit/balanced/MH-50",
+          "physical_input_exact": true,
+          "result_exact": true
+        },
+        {
+          "screen_id": "rolling-heat-065/craft_engineering:era2-exit/MONZA/2",
+          "case_id": "era2/MONZA/exit/balanced/MH-matched-2",
+          "physical_input_exact": true,
+          "result_exact": true
+        },
+        {
+          "screen_id": "rolling-heat-065/craft_engineering:era2-exit/MONZA/3",
+          "case_id": "era2/MONZA/exit/balanced/MH-matched-3",
+          "physical_input_exact": true,
+          "result_exact": true
+        },
+        {
+          "screen_id": "rolling-heat-065/craft_engineering:era2-exit/SAOPAULO/1",
+          "case_id": "era2/SAOPAULO/exit/balanced/MH-50",
+          "physical_input_exact": true,
+          "result_exact": true
+        },
+        {
+          "screen_id": "rolling-heat-065/craft_engineering:era2-exit/SAOPAULO/2",
+          "case_id": "era2/SAOPAULO/exit/balanced/MH-matched-2",
+          "physical_input_exact": true,
+          "result_exact": true
+        },
+        {
+          "screen_id": "rolling-heat-065/craft_engineering:era2-exit/SAOPAULO/3",
+          "case_id": "era2/SAOPAULO/exit/balanced/MH-matched-3",
+          "physical_input_exact": true,
+          "result_exact": true
+        },
+        {
+          "screen_id": "rolling-heat-065/craft_engineering:era2-entry/MONZA/1",
+          "case_id": "era2/MONZA/entry/balanced/SM-50",
+          "physical_input_exact": true,
+          "result_exact": true
+        },
+        {
+          "screen_id": "rolling-heat-065/craft_engineering:era2-entry/MONTREAL/1",
+          "case_id": "era2/MONTREAL/entry/balanced/SM-50",
+          "physical_input_exact": true,
+          "result_exact": true
+        },
+        {
+          "screen_id": "rolling-heat-065/craft_engineering:era2-exit/MEXICO/1",
+          "case_id": "era2/MEXICO/exit/balanced/MH-50",
+          "physical_input_exact": true,
+          "result_exact": true
+        },
+        {
+          "screen_id": "rolling-heat-065/craft_engineering:era2-exit/MEXICO/2",
+          "case_id": "era2/MEXICO/exit/balanced/MH-matched-2",
+          "physical_input_exact": true,
+          "result_exact": true
+        },
+        {
+          "screen_id": "rolling-heat-065/craft_engineering:era2-exit/MEXICO/3",
+          "case_id": "era2/MEXICO/exit/balanced/MH-matched-3",
+          "physical_input_exact": true,
+          "result_exact": true
+        }
+      ],
+      "failures": [],
+      "review_flags": [],
+      "cooling_comparisons": [
+        {
+          "circuit": "MONTREAL",
+          "stage": "entry",
+          "profile_winners": {
+            "balanced": {
+              "id": "era2/MONTREAL/entry/balanced/SM-50",
+              "time_s": 8152.198022234202
+            },
+            "no_discretionary_cooling": {
+              "id": "era2/MONTREAL/entry/no_discretionary_cooling/SM-50",
+              "time_s": 8325.314427533922
+            },
+            "cooling": {
+              "id": "era2/MONTREAL/entry/cooling/SM-50",
+              "time_s": 8084.1599459653235
+            }
+          },
+          "concentrated_minus_best_other_s": 241.15448156859838
+        },
+        {
+          "circuit": "MONTREAL",
+          "stage": "exit",
+          "profile_winners": {
+            "balanced": {
+              "id": "era2/MONTREAL/exit/balanced/MH-50",
+              "time_s": 6915.637653870842
+            },
+            "no_discretionary_cooling": {
+              "id": "era2/MONTREAL/exit/no_discretionary_cooling/MH-50",
+              "time_s": 6925.495470964754
+            },
+            "cooling": {
+              "id": "era2/MONTREAL/exit/cooling/MH-50",
+              "time_s": 6908.34350869985
+            }
+          },
+          "concentrated_minus_best_other_s": 17.151962264903887
+        },
+        {
+          "circuit": "SPIELBERG",
+          "stage": "entry",
+          "profile_winners": {
+            "balanced": {
+              "id": "era2/SPIELBERG/entry/balanced/SM-50",
+              "time_s": 7861.204750657471
+            },
+            "no_discretionary_cooling": {
+              "id": "era2/SPIELBERG/entry/no_discretionary_cooling/SM-50",
+              "time_s": 8031.409818154488
+            },
+            "cooling": {
+              "id": "era2/SPIELBERG/entry/cooling/SM-50",
+              "time_s": 7792.268644859362
+            }
+          },
+          "concentrated_minus_best_other_s": 239.14117329512555
+        },
+        {
+          "circuit": "SPIELBERG",
+          "stage": "exit",
+          "profile_winners": {
+            "balanced": {
+              "id": "era2/SPIELBERG/exit/balanced/MH-50",
+              "time_s": 6660.9242541265985
+            },
+            "no_discretionary_cooling": {
+              "id": "era2/SPIELBERG/exit/no_discretionary_cooling/MH-50",
+              "time_s": 6662.809532419155
+            },
+            "cooling": {
+              "id": "era2/SPIELBERG/exit/cooling/MH-50",
+              "time_s": 6654.030360680631
+            }
+          },
+          "concentrated_minus_best_other_s": 8.779171738524383
+        },
+        {
+          "circuit": "MEXICO",
+          "stage": "entry",
+          "profile_winners": {
+            "balanced": {
+              "id": "era2/MEXICO/entry/balanced/SM-50",
+              "time_s": 8768.880113915335
+            },
+            "no_discretionary_cooling": {
+              "id": "era2/MEXICO/entry/no_discretionary_cooling/SM-50",
+              "time_s": 8906.929837523616
+            },
+            "cooling": {
+              "id": "era2/MEXICO/entry/cooling/SM-50",
+              "time_s": 8714.304141914243
+            }
+          },
+          "concentrated_minus_best_other_s": 192.625695609373
+        },
+        {
+          "circuit": "MEXICO",
+          "stage": "exit",
+          "profile_winners": {
+            "balanced": {
+              "id": "era2/MEXICO/exit/balanced/MH-50",
+              "time_s": 7547.594319244318
+            },
+            "no_discretionary_cooling": {
+              "id": "era2/MEXICO/exit/no_discretionary_cooling/MH-50",
+              "time_s": 7543.299607426751
+            },
+            "cooling": {
+              "id": "era2/MEXICO/exit/cooling/MH-50",
+              "time_s": 7541.405824755818
+            }
+          },
+          "concentrated_minus_best_other_s": 1.893782670933433
+        },
+        {
+          "circuit": "SAOPAULO",
+          "stage": "entry",
+          "profile_winners": {
+            "balanced": {
+              "id": "era2/SAOPAULO/entry/balanced/SM-50",
+              "time_s": 7968.38404290169
+            },
+            "no_discretionary_cooling": {
+              "id": "era2/SAOPAULO/entry/no_discretionary_cooling/SM-50",
+              "time_s": 8115.615464830471
+            },
+            "cooling": {
+              "id": "era2/SAOPAULO/entry/cooling/SM-50",
+              "time_s": 7912.206304782453
+            }
+          },
+          "concentrated_minus_best_other_s": 203.40916004801784
+        },
+        {
+          "circuit": "SAOPAULO",
+          "stage": "exit",
+          "profile_winners": {
+            "balanced": {
+              "id": "era2/SAOPAULO/exit/balanced/MH-50",
+              "time_s": 6855.23342531804
+            },
+            "no_discretionary_cooling": {
+              "id": "era2/SAOPAULO/exit/no_discretionary_cooling/MH-50",
+              "time_s": 6850.501489263464
+            },
+            "cooling": {
+              "id": "era2/SAOPAULO/exit/cooling/MH-50",
+              "time_s": 6847.543948105377
+            }
+          },
+          "concentrated_minus_best_other_s": 2.9575411580863147
+        },
+        {
+          "circuit": "SILVERSTONE",
+          "stage": "entry",
+          "profile_winners": {
+            "balanced": {
+              "id": "era2/SILVERSTONE/entry/balanced/SM-50",
+              "time_s": 7785.405754158593
+            },
+            "no_discretionary_cooling": {
+              "id": "era2/SILVERSTONE/entry/no_discretionary_cooling/SM-50",
+              "time_s": 7906.590094427681
+            },
+            "cooling": {
+              "id": "era2/SILVERSTONE/entry/cooling/SM-50",
+              "time_s": 7728.747554365289
+            }
+          },
+          "concentrated_minus_best_other_s": 177.8425400623919
+        },
+        {
+          "circuit": "SILVERSTONE",
+          "stage": "exit",
+          "profile_winners": {
+            "balanced": {
+              "id": "era2/SILVERSTONE/exit/balanced/MH-50",
+              "time_s": 6684.893807487717
+            },
+            "no_discretionary_cooling": {
+              "id": "era2/SILVERSTONE/exit/no_discretionary_cooling/MH-50",
+              "time_s": 6671.064109453875
+            },
+            "cooling": {
+              "id": "era2/SILVERSTONE/exit/cooling/MH-50",
+              "time_s": 6678.917063486044
+            }
+          },
+          "concentrated_minus_best_other_s": -7.852954032168782
+        },
+        {
+          "circuit": "MONZA",
+          "stage": "entry",
+          "profile_winners": {
+            "balanced": {
+              "id": "era2/MONZA/entry/balanced/SM-50",
+              "time_s": 7420.256925821551
+            },
+            "no_discretionary_cooling": {
+              "id": "era2/MONZA/entry/no_discretionary_cooling/SM-50",
+              "time_s": 7583.181723631914
+            },
+            "cooling": {
+              "id": "era2/MONZA/entry/cooling/SM-50",
+              "time_s": 7359.680892196289
+            }
+          },
+          "concentrated_minus_best_other_s": 223.5008314356246
+        },
+        {
+          "circuit": "MONZA",
+          "stage": "exit",
+          "profile_winners": {
+            "balanced": {
+              "id": "era2/MONZA/exit/balanced/MH-50",
+              "time_s": 6421.216713792708
+            },
+            "no_discretionary_cooling": {
+              "id": "era2/MONZA/exit/no_discretionary_cooling/MH-50",
+              "time_s": 6405.711891974933
+            },
+            "cooling": {
+              "id": "era2/MONZA/exit/cooling/MH-50",
+              "time_s": 6415.021524144595
+            }
+          },
+          "concentrated_minus_best_other_s": -9.309632169662109
+        },
+        {
+          "circuit": "ZANDVOORT",
+          "stage": "entry",
+          "profile_winners": {
+            "balanced": {
+              "id": "era2/ZANDVOORT/entry/balanced/SM-50",
+              "time_s": 8378.150639703232
+            },
+            "no_discretionary_cooling": {
+              "id": "era2/ZANDVOORT/entry/no_discretionary_cooling/SM-50",
+              "time_s": 8500.71941986899
+            },
+            "cooling": {
+              "id": "era2/ZANDVOORT/entry/cooling/SM-50",
+              "time_s": 8326.456198412687
+            }
+          },
+          "concentrated_minus_best_other_s": 174.26322145630365
+        },
+        {
+          "circuit": "ZANDVOORT",
+          "stage": "exit",
+          "profile_winners": {
+            "balanced": {
+              "id": "era2/ZANDVOORT/exit/balanced/MH-50",
+              "time_s": 7165.655230689582
+            },
+            "no_discretionary_cooling": {
+              "id": "era2/ZANDVOORT/exit/no_discretionary_cooling/MH-50",
+              "time_s": 7150.890525987277
+            },
+            "cooling": {
+              "id": "era2/ZANDVOORT/exit/cooling/MH-50",
+              "time_s": 7158.600102316133
+            }
+          },
+          "concentrated_minus_best_other_s": -7.709576328856201
+        }
+      ],
+      "stop_comparisons": [
+        {
+          "circuit": "MONTREAL",
+          "stage": "entry",
+          "best_by_stops": {
+            "1": {
+              "id": "era2/MONTREAL/entry/balanced/SM-50",
+              "time_s": 8152.198022234202,
+              "service_s": 22.0
+            },
+            "2": {
+              "id": "era2/MONTREAL/entry/balanced/SMS-thirds",
+              "time_s": 8173.30953314796,
+              "service_s": 44.0
+            },
+            "3": {
+              "id": "era2/MONTREAL/entry/balanced/MH-matched-3",
+              "time_s": 8427.9810831029,
+              "service_s": 66.0
+            }
+          },
+          "three_beats_one_two": false
+        },
+        {
+          "circuit": "MONTREAL",
+          "stage": "exit",
+          "best_by_stops": {
+            "0": {
+              "id": "era2/MONTREAL/exit/balanced/H0",
+              "time_s": 6938.041909295117,
+              "service_s": 0.0
+            },
+            "1": {
+              "id": "era2/MONTREAL/exit/balanced/MH-50",
+              "time_s": 6915.637653870842,
+              "service_s": 22.0
+            },
+            "2": {
+              "id": "era2/MONTREAL/exit/balanced/MH-matched-2",
+              "time_s": 6917.770700689691,
+              "service_s": 44.0
+            },
+            "3": {
+              "id": "era2/MONTREAL/exit/balanced/SMSM-quarters",
+              "time_s": 6928.928852447144,
+              "service_s": 66.0
+            }
+          },
+          "three_beats_one_two": false
+        },
+        {
+          "circuit": "SPIELBERG",
+          "stage": "entry",
+          "best_by_stops": {
+            "1": {
+              "id": "era2/SPIELBERG/entry/balanced/SM-50",
+              "time_s": 7861.204750657471,
+              "service_s": 22.0
+            },
+            "2": {
+              "id": "era2/SPIELBERG/entry/balanced/SMS-thirds",
+              "time_s": 7885.764026809037,
+              "service_s": 44.0
+            },
+            "3": {
+              "id": "era2/SPIELBERG/entry/balanced/MH-matched-3",
+              "time_s": 8126.441832657789,
+              "service_s": 66.0
+            }
+          },
+          "three_beats_one_two": false
+        },
+        {
+          "circuit": "SPIELBERG",
+          "stage": "exit",
+          "best_by_stops": {
+            "0": {
+              "id": "era2/SPIELBERG/exit/balanced/H0",
+              "time_s": 6674.224649122786,
+              "service_s": 0.0
+            },
+            "1": {
+              "id": "era2/SPIELBERG/exit/balanced/MH-50",
+              "time_s": 6660.9242541265985,
+              "service_s": 22.0
+            },
+            "2": {
+              "id": "era2/SPIELBERG/exit/balanced/MH-matched-2",
+              "time_s": 6664.572937209796,
+              "service_s": 44.0
+            },
+            "3": {
+              "id": "era2/SPIELBERG/exit/balanced/SMSM-quarters",
+              "time_s": 6678.803229533308,
+              "service_s": 66.0
+            }
+          },
+          "three_beats_one_two": false
+        },
+        {
+          "circuit": "MEXICO",
+          "stage": "entry",
+          "best_by_stops": {
+            "1": {
+              "id": "era2/MEXICO/entry/balanced/SM-50",
+              "time_s": 8768.880113915335,
+              "service_s": 22.0
+            },
+            "2": {
+              "id": "era2/MEXICO/entry/balanced/SMS-thirds",
+              "time_s": 8775.292435931227,
+              "service_s": 44.0
+            },
+            "3": {
+              "id": "era2/MEXICO/entry/balanced/MH-matched-3",
+              "time_s": 9086.1262672485,
+              "service_s": 66.0
+            }
+          },
+          "three_beats_one_two": false
+        },
+        {
+          "circuit": "MEXICO",
+          "stage": "exit",
+          "best_by_stops": {
+            "0": {
+              "id": "era2/MEXICO/exit/balanced/H0",
+              "time_s": 7609.04918386435,
+              "service_s": 0.0
+            },
+            "1": {
+              "id": "era2/MEXICO/exit/balanced/MH-50",
+              "time_s": 7547.594319244318,
+              "service_s": 22.0
+            },
+            "2": {
+              "id": "era2/MEXICO/exit/balanced/MH-matched-2",
+              "time_s": 7547.420645131428,
+              "service_s": 44.0
+            },
+            "3": {
+              "id": "era2/MEXICO/exit/balanced/SMSM-quarters",
+              "time_s": 7555.956059492513,
+              "service_s": 66.0
+            }
+          },
+          "three_beats_one_two": false
+        },
+        {
+          "circuit": "SAOPAULO",
+          "stage": "entry",
+          "best_by_stops": {
+            "1": {
+              "id": "era2/SAOPAULO/entry/balanced/SM-50",
+              "time_s": 7968.38404290169,
+              "service_s": 22.0
+            },
+            "2": {
+              "id": "era2/SAOPAULO/entry/balanced/SMS-thirds",
+              "time_s": 7988.3832126781035,
+              "service_s": 44.0
+            },
+            "3": {
+              "id": "era2/SAOPAULO/entry/balanced/MH-matched-3",
+              "time_s": 8275.412266366944,
+              "service_s": 66.0
+            }
+          },
+          "three_beats_one_two": false
+        },
+        {
+          "circuit": "SAOPAULO",
+          "stage": "exit",
+          "best_by_stops": {
+            "0": {
+              "id": "era2/SAOPAULO/exit/balanced/H0",
+              "time_s": 6935.6720203238765,
+              "service_s": 0.0
+            },
+            "1": {
+              "id": "era2/SAOPAULO/exit/balanced/MH-50",
+              "time_s": 6855.23342531804,
+              "service_s": 22.0
+            },
+            "2": {
+              "id": "era2/SAOPAULO/exit/balanced/MH-matched-2",
+              "time_s": 6832.635666117885,
+              "service_s": 44.0
+            },
+            "3": {
+              "id": "era2/SAOPAULO/exit/balanced/SMSM-quarters",
+              "time_s": 6852.2696235159865,
+              "service_s": 66.0
+            }
+          },
+          "three_beats_one_two": false
+        },
+        {
+          "circuit": "SILVERSTONE",
+          "stage": "entry",
+          "best_by_stops": {
+            "1": {
+              "id": "era2/SILVERSTONE/entry/balanced/SM-50",
+              "time_s": 7785.405754158593,
+              "service_s": 22.0
+            },
+            "2": {
+              "id": "era2/SILVERSTONE/entry/balanced/SMS-thirds",
+              "time_s": 7807.594353897103,
+              "service_s": 44.0
+            },
+            "3": {
+              "id": "era2/SILVERSTONE/entry/balanced/MH-matched-3",
+              "time_s": 8051.92661602753,
+              "service_s": 66.0
+            }
+          },
+          "three_beats_one_two": false
+        },
+        {
+          "circuit": "SILVERSTONE",
+          "stage": "exit",
+          "best_by_stops": {
+            "0": {
+              "id": "era2/SILVERSTONE/exit/balanced/H0",
+              "time_s": 6731.245914487976,
+              "service_s": 0.0
+            },
+            "1": {
+              "id": "era2/SILVERSTONE/exit/balanced/MH-50",
+              "time_s": 6684.893807487717,
+              "service_s": 22.0
+            },
+            "2": {
+              "id": "era2/SILVERSTONE/exit/balanced/MH-matched-2",
+              "time_s": 6670.306266879667,
+              "service_s": 44.0
+            },
+            "3": {
+              "id": "era2/SILVERSTONE/exit/balanced/SMSM-quarters",
+              "time_s": 6686.461001014257,
+              "service_s": 66.0
+            }
+          },
+          "three_beats_one_two": false
+        },
+        {
+          "circuit": "MONZA",
+          "stage": "entry",
+          "best_by_stops": {
+            "1": {
+              "id": "era2/MONZA/entry/balanced/SM-50",
+              "time_s": 7420.256925821551,
+              "service_s": 22.0
+            },
+            "2": {
+              "id": "era2/MONZA/entry/balanced/SMS-thirds",
+              "time_s": 7449.237169372374,
+              "service_s": 44.0
+            },
+            "3": {
+              "id": "era2/MONZA/entry/balanced/MH-matched-3",
+              "time_s": 7655.76755331636,
+              "service_s": 66.0
+            }
+          },
+          "three_beats_one_two": false
+        },
+        {
+          "circuit": "MONZA",
+          "stage": "exit",
+          "best_by_stops": {
+            "0": {
+              "id": "era2/MONZA/exit/balanced/H0",
+              "time_s": 6445.468826893492,
+              "service_s": 0.0
+            },
+            "1": {
+              "id": "era2/MONZA/exit/balanced/MH-50",
+              "time_s": 6421.216713792708,
+              "service_s": 22.0
+            },
+            "2": {
+              "id": "era2/MONZA/exit/balanced/MH-matched-2",
+              "time_s": 6412.205508670765,
+              "service_s": 44.0
+            },
+            "3": {
+              "id": "era2/MONZA/exit/balanced/SMSM-quarters",
+              "time_s": 6425.932425385779,
+              "service_s": 66.0
+            }
+          },
+          "three_beats_one_two": false
+        },
+        {
+          "circuit": "ZANDVOORT",
+          "stage": "entry",
+          "best_by_stops": {
+            "1": {
+              "id": "era2/ZANDVOORT/entry/balanced/SM-50",
+              "time_s": 8378.150639703232,
+              "service_s": 22.0
+            },
+            "2": {
+              "id": "era2/ZANDVOORT/entry/balanced/SMS-thirds",
+              "time_s": 8383.94714495669,
+              "service_s": 44.0
+            },
+            "3": {
+              "id": "era2/ZANDVOORT/entry/balanced/MH-matched-3",
+              "time_s": 8685.000177200214,
+              "service_s": 66.0
+            }
+          },
+          "three_beats_one_two": false
+        },
+        {
+          "circuit": "ZANDVOORT",
+          "stage": "exit",
+          "best_by_stops": {
+            "0": {
+              "id": "era2/ZANDVOORT/exit/balanced/H0",
+              "time_s": 7277.17155711599,
+              "service_s": 0.0
+            },
+            "1": {
+              "id": "era2/ZANDVOORT/exit/balanced/MH-50",
+              "time_s": 7165.655230689582,
+              "service_s": 22.0
+            },
+            "2": {
+              "id": "era2/ZANDVOORT/exit/balanced/MH-matched-2",
+              "time_s": 7132.3203470943035,
+              "service_s": 44.0
+            },
+            "3": {
+              "id": "era2/ZANDVOORT/exit/balanced/SMSM-quarters",
+              "time_s": 7155.988159425465,
+              "service_s": 66.0
+            }
+          },
+          "three_beats_one_two": false
+        }
+      ],
+      "sliders": [
+        {
+          "circuit": "MONTREAL",
+          "stage": "exit",
+          "variant": "gear-0.35",
+          "delta_s": -3.498086119539039,
+          "driver_lapses": 1
+        },
+        {
+          "circuit": "MONTREAL",
+          "stage": "exit",
+          "variant": "gear-0.85",
+          "delta_s": -2.5780921657751605,
+          "driver_lapses": 1
+        },
+        {
+          "circuit": "MONTREAL",
+          "stage": "exit",
+          "variant": "downforce-0.2",
+          "delta_s": -46.3229329432761,
+          "driver_lapses": 1
+        },
+        {
+          "circuit": "MONTREAL",
+          "stage": "exit",
+          "variant": "downforce-0.8",
+          "delta_s": 78.69788429378877,
+          "driver_lapses": 1
+        },
+        {
+          "circuit": "MONTREAL",
+          "stage": "exit",
+          "variant": "reserved-seed",
+          "delta_s": 2.5632802311920386,
+          "driver_lapses": 3
+        },
+        {
+          "circuit": "SPIELBERG",
+          "stage": "exit",
+          "variant": "gear-0.35",
+          "delta_s": -5.301693607972993,
+          "driver_lapses": 1
+        },
+        {
+          "circuit": "SPIELBERG",
+          "stage": "exit",
+          "variant": "gear-0.85",
+          "delta_s": 8.36301059082416,
+          "driver_lapses": 1
+        },
+        {
+          "circuit": "SPIELBERG",
+          "stage": "exit",
+          "variant": "downforce-0.2",
+          "delta_s": -47.83415404876814,
+          "driver_lapses": 1
+        },
+        {
+          "circuit": "SPIELBERG",
+          "stage": "exit",
+          "variant": "downforce-0.8",
+          "delta_s": 96.5698831407417,
+          "driver_lapses": 1
+        },
+        {
+          "circuit": "SPIELBERG",
+          "stage": "exit",
+          "variant": "reserved-seed",
+          "delta_s": 3.6253022767123184,
+          "driver_lapses": 3
+        },
+        {
+          "circuit": "MEXICO",
+          "stage": "exit",
+          "variant": "gear-0.35",
+          "delta_s": 4.09168848887839,
+          "driver_lapses": 1
+        },
+        {
+          "circuit": "MEXICO",
+          "stage": "exit",
+          "variant": "gear-0.85",
+          "delta_s": -13.989105680358989,
+          "driver_lapses": 1
+        },
+        {
+          "circuit": "MEXICO",
+          "stage": "exit",
+          "variant": "downforce-0.2",
+          "delta_s": -29.161779908878998,
+          "driver_lapses": 1
+        },
+        {
+          "circuit": "MEXICO",
+          "stage": "exit",
+          "variant": "downforce-0.8",
+          "delta_s": 62.58912805423461,
+          "driver_lapses": 1
+        },
+        {
+          "circuit": "MEXICO",
+          "stage": "exit",
+          "variant": "reserved-seed",
+          "delta_s": 1.8267865905700091,
+          "driver_lapses": 3
+        },
+        {
+          "circuit": "SAOPAULO",
+          "stage": "exit",
+          "variant": "gear-0.35",
+          "delta_s": 0.3010589123077807,
+          "driver_lapses": 1
+        },
+        {
+          "circuit": "SAOPAULO",
+          "stage": "exit",
+          "variant": "gear-0.85",
+          "delta_s": -2.613747536998744,
+          "driver_lapses": 1
+        },
+        {
+          "circuit": "SAOPAULO",
+          "stage": "exit",
+          "variant": "downforce-0.2",
+          "delta_s": -42.2611135678826,
+          "driver_lapses": 1
+        },
+        {
+          "circuit": "SAOPAULO",
+          "stage": "exit",
+          "variant": "downforce-0.8",
+          "delta_s": 71.42744294639942,
+          "driver_lapses": 1
+        },
+        {
+          "circuit": "SAOPAULO",
+          "stage": "exit",
+          "variant": "reserved-seed",
+          "delta_s": -0.8093639439475737,
+          "driver_lapses": 3
+        },
+        {
+          "circuit": "SILVERSTONE",
+          "stage": "exit",
+          "variant": "gear-0.35",
+          "delta_s": 1.8304496292848853,
+          "driver_lapses": 1
+        },
+        {
+          "circuit": "SILVERSTONE",
+          "stage": "exit",
+          "variant": "gear-0.85",
+          "delta_s": 7.89004963332718,
+          "driver_lapses": 1
+        },
+        {
+          "circuit": "SILVERSTONE",
+          "stage": "exit",
+          "variant": "downforce-0.2",
+          "delta_s": -41.072931191029056,
+          "driver_lapses": 1
+        },
+        {
+          "circuit": "SILVERSTONE",
+          "stage": "exit",
+          "variant": "downforce-0.8",
+          "delta_s": 79.57375349619088,
+          "driver_lapses": 1
+        },
+        {
+          "circuit": "SILVERSTONE",
+          "stage": "exit",
+          "variant": "reserved-seed",
+          "delta_s": 1.0292603882180629,
+          "driver_lapses": 3
+        },
+        {
+          "circuit": "MONZA",
+          "stage": "exit",
+          "variant": "gear-0.35",
+          "delta_s": -2.8959572621506595,
+          "driver_lapses": 1
+        },
+        {
+          "circuit": "MONZA",
+          "stage": "exit",
+          "variant": "gear-0.85",
+          "delta_s": 3.286375451605636,
+          "driver_lapses": 1
+        },
+        {
+          "circuit": "MONZA",
+          "stage": "exit",
+          "variant": "downforce-0.2",
+          "delta_s": -59.40250943384672,
+          "driver_lapses": 1
+        },
+        {
+          "circuit": "MONZA",
+          "stage": "exit",
+          "variant": "downforce-0.8",
+          "delta_s": 96.44068756482193,
+          "driver_lapses": 1
+        },
+        {
+          "circuit": "MONZA",
+          "stage": "exit",
+          "variant": "reserved-seed",
+          "delta_s": 1.1089177454678065,
+          "driver_lapses": 3
+        },
+        {
+          "circuit": "ZANDVOORT",
+          "stage": "exit",
+          "variant": "gear-0.35",
+          "delta_s": 2.8777315870520397,
+          "driver_lapses": 1
+        },
+        {
+          "circuit": "ZANDVOORT",
+          "stage": "exit",
+          "variant": "gear-0.85",
+          "delta_s": -1.0365506081452622,
+          "driver_lapses": 1
+        },
+        {
+          "circuit": "ZANDVOORT",
+          "stage": "exit",
+          "variant": "downforce-0.2",
+          "delta_s": -18.579326160303026,
+          "driver_lapses": 1
+        },
+        {
+          "circuit": "ZANDVOORT",
+          "stage": "exit",
+          "variant": "downforce-0.8",
+          "delta_s": 43.53230450724368,
+          "driver_lapses": 1
+        },
+        {
+          "circuit": "ZANDVOORT",
+          "stage": "exit",
+          "variant": "reserved-seed",
+          "delta_s": -0.16276128897789022,
+          "driver_lapses": 3
+        }
+      ],
+      "modes": [
+        {
+          "circuit": "MONTREAL",
+          "stage": "exit",
+          "variant": "manage",
+          "delta_s": 24.658975361829107,
+          "driver_lapses": 0
+        },
+        {
+          "circuit": "MONTREAL",
+          "stage": "exit",
+          "variant": "attack",
+          "delta_s": -23.285089413492642,
+          "driver_lapses": 2
+        },
+        {
+          "circuit": "SILVERSTONE",
+          "stage": "exit",
+          "variant": "manage",
+          "delta_s": 27.93941511491539,
+          "driver_lapses": 0
+        },
+        {
+          "circuit": "SILVERSTONE",
+          "stage": "exit",
+          "variant": "attack",
+          "delta_s": -16.180604083925573,
+          "driver_lapses": 2
+        },
+        {
+          "circuit": "MONZA",
+          "stage": "exit",
+          "variant": "manage",
+          "delta_s": 26.463015908591842,
+          "driver_lapses": 0
+        },
+        {
+          "circuit": "MONZA",
+          "stage": "exit",
+          "variant": "attack",
+          "delta_s": -16.43069393353744,
+          "driver_lapses": 2
+        }
+      ],
+      "thermal": [
+        {
+          "circuit": "MONTREAL",
+          "stage": "entry",
+          "time_s": 8152.198022234202,
+          "service_s": 22.0,
+          "surface_mean_c": 84.05388756034087,
+          "carcass_mean_c": 90.88110815764476,
+          "hot_fraction": 0.0,
+          "cold_fraction": 0.681342784668846,
+          "window_fraction": 0.318657215331154,
+          "temperature_grip_mean": 0.9223122678670769,
+          "maximum_surface_c": 87.48781199791155,
+          "maximum_carcass_c": 93.79726486046636,
+          "maximum_wear": 0.7341537193995818,
+          "minimum_engine_capacity": 0.848879565798444,
+          "derated_time_s": 8074.248396705342,
+          "driver_lapses": 1,
+          "final_fuel_kg": 57.38488565091131
+        },
+        {
+          "circuit": "MONTREAL",
+          "stage": "exit",
+          "time_s": 7001.979160961426,
+          "service_s": 22.0,
+          "surface_mean_c": 116.81851899059754,
+          "carcass_mean_c": 130.08759436440198,
+          "hot_fraction": 0.6237733090910819,
+          "cold_fraction": 0.01180884920038236,
+          "window_fraction": 0.36441784170853564,
+          "temperature_grip_mean": 0.9348492181466892,
+          "maximum_surface_c": 125.77684724460389,
+          "maximum_carcass_c": 138.66339427427502,
+          "maximum_wear": 1.0,
+          "minimum_engine_capacity": 1.0,
+          "derated_time_s": 0.0,
+          "driver_lapses": 1,
+          "final_fuel_kg": 19.632180900732155
+        },
+        {
+          "circuit": "SPIELBERG",
+          "stage": "entry",
+          "time_s": 7861.204750657471,
+          "service_s": 22.0,
+          "surface_mean_c": 84.45147099599981,
+          "carcass_mean_c": 91.55345912848529,
+          "hot_fraction": 0.0,
+          "cold_fraction": 0.6581929868897047,
+          "window_fraction": 0.3418070131102949,
+          "temperature_grip_mean": 0.9249485574335647,
+          "maximum_surface_c": 87.88231083628055,
+          "maximum_carcass_c": 94.59053202292074,
+          "maximum_wear": 0.6956539371116912,
+          "minimum_engine_capacity": 0.8450050852922102,
+          "derated_time_s": 7789.074274988279,
+          "driver_lapses": 1,
+          "final_fuel_kg": 57.45613451113757
+        },
+        {
+          "circuit": "SPIELBERG",
+          "stage": "exit",
+          "time_s": 6733.909807897547,
+          "service_s": 22.0,
+          "surface_mean_c": 117.69085507742804,
+          "carcass_mean_c": 131.63616472396666,
+          "hot_fraction": 0.6590101841269667,
+          "cold_fraction": 0.009744229713384098,
+          "window_fraction": 0.33124558615964866,
+          "temperature_grip_mean": 0.9279008969081796,
+          "maximum_surface_c": 127.62809922635586,
+          "maximum_carcass_c": 140.4559566791905,
+          "maximum_wear": 1.0,
+          "minimum_engine_capacity": 1.0,
+          "derated_time_s": 0.0,
+          "driver_lapses": 1,
+          "final_fuel_kg": 21.23078518218707
+        },
+        {
+          "circuit": "MEXICO",
+          "stage": "entry",
+          "time_s": 8768.880113915335,
+          "service_s": 22.0,
+          "surface_mean_c": 84.51373532462547,
+          "carcass_mean_c": 90.7639096362778,
+          "hot_fraction": 0.0,
+          "cold_fraction": 0.6720351040710231,
+          "window_fraction": 0.32796489592897676,
+          "temperature_grip_mean": 0.9254725432315157,
+          "maximum_surface_c": 87.83882159560564,
+          "maximum_carcass_c": 93.72406308851205,
+          "maximum_wear": 0.829933722922056,
+          "minimum_engine_capacity": 0.8507170725573239,
+          "derated_time_s": 8679.49504037525,
+          "driver_lapses": 1,
+          "final_fuel_kg": 57.85420640142684
+        },
+        {
+          "circuit": "MEXICO",
+          "stage": "exit",
+          "time_s": 7649.054711148915,
+          "service_s": 22.0,
+          "surface_mean_c": 114.40505615671778,
+          "carcass_mean_c": 126.03580448218217,
+          "hot_fraction": 0.4456587498072222,
+          "cold_fraction": 0.009358508594931638,
+          "window_fraction": 0.5449827415978459,
+          "temperature_grip_mean": 0.9521370955028566,
+          "maximum_surface_c": 121.96386517614714,
+          "maximum_carcass_c": 133.6941399687486,
+          "maximum_wear": 1.0,
+          "minimum_engine_capacity": 1.0,
+          "derated_time_s": 0.0,
+          "driver_lapses": 1,
+          "final_fuel_kg": 21.952514861401973
+        },
+        {
+          "circuit": "SAOPAULO",
+          "stage": "entry",
+          "time_s": 7968.38404290169,
+          "service_s": 22.0,
+          "surface_mean_c": 86.60328391577494,
+          "carcass_mean_c": 93.51838915703243,
+          "hot_fraction": 0.0,
+          "cold_fraction": 0.5977976640853118,
+          "window_fraction": 0.4022023359146883,
+          "temperature_grip_mean": 0.940007340252254,
+          "maximum_surface_c": 90.33296557559943,
+          "maximum_carcass_c": 96.92652436047098,
+          "maximum_wear": 0.7841081389929986,
+          "minimum_engine_capacity": 0.8466339427962885,
+          "derated_time_s": 7895.472526335522,
+          "driver_lapses": 1,
+          "final_fuel_kg": 57.516595136475686
+        },
+        {
+          "circuit": "SAOPAULO",
+          "stage": "exit",
+          "time_s": 7001.544515166972,
+          "service_s": 22.0,
+          "surface_mean_c": 120.69776793323902,
+          "carcass_mean_c": 133.90611611080368,
+          "hot_fraction": 0.7385417443490483,
+          "cold_fraction": 0.00654788496478787,
+          "window_fraction": 0.2549103706861637,
+          "temperature_grip_mean": 0.9064684380134999,
+          "maximum_surface_c": 129.72657625602346,
+          "maximum_carcass_c": 142.79780407360033,
+          "maximum_wear": 1.0,
+          "minimum_engine_capacity": 1.0,
+          "derated_time_s": 0.0,
+          "driver_lapses": 1,
+          "final_fuel_kg": 22.044466299327834
+        },
+        {
+          "circuit": "SILVERSTONE",
+          "stage": "entry",
+          "time_s": 7785.405754158593,
+          "service_s": 22.0,
+          "surface_mean_c": 86.55944833170501,
+          "carcass_mean_c": 93.77399513091585,
+          "hot_fraction": 0.0,
+          "cold_fraction": 0.5843936791958702,
+          "window_fraction": 0.4156063208041299,
+          "temperature_grip_mean": 0.9405635766615349,
+          "maximum_surface_c": 89.90803394906212,
+          "maximum_carcass_c": 96.75118670307901,
+          "maximum_wear": 0.7525556303242846,
+          "minimum_engine_capacity": 0.8574331758802208,
+          "derated_time_s": 7706.664884005138,
+          "driver_lapses": 1,
+          "final_fuel_kg": 58.651852216053946
+        },
+        {
+          "circuit": "SILVERSTONE",
+          "stage": "exit",
+          "time_s": 6801.368101830107,
+          "service_s": 22.0,
+          "surface_mean_c": 120.3518740647459,
+          "carcass_mean_c": 134.1485972907884,
+          "hot_fraction": 0.7399663949335944,
+          "cold_fraction": 0.0,
+          "window_fraction": 0.2600336050664057,
+          "temperature_grip_mean": 0.9140407387621996,
+          "maximum_surface_c": 128.3129165144668,
+          "maximum_carcass_c": 142.1224838645886,
+          "maximum_wear": 1.0,
+          "minimum_engine_capacity": 1.0,
+          "derated_time_s": 0.0,
+          "driver_lapses": 1,
+          "final_fuel_kg": 24.440251119638006
+        },
+        {
+          "circuit": "MONZA",
+          "stage": "entry",
+          "time_s": 7420.256925821551,
+          "service_s": 22.0,
+          "surface_mean_c": 86.34552382168616,
+          "carcass_mean_c": 93.99813923223876,
+          "hot_fraction": 0.0,
+          "cold_fraction": 0.6046299093686567,
+          "window_fraction": 0.39537009063134304,
+          "temperature_grip_mean": 0.9387536082121671,
+          "maximum_surface_c": 89.91177248259949,
+          "maximum_carcass_c": 96.94696831529171,
+          "maximum_wear": 0.6752460657190541,
+          "minimum_engine_capacity": 0.8594729074833212,
+          "derated_time_s": 7337.667394286379,
+          "driver_lapses": 1,
+          "final_fuel_kg": 58.540961157652845
+        },
+        {
+          "circuit": "MONZA",
+          "stage": "exit",
+          "time_s": 6511.540313686757,
+          "service_s": 22.0,
+          "surface_mean_c": 121.48111381691056,
+          "carcass_mean_c": 136.71280483795988,
+          "hot_fraction": 0.7503089746961892,
+          "cold_fraction": 0.0,
+          "window_fraction": 0.24969102530381074,
+          "temperature_grip_mean": 0.9035128356938036,
+          "maximum_surface_c": 131.33295867042358,
+          "maximum_carcass_c": 145.62099921013416,
+          "maximum_wear": 1.0,
+          "minimum_engine_capacity": 1.0,
+          "derated_time_s": 0.0,
+          "driver_lapses": 1,
+          "final_fuel_kg": 24.949789491936937
+        },
+        {
+          "circuit": "ZANDVOORT",
+          "stage": "entry",
+          "time_s": 8378.150639703232,
+          "service_s": 22.0,
+          "surface_mean_c": 87.02281876724993,
+          "carcass_mean_c": 93.56081388698716,
+          "hot_fraction": 0.0,
+          "cold_fraction": 0.5792095253966741,
+          "window_fraction": 0.42079047460332597,
+          "temperature_grip_mean": 0.9430045030097857,
+          "maximum_surface_c": 90.61541180026191,
+          "maximum_carcass_c": 96.90549174807056,
+          "maximum_wear": 0.8733802092808903,
+          "minimum_engine_capacity": 0.8521694645943924,
+          "derated_time_s": 8296.603252077273,
+          "driver_lapses": 1,
+          "final_fuel_kg": 57.31893826865895
+        },
+        {
+          "circuit": "ZANDVOORT",
+          "stage": "exit",
+          "time_s": 7326.730476432751,
+          "service_s": 22.0,
+          "surface_mean_c": 119.40629974626677,
+          "carcass_mean_c": 131.42051094214406,
+          "hot_fraction": 0.7286801631397588,
+          "cold_fraction": 0.005664408165331871,
+          "window_fraction": 0.2656554286949091,
+          "temperature_grip_mean": 0.9183016952706331,
+          "maximum_surface_c": 127.5401583589589,
+          "maximum_carcass_c": 139.48965335667444,
+          "maximum_wear": 1.0,
+          "minimum_engine_capacity": 1.0,
+          "derated_time_s": 0.0,
+          "driver_lapses": 1,
+          "final_fuel_kg": 24.082984210556248
+        }
+      ],
+      "release_admitted": false,
+      "maximum_tire_balance_residual_j": 6.34536689858578e-09,
+      "maximum_carry_jump": 0.0
+    }
+  ],
+  "scope_complete": true,
+  "qualified_for_ai_preparation": true,
+  "release_admitted": false
+}

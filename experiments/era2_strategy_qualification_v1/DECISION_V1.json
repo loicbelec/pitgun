@@ -1,0 +1,25 @@
+{
+  "schema": "pitgun.era2-strategy-qualification-decision/v1",
+  "status": "numerical-pass-strategic-review-required",
+  "physical_policy_changed": false,
+  "counts": {
+    "main_cases": 195,
+    "fresh_exact_repeats": 6,
+    "retained_full_gp": 201,
+    "driven_laps": 13158,
+    "physical_failures": 0
+  },
+  "findings": [
+    "Zero extra cooling at developed exit retains the installed Cooling1 bonus and can legitimately win among sampled profiles",
+    "Three-stop SMSM beats sampled one/two-stop plans at all seven developed-car controls; strategic gate remains open",
+    "No coefficient change or player-only stop cap used to hide this counterexample"
+  ],
+  "not_claimed": [
+    "Global strategy optimum",
+    "Nine-AI balance or player win probability",
+    "Signed-service/leaderboard admission",
+    "Native/WASM equality or industrial tire identification"
+  ],
+  "next": "Isolated unranked browser preview for owner observation; diagnose the sampled stop-count counterexample before freezing nine-AI strategies",
+  "result_report": "RESULTS_V1.md"
+}

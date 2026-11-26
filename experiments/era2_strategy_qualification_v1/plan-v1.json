@@ -1,0 +1,231 @@
+{
+  "schema": "pitgun.era2-strategy-qualification-plan/v1",
+  "scope": "Frozen native player-only era-II qualification from actual retained entry/exit career fixtures. No AI fit, coefficient changes or game activation.",
+  "policy": "experiments/three_compound_thermal_v1/candidate-v1.json",
+  "policy_sha256": "0021bd8ead91698de49de297b1760cc3225a54c9e61adfeb07bab8250ab16439",
+  "fixtures": "experiments/opponent_physics_v2/results/career-fixtures-v1.json",
+  "fixtures_sha256": "858cce40ccb942b5667bab84f99af9e1231711d6cf13afca472537051ef3c6d9",
+  "seed": 73013,
+  "reserved_seed": 104729,
+  "contexts": [
+    {
+      "circuit": "MONTREAL",
+      "laps": 70
+    },
+    {
+      "circuit": "SPIELBERG",
+      "laps": 71
+    },
+    {
+      "circuit": "MEXICO",
+      "laps": 71
+    },
+    {
+      "circuit": "SAOPAULO",
+      "laps": 71
+    },
+    {
+      "circuit": "SILVERSTONE",
+      "laps": 52
+    },
+    {
+      "circuit": "MONZA",
+      "laps": 53
+    },
+    {
+      "circuit": "ZANDVOORT",
+      "laps": 72
+    }
+  ],
+  "stages": {
+    "entry": {
+      "fixture_id": "craft_engineering:era2-entry",
+      "discretionary_points": 11,
+      "offsets": [
+        0,
+        1,
+        0,
+        0
+      ],
+      "engine_id": "v8_1960",
+      "aero_id": "none",
+      "downforce_locked": true,
+      "setups": {
+        "balanced": [
+          3,
+          3,
+          3,
+          2
+        ],
+        "no_discretionary_cooling": [
+          0,
+          6,
+          5,
+          0
+        ],
+        "cooling": [
+          0,
+          4,
+          4,
+          3
+        ]
+      }
+    },
+    "exit": {
+      "fixture_id": "craft_engineering:era2-exit",
+      "discretionary_points": 16,
+      "offsets": [
+        2,
+        1,
+        4,
+        1
+      ],
+      "engine_id": "v8_1970",
+      "aero_id": "basic",
+      "downforce_locked": false,
+      "setups": {
+        "balanced": [
+          4,
+          4,
+          4,
+          4
+        ],
+        "no_discretionary_cooling": [
+          0,
+          8,
+          8,
+          0
+        ],
+        "cooling": [
+          0,
+          6,
+          6,
+          4
+        ]
+      }
+    }
+  },
+  "normal_plans": {
+    "SM-50": {
+      "tires": [
+        "soft",
+        "medium"
+      ],
+      "fractions": [
+        [
+          1,
+          2
+        ]
+      ]
+    },
+    "MH-50": {
+      "tires": [
+        "medium",
+        "hard"
+      ],
+      "fractions": [
+        [
+          1,
+          2
+        ]
+      ]
+    },
+    "SMS-thirds": {
+      "tires": [
+        "soft",
+        "medium",
+        "soft"
+      ],
+      "fractions": [
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          3
+        ]
+      ]
+    }
+  },
+  "diagnostic_plans": {
+    "S0": {
+      "tires": [
+        "soft"
+      ],
+      "fractions": []
+    },
+    "M0": {
+      "tires": [
+        "medium"
+      ],
+      "fractions": []
+    },
+    "H0": {
+      "tires": [
+        "hard"
+      ],
+      "fractions": []
+    },
+    "SMSM-quarters": {
+      "tires": [
+        "soft",
+        "medium",
+        "soft",
+        "medium"
+      ],
+      "fractions": [
+        [
+          1,
+          4
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          4
+        ]
+      ]
+    }
+  },
+  "gear_values": [
+    0.35,
+    0.85
+  ],
+  "downforce_values": [
+    0.2,
+    0.8
+  ],
+  "driver_mode_contexts": [
+    "MONTREAL",
+    "SILVERSTONE",
+    "MONZA"
+  ],
+  "modes": [
+    "manage",
+    "attack"
+  ],
+  "repeat_contexts": [
+    "MONTREAL",
+    "MEXICO",
+    "MONZA"
+  ],
+  "repeat_selection": [
+    [
+      "entry",
+      "balanced",
+      "SM-50"
+    ],
+    [
+      "exit",
+      "balanced",
+      "SMS-thirds"
+    ]
+  ],
+  "expected_cases": 195,
+  "expected_repeats": 6,
+  "workers": 1,
+  "comparability": "Discretionary allocation plus actual retained bonus floors; entry effective12 oldV8/no aero vs exit effective24 V8_1970/basic. Entry/exit contrasts combine budget and technology progress, not a pure isolated engine experiment. No discretionary cooling leaves inherited cooling1 at exit. Two six-round calendars cover seven unique circuits. No zero/three-stop change to ranked rules."
+}

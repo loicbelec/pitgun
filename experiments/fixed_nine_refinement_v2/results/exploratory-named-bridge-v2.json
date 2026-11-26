@@ -1,0 +1,19 @@
+{
+  "scope": "post-pilot interpretation of existing solves; not preregistered extra repeats or validation",
+  "pairs": [
+    {
+      "actor": "franz_hermann",
+      "old_case_id": "2/MEXICO/franz_hermann/16/reserved",
+      "old_to_pilot_baseline_input_and_result_exact": true,
+      "changed_control_only": "downforce 0.5 -> 0.4",
+      "full_gp_gain_s": 15.375027872792089
+    },
+    {
+      "actor": "charles_leclair",
+      "old_case_id": "2/MEXICO/charles_leclair/16/reserved",
+      "old_to_pilot_baseline_input_and_result_exact": true,
+      "changed_control_only": "downforce 0.5 -> 0.4",
+      "full_gp_gain_s": 15.889354401595483
+    }
+  ]
+}

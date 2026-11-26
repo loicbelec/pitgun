@@ -1,0 +1,198 @@
+{
+  "schema": "pitgun.thermal-balance-sensitivity-plan/v1",
+  "policies": {
+    "reference": {
+      "path": "experiments/three_compound_thermal_v1/candidate-v1.json",
+      "sha256": "0021bd8ead91698de49de297b1760cc3225a54c9e61adfeb07bab8250ab16439",
+      "changed_field": null,
+      "value": null
+    },
+    "rolling-heat-065": {
+      "path": "experiments/thermal_balance_sensitivity_v1/rolling-heat-065.json",
+      "sha256": "8b303f0189e3e174138a877d0eada425b37c672fe66dd07efcbc86b8d861e771",
+      "changed_field": "rolling_heat_fraction",
+      "value": 0.65
+    },
+    "surface-air-120": {
+      "path": "experiments/thermal_balance_sensitivity_v1/surface-air-120.json",
+      "sha256": "9cf2b6b268534892b0a9aa85e4d13b7cdea0ce154ce1c69d2247d54fa582101b",
+      "changed_field": "surface_air_speed_conductance_w_per_k_mps",
+      "value": 1.2
+    },
+    "carcass-air-45": {
+      "path": "experiments/thermal_balance_sensitivity_v1/carcass-air-45.json",
+      "sha256": "b037e992e351a116b70c78abf9d102edf1286e889f3d8a28811c38e7803b48f3",
+      "changed_field": "carcass_air_conductance_w_per_k",
+      "value": 45.0
+    }
+  },
+  "fixtures": "experiments/opponent_physics_v2/results/career-fixtures-v1.json",
+  "fixtures_sha256": "858cce40ccb942b5667bab84f99af9e1231711d6cf13afca472537051ef3c6d9",
+  "seed": 73013,
+  "development_contexts": [
+    {
+      "circuit": "MONZA",
+      "fixture_id": "craft_engineering:era2-exit",
+      "allocation": [
+        4,
+        4,
+        4,
+        4
+      ],
+      "laps": 53,
+      "family": [
+        "medium",
+        "hard"
+      ],
+      "stops": [
+        1,
+        2,
+        3
+      ]
+    },
+    {
+      "circuit": "SAOPAULO",
+      "fixture_id": "craft_engineering:era2-exit",
+      "allocation": [
+        4,
+        4,
+        4,
+        4
+      ],
+      "laps": 71,
+      "family": [
+        "medium",
+        "hard"
+      ],
+      "stops": [
+        1,
+        2,
+        3
+      ]
+    },
+    {
+      "circuit": "MONZA",
+      "fixture_id": "craft_engineering:era1-entry",
+      "allocation": [
+        2,
+        2,
+        2,
+        2
+      ],
+      "laps": 53,
+      "family": [
+        "soft",
+        "medium"
+      ],
+      "stops": [
+        1
+      ]
+    },
+    {
+      "circuit": "SILVERSTONE",
+      "fixture_id": "craft_engineering:era1-entry",
+      "allocation": [
+        2,
+        2,
+        2,
+        2
+      ],
+      "laps": 52,
+      "family": [
+        "soft",
+        "medium"
+      ],
+      "stops": [
+        1
+      ]
+    },
+    {
+      "circuit": "MONZA",
+      "fixture_id": "craft_engineering:era2-entry",
+      "allocation": [
+        3,
+        3,
+        3,
+        2
+      ],
+      "laps": 53,
+      "family": [
+        "soft",
+        "medium"
+      ],
+      "stops": [
+        1
+      ]
+    },
+    {
+      "circuit": "MONTREAL",
+      "fixture_id": "craft_engineering:era2-entry",
+      "allocation": [
+        3,
+        3,
+        3,
+        2
+      ],
+      "laps": 70,
+      "family": [
+        "soft",
+        "medium"
+      ],
+      "stops": [
+        1
+      ]
+    }
+  ],
+  "validation_contexts": [
+    {
+      "circuit": "MEXICO",
+      "fixture_id": "craft_engineering:era2-exit",
+      "allocation": [
+        4,
+        4,
+        4,
+        4
+      ],
+      "laps": 71,
+      "family": [
+        "medium",
+        "hard"
+      ],
+      "stops": [
+        1,
+        2,
+        3
+      ]
+    },
+    {
+      "circuit": "ZANDVOORT",
+      "fixture_id": "craft_engineering:era1-entry",
+      "allocation": [
+        2,
+        2,
+        2,
+        2
+      ],
+      "laps": 72,
+      "family": [
+        "soft",
+        "medium"
+      ],
+      "stops": [
+        1
+      ]
+    }
+  ],
+  "criteria": {
+    "warmup_laps_per_stint": 3,
+    "minimum_relative_hot_exposure_reduction_each_exit_context": 0.2,
+    "maximum_entry_mean_temperature_grip_loss": 0.03,
+    "maximum_surface_c": 155.0,
+    "maximum_carcass_c": 165.0
+  },
+  "expected_development_cases": 40,
+  "expected_validation_cases": 8,
+  "expected_fresh_repeats": 6,
+  "baseline_archive": "experiments/era2_stop_diagnostic_v1/results/main-v1.json.gz",
+  "baseline_archive_sha256": "7329147d906024f94ac0ae32ecf90fe8ed98659750f115b9a73a5e37015a047c"
+}

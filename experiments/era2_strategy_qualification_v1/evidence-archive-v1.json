@@ -1,0 +1,10 @@
+{
+  "schema": "pitgun.era2-strategy-evidence-archive/v1",
+  "native_source_commit": "9d7b082e143f0ce878162ae858e3a8b37520baf0",
+  "native_binary_sha256": "9acece92aef9cd61ffb5ba11345b58060f06a913f0e7775b637ba31806a0993e",
+  "operating_policy_sha256": "0021bd8ead91698de49de297b1760cc3225a54c9e61adfeb07bab8250ab16439",
+  "reports": {
+    "main-v1.json.gz": "079ef5ebd2639a3c3e7a93c84d47416ed7b979e9c2ef40d0ce178e213537d515"
+  },
+  "scope": "195 main cases +6 exact repeats; 201 retained full GP,13158 laps; actual career entry/exit,seven regular contexts; no AI fit/admission/deployment"
+}
