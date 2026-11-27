@@ -9,10 +9,15 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let catalog = RacingCatalogSnapshot::embedded_validated_career()?;
     let mut vectors = Vec::new();
     let mut checked = 0;
+    let inspect = std::env::args().nth(1);
     for vector in proof["vectors"].as_array().unwrap() {
         let request: RunRaceRequest = serde_json::from_value(vector["request"].clone())?;
         let request = qualified_career::prepare_request(request, &catalog)?;
         let inputs = qualified_career::resolve_inputs(&request, &catalog)?;
+        if inspect.as_deref() == vector["id"].as_str() {
+            println!("{}", serde_json::to_string(&inputs)?);
+            return Ok(());
+        }
         for (id, expected) in vector["expected"].as_object().unwrap() {
             if canonical_json_digest(&inputs[id])?.to_string()
                 != expected["physical_input_digest"].as_str().unwrap()

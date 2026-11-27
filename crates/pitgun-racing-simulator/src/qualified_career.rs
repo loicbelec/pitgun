@@ -498,7 +498,11 @@ pub fn prepare_qualified_career_request_json(input_json: String, catalog_json: S
 
 /// Read-only lineage diagnostic. Never materializes lap histories or runs a lap.
 #[cfg_attr(feature = "wasm", wasm_bindgen)]
-pub fn resolved_qualified_career_inputs_json(input_json: String, catalog_json: String) -> String {
+pub fn resolved_qualified_career_inputs_json(
+    input_json: String,
+    catalog_json: String,
+    include_values: bool,
+) -> String {
     let result = (|| -> Result<Value, String> {
         let catalog =
             RacingCatalogSnapshot::from_bundle_json(&catalog_json).map_err(|e| e.to_string())?;
@@ -513,7 +517,11 @@ pub fn resolved_qualified_career_inputs_json(input_json: String, catalog_json: S
                 ))
             })
             .collect::<Result<_, String>>()?;
-        Ok(serde_json::json!({"physical_inputs":digests}))
+        let mut result = serde_json::json!({"physical_inputs":digests});
+        if include_values {
+            result["physical_values"] = serde_json::to_value(inputs).map_err(|e| e.to_string())?;
+        }
+        Ok(result)
     })();
     match result {
         Ok(v) => serialize_json(&v),
