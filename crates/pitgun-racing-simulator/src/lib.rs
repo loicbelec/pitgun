@@ -78,6 +78,10 @@ include!(concat!(
     "/../../generated/racing_catalog_three_compound.rs"
 ));
 use std::collections::hash_map::DefaultHasher;
+include!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../generated/racing_catalog_validated_career.rs"
+));
 use std::collections::{BTreeMap, BTreeSet, HashMap, VecDeque};
 use std::hash::{Hash, Hasher};
 

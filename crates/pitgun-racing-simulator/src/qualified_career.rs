@@ -11,6 +11,11 @@ use pitgun_racing_solver::lap_boundary::{
     BoundaryDiagnosticRequestV1, BoundaryDiagnosticVersionV1, BoundaryForecastV1,
 };
 
+const VALIDATED_BYTES: &[u8] = include_bytes!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../catalogs/racing/v1.10.3/simulation/qualified-career/profile-v1.json"
+));
+
 const THREE_COMPOUND_BYTES: &[u8] = include_bytes!(concat!(
     env!("CARGO_MANIFEST_DIR"),
     "/../../catalogs/racing/v1.10.2/simulation/qualified-career/profile-v1.json"
@@ -25,6 +30,8 @@ const PROFILE_BYTES: &[u8] = include_bytes!(concat!(
 pub struct QualifiedCareerProfile {
     pub schema_version: String,
     pub source_policy_digest: Digest,
+    #[serde(default)]
+    pub preparation_basis: Option<String>,
     pub supported_eras: Vec<i32>,
     pub base_vehicle_id: String,
     pub initial_fuel_mass_kg: f64,
@@ -91,11 +98,44 @@ pub fn three_compound_model_identity() -> ArtifactIdentity {
 pub fn model_identity_for(snapshot: &RacingCatalogSnapshot) -> Result<ArtifactIdentity, String> {
     profile(snapshot)?;
     Ok(
-        if snapshot.qualified_career_profile_bytes() == Some(THREE_COMPOUND_BYTES) {
+        if snapshot.qualified_career_profile_bytes() == Some(VALIDATED_BYTES) {
+            validated_model_identity()
+        } else if snapshot.qualified_career_profile_bytes() == Some(THREE_COMPOUND_BYTES) {
             three_compound_model_identity()
         } else {
             model_identity()
         },
+    )
+}
+pub fn validated_model_identity() -> ArtifactIdentity {
+    ArtifactIdentity {
+        id: "pitgun.racing-v3-candidate".parse().unwrap(),
+        version: "0.16.3".parse().unwrap(),
+        digest: Digest::from_bytes(
+            format!(
+                "pitgun.racing:0.16.3:rolling-heat-065:effective-cap-table-v1:readable-power-v3:{}",
+                Digest::from_bytes(VALIDATED_BYTES)
+            )
+            .as_bytes(),
+        ),
+    }
+}
+pub fn validated_profile_identity() -> ArtifactIdentity {
+    ArtifactIdentity {
+        id: "pitgun.racing.qualified-career.profile-v1".parse().unwrap(),
+        version: "1.2.0".parse().unwrap(),
+        digest: canonical_json_digest(&serde_json::from_slice::<Value>(VALIDATED_BYTES).unwrap())
+            .unwrap(),
+    }
+}
+#[cfg_attr(feature = "wasm", wasm_bindgen)]
+pub fn validated_career_metadata_json() -> String {
+    serialize_json(
+        &serde_json::json!({"model":validated_model_identity(),"profile":validated_profile_identity(),
+        "control_policy":crate::service_control::validated_local_control_policy_identity(),
+        "telemetry_policy":crate::power_stream::readable_power_telemetry_policy_identity(),
+        "physics":"pitgun.local-qualified-career/v1","scope":"native-reserve-qualified I/II field; local unranked runtime",
+        "signed_service_admitted":false}),
     )
 }
 pub fn three_compound_profile_identity() -> ArtifactIdentity {
@@ -154,7 +194,7 @@ pub fn profile(snapshot: &RacingCatalogSnapshot) -> Result<QualifiedCareerProfil
     let bytes = snapshot
         .qualified_career_profile_bytes()
         .ok_or("qualified career profile missing")?;
-    if bytes != PROFILE_BYTES && bytes != THREE_COMPOUND_BYTES {
+    if bytes != PROFILE_BYTES && bytes != THREE_COMPOUND_BYTES && bytes != VALIDATED_BYTES {
         return Err("qualified career profile differs from the compiled candidate".into());
     }
     let p: QualifiedCareerProfile = serde_json::from_slice(bytes).map_err(|e| e.to_string())?;
@@ -166,8 +206,13 @@ pub fn profile(snapshot: &RacingCatalogSnapshot) -> Result<QualifiedCareerProfil
     }
     p.thermal.validate()?;
     p.tires.validate()?;
-    if (bytes == THREE_COMPOUND_BYTES) != p.tire_operating.is_some() {
+    if (bytes != PROFILE_BYTES) != p.tire_operating.is_some() {
         return Err("operating policy/profile identity mismatch".into());
+    }
+    if (bytes == VALIDATED_BYTES)
+        != (p.preparation_basis.as_deref() == Some("effective-cap-table/v1"))
+    {
+        return Err("preparation table/profile identity mismatch".into());
     }
     if p.tire_operating
         .as_ref()
@@ -237,14 +282,40 @@ pub fn prepare_request(
         .input
         .competitor_vehicle_components
         .retain(|id, _| id == "player");
-    for case in &context.cases {
+    // Available cap is fixed before the session. Unspent points and player tuning
+    // never lower, strengthen or otherwise adapt the frozen field.
+    let available = if p.preparation_basis.is_some() {
+        let cap = cars[0].budget_cap;
+        if !cap.is_finite() || cap.fract() != 0. || !(0. ..=80.).contains(&cap) {
+            return Err("qualified field requires an integer available effective cap".into());
+        }
+        Some(cap as u16)
+    } else {
+        None
+    };
+    let cases: Vec<_> = context
+        .cases
+        .iter()
+        .filter(|c| available.is_none_or(|b| c.budget == b))
+        .collect();
+    if cases.len() != 9
+        || cases
+            .iter()
+            .map(|c| &c.actor)
+            .collect::<std::collections::BTreeSet<_>>()
+            .len()
+            != 9
+    {
+        return Err("available effective budget is outside the qualified I/II field table".into());
+    }
+    for case in cases {
         let person = &p.roster[&case.actor];
         let base = &p.installed_component_baseline_by_era[&era.to_string()];
         let points: Vec<f64> = case
             .allocation
             .iter()
             .zip(base.offsets)
-            .map(|(a, b)| f64::from(a + b))
+            .map(|(a, b)| f64::from(if available.is_some() { *a } else { a + b }))
             .collect();
         let strategy = if laps == full_laps {
             case.strategy.clone()
@@ -425,9 +496,107 @@ pub fn prepare_qualified_career_request_json(input_json: String, catalog_json: S
     }
 }
 
+/// Read-only lineage diagnostic. Never materializes lap histories or runs a lap.
+#[cfg_attr(feature = "wasm", wasm_bindgen)]
+pub fn resolved_qualified_career_inputs_json(input_json: String, catalog_json: String) -> String {
+    let result = (|| -> Result<Value, String> {
+        let catalog =
+            RacingCatalogSnapshot::from_bundle_json(&catalog_json).map_err(|e| e.to_string())?;
+        let request = prepare_request(parse_run_race_request(&input_json)?, &catalog)?;
+        let inputs = resolve_inputs(&request, &catalog)?;
+        let digests: BTreeMap<_, _> = inputs
+            .iter()
+            .map(|(id, input)| {
+                Ok((
+                    id.clone(),
+                    canonical_json_digest(input).map_err(|e| e.to_string())?,
+                ))
+            })
+            .collect::<Result<_, String>>()?;
+        Ok(serde_json::json!({"physical_inputs":digests}))
+    })();
+    match result {
+        Ok(v) => serialize_json(&v),
+        Err(e) => json_error(&e),
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn validated_field_resolves_every_retained_reserve_input_exactly() {
+        let snapshot = RacingCatalogSnapshot::embedded_validated_career().unwrap();
+        let proof: Value = serde_json::from_str(include_str!(
+            "../../../experiments/validated_runtime_v1/bridge-inputs-v1.json"
+        ))
+        .unwrap();
+        let mut checked = 0;
+        for vector in proof["vectors"].as_array().unwrap() {
+            let request: RunRaceRequest =
+                serde_json::from_value(vector["request"].clone()).unwrap();
+            let prepared = prepare_request(request, &snapshot).unwrap();
+            assert_eq!(
+                canonical_json_digest(&prepared).unwrap(),
+                canonical_json_digest(&prepare_request(prepared.clone(), &snapshot).unwrap())
+                    .unwrap()
+            );
+            let inputs = resolve_inputs(&prepared, &snapshot).unwrap();
+            for (id, expected) in vector["expected"].as_object().unwrap() {
+                assert_eq!(
+                    canonical_json_digest(&inputs[id]).unwrap().to_string(),
+                    expected["physical_input_digest"].as_str().unwrap(),
+                    "{} {id}",
+                    vector["id"]
+                );
+                checked += 1;
+            }
+        }
+        assert_eq!(checked, 327);
+    }
+
+    #[test]
+    fn available_cap_field_is_independent_of_player_spending_and_rejects_extrapolation() {
+        let snapshot = RacingCatalogSnapshot::embedded_validated_career().unwrap();
+        let proof: Value = serde_json::from_str(include_str!(
+            "../../../experiments/validated_runtime_v1/bridge-inputs-v1.json"
+        ))
+        .unwrap();
+        let request: RunRaceRequest =
+            serde_json::from_value(proof["vectors"][0]["request"].clone()).unwrap();
+        let base = prepare_request(request.clone(), &snapshot).unwrap();
+        let mut unspent = request.clone();
+        unspent.input.race.competitors.iter_mut().find(|c|c.is_player).unwrap().tuning=serde_json::from_value(serde_json::json!({"aero_points":0,"chassis_points":1,"engine_points":1,"cooling_points":0,"downforce_slider":0.5,"gear_ratio_slider":0.9})).unwrap();
+        let other = prepare_request(unspent, &snapshot).unwrap();
+        for (a, b) in base
+            .input
+            .race
+            .competitors
+            .iter()
+            .zip(other.input.race.competitors.iter())
+            .filter(|(a, _)| !a.is_player)
+        {
+            assert_eq!(
+                serde_json::to_value(a).unwrap(),
+                serde_json::to_value(b).unwrap()
+            );
+        }
+        let mut invalid = request;
+        invalid
+            .input
+            .race
+            .competitors
+            .iter_mut()
+            .find(|c| c.is_player)
+            .unwrap()
+            .budget_cap = 25.;
+        assert!(prepare_request(invalid, &snapshot).is_err());
+        assert_eq!(
+            model_identity_for(&snapshot).unwrap(),
+            validated_model_identity()
+        );
+        assert_ne!(validated_model_identity(), three_compound_model_identity());
+    }
     #[test]
     fn operating_catalog_inputs_equal_the_frozen_offline_compilation() {
         let old = RacingCatalogSnapshot::embedded_qualified_career().unwrap();
