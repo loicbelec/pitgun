@@ -38,7 +38,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             let tuning = serde_json::from_value(
                 json!({"aero_points":case.allocation[0],"chassis_points":case.allocation[1],"engine_points":case.allocation[2],"cooling_points":case.allocation[3],"gear_ratio_slider":case.gear,"downforce_slider":case.downforce}),
             )?;
-            request.input.player_tuning = Some(tuning);
             let player = request
                 .input
                 .race
@@ -47,7 +46,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .find(|c| c.is_player)
                 .unwrap();
             player.budget_cap = f64::from(cap);
-            player.tuning = request.input.player_tuning.clone().unwrap();
+            player.tuning = tuning;
             player.stint_strategy = Some(case.strategy.clone());
             request.input.pit_strategy = None;
             let request = qualified_career::prepare_request(request, &catalog)?;
