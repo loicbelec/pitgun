@@ -1,0 +1,79 @@
+{
+  "schema_version": "pitgun.racing-component-capabilities/v1",
+  "components": [
+    {
+      "kind": "aerodynamic_package",
+      "component_id": "active",
+      "capabilities": [
+        "adjustable_downforce"
+      ]
+    },
+    {
+      "kind": "aerodynamic_package",
+      "component_id": "basic",
+      "capabilities": [
+        "adjustable_downforce"
+      ]
+    },
+    {
+      "kind": "aerodynamic_package",
+      "component_id": "none",
+      "capabilities": []
+    },
+    {
+      "kind": "chassis",
+      "component_id": "default",
+      "capabilities": []
+    },
+    {
+      "kind": "chassis",
+      "component_id": "f1_2026",
+      "capabilities": []
+    },
+    {
+      "kind": "power_unit",
+      "component_id": "v6t",
+      "capabilities": [
+        "adjustable_gear_ratio",
+        "turbo_configuration"
+      ]
+    },
+    {
+      "kind": "power_unit",
+      "component_id": "v6t_hybrid",
+      "capabilities": [
+        "adjustable_gear_ratio",
+        "turbo_configuration"
+      ]
+    },
+    {
+      "kind": "power_unit",
+      "component_id": "v8_1960",
+      "capabilities": [
+        "adjustable_gear_ratio"
+      ]
+    },
+    {
+      "kind": "power_unit",
+      "component_id": "v8_1970",
+      "capabilities": [
+        "adjustable_gear_ratio"
+      ]
+    },
+    {
+      "kind": "tire_specification",
+      "component_id": "hard",
+      "capabilities": []
+    },
+    {
+      "kind": "tire_specification",
+      "component_id": "medium",
+      "capabilities": []
+    },
+    {
+      "kind": "tire_specification",
+      "component_id": "soft",
+      "capabilities": []
+    }
+  ]
+}

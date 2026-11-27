@@ -1,0 +1,90 @@
+{
+  "schema": "pitgun.local-game-budget-envelope/v1",
+  "sourceGameCommit": "88c4964",
+  "sources": {
+    "src/economy/seasonContent.ts": "0b654634106002317632f930b0072927a0fb78edb1d4b751b47e308fd57b3120",
+    "src/economy/seasonCareer.ts": "53d95c9aee23a8118bda3b3c542ece2d73f250a1b64c6f6a49089a03991510ed",
+    "src/engine/carSetup.ts": "99e8e089cf01e01806335cd26107932fc353caf4bf5fdbc133b23314c806d07e"
+  },
+  "basis": "Conservative co-owned-development upper bound per doctrine, not an affordability or progression-time claim.",
+  "coverage": {
+    "1": {
+      "minimum": 8,
+      "maximum": 27,
+      "scenarios": [
+        {
+          "doctrine": "craft_engineering",
+          "developmentPoints": 21,
+          "offsets": {
+            "aero": 1,
+            "chassis": 1,
+            "engine": 1,
+            "cooling": 0
+          },
+          "effectiveCap": 24
+        },
+        {
+          "doctrine": "industrial_discipline",
+          "developmentPoints": 24,
+          "offsets": {
+            "aero": 1,
+            "chassis": 1,
+            "engine": 1,
+            "cooling": 0
+          },
+          "effectiveCap": 27
+        },
+        {
+          "doctrine": "commercial_push",
+          "developmentPoints": 21,
+          "offsets": {
+            "aero": 1,
+            "chassis": 1,
+            "engine": 1,
+            "cooling": 0
+          },
+          "effectiveCap": 24
+        }
+      ]
+    },
+    "2": {
+      "minimum": 8,
+      "maximum": 53,
+      "scenarios": [
+        {
+          "doctrine": "craft_engineering",
+          "developmentPoints": 35,
+          "offsets": {
+            "aero": 3,
+            "chassis": 3,
+            "engine": 7,
+            "cooling": 2
+          },
+          "effectiveCap": 50
+        },
+        {
+          "doctrine": "industrial_discipline",
+          "developmentPoints": 38,
+          "offsets": {
+            "aero": 3,
+            "chassis": 3,
+            "engine": 7,
+            "cooling": 2
+          },
+          "effectiveCap": 53
+        },
+        {
+          "doctrine": "commercial_push",
+          "developmentPoints": 35,
+          "offsets": {
+            "aero": 3,
+            "chassis": 3,
+            "engine": 7,
+            "cooling": 2
+          },
+          "effectiveCap": 50
+        }
+      ]
+    }
+  }
+}

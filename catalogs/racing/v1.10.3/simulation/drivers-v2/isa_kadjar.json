@@ -1,0 +1,9 @@
+{
+  "schema_version": "pitgun.racing-driver/v2",
+  "id": "isa_kadjar",
+  "traits": {
+    "limit_exploitation": 0.81,
+    "consistency": 0.75,
+    "tire_management": 0.76
+  }
+}

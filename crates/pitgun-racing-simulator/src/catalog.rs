@@ -34,7 +34,7 @@ use crate::{
     racing_model_v3_thermal_candidate_identity, racing_model_v3_timeline_candidate_identity,
 };
 
-const KNOWN_RACING_MODELS: [(&str, &str); 8] = [
+const KNOWN_RACING_MODELS: [(&str, &str); 10] = [
     ("pitgun.racing", "1.0.0"),
     ("pitgun.racing", "2.0.0"),
     ("pitgun.racing-v3-candidate", "0.10.0"),
@@ -43,6 +43,8 @@ const KNOWN_RACING_MODELS: [(&str, &str); 8] = [
     ("pitgun.racing-v3-candidate", "0.15.0"),
     ("pitgun.racing-v3-candidate", "0.16.0"),
     ("pitgun.racing-v3-candidate", "0.16.1"),
+    ("pitgun.racing-v3-candidate", "0.16.2"),
+    ("pitgun.racing-v3-candidate", "0.16.3"),
 ];
 const MODEL_PARAMETERS_ID_PREFIX: &str = "pitgun.racing.model-parameters.";
 const MODEL_PARAMETERS_PATH_PREFIX: &str = "simulation/model-parameters/";
@@ -332,6 +334,56 @@ impl RacingCatalogSnapshot {
                 "/../../catalogs/racing/v1.10.1/presentation/index.json"
             )),
             resources,
+        )
+    }
+
+    /// Separate unranked local preview; never replaces an older embedded release.
+    pub fn embedded_three_compound() -> Result<Self, RacingCatalogResolutionError> {
+        Self::from_bytes(
+            include_bytes!(concat!(
+                env!("CARGO_MANIFEST_DIR"),
+                "/../../catalogs/racing/v1.10.2/catalog.json"
+            )),
+            include_bytes!(concat!(
+                env!("CARGO_MANIFEST_DIR"),
+                "/../../catalogs/racing/v1.10.2/release.json"
+            )),
+            include_bytes!(concat!(
+                env!("CARGO_MANIFEST_DIR"),
+                "/../../catalogs/racing/v1.10.2/simulation/index.json"
+            )),
+            include_bytes!(concat!(
+                env!("CARGO_MANIFEST_DIR"),
+                "/../../catalogs/racing/v1.10.2/presentation/index.json"
+            )),
+            crate::THREE_COMPOUND_EMBEDDED_FILES
+                .iter()
+                .map(|(path, bytes)| (format!("simulation/{path}"), bytes.to_vec())),
+        )
+    }
+
+    /// Separate unranked local preview; never replaces an older embedded release.
+    pub fn embedded_validated_career() -> Result<Self, RacingCatalogResolutionError> {
+        Self::from_bytes(
+            include_bytes!(concat!(
+                env!("CARGO_MANIFEST_DIR"),
+                "/../../catalogs/racing/v1.10.3/catalog.json"
+            )),
+            include_bytes!(concat!(
+                env!("CARGO_MANIFEST_DIR"),
+                "/../../catalogs/racing/v1.10.3/release.json"
+            )),
+            include_bytes!(concat!(
+                env!("CARGO_MANIFEST_DIR"),
+                "/../../catalogs/racing/v1.10.3/simulation/index.json"
+            )),
+            include_bytes!(concat!(
+                env!("CARGO_MANIFEST_DIR"),
+                "/../../catalogs/racing/v1.10.3/presentation/index.json"
+            )),
+            crate::VALIDATED_CAREER_EMBEDDED_FILES
+                .iter()
+                .map(|(path, bytes)| (format!("simulation/{path}"), bytes.to_vec())),
         )
     }
 

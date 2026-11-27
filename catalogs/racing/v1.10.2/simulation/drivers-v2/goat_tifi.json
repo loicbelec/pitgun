@@ -1,0 +1,9 @@
+{
+  "schema_version": "pitgun.racing-driver/v2",
+  "id": "goat_tifi",
+  "traits": {
+    "limit_exploitation": 0.69,
+    "consistency": 0.71,
+    "tire_management": 0.73
+  }
+}

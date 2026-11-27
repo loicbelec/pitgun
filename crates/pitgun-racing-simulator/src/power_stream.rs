@@ -15,6 +15,24 @@ pub const POWER_CHANNELS: [(u16, &str, &str); 7] = [
     (5106, "sim.drive_budget_w", "W"),
 ];
 
+/// Native presentation cues, selected only by model0.16.2.
+pub const READABLE_POWER_CHANNELS: [(u16, &str, &str); 3] = [
+    (5107, "sim.engine_output_pct", "%"),
+    (5108, "sim.engine_power_loss_pct", "%"),
+    (5109, "sim.brake_force_kn", "kN"),
+];
+pub fn readable_power_telemetry_policy_identity() -> ArtifactIdentity {
+    let policy = serde_json::json!({"schema":"pitgun.racing-readable-power-channel-policy/v1","base":energy_power_telemetry_policy_identity(),"channels":READABLE_POWER_CHANNELS,
+        "engine_output":"min(100,100*accepted-shaft-power/accepted-available-thermal-power)*accepted-derating-factor;zero-if-no-capacity",
+        "thermal_loss":"100*(1-accepted-segment-derating-factor)","braking":"accepted-native-brake-force-N/1000",
+        "sampling":"same-causal-accepted-segment-as-energy-power;driving-only","physics":"unchanged"});
+    ArtifactIdentity {
+        id: "pitgun.racing-power-channel-policy".parse().unwrap(),
+        version: "3.0.0".parse().unwrap(),
+        digest: canonical_json_digest(&policy).unwrap(),
+    }
+}
+
 pub fn power_telemetry_policy_identity() -> ArtifactIdentity {
     let policy = serde_json::json!({
         "schema":"pitgun.racing-power-channel-policy/v1", "channels":POWER_CHANNELS,
@@ -42,12 +60,35 @@ pub fn energy_power_telemetry_policy_identity() -> ArtifactIdentity {
     }
 }
 
+fn readable_cues(
+    p: pitgun_racing_solver::longitudinal_energy::EnergyPowerPointV1,
+    factor: f64,
+    brake_n: f64,
+) -> Result<[f64; 3], String> {
+    if !factor.is_finite()
+        || !(0.0..=1.0).contains(&factor)
+        || !brake_n.is_finite()
+        || brake_n < 0.0
+    {
+        return Err("invalid native power/braking cue".into());
+    }
+    // The accepted power cap is already checked above; min only removes its
+    // permitted floating-point residual, not a physical excess.
+    let output = if p.available_engine_w > 0.0 {
+        (100.0 * p.shaft_w / p.available_engine_w).min(100.0) * factor
+    } else {
+        0.0
+    };
+    Ok([output, 100.0 * (1.0 - factor), brake_n / 1000.0])
+}
+
 /// Compact exported rows, not a second native history or full frame archive.
 pub(crate) struct PowerLapCache {
     energy: bool,
+    readable: bool,
     start_us: i64,
     end_us: i64,
-    rows: Vec<(i64, PowerPointV1)>,
+    rows: Vec<(i64, PowerPointV1, Option<[f64; 3]>)>,
 }
 impl PowerLapCache {
     pub(crate) fn from_lap(
@@ -57,10 +98,16 @@ impl PowerLapCache {
         fuel: Option<FuelMassParamsV3>,
         times: &[f64],
         offset: f64,
+        readable: bool,
     ) -> Result<Self, String> {
         if lap.solution.longitudinal_model.is_some() {
             let solution = &lap.solution;
-            if solution.t.len() < 2 || solution.energy_power_points.len() != solution.t.len() {
+            if solution.t.len() < 2
+                || solution.energy_power_points.len() != solution.t.len()
+                || (readable
+                    && (solution.engine_derating_factor.len() != solution.t.len()
+                        || solution.brake_force_budget_n.len() != solution.t.len()))
+            {
                 return Err(
                     "energy power projection requires the accepted native segment powers".into(),
                 );
@@ -106,10 +153,20 @@ impl PowerLapCache {
                         },
                         shift_power_fraction: solution.shift_power_fraction[i],
                     },
+                    if readable {
+                        Some(readable_cues(
+                            p,
+                            solution.engine_derating_factor[i],
+                            solution.brake_force_budget_n[i],
+                        )?)
+                    } else {
+                        None
+                    },
                 ));
             }
             return Ok(Self {
                 energy: true,
+                readable,
                 start_us: ((solution.t[0] + offset) * 1e6).round() as i64,
                 end_us: ((solution.t.last().unwrap() + offset) * 1e6).round() as i64,
                 rows,
@@ -122,27 +179,31 @@ impl PowerLapCache {
         let rows = projection
             .sample_at_times(times)?
             .into_iter()
-            .map(|p| (us(p.time_s), p))
+            .map(|p| (us(p.time_s), p, None))
             .collect();
         Ok(Self {
             energy: false,
+            readable: false,
             start_us,
             end_us,
             rows,
         })
     }
-    fn at(&self, time: i64) -> Option<&PowerPointV1> {
+    fn at(&self, time: i64) -> Option<&(i64, PowerPointV1, Option<[f64; 3]>)> {
         if time < self.start_us || time >= self.end_us {
             return None;
         }
-        let index = self.rows.partition_point(|(t, _)| *t <= time);
-        index.checked_sub(1).map(|i| &self.rows[i].1)
+        let index = self.rows.partition_point(|(t, _, _)| *t <= time);
+        index.checked_sub(1).map(|i| &self.rows[i])
     }
 }
 
 pub(crate) fn apply_power_frames(frames: &mut [TelemetryFrame], caches: &[PowerLapCache]) {
     let energy = caches.first().is_some_and(|c| c.energy);
-    let policy = if energy {
+    let readable = caches.first().is_some_and(|c| c.readable);
+    let policy = if readable {
+        readable_power_telemetry_policy_identity()
+    } else if energy {
         energy_power_telemetry_policy_identity()
     } else {
         power_telemetry_policy_identity()
@@ -156,7 +217,9 @@ pub(crate) fn apply_power_frames(frames: &mut [TelemetryFrame], caches: &[PowerL
             .insert("power_telemetry_policy".into(), policy.digest.to_string());
         frame.metadata.insert(
             "power_telemetry_version".into(),
-            if energy {
+            if readable {
+                "pitgun.racing-readable-power-channel-policy/v1"
+            } else if energy {
                 "pitgun.racing-energy-power-channel-policy/v1"
             } else {
                 "pitgun.racing-power-channel-policy/v1"
@@ -167,7 +230,7 @@ pub(crate) fn apply_power_frames(frames: &mut [TelemetryFrame], caches: &[PowerL
         let point = index
             .checked_sub(1)
             .and_then(|i| caches[i].at(frame.timestamp_us));
-        if let Some(p) = point {
+        if let Some((_, p, cue)) = point {
             let values = [
                 p.equivalent_engine_load_pct,
                 p.engine_available_w,
@@ -183,6 +246,14 @@ pub(crate) fn apply_power_frames(frames: &mut [TelemetryFrame], caches: &[PowerL
                     .zip(values)
                     .map(|((id, _, _), v)| gateway_sample(*id, v)),
             );
+            if let Some(cue) = cue {
+                frame.samples.extend(
+                    READABLE_POWER_CHANNELS
+                        .iter()
+                        .zip(cue)
+                        .map(|((id, _, _), v)| gateway_sample(*id, *v)),
+                );
+            }
             frame.samples.sort_by_key(|s| s.parameter_id);
         }
     }
@@ -191,6 +262,30 @@ pub(crate) fn apply_power_frames(frames: &mut [TelemetryFrame], caches: &[PowerL
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn delivered_output_keeps_thermal_loss_visible_and_braking_physical() {
+        use pitgun_racing_solver::longitudinal_energy::EnergyPowerPointV1;
+        let full = EnergyPowerPointV1 {
+            available_engine_w: 80000.0,
+            shaft_w: 80000.0,
+            ..Default::default()
+        };
+        let cue = readable_cues(full, 0.8, 2000.0).unwrap();
+        assert_eq!(cue[0], 80.0);
+        assert!((cue[1] - 20.0).abs() < 1e-12);
+        assert_eq!(cue[2], 2.0);
+        let part = EnergyPowerPointV1 {
+            shaft_w: 40000.0,
+            ..full
+        };
+        assert_eq!(readable_cues(part, 0.8, 0.0).unwrap()[0], 40.0);
+        assert_eq!(
+            readable_cues(EnergyPowerPointV1::default(), 0.0, 3000.0).unwrap(),
+            [0.0, 100.0, 3.0]
+        );
+        assert!(readable_cues(full, f64::NAN, 0.0).is_err());
+        assert!(readable_cues(full, 0.8, -1.0).is_err());
+    }
     #[test]
     fn terminal_sampling_does_not_leak_power_into_a_pit_gap_or_a_future_lap() {
         let p = PowerPointV1 {
@@ -206,9 +301,10 @@ mod tests {
         };
         let cache = PowerLapCache {
             energy: false,
+            readable: false,
             start_us: 10,
             end_us: 30,
-            rows: vec![(10, p.clone()), (20, p)],
+            rows: vec![(10, p.clone(), None), (20, p, None)],
         };
         assert!(cache.at(9).is_none());
         assert!(cache.at(10).is_some());

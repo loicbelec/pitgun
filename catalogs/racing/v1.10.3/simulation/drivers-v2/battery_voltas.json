@@ -1,0 +1,9 @@
+{
+  "schema_version": "pitgun.racing-driver/v2",
+  "id": "battery_voltas",
+  "traits": {
+    "limit_exploitation": 0.75,
+    "consistency": 0.83,
+    "tire_management": 0.84
+  }
+}

@@ -73,7 +73,15 @@ include!(concat!(
     env!("CARGO_MANIFEST_DIR"),
     "/../../generated/racing_catalog_qualified_career.rs"
 ));
+include!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../generated/racing_catalog_three_compound.rs"
+));
 use std::collections::hash_map::DefaultHasher;
+include!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../generated/racing_catalog_validated_career.rs"
+));
 use std::collections::{BTreeMap, BTreeSet, HashMap, VecDeque};
 use std::hash::{Hash, Hasher};
 
@@ -2833,6 +2841,7 @@ fn take_playback_prefix(points: &mut Vec<[f64; 2]>, horizon: f64) -> Vec<[f64; 2
 pub struct IncrementalRacingSession {
     physical_event_failure: Option<String>,
     power_telemetry_v1: bool,
+    readable_power_telemetry: bool,
     power_caches: Vec<power_stream::PowerLapCache>,
     track_id: String,
     track: Track,
@@ -3317,6 +3326,7 @@ impl IncrementalRacingSession {
             physical_event_failure: None,
             track_id,
             power_telemetry_v1: false,
+            readable_power_telemetry: false,
             power_caches: Vec::new(),
             track: track_record.track,
             vehicle_id: vehicle_id.to_string(),
@@ -3568,6 +3578,7 @@ impl IncrementalRacingSession {
                     player.power_projection_fuel,
                     &resampled.time_s,
                     player_time_offset,
+                    self.readable_power_telemetry,
                 )?)
             } else {
                 None
@@ -6406,7 +6417,26 @@ fn parse_engine(value: &Value) -> Result<EngineParams, String> {
     let g1_total = read_required_f64(gearbox, &["g1_total"])?;
     let g_last_total = read_required_f64(gearbox, &["g_last_total"])?;
     let gear_count = read_required_u64(gearbox, &["gear_count"])? as usize;
-    let gear_ratios = build_gear_ratios(g1_total, g_last_total, gear_count.max(2));
+    // New catalogues may retain exact native spacing instead of deriving it
+    // with target-dependent transcendental pow(). Historical resources retain
+    // their original path and bytes.
+    let gear_ratios = if let Some(values) = gearbox.get("ratios") {
+        let ratios: Vec<f64> = serde_json::from_value(values.clone())
+            .map_err(|e| format!("invalid explicit gearbox ratios: {e}"))?;
+        if ratios.len() != gear_count
+            || ratios.iter().any(|r| !r.is_finite() || *r <= 0.)
+            || ratios.windows(2).any(|p| p[0] <= p[1])
+            || ratios.first() != Some(&g1_total)
+            || ratios.last() != Some(&g_last_total)
+        {
+            return Err(
+                "explicit gearbox ratios disagree with declared count/endpoints/ordering".into(),
+            );
+        }
+        ratios
+    } else {
+        build_gear_ratios(g1_total, g_last_total, gear_count.max(2))
+    };
     let thermal = value
         .get("thermal")
         .ok_or_else(|| "engine is missing thermal".to_string())?;

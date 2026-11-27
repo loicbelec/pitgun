@@ -1,0 +1,24 @@
+{
+  "n_rpm": {"start": 0, "end": 15000, "step": 250},
+  "trq_segments": [
+    {"type": "linspace", "start": 0.44, "end": 0.59, "num": 43},
+    {"type": "linspace", "start": 0.57, "end": 0.455, "num": 8},
+    {"type": "linspace", "start": 0.44, "end": 0.32, "num": 9},
+    {"type": "list", "values": [0.16]}
+  ],
+  "gearbox": {"g1_total": 14.0, "g_last_total": 4.5, "gear_count": 8},
+  "n_idle": 400.0,
+  "n_max": 15000.0,
+  "n_upshift": 0.0,
+  "n_downshift": 0.0,
+  "thermal": {
+    "t_amb": 35.0,
+    "t_init": 90.0,
+    "c_th": 100000.0,
+    "alpha_heat": 0.45,
+    "p_cool0": 0.0,
+    "k_cool": 45.0,
+    "t_soft": 110.0,
+    "beta_derate": 0.02
+  }
+}

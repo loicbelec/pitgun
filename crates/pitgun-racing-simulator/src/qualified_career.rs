@@ -11,6 +11,16 @@ use pitgun_racing_solver::lap_boundary::{
     BoundaryDiagnosticRequestV1, BoundaryDiagnosticVersionV1, BoundaryForecastV1,
 };
 
+const VALIDATED_BYTES: &[u8] = include_bytes!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../catalogs/racing/v1.10.3/simulation/qualified-career/profile-v1.json"
+));
+
+const THREE_COMPOUND_BYTES: &[u8] = include_bytes!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../catalogs/racing/v1.10.2/simulation/qualified-career/profile-v1.json"
+));
+
 const PROFILE_BYTES: &[u8] = include_bytes!(concat!(
     env!("CARGO_MANIFEST_DIR"),
     "/../../catalogs/racing/v1.10.1/simulation/qualified-career/profile-v1.json"
@@ -20,11 +30,15 @@ const PROFILE_BYTES: &[u8] = include_bytes!(concat!(
 pub struct QualifiedCareerProfile {
     pub schema_version: String,
     pub source_policy_digest: Digest,
+    #[serde(default)]
+    pub preparation_basis: Option<String>,
     pub supported_eras: Vec<i32>,
     pub base_vehicle_id: String,
     pub initial_fuel_mass_kg: f64,
     pub thermal: ThermalCareerPolicyV1,
     pub tires: TirePerformanceProfileV1,
+    #[serde(default)]
+    pub tire_operating: Option<crate::tire_operating::TireOperatingPolicyV1>,
     pub roster: BTreeMap<String, QualifiedPerson>,
     pub contexts: Vec<QualifiedContext>,
     pub derating_events: physical_events::DeratingEventPolicyV1,
@@ -69,6 +83,84 @@ pub fn model_identity() -> ArtifactIdentity {
         digest: Digest::from_bytes(manifest.as_bytes()),
     }
 }
+/// Explicit local preview identity. Signed/leaderboard admission is separate.
+pub fn three_compound_model_identity() -> ArtifactIdentity {
+    let manifest = format!(
+        "pitgun.racing-v3-candidate:0.16.2:three-compound-operating-v1:energy-gear-8eps:reachable-wear:readable-power-v3:{}",
+        Digest::from_bytes(THREE_COMPOUND_BYTES)
+    );
+    ArtifactIdentity {
+        id: "pitgun.racing-v3-candidate".parse().unwrap(),
+        version: "0.16.2".parse().unwrap(),
+        digest: Digest::from_bytes(manifest.as_bytes()),
+    }
+}
+pub fn model_identity_for(snapshot: &RacingCatalogSnapshot) -> Result<ArtifactIdentity, String> {
+    profile(snapshot)?;
+    Ok(
+        if snapshot.qualified_career_profile_bytes() == Some(VALIDATED_BYTES) {
+            validated_model_identity()
+        } else if snapshot.qualified_career_profile_bytes() == Some(THREE_COMPOUND_BYTES) {
+            three_compound_model_identity()
+        } else {
+            model_identity()
+        },
+    )
+}
+pub fn validated_model_identity() -> ArtifactIdentity {
+    ArtifactIdentity {
+        id: "pitgun.racing-v3-candidate".parse().unwrap(),
+        version: "0.16.3".parse().unwrap(),
+        digest: Digest::from_bytes(
+            format!(
+                "pitgun.racing:0.16.3:rolling-heat-065:effective-cap-table-v1:readable-power-v3:{}",
+                Digest::from_bytes(VALIDATED_BYTES)
+            )
+            .as_bytes(),
+        ),
+    }
+}
+pub fn validated_profile_identity() -> ArtifactIdentity {
+    ArtifactIdentity {
+        id: "pitgun.racing.qualified-career.profile-v1".parse().unwrap(),
+        version: "1.2.0".parse().unwrap(),
+        digest: canonical_json_digest(&serde_json::from_slice::<Value>(VALIDATED_BYTES).unwrap())
+            .unwrap(),
+    }
+}
+#[cfg_attr(feature = "wasm", wasm_bindgen)]
+pub fn validated_career_metadata_json() -> String {
+    serialize_json(
+        &serde_json::json!({"model":validated_model_identity(),"profile":validated_profile_identity(),
+        "control_policy":crate::service_control::validated_local_control_policy_identity(),
+        "telemetry_policy":crate::power_stream::readable_power_telemetry_policy_identity(),
+        "physics":"pitgun.local-qualified-career/v1","scope":"native-reserve-qualified I/II field; local unranked runtime",
+        "signed_service_admitted":false}),
+    )
+}
+pub fn three_compound_profile_identity() -> ArtifactIdentity {
+    ArtifactIdentity {
+        id: "pitgun.racing.qualified-career.profile-v1".parse().unwrap(),
+        version: "1.1.0".parse().unwrap(),
+        digest: canonical_json_digest(
+            &serde_json::from_slice::<Value>(THREE_COMPOUND_BYTES).unwrap(),
+        )
+        .unwrap(),
+    }
+}
+pub fn compile_tires(
+    snapshot: &RacingCatalogSnapshot,
+    p: &QualifiedCareerProfile,
+) -> Result<crate::tire_performance::CompiledTirePerformanceV1, String> {
+    match &p.tire_operating {
+        Some(policy) => Ok(crate::tire_operating::compile_tire_operating_v1(
+            snapshot, &p.thermal, policy,
+        )?
+        .performance),
+        None => compile_tire_performance_v1(snapshot, &p.thermal, &p.tires),
+    }
+}
+
 pub fn profile_identity() -> ArtifactIdentity {
     ArtifactIdentity {
         id: "pitgun.racing.qualified-career.profile-v1".parse().unwrap(),
@@ -87,11 +179,22 @@ pub fn qualified_career_metadata_json() -> String {
         "physics":"pitgun.local-qualified-career/v1","scope":"local I/II candidate, not deployed"}),
     )
 }
+/// Local unranked preview metadata. Public signed-service admission stays closed.
+#[cfg_attr(feature = "wasm", wasm_bindgen)]
+pub fn three_compound_career_metadata_json() -> String {
+    let control = crate::service_control::three_compound_local_control_policy_identity();
+    serialize_json(
+        &serde_json::json!({"model":three_compound_model_identity(),"profile":three_compound_profile_identity(),"control_policy":control,
+        "telemetry_policy":crate::power_stream::readable_power_telemetry_policy_identity(),"physics":"pitgun.local-qualified-career/v1",
+        "scope":"local I/II three-compound preview; provisional AI; not leaderboard admitted","signed_service_admitted":false}),
+    )
+}
+
 pub fn profile(snapshot: &RacingCatalogSnapshot) -> Result<QualifiedCareerProfile, String> {
     let bytes = snapshot
         .qualified_career_profile_bytes()
         .ok_or("qualified career profile missing")?;
-    if bytes != PROFILE_BYTES {
+    if bytes != PROFILE_BYTES && bytes != THREE_COMPOUND_BYTES && bytes != VALIDATED_BYTES {
         return Err("qualified career profile differs from the compiled candidate".into());
     }
     let p: QualifiedCareerProfile = serde_json::from_slice(bytes).map_err(|e| e.to_string())?;
@@ -103,6 +206,20 @@ pub fn profile(snapshot: &RacingCatalogSnapshot) -> Result<QualifiedCareerProfil
     }
     p.thermal.validate()?;
     p.tires.validate()?;
+    if (bytes != PROFILE_BYTES) != p.tire_operating.is_some() {
+        return Err("operating policy/profile identity mismatch".into());
+    }
+    if (bytes == VALIDATED_BYTES)
+        != (p.preparation_basis.as_deref() == Some("effective-cap-table/v1"))
+    {
+        return Err("preparation table/profile identity mismatch".into());
+    }
+    if p.tire_operating
+        .as_ref()
+        .is_some_and(|t| t.performance != p.tires)
+    {
+        return Err("conflicting tire performance policy".into());
+    }
     Ok(p)
 }
 
@@ -165,14 +282,40 @@ pub fn prepare_request(
         .input
         .competitor_vehicle_components
         .retain(|id, _| id == "player");
-    for case in &context.cases {
+    // Available cap is fixed before the session. Unspent points and player tuning
+    // never lower, strengthen or otherwise adapt the frozen field.
+    let available = if p.preparation_basis.is_some() {
+        let cap = cars[0].budget_cap;
+        if !cap.is_finite() || cap.fract() != 0. || !(0. ..=80.).contains(&cap) {
+            return Err("qualified field requires an integer available effective cap".into());
+        }
+        Some(cap as u16)
+    } else {
+        None
+    };
+    let cases: Vec<_> = context
+        .cases
+        .iter()
+        .filter(|c| available.is_none_or(|b| c.budget == b))
+        .collect();
+    if cases.len() != 9
+        || cases
+            .iter()
+            .map(|c| &c.actor)
+            .collect::<std::collections::BTreeSet<_>>()
+            .len()
+            != 9
+    {
+        return Err("available effective budget is outside the qualified I/II field table".into());
+    }
+    for case in cases {
         let person = &p.roster[&case.actor];
         let base = &p.installed_component_baseline_by_era[&era.to_string()];
         let points: Vec<f64> = case
             .allocation
             .iter()
             .zip(base.offsets)
-            .map(|(a, b)| f64::from(a + b))
+            .map(|(a, b)| f64::from(if available.is_some() { *a } else { a + b }))
             .collect();
         let strategy = if laps == full_laps {
             case.strategy.clone()
@@ -215,7 +358,7 @@ pub fn resolve_inputs(
         &driver_policy,
         &BTreeMap::new(),
     )?;
-    let tires = compile_tire_performance_v1(snapshot, &p.thermal, &p.tires)?;
+    let tires = compile_tires(snapshot, &p)?;
     field
         .competitors
         .into_iter()
@@ -316,6 +459,7 @@ pub fn start(
     session.competitor_power_unit_thermal_resolutions_v3.clear();
     session.align_player_horizon = true;
     session.enable_power_telemetry_v1()?;
+    session.readable_power_telemetry = p.tire_operating.is_some();
     Ok(session)
 }
 
@@ -352,9 +496,269 @@ pub fn prepare_qualified_career_request_json(input_json: String, catalog_json: S
     }
 }
 
+/// Read-only lineage diagnostic. Never materializes lap histories or runs a lap.
+#[cfg_attr(feature = "wasm", wasm_bindgen)]
+pub fn resolved_qualified_career_inputs_json(
+    input_json: String,
+    catalog_json: String,
+    include_values: bool,
+) -> String {
+    let result = (|| -> Result<Value, String> {
+        let catalog =
+            RacingCatalogSnapshot::from_bundle_json(&catalog_json).map_err(|e| e.to_string())?;
+        let request = prepare_request(parse_run_race_request(&input_json)?, &catalog)?;
+        let inputs = resolve_inputs(&request, &catalog)?;
+        let digests: BTreeMap<_, _> = inputs
+            .iter()
+            .map(|(id, input)| {
+                Ok((
+                    id.clone(),
+                    canonical_json_digest(input).map_err(|e| e.to_string())?,
+                ))
+            })
+            .collect::<Result<_, String>>()?;
+        let mut result = serde_json::json!({"physical_inputs":digests});
+        if include_values {
+            result["physical_values"] = serde_json::to_value(inputs).map_err(|e| e.to_string())?;
+        }
+        Ok(result)
+    })();
+    match result {
+        Ok(v) => serialize_json(&v),
+        Err(e) => json_error(&e),
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn optional_hq_developments_have_equal_budget_rows_without_changing_frozen_recipes() {
+        let snapshot = RacingCatalogSnapshot::embedded_validated_career().unwrap();
+        let p = profile(&snapshot).unwrap();
+        for context in &p.contexts {
+            let max = context.cases.iter().map(|c| c.budget).max().unwrap();
+            assert_eq!(max, if context.era == 1 { 27 } else { 53 });
+            for budget in 8..=max {
+                let rows: Vec<_> = context
+                    .cases
+                    .iter()
+                    .filter(|c| c.budget == budget)
+                    .collect();
+                assert_eq!(rows.len(), 9);
+                for row in rows {
+                    assert_eq!(row.allocation.iter().sum::<u16>(), budget);
+                    assert!(row.allocation.iter().all(|p| *p <= 20));
+                    if context.era == 2 {
+                        assert!(
+                            row.allocation
+                                .iter()
+                                .zip([2, 1, 4, 1])
+                                .all(|(p, f)| *p >= f)
+                        );
+                    }
+                }
+            }
+        }
+    }
+    #[test]
+    fn all_doctrine_entry_exit_player_inputs_keep_actual_owned_components() {
+        let old = RacingCatalogSnapshot::embedded_qualified_career().unwrap();
+        let new = RacingCatalogSnapshot::embedded_validated_career().unwrap();
+        let p = profile(&new).unwrap();
+        let tires = compile_tires(&new, &p).unwrap();
+        let fixtures: Value = serde_json::from_str(include_str!(
+            "../../../experiments/opponent_physics_v2/results/career-fixtures-v1.json"
+        ))
+        .unwrap();
+        for fixture in fixtures["fixtures"].as_array().unwrap() {
+            let request: RunRaceRequest =
+                serde_json::from_value(fixture["preparedRequests"][0]["request"].clone()).unwrap();
+            let legacy = prepare_request(request.clone(), &old).unwrap();
+            let mut expected = resolve_inputs(&legacy, &old)
+                .unwrap()
+                .remove("player")
+                .unwrap();
+            let ids: Vec<_> = legacy
+                .input
+                .race
+                .competitors
+                .iter()
+                .find(|c| c.is_player)
+                .unwrap()
+                .stint_strategy
+                .as_ref()
+                .unwrap()
+                .stints
+                .iter()
+                .map(|s| s.tire_id.clone())
+                .collect();
+            tires.apply_initial_to_input(&mut expected, &ids).unwrap();
+            let prepared = prepare_request(request, &new).unwrap();
+            let actual = resolve_inputs(&prepared, &new)
+                .unwrap()
+                .remove("player")
+                .unwrap();
+            assert_eq!(
+                canonical_json_digest(&expected).unwrap(),
+                canonical_json_digest(&actual).unwrap(),
+                "{}",
+                fixture["id"]
+            );
+        }
+    }
+
+    #[test]
+    fn retained_native_gear_spacing_is_exact_and_invalid_explicit_ratios_fail() {
+        let original: Value = serde_json::from_str(include_str!(
+            "../../../catalogs/racing/v1.10.2/simulation/engines/v8_1970.json"
+        ))
+        .unwrap();
+        let mut explicit: Value = serde_json::from_str(include_str!(
+            "../../../catalogs/racing/v1.10.3/simulation/engines/v8_1970.json"
+        ))
+        .unwrap();
+        assert_eq!(
+            parse_engine(&original).unwrap().gear_ratios,
+            parse_engine(&explicit).unwrap().gear_ratios
+        );
+        explicit["gearbox"]["ratios"] = serde_json::json!([13., 13., 7., 5., 4.5]);
+        assert!(parse_engine(&explicit).is_err());
+    }
+    #[test]
+    fn validated_field_resolves_every_retained_reserve_input_exactly() {
+        let snapshot = RacingCatalogSnapshot::embedded_validated_career().unwrap();
+        let proof: Value = serde_json::from_str(include_str!(
+            "../../../experiments/validated_runtime_v1/bridge-inputs-v1.json"
+        ))
+        .unwrap();
+        let mut checked = 0;
+        for vector in proof["vectors"].as_array().unwrap() {
+            let request: RunRaceRequest =
+                serde_json::from_value(vector["request"].clone()).unwrap();
+            let prepared = prepare_request(request, &snapshot).unwrap();
+            assert_eq!(
+                canonical_json_digest(&prepared).unwrap(),
+                canonical_json_digest(&prepare_request(prepared.clone(), &snapshot).unwrap())
+                    .unwrap()
+            );
+            let inputs = resolve_inputs(&prepared, &snapshot).unwrap();
+            for (id, expected) in vector["expected"].as_object().unwrap() {
+                assert_eq!(
+                    canonical_json_digest(&inputs[id]).unwrap().to_string(),
+                    expected["physical_input_digest"].as_str().unwrap(),
+                    "{} {id}",
+                    vector["id"]
+                );
+                checked += 1;
+            }
+        }
+        assert_eq!(checked, 327);
+    }
+
+    #[test]
+    fn available_cap_field_is_independent_of_player_spending_and_rejects_extrapolation() {
+        let snapshot = RacingCatalogSnapshot::embedded_validated_career().unwrap();
+        let proof: Value = serde_json::from_str(include_str!(
+            "../../../experiments/validated_runtime_v1/bridge-inputs-v1.json"
+        ))
+        .unwrap();
+        let request: RunRaceRequest =
+            serde_json::from_value(proof["vectors"][0]["request"].clone()).unwrap();
+        let base = prepare_request(request.clone(), &snapshot).unwrap();
+        let mut unspent = request.clone();
+        unspent.input.race.competitors.iter_mut().find(|c|c.is_player).unwrap().tuning=serde_json::from_value(serde_json::json!({"aero_points":0,"chassis_points":1,"engine_points":1,"cooling_points":0,"downforce_slider":0.5,"gear_ratio_slider":0.9})).unwrap();
+        let other = prepare_request(unspent, &snapshot).unwrap();
+        for (a, b) in base
+            .input
+            .race
+            .competitors
+            .iter()
+            .zip(other.input.race.competitors.iter())
+            .filter(|(a, _)| !a.is_player)
+        {
+            assert_eq!(
+                serde_json::to_value(a).unwrap(),
+                serde_json::to_value(b).unwrap()
+            );
+        }
+        let mut invalid = request;
+        invalid
+            .input
+            .race
+            .competitors
+            .iter_mut()
+            .find(|c| c.is_player)
+            .unwrap()
+            .budget_cap = 28.;
+        assert!(prepare_request(invalid, &snapshot).is_err());
+        assert_eq!(
+            model_identity_for(&snapshot).unwrap(),
+            validated_model_identity()
+        );
+        assert_ne!(validated_model_identity(), three_compound_model_identity());
+    }
+    #[test]
+    fn operating_catalog_inputs_equal_the_frozen_offline_compilation() {
+        let old = RacingCatalogSnapshot::embedded_qualified_career().unwrap();
+        let next = RacingCatalogSnapshot::embedded_three_compound().unwrap();
+        assert_eq!(
+            model_identity().digest.to_string(),
+            "sha256:fcce2427ec1f0d27b5d8a04be8664f1c90ea8be222ba988028b6080cdb2b6abe"
+        );
+        assert_eq!(model_identity_for(&old).unwrap(), model_identity());
+        assert_eq!(
+            model_identity_for(&next).unwrap(),
+            three_compound_model_identity()
+        );
+        let candidate = profile(&next).unwrap();
+        let compiled = compile_tires(&next, &candidate).unwrap();
+        let fixtures: Value = serde_json::from_str(include_str!(
+            "../../../experiments/opponent_physics_v2/results/career-fixtures-v1.json"
+        ))
+        .unwrap();
+        for id in [
+            "craft_engineering:era1-entry",
+            "craft_engineering:era2-entry",
+            "craft_engineering:era2-exit",
+        ] {
+            let f = fixtures["fixtures"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .find(|f| f["id"] == id)
+                .unwrap();
+            let req: RunRaceRequest =
+                serde_json::from_value(f["preparedRequests"][0]["request"].clone()).unwrap();
+            let req = prepare_request(req, &old).unwrap();
+            let mut baseline = resolve_inputs(&req, &old).unwrap();
+            let actual = resolve_inputs(&req, &next).unwrap();
+            for (actor, input) in &mut baseline {
+                let c = req
+                    .input
+                    .race
+                    .competitors
+                    .iter()
+                    .find(|c| c.id == *actor)
+                    .unwrap();
+                let ids: Vec<_> = c
+                    .stint_strategy
+                    .as_ref()
+                    .unwrap()
+                    .stints
+                    .iter()
+                    .map(|s| s.tire_id.clone())
+                    .collect();
+                compiled.apply_initial_to_input(input, &ids).unwrap();
+                assert_eq!(
+                    canonical_json_digest(input).unwrap(),
+                    canonical_json_digest(&actual[actor]).unwrap(),
+                    "{id}/{actor}"
+                );
+            }
+        }
+    }
+
     fn request(era: i32, short: bool) -> RunRaceRequest {
         let fixtures: Value = serde_json::from_str(include_str!(concat!(
             env!("CARGO_MANIFEST_DIR"),
@@ -480,62 +884,66 @@ mod tests {
         use crate::control_prototype::{
             ControlStep, LocalControlConfig, LocalControlledRacingSession, reference_proposal,
         };
-        let catalog = RacingCatalogSnapshot::embedded_qualified_career().unwrap();
-        let mut input = request(1, true);
-        input.input.race.laps = 3;
-        input
-            .input
-            .race
-            .competitors
-            .iter_mut()
-            .find(|c| c.is_player)
-            .unwrap()
-            .stint_strategy
-            .as_mut()
-            .unwrap()
-            .stints[0]
-            .laps = 3;
-        let input = prepare_request(input, &catalog).unwrap();
-        let config:LocalControlConfig=serde_json::from_value(serde_json::json!({"execution_id":"qualified-pit-test","runtime_digest":Digest::from_bytes(b"qualified-test-runtime"),
+        for catalog in [
+            RacingCatalogSnapshot::embedded_qualified_career().unwrap(),
+            RacingCatalogSnapshot::embedded_validated_career().unwrap(),
+        ] {
+            let mut input = request(1, true);
+            input.input.race.laps = 3;
+            input
+                .input
+                .race
+                .competitors
+                .iter_mut()
+                .find(|c| c.is_player)
+                .unwrap()
+                .stint_strategy
+                .as_mut()
+                .unwrap()
+                .stints[0]
+                .laps = 3;
+            let input = prepare_request(input, &catalog).unwrap();
+            let config:LocalControlConfig=serde_json::from_value(serde_json::json!({"execution_id":"qualified-pit-test","runtime_digest":Digest::from_bytes(b"qualified-test-runtime"),
             "physics":"pitgun.local-qualified-career/v1","decision_laps":[1],"allowed_tire_ids":["hard","medium","soft"]})).unwrap();
-        let mut session = LocalControlledRacingSession::start(
-            input.clone(),
-            &catalog,
-            crate::service_control::empty_timeline(),
-            config.clone(),
-        )
-        .unwrap();
-        let mut history = Vec::new();
-        let output = loop {
-            match session.advance().unwrap() {
-                ControlStep::AwaitingDecision(observation) => history.push(
-                    session
-                        .propose(reference_proposal(&observation, 1, "hard").unwrap())
-                        .unwrap(),
-                ),
-                ControlStep::Batch(batch) => {
-                    if let Some(out) = batch.records().iter().find_map(|r| match r.event() {
-                        IncrementalExecutionStreamEventV1::Complete(out) => Some(out.clone()),
-                        _ => None,
-                    }) {
-                        break out;
+            let mut session = LocalControlledRacingSession::start(
+                input.clone(),
+                &catalog,
+                crate::service_control::empty_timeline(),
+                config.clone(),
+            )
+            .unwrap();
+            let mut history = Vec::new();
+            let output = loop {
+                match session.advance().unwrap() {
+                    ControlStep::AwaitingDecision(observation) => history.push(
+                        session
+                            .propose(reference_proposal(&observation, 1, "hard").unwrap())
+                            .unwrap(),
+                    ),
+                    ControlStep::Batch(batch) => {
+                        if let Some(out) = batch.records().iter().find_map(|r| match r.event() {
+                            IncrementalExecutionStreamEventV1::Complete(out) => Some(out.clone()),
+                            _ => None,
+                        }) {
+                            break out;
+                        }
                     }
                 }
-            }
-        };
-        assert_eq!(output.player_pit_laps, vec![2]);
-        let replay = crate::control_prototype::replay(
-            input,
-            &catalog,
-            crate::service_control::empty_timeline(),
-            config,
-            &history,
-        )
-        .unwrap();
-        assert_eq!(
-            canonical_json_digest(&output).unwrap(),
-            canonical_json_digest(&replay).unwrap()
-        );
+            };
+            assert_eq!(output.player_pit_laps, vec![2]);
+            let replay = crate::control_prototype::replay(
+                input,
+                &catalog,
+                crate::service_control::empty_timeline(),
+                config,
+                &history,
+            )
+            .unwrap();
+            assert_eq!(
+                canonical_json_digest(&output).unwrap(),
+                canonical_json_digest(&replay).unwrap()
+            );
+        }
     }
     #[test]
     fn physical_inputs_match_the_sealed_native_campaign_exactly() {
