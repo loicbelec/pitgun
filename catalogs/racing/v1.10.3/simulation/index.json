@@ -365,13 +365,13 @@
       "id": "pitgun.racing.engines.v8_1960",
       "path": "simulation/engines/v8_1960.json",
       "media_type": "application/json",
-      "digest": "sha256:c6f337b740337b85c089b56c0bcca23adfb405d15a2fae38770898ebfde9e700"
+      "digest": "sha256:629547fa9b5363f080362630e9b7d5f1da0da5288d77315ad39778575dbe4d20"
     },
     {
       "id": "pitgun.racing.engines.v8_1970",
       "path": "simulation/engines/v8_1970.json",
       "media_type": "application/json",
-      "digest": "sha256:4004500f47efb22d1117efaccde51e578cadca90cde3bb2af833f03f376a78f8"
+      "digest": "sha256:2ba3b9dbe5fa9f0eafe7a2af78da6548213e699e54dbd505f02a84cc4cc4686f"
     },
     {
       "id": "pitgun.racing.policies.competitive",

@@ -1,10 +1,35 @@
 {
-  "n_rpm": {"start": 0, "end": 11000, "step": 250},
+  "n_rpm": {
+    "start": 0,
+    "end": 11000,
+    "step": 250
+  },
   "trq_segments": [
-    {"type": "linspace", "start": 0.11, "end": 0.15, "num": 40},
-    {"type": "linspace", "start": 0.15, "end": 0.05, "num": 5}
+    {
+      "type": "linspace",
+      "start": 0.11,
+      "end": 0.15,
+      "num": 40
+    },
+    {
+      "type": "linspace",
+      "start": 0.15,
+      "end": 0.05,
+      "num": 5
+    }
   ],
-  "gearbox": {"g1_total": 13.0, "g_last_total": 5.5, "gear_count": 5},
+  "gearbox": {
+    "g1_total": 13.0,
+    "g_last_total": 5.5,
+    "gear_count": 5,
+    "ratios": [
+      13.0,
+      10.484511167163229,
+      8.455767262643882,
+      6.81958356093254,
+      5.5
+    ]
+  },
   "fuel_burn_kg_per_s": 0.02,
   "n_idle": 1500.0,
   "n_max": 11000.0,

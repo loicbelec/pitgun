@@ -6,6 +6,7 @@ Both runtimes select the same exact effective-cap rows before a weekend.
 """
 import json
 import importlib.util
+import math
 from pathlib import Path
 import shutil
 import sys
@@ -70,7 +71,9 @@ def bridge():
                 selected=([e for e in group if e['role']not in ['free','zero_extra']]+[ref])if role=='free'else[ref]
                 expected={('player'if e['role']in ['free','zero_extra']else e['role']):{
                     'physical_input_digest':rows[e['native_case_id']]['data']['receipt']['physical_input_digest'],
-                    'time_s':rows[e['native_case_id']]['data']['outcome']['time_s']}
+                    'time_s':rows[e['native_case_id']]['data']['outcome']['time_s'],
+                    'lap_times_ms':[math.floor(l['time_s']*1000+.5)+(round(rows[e['native_case_id']]['data']['receipt']['pit_loss_s']*1000)if l['lap']in rows[e['native_case_id']]['case']['strategy']['pit_laps']else 0)
+                        for l in rows[e['native_case_id']]['data']['laps']]}
                     for e in selected}
                 vectors.append({'id':f'{era}/{circuit}/{budget}/{role}','request':wire,'expected':expected,
                     'full_race_qa':role=='free'and((era==1 and circuit=='MONZA'and budget==12)or(era==2 and circuit=='MEXICO'and budget==24))})
@@ -81,5 +84,10 @@ if __name__ == '__main__':
     target=ROOT/'catalogs/racing/v1.10.3'
     if not target.exists(): shutil.copytree(ROOT/'catalogs/racing/v1.10.2',target)
     candidate.write(target/'simulation/qualified-career/profile-v1.json',profile())
+    ratios=candidate.load(ROOT/'experiments/validated_runtime_v1/gear-ratios-native-v1.json')
+    for engine,values in ratios['ratios'].items():
+        engine_path=target/f'simulation/engines/{engine}.json'
+        resource=candidate.load(engine_path);resource['gearbox']['ratios']=values
+        candidate.write(engine_path,resource)
     (target/'README.md').write_text('# Local validated I/II candidate\n\nCatalog1.10.3/model0.16.3 binds rolling-heat-065 and the frozen I/II field.\nEffective-cap preparation table is generated from the native reserve-qualified\ncandidate; no results or live player tuning enter opponent selection.\nLocal unranked admission only; I–V coverage is required before full staging.\nOlder catalog/model bytes and the public LATEST pointer are preserved.\n')
     candidate.write(ROOT/'experiments/validated_runtime_v1/bridge-inputs-v1.json',bridge())

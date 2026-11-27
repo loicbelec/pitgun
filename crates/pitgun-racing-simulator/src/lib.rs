@@ -6417,7 +6417,26 @@ fn parse_engine(value: &Value) -> Result<EngineParams, String> {
     let g1_total = read_required_f64(gearbox, &["g1_total"])?;
     let g_last_total = read_required_f64(gearbox, &["g_last_total"])?;
     let gear_count = read_required_u64(gearbox, &["gear_count"])? as usize;
-    let gear_ratios = build_gear_ratios(g1_total, g_last_total, gear_count.max(2));
+    // New catalogues may retain exact native spacing instead of deriving it
+    // with target-dependent transcendental pow(). Historical resources retain
+    // their original path and bytes.
+    let gear_ratios = if let Some(values) = gearbox.get("ratios") {
+        let ratios: Vec<f64> = serde_json::from_value(values.clone())
+            .map_err(|e| format!("invalid explicit gearbox ratios: {e}"))?;
+        if ratios.len() != gear_count
+            || ratios.iter().any(|r| !r.is_finite() || *r <= 0.)
+            || ratios.windows(2).any(|p| p[0] <= p[1])
+            || ratios.first() != Some(&g1_total)
+            || ratios.last() != Some(&g_last_total)
+        {
+            return Err(
+                "explicit gearbox ratios disagree with declared count/endpoints/ordering".into(),
+            );
+        }
+        ratios
+    } else {
+        build_gear_ratios(g1_total, g_last_total, gear_count.max(2))
+    };
     let thermal = value
         .get("thermal")
         .ok_or_else(|| "engine is missing thermal".to_string())?;

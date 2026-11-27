@@ -533,6 +533,70 @@ pub fn resolved_qualified_career_inputs_json(
 mod tests {
     use super::*;
     #[test]
+    fn all_doctrine_entry_exit_player_inputs_keep_actual_owned_components() {
+        let old = RacingCatalogSnapshot::embedded_qualified_career().unwrap();
+        let new = RacingCatalogSnapshot::embedded_validated_career().unwrap();
+        let p = profile(&new).unwrap();
+        let tires = compile_tires(&new, &p).unwrap();
+        let fixtures: Value = serde_json::from_str(include_str!(
+            "../../../experiments/opponent_physics_v2/results/career-fixtures-v1.json"
+        ))
+        .unwrap();
+        for fixture in fixtures["fixtures"].as_array().unwrap() {
+            let request: RunRaceRequest =
+                serde_json::from_value(fixture["preparedRequests"][0]["request"].clone()).unwrap();
+            let legacy = prepare_request(request.clone(), &old).unwrap();
+            let mut expected = resolve_inputs(&legacy, &old)
+                .unwrap()
+                .remove("player")
+                .unwrap();
+            let ids: Vec<_> = legacy
+                .input
+                .race
+                .competitors
+                .iter()
+                .find(|c| c.is_player)
+                .unwrap()
+                .stint_strategy
+                .as_ref()
+                .unwrap()
+                .stints
+                .iter()
+                .map(|s| s.tire_id.clone())
+                .collect();
+            tires.apply_initial_to_input(&mut expected, &ids).unwrap();
+            let prepared = prepare_request(request, &new).unwrap();
+            let actual = resolve_inputs(&prepared, &new)
+                .unwrap()
+                .remove("player")
+                .unwrap();
+            assert_eq!(
+                canonical_json_digest(&expected).unwrap(),
+                canonical_json_digest(&actual).unwrap(),
+                "{}",
+                fixture["id"]
+            );
+        }
+    }
+
+    #[test]
+    fn retained_native_gear_spacing_is_exact_and_invalid_explicit_ratios_fail() {
+        let original: Value = serde_json::from_str(include_str!(
+            "../../../catalogs/racing/v1.10.2/simulation/engines/v8_1970.json"
+        ))
+        .unwrap();
+        let mut explicit: Value = serde_json::from_str(include_str!(
+            "../../../catalogs/racing/v1.10.3/simulation/engines/v8_1970.json"
+        ))
+        .unwrap();
+        assert_eq!(
+            parse_engine(&original).unwrap().gear_ratios,
+            parse_engine(&explicit).unwrap().gear_ratios
+        );
+        explicit["gearbox"]["ratios"] = serde_json::json!([13., 13., 7., 5., 4.5]);
+        assert!(parse_engine(&explicit).is_err());
+    }
+    #[test]
     fn validated_field_resolves_every_retained_reserve_input_exactly() {
         let snapshot = RacingCatalogSnapshot::embedded_validated_career().unwrap();
         let proof: Value = serde_json::from_str(include_str!(

@@ -1,0 +1,20 @@
+{
+  "schema": "pitgun.native-reference-gear-spacing/v1",
+  "basis": "Original catalogue geometry, native ARM/libm formula; exact retained-input bridge required before use. No tuned values.",
+  "ratios": {
+    "v8_1960": [
+      13.0,
+      10.484511167163229,
+      8.455767262643882,
+      6.81958356093254,
+      5.5
+    ],
+    "v8_1970": [
+      13.0,
+      9.97150342300795,
+      7.648529270389178,
+      5.866718138512477,
+      4.5
+    ]
+  }
+}
