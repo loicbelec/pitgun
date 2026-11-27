@@ -533,6 +533,35 @@ pub fn resolved_qualified_career_inputs_json(
 mod tests {
     use super::*;
     #[test]
+    fn optional_hq_developments_have_equal_budget_rows_without_changing_frozen_recipes() {
+        let snapshot = RacingCatalogSnapshot::embedded_validated_career().unwrap();
+        let p = profile(&snapshot).unwrap();
+        for context in &p.contexts {
+            let max = context.cases.iter().map(|c| c.budget).max().unwrap();
+            assert_eq!(max, if context.era == 1 { 27 } else { 53 });
+            for budget in 8..=max {
+                let rows: Vec<_> = context
+                    .cases
+                    .iter()
+                    .filter(|c| c.budget == budget)
+                    .collect();
+                assert_eq!(rows.len(), 9);
+                for row in rows {
+                    assert_eq!(row.allocation.iter().sum::<u16>(), budget);
+                    assert!(row.allocation.iter().all(|p| *p <= 20));
+                    if context.era == 2 {
+                        assert!(
+                            row.allocation
+                                .iter()
+                                .zip([2, 1, 4, 1])
+                                .all(|(p, f)| *p >= f)
+                        );
+                    }
+                }
+            }
+        }
+    }
+    #[test]
     fn all_doctrine_entry_exit_player_inputs_keep_actual_owned_components() {
         let old = RacingCatalogSnapshot::embedded_qualified_career().unwrap();
         let new = RacingCatalogSnapshot::embedded_validated_career().unwrap();
@@ -855,62 +884,66 @@ mod tests {
         use crate::control_prototype::{
             ControlStep, LocalControlConfig, LocalControlledRacingSession, reference_proposal,
         };
-        let catalog = RacingCatalogSnapshot::embedded_qualified_career().unwrap();
-        let mut input = request(1, true);
-        input.input.race.laps = 3;
-        input
-            .input
-            .race
-            .competitors
-            .iter_mut()
-            .find(|c| c.is_player)
-            .unwrap()
-            .stint_strategy
-            .as_mut()
-            .unwrap()
-            .stints[0]
-            .laps = 3;
-        let input = prepare_request(input, &catalog).unwrap();
-        let config:LocalControlConfig=serde_json::from_value(serde_json::json!({"execution_id":"qualified-pit-test","runtime_digest":Digest::from_bytes(b"qualified-test-runtime"),
+        for catalog in [
+            RacingCatalogSnapshot::embedded_qualified_career().unwrap(),
+            RacingCatalogSnapshot::embedded_validated_career().unwrap(),
+        ] {
+            let mut input = request(1, true);
+            input.input.race.laps = 3;
+            input
+                .input
+                .race
+                .competitors
+                .iter_mut()
+                .find(|c| c.is_player)
+                .unwrap()
+                .stint_strategy
+                .as_mut()
+                .unwrap()
+                .stints[0]
+                .laps = 3;
+            let input = prepare_request(input, &catalog).unwrap();
+            let config:LocalControlConfig=serde_json::from_value(serde_json::json!({"execution_id":"qualified-pit-test","runtime_digest":Digest::from_bytes(b"qualified-test-runtime"),
             "physics":"pitgun.local-qualified-career/v1","decision_laps":[1],"allowed_tire_ids":["hard","medium","soft"]})).unwrap();
-        let mut session = LocalControlledRacingSession::start(
-            input.clone(),
-            &catalog,
-            crate::service_control::empty_timeline(),
-            config.clone(),
-        )
-        .unwrap();
-        let mut history = Vec::new();
-        let output = loop {
-            match session.advance().unwrap() {
-                ControlStep::AwaitingDecision(observation) => history.push(
-                    session
-                        .propose(reference_proposal(&observation, 1, "hard").unwrap())
-                        .unwrap(),
-                ),
-                ControlStep::Batch(batch) => {
-                    if let Some(out) = batch.records().iter().find_map(|r| match r.event() {
-                        IncrementalExecutionStreamEventV1::Complete(out) => Some(out.clone()),
-                        _ => None,
-                    }) {
-                        break out;
+            let mut session = LocalControlledRacingSession::start(
+                input.clone(),
+                &catalog,
+                crate::service_control::empty_timeline(),
+                config.clone(),
+            )
+            .unwrap();
+            let mut history = Vec::new();
+            let output = loop {
+                match session.advance().unwrap() {
+                    ControlStep::AwaitingDecision(observation) => history.push(
+                        session
+                            .propose(reference_proposal(&observation, 1, "hard").unwrap())
+                            .unwrap(),
+                    ),
+                    ControlStep::Batch(batch) => {
+                        if let Some(out) = batch.records().iter().find_map(|r| match r.event() {
+                            IncrementalExecutionStreamEventV1::Complete(out) => Some(out.clone()),
+                            _ => None,
+                        }) {
+                            break out;
+                        }
                     }
                 }
-            }
-        };
-        assert_eq!(output.player_pit_laps, vec![2]);
-        let replay = crate::control_prototype::replay(
-            input,
-            &catalog,
-            crate::service_control::empty_timeline(),
-            config,
-            &history,
-        )
-        .unwrap();
-        assert_eq!(
-            canonical_json_digest(&output).unwrap(),
-            canonical_json_digest(&replay).unwrap()
-        );
+            };
+            assert_eq!(output.player_pit_laps, vec![2]);
+            let replay = crate::control_prototype::replay(
+                input,
+                &catalog,
+                crate::service_control::empty_timeline(),
+                config,
+                &history,
+            )
+            .unwrap();
+            assert_eq!(
+                canonical_json_digest(&output).unwrap(),
+                canonical_json_digest(&replay).unwrap()
+            );
+        }
     }
     #[test]
     fn physical_inputs_match_the_sealed_native_campaign_exactly() {

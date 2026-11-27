@@ -389,7 +389,7 @@
       "id": "pitgun.racing.qualified-career.profile-v1",
       "path": "simulation/qualified-career/profile-v1.json",
       "media_type": "application/json",
-      "digest": "sha256:14ead96be859a1c04d7741878e9c302a983a8168bceae83f20fd8c4bbc30c3de"
+      "digest": "sha256:50e45952a5741659a5edccf4d14b985ae634d0903b984e17b0ce1398e0866c37"
     },
     {
       "id": "pitgun.racing.thermal-profiles.family-v2",

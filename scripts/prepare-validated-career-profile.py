@@ -23,19 +23,29 @@ def profile():
     if not review['native_reserved_review_pass'] or review['candidate_sha256'] != digest:
         raise ValueError('frozen native candidate has not passed reserve')
     p = candidate.load(ROOT/'catalogs/racing/v1.10.2/simulation/qualified-career/profile-v1.json')
-    p['source_policy_digest'] = 'sha256:'+digest
+    envelope=candidate.load(ROOT/'experiments/validated_runtime_v1/game-budget-envelope-v1.json')
+    projection={'schema':'pitgun.local-frozen-field-budget-projection/v1','candidate_sha256':digest,
+        'game_envelope_sha256':candidate.sha(ROOT/'experiments/validated_runtime_v1/game-budget-envelope-v1.json'),
+        'outside_reserve_anchors':'nearest endpoint preparation, exact integer point projection; no fitting',
+        'scope':'reserve-qualified original range; extended game caps are local projection/technical-smoke coverage, not additional balance calibration'}
+    p['source_policy_digest'] = 'sha256:'+__import__('hashlib').sha256(candidate.encoded(projection)).hexdigest()
+    p['budget_projection']=projection
     p['preparation_basis'] = 'effective-cap-table/v1'
     p['tire_operating'] = candidate.load(ROOT/frozen['policy'])
     p['tires'] = p['tire_operating']['performance']
     p['qualification_status'] = 'native I/II fresh reserve PASS; local runtime qualification'
     p['calibration_status'] = 'frozen I interpolation / II complete anchors; no runtime fitting'
-    p['budgets_by_era'] = {'1':list(range(8,13)), '2':list(range(12,25))}
+    p['budgets_by_era'] = {era:list(range(e['minimum'],e['maximum']+1))for era,e in envelope['coverage'].items()}
     p['contexts'] = []
     for ctx in frozen['contexts']:
         cases=[]
         for budget in p['budgets_by_era'][str(ctx['era'])]:
             for actor in p['roster']:
-                prep = candidate.field(frozen,ctx['era'],ctx['circuit'],budget,actor)
+                lo,hi=(8,12)if ctx['era']==1 else(12,24)
+                anchor=min(hi,max(lo,budget))
+                prep = candidate.field(frozen,ctx['era'],ctx['circuit'],anchor,actor)
+                if budget!=anchor:
+                    prep['effective_allocation']=candidate.BASE.scale(prep['effective_allocation'],budget,candidate.BASE.floors(ctx['era']))
                 cases.append({'actor':actor,'allocation':prep['effective_allocation'],
                     'budget':budget,'gear':prep['gear'],'downforce':prep['downforce'],
                     'strategy':prep['strategy']})

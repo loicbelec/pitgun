@@ -8,12 +8,12 @@
     "identity": {
       "id": "pitgun.racing.simulation",
       "version": "1.10.3",
-      "digest": "sha256:a0d5875a57bcc0b213f54ea151f4d7ac3cd8a044d411704f411fc9b45cde538d"
+      "digest": "sha256:993838632222db55c969b562325a2667118e60de0750832b6a135625aaf63265"
     },
     "index": {
       "path": "simulation/index.json",
       "media_type": "application/json",
-      "digest": "sha256:a0d5875a57bcc0b213f54ea151f4d7ac3cd8a044d411704f411fc9b45cde538d"
+      "digest": "sha256:993838632222db55c969b562325a2667118e60de0750832b6a135625aaf63265"
     }
   },
   "presentation_pack": {
