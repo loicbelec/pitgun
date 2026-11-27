@@ -690,7 +690,7 @@ mod tests {
             .iter_mut()
             .find(|c| c.is_player)
             .unwrap()
-            .budget_cap = 25.;
+            .budget_cap = 28.;
         assert!(prepare_request(invalid, &snapshot).is_err());
         assert_eq!(
             model_identity_for(&snapshot).unwrap(),
