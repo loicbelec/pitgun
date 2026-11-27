@@ -1,0 +1,12 @@
+{
+  "full_gp": 603,
+  "accepted_laps": 37947,
+  "numerical_failures": 0,
+  "exact_repeats": 18,
+  "input_bridges": 20,
+  "full_prior_bridges": 2,
+  "native_wall_s": 2473.3894917810035,
+  "training_pass": true,
+  "validation_pass": false,
+  "release_admitted": false
+}

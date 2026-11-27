@@ -1,0 +1,153 @@
+{
+  "candidate_screening_pass": true,
+  "comparison": {
+    "eligible": true,
+    "rejection_reasons": [],
+    "score": 0.27189428394818116,
+    "measurements": [
+      {
+        "context": "craft_engineering:era2-exit/MEXICO/1",
+        "reference": {
+          "hot_fraction": 0.5585608520669547,
+          "cold_fraction": 0.026406092580196366,
+          "window_fraction": 0.4150330553528492,
+          "temperature_grip_mean": 0.9393270985301843,
+          "wear_grip_mean": 0.9833074042527205,
+          "surface_mean_c": 120.24934926395514,
+          "carcass_mean_c": 133.45073455329572,
+          "surface_max_c": 129.72723231365228,
+          "carcass_max_c": 143.47284579237336,
+          "maximum_wear": 0.8083443202825424,
+          "race_time_s": 7636.378610809689,
+          "drive_s": 7614.378610809689,
+          "service_s": 22.0,
+          "post_warmup_duration_s": 6938.650168834259
+        },
+        "candidate": {
+          "hot_fraction": 0.1518695029142306,
+          "cold_fraction": 0.04892806286418242,
+          "window_fraction": 0.7992024342215869,
+          "temperature_grip_mean": 0.9731847375617673,
+          "wear_grip_mean": 0.985863942830312,
+          "surface_mean_c": 112.90104178681518,
+          "carcass_mean_c": 124.51744704636661,
+          "surface_max_c": 122.16206794529987,
+          "carcass_max_c": 134.26368403145727,
+          "maximum_wear": 0.7435717396554236,
+          "race_time_s": 7547.594319244318,
+          "drive_s": 7525.594319244318,
+          "service_s": 22.0,
+          "post_warmup_duration_s": 6845.579768849749
+        }
+      },
+      {
+        "context": "craft_engineering:era2-exit/MEXICO/2",
+        "reference": {
+          "hot_fraction": 0.3916267637318957,
+          "cold_fraction": 0.031987530615271806,
+          "window_fraction": 0.5763857056528322,
+          "temperature_grip_mean": 0.9591616058224285,
+          "wear_grip_mean": 0.9927067303469497,
+          "surface_mean_c": 116.51947010101762,
+          "carcass_mean_c": 129.1591092692606,
+          "surface_max_c": 129.45517722123094,
+          "carcass_max_c": 143.49998431435844,
+          "maximum_wear": 0.5367008260476754,
+          "race_time_s": 7595.380829297282,
+          "drive_s": 7551.380829297282,
+          "service_s": 44.0,
+          "post_warmup_duration_s": 6544.373418083095
+        },
+        "candidate": {
+          "hot_fraction": 0.0,
+          "cold_fraction": 0.06198646420816837,
+          "window_fraction": 0.9380135357918316,
+          "temperature_grip_mean": 0.9817377374291835,
+          "wear_grip_mean": 0.9929816317046167,
+          "surface_mean_c": 109.6427571240651,
+          "carcass_mean_c": 120.68285794824251,
+          "surface_max_c": 121.63922448869371,
+          "carcass_max_c": 133.89482067632366,
+          "maximum_wear": 0.5168252850495162,
+          "race_time_s": 7547.420645131428,
+          "drive_s": 7503.420645131428,
+          "service_s": 44.0,
+          "post_warmup_duration_s": 6490.2690035997875
+        }
+      },
+      {
+        "context": "craft_engineering:era2-exit/MEXICO/3",
+        "reference": {
+          "hot_fraction": 0.16739110001390242,
+          "cold_fraction": 0.06056252319163471,
+          "window_fraction": 0.7720463767944629,
+          "temperature_grip_mean": 0.9700846810445364,
+          "wear_grip_mean": 0.995659605579199,
+          "surface_mean_c": 111.73543361943867,
+          "carcass_mean_c": 123.50548101363802,
+          "surface_max_c": 126.9130621271452,
+          "carcass_max_c": 139.83632778320995,
+          "maximum_wear": 0.37824471044078467,
+          "race_time_s": 7612.5111417870685,
+          "drive_s": 7546.5111417870685,
+          "service_s": 66.0,
+          "post_warmup_duration_s": 6197.38413245914
+        },
+        "candidate": {
+          "hot_fraction": 0.0,
+          "cold_fraction": 0.11151671567067432,
+          "window_fraction": 0.8884832843293259,
+          "temperature_grip_mean": 0.9797539683261537,
+          "wear_grip_mean": 0.995657153386511,
+          "surface_mean_c": 105.51662992695614,
+          "carcass_mean_c": 115.73816376844461,
+          "surface_max_c": 119.01448979919542,
+          "carcass_max_c": 130.20089356832327,
+          "maximum_wear": 0.3666621382315821,
+          "race_time_s": 7599.960767758584,
+          "drive_s": 7533.9607677585855,
+          "service_s": 66.0,
+          "post_warmup_duration_s": 6176.144117502027
+        }
+      },
+      {
+        "context": "craft_engineering:era1-entry/ZANDVOORT/1",
+        "reference": {
+          "hot_fraction": 0.0,
+          "cold_fraction": 0.18191389483255507,
+          "window_fraction": 0.8180861051674451,
+          "temperature_grip_mean": 0.9667312292358544,
+          "wear_grip_mean": 0.9795819777826481,
+          "surface_mean_c": 91.33707715160006,
+          "carcass_mean_c": 98.98177985623178,
+          "surface_max_c": 95.54955847883518,
+          "carcass_max_c": 103.02387518093597,
+          "maximum_wear": 0.8355779077057411,
+          "race_time_s": 8314.692265445821,
+          "drive_s": 8292.69226544582,
+          "service_s": 22.0,
+          "post_warmup_duration_s": 7556.014736802183
+        },
+        "candidate": {
+          "hot_fraction": 0.0,
+          "cold_fraction": 0.5796793595370401,
+          "window_fraction": 0.4203206404629602,
+          "temperature_grip_mean": 0.9428319496098609,
+          "wear_grip_mean": 0.9766676498258121,
+          "surface_mean_c": 86.99505371560238,
+          "carcass_mean_c": 93.52256537877078,
+          "surface_max_c": 90.5788954104956,
+          "carcass_max_c": 96.8579959807391,
+          "maximum_wear": 0.8743031542292105,
+          "race_time_s": 8390.593179843454,
+          "drive_s": 8368.593179843454,
+          "service_s": 22.0,
+          "post_warmup_duration_s": 7628.905298253105
+        }
+      }
+    ]
+  },
+  "fresh_repeats": 6,
+  "exact_repeats": 6,
+  "release_admitted": false
+}

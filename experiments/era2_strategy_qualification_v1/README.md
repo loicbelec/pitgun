@@ -1,5 +1,6 @@
 # Era-II bounded strategy qualification
 
+**Fuel-scope correction:** retained runs start with100kg. The110kg wording in the original acceptance/report prose is incorrect; only100kg was qualified. See [the explicit erratum](../three_compound_thermal_v1/FUEL_SCOPE_ERRATUM_V1.md).
 Tracking #483 / #479 / draft #481. Same frozen three-compound candidate as era I; actual career component and bonus-floor fixtures. See [acceptance](ACCEPTANCE.md), [results](RESULTS_V1.md), [decision](DECISION_V1.json) and [archive hashes](evidence-archive-v1.json).
 
 Run one native process at a time:

@@ -1,0 +1,37 @@
+{
+  "schema": "pitgun.thermal-candidate-qualification-evidence/v1",
+  "source_commits": {
+    "era1": "99ed8389efafb1a8b9938e232310e5a4dcb09e1b",
+    "era2": "85aa78eb22f59c1e230b8a02e68a3beebd65a6f0"
+  },
+  "native_binary_sha256": "3d745b32eb71eb22a3046ce7010909590242e1f4eb6df3151eee73bbd18c44ed",
+  "native_binary_retained_separately": true,
+  "host": {
+    "system": "Darwin",
+    "machine": "arm64",
+    "rustc": "rustc 1.89.0 (29483883e 2025-08-04)",
+    "cargo": "cargo 1.89.0 (c24e10642 2025-06-23)"
+  },
+  "policy_id": "rolling-heat-065",
+  "policy_sha256": "8b303f0189e3e174138a877d0eada425b37c672fe66dd07efcbc86b8d861e771",
+  "full_gp": 369,
+  "accepted_laps": 23352,
+  "numerical_failures": 0,
+  "fresh_exact_repeats": 12,
+  "screen_exact_bridges": 14,
+  "maximum_tire_balance_residual_j": 6.34536689858578e-09,
+  "maximum_engine_balance_residual_j": 2.121669240295887e-08,
+  "maximum_relative_grip_coupling_error": 0.0009999275169214616,
+  "maximum_contact_utilization_upper_bound": 0.99920964583991,
+  "maximum_carry_jump": 0.0,
+  "reports": {
+    "DECISION_V1.json": "59fb01c0f5eed7d03699609b2bf576add86dbcb49cc76bc7ba2ccef635766cf8",
+    "RESULTS_V1.md": "cb50ef7744f0f78aeeb11e4284611ef9b46d0b77a9601c7af59489e48c588746",
+    "results/era1-v1.json.gz": "878aa559dd72b0f866b34f91b55bf52993d6b049ce0b666753d5d618df0e2b62",
+    "results/era2-v1.json.gz": "a1d648c183e3c249365fda85d9e38d05d1edb6e8cb024cc08d1d551f9ae0b7bd",
+    "INTERPRETATION.md": "a2b8d45a62afcb0f0160cc073e0d1537becb42761889c0482bcc54db356d29e5"
+  },
+  "qualified_for_ai_preparation": true,
+  "release_admitted": false,
+  "scope": "Native Craft reference-player scenarios at era-I entry and era-II entry/exit means. No all-budget/all-doctrine/AI-win-rate/WASM/admission/deployment claim."
+}

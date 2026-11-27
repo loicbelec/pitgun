@@ -1,0 +1,45 @@
+{
+  "schema": "pitgun.thermal-candidate-qualification-plan/v1",
+  "policy_id": "rolling-heat-065",
+  "policies": {
+    "rolling-heat-065": {
+      "path": "experiments/thermal_balance_sensitivity_v1/rolling-heat-065.json",
+      "sha256": "8b303f0189e3e174138a877d0eada425b37c672fe66dd07efcbc86b8d861e771"
+    }
+  },
+  "fixtures": "experiments/opponent_physics_v2/results/career-fixtures-v1.json",
+  "fixtures_sha256": "858cce40ccb942b5667bab84f99af9e1231711d6cf13afca472537051ef3c6d9",
+  "baseline_archive": "experiments/thermal_balance_sensitivity_v1/results/development-v1.json.gz",
+  "baseline_archive_sha256": "aa339c07eb9139a06125a6cd6f79ff6eb7e461f79dc2b8268cf48c46d73fd7aa",
+  "retained_files": {
+    "experiments/thermal_balance_sensitivity_v1/results/development-v1.json.gz": "aa339c07eb9139a06125a6cd6f79ff6eb7e461f79dc2b8268cf48c46d73fd7aa",
+    "experiments/thermal_balance_sensitivity_v1/results/validation-v1.json.gz": "1b89dd3167bf549a74f293e00c9e09284037dadd74381d1d2e2f10aedc96ef1f",
+    "experiments/thermal_balance_sensitivity_v1/selection-v1.json": "a53e328549995b66cb7f9243b40a9a7b3b5645a493fa390890b604ebd7b9a04e",
+    "experiments/era1_strategy_qualification_v1/plan-v1.json": "ea166fbfce7d35f08b42e79fb5d737d109db2522cfb90d427ccc24138111d171",
+    "experiments/era2_strategy_qualification_v1/plan-v1.json": "b2006aa162f8e4e8f83c42ce2db7c045ddaa1d5f73041c8ce690e7b30a4998ff"
+  },
+  "expected_cases": {
+    "era1": 120,
+    "era2": 237
+  },
+  "expected_repeats": {
+    "era1": 6,
+    "era2": 6
+  },
+  "expected_total_gp": 369,
+  "workers": 1,
+  "fuel_kg": 100,
+  "warmup_laps_per_stint": 3,
+  "seed": 73013,
+  "reserved_seed": 104729,
+  "era1_repeat_contexts": [
+    "MONZA",
+    "SILVERSTONE",
+    "ZANDVOORT"
+  ],
+  "era2_repeat_contexts": [
+    "MONTREAL",
+    "MEXICO",
+    "MONZA"
+  ]
+}

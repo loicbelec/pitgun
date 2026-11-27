@@ -1,0 +1,1187 @@
+{
+  "schema": "pitgun.era1-attainability-audit-decision/v1",
+  "complete": true,
+  "numerical_pass": true,
+  "development_review_pass": true,
+  "fresh_native_gp": 153,
+  "logical_evaluations": 162,
+  "unique_primary_gp": 147,
+  "fresh_repeats": [
+    {
+      "case_id": "era1-audit/MONZA/12/zero_extra/baseline",
+      "exact": true
+    },
+    {
+      "case_id": "era1-audit/MONZA/12/free/baseline",
+      "exact": true
+    },
+    {
+      "case_id": "era1-audit/SILVERSTONE/12/zero_extra/baseline",
+      "exact": true
+    },
+    {
+      "case_id": "era1-audit/SILVERSTONE/12/free/baseline",
+      "exact": true
+    },
+    {
+      "case_id": "era1-audit/ZANDVOORT/12/zero_extra/baseline",
+      "exact": true
+    },
+    {
+      "case_id": "era1-audit/ZANDVOORT/12/free/baseline",
+      "exact": true
+    }
+  ],
+  "reused_field_gp": 81,
+  "summaries": [
+    {
+      "circuit": "MONZA",
+      "budget": 8,
+      "kind": "actual career fixture",
+      "best": {
+        "zero_extra": {
+          "time_s": 7549.105688351712,
+          "rank": 10,
+          "gap_to_best_ai_s": 141.94472336922718,
+          "logical_case": {
+            "id": "era1-audit/MONZA/8/zero_extra/gear005",
+            "policy_id": "rolling-heat-065",
+            "circuit": "MONZA",
+            "fixture_id": "craft_engineering:era1-entry",
+            "actor": "balanced_reference",
+            "kind": "career",
+            "effective_budget": 8,
+            "effective_allocation": [
+              0,
+              4,
+              4,
+              0
+            ],
+            "gear": 0.05,
+            "downforce": 0.5,
+            "mode": "balanced",
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "soft",
+                  "laps": 26
+                },
+                {
+                  "tire_id": "medium",
+                  "laps": 27
+                }
+              ],
+              "pit_laps": [
+                26
+              ]
+            },
+            "seed": 73013
+          },
+          "native_case_id": "era1-audit/MONZA/8/zero_extra/gear005"
+        },
+        "heavy_80": {
+          "time_s": 7461.7880864877425,
+          "rank": 9,
+          "gap_to_best_ai_s": 54.62712150525749,
+          "logical_case": {
+            "id": "era1-audit/MONZA/8/heavy_80/gear015",
+            "policy_id": "rolling-heat-065",
+            "circuit": "MONZA",
+            "fixture_id": "craft_engineering:era1-entry",
+            "actor": "balanced_reference",
+            "kind": "career",
+            "effective_budget": 8,
+            "effective_allocation": [
+              0,
+              4,
+              3,
+              1
+            ],
+            "gear": 0.15,
+            "downforce": 0.5,
+            "mode": "balanced",
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "soft",
+                  "laps": 26
+                },
+                {
+                  "tire_id": "medium",
+                  "laps": 27
+                }
+              ],
+              "pit_laps": [
+                26
+              ]
+            },
+            "seed": 73013
+          },
+          "native_case_id": "era1-audit/MONZA/8/heavy_80/gear015"
+        },
+        "free": {
+          "time_s": 7399.523124328648,
+          "rank": 1,
+          "gap_to_best_ai_s": -7.6378406538369745,
+          "logical_case": {
+            "id": "era1-audit/MONZA/8/free/gear015",
+            "policy_id": "rolling-heat-065",
+            "circuit": "MONZA",
+            "fixture_id": "craft_engineering:era1-entry",
+            "actor": "balanced_reference",
+            "kind": "career",
+            "effective_budget": 8,
+            "effective_allocation": [
+              0,
+              3,
+              3,
+              2
+            ],
+            "gear": 0.15,
+            "downforce": 0.5,
+            "mode": "balanced",
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "soft",
+                  "laps": 26
+                },
+                {
+                  "tire_id": "medium",
+                  "laps": 27
+                }
+              ],
+              "pit_laps": [
+                26
+              ]
+            },
+            "seed": 73013
+          },
+          "native_case_id": "era1-audit/MONZA/8/free/gear015"
+        }
+      }
+    },
+    {
+      "circuit": "MONZA",
+      "budget": 10,
+      "kind": "controlled intermediate",
+      "best": {
+        "zero_extra": {
+          "time_s": 7542.5826323605,
+          "rank": 10,
+          "gap_to_best_ai_s": 141.9803258418542,
+          "logical_case": {
+            "id": "era1-audit/MONZA/10/zero_extra/gear005",
+            "policy_id": "rolling-heat-065",
+            "circuit": "MONZA",
+            "fixture_id": "craft_engineering:era1-entry",
+            "actor": "balanced_reference",
+            "kind": "field",
+            "effective_budget": 10,
+            "effective_allocation": [
+              0,
+              5,
+              5,
+              0
+            ],
+            "gear": 0.05,
+            "downforce": 0.5,
+            "mode": "balanced",
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "soft",
+                  "laps": 26
+                },
+                {
+                  "tire_id": "medium",
+                  "laps": 27
+                }
+              ],
+              "pit_laps": [
+                26
+              ]
+            },
+            "seed": 73013
+          },
+          "native_case_id": "era1-audit/MONZA/10/zero_extra/gear005"
+        },
+        "heavy_80": {
+          "time_s": 7393.915796797407,
+          "rank": 1,
+          "gap_to_best_ai_s": -6.686509721238508,
+          "logical_case": {
+            "id": "era1-audit/MONZA/10/heavy_80/gear015",
+            "policy_id": "rolling-heat-065",
+            "circuit": "MONZA",
+            "fixture_id": "craft_engineering:era1-entry",
+            "actor": "balanced_reference",
+            "kind": "field",
+            "effective_budget": 10,
+            "effective_allocation": [
+              0,
+              5,
+              3,
+              2
+            ],
+            "gear": 0.15,
+            "downforce": 0.5,
+            "mode": "balanced",
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "soft",
+                  "laps": 26
+                },
+                {
+                  "tire_id": "medium",
+                  "laps": 27
+                }
+              ],
+              "pit_laps": [
+                26
+              ]
+            },
+            "seed": 73013
+          },
+          "native_case_id": "era1-audit/MONZA/10/heavy_80/gear015"
+        },
+        "free": {
+          "time_s": 7347.111661400486,
+          "rank": 1,
+          "gap_to_best_ai_s": -53.49064511815959,
+          "logical_case": {
+            "id": "era1-audit/MONZA/10/free/baseline",
+            "policy_id": "rolling-heat-065",
+            "circuit": "MONZA",
+            "fixture_id": "craft_engineering:era1-entry",
+            "actor": "balanced_reference",
+            "kind": "field",
+            "effective_budget": 10,
+            "effective_allocation": [
+              0,
+              4,
+              3,
+              3
+            ],
+            "gear": 0.25,
+            "downforce": 0.5,
+            "mode": "balanced",
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "soft",
+                  "laps": 26
+                },
+                {
+                  "tire_id": "medium",
+                  "laps": 27
+                }
+              ],
+              "pit_laps": [
+                26
+              ]
+            },
+            "seed": 73013
+          },
+          "native_case_id": "era1-audit/MONZA/10/free/baseline"
+        }
+      }
+    },
+    {
+      "circuit": "MONZA",
+      "budget": 12,
+      "kind": "actual career fixture",
+      "best": {
+        "zero_extra": {
+          "time_s": 7536.023066272265,
+          "rank": 10,
+          "gap_to_best_ai_s": 193.84384273503838,
+          "logical_case": {
+            "id": "era1-audit/MONZA/12/zero_extra/gear005",
+            "policy_id": "rolling-heat-065",
+            "circuit": "MONZA",
+            "fixture_id": "craft_engineering:era1-exit",
+            "actor": "balanced_reference",
+            "kind": "career",
+            "effective_budget": 12,
+            "effective_allocation": [
+              0,
+              6,
+              6,
+              0
+            ],
+            "gear": 0.05,
+            "downforce": 0.5,
+            "mode": "balanced",
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "soft",
+                  "laps": 26
+                },
+                {
+                  "tire_id": "medium",
+                  "laps": 27
+                }
+              ],
+              "pit_laps": [
+                26
+              ]
+            },
+            "seed": 73013
+          },
+          "native_case_id": "era1-audit/MONZA/12/zero_extra/gear005"
+        },
+        "heavy_80": {
+          "time_s": 7388.243165189843,
+          "rank": 8,
+          "gap_to_best_ai_s": 46.06394165261645,
+          "logical_case": {
+            "id": "era1-audit/MONZA/12/heavy_80/gear015",
+            "policy_id": "rolling-heat-065",
+            "circuit": "MONZA",
+            "fixture_id": "craft_engineering:era1-exit",
+            "actor": "balanced_reference",
+            "kind": "career",
+            "effective_budget": 12,
+            "effective_allocation": [
+              0,
+              6,
+              4,
+              2
+            ],
+            "gear": 0.15,
+            "downforce": 0.5,
+            "mode": "balanced",
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "soft",
+                  "laps": 26
+                },
+                {
+                  "tire_id": "medium",
+                  "laps": 27
+                }
+              ],
+              "pit_laps": [
+                26
+              ]
+            },
+            "seed": 73013
+          },
+          "native_case_id": "era1-audit/MONZA/12/heavy_80/gear015"
+        },
+        "free": {
+          "time_s": 7340.72037634764,
+          "rank": 1,
+          "gap_to_best_ai_s": -1.458847189586777,
+          "logical_case": {
+            "id": "era1-audit/MONZA/12/free/baseline",
+            "policy_id": "rolling-heat-065",
+            "circuit": "MONZA",
+            "fixture_id": "craft_engineering:era1-exit",
+            "actor": "balanced_reference",
+            "kind": "career",
+            "effective_budget": 12,
+            "effective_allocation": [
+              0,
+              5,
+              4,
+              3
+            ],
+            "gear": 0.25,
+            "downforce": 0.5,
+            "mode": "balanced",
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "soft",
+                  "laps": 26
+                },
+                {
+                  "tire_id": "medium",
+                  "laps": 27
+                }
+              ],
+              "pit_laps": [
+                26
+              ]
+            },
+            "seed": 73013
+          },
+          "native_case_id": "era1-audit/MONZA/12/free/baseline"
+        }
+      }
+    },
+    {
+      "circuit": "SILVERSTONE",
+      "budget": 8,
+      "kind": "actual career fixture",
+      "best": {
+        "zero_extra": {
+          "time_s": 7907.748460282987,
+          "rank": 10,
+          "gap_to_best_ai_s": 127.90276878395889,
+          "logical_case": {
+            "id": "era1-audit/SILVERSTONE/8/zero_extra/baseline",
+            "policy_id": "rolling-heat-065",
+            "circuit": "SILVERSTONE",
+            "fixture_id": "craft_engineering:era1-entry",
+            "actor": "balanced_reference",
+            "kind": "career",
+            "effective_budget": 8,
+            "effective_allocation": [
+              0,
+              4,
+              4,
+              0
+            ],
+            "gear": 0.85,
+            "downforce": 0.5,
+            "mode": "balanced",
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "soft",
+                  "laps": 26
+                },
+                {
+                  "tire_id": "medium",
+                  "laps": 26
+                }
+              ],
+              "pit_laps": [
+                26
+              ]
+            },
+            "seed": 73013
+          },
+          "native_case_id": "era1-audit/SILVERSTONE/8/zero_extra/baseline"
+        },
+        "heavy_80": {
+          "time_s": 7837.622475053047,
+          "rank": 9,
+          "gap_to_best_ai_s": 57.77678355401895,
+          "logical_case": {
+            "id": "era1-audit/SILVERSTONE/8/heavy_80/engine_to_chassis",
+            "policy_id": "rolling-heat-065",
+            "circuit": "SILVERSTONE",
+            "fixture_id": "craft_engineering:era1-entry",
+            "actor": "balanced_reference",
+            "kind": "career",
+            "effective_budget": 8,
+            "effective_allocation": [
+              0,
+              5,
+              2,
+              1
+            ],
+            "gear": 0.15,
+            "downforce": 0.5,
+            "mode": "balanced",
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "soft",
+                  "laps": 26
+                },
+                {
+                  "tire_id": "medium",
+                  "laps": 26
+                }
+              ],
+              "pit_laps": [
+                26
+              ]
+            },
+            "seed": 73013
+          },
+          "native_case_id": "era1-audit/SILVERSTONE/8/heavy_80/engine_to_chassis"
+        },
+        "free": {
+          "time_s": 7775.649738060343,
+          "rank": 1,
+          "gap_to_best_ai_s": -4.195953438685137,
+          "logical_case": {
+            "id": "era1-audit/SILVERSTONE/8/free/gear015",
+            "policy_id": "rolling-heat-065",
+            "circuit": "SILVERSTONE",
+            "fixture_id": "craft_engineering:era1-entry",
+            "actor": "balanced_reference",
+            "kind": "career",
+            "effective_budget": 8,
+            "effective_allocation": [
+              0,
+              3,
+              3,
+              2
+            ],
+            "gear": 0.15,
+            "downforce": 0.5,
+            "mode": "balanced",
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "soft",
+                  "laps": 26
+                },
+                {
+                  "tire_id": "medium",
+                  "laps": 26
+                }
+              ],
+              "pit_laps": [
+                26
+              ]
+            },
+            "seed": 73013
+          },
+          "native_case_id": "era1-audit/SILVERSTONE/8/free/gear015"
+        }
+      }
+    },
+    {
+      "circuit": "SILVERSTONE",
+      "budget": 10,
+      "kind": "controlled intermediate",
+      "best": {
+        "zero_extra": {
+          "time_s": 7899.762794955383,
+          "rank": 10,
+          "gap_to_best_ai_s": 126.52604624290962,
+          "logical_case": {
+            "id": "era1-audit/SILVERSTONE/10/zero_extra/baseline",
+            "policy_id": "rolling-heat-065",
+            "circuit": "SILVERSTONE",
+            "fixture_id": "craft_engineering:era1-entry",
+            "actor": "balanced_reference",
+            "kind": "field",
+            "effective_budget": 10,
+            "effective_allocation": [
+              0,
+              6,
+              4,
+              0
+            ],
+            "gear": 0.85,
+            "downforce": 0.5,
+            "mode": "balanced",
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "soft",
+                  "laps": 26
+                },
+                {
+                  "tire_id": "medium",
+                  "laps": 26
+                }
+              ],
+              "pit_laps": [
+                26
+              ]
+            },
+            "seed": 73013
+          },
+          "native_case_id": "era1-audit/SILVERSTONE/10/zero_extra/baseline"
+        },
+        "heavy_80": {
+          "time_s": 7767.043241186387,
+          "rank": 1,
+          "gap_to_best_ai_s": -6.19350752608625,
+          "logical_case": {
+            "id": "era1-audit/SILVERSTONE/10/heavy_80/engine_to_chassis",
+            "policy_id": "rolling-heat-065",
+            "circuit": "SILVERSTONE",
+            "fixture_id": "craft_engineering:era1-entry",
+            "actor": "balanced_reference",
+            "kind": "field",
+            "effective_budget": 10,
+            "effective_allocation": [
+              0,
+              6,
+              2,
+              2
+            ],
+            "gear": 0.15,
+            "downforce": 0.5,
+            "mode": "balanced",
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "soft",
+                  "laps": 26
+                },
+                {
+                  "tire_id": "medium",
+                  "laps": 26
+                }
+              ],
+              "pit_laps": [
+                26
+              ]
+            },
+            "seed": 73013
+          },
+          "native_case_id": "era1-audit/SILVERSTONE/10/heavy_80/engine_to_chassis"
+        },
+        "free": {
+          "time_s": 7721.566914242131,
+          "rank": 1,
+          "gap_to_best_ai_s": -51.66983447034181,
+          "logical_case": {
+            "id": "era1-audit/SILVERSTONE/10/free/gear015",
+            "policy_id": "rolling-heat-065",
+            "circuit": "SILVERSTONE",
+            "fixture_id": "craft_engineering:era1-entry",
+            "actor": "balanced_reference",
+            "kind": "field",
+            "effective_budget": 10,
+            "effective_allocation": [
+              0,
+              4,
+              3,
+              3
+            ],
+            "gear": 0.15,
+            "downforce": 0.5,
+            "mode": "balanced",
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "soft",
+                  "laps": 26
+                },
+                {
+                  "tire_id": "medium",
+                  "laps": 26
+                }
+              ],
+              "pit_laps": [
+                26
+              ]
+            },
+            "seed": 73013
+          },
+          "native_case_id": "era1-audit/SILVERSTONE/10/free/gear015"
+        }
+      }
+    },
+    {
+      "circuit": "SILVERSTONE",
+      "budget": 12,
+      "kind": "actual career fixture",
+      "best": {
+        "zero_extra": {
+          "time_s": 7893.117409920204,
+          "rank": 10,
+          "gap_to_best_ai_s": 175.42467956245946,
+          "logical_case": {
+            "id": "era1-audit/SILVERSTONE/12/zero_extra/baseline",
+            "policy_id": "rolling-heat-065",
+            "circuit": "SILVERSTONE",
+            "fixture_id": "craft_engineering:era1-exit",
+            "actor": "balanced_reference",
+            "kind": "career",
+            "effective_budget": 12,
+            "effective_allocation": [
+              0,
+              7,
+              5,
+              0
+            ],
+            "gear": 0.85,
+            "downforce": 0.5,
+            "mode": "balanced",
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "soft",
+                  "laps": 26
+                },
+                {
+                  "tire_id": "medium",
+                  "laps": 26
+                }
+              ],
+              "pit_laps": [
+                26
+              ]
+            },
+            "seed": 73013
+          },
+          "native_case_id": "era1-audit/SILVERSTONE/12/zero_extra/baseline"
+        },
+        "heavy_80": {
+          "time_s": 7760.464969435123,
+          "rank": 5,
+          "gap_to_best_ai_s": 42.77223907737789,
+          "logical_case": {
+            "id": "era1-audit/SILVERSTONE/12/heavy_80/engine_to_chassis",
+            "policy_id": "rolling-heat-065",
+            "circuit": "SILVERSTONE",
+            "fixture_id": "craft_engineering:era1-exit",
+            "actor": "balanced_reference",
+            "kind": "career",
+            "effective_budget": 12,
+            "effective_allocation": [
+              0,
+              7,
+              3,
+              2
+            ],
+            "gear": 0.15,
+            "downforce": 0.5,
+            "mode": "balanced",
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "soft",
+                  "laps": 26
+                },
+                {
+                  "tire_id": "medium",
+                  "laps": 26
+                }
+              ],
+              "pit_laps": [
+                26
+              ]
+            },
+            "seed": 73013
+          },
+          "native_case_id": "era1-audit/SILVERSTONE/12/heavy_80/engine_to_chassis"
+        },
+        "free": {
+          "time_s": 7714.586711780753,
+          "rank": 1,
+          "gap_to_best_ai_s": -3.106018576992028,
+          "logical_case": {
+            "id": "era1-audit/SILVERSTONE/12/free/gear015",
+            "policy_id": "rolling-heat-065",
+            "circuit": "SILVERSTONE",
+            "fixture_id": "craft_engineering:era1-exit",
+            "actor": "balanced_reference",
+            "kind": "career",
+            "effective_budget": 12,
+            "effective_allocation": [
+              0,
+              5,
+              4,
+              3
+            ],
+            "gear": 0.15,
+            "downforce": 0.5,
+            "mode": "balanced",
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "soft",
+                  "laps": 26
+                },
+                {
+                  "tire_id": "medium",
+                  "laps": 26
+                }
+              ],
+              "pit_laps": [
+                26
+              ]
+            },
+            "seed": 73013
+          },
+          "native_case_id": "era1-audit/SILVERSTONE/12/free/gear015"
+        }
+      }
+    },
+    {
+      "circuit": "ZANDVOORT",
+      "budget": 8,
+      "kind": "actual career fixture",
+      "best": {
+        "zero_extra": {
+          "time_s": 8497.323256379363,
+          "rank": 10,
+          "gap_to_best_ai_s": 127.5212390032575,
+          "logical_case": {
+            "id": "era1-audit/ZANDVOORT/8/zero_extra/engine_to_chassis",
+            "policy_id": "rolling-heat-065",
+            "circuit": "ZANDVOORT",
+            "fixture_id": "craft_engineering:era1-entry",
+            "actor": "balanced_reference",
+            "kind": "career",
+            "effective_budget": 8,
+            "effective_allocation": [
+              0,
+              5,
+              3,
+              0
+            ],
+            "gear": 0.15,
+            "downforce": 0.5,
+            "mode": "balanced",
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "soft",
+                  "laps": 36
+                },
+                {
+                  "tire_id": "medium",
+                  "laps": 36
+                }
+              ],
+              "pit_laps": [
+                36
+              ]
+            },
+            "seed": 73013
+          },
+          "native_case_id": "era1-audit/ZANDVOORT/8/zero_extra/engine_to_chassis"
+        },
+        "heavy_80": {
+          "time_s": 8424.687415371607,
+          "rank": 6,
+          "gap_to_best_ai_s": 54.88539799550199,
+          "logical_case": {
+            "id": "era1-audit/ZANDVOORT/8/heavy_80/engine_to_chassis",
+            "policy_id": "rolling-heat-065",
+            "circuit": "ZANDVOORT",
+            "fixture_id": "craft_engineering:era1-entry",
+            "actor": "balanced_reference",
+            "kind": "career",
+            "effective_budget": 8,
+            "effective_allocation": [
+              0,
+              5,
+              2,
+              1
+            ],
+            "gear": 0.15,
+            "downforce": 0.5,
+            "mode": "balanced",
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "soft",
+                  "laps": 36
+                },
+                {
+                  "tire_id": "medium",
+                  "laps": 36
+                }
+              ],
+              "pit_laps": [
+                36
+              ]
+            },
+            "seed": 73013
+          },
+          "native_case_id": "era1-audit/ZANDVOORT/8/heavy_80/engine_to_chassis"
+        },
+        "free": {
+          "time_s": 8380.844569811434,
+          "rank": 3,
+          "gap_to_best_ai_s": 11.042552435328616,
+          "logical_case": {
+            "id": "era1-audit/ZANDVOORT/8/free/pit_early3",
+            "policy_id": "rolling-heat-065",
+            "circuit": "ZANDVOORT",
+            "fixture_id": "craft_engineering:era1-entry",
+            "actor": "balanced_reference",
+            "kind": "career",
+            "effective_budget": 8,
+            "effective_allocation": [
+              0,
+              3,
+              3,
+              2
+            ],
+            "gear": 0.35,
+            "downforce": 0.5,
+            "mode": "balanced",
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "soft",
+                  "laps": 33
+                },
+                {
+                  "tire_id": "medium",
+                  "laps": 39
+                }
+              ],
+              "pit_laps": [
+                33
+              ]
+            },
+            "seed": 73013
+          },
+          "native_case_id": "era1-audit/ZANDVOORT/8/free/pit_early3"
+        }
+      }
+    },
+    {
+      "circuit": "ZANDVOORT",
+      "budget": 10,
+      "kind": "controlled intermediate",
+      "best": {
+        "zero_extra": {
+          "time_s": 8488.148279507002,
+          "rank": 10,
+          "gap_to_best_ai_s": 125.84428989981461,
+          "logical_case": {
+            "id": "era1-audit/ZANDVOORT/10/zero_extra/engine_to_chassis",
+            "policy_id": "rolling-heat-065",
+            "circuit": "ZANDVOORT",
+            "fixture_id": "craft_engineering:era1-entry",
+            "actor": "balanced_reference",
+            "kind": "field",
+            "effective_budget": 10,
+            "effective_allocation": [
+              0,
+              7,
+              3,
+              0
+            ],
+            "gear": 0.15,
+            "downforce": 0.5,
+            "mode": "balanced",
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "soft",
+                  "laps": 36
+                },
+                {
+                  "tire_id": "medium",
+                  "laps": 36
+                }
+              ],
+              "pit_laps": [
+                36
+              ]
+            },
+            "seed": 73013
+          },
+          "native_case_id": "era1-audit/ZANDVOORT/10/zero_extra/engine_to_chassis"
+        },
+        "heavy_80": {
+          "time_s": 8366.543190241926,
+          "rank": 2,
+          "gap_to_best_ai_s": 4.239200634738154,
+          "logical_case": {
+            "id": "era1-audit/ZANDVOORT/10/heavy_80/pit_early3",
+            "policy_id": "rolling-heat-065",
+            "circuit": "ZANDVOORT",
+            "fixture_id": "craft_engineering:era1-entry",
+            "actor": "balanced_reference",
+            "kind": "field",
+            "effective_budget": 10,
+            "effective_allocation": [
+              0,
+              5,
+              3,
+              2
+            ],
+            "gear": 0.25,
+            "downforce": 0.5,
+            "mode": "balanced",
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "soft",
+                  "laps": 33
+                },
+                {
+                  "tire_id": "medium",
+                  "laps": 39
+                }
+              ],
+              "pit_laps": [
+                33
+              ]
+            },
+            "seed": 73013
+          },
+          "native_case_id": "era1-audit/ZANDVOORT/10/heavy_80/pit_early3"
+        },
+        "free": {
+          "time_s": 8326.418847243749,
+          "rank": 1,
+          "gap_to_best_ai_s": -35.88514236343872,
+          "logical_case": {
+            "id": "era1-audit/ZANDVOORT/10/free/pit_early3",
+            "policy_id": "rolling-heat-065",
+            "circuit": "ZANDVOORT",
+            "fixture_id": "craft_engineering:era1-entry",
+            "actor": "balanced_reference",
+            "kind": "field",
+            "effective_budget": 10,
+            "effective_allocation": [
+              0,
+              4,
+              3,
+              3
+            ],
+            "gear": 0.25,
+            "downforce": 0.5,
+            "mode": "balanced",
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "soft",
+                  "laps": 33
+                },
+                {
+                  "tire_id": "medium",
+                  "laps": 39
+                }
+              ],
+              "pit_laps": [
+                33
+              ]
+            },
+            "seed": 73013
+          },
+          "native_case_id": "era1-audit/ZANDVOORT/10/free/pit_early3"
+        }
+      }
+    },
+    {
+      "circuit": "ZANDVOORT",
+      "budget": 12,
+      "kind": "actual career fixture",
+      "best": {
+        "zero_extra": {
+          "time_s": 8481.944416017368,
+          "rank": 10,
+          "gap_to_best_ai_s": 168.72260289715632,
+          "logical_case": {
+            "id": "era1-audit/ZANDVOORT/12/zero_extra/engine_to_chassis",
+            "policy_id": "rolling-heat-065",
+            "circuit": "ZANDVOORT",
+            "fixture_id": "craft_engineering:era1-exit",
+            "actor": "balanced_reference",
+            "kind": "career",
+            "effective_budget": 12,
+            "effective_allocation": [
+              0,
+              8,
+              4,
+              0
+            ],
+            "gear": 0.15,
+            "downforce": 0.5,
+            "mode": "balanced",
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "soft",
+                  "laps": 36
+                },
+                {
+                  "tire_id": "medium",
+                  "laps": 36
+                }
+              ],
+              "pit_laps": [
+                36
+              ]
+            },
+            "seed": 73013
+          },
+          "native_case_id": "era1-audit/ZANDVOORT/12/zero_extra/engine_to_chassis"
+        },
+        "heavy_80": {
+          "time_s": 8359.2115269359,
+          "rank": 5,
+          "gap_to_best_ai_s": 45.98971381568845,
+          "logical_case": {
+            "id": "era1-audit/ZANDVOORT/12/heavy_80/pit_early3",
+            "policy_id": "rolling-heat-065",
+            "circuit": "ZANDVOORT",
+            "fixture_id": "craft_engineering:era1-exit",
+            "actor": "balanced_reference",
+            "kind": "career",
+            "effective_budget": 12,
+            "effective_allocation": [
+              0,
+              6,
+              4,
+              2
+            ],
+            "gear": 0.25,
+            "downforce": 0.5,
+            "mode": "balanced",
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "soft",
+                  "laps": 33
+                },
+                {
+                  "tire_id": "medium",
+                  "laps": 39
+                }
+              ],
+              "pit_laps": [
+                33
+              ]
+            },
+            "seed": 73013
+          },
+          "native_case_id": "era1-audit/ZANDVOORT/12/heavy_80/pit_early3"
+        },
+        "free": {
+          "time_s": 8319.226505850847,
+          "rank": 3,
+          "gap_to_best_ai_s": 6.004692730635725,
+          "logical_case": {
+            "id": "era1-audit/ZANDVOORT/12/free/pit_early3",
+            "policy_id": "rolling-heat-065",
+            "circuit": "ZANDVOORT",
+            "fixture_id": "craft_engineering:era1-exit",
+            "actor": "balanced_reference",
+            "kind": "career",
+            "effective_budget": 12,
+            "effective_allocation": [
+              0,
+              5,
+              4,
+              3
+            ],
+            "gear": 0.25,
+            "downforce": 0.5,
+            "mode": "balanced",
+            "strategy": {
+              "stints": [
+                {
+                  "tire_id": "soft",
+                  "laps": 33
+                },
+                {
+                  "tire_id": "medium",
+                  "laps": 39
+                }
+              ],
+              "pit_laps": [
+                33
+              ]
+            },
+            "seed": 73013
+          },
+          "native_case_id": "era1-audit/ZANDVOORT/12/free/pit_early3"
+        }
+      }
+    }
+  ],
+  "exit_free_wins": 2,
+  "zero_extra_wins": 0,
+  "accepted_fresh_laps": 9027,
+  "release_admitted": false,
+  "scope": "opened-seed development audit; broad heavy allocations may legitimately win; no global optimum or new holdout claim",
+  "results_sha256": "1eff27eaa2a7b4a269a1618388f916f8942f95484c269c1c9af2c33a6fa4ccca"
+}

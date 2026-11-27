@@ -1,0 +1,48 @@
+{
+  "policy": "experiments/three_compound_thermal_v1/candidate-v1.json",
+  "policy_sha256": "0021bd8ead91698de49de297b1760cc3225a54c9e61adfeb07bab8250ab16439",
+  "fixtures": "experiments/opponent_physics_v2/results/career-fixtures-v1.json",
+  "fixtures_sha256": "858cce40ccb942b5667bab84f99af9e1231711d6cf13afca472537051ef3c6d9",
+  "seed": 73013,
+  "schema": "pitgun.era2-stop-diagnostic-plan/v1",
+  "contexts": [
+    {
+      "circuit": "MONZA",
+      "laps": 53
+    },
+    {
+      "circuit": "SAOPAULO",
+      "laps": 71
+    }
+  ],
+  "fixture_id": "craft_engineering:era2-exit",
+  "discretionary_allocation": [
+    4,
+    4,
+    4,
+    4
+  ],
+  "downforce": 0.5,
+  "gear": 0.5,
+  "mode": "balanced",
+  "initial_fuel_kg": 100.0,
+  "families": [
+    [
+      "medium",
+      "hard"
+    ],
+    [
+      "soft",
+      "medium"
+    ]
+  ],
+  "diagnostics": [
+    "nominal",
+    "no_temperature_grip_loss",
+    "no_wear_grip_loss"
+  ],
+  "expected_cases": 44,
+  "expected_repeats": 4,
+  "baseline_archive": "experiments/era2_strategy_qualification_v1/results/main-v1.json.gz",
+  "baseline_archive_sha256": "079ef5ebd2639a3c3e7a93c84d47416ed7b979e9c2ef40d0ce178e213537d515"
+}

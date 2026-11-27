@@ -1,0 +1,16 @@
+{
+  "schema": "pitgun.joint-era2-execution-observations/v1",
+  "source_freeze": "a3d11f7",
+  "completed_rows": 858,
+  "native_files_checked": 1700,
+  "new_full_gp_on_completed_resume": 0,
+  "all_native_bytes_and_mtimes_unchanged_on_resume": true,
+  "journal_archive_decision_policy_bytes_unchanged_on_resume": true,
+  "earliest_native_files_and_journal_prefix_unchanged_during_campaign": 13,
+  "reused_original_rows_unchanged": 279,
+  "structural_non_anchor_preparations_checked": 630,
+  "non_anchor_native_admitted": false,
+  "native_source_pin": "a3d11f7d6147bcdfdc3a10a33e6e009b2dd67481",
+  "results_sha256": "9d54841ed2d97e0c0dcb5fa58e02e8fe31e81bf9ac811b3fb126cc3953017d45",
+  "structural_integer_preparations_checked": 819
+}

@@ -1,5 +1,6 @@
 # Era-I strategic qualification
 
+**Fuel-scope correction:** retained runs start with100kg. The110kg wording in the original acceptance/report prose is incorrect; only100kg was qualified. See [the explicit erratum](../three_compound_thermal_v1/FUEL_SCOPE_ERRATUM_V1.md).
 Follow-up to #479 / draft#481, after the owner explicitly accepted circuit-dependent tire behavior. No physical coefficient change. [Preregistered matrix and interpretation](ACCEPTANCE.md).
 
 Run one native process at a time, with at most two compiler jobs:

@@ -1,0 +1,129 @@
+{
+  "schema": "pitgun.era1-attainability-batch-progress/v1",
+  "complete": false,
+  "batch": 2,
+  "frozen_source_commit": "77e2f0a1395dd1a8a2d60342d80415e3ddb1fba1",
+  "progress": {
+    "schema": "pitgun.offline-native-batch-progress/v1",
+    "complete": false,
+    "completed": 40,
+    "expected": 153,
+    "remaining": 113,
+    "new_gp_this_batch": 20,
+    "stop_reason": "new_gp_limit",
+    "limits": {
+      "max_new_gp": 20,
+      "max_wall_seconds": 300.0
+    }
+  },
+  "accepted_fresh_laps_cumulative": 2120,
+  "accepted_fresh_laps_this_batch": 1060,
+  "observed_numerical_failures_cumulative": 0,
+  "reused_field_gp_checked": 81,
+  "previous_20_result_files_and_mtimes_unchanged": true,
+  "previous_journal_prefix_unchanged": true,
+  "journal_sha256": "c15e77e093e3b749dbe1f782d5d672c06a996f5981aee312006181985245ea1e",
+  "scope": "Partial progress only; no audit decision or field admission. Native work stopped after exactly20new GP.",
+  "new_completed_cases": [
+    {
+      "id": "era1-audit/MONZA/10/zero_extra/gear005",
+      "physical_input_digest": "sha256:c7b920000a918663e1891999078103bd0d48e2d0c909480d773dc7be8635994d",
+      "result_digest": "sha256:c6a010818f927d9d48004eb130fda13590b6549891e832968cfe2d6dfa5c1e69"
+    },
+    {
+      "id": "era1-audit/MONZA/10/heavy_80/baseline",
+      "physical_input_digest": "sha256:b5f723cb6ae69735eab2b460c2bdbbee42235de6a391d2d940682c681bd967e6",
+      "result_digest": "sha256:81f402980cf1292ef4f07472246ced1756466b5fa1ff51d05290016abbdc47ee"
+    },
+    {
+      "id": "era1-audit/MONZA/10/heavy_80/gear015",
+      "physical_input_digest": "sha256:e15256f1e2feb494fba4eee3241608f5d74983d3d66051fa1b4318236fdabce9",
+      "result_digest": "sha256:713a0a2ba0d0e4e2b4d16fef4884a87a8f4732b8b142fba1f5ecdd6bfd1b9d11"
+    },
+    {
+      "id": "era1-audit/MONZA/10/heavy_80/pit_early3",
+      "physical_input_digest": "sha256:48db4e586add5b1783dd3140f9132a39a99f4aa3c969a93efd948b779bad0457",
+      "result_digest": "sha256:100abdab4a7b326b8bf775e5afb06ec255179141eda87b6f3e2fca9dc03612bc"
+    },
+    {
+      "id": "era1-audit/MONZA/10/heavy_80/cool_to_engine",
+      "physical_input_digest": "sha256:2866fb8859e9d801c988d94e2986e9e7c57be17e523517eab0de7b976ef481b0",
+      "result_digest": "sha256:6b4e80653cdc3b82b1accb08d65c1dff0c762368296d74538b70e2d0d70367f1"
+    },
+    {
+      "id": "era1-audit/MONZA/10/heavy_80/engine_to_chassis",
+      "physical_input_digest": "sha256:87a06a3367236c99c49fd19666b8c91d14a09d73696840d5bf0a89f3dee1bc42",
+      "result_digest": "sha256:fbac47f127c944a33dc1ed0f79f2e59c1d5f5dfb9280f524fffed0751963aa69"
+    },
+    {
+      "id": "era1-audit/MONZA/10/heavy_80/cool_to_chassis",
+      "physical_input_digest": "sha256:77d1a468dc83eb5939af83d60731ffe36f49b5f7657f95f74a0d7f21caeb17e1",
+      "result_digest": "sha256:14c2e331bb4d2dd363517fa57e0dd26dc8a8f4ccfaae1f30f4d5daea61f6b563"
+    },
+    {
+      "id": "era1-audit/MONZA/10/free/baseline",
+      "physical_input_digest": "sha256:2190cc0ec1efc5503adb8e937bc919b5a3adcf872022cfd84eff34d1d9c44883",
+      "result_digest": "sha256:5a5459c591178a7f3738b367b8feafeccc39250be1e565234136b96b1ca6fdbd"
+    },
+    {
+      "id": "era1-audit/MONZA/10/free/gear015",
+      "physical_input_digest": "sha256:930050743744573ad9256d91df1ca981bb57d476396986fa97483c2dc1b1c0da",
+      "result_digest": "sha256:fd34c4b240c798e99e32a56bc15f865f673688311b4750c6c7b394a3306158d1"
+    },
+    {
+      "id": "era1-audit/MONZA/10/free/pit_early3",
+      "physical_input_digest": "sha256:ab192b63b032dd68f43220997c95052b307028db018985a4e8431d81684d8d7a",
+      "result_digest": "sha256:09bb0d69988a620c1ee7ebef1bad290fe6ea67eea04c85e2d54d79c1af3fdc8b"
+    },
+    {
+      "id": "era1-audit/MONZA/10/free/cool_to_engine",
+      "physical_input_digest": "sha256:3e6302f9210f48c1cf76ccf1c8969bd9f6a5c8d4df85fe583bcb14bdc47e1f58",
+      "result_digest": "sha256:3bda2af7c73941a3214245e824ea2c1853826dfce3b593e6a6fc9f193c16e53e"
+    },
+    {
+      "id": "era1-audit/MONZA/10/free/engine_to_aero",
+      "physical_input_digest": "sha256:b68a33227cdb80e37b1b42e7ae29761f28ad255bee3c800233c9e6ec9242b8f9",
+      "result_digest": "sha256:b024ac8d11568fd64a5bc777b2c4a6ecff480f5b49679ef9de554a019544ec2e"
+    },
+    {
+      "id": "era1-audit/MONZA/12/zero_extra/baseline",
+      "physical_input_digest": "sha256:b61ca6dba8a97e1f275f2915eb15587854c24775b75f89fe902549bfff9fd483",
+      "result_digest": "sha256:f1e1a2b443a54dd2239e85dacdbf599ad00d6d2cdfb2f153550943ee350a48dd"
+    },
+    {
+      "id": "era1-audit/MONZA/12/zero_extra/gear015",
+      "physical_input_digest": "sha256:b300c89b40255c57dfef146110242146369623a0a35ea09d907c26b7d2e33022",
+      "result_digest": "sha256:49d6ed980d6d59cefaf274ddbd7f67075ff7abb22d77e9ae2d02f82a04930d08"
+    },
+    {
+      "id": "era1-audit/MONZA/12/zero_extra/pit_early3",
+      "physical_input_digest": "sha256:2878a39f478eea8fdeb85b7f6d87141c275297642dfa562fa67531bb16bde4b9",
+      "result_digest": "sha256:102d0325f6d19d8ca73161e11a88730b19863d78b6c9344c475d5a5ebea185d8"
+    },
+    {
+      "id": "era1-audit/MONZA/12/zero_extra/chassis_to_engine",
+      "physical_input_digest": "sha256:f2b85ae3e651cd4170d1483d9bfc8c8250dd3a8ba482bbe30eb08a5f2f4615b5",
+      "result_digest": "sha256:af1ea72ef8e7f730b2bcc99290af5eff31868c50490baf064c7d236c3dbaf9dc"
+    },
+    {
+      "id": "era1-audit/MONZA/12/zero_extra/engine_to_chassis",
+      "physical_input_digest": "sha256:b36dcd6dd3b78850ae2cf45b9f8df19700a9d6a0a39dffcdefafa68f576430a5",
+      "result_digest": "sha256:9009f274e5d818b2eede1c308111d77e9f60a98dd6b0231d504170a185710a26"
+    },
+    {
+      "id": "era1-audit/MONZA/12/zero_extra/gear005",
+      "physical_input_digest": "sha256:08051f6b46c745fdbf26670f77bd74538dcc8fcbd4f4f3e717ba4b59e29e7173",
+      "result_digest": "sha256:1c53b03801317b3ad4495f860f18b6d8dff575152ca95e08bc9122bf1a1e4322"
+    },
+    {
+      "id": "era1-audit/MONZA/12/heavy_80/baseline",
+      "physical_input_digest": "sha256:98b0f35c72e19d4b4208bcb6334f5b7083c7829ad31047121a948855924aa7da",
+      "result_digest": "sha256:4064c855357779f27e8fc16aa823e1efaa33c844698a35120d0e60ef5f318194"
+    },
+    {
+      "id": "era1-audit/MONZA/12/heavy_80/gear015",
+      "physical_input_digest": "sha256:8659fb8ef3e5c2e9e82bfd1f80b018eb22dc6b08e7dd436cdfa01098b07f37c9",
+      "result_digest": "sha256:c0589f811714f6615a968006f6e0dc644355d7fb071ad4191c5ce8ed88a342ec"
+    }
+  ]
+}

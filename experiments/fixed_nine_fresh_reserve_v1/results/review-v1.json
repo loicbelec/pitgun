@@ -1,0 +1,30 @@
+{
+  "schema": "pitgun.fixed-nine-fresh-reserve-review/v1",
+  "candidate_sha256": "2a538c3f116f23a177bedf73a2ca397cc24df57d89a8585ca644bc924f01a205",
+  "native_reserved_review_pass": true,
+  "fresh_native_gp": 339,
+  "fresh_native_laps": 21592,
+  "exact_fresh_repeats": 12,
+  "eras": [
+    {
+      "era": 1,
+      "numerical_pass": true,
+      "reserved_review_pass": true,
+      "fresh_native_gp": 105,
+      "fresh_native_laps": 6195,
+      "exact_fresh_repeats": 6,
+      "decision_sha256": "15ce8ab57a6d2c02659e4155235e6c61a41fe594b71a40a54318a2123aa57541"
+    },
+    {
+      "era": 2,
+      "numerical_pass": true,
+      "reserved_review_pass": true,
+      "fresh_native_gp": 234,
+      "fresh_native_laps": 15397,
+      "exact_fresh_repeats": 6,
+      "decision_sha256": "097ac0a30a2a90624fa244be057c4e84a095be0c246fcf9bf60e3f943c33b670"
+    }
+  ],
+  "release_admitted": false,
+  "remaining": "native-WASM/recovery/performance, versioned local integration and owner playtest; III-IV-V separate before full staging"
+}

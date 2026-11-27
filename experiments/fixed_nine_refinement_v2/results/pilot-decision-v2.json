@@ -1,0 +1,146 @@
+{
+  "schema": "pitgun.fixed-nine-mexico-pilot-decision/v2",
+  "complete": true,
+  "numerical_pass": true,
+  "fairness_errors": [],
+  "main_gp": 24,
+  "fresh_repeats": [
+    {
+      "case_id": "2/MEXICO/balanced_reference/16/concentrated-df04",
+      "exact": true
+    },
+    {
+      "case_id": "2/MEXICO/balanced_reference/24/cooling-df04",
+      "exact": true
+    },
+    {
+      "case_id": "2/MEXICO/franz_hermann/16/concentrated-df04",
+      "exact": true
+    },
+    {
+      "case_id": "2/MEXICO/franz_hermann/24/cooling-df04",
+      "exact": true
+    },
+    {
+      "case_id": "2/MEXICO/charles_leclair/16/concentrated-df04",
+      "exact": true
+    },
+    {
+      "case_id": "2/MEXICO/charles_leclair/24/cooling-df04",
+      "exact": true
+    }
+  ],
+  "prior_result_bridges": [
+    {
+      "case_id": "2/MEXICO/balanced_reference/16/cooling-df04",
+      "prior_case_id": "2/MEXICO/player/16/reserved-informed",
+      "exact": true
+    },
+    {
+      "case_id": "2/MEXICO/balanced_reference/16/concentrated-df04",
+      "prior_case_id": "2/MEXICO/player/16/reserved-concentrated",
+      "exact": true
+    }
+  ],
+  "accepted_laps": 2130,
+  "comparisons": [
+    {
+      "budget": 16,
+      "actor": "balanced_reference",
+      "times_s": {
+        "cooling-df05": 7564.795334441722,
+        "cooling-df04": 7548.222932576277,
+        "concentrated-df05": 7571.999471342518,
+        "concentrated-df04": 7552.7581221081455
+      },
+      "best_proposal": "cooling-df04",
+      "cooling_advantage_at_df04_s": 4.535189531868127,
+      "cooling_advantage_at_df05_s": 7.204136900795675
+    },
+    {
+      "budget": 16,
+      "actor": "charles_leclair",
+      "times_s": {
+        "cooling-df05": 7555.095672773441,
+        "cooling-df04": 7539.206318371846,
+        "concentrated-df05": 7561.987830906253,
+        "concentrated-df04": 7543.484220217073
+      },
+      "best_proposal": "cooling-df04",
+      "cooling_advantage_at_df04_s": 4.277901845227461,
+      "cooling_advantage_at_df05_s": 6.892158132812256
+    },
+    {
+      "budget": 16,
+      "actor": "franz_hermann",
+      "times_s": {
+        "cooling-df05": 7555.502285928824,
+        "cooling-df04": 7540.127258056032,
+        "concentrated-df05": 7562.912383599461,
+        "concentrated-df04": 7544.108832943948
+      },
+      "best_proposal": "cooling-df04",
+      "cooling_advantage_at_df04_s": 3.981574887916395,
+      "cooling_advantage_at_df05_s": 7.410097670636787
+    },
+    {
+      "budget": 24,
+      "actor": "balanced_reference",
+      "times_s": {
+        "cooling-df05": 7548.489379625887,
+        "cooling-df04": 7532.431812237478,
+        "concentrated-df05": 7550.198833196395,
+        "concentrated-df04": 7531.293574864902
+      },
+      "best_proposal": "concentrated-df04",
+      "cooling_advantage_at_df04_s": -1.1382373725755315,
+      "cooling_advantage_at_df05_s": 1.7094535705082308
+    },
+    {
+      "budget": 24,
+      "actor": "charles_leclair",
+      "times_s": {
+        "cooling-df05": 7538.423857285856,
+        "cooling-df04": 7523.326629437913,
+        "concentrated-df05": 7539.79487826281,
+        "concentrated-df04": 7523.069386384994
+      },
+      "best_proposal": "concentrated-df04",
+      "cooling_advantage_at_df04_s": -0.257243052918966,
+      "cooling_advantage_at_df05_s": 1.3710209769542416
+    },
+    {
+      "budget": 24,
+      "actor": "franz_hermann",
+      "times_s": {
+        "cooling-df05": 7539.951386049561,
+        "cooling-df04": 7524.255028435687,
+        "concentrated-df05": 7540.997767007696,
+        "concentrated-df04": 7523.370727245806
+      },
+      "best_proposal": "concentrated-df04",
+      "cooling_advantage_at_df04_s": -0.8843011898807163,
+      "cooling_advantage_at_df05_s": 1.0463809581351597
+    }
+  ],
+  "diagnostic": [
+    {
+      "budget": 16,
+      "best_elite_time_s": 7539.206318371846,
+      "best_reference_concentrated_time_s": 7552.7581221081455,
+      "elite_lead_over_concentrated_s": 13.551803736299917,
+      "cooling_tradeoff_faster_for_all_three_at_both_sliders": true
+    },
+    {
+      "budget": 24,
+      "best_elite_time_s": 7523.069386384994,
+      "best_reference_concentrated_time_s": 7531.293574864902,
+      "elite_lead_over_concentrated_s": 8.224188479908662,
+      "cooling_tradeoff_faster_for_all_three_at_both_sliders": false
+    }
+  ],
+  "preparation_hypothesis_supported": false,
+  "release_admitted": false,
+  "scope": "opened-case diagnosis; not fresh validation or universal physical balance",
+  "results_sha256": "533ecfaaac75a2710dcdc3caf113ad6be7ab5516e107f65f54928b596c420171"
+}
