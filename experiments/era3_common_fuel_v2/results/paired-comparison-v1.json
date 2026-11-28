@@ -1,0 +1,810 @@
+{
+  "schema": "pitgun.paired-common-fuel-comparison/v1",
+  "sameSeedMatrix": true,
+  "previousInitialKg": 160.0,
+  "candidateInitialKg": 140.0,
+  "currentStatus": "PASS",
+  "minimumCurrentReserveKg": 6.5067499536004485,
+  "rows": [
+    {
+      "id": "III/common140/BARCELONA/actual-entry",
+      "previousFinalFuelKg": 81.27929158120709,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 61.66292248496262,
+      "consumptionChangeKg": -0.383630903755531,
+      "simulatedTimeChangeSeconds": -45.98988109804395
+    },
+    {
+      "id": "III/common140/BARCELONA/actual-developed-power",
+      "previousFinalFuelKg": 38.85026214747707,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 18.881146672483972,
+      "consumptionChangeKg": -0.03088452500689698,
+      "simulatedTimeChangeSeconds": -52.008920216602746
+    },
+    {
+      "id": "III/common140/BARCELONA/actual-exit-balanced",
+      "previousFinalFuelKg": 48.7120470925842,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 28.611324619338063,
+      "consumptionChangeKg": 0.1007224732461367,
+      "simulatedTimeChangeSeconds": -62.622703736285075
+    },
+    {
+      "id": "III/common140/BARCELONA/field-low-cooling",
+      "previousFinalFuelKg": 42.161270509146334,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 22.167655391483056,
+      "consumptionChangeKg": -0.0063848823367180785,
+      "simulatedTimeChangeSeconds": -51.96006147191929
+    },
+    {
+      "id": "III/common140/BARCELONA/field-mid-power",
+      "previousFinalFuelKg": 38.44933124181713,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 18.49696460640112,
+      "consumptionChangeKg": -0.04763336458398726,
+      "simulatedTimeChangeSeconds": -50.81666489429517
+    },
+    {
+      "id": "III/common140/BARCELONA/field-high-balanced",
+      "previousFinalFuelKg": 49.2613398495818,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 29.1779381691317,
+      "consumptionChangeKg": 0.08340168045010898,
+      "simulatedTimeChangeSeconds": -62.9146319465608
+    },
+    {
+      "id": "III/common140/BARCELONA/field-max79",
+      "previousFinalFuelKg": 37.30562800735501,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 17.42260812119129,
+      "consumptionChangeKg": -0.11698011383627716,
+      "simulatedTimeChangeSeconds": -47.0697229481857
+    },
+    {
+      "id": "III/common140/BARCELONA/field-max82",
+      "previousFinalFuelKg": 37.19827806040738,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 17.29159709375114,
+      "consumptionChangeKg": -0.0933190333437608,
+      "simulatedTimeChangeSeconds": -47.14860267965196
+    },
+    {
+      "id": "III/common140/BUDAPEST/actual-entry",
+      "previousFinalFuelKg": 80.22746445694874,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 60.46261363662893,
+      "consumptionChangeKg": -0.23514917968019233,
+      "simulatedTimeChangeSeconds": -42.72219812302137
+    },
+    {
+      "id": "III/common140/BUDAPEST/actual-developed-power",
+      "previousFinalFuelKg": 35.024005701955744,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 15.054935781922522,
+      "consumptionChangeKg": -0.030930079966779545,
+      "simulatedTimeChangeSeconds": -65.86500693285961
+    },
+    {
+      "id": "III/common140/BUDAPEST/actual-exit-balanced",
+      "previousFinalFuelKg": 43.40663766457303,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 23.45353811885938,
+      "consumptionChangeKg": -0.046900454286358695,
+      "simulatedTimeChangeSeconds": -69.66445292904518
+    },
+    {
+      "id": "III/common140/BUDAPEST/field-low-cooling",
+      "previousFinalFuelKg": 38.559089370853165,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 18.567149174173736,
+      "consumptionChangeKg": -0.008059803320563219,
+      "simulatedTimeChangeSeconds": -63.43433185483991
+    },
+    {
+      "id": "III/common140/BUDAPEST/field-mid-power",
+      "previousFinalFuelKg": 34.59833261446009,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 14.601480730759198,
+      "consumptionChangeKg": -0.003148116299101389,
+      "simulatedTimeChangeSeconds": -65.65880707050019
+    },
+    {
+      "id": "III/common140/BUDAPEST/field-high-balanced",
+      "previousFinalFuelKg": 43.65880021001958,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 23.699176420372403,
+      "consumptionChangeKg": -0.04037621035281802,
+      "simulatedTimeChangeSeconds": -69.34223161077352
+    },
+    {
+      "id": "III/common140/BUDAPEST/field-max79",
+      "previousFinalFuelKg": 34.39431928489891,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 14.376280825877881,
+      "consumptionChangeKg": 0.018038459021028075,
+      "simulatedTimeChangeSeconds": -64.56325773449771
+    },
+    {
+      "id": "III/common140/BUDAPEST/field-max82",
+      "previousFinalFuelKg": 34.428277722395734,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 14.451636379664906,
+      "consumptionChangeKg": -0.023358657269170635,
+      "simulatedTimeChangeSeconds": -65.20542809177823
+    },
+    {
+      "id": "III/common140/MELBOURNE/actual-entry",
+      "previousFinalFuelKg": 81.81049171171156,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 62.90711764728381,
+      "consumptionChangeKg": -1.0966259355722485,
+      "simulatedTimeChangeSeconds": -29.370564665471647
+    },
+    {
+      "id": "III/common140/MELBOURNE/actual-developed-power",
+      "previousFinalFuelKg": 34.49002421827036,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 14.705122279912915,
+      "consumptionChangeKg": -0.21509806164256418,
+      "simulatedTimeChangeSeconds": -47.42616198398082
+    },
+    {
+      "id": "III/common140/MELBOURNE/actual-exit-balanced",
+      "previousFinalFuelKg": 46.28610522739239,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 26.52955488555058,
+      "consumptionChangeKg": -0.24344965815818398,
+      "simulatedTimeChangeSeconds": -49.193044267629375
+    },
+    {
+      "id": "III/common140/MELBOURNE/field-low-cooling",
+      "previousFinalFuelKg": 37.07762636837842,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 17.2884333501759,
+      "consumptionChangeKg": -0.21080698179747515,
+      "simulatedTimeChangeSeconds": -47.45833559881703
+    },
+    {
+      "id": "III/common140/MELBOURNE/field-mid-power",
+      "previousFinalFuelKg": 33.56187637639563,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 13.817776044103542,
+      "consumptionChangeKg": -0.25589966770790795,
+      "simulatedTimeChangeSeconds": -46.60739886464853
+    },
+    {
+      "id": "III/common140/MELBOURNE/field-high-balanced",
+      "previousFinalFuelKg": 46.517511759049604,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 26.78540234548241,
+      "consumptionChangeKg": -0.26789058643281294,
+      "simulatedTimeChangeSeconds": -49.31070601052306
+    },
+    {
+      "id": "III/common140/MELBOURNE/field-max79",
+      "previousFinalFuelKg": 32.05527800948068,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 12.298826494445986,
+      "consumptionChangeKg": -0.24354848496531645,
+      "simulatedTimeChangeSeconds": -45.62436443900242
+    },
+    {
+      "id": "III/common140/MELBOURNE/field-max82",
+      "previousFinalFuelKg": 32.45600999736459,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 12.653895634325917,
+      "consumptionChangeKg": -0.1978856369613311,
+      "simulatedTimeChangeSeconds": -46.124594482833345
+    },
+    {
+      "id": "III/common140/MONTREAL/actual-entry",
+      "previousFinalFuelKg": 78.41603923692226,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 58.80557906267954,
+      "consumptionChangeKg": -0.3895398257572822,
+      "simulatedTimeChangeSeconds": -37.09959547009748
+    },
+    {
+      "id": "III/common140/MONTREAL/actual-developed-power",
+      "previousFinalFuelKg": 29.413856807325427,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 9.61366913715094,
+      "consumptionChangeKg": -0.19981232982550523,
+      "simulatedTimeChangeSeconds": -45.71790916136979
+    },
+    {
+      "id": "III/common140/MONTREAL/actual-exit-balanced",
+      "previousFinalFuelKg": 40.50239989423143,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 20.59319891894561,
+      "consumptionChangeKg": -0.09079902471417256,
+      "simulatedTimeChangeSeconds": -53.56431446421084
+    },
+    {
+      "id": "III/common140/MONTREAL/field-low-cooling",
+      "previousFinalFuelKg": 33.80135856137826,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 13.921998648616619,
+      "consumptionChangeKg": -0.12064008723835684,
+      "simulatedTimeChangeSeconds": -45.033308400243186
+    },
+    {
+      "id": "III/common140/MONTREAL/field-mid-power",
+      "previousFinalFuelKg": 28.45518745945035,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 8.691221629431382,
+      "consumptionChangeKg": -0.2360341699810249,
+      "simulatedTimeChangeSeconds": -45.82395628075028
+    },
+    {
+      "id": "III/common140/MONTREAL/field-high-balanced",
+      "previousFinalFuelKg": 40.79429637789025,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 20.96748324250133,
+      "consumptionChangeKg": -0.17318686461108257,
+      "simulatedTimeChangeSeconds": -51.066477581444815
+    },
+    {
+      "id": "III/common140/MONTREAL/field-max79",
+      "previousFinalFuelKg": 27.38045254982627,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 7.665350164088771,
+      "consumptionChangeKg": -0.28489761426251903,
+      "simulatedTimeChangeSeconds": -42.63521288953143
+    },
+    {
+      "id": "III/common140/MONTREAL/field-max82",
+      "previousFinalFuelKg": 27.90444166159582,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 8.214408371356651,
+      "consumptionChangeKg": -0.30996670976082896,
+      "simulatedTimeChangeSeconds": -42.71146812997813
+    },
+    {
+      "id": "III/common140/SILVERSTONE/actual-entry",
+      "previousFinalFuelKg": 83.48155586047652,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 63.97699185820704,
+      "consumptionChangeKg": -0.4954359977305245,
+      "simulatedTimeChangeSeconds": -38.367601914677834
+    },
+    {
+      "id": "III/common140/SILVERSTONE/actual-developed-power",
+      "previousFinalFuelKg": 33.207815240695794,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 13.516680441743711,
+      "consumptionChangeKg": -0.30886520104792226,
+      "simulatedTimeChangeSeconds": -44.9439158341911
+    },
+    {
+      "id": "III/common140/SILVERSTONE/actual-exit-balanced",
+      "previousFinalFuelKg": 44.62497419197803,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 24.876139068394476,
+      "consumptionChangeKg": -0.25116487641645335,
+      "simulatedTimeChangeSeconds": -46.22526491030294
+    },
+    {
+      "id": "III/common140/SILVERSTONE/field-low-cooling",
+      "previousFinalFuelKg": 36.5320404187928,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 16.70586230718664,
+      "consumptionChangeKg": -0.17382188839383161,
+      "simulatedTimeChangeSeconds": -45.929171686548216
+    },
+    {
+      "id": "III/common140/SILVERSTONE/field-mid-power",
+      "previousFinalFuelKg": 31.918529920791457,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 12.241873493081023,
+      "consumptionChangeKg": -0.32334357228955923,
+      "simulatedTimeChangeSeconds": -44.61097206321483
+    },
+    {
+      "id": "III/common140/SILVERSTONE/field-high-balanced",
+      "previousFinalFuelKg": 44.799510290688076,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 25.065115159879557,
+      "consumptionChangeKg": -0.26560486919147763,
+      "simulatedTimeChangeSeconds": -46.357491033098086
+    },
+    {
+      "id": "III/common140/SILVERSTONE/field-max79",
+      "previousFinalFuelKg": 30.57597477411796,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 10.945552975188448,
+      "consumptionChangeKg": -0.3695782010704818,
+      "simulatedTimeChangeSeconds": -44.852549272484794
+    },
+    {
+      "id": "III/common140/SILVERSTONE/field-max82",
+      "previousFinalFuelKg": 31.645099489922853,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 12.027919346838761,
+      "consumptionChangeKg": -0.3828198569159156,
+      "simulatedTimeChangeSeconds": -42.70079740028905
+    },
+    {
+      "id": "III/common140/MONZA/actual-entry",
+      "previousFinalFuelKg": 84.4518579668925,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 64.75901849949058,
+      "consumptionChangeKg": -0.3071605325980755,
+      "simulatedTimeChangeSeconds": -36.31054545911502
+    },
+    {
+      "id": "III/common140/MONZA/actual-developed-power",
+      "previousFinalFuelKg": 30.39450098788913,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 10.812246701274866,
+      "consumptionChangeKg": -0.4177457133857274,
+      "simulatedTimeChangeSeconds": -37.803637379970496
+    },
+    {
+      "id": "III/common140/MONZA/actual-exit-balanced",
+      "previousFinalFuelKg": 40.11678693569787,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 20.30209751796054,
+      "consumptionChangeKg": -0.18531058226267305,
+      "simulatedTimeChangeSeconds": -39.61225303750598
+    },
+    {
+      "id": "III/common140/MONZA/field-low-cooling",
+      "previousFinalFuelKg": 35.18143231613397,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 15.48613035605941,
+      "consumptionChangeKg": -0.30469803992544087,
+      "simulatedTimeChangeSeconds": -37.74024510242816
+    },
+    {
+      "id": "III/common140/MONZA/field-mid-power",
+      "previousFinalFuelKg": 29.551737171356535,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 9.819335773783479,
+      "consumptionChangeKg": -0.26759860242694344,
+      "simulatedTimeChangeSeconds": -35.84823400089226
+    },
+    {
+      "id": "III/common140/MONZA/field-high-balanced",
+      "previousFinalFuelKg": 40.80241798518636,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 20.98020942183446,
+      "consumptionChangeKg": -0.17779143664809283,
+      "simulatedTimeChangeSeconds": -38.57336098281303
+    },
+    {
+      "id": "III/common140/MONZA/field-max79",
+      "previousFinalFuelKg": 28.36053835661262,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 8.903028952132006,
+      "consumptionChangeKg": -0.5424905955194106,
+      "simulatedTimeChangeSeconds": -35.68067657862957
+    },
+    {
+      "id": "III/common140/MONZA/field-max82",
+      "previousFinalFuelKg": 29.146135602467183,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 9.434284692779475,
+      "consumptionChangeKg": -0.2881490903122881,
+      "simulatedTimeChangeSeconds": -35.95539768571143
+    },
+    {
+      "id": "III/common140/ZANDVOORT/actual-entry",
+      "previousFinalFuelKg": 82.80776968950403,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 63.426186944353,
+      "consumptionChangeKg": -0.6184172548489641,
+      "simulatedTimeChangeSeconds": -42.83433962888466
+    },
+    {
+      "id": "III/common140/ZANDVOORT/actual-developed-power",
+      "previousFinalFuelKg": 39.032013110764744,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 19.164730973410077,
+      "consumptionChangeKg": -0.13271786264532182,
+      "simulatedTimeChangeSeconds": -59.30791511169991
+    },
+    {
+      "id": "III/common140/ZANDVOORT/actual-exit-balanced",
+      "previousFinalFuelKg": 47.7007545991236,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 27.736363468197865,
+      "consumptionChangeKg": -0.035608869074266636,
+      "simulatedTimeChangeSeconds": -65.29488591796598
+    },
+    {
+      "id": "III/common140/ZANDVOORT/field-low-cooling",
+      "previousFinalFuelKg": 41.4890553849534,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 21.558795545694608,
+      "consumptionChangeKg": -0.0697401607412047,
+      "simulatedTimeChangeSeconds": -58.90673635233816
+    },
+    {
+      "id": "III/common140/ZANDVOORT/field-mid-power",
+      "previousFinalFuelKg": 38.31687158466302,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 18.46016892881612,
+      "consumptionChangeKg": -0.14329734415309758,
+      "simulatedTimeChangeSeconds": -57.38373625985332
+    },
+    {
+      "id": "III/common140/ZANDVOORT/field-high-balanced",
+      "previousFinalFuelKg": 47.94724216495163,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 27.956964131710897,
+      "consumptionChangeKg": -0.009721966759258294,
+      "simulatedTimeChangeSeconds": -64.68651340927408
+    },
+    {
+      "id": "III/common140/ZANDVOORT/field-max79",
+      "previousFinalFuelKg": 37.57142422894877,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 17.82320258165524,
+      "consumptionChangeKg": -0.25177835270646653,
+      "simulatedTimeChangeSeconds": -52.73421011874416
+    },
+    {
+      "id": "III/common140/ZANDVOORT/field-max82",
+      "previousFinalFuelKg": 38.01315480036675,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 18.191399176209174,
+      "consumptionChangeKg": -0.17824437584242503,
+      "simulatedTimeChangeSeconds": -52.60026073291556
+    },
+    {
+      "id": "III/common140/SPIELBERG/actual-entry",
+      "previousFinalFuelKg": 80.0900125433202,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 60.39306266828199,
+      "consumptionChangeKg": -0.30305012496179984,
+      "simulatedTimeChangeSeconds": -38.177288738700554
+    },
+    {
+      "id": "III/common140/SPIELBERG/actual-developed-power",
+      "previousFinalFuelKg": 29.071884617054675,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 9.32823826200173,
+      "consumptionChangeKg": -0.2563536449470405,
+      "simulatedTimeChangeSeconds": -41.03776268905949
+    },
+    {
+      "id": "III/common140/SPIELBERG/actual-exit-balanced",
+      "previousFinalFuelKg": 40.629265354571594,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 20.84486278275026,
+      "consumptionChangeKg": -0.21559742817865413,
+      "simulatedTimeChangeSeconds": -42.575780085709084
+    },
+    {
+      "id": "III/common140/SPIELBERG/field-low-cooling",
+      "previousFinalFuelKg": 32.722348871692816,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 12.926355275608165,
+      "consumptionChangeKg": -0.20400640391534353,
+      "simulatedTimeChangeSeconds": -43.824513485641546
+    },
+    {
+      "id": "III/common140/SPIELBERG/field-mid-power",
+      "previousFinalFuelKg": 27.7485409000915,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 8.034215203758139,
+      "consumptionChangeKg": -0.28567430366666713,
+      "simulatedTimeChangeSeconds": -40.946318649565
+    },
+    {
+      "id": "III/common140/SPIELBERG/field-high-balanced",
+      "previousFinalFuelKg": 40.889610962671796,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 21.153332535338382,
+      "consumptionChangeKg": -0.2637215726665829,
+      "simulatedTimeChangeSeconds": -42.981474201907986
+    },
+    {
+      "id": "III/common140/SPIELBERG/field-max79",
+      "previousFinalFuelKg": 26.131478484292586,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 6.5067499536004485,
+      "consumptionChangeKg": -0.3752714693078758,
+      "simulatedTimeChangeSeconds": -39.627962884072986
+    },
+    {
+      "id": "III/common140/SPIELBERG/field-max82",
+      "previousFinalFuelKg": 27.17921090087762,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 7.495164291088042,
+      "consumptionChangeKg": -0.31595339021041013,
+      "simulatedTimeChangeSeconds": -39.435772203517445
+    },
+    {
+      "id": "III/common140/MEXICO/actual-entry",
+      "previousFinalFuelKg": 80.50280370773066,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 60.94472848106099,
+      "consumptionChangeKg": -0.441924773330328,
+      "simulatedTimeChangeSeconds": -35.460915621083586
+    },
+    {
+      "id": "III/common140/MEXICO/actual-developed-power",
+      "previousFinalFuelKg": 36.69204612461739,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 16.76399020943056,
+      "consumptionChangeKg": -0.07194408481316827,
+      "simulatedTimeChangeSeconds": -58.456175904641896
+    },
+    {
+      "id": "III/common140/MEXICO/actual-exit-balanced",
+      "previousFinalFuelKg": 44.31924232126749,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 24.33907121705175,
+      "consumptionChangeKg": -0.01982889578425784,
+      "simulatedTimeChangeSeconds": -59.382582295779685
+    },
+    {
+      "id": "III/common140/MEXICO/field-low-cooling",
+      "previousFinalFuelKg": 40.161226107004445,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 20.26408016634117,
+      "consumptionChangeKg": -0.1028540593367353,
+      "simulatedTimeChangeSeconds": -56.27249328663311
+    },
+    {
+      "id": "III/common140/MEXICO/field-mid-power",
+      "previousFinalFuelKg": 36.50628680676688,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 16.63622069340271,
+      "consumptionChangeKg": -0.1299338866358255,
+      "simulatedTimeChangeSeconds": -59.479602626995074
+    },
+    {
+      "id": "III/common140/MEXICO/field-high-balanced",
+      "previousFinalFuelKg": 45.005073456076985,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 25.034058900599064,
+      "consumptionChangeKg": -0.028985444522078296,
+      "simulatedTimeChangeSeconds": -59.230204882781436
+    },
+    {
+      "id": "III/common140/MEXICO/field-max79",
+      "previousFinalFuelKg": 36.34425301571004,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 16.43663087903086,
+      "consumptionChangeKg": -0.0923778633208201,
+      "simulatedTimeChangeSeconds": -59.954616604143666
+    },
+    {
+      "id": "III/common140/MEXICO/field-max82",
+      "previousFinalFuelKg": 36.061429110958045,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 16.116132829501844,
+      "consumptionChangeKg": -0.054703718543805735,
+      "simulatedTimeChangeSeconds": -59.88681763082968
+    },
+    {
+      "id": "III/common140/MONACO/actual-entry",
+      "previousFinalFuelKg": 89.53024108276394,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 69.9323281611901,
+      "consumptionChangeKg": -0.4020870784261632,
+      "simulatedTimeChangeSeconds": -32.32435480121694
+    },
+    {
+      "id": "III/common140/MONACO/actual-developed-power",
+      "previousFinalFuelKg": 49.46830825890533,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 29.77562296650299,
+      "consumptionChangeKg": -0.3073147075976692,
+      "simulatedTimeChangeSeconds": -52.65609805086933
+    },
+    {
+      "id": "III/common140/MONACO/actual-exit-balanced",
+      "previousFinalFuelKg": 56.66955142386742,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 36.90745530072216,
+      "consumptionChangeKg": -0.23790387685474457,
+      "simulatedTimeChangeSeconds": -56.338428148849744
+    },
+    {
+      "id": "III/common140/MONACO/field-low-cooling",
+      "previousFinalFuelKg": 52.69723464247105,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 32.75353978307625,
+      "consumptionChangeKg": -0.056305140605203974,
+      "simulatedTimeChangeSeconds": -48.08056760562067
+    },
+    {
+      "id": "III/common140/MONACO/field-mid-power",
+      "previousFinalFuelKg": 48.26504125939133,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 28.44478522008783,
+      "consumptionChangeKg": -0.17974396069649856,
+      "simulatedTimeChangeSeconds": -51.24338372458806
+    },
+    {
+      "id": "III/common140/MONACO/field-high-balanced",
+      "previousFinalFuelKg": 56.49554640950901,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 36.68330139900698,
+      "consumptionChangeKg": -0.18775498949796088,
+      "simulatedTimeChangeSeconds": -55.91879880364013
+    },
+    {
+      "id": "III/common140/MONACO/field-max79",
+      "previousFinalFuelKg": 47.70342969737917,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 27.79862502064155,
+      "consumptionChangeKg": -0.09519532326238789,
+      "simulatedTimeChangeSeconds": -51.648451346765796
+    },
+    {
+      "id": "III/common140/MONACO/field-max82",
+      "previousFinalFuelKg": 48.43600929499954,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 28.780070851229528,
+      "consumptionChangeKg": -0.34406155622998824,
+      "simulatedTimeChangeSeconds": -53.856777874922045
+    },
+    {
+      "id": "III/common140/SPA/actual-entry",
+      "previousFinalFuelKg": 84.81910808611487,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 65.03402905735807,
+      "consumptionChangeKg": -0.21492097124320253,
+      "simulatedTimeChangeSeconds": -41.542904525292215
+    },
+    {
+      "id": "III/common140/SPA/actual-developed-power",
+      "previousFinalFuelKg": 33.3501822288617,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 13.510772659584989,
+      "consumptionChangeKg": -0.16059043072328905,
+      "simulatedTimeChangeSeconds": -42.02643852453821
+    },
+    {
+      "id": "III/common140/SPA/actual-exit-balanced",
+      "previousFinalFuelKg": 43.13599589408733,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 23.27308831416753,
+      "consumptionChangeKg": -0.13709242008019373,
+      "simulatedTimeChangeSeconds": -43.03201448412801
+    },
+    {
+      "id": "III/common140/SPA/field-low-cooling",
+      "previousFinalFuelKg": 37.9657172529425,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 18.130397674278957,
+      "consumptionChangeKg": -0.1646804213364561,
+      "simulatedTimeChangeSeconds": -44.89493860457242
+    },
+    {
+      "id": "III/common140/SPA/field-mid-power",
+      "previousFinalFuelKg": 32.77918985383778,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 13.092471110439185,
+      "consumptionChangeKg": -0.3132812566014138,
+      "simulatedTimeChangeSeconds": -42.18436266125809
+    },
+    {
+      "id": "III/common140/SPA/field-high-balanced",
+      "previousFinalFuelKg": 43.66855723798065,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 23.84520755445262,
+      "consumptionChangeKg": -0.17665031647197793,
+      "simulatedTimeChangeSeconds": -44.42942298694834
+    },
+    {
+      "id": "III/common140/SPA/field-max79",
+      "previousFinalFuelKg": 31.991904880041687,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 12.13257607725539,
+      "consumptionChangeKg": -0.14067119721370602,
+      "simulatedTimeChangeSeconds": -40.59415717929005
+    },
+    {
+      "id": "III/common140/SPA/field-max82",
+      "previousFinalFuelKg": 31.94498328553336,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 12.321103910438469,
+      "consumptionChangeKg": -0.37612062490509857,
+      "simulatedTimeChangeSeconds": -39.30802738119655
+    },
+    {
+      "id": "III/common140/SAOPAULO/actual-entry",
+      "previousFinalFuelKg": 80.8227535011355,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 61.113419641719354,
+      "consumptionChangeKg": -0.2906661405838662,
+      "simulatedTimeChangeSeconds": -40.1829679163493
+    },
+    {
+      "id": "III/common140/SAOPAULO/actual-developed-power",
+      "previousFinalFuelKg": 36.6100473088764,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 16.751926559195535,
+      "consumptionChangeKg": -0.1418792503191355,
+      "simulatedTimeChangeSeconds": -49.20699965993208
+    },
+    {
+      "id": "III/common140/SAOPAULO/actual-exit-balanced",
+      "previousFinalFuelKg": 46.93898428057733,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 26.933715831826607,
+      "consumptionChangeKg": 0.005268448750726407,
+      "simulatedTimeChangeSeconds": -59.709513196141415
+    },
+    {
+      "id": "III/common140/SAOPAULO/field-low-cooling",
+      "previousFinalFuelKg": 39.9196055770067,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 20.082794589557047,
+      "consumptionChangeKg": -0.16318901255033325,
+      "simulatedTimeChangeSeconds": -49.661631538006986
+    },
+    {
+      "id": "III/common140/SAOPAULO/field-mid-power",
+      "previousFinalFuelKg": 35.93677817201617,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 16.1091063430329,
+      "consumptionChangeKg": -0.17232817101671571,
+      "simulatedTimeChangeSeconds": -48.905682284053
+    },
+    {
+      "id": "III/common140/SAOPAULO/field-high-balanced",
+      "previousFinalFuelKg": 47.40511848518195,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 27.456768258553566,
+      "consumptionChangeKg": -0.05164977337160792,
+      "simulatedTimeChangeSeconds": -60.46631869160865
+    },
+    {
+      "id": "III/common140/SAOPAULO/field-max79",
+      "previousFinalFuelKg": 34.898665885857774,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 15.147431252187513,
+      "consumptionChangeKg": -0.24876536632973512,
+      "simulatedTimeChangeSeconds": -45.51918628680778
+    },
+    {
+      "id": "III/common140/SAOPAULO/field-max82",
+      "previousFinalFuelKg": 35.17361347442691,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 15.346768102044894,
+      "consumptionChangeKg": -0.17315462761798983,
+      "simulatedTimeChangeSeconds": -45.44824008490377
+    },
+    {
+      "id": "III/common140/BARCELONA/field-max82",
+      "previousFinalFuelKg": 37.19827806040738,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 17.29159709375114,
+      "consumptionChangeKg": -0.0933190333437608,
+      "simulatedTimeChangeSeconds": -47.14860267965196
+    },
+    {
+      "id": "III/common140/MONACO/field-max82",
+      "previousFinalFuelKg": 48.43600929499954,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 28.780070851229528,
+      "consumptionChangeKg": -0.34406155622998824,
+      "simulatedTimeChangeSeconds": -53.856777874922045
+    },
+    {
+      "id": "III/common140/SPA/actual-developed-power",
+      "previousFinalFuelKg": 33.3501822288617,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 13.510772659584989,
+      "consumptionChangeKg": -0.16059043072328905,
+      "simulatedTimeChangeSeconds": -42.02643852453821
+    },
+    {
+      "id": "III/common140/SAOPAULO/field-max79",
+      "previousFinalFuelKg": 34.898665885857774,
+      "currentCompleted": true,
+      "currentFinalFuelKg": 15.147431252187513,
+      "consumptionChangeKg": -0.24876536632973512,
+      "simulatedTimeChangeSeconds": -45.51918628680778
+    }
+  ]
+}

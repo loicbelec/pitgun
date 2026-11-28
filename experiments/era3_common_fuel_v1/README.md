@@ -38,3 +38,10 @@ minimum reserve26.131478kgversus5kggate. Completed-cache resume adds0solvercalls
 and preserves native/journal/archive/review bytes+mtimes. Full scope/limits and
 per-circuit summary: [RESULTS_V1.md](RESULTS_V1.md). Common160kgis selected for
 the subsequent IIIjoint campaign; no IIIgame/runtime admission yet.
+
+## Subsequent paired comparison
+
+The160kgscreen remains unchanged history. The owner's20kgreduction proposal
+passed the same100cases at140kgwith6.506750kgminimum finish reserve; the active
+prospective IIIcharge is now recorded by ../era3_common_fuel_v2/selected-charge-v1.json.
+See that comparison's RESULTS_V1.md for scope and predecessor digest.

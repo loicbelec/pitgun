@@ -1,0 +1,26 @@
+{
+  "schema": "pitgun.era3-common140-resume/v1",
+  "frozenSourceCommit": "62f47a90811c9ec4645959b5150b80a7fdfe9587",
+  "newSolverCalls": 0,
+  "nativeInventoryJournalArchiveReviewHashesAndMtimesPreserved": true,
+  "archiveSha256": "ef006d37feb992589e37fdfdd3a33787ce56270eaec8707ba543090d039d667f",
+  "nativeFileCount": 198,
+  "repeatChecks": [
+    {
+      "id": "III/common140/BARCELONA/field-max82",
+      "exact": true
+    },
+    {
+      "id": "III/common140/MONACO/field-max82",
+      "exact": true
+    },
+    {
+      "id": "III/common140/SPA/actual-developed-power",
+      "exact": true
+    },
+    {
+      "id": "III/common140/SAOPAULO/field-max79",
+      "exact": true
+    }
+  ]
+}

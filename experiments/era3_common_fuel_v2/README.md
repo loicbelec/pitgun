@@ -20,3 +20,11 @@ One process, finite100GP/3600ssoft limits, shared durable journal and exact resu
 No Rust equations/binary, physics coefficient, browser, game, signed workload,
 public catalog or deployment change. Scoped native qualification is not a proof
 that every legal preparation finishes or an identification of physical tank size.
+
+## Result
+
+**PASS**:100completed GP/6,467laps, minimum finish reserve6.506750kgversus the
+unchanged5kggate, four exact fresh repeats and zero-compute cache resume.140kg
+is selected for the next IIIjoint campaign;160kgevidence remains historical.
+See [RESULTS_V1.md](RESULTS_V1.md), decision-v1.json and selected-charge-v1.json.
+No IIIgame/runtime admission yet; I/IIpreview remains unchanged.
