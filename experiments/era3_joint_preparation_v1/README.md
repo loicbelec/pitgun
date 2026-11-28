@@ -59,3 +59,9 @@ actual-entry V8 cases finish; turbo attempts exhaust fuel before66laps. Full
 [failure-preserving interpretation](RESULTS_V1.md). No joint field fitting yet.
 The separate diagnostic reuses the existing bounded automatic-fuel preparer,
 without changing a coefficient, tank limit or game setting.
+
+The additional actual110kg comparison is retained as a separate frozen design:
+one unique one-stop preparation finishes with3.376kg, two two-stop preparations
+still exhaust fuel. The preparer's133.5kg estimate overstates the minimum for the
+finished case. This is now a concrete estimator/initial-load qualification task
+under#445, before the full joint field campaign. No IA fitting has been run.

@@ -95,3 +95,37 @@ small fixed turbo set, then select/document an era/vehicle-aware automatic initi
 fuel policy and validate finish reserve. Keep capacity, initial charge and reserve
 separate. Only then freeze the full joint era-III field matrix. I/II playtesting
 continues on its unchanged100kgqualified candidate; no player fuel slider is added.
+
+## Actual110kg comparison — frozen508c6e6
+
+Three unique turbo inputs plus one exact fresh repeat, with only initial mass
+changed100->110kg. Component, driver, mechanical, tire, point and stop inputs
+bridge unchanged before the full-GP attempts. Four attempts/259accepted laps,
+14.08s native calls; exact entire full-result repeat and zero-compute cache resume
+preserve native/journal/archive bytes and mtimes.
+
+| Actual110kg input | Outcome | Last fully accepted lap | Fuel at accepted boundary |
+|---|---|---:|---:|
+| Franz neutral, cap34, one stop |Finished|66|3.376kg|
+| Franz cooling recipe, cap34, two stops |Fuel shortfall on lap64|63|0.522kg|
+| Reference cap82/spent80, two stops |Fuel shortfall on lap65|64|0.032kg|
+
+The repeated one-stop finish is exact. The estimate133.5kg from the existing
+preparer is **not a minimum requirement**: the same one-stop input actually
+finishes at110kg with more than the1kg planning reserve. Conversely, the110kg
+ceiling does not cover the other two sampled preparations. This does not identify
+an actual tank or justify raising a capacity without an explicit profile.
+
+Current next slice under#445/#496: refine/qualify the bounded initial-plan fuel
+estimator against these captured full/partial comparisons; define the explicit
+era/vehicle operational-limit and reserve policy; then check fresh full-distance
+cases before freezing the joint IA matrix. No per-driver pace or fuel coefficient
+is fitted to turn these observations into wins. No new player fuel-mass slider.
+The future prediction must remain bounded and cannot precompute the entire race
+just to prepare it.
+
+Native final probe suite:7tests pass, including99fixture/context inputs, existing
+fuel-preparation identity and the explicit-mass-only comparison. Python:8focused
+and14shared journal/batch tests pass. Strict probe Clippy/fmt pass. Full artifacts:
+`results/ceiling-v1.json.gz`, compact `ceiling-review-v1.json`, frozen
+`ceiling-plan-v1.json` and `CEILING_DIAGNOSTIC.md`.
