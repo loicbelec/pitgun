@@ -1,0 +1,23 @@
+{
+  "schema": "pitgun.experimental-common-era-fuel/v1",
+  "era": 3,
+  "startingFuelKg": 160.0,
+  "sessionScope": [
+    "FP1",
+    "FP2",
+    "FP3",
+    "RACE"
+  ],
+  "competitorScope": "same value for player and all nine rivals; independent of tuning, identity, initial plan and results",
+  "minimumScreenReserveKg": 5.0,
+  "qualification": "finite native common160 screen PASS; not all-legal-input proof or runtime admission",
+  "screenArchiveSha256": "721de8805c2887f9c7c7c813b8952d423857b5b100d7a050e095cf8907ca7c8f",
+  "nativeScreenSourceCommit": "3e8e1d7eed7b7b3befbce6fd760822e20026fd96",
+  "nativeCompletedGP": 100,
+  "minimumObservedFinishReserveKg": 26.131478484292586,
+  "legacyEra1And2FuelKg": 100.0,
+  "legacyEra1And2Unchanged": true,
+  "runtimeAdmitted": false,
+  "publication": false,
+  "next": "Use this same frozen charge in joint era-III preparations/reserved review; explicitly admit native/WASM/game later."
+}

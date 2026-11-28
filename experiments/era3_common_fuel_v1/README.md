@@ -30,3 +30,11 @@ A successful screen is scoped evidence for the common charge, not a proof over a
 legal preparations. The subsequent fixed-nine/player joint campaign and fresh
 reserved review use the same frozen charge before local IIIadmission. IV/V stay
 separate serial lots; no public catalog or deployment here.
+
+## Result
+
+**PASS** from frozen3e8e1d7:100completed GP/6,467laps, four exact fresh repeats,
+minimum reserve26.131478kgversus5kggate. Completed-cache resume adds0solvercalls
+and preserves native/journal/archive/review bytes+mtimes. Full scope/limits and
+per-circuit summary: [RESULTS_V1.md](RESULTS_V1.md). Common160kgis selected for
+the subsequent IIIjoint campaign; no IIIgame/runtime admission yet.
