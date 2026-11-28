@@ -1,0 +1,264 @@
+{
+  "schema": "pitgun.joint-era3-preparation-plan/v1",
+  "initial_fuel_kg": 140.0,
+  "minimum_finish_reserve_kg": 5.0,
+  "gp_count": 836,
+  "evaluation_gp_count": 816,
+  "seed": 83051,
+  "workers": 1,
+  "policy": "experiments/thermal_balance_sensitivity_v1/rolling-heat-065.json",
+  "roster": "experiments/fixed_opponents_v2/roster-v2.json",
+  "native_binary_sha256": "4738e324fff03930b82ad99ad4fe5cd646e238d9e2766cee063273ad3bc7420c",
+  "bridge_archive": "experiments/era3_common_fuel_v2/results/screen-v1.json.gz",
+  "bridge_indices": [
+    0,
+    62
+  ],
+  "retained_files": {
+    "catalogs/racing/v1.10.3/README.md": "732f0502a74fad4cc51a0395842d4c163112ef0b0ec0523130d867a4cc5fab45",
+    "catalogs/racing/v1.10.3/catalog.json": "0d7fe9103295cea3b855f1935857315e60a50d89d137993949a4df7fe70fa6df",
+    "catalogs/racing/v1.10.3/presentation/index.json": "96f947ad32007cb83ac38432f2599b22e8679f4b76698b1270a9ba4242b12d29",
+    "catalogs/racing/v1.10.3/release.json": "484a610cab02be10c73c8a592db3fb1339ab11ed54c34ea029efd8e9fbcf9c39",
+    "catalogs/racing/v1.10.3/simulation/aero/active.json": "92d44adfe851ba02fa5ee9f0d2ecbe2d6d4623c802fa675e9cbaf3f8f97f7e42",
+    "catalogs/racing/v1.10.3/simulation/aero/basic.json": "e3c7d2d64b4b6414286a362404286e0d7a8db17bb0c8bdb98aaab5eaeb6dd94d",
+    "catalogs/racing/v1.10.3/simulation/aero/none.json": "0019272ee724d3be5ff3428f3c279533a5d645d87ebd615993aebdc20fe5d5e2",
+    "catalogs/racing/v1.10.3/simulation/chassis/default.json": "6cdfbad46bbcd6f9ee0a979e4a1be5af671ad888a5b4540fb512fafc53381ad3",
+    "catalogs/racing/v1.10.3/simulation/chassis/f1_2026.json": "52415f02f1029a15c51ca71c7ac27edd3ae2079c8e16c56ca52903dddba54fac",
+    "catalogs/racing/v1.10.3/simulation/circuits/austin.json": "098be7b3d23479921b826c444e1b5373cbdca7a35e50949590d179b3c116ca00",
+    "catalogs/racing/v1.10.3/simulation/circuits/baku.json": "727e89be0051e5a465cd182ce25a849e6d147997dc718403220252a7711fcc0a",
+    "catalogs/racing/v1.10.3/simulation/circuits/barcelona.json": "da1f4c2d1c3c855daadfec178011495c8a1332cb7b7b350a2b3b0378d48b9dbd",
+    "catalogs/racing/v1.10.3/simulation/circuits/budapest.json": "662f8490de68a7979c8498f7b040772faa308a0859675b10a6f11236b9adc701",
+    "catalogs/racing/v1.10.3/simulation/circuits/default.json": "e903ac78962fe095e05c5fcaa5f89d373e309457579cc4fe9b2ef8e2576ee9bb",
+    "catalogs/racing/v1.10.3/simulation/circuits/jeddah.json": "afa676d288b9d552d237d807957488e6ab213034b194596668eb2542d4f059f8",
+    "catalogs/racing/v1.10.3/simulation/circuits/las_vegas.json": "aa72ee1f064b345bb6b0752d09cf454b30e7a60e1c5e38db35db502a5c174b54",
+    "catalogs/racing/v1.10.3/simulation/circuits/lusail.json": "41e5f1f1b65ff0f1a0326ac6c201b2fe82135e2588516b7a3351f44041c7cd8c",
+    "catalogs/racing/v1.10.3/simulation/circuits/madrid.json": "ee2ea9734feca9fee74800ff33110a0ebce13404463aa6e6af1c1d7b4f4d8409",
+    "catalogs/racing/v1.10.3/simulation/circuits/melbourne.json": "9e3ccb2a02bc201f3f5332cea83be1add8bea39ad59ea859ccdf1e28f800a778",
+    "catalogs/racing/v1.10.3/simulation/circuits/mexico.json": "4667d2a965d4ce3d8a3a953a3dc23238903fc125a1f270366f7dac5f912a1dd3",
+    "catalogs/racing/v1.10.3/simulation/circuits/miami.json": "78a34ae48c7cf4b17a44647ef2f9490affc4764bfc7edd53779e3d9e930969a0",
+    "catalogs/racing/v1.10.3/simulation/circuits/monaco.json": "4fd47ae683c172561eeec1fee647d0f0266c67b537709af94bb857d7032e4d8d",
+    "catalogs/racing/v1.10.3/simulation/circuits/montreal.json": "40d48ffaface9d900db998824b2a88318ddb62f4dd9d419ac0d73b6d2ddeaa50",
+    "catalogs/racing/v1.10.3/simulation/circuits/monza.json": "936f5386e0c6180cfa095bf3def167f4395204523e23b79f1a20c78e144da337",
+    "catalogs/racing/v1.10.3/simulation/circuits/sakhir.json": "2abfbb962c910022ae52332b2d2e5e741ee9c8572fcf6b15104ad343f491438e",
+    "catalogs/racing/v1.10.3/simulation/circuits/sao_paulo.json": "0ba903e3a8427e069768cfc1034d51f67b1dd24a0233c478b3a4c28ef70f1938",
+    "catalogs/racing/v1.10.3/simulation/circuits/shanghai.json": "838bf4b6c7c18047d50b01cf88c83f50ab889082749dfeb7b425c534d90ea696",
+    "catalogs/racing/v1.10.3/simulation/circuits/silverstone.json": "96422533f19f93b9382b8344884102597ea2bf704e295731be5c64c8b4181f97",
+    "catalogs/racing/v1.10.3/simulation/circuits/singapore.json": "0d4a1f819ea97c638645f762379eff9463a7fbfae3e94bb5b6151daa60def17a",
+    "catalogs/racing/v1.10.3/simulation/circuits/spa.json": "b3ad4c106f0969460aa7dade356b4e0db9a2e9207ce0eb99a63956ade1796dac",
+    "catalogs/racing/v1.10.3/simulation/circuits/spielberg.json": "0c0b690413f2051187e014a329f8f80f1164ca6266458f075ed86dcd10762968",
+    "catalogs/racing/v1.10.3/simulation/circuits/suzuka.json": "27a2359f7609f457dbde6743c908b34fdc947f75b3d321379e2754fc07e063ab",
+    "catalogs/racing/v1.10.3/simulation/circuits/yas_marina.json": "a843c8486dc8694ac8dbacf73cda60753cc1628d64c2429ad0cc4c677be92660",
+    "catalogs/racing/v1.10.3/simulation/circuits/zandvoort.json": "62ae57706f2f0ce2d0527a92226cf7d4b1e0d3895085d46ded2ee31ee864ca1e",
+    "catalogs/racing/v1.10.3/simulation/component-capabilities/v1.json": "6c33287535128b1b0e0e3566405d4189a9fba53033d4a4b3d6150dc365f80347",
+    "catalogs/racing/v1.10.3/simulation/driver-control/profile-v1.json": "67f343482ff12fdceec3b0f068add6f96b7248a0c7de7efb01ae03851b4f26d6",
+    "catalogs/racing/v1.10.3/simulation/driver-instructions/profile-v1.json": "508bf37c0092836d18660e5aa717344b2c563d04dd29b6ca426cf8b94e175aa3",
+    "catalogs/racing/v1.10.3/simulation/drivers-v2/balanced_reference.json": "2bddd852f3d2b1c3207cf691d00b5e551710151a785d9640f7817d6013cc5a83",
+    "catalogs/racing/v1.10.3/simulation/drivers-v2/battery_voltas.json": "790a9e8e408bd8c3f09d33fae4b1b5d3af208e8d6e631467243779c57b3d9c8a",
+    "catalogs/racing/v1.10.3/simulation/drivers-v2/charles_leclair.json": "b627daf536865620d392fd1c0a9edab9dab61a54696765408b714412f10fb33d",
+    "catalogs/racing/v1.10.3/simulation/drivers-v2/daniel_enchantier.json": "4ee7d1bcdfb216b8b99e51d910c5d7620f2e197cbe2f75d18d146c2ec07ecd7f",
+    "catalogs/racing/v1.10.3/simulation/drivers-v2/franz_hermann.json": "f56b578bfe4cf68f3e0f5f8c1331aa31df024edc7c6fda5ab654e300129dbc37",
+    "catalogs/racing/v1.10.3/simulation/drivers-v2/goat_tifi.json": "33348ab9ba31371192d25a78204a8fec1fb3cde6276f3329fb5de3876d3a8816",
+    "catalogs/racing/v1.10.3/simulation/drivers-v2/isa_kadjar.json": "6bcfdfaf5845a206585b37aa8cbda24c4c2b6689349ec76cf63f5c587b35c697",
+    "catalogs/racing/v1.10.3/simulation/drivers-v2/limit_specialist.json": "53f4f3b85f851a506a502b120ddb1126aeeee0a30378e606ace62036c910e8cd",
+    "catalogs/racing/v1.10.3/simulation/drivers-v2/luis_amilton.json": "a30e85931ac07abfe58af39a1c62ab0bda1a33a3e47de3d7ddb9f2eecaa958e8",
+    "catalogs/racing/v1.10.3/simulation/drivers-v2/pedro_gaseoso.json": "f47004167c8c85b0e0c0e48ca4a427ebda42aab237c64e30353095bee0cac1e3",
+    "catalogs/racing/v1.10.3/simulation/drivers-v2/smooth_operator.json": "15cdcd6d0610b5a7b53b964bf3ee911efbf0cdbc209cfb09b220d73f7da6f176",
+    "catalogs/racing/v1.10.3/simulation/drivers-v2/tire_manager.json": "34d00c6bb77f6ae4b96431cb748548bc3015d15faed3fc9e3289ea52fb9d2158",
+    "catalogs/racing/v1.10.3/simulation/drivers/aggressive.json": "7be162b55df9111ac108bb6db71774f22d6aa01f96b2bcf0e4f7ab713aaa2182",
+    "catalogs/racing/v1.10.3/simulation/drivers/balanced.json": "d7eb42c29f8964f595457f67433acc6a222520f184ebfe541f3891069777d9a1",
+    "catalogs/racing/v1.10.3/simulation/drivers/battery_voltas.json": "eca0d9c3fd085b4139656f141e2da0f34b39a8f9eea08a3b5471b6ef023fcc38",
+    "catalogs/racing/v1.10.3/simulation/drivers/charles_leclair.json": "b9730f1442a12be0046b4510c6e3ec46c914855c517c60c7591103deb7c43fa8",
+    "catalogs/racing/v1.10.3/simulation/drivers/conservative.json": "741ccf473c38a34a9bc6fdbd9f37128847c310bbbf1a5a70b8b67b3faa341c3a",
+    "catalogs/racing/v1.10.3/simulation/drivers/daniel_enchantier.json": "f3cf787d1d955effcb927648b56cf8e131f96c857a789117dfbdb70bacb953ad",
+    "catalogs/racing/v1.10.3/simulation/drivers/default.json": "3ab34a10fafb4ceb09595869d97801337ab39bb4d6fdb3393ad355146b5eab01",
+    "catalogs/racing/v1.10.3/simulation/drivers/franz_hermann.json": "22fe2621831cb22f51e336c46e2d80a3ff90a3433e1f0b0a0405ae070f6d2876",
+    "catalogs/racing/v1.10.3/simulation/drivers/goat_tifi.json": "6e492b3ba66012cb92c911a7ce8595c180327a14133b130b1d758aab4963dd04",
+    "catalogs/racing/v1.10.3/simulation/drivers/isa_kadjar.json": "21de1ee5201ad7d06a7ef64f489a3879964ba2240acea0eb1bd054a7fc8a5470",
+    "catalogs/racing/v1.10.3/simulation/drivers/luis_amilton.json": "ba6ea3e0e09b6ae569db9dbc68cfd8f89b06474149297480e5494b2b9a857dfc",
+    "catalogs/racing/v1.10.3/simulation/drivers/pedro_gaseoso.json": "d2b3dc73cdc1f8922191e7b14fea53e0cb6c2035dc4cf32a6260681fef957320",
+    "catalogs/racing/v1.10.3/simulation/drivers/smooth_operator.json": "1583beccd4e8c800ecfb8b3eadea756e0ba643ef9fdbe6b9e75ca69f6e4a02bd",
+    "catalogs/racing/v1.10.3/simulation/engines/v6t.json": "0d42fc77c421fcab6aebe7d5e805e76562f24528c8dc94c05524d67116598d86",
+    "catalogs/racing/v1.10.3/simulation/engines/v6t_hybrid.json": "541bc9522ae9ddcf7de7318bbf1a57c656318475142e475be7b6b42a7a1b5b36",
+    "catalogs/racing/v1.10.3/simulation/engines/v8_1960.json": "629547fa9b5363f080362630e9b7d5f1da0da5288d77315ad39778575dbe4d20",
+    "catalogs/racing/v1.10.3/simulation/engines/v8_1970.json": "2ba3b9dbe5fa9f0eafe7a2af78da6548213e699e54dbd505f02a84cc4cc4686f",
+    "catalogs/racing/v1.10.3/simulation/index.json": "983065e429310d58fa406ce95e545a3e47b363e1be2348c94b33291343263400",
+    "catalogs/racing/v1.10.3/simulation/policies/competitive.json": "3ae8204156754fcf6758bcb452e0b648582e0e8afa196365ea9167e2203a3370",
+    "catalogs/racing/v1.10.3/simulation/policies/reference.json": "f95178f5208ea909c2950ea76abd19180fee152beb9384d8aad01cf288e5ea72",
+    "catalogs/racing/v1.10.3/simulation/qualified-career/profile-v1.json": "50e45952a5741659a5edccf4d14b985ae634d0903b984e17b0ce1398e0866c37",
+    "catalogs/racing/v1.10.3/simulation/thermal-profiles/family-v2.json": "47c54c5fb79327d1937c84decab79bfbd9cd72b933f15710515670dc61315c84",
+    "catalogs/racing/v1.10.3/simulation/tires/hard.json": "829d45437aabad1b6f85208354e91ea70629bf0a1d29631b6dbfee9dfc3c83d4",
+    "catalogs/racing/v1.10.3/simulation/tires/medium.json": "9e40cf437c96ab26ed3fd3a45a8b6ba0f4a5752cf3ea220ee25770bd7f497e90",
+    "catalogs/racing/v1.10.3/simulation/tires/soft.json": "9e053a0d63495defea753f264e5441de8ef7c3baec95dbc77f07c31a91ee3afc",
+    "catalogs/racing/v1.10.3/simulation/vehicles/classic_v8_1960.json": "ed525dd47e803a071b4dd7d64d061a9e8ee925bb0e3d30b370547ff0b10c6004",
+    "catalogs/racing/v1.10.3/simulation/vehicles/classic_v8_1970.json": "5fefbde1ecfffb1bcc011edeb731c919f431a7e9da27aedd49aa4794747c2b6b",
+    "catalogs/racing/v1.10.3/simulation/vehicles/default.json": "5fefbde1ecfffb1bcc011edeb731c919f431a7e9da27aedd49aa4794747c2b6b",
+    "catalogs/racing/v1.10.3/simulation/vehicles/f1_2026.json": "06111d484ec5cca9188bde63ce2f49aaf467a6289cff5d85a7cb28bb83727722",
+    "catalogs/racing/v1.10.3/simulation/vehicles/modern_v6t.json": "4aad13d55acc6a1c8716cbbd6d52003595755fa127729e0b5a197e6c91985934",
+    "experiments/era3_common_fuel_v1/ACCEPTANCE.md": "f05c66e0354b3798d264c897a55cf8a76bb9dab9072af2675f7a016ac04c493b",
+    "experiments/era3_common_fuel_v1/export_career_fixtures_v2.mjs": "9e96898dbe6b684d3a775682ca02eb4a8374432bba748cbf2b810a9453b10ff2",
+    "experiments/era3_common_fuel_v1/plan-v1.json": "4452e20e8f2ec9a3ecc0e858a875ac947a9538debb69427488e2298814ad7a73",
+    "experiments/era3_common_fuel_v1/results/career-fixtures-v2.json": "c10e05766aa76129bca1645df5ac6534f7ddc421c6ce8d91810257eafdbb5cb0",
+    "experiments/era3_common_fuel_v1/results/screen-v1.json.gz": "721de8805c2887f9c7c7c813b8952d423857b5b100d7a050e095cf8907ca7c8f",
+    "experiments/era3_common_fuel_v1/screen.py": "8cc19eb8968fd9145e4010c7a65bb869bdbfafe598a69c77c143451d34d01690",
+    "experiments/era3_common_fuel_v2/ACCEPTANCE.md": "593b5e73cf2c11758ed0d5bf2d9b0caa6be417d2b1cafa1d301c4b662e65daf7",
+    "experiments/era3_common_fuel_v2/results/screen-v1.json.gz": "ef006d37feb992589e37fdfdd3a33787ce56270eaec8707ba543090d039d667f",
+    "experiments/era3_common_fuel_v2/selected-charge-v1.json": "ff63fffbc56de5518d69eecf6da18c5663ba1685a43534d8db492e883c8ed75b",
+    "experiments/era3_joint_preparation_v1/run.py": "07080af724cc4c3e5e08e41e290c35b1ee4f79a3c1227ffbc4616c88e6144911",
+    "experiments/fixed_nine_refinement_v2/harness.py": "263c233f1096cba718b75a0bdf9fbafbce88cd1f340e81b9089abe839d6343ce",
+    "experiments/fixed_nine_thermal_v1/policy.py": "e935a279608c20afc23d2940bbba3887016bba930f562d569ba9004b91143dd1",
+    "experiments/fixed_opponents_v2/roster-v2.json": "cf8a427975c321b724d0f10d4654f48ae54db43442afa84658b6ee768efaaac4",
+    "experiments/joint_era2_preparation_v1/selection.py": "d03bb20b700eded9cf6459de30b554f5e8efcf5b32cb8a337e85dbfd9f75df1a",
+    "experiments/joint_era3_preparation_v1/ACCEPTANCE.md": "3672bde1d93fafd582763b18ee6b19b11d21a948eb8a27616974274a61eea4a6",
+    "experiments/joint_era3_preparation_v1/audit_budget.mjs": "d565262f56df68ebd0041debe27ca9d45cee4c3df2f42234ca3c9ce4dfa0c723",
+    "experiments/joint_era3_preparation_v1/results/foundation-budget-v1.json": "68e7fbbbd35067d14ef383cd1204c405aafce80e46292cfbabdf50b96229b0be",
+    "experiments/thermal_balance_sensitivity_v1/rolling-heat-065.json": "8b303f0189e3e174138a877d0eada425b37c672fe66dd07efcbc86b8d861e771"
+  },
+  "budgets": [
+    24,
+    43,
+    82
+  ],
+  "repeat_groups": [
+    [
+      "BARCELONA",
+      24
+    ],
+    [
+      "SPIELBERG",
+      82
+    ]
+  ],
+  "proposals": {
+    "balanced": {
+      "weights": [
+        2,
+        3,
+        3,
+        2
+      ],
+      "downforce_delta": 0.0,
+      "gear_delta": 0.0,
+      "stops": 1
+    },
+    "power": {
+      "weights": [
+        1,
+        3,
+        5,
+        1
+      ],
+      "downforce_delta": 0.1,
+      "gear_delta": 0.1,
+      "stops": 2
+    },
+    "shortcut": {
+      "weights": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "downforce_delta": 0.0,
+      "gear_delta": 0.0,
+      "stops": 1
+    }
+  },
+  "career_preparation": {
+    "weights": [
+      3,
+      2,
+      4,
+      3
+    ],
+    "downforce": 0.75,
+    "gear": 0.65,
+    "stops": 1
+  },
+  "contexts": [
+    {
+      "circuit": "BARCELONA",
+      "laps": 66,
+      "archetype": "balanced",
+      "downforce": 0.6,
+      "gear": 0.65
+    },
+    {
+      "circuit": "BUDAPEST",
+      "laps": 70,
+      "archetype": "handling",
+      "downforce": 0.75,
+      "gear": 0.55
+    },
+    {
+      "circuit": "MELBOURNE",
+      "laps": 58,
+      "archetype": "balanced",
+      "downforce": 0.6,
+      "gear": 0.65
+    },
+    {
+      "circuit": "MONTREAL",
+      "laps": 70,
+      "archetype": "power",
+      "downforce": 0.45,
+      "gear": 0.75
+    },
+    {
+      "circuit": "SILVERSTONE",
+      "laps": 52,
+      "archetype": "balanced",
+      "downforce": 0.6,
+      "gear": 0.65
+    },
+    {
+      "circuit": "MONZA",
+      "laps": 53,
+      "archetype": "power",
+      "downforce": 0.45,
+      "gear": 0.75
+    },
+    {
+      "circuit": "ZANDVOORT",
+      "laps": 72,
+      "archetype": "handling",
+      "downforce": 0.75,
+      "gear": 0.55
+    },
+    {
+      "circuit": "SPIELBERG",
+      "laps": 71,
+      "archetype": "balanced",
+      "downforce": 0.6,
+      "gear": 0.65
+    },
+    {
+      "circuit": "MEXICO",
+      "laps": 71,
+      "archetype": "handling",
+      "downforce": 0.75,
+      "gear": 0.55
+    },
+    {
+      "circuit": "MONACO",
+      "laps": 78,
+      "archetype": "handling",
+      "downforce": 0.75,
+      "gear": 0.55
+    },
+    {
+      "circuit": "SPA",
+      "laps": 44,
+      "archetype": "power",
+      "downforce": 0.45,
+      "gear": 0.75
+    },
+    {
+      "circuit": "SAOPAULO",
+      "laps": 71,
+      "archetype": "power",
+      "downforce": 0.45,
+      "gear": 0.75
+    }
+  ],
+  "scope": "Finite opened-seed joint native preparation at anchors24/43/82; actual entry24 and exit43 references; no global-optimum, fresh-reserve, continuous-budget, WASM, signed-service or runtime-admission claim."
+}
