@@ -1,0 +1,20 @@
+{
+  "schema": "pitgun.era3-common-fuel-plan/v1",
+  "initial_fuel_kg": 160.0,
+  "minimum_finish_reserve_kg": 5.0,
+  "gp_count": 100,
+  "seed": 83029,
+  "policy": "experiments/thermal_balance_sensitivity_v1/rolling-heat-065.json",
+  "roster": "experiments/fixed_opponents_v2/roster-v2.json",
+  "native_binary_sha256": "4738e324fff03930b82ad99ad4fe5cd646e238d9e2766cee063273ad3bc7420c",
+  "retained_files": {
+    "experiments/era3_common_fuel_v1/results/career-fixtures-v2.json": "c10e05766aa76129bca1645df5ac6534f7ddc421c6ce8d91810257eafdbb5cb0",
+    "experiments/era3_common_fuel_v1/ACCEPTANCE.md": "f05c66e0354b3798d264c897a55cf8a76bb9dab9072af2675f7a016ac04c493b",
+    "experiments/era3_common_fuel_v1/export_career_fixtures_v2.mjs": "9e96898dbe6b684d3a775682ca02eb4a8374432bba748cbf2b810a9453b10ff2",
+    "experiments/era3_joint_preparation_v1/run.py": "07080af724cc4c3e5e08e41e290c35b1ee4f79a3c1227ffbc4616c88e6144911",
+    "experiments/fixed_nine_refinement_v2/harness.py": "263c233f1096cba718b75a0bdf9fbafbce88cd1f340e81b9089abe839d6343ce",
+    "experiments/thermal_balance_sensitivity_v1/rolling-heat-065.json": "8b303f0189e3e174138a877d0eada425b37c672fe66dd07efcbc86b8d861e771",
+    "experiments/fixed_opponents_v2/roster-v2.json": "cf8a427975c321b724d0f10d4654f48ae54db43442afa84658b6ee768efaaac4"
+  },
+  "scope": "Common-charge operability only; no field fitting or runtime admission"
+}

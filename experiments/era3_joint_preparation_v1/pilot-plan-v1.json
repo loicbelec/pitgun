@@ -1,0 +1,19 @@
+{
+  "schema": "pitgun.era3-native-pilot-plan/v1",
+  "policy": "experiments/thermal_balance_sensitivity_v1/rolling-heat-065.json",
+  "roster": "experiments/fixed_opponents_v2/roster-v2.json",
+  "native_binary_sha256": "477f0d72d8b1a0399d81cf1917538b9990a09523297d30970cfd7f8572d2dc38",
+  "retained_files": {
+    "experiments/thermal_balance_sensitivity_v1/rolling-heat-065.json": "8b303f0189e3e174138a877d0eada425b37c672fe66dd07efcbc86b8d861e771",
+    "experiments/fixed_opponents_v2/roster-v2.json": "cf8a427975c321b724d0f10d4654f48ae54db43442afa84658b6ee768efaaac4",
+    "experiments/era3_joint_preparation_v1/results/career-fixtures-v1.json": "33165beac14ccdedc101a1663f49c32a033ed1a459753a7f73874535d0c73c94",
+    "experiments/era3_joint_preparation_v1/ACCEPTANCE.md": "f8f9ca9501d45a487b3832ab9c8173937e299f5384d186df46164c57c5738437"
+  },
+  "gp_count": 22,
+  "circuit": "BARCELONA",
+  "laps": 66,
+  "seed": 83017,
+  "initial_fuel_kg": 100,
+  "scope": "Pilot only; no fit/reserved review/runtime admission",
+  "reserved_seeds": "Not designated or consumed in this pilot; preregister separately after joint candidate freeze."
+}

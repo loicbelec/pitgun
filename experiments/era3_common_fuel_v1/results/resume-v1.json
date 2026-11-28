@@ -1,0 +1,26 @@
+{
+  "schema": "pitgun.era3-common-fuel-resume/v1",
+  "sourceCommit": "3e8e1d7eed7b7b3befbce6fd760822e20026fd96",
+  "newSolverCalls": 0,
+  "nativeFileCount": 198,
+  "nativeJournalArchiveReviewHashesAndMtimesPreserved": true,
+  "archiveSha256": "721de8805c2887f9c7c7c813b8952d423857b5b100d7a050e095cf8907ca7c8f",
+  "repeatChecks": [
+    {
+      "id": "III/common160/BARCELONA/field-max82",
+      "exact": true
+    },
+    {
+      "id": "III/common160/MONACO/field-max82",
+      "exact": true
+    },
+    {
+      "id": "III/common160/SPA/actual-developed-power",
+      "exact": true
+    },
+    {
+      "id": "III/common160/SAOPAULO/field-max79",
+      "exact": true
+    }
+  ]
+}

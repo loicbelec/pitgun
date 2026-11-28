@@ -1,0 +1,69 @@
+{
+  "schema": "pitgun.era3-structural-budget-audit/v1",
+  "gameCommit": "7e06578eb3b142e72402be8c565b50ded352ce6f",
+  "sourceHashes": {
+    "src/economy/seasonContent.ts": "0b654634106002317632f930b0072927a0fb78edb1d4b751b47e308fd57b3120",
+    "src/economy/seasonCatalogue.ts": "5e20fb2ca98127b49847f1310d28f9d41c09c44fc4053ef3566c3b027da546ec",
+    "src/economy/seasonCareer.ts": "53d95c9aee23a8118bda3b3c542ece2d73f250a1b64c6f6a49089a03991510ed",
+    "src/engine/carSetup.ts": "99e8e089cf01e01806335cd26107932fc353caf4bf5fdbc133b23314c806d07e",
+    "src/data/Upgrades.ts": "e83b961630e889013d5c5a4c390630d3f99797406872b64e3588683ec8863b08"
+  },
+  "foundations": [
+    {
+      "upgrades": [
+        "e1_blueprints",
+        "e1_desk",
+        "e1_engine_tuner",
+        "e1_industrialization",
+        "e1_radio",
+        "e1_stopwatch",
+        "e1_toolbox",
+        "e1_workbench",
+        "e2_aero_kit",
+        "e2_cnc_3axis",
+        "e2_mainframe",
+        "e2_steel_supplier",
+        "e2_tabulators",
+        "e2_telemetry_basic",
+        "e2_v8_engine"
+      ],
+      "discretionaryPoints": 16,
+      "offsets": {
+        "aero": 2,
+        "chassis": 0,
+        "engine": 5,
+        "cooling": 1
+      },
+      "effectiveCap": 24
+    },
+    {
+      "upgrades": [
+        "e1_blueprints",
+        "e1_desk",
+        "e1_industrialization",
+        "e1_radio",
+        "e1_stopwatch",
+        "e1_toolbox",
+        "e1_welder",
+        "e1_workbench",
+        "e2_aero_kit",
+        "e2_cnc_3axis",
+        "e2_mainframe",
+        "e2_steel_supplier",
+        "e2_tabulators",
+        "e2_telemetry_basic",
+        "e2_v8_engine"
+      ],
+      "discretionaryPoints": 16,
+      "offsets": {
+        "aero": 2,
+        "chassis": 1,
+        "engine": 4,
+        "cooling": 1
+      },
+      "effectiveCap": 24
+    }
+  ],
+  "minimumFoundationEffectiveCap": 24,
+  "scope": "Dependency closure of permanent era-entry milestones using public preparation/offset functions. No immediate affordability or human play-duration claim. Existing ownership can only add nonnegative point/offset effects; optional ceiling is separately exported."
+}

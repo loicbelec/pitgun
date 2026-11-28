@@ -1,0 +1,90 @@
+{
+  "schema": "pitgun.era3-actual-ceiling-review/v1",
+  "sourceCommit": "508c6e6030845c304b0b19c7eb4fec0b1126d016",
+  "attempts": 4,
+  "uniqueInputs": 3,
+  "completedAttempts": 2,
+  "exactRepeat": true,
+  "resume": "No new solver calls; native/journal/archive hashes and mtimes preserved",
+  "nativeWallSeconds": 14.081703874999999,
+  "rows": [
+    {
+      "id": "III/BARCELONA/developed/34/franz_hermann/neutral/1stop/explicit-start110",
+      "completedLaps": 66,
+      "outcome": {
+        "conservative_recomputes": 0,
+        "drive_time_s": 7206.066184041745,
+        "elapsed_accounting_residual_s": 0.0,
+        "final_state": {
+          "engine_temp": 95.67909134061023,
+          "fuel_mass": 3.3757711047844463,
+          "tire_temp": 144.90456249958842,
+          "tire_wear": 1.0
+        },
+        "maximum_cap_updates": 0,
+        "ok": true,
+        "result_digest": "sha256:b9ccae11e6200b62a2c768bb6ab0782d252ca1397e865dba3986985fca84e726",
+        "service_time_s": 22.0,
+        "time_s": 7228.066184041745
+      },
+      "checks": []
+    },
+    {
+      "id": "III/BARCELONA/developed/34/franz_hermann/cooling/2stop/explicit-start110",
+      "completedLaps": 63,
+      "outcome": {
+        "accepted_laps": 63,
+        "error": "V3 fuel depleted on lap 64: required 1.475534 kg, available 0.522030 kg",
+        "last_accepted_state": {
+          "engine_temp": 94.56252243169503,
+          "fuel_mass": 0.5220301046578484,
+          "tire_temp": 145.5680677882321,
+          "tire_wear": 0.8780776867300127
+        },
+        "ok": false
+      },
+      "checks": [
+        "physical_or_resolution_failure"
+      ]
+    },
+    {
+      "id": "III/BARCELONA/developed/82/balanced_reference/neutral/2stop/explicit-start110",
+      "completedLaps": 64,
+      "outcome": {
+        "accepted_laps": 64,
+        "error": "V3 fuel depleted on lap 65: required 1.404386 kg, available 0.031897 kg",
+        "last_accepted_state": {
+          "engine_temp": 91.45827371768954,
+          "fuel_mass": 0.031896516786626083,
+          "tire_temp": 145.64770695698294,
+          "tire_wear": 0.958930039695199
+        },
+        "ok": false
+      },
+      "checks": [
+        "physical_or_resolution_failure"
+      ]
+    },
+    {
+      "id": "III/BARCELONA/developed/34/franz_hermann/neutral/1stop/explicit-start110",
+      "completedLaps": 66,
+      "outcome": {
+        "conservative_recomputes": 0,
+        "drive_time_s": 7206.066184041745,
+        "elapsed_accounting_residual_s": 0.0,
+        "final_state": {
+          "engine_temp": 95.67909134061023,
+          "fuel_mass": 3.3757711047844463,
+          "tire_temp": 144.90456249958842,
+          "tire_wear": 1.0
+        },
+        "maximum_cap_updates": 0,
+        "ok": true,
+        "result_digest": "sha256:b9ccae11e6200b62a2c768bb6ab0782d252ca1397e865dba3986985fca84e726",
+        "service_time_s": 22.0,
+        "time_s": 7228.066184041745
+      },
+      "checks": []
+    }
+  ]
+}

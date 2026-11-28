@@ -1,0 +1,27 @@
+{
+  "schema": "pitgun.experimental-common-era-fuel/v2",
+  "era": 3,
+  "startingFuelKg": 140.0,
+  "sessionScope": [
+    "FP1",
+    "FP2",
+    "FP3",
+    "RACE"
+  ],
+  "competitorScope": "same charge for player and all nine; independent of identity, setup, spending, initial plan and results",
+  "minimumScreenReserveKg": 5.0,
+  "qualification": "Paired finite native140kg screen PASS, not all-legal-input coverage or runtime admission",
+  "screenArchiveSha256": "ef006d37feb992589e37fdfdd3a33787ce56270eaec8707ba543090d039d667f",
+  "nativeScreenSourceCommit": "62f47a90811c9ec4645959b5150b80a7fdfe9587",
+  "nativeCompletedGP": 100,
+  "minimumObservedFinishReserveKg": 6.5067499536004485,
+  "supersedes": {
+    "path": "experiments/era3_common_fuel_v1/selected-charge-v1.json",
+    "sha256": "1a3f4906c8d4e7a92e4e0b1770bad0e156615d4239afd4a5fb03de4383b728a0"
+  },
+  "legacyEra1And2FuelKg": 100.0,
+  "legacyEra1And2Unchanged": true,
+  "runtimeAdmitted": false,
+  "publication": false,
+  "next": "Joint era-III field/player preparation and reserved review using the same140kg; later native/WASM/local admission."
+}

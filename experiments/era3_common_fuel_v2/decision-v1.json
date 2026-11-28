@@ -1,0 +1,10 @@
+{
+  "schema": "pitgun.common-fuel-selection/v1",
+  "selectedChargeKg": 140.0,
+  "candidateStatus": "PASS",
+  "unchangedReserveGateKg": 5.0,
+  "rule": "PASS selects140; REFINE keeps160 pending review; no additional automatic search",
+  "candidateArchiveSha256": "ef006d37feb992589e37fdfdd3a33787ce56270eaec8707ba543090d039d667f",
+  "previousSelectedPolicySha256": "1a3f4906c8d4e7a92e4e0b1770bad0e156615d4239afd4a5fb03de4383b728a0",
+  "runtimeAdmitted": false
+}
