@@ -1,0 +1,22 @@
+{
+  "schema": "pitgun.era3-ceiling-diagnostic-plan/v1",
+  "policy": "experiments/thermal_balance_sensitivity_v1/rolling-heat-065.json",
+  "roster": "experiments/fixed_opponents_v2/roster-v2.json",
+  "native_binary_sha256": "31c1d13e822c2e5dccf4b453d1a6b66bdb96cc6266f2c36792bdecde3d46e2a7",
+  "retained_files": {
+    "experiments/era3_joint_preparation_v1/results/pilot-v1.json.gz": "45e60bacd85eb47c572441a1a8978ac2e18fc9e504626eb4d88fe8dd4b6592ba",
+    "experiments/era3_joint_preparation_v1/results/career-fixtures-v1.json": "33165beac14ccdedc101a1663f49c32a033ed1a459753a7f73874535d0c73c94",
+    "experiments/thermal_balance_sensitivity_v1/rolling-heat-065.json": "8b303f0189e3e174138a877d0eada425b37c672fe66dd07efcbc86b8d861e771",
+    "experiments/fixed_opponents_v2/roster-v2.json": "cf8a427975c321b724d0f10d4654f48ae54db43442afa84658b6ee768efaaac4",
+    "experiments/era3_joint_preparation_v1/CEILING_DIAGNOSTIC.md": "2c3f58837791fee495b22c9ab3c6de6e470407149bd4ec9b40a8d6fd19072c1a"
+  },
+  "pilot_archive": "results/pilot-v1.json.gz",
+  "pilot_row_indices": [
+    0,
+    3,
+    20
+  ],
+  "initial_fuel_kg": 110.0,
+  "gp_count": 4,
+  "scope": "Actual bounded counterfactual at existing experimental110kg ceiling; not tank identification or reserved qualification."
+}

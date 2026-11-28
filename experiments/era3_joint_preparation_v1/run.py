@@ -57,6 +57,8 @@ def checks(data):
         and r['spent_budget']==spent and r['unused_budget']==available-spent)
     errors=[e for e in errors if e!='budget_binding']
     if not valid:errors.append('available_spent_budget_binding')
+    errors=[e for e in errors if e!='fuel_scope']
+    if r['initial_state']['fuel_mass']!=c.get('initial_fuel_kg',100.):errors.append('explicit_initial_fuel_binding')
     return errors
 
 

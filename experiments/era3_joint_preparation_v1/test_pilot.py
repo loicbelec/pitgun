@@ -24,7 +24,7 @@ class PilotTests(unittest.TestCase):
 class ExplicitBudgetChecks(unittest.TestCase):
  def test_accepts_valid_unused_points_without_masking_other_failures(self):
   case=run.make_case('balanced_reference','neutral',True,budget=82)
-  data={'case':case,'outcome':{'ok':True},'receipt':{'budget':82,'points':[20]*4,'spent_budget':80,'unused_budget':2}}
+  data={'case':case,'outcome':{'ok':True},'receipt':{'budget':82,'points':[20]*4,'spent_budget':80,'unused_budget':2,'initial_state':{'fuel_mass':100.0}}}
   with patch.object(run.BASE,'checks',return_value=['budget_binding','incomplete_finish']):
    self.assertEqual(run.checks(data),['incomplete_finish'])
    data['receipt']['unused_budget']=0
@@ -45,5 +45,13 @@ class FailedPilotReport(unittest.TestCase):
   row={'case':{'id':'incomplete'},'data':{'case':{'id':'incomplete'},'outcome':{'ok':False,'error':'fuel shortfall'},'laps':[],'receipt':{'budget':82,'spent_budget':80}},'wall_s':1.0,'checks':['physical_or_resolution_failure']}
   summary=run.summarize_rows([row,deepcopy(row)])
   self.assertEqual(summary['attemptedGP'],2);self.assertEqual(summary['completedGP'],0);self.assertTrue(summary['exactFullOrPartialRepeat']);self.assertEqual(len(summary['failedCases']),2)
+
+class CeilingDesign(unittest.TestCase):
+ def test_four_counterfactuals_change_only_declared_initial_fuel(self):
+  import ceiling_compare
+  plan=run.load(run.HERE/'ceiling-plan-v1.json');before=run.load(run.HERE/plan['pilot_archive']);m=ceiling_compare.matrix(plan)
+  self.assertEqual(len(m),4);self.assertTrue(m[-1]['fresh']);self.assertEqual(m[0]['case'],m[-1]['case'])
+  for row,index in zip(m,plan['pilot_row_indices']+[plan['pilot_row_indices'][0]]):
+   c=deepcopy(row['case']);self.assertEqual(c.pop('initial_fuel_kg'),110.0);c['id']=c['id'].removesuffix('/explicit-start110');self.assertEqual(c,before['rows'][index]['case'])
 
 if __name__=='__main__':unittest.main()

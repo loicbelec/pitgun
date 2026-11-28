@@ -37,6 +37,8 @@ struct Case {
     gear: f64,
     mode: RacingDrivingMode,
     strategy: CompetitorStintStrategy,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    initial_fuel_kg: Option<f64>,
 }
 
 #[cfg(test)]
@@ -221,6 +223,12 @@ fn execute_with_fuel_estimate(
         )?
     };
     apply_thermal_driver_v1(&mut input, &driver)?;
+    if let Some(kg) = case.initial_fuel_kg {
+        if !kg.is_finite() || !(1.0..=200.0).contains(&kg) {
+            return Err("invalid explicit diagnostic initial fuel".into());
+        }
+        input.state.fuel_mass = kg;
+    }
     let physical_digest = canonical_json_digest(&input).map_err(|e| e.to_string())?;
     if let Some(policy) = fuel_policy {
         let (receipt, prepared) = prepare_fuel_v1(&input, policy)?;
@@ -495,5 +503,21 @@ mod tests {
             estimated["preparation"]["pilots"].as_array().unwrap().len(),
             2
         );
+    }
+    #[test]
+    fn explicit_fuel_counterfactual_changes_only_starting_mass() {
+        let mut c = case();
+        let original = execute(&policy(), &c, true).unwrap();
+        c.initial_fuel_kg = Some(110.0);
+        let changed = execute(&policy(), &c, true).unwrap();
+        assert_eq!(changed["receipt"]["initial_state"]["fuel_mass"], 110.0);
+        assert_eq!(changed["receipt"]["points"], original["receipt"]["points"]);
+        assert_eq!(
+            changed["receipt"]["components"],
+            original["receipt"]["components"]
+        );
+        assert_eq!(changed["receipt"]["driver"], original["receipt"]["driver"]);
+        c.initial_fuel_kg = Some(-1.0);
+        assert!(execute(&policy(), &c, true).is_err());
     }
 }
