@@ -39,6 +39,8 @@ struct Case {
     strategy: CompetitorStintStrategy,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     initial_fuel_kg: Option<f64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    fixture_revision: Option<u8>,
 }
 
 #[cfg(test)]
@@ -52,10 +54,16 @@ fn execute_with_fuel_estimate(
     audit_only: bool,
     fuel_policy: Option<&FuelPreparationPolicyV1>,
 ) -> Result<Value, String> {
-    let fixtures: Value = serde_json::from_str(include_str!(
-        "../../../experiments/era3_joint_preparation_v1/results/career-fixtures-v1.json"
-    ))
-    .map_err(|e| e.to_string())?;
+    let bytes = match case.fixture_revision {
+        None | Some(1) => include_str!(
+            "../../../experiments/era3_joint_preparation_v1/results/career-fixtures-v1.json"
+        ),
+        Some(2) => {
+            include_str!("../../../experiments/era3_common_fuel_v1/results/career-fixtures-v2.json")
+        }
+        _ => return Err("unsupported career fixture revision".into()),
+    };
+    let fixtures: Value = serde_json::from_str(bytes).map_err(|e| e.to_string())?;
     let fixture = fixtures["fixtures"]
         .as_array()
         .unwrap()
@@ -519,5 +527,18 @@ mod tests {
         assert_eq!(changed["receipt"]["driver"], original["receipt"]["driver"]);
         c.initial_fuel_kg = Some(-1.0);
         assert!(execute(&policy(), &c, true).is_err());
+    }
+    #[test]
+    fn practice_only_context_uses_explicit_revision_without_rebinding_old_fixtures() {
+        let mut c = case();
+        c.circuit = "SAOPAULO".into();
+        c.initial_fuel_kg = Some(160.0);
+        c.strategy=serde_json::from_value(json!({"stints":[{"tire_id":"medium","laps":35},{"tire_id":"hard","laps":36}],"pit_laps":[35]})).unwrap();
+        assert!(execute(&policy(), &c, true).is_err());
+        c.fixture_revision = Some(2);
+        let r = execute(&policy(), &c, true).unwrap();
+        assert_eq!(r["receipt"]["laps"], 71);
+        assert_eq!(r["receipt"]["initial_state"]["fuel_mass"], 160.0);
+        assert_eq!(r["receipt"]["components"]["engine_id"], "v6t");
     }
 }
