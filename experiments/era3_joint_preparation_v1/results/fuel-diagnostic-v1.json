@@ -1,0 +1,566 @@
+{
+  "schema": "pitgun.era3-fuel-estimate-review/v1",
+  "identity": {
+    "source_commit": "c4f67e2013226a842f151dea8d4d16b7c32290f1",
+    "sources": {
+      "crates/pitgun-racing-solver/tests/physical_kernel.rs": "5239aae512d02777b61aa1b9c62e1618779428fc5d351ed139f8b197eeaf9472",
+      "crates/pitgun-racing-solver/src/tire_reachability.rs": "46b625c3cc6787a7e68c5ea977ee68bd981307285007d23f56fdc3ddb56ae933",
+      "crates/pitgun-racing-solver/src/driver_lapses.rs": "0b127209ec1f836988681d35d967a1cf2e5604c9c0a6be0d7746eb1c9c146eab",
+      "crates/pitgun-racing-solver/src/lap_boundary.rs": "908689a312ab4561038e6050d39611e00a0d947caf692614c9666446461f7b13",
+      "crates/pitgun-racing-solver/src/fuel_outcome.rs": "c2fc01807ed415ec3c40510507de77761b586d1379665172acdb9433a63a8271",
+      "crates/pitgun-racing-solver/src/lib.rs": "4ddf1cbbecd16235dc2338f1394bc92aef641cdbc76b2897029b26e8fb8a7c15",
+      "crates/pitgun-racing-solver/src/thermal_physics.rs": "0a0bb07dfa693fcd5e5e52d2eafa2b9a48758c0ee5566060ec7f4f206a58bf6e",
+      "crates/pitgun-racing-solver/src/longitudinal_energy.rs": "ededa0d2a0f15a9542e587d3403315f4fba0ecf1b2195e6d733f3c1d0790df30",
+      "crates/pitgun-racing-solver/src/wear_grip.rs": "bc22c34350927b0838149959b709f09c2e4055f5cfae4633a1c444ce25bd7271",
+      "crates/pitgun-racing-solver/src/power_telemetry.rs": "4dbaab400249b5e94263a8feba3e870d09e89a3ec474158008693ea05596f1a0",
+      "crates/pitgun-core/tests/segment_stream.rs": "f8f9b91e0747c9157736e1adb44af817ced3988f4d3f66c3b7e96261a481736b",
+      "crates/pitgun-core/examples/observed_segment_aggregation.rs": "7f2dabc416bcf1da7fe0ff9e811209a1642fd506b6a878f75ce47058fe3b05a6",
+      "crates/pitgun-core/benches/formula_processor_bench.rs": "e469989bfdd99d780cad7ec3273a3a3a8df727d3471a6669fa5517247762eb5b",
+      "crates/pitgun-core/src/converter.rs": "e494ffb9ae3b60aef428799c66a3dc0c7a18bb67c6f88c9020336a2bcc5feff4",
+      "crates/pitgun-core/src/types.rs": "fa939faf3fe69770f760114fc700e262e265d5a9a1bb1cf3cf49afeb6da37edb",
+      "crates/pitgun-core/src/telemetry_aggregate.rs": "b1a41bb62282c3e17f024a9373816df505d448635524656db61beca1de6ddb31",
+      "crates/pitgun-core/src/io.rs": "40a224a098cac5ea24ef264f3c2d39c7e40ee676b6c571902b56027867197a40",
+      "crates/pitgun-core/src/lib.rs": "cf03963a8cf08b98eee4108e7816915496a5332910cf325450d8370ae5825813",
+      "crates/pitgun-core/src/segment.rs": "ff924b28a483b13355f46eaec8592fac85128c328fab1b63fce0a706a7f4db91",
+      "crates/pitgun-core/src/pipeline.rs": "9cb4ed0e50f14ed96c16baefcf636ad56213221907226b212eb0ef54b8d5cf3b",
+      "crates/pitgun-core/src/builder.rs": "354ae3bc1b5da03a4a3a89ae3ccb70850fd4d80abe7e1b3e50d9bb2b09a9226e",
+      "crates/pitgun-core/src/formula/processor.rs": "2b5cc881f269c9ba54527e838c679dfe4388f1760e362f9c2eb4707f5cf3c5fe",
+      "crates/pitgun-core/src/formula/mod.rs": "398e93157c14fab16b11273d6430c2cc7b21a2dabe3b41c4e3738accd8711508",
+      "crates/pitgun-core/src/formula/eval.rs": "c3e1f9757702ea0f85155de4d9340d14f93fc58f337a22afecf3de58517c538a",
+      "crates/pitgun-core/src/formula/ast.rs": "7326558de40b746c755bf9792c66dfe19f87c859e010ce890128199fab79d9f0",
+      "crates/pitgun-solver/tests/racing_golden.rs": "16cb5a2cc23c41d2460ad1528542ab18ab59887ddd23c43c46d902cba9de9358",
+      "crates/pitgun-solver/tests/rng_v1.rs": "d6d2fee7ded416ce85eb8bf8d4c7299471df6919f3b05cd268f93e999a8bd9d6",
+      "crates/pitgun-solver/tests/thermal_family_profile.rs": "81bf941cf787698acb3130346e1e7756a71b7230d5a958d0f3d3b9d0e97f4443",
+      "crates/pitgun-solver/tests/catalog_resolver.rs": "4c2e5ab0d3e0cbe06529078b094cd6c418ba81e0f91950b896c1e12729c2096c",
+      "crates/pitgun-solver/src/rng.rs": "c41b265c99eda9a078b2c9cb001796707fd331fa7e6f1922d569ee93d114a5f0",
+      "crates/pitgun-solver/src/lib.rs": "4e34d52b72d49a9cf0ce75f05aad547c9002e7df88bbe37c89453185a217cbdf",
+      "crates/pitgun-racing-simulator/tests/tire_preparation.rs": "a0ff598e9988e9c90e873262967dbd476252912010da58acf9a890b92ece3db7",
+      "crates/pitgun-racing-simulator/examples/lap_boundary_probe.rs": "2f61d67afd6abd36adacd20426d7f1199a7c8d97dec94665e03bb604f3bc9d03",
+      "crates/pitgun-racing-simulator/examples/v3_decision_surface_probe.rs": "65a98b178cf94b04ac845f35b40fb5ea11dd8b0e865818a98e3e91c8b038e550",
+      "crates/pitgun-racing-simulator/examples/career_physics_probe.rs": "a464d5fa0efe54483b63ce7398bbfd6a91783c9891814c64453a921b93d39a55",
+      "crates/pitgun-racing-simulator/examples/three_compound_thermal_probe.rs": "75385dac6165a80f8282f722649f80e61dded352d67477c3c4f60335df16baaf",
+      "crates/pitgun-racing-simulator/examples/native_derating_events_probe.rs": "b4615c630f881a6b31c7b4130405a4d49a761015a25a16ef4d586b7c5dadd192",
+      "crates/pitgun-racing-simulator/examples/continuous_curvature_response_probe.rs": "c997daa1fffb2d7b8db512ac6ffdd1ee70872f8691fa498b3d1499e88d2266c1",
+      "crates/pitgun-racing-simulator/examples/validated_career_bridge.rs": "99c179a2dab26011cdc6958e377ecf577c47abcba386e63d43f3a04a02b948b5",
+      "crates/pitgun-racing-simulator/examples/aero_tradeoff_probe.rs": "3838dc5f466a4dd2a25ab375066a076ec043a27c554dbf5ad6a6e5d2d609b1c3",
+      "crates/pitgun-racing-simulator/examples/career_full_gp_probe.rs": "e66ce6d4fe7314574cc5362f6f93c7903b585bcce67d116a2f3c64bafebc47cc",
+      "crates/pitgun-racing-simulator/examples/racing_replay_phase_probe.rs": "2146c20b396edcfe1accdfafad420817bd2dcd149cd66e7a2619a3639a2e8464",
+      "crates/pitgun-racing-simulator/examples/fixed_field_probe_v2.rs": "52dcdcbe7fcc09e13fdaa89974f1657c3826a1782e9773762a1039ab77f54699",
+      "crates/pitgun-racing-simulator/examples/relief_response_probe.rs": "9a3af987bda95f7e19ef4d5ef284d6495ce88867693f268b03d21725c1ef5ff2",
+      "crates/pitgun-racing-simulator/examples/tuning_response_probe.rs": "e90881ec4d87ca40aca10cfac77465c75bc5356bd79936a099edac5ccc958776",
+      "crates/pitgun-racing-simulator/examples/era2_strategy_probe.rs": "17bf43d2ab0cc2fb9fbcee94fc1610c1db335f5de78fbcb3494b254de6edab95",
+      "crates/pitgun-racing-simulator/examples/tire_operating_probe.rs": "64743ee4da44e4a7eeb267f25999a810b0ddb0ac109dcbf4a5e861af2e7c8651",
+      "crates/pitgun-racing-simulator/examples/tire_performance_probe.rs": "3617344fa06e29463c8868e854355d29d51cc6a65cb96d731cc12fd7c0a75a68",
+      "crates/pitgun-racing-simulator/examples/thermal_physics_v2_probe.rs": "46e6f2a818a0c93a94978269e21605e9f3b9bfa8cb25ed8bf00b6272b929ecff",
+      "crates/pitgun-racing-simulator/examples/era1_strategy_probe.rs": "4665833fa09737317d000174d806329054c1fc9957a64366a0c12c3d2f239735",
+      "crates/pitgun-racing-simulator/examples/v3_validation_probe.rs": "5eff32d1f49f93321c75ecf7622d224b5f71bcbf4dc6897e3b87c46a8f488879",
+      "crates/pitgun-racing-simulator/examples/racing_control_gp_probe.rs": "b3564b48cc0fc65dddda27726f93aa298d69b4cb8cb1328bcb039b0584c3db43",
+      "crates/pitgun-racing-simulator/examples/qualified_career_conformance.rs": "9842399a0a6bc6675d38f71508a2c287b735a2d8565d798ceaddb74a75ada789",
+      "crates/pitgun-racing-simulator/examples/power_telemetry_policy_probe.rs": "9bfa67c7f996c29d3b6641d6ef2e41ffad4cbb03905454264ee2f6d355660295",
+      "crates/pitgun-racing-simulator/examples/fixed_nine_budget_probe.rs": "8a428053812cac04ebbeb6dd98187331cf9f9448266e28ab6d435bb25fdeba8e",
+      "crates/pitgun-racing-simulator/examples/pit_strategy_audit.rs": "faa375020fd26e0c578e9886aa604c89cf13567b891687ce73d12d71475f0822",
+      "crates/pitgun-racing-simulator/examples/era3_budget_probe.rs": "a11a9142ac4ca68aca96b4c0c6b3d4ed410c46cfa8bfb125ffdfb7dda6b2f3c7",
+      "crates/pitgun-racing-simulator/examples/thermal_driver_probe.rs": "ce36d6dd2bb9a6b275ddc98bea1a55b57f19e4f8eea2ebb8177d73cd90d78d73",
+      "crates/pitgun-racing-simulator/examples/physics_baseline_probe.rs": "bd0316254d08f524ebf1a64f124d8317501beaa021504e1b21d51ac8dca2bd18",
+      "crates/pitgun-racing-simulator/examples/fixed_field_probe.rs": "1016f133de914c49c747642dc15323beef5e562b124b800b8f69b6e1928f3473",
+      "crates/pitgun-racing-simulator/examples/career_feedback_probe.rs": "97059afb4513ffbcffc6737330fdc1a0f6bd2cbfedb8ad5bd26ee907ce85a58e",
+      "crates/pitgun-racing-simulator/examples/qualified_gear_audit.rs": "797ce7d75552d032faa35c7478ecb6cf47306f784804a4bce9fc61d9e84a1a0b",
+      "crates/pitgun-racing-simulator/examples/high_speed_response_probe.rs": "192f6108fc174eb9c83de2757ecda8e9358e1cf2c4becaf3147e3b2d82e7b606",
+      "crates/pitgun-racing-simulator/examples/three_compound_bridge.rs": "98218f5efd53eecfc304be487e32dcc65f38c44767a5e2b06003261392298e69",
+      "crates/pitgun-racing-simulator/examples/era2_stop_diagnostic_probe.rs": "fb2b033520d6939dabab307f2d24e7e1fe9223415fa38d3a1708dfdc0eff9408",
+      "crates/pitgun-racing-simulator/examples/v3_driver_control_probe.rs": "ed5280b5255efeb780e7837754cafdf71690e55c8990ffaba9308df8eba005c7",
+      "crates/pitgun-racing-simulator/examples/longitudinal_energy_probe.rs": "7e9067980d329f81d8d71f06f940b070f7107932528867327b9b3fed975dae26",
+      "crates/pitgun-racing-simulator/examples/racing_service_control_probe.rs": "bdca19ca686eb19238f87e6e9cc153eef7c9d706bfe9a4f095888c73179d826b",
+      "crates/pitgun-racing-simulator/examples/driver_resolution_audit.rs": "0ac3b8b118b8e1df99def353764f3a0bc5849c1567aa9526a4226ec5f8fac251",
+      "crates/pitgun-racing-simulator/examples/thermal_tire_gameplay_probe.rs": "a53b4b641c094bac5c1dc6969cdf3e59888a2f19470514f64ede67f42747eab5",
+      "crates/pitgun-racing-simulator/examples/racing_control_probe.rs": "a9cd452e43ccbb0a053bac1a91dd8f55ea7c0d7e4ae9410c2e7c3e3623607f36",
+      "crates/pitgun-racing-simulator/examples/thermal_balance_sensitivity_probe.rs": "6b3985c16063dc9c9d62074116ddc37cd1f8a0f4cea7c0f389dc1fdb5ac28475",
+      "crates/pitgun-racing-simulator/examples/energy_cost_probe.rs": "8e9abd8c818fd1a2390bab3b3d56f9a2c2a4e376c9a982ce8fbdfa25592b11a4",
+      "crates/pitgun-racing-simulator/examples/fuel_preparation_probe.rs": "7cb94f27663443c9253e5e0cffb85f8b602861db98a6f249387f2cb54d29f5e6",
+      "crates/pitgun-racing-simulator/examples/support/frozen_thermal_input.rs": "302f79819f0113f9e118e6eb7998579e2806e9cda84f32e772448d1620303dbd",
+      "crates/pitgun-racing-simulator/src/fuel_preparation.rs": "bb1068fc78fbcb0451eaa665357576abd00ff2fdabf3e53c24f571a108b41a72",
+      "crates/pitgun-racing-simulator/src/workload.rs": "135c9a63a501be2139f66d77b498fe6e98a8b039b360fd34d6089eda44e7e327",
+      "crates/pitgun-racing-simulator/src/tire_operating.rs": "1456aaa7fdb82b8c8f0958f360d3b0ab20b172bfd66d482ee36171480d40849f",
+      "crates/pitgun-racing-simulator/src/thermal_driver.rs": "874101895f54b1ad590c8ee80b7bcc5d53a665d32daee3a690b6ab33865719c2",
+      "crates/pitgun-racing-simulator/src/thermal_career.rs": "f8b6300748c91f5058491c65f3c657b0cf4d0a17099851453b9bde891fcbd5a6",
+      "crates/pitgun-racing-simulator/src/lib.rs": "76870de90f0cf5fe9077bbb1725b536807aa36560d3b653c549d04bccca48f78",
+      "crates/pitgun-racing-simulator/src/catalog.rs": "28e80a150dd1f456086c01b3f982435b1ba24f1f8d0d74d14438a378253b8b18",
+      "crates/pitgun-racing-simulator/src/fuel_contract.rs": "4796c2d60e45ecac44fb7ff24253335e3110468cc3c7e03dd99c2f24dc8f02cb",
+      "crates/pitgun-racing-simulator/src/local_stream.rs": "6dff5dd4114d4e4724d6edc59a1ea700404f3b462f5ef6769876915703b3cf86",
+      "crates/pitgun-racing-simulator/src/thermal_profile.rs": "cacdff461d47384f6194fd5c7a789ab8ff2157047642f0651c2d12629d450911",
+      "crates/pitgun-racing-simulator/src/service_control.rs": "d8565ba4a6b874182caf1d094a5580f502357641cdd504ada24daa645ca02c3a",
+      "crates/pitgun-racing-simulator/src/tire_events.rs": "b69814274e98181418efe37041c16bbfe3dfa9f00523f6604e1f52ccca3e01f7",
+      "crates/pitgun-racing-simulator/src/evidence.rs": "7f7ea93cb9e57338a9fed5ea06112375f432c8f6be592391bab48a4aa034a04f",
+      "crates/pitgun-racing-simulator/src/qualified_career.rs": "2f307494dd437e0badb74802e9216aa5210299febffbdead3a36b28ea5164a64",
+      "crates/pitgun-racing-simulator/src/control_prototype.rs": "1a397e7b4552a61bf5dc4b7ad8d47562feceed3960882a9261e6fabbfa7b0f1c",
+      "crates/pitgun-racing-simulator/src/power_stream.rs": "9eeb801b4cb7fad290b9358b717ac35b091b9d3b306045e9a97c4f66445ae2f5",
+      "crates/pitgun-racing-simulator/src/physical_events.rs": "d3b189508799e36f9348197b4a8613da56304bab204671410cc2c08fcc63d159",
+      "crates/pitgun-racing-simulator/src/controlled_stream.rs": "31f4f4e9fb8fc5cc142b0e3979c0c9e5969227bea94f44e5eb9ce6d52e211195",
+      "crates/pitgun-racing-simulator/src/tire_preparation.rs": "97e7e6e72c22ce1e19307cc796a3ae602d532cce24dbe46d9bc59e0432e92596",
+      "crates/pitgun-racing-simulator/src/tire_performance.rs": "5d54b105e933a4a0aa6f969b87a7b8c4225f0df1a5cbb3d0451f25c5d6b38a78",
+      "crates/pitgun-racing-simulator/src/control_prototype/relevance.rs": "93f58d186c0c6500b25c731f74781c344c2f5326f88ca5e5cbb4670466d0f773",
+      "crates/pitgun-racing-simulator/src/control_prototype/tests.rs": "b943fb885540d5c4e6b146107915d3109c723709a4733c15050b5084424344c7",
+      "crates/pitgun-racing-simulator/src/controlled_stream/tests.rs": "b9954875cf626b7ff6aab72f1a1f40451e0f172dbb18c17a5317a5c7716cbf94",
+      "crates/pitgun-source-ws/src/lib.rs": "b056ff5b2dbb23ac6aa2d687857dbd3583d7667eba7e24d228188e1dc561c473",
+      "crates/pitgun-source-ws/src/async_source.rs": "8e777ed20b73f2f48e4c91c14277771f4c8e5c6b92a9fe77ec6df1d3949dd116",
+      "crates/pitgun-simulator/src/telemetry.rs": "65cfe841e0f70e9b7d0ac953c66b6715baf5da453584fd2280dfacbb8d06708d",
+      "crates/pitgun-simulator/src/runtime.rs": "002616945954b87a96c577e36f3a847ebcbf0e26edda2808c673c885eec02fc6",
+      "crates/pitgun-simulator/src/drivers.rs": "d6d057b2e35359a0341e851f8fdd29bc2d7bc1a6d2ce18754b87936df071a085",
+      "crates/pitgun-simulator/src/lib.rs": "7c4e5c570ae1f9d6f41fcdd1f35ce67ad31185c3bc17fb86596f3c1fbed8a224",
+      "crates/pitgun-simulator/src/provider.rs": "9e3a028bad7105cde7cec21246f62927f3c2b24df7f76bf12ef5005b2820f569",
+      "crates/pitgun-simulator/src/models.rs": "2ded33c9ba45d59c9b7ff2ba7445780ba0093457e4557644137da9c24953d281",
+      "crates/pitgun-simulator/src/catalog.rs": "871758243d95cb080730c196527f1fd62aa3a0dbe2fe94f31e1a2f5abf571194",
+      "crates/pitgun-simulator/src/profiles.rs": "31ac4e9331517a08682a35801db388b0ae555ccf07bc4101aeaaa8519f38ddce",
+      "crates/pitgun-simulator/src/state.rs": "c710c4ef6f1720020eb8689124dcfcf816b7b6ed2fe24c81a586f96c616d8f95",
+      "crates/pitgun-simulator/src/data.rs": "14a6ab8441a7d9625a2e51cf263f6457ee6668cf15847dc37b89d0684458f112",
+      "crates/pitgun-simulator/src/errors.rs": "db7a0cc7b89631655384f1e5e0be2212e0b852aabeebf5c989938535f78d2d82",
+      "crates/pitgun-simulator/src/tuning.rs": "027e233d25e52fcb8a0a40b0a399ec17d59f0017ada7868df490ba210932c233",
+      "crates/pitgun-simulator/src/simulator.rs": "b8f8e440047174cfdcb9a10dac576a5e2e3207735a3aec57c531bfd538f2a433",
+      "crates/pitgun-simulator/src/racing.rs": "71aaf93520c43a56674ba71226da026598273edad46bb56074e74ff98399457f",
+      "crates/pitgun-source-udp/src/lib.rs": "5f7e53fe281317065c4adcb9693a7d99ef864263c0e381199719fc61089b80e1",
+      "crates/pitgun-source-udp/src/async_source.rs": "e201d6cf1f297def53452d297be168e99c536347abda825799b9ae8aaa700256",
+      "crates/pitgun-signing/src/lib.rs": "db32bf5b3d1ebe8f1843556270b3deb5a21be678173ff0c80e7a7c6c7c59eebd",
+      "crates/pitgun-contract/tests/run_attempt_authorization.rs": "81a76b4401154f57dc65339fff76225c0e396a0fdb3599b76a7dde07f4101951",
+      "crates/pitgun-contract/tests/incremental_execution_stream.rs": "2ff3770da791582dfce64707a3da86d4ee3f1114293321e701ed8c5a44b915d5",
+      "crates/pitgun-contract/tests/determinism_cross_runtime.rs": "b086bb48a0352261705b9b3cbfa82bb3ae4c6e41350cae49f8bb36221471e463",
+      "crates/pitgun-contract/src/determinism.rs": "f52d1bf5631b297e2750e09805568782f01b7e1c9cae414f12513d223cd46011",
+      "crates/pitgun-contract/src/registry.rs": "3fffa255ed27b33b22bbe82cba5c8032ebe282a8ca1e2be41eef7d49f3815177",
+      "crates/pitgun-contract/src/verification.rs": "d1aed3e4704f80ca0466a2457012342fa8d4b8c40185a44def49221495dc9421",
+      "crates/pitgun-contract/src/lib.rs": "d081a84294bd90878573eec6ee81ff03bc798e77c0f0ce089da4bf70e3104c4b",
+      "crates/pitgun-contract/src/bundle.rs": "b9cc0af4c53b1428119e032968b91655b406034859e93277994f7af2b609f94e",
+      "crates/pitgun-contract/src/catalog.rs": "45e9bdf2a9a4c5bfcca897a3ce9987ae85b9ed7b2dea0853a3f7955441982404",
+      "crates/pitgun-contract/src/run.rs": "a841afb8a4c10b4ae534d7910a0184a713e3bd2328f43db4b06498919e0dbb9c",
+      "crates/pitgun-contract/src/metrics.rs": "528d8f97493451ba269a7c07286ce8bd90fe50c3eeca080a846cafb6dd85258a",
+      "crates/pitgun-contract/src/source.rs": "81c0cf01ae41b6a666ab4d5d426ef45cffa514f037bc595676f7e60bbc503441",
+      "crates/pitgun-contract/src/execution_stream.rs": "40d4fea72ed043b6a3c895ec14ee7b85dd423aaed3e4e6797a095baf5b475cbc",
+      "crates/pitgun-contract/src/codec.rs": "8e26b37598d8d69de05fd4a97509934997b208639695a50a89c50d4dd9992b54",
+      "crates/pitgun-contract/src/frame.rs": "29709e0d94a6a731ec570bd4e64423782873373e8e7e8a1fb442b5c1a18cda75",
+      "crates/pitgun-contract/src/attempt_authorization.rs": "902d08689eddcda8adff438971bff0e3fce2824524898da3b0b024fee2a570b0",
+      "crates/pitgun-contract/src/authorization.rs": "687b0fe07a931833e8d627bc917c98d1eb1c3435ad15951954504984465df17d",
+      "crates/pitgun-codec-udp/src/ecubridge.rs": "6f4e2da882c1c550c45fdd0d5819303810189fcb0360a0d120097ea5693de2cf",
+      "crates/pitgun-codec-udp/src/lib.rs": "d2224844d2f2bbceadb579fdc5aa02192b3f7c1c4739437d457b5a433fb8244e",
+      "crates/pitgun-codec-udp/src/f1.rs": "09481676321dadac9cc858e76d29f74a635b98b9c8f2cb6e71877fa9ee67d65c",
+      "crates/pitgun-racing-policy/tests/tuning_v1.rs": "bd09284f45e30e6cc48d477b4c7cb5589a1fee4c7dbed47953acf40664539b0e",
+      "crates/pitgun-racing-policy/src/lib.rs": "a32d0c133dba5111200c42e5595a8b7e1b89d654e5c6f4aedcddd282d58d6d40",
+      "crates/pitgun-policy/src/access.rs": "07219f8fd6819c124ffef2f328fc0523e66d80515dda9b7b9134f6dc74a6f221",
+      "crates/pitgun-policy/src/lib.rs": "218d17eabd2a6c8d1421b3d9a62afb0cb87b7200004fabcafc11606116349401",
+      "crates/pitgun-policy/src/tuning/mod.rs": "1376b736f7a1925586be9413389a93c25d56cab987c2d6a54882bfb0c3c3a3cf",
+      "crates/pitgun-policy/src/tuning/v1/error.rs": "f3bd049817924d3d15e2283b86c8110706f08b22e712e2a7fb80a925b1e897bf",
+      "crates/pitgun-policy/src/tuning/v1/mod.rs": "551546ac9c80367d26ded4732fb7a0f7643328de56e1fcda94972263d24d7526",
+      "crates/pitgun-policy/src/tuning/v1/expr.rs": "7dafae1ea8f5aee779969582363100f2a2e91a1f105beb57703c02beb26a821d",
+      "crates/pitgun-policy/src/tuning/v1/schema.rs": "9d7312364c6d7538f81eef1aa56e32441e0178d6dc2e1efa19bcfe527baf2a27",
+      "crates/pitgun-policy/src/tuning/v1/canonicalize.rs": "a9b8d8c2500026b993408314716868f928f793eeb7b6e12575739a426e0a112f",
+      "crates/pitgun-policy/src/tuning/v1/validate.rs": "9f91db1609ba8f819ca8929a29e9aae49dbf7316877b5b034f0f86314750f298",
+      "crates/pitgun-codec-json/src/lib.rs": "3fb37131504e753c3fea42416b251ba668b25a8419e0c13a261deccb39a7b4ac",
+      "crates/pitgun-source-kafka/src/lib.rs": "dd2576cf5480d026535994adb68b6e6396b8bc168932431736027295355104f8",
+      "crates/pitgun-racing-contract/tests/racing_schema_compatibility.rs": "afd8ecd81477e9bd350bcce60a7b5228b6c419e5c1d4b7c20cfd017a45309c0a",
+      "crates/pitgun-racing-contract/tests/racing_model_parameters.rs": "0e9a9ebeba0c728b31e10ccdf068e2d2a073b21772f6a9b5e7e0db752ed6a108",
+      "crates/pitgun-racing-contract/tests/completed_driver_instruction_identity.rs": "1e1ccb84023a20b4ea129a27f776a32f2ba5754fa946b3b00512f9194a2064cb",
+      "crates/pitgun-racing-contract/tests/driver_instruction_authorization.rs": "6c71c81ee862f70f817ee0987f78a047ec419304ae8019c3f612a2b6ebf69431",
+      "crates/pitgun-racing-contract/tests/dynamic_attempt_evidence.rs": "0f930cb4576fdcbe0f9dc56a546f9f868754e88d75efcd3ad9852a5009c3c781",
+      "crates/pitgun-racing-contract/tests/game_vehicle_unlock_contract.rs": "90d0da2a977f95640b622bbbf80bc743d2ddfb42d30f22542c7faa90d1370627",
+      "crates/pitgun-racing-contract/src/completed_run.rs": "33b7a6fc80731632ec9d872ae6ba3ea2cba216134b3410e82b60bb56bb5ec7db",
+      "crates/pitgun-racing-contract/src/race.rs": "1daa4414d169632212ba7e5cbc599888e24aa5d88b5b1fa620b75df01b327962",
+      "crates/pitgun-racing-contract/src/lib.rs": "47b1ba77769dd6ade26481dbd6cfc7656eeded10816a788bf14948377311a00e",
+      "crates/pitgun-racing-contract/src/catalog.rs": "71215e687032336b0b4113776236e53740ee41a7cd6ad5928aeb4544cb5ffd59",
+      "crates/pitgun-racing-contract/src/service_control.rs": "e9d3f5e21367135fbd33e7cf8d7089f09b4a8c167e8594e4b009e931a2289e1d",
+      "crates/pitgun-racing-contract/src/model_parameters.rs": "d979f4db3ac1f3fc7863f5c65f826fdda4181dd5b5f54eab7ed63b99a4b7c227",
+      "crates/pitgun-racing-contract/src/components.rs": "fcf009b22859c1e2bb9229062a2c61fb27511fa4b6087f71f67536d310104957",
+      "crates/pitgun-racing-contract/src/driver.rs": "b1eb7033c745cc04fe54ba17cd15a2581b1038b455de30c7d6b928e941cf601c",
+      "crates/pitgun-racing-contract/src/authority.rs": "959e7d1dc93fb3eb9c46c35a23d4d9b317d31c4e0377e65cd2363893f715179f",
+      "crates/pitgun-racing-contract/src/instruction_authorization.rs": "e71e76ed87eb9a749c11b35678fa789affd0c9995773ae0d3488cf09c163f16b",
+      "crates/pitgun-runtime/tests/linked_workload.rs": "f8f7b6f46b9bf62d409f2ae5a57413ee25a0dd936305fd055da29eeb29083a3e",
+      "crates/pitgun-runtime/tests/run_bundle_verification.rs": "19472a645b5aba644cb4cf4fee2b46add4e61ba915e015c3df9ff3f9c1da9530",
+      "crates/pitgun-runtime/tests/rng_v1.rs": "327d2a0c57807f6c354ab5bbbd17635711d45aaf1e7b1fe86c69f2fa366d1cc0",
+      "crates/pitgun-runtime/src/workload.rs": "1241f6fc863ccdef1393f493990bbe9cf3e3b994b93ca3977ee20dff6b66b22e",
+      "crates/pitgun-runtime/src/rng.rs": "3f59f953a146a851b95ea0bb0a881fd7329216e617c6153eb7f0624b169bb42e",
+      "crates/pitgun-runtime/src/verification.rs": "d369cea5d10d028cd7c3f9b2e9f027d46df18db6a0083aa136b3d6ffa8afa8c7",
+      "crates/pitgun-runtime/src/lib.rs": "e6e4ead80fff9a4c7539de5cfbce1144c46ac3607653b3e47a5f0236587dbd45",
+      "crates/pitgun-source-mqtt/src/lib.rs": "d02c299115b60d910fe407354c8e7301b932f5ed444e7637522f9769a6b66e5c"
+    },
+    "script_sha256": "f340567f408673734b923d1692bb95adcd28c15948ce1f954403e659070b6882",
+    "plan": {
+      "schema": "pitgun.era3-fuel-estimate-plan/v1",
+      "pilot_archive": "results/pilot-v1.json.gz",
+      "pilot_archive_sha256": "45e60bacd85eb47c572441a1a8978ac2e18fc9e504626eb4d88fe8dd4b6592ba",
+      "pilot_row_indices": [
+        0,
+        12,
+        18,
+        20
+      ],
+      "repeat_row_index": 0,
+      "binary_sha256": "af79cb11b53381fe205542672b38cdc63da0b82f78494f6422f42fb8e3baeb44",
+      "tire_policy": "experiments/thermal_balance_sensitivity_v1/rolling-heat-065.json",
+      "fuel_policy": "experiments/fuel_preparation_v1/profile-v1.json",
+      "fuel_policy_sha256": "e13c107d721e401029d603ceb49d822c080a1fb41bdfbf5c1e723490f35db521",
+      "scope": "Post-pilot diagnosis, not reserved qualification; four original physical inputs must bridge exactly. Existing maximum110kg/reserve1kg/uncertainty8pct, no coefficients changed. At most20pilot laps including one exact repeat; no full GP."
+    }
+  },
+  "rows": [
+    {
+      "case_index": 0,
+      "data": {
+        "case": {
+          "actor": "franz_hermann",
+          "circuit": "BARCELONA",
+          "downforce": 0.5,
+          "effective_allocation": [
+            9,
+            8,
+            9,
+            8
+          ],
+          "effective_budget": 34,
+          "fixture_id": "craft_engineering:era3-developed",
+          "gear": 0.5,
+          "id": "III/BARCELONA/developed/34/franz_hermann/neutral/1stop",
+          "kind": "field",
+          "mode": "balanced",
+          "policy_id": "rolling-heat-065",
+          "seed": 83017,
+          "strategy": {
+            "pit_laps": [
+              33
+            ],
+            "stints": [
+              {
+                "laps": 33,
+                "tire_id": "medium"
+              },
+              {
+                "laps": 33,
+                "tire_id": "hard"
+              }
+            ]
+          }
+        },
+        "original_physical_input_digest": "sha256:d539b136fa30a1b3185540ac75b041e1884a4ba1f40f3d13d66c09c216dc4e27",
+        "preparation": {
+          "estimated_driving_kg": 122.64017693746584,
+          "estimated_service_kg": 0.0088,
+          "outcome": {
+            "estimated_start_kg": 133.5,
+            "kind": "estimate_exceeds_limit",
+            "maximum_start_kg": 110.0
+          },
+          "pilots": [
+            {
+              "completed_laps": 2,
+              "input_digest": "sha256:62c5169a7870ddd42a959c098c60e695e988323d2fcf33fde486c0eb0a029398",
+              "maximum_consumption_kg_per_m": 0.00039841005554299157,
+              "tire_digest": "sha256:25cf604b038c201ecee3b1f73fb24be34a994b5b35d8a706aed05701c7a44def"
+            },
+            {
+              "completed_laps": 2,
+              "input_digest": "sha256:c6a41e4c774dce3174e8f3a580537c4f95be23e32dfd7dcc9e6be6f49353045b",
+              "maximum_consumption_kg_per_m": 0.00038898056124980876,
+              "tire_digest": "sha256:d8e0fdc31a053f23e2f173ac7d2caada2d3908eb6c4b0015749569b11b5c6294"
+            }
+          ],
+          "policy_digest": "sha256:f1f9eb41f68c86ad23d8665fedcc1d7c422354f1e6b580825abd562b4a5438b3",
+          "prepared_input_digest": null,
+          "schema_version": "pitgun.fuel-preparation/v1",
+          "source_input_digest": "sha256:d539b136fa30a1b3185540ac75b041e1884a4ba1f40f3d13d66c09c216dc4e27"
+        },
+        "prepared_input_available": false,
+        "schema": "pitgun.era3-initial-fuel-estimate/v1",
+        "scope": "Bounded initial-plan estimate only; no GP, capacity identification or model/runtime admission."
+      },
+      "wall_s": 0.9847897910000001
+    },
+    {
+      "case_index": 12,
+      "data": {
+        "case": {
+          "actor": "balanced_reference",
+          "circuit": "BARCELONA",
+          "downforce": 0.5,
+          "effective_allocation": [
+            9,
+            8,
+            9,
+            8
+          ],
+          "effective_budget": 34,
+          "fixture_id": "craft_engineering:era3-developed",
+          "gear": 0.5,
+          "id": "III/BARCELONA/developed/34/balanced_reference/neutral/1stop",
+          "kind": "career",
+          "mode": "balanced",
+          "policy_id": "rolling-heat-065",
+          "seed": 83017,
+          "strategy": {
+            "pit_laps": [
+              33
+            ],
+            "stints": [
+              {
+                "laps": 33,
+                "tire_id": "medium"
+              },
+              {
+                "laps": 33,
+                "tire_id": "hard"
+              }
+            ]
+          }
+        },
+        "original_physical_input_digest": "sha256:0444257aae293538b674bfe1cccb834cb05e69499e6db1a5cbcee57f4a012508",
+        "preparation": {
+          "estimated_driving_kg": 122.94491712799984,
+          "estimated_service_kg": 0.0088,
+          "outcome": {
+            "estimated_start_kg": 134.0,
+            "kind": "estimate_exceeds_limit",
+            "maximum_start_kg": 110.0
+          },
+          "pilots": [
+            {
+              "completed_laps": 2,
+              "input_digest": "sha256:5964766928530f9aa1d60fde1cf02be3dc1d4a6a3f1e3d12c4fec2659687bac7",
+              "maximum_consumption_kg_per_m": 0.0003994000374499709,
+              "tire_digest": "sha256:25cf604b038c201ecee3b1f73fb24be34a994b5b35d8a706aed05701c7a44def"
+            },
+            {
+              "completed_laps": 2,
+              "input_digest": "sha256:236fd7fc3207e1dbcfa338b0a0ee872c014296466a56dcbdd5efa1005e81c341",
+              "maximum_consumption_kg_per_m": 0.0003895393208344896,
+              "tire_digest": "sha256:d8e0fdc31a053f23e2f173ac7d2caada2d3908eb6c4b0015749569b11b5c6294"
+            }
+          ],
+          "policy_digest": "sha256:f1f9eb41f68c86ad23d8665fedcc1d7c422354f1e6b580825abd562b4a5438b3",
+          "prepared_input_digest": null,
+          "schema_version": "pitgun.fuel-preparation/v1",
+          "source_input_digest": "sha256:0444257aae293538b674bfe1cccb834cb05e69499e6db1a5cbcee57f4a012508"
+        },
+        "prepared_input_available": false,
+        "schema": "pitgun.era3-initial-fuel-estimate/v1",
+        "scope": "Bounded initial-plan estimate only; no GP, capacity identification or model/runtime admission."
+      },
+      "wall_s": 0.49453087500000015
+    },
+    {
+      "case_index": 18,
+      "data": {
+        "case": {
+          "actor": "balanced_reference",
+          "circuit": "BARCELONA",
+          "downforce": 0.5,
+          "effective_allocation": [
+            6,
+            6,
+            6,
+            6
+          ],
+          "effective_budget": 24,
+          "fixture_id": "craft_engineering:era3-entry",
+          "gear": 0.5,
+          "id": "III/BARCELONA/entry/24/balanced_reference/neutral/1stop",
+          "kind": "career",
+          "mode": "balanced",
+          "policy_id": "rolling-heat-065",
+          "seed": 83017,
+          "strategy": {
+            "pit_laps": [
+              33
+            ],
+            "stints": [
+              {
+                "laps": 33,
+                "tire_id": "medium"
+              },
+              {
+                "laps": 33,
+                "tire_id": "hard"
+              }
+            ]
+          }
+        },
+        "original_physical_input_digest": "sha256:b83e3c6070de3bb002d551567a9ddad7ba2f28aea61ae52b346b332669e8adaa",
+        "preparation": {
+          "estimated_driving_kg": 81.84141249142925,
+          "estimated_service_kg": 0.0088,
+          "outcome": {
+            "initial_kg": 89.5,
+            "kind": "prepared"
+          },
+          "pilots": [
+            {
+              "completed_laps": 2,
+              "input_digest": "sha256:ade520b602498cb78d048f0cd12b72f16369f46c77cff8dfc62d6d887c93691d",
+              "maximum_consumption_kg_per_m": 0.00026587079789564574,
+              "tire_digest": "sha256:25cf604b038c201ecee3b1f73fb24be34a994b5b35d8a706aed05701c7a44def"
+            },
+            {
+              "completed_laps": 2,
+              "input_digest": "sha256:6a40d6b26107d67ca5c02021e8226e8fa225a04f8c048e1872dacca1103a3904",
+              "maximum_consumption_kg_per_m": 0.0002595789902735021,
+              "tire_digest": "sha256:d8e0fdc31a053f23e2f173ac7d2caada2d3908eb6c4b0015749569b11b5c6294"
+            }
+          ],
+          "policy_digest": "sha256:f1f9eb41f68c86ad23d8665fedcc1d7c422354f1e6b580825abd562b4a5438b3",
+          "prepared_input_digest": "sha256:4bba1fe75a7499bfdebb2608c42932214d76f14ee6a52bc1edde7db8120eb7b1",
+          "schema_version": "pitgun.fuel-preparation/v1",
+          "source_input_digest": "sha256:b83e3c6070de3bb002d551567a9ddad7ba2f28aea61ae52b346b332669e8adaa"
+        },
+        "prepared_input_available": true,
+        "schema": "pitgun.era3-initial-fuel-estimate/v1",
+        "scope": "Bounded initial-plan estimate only; no GP, capacity identification or model/runtime admission."
+      },
+      "wall_s": 0.49950570800000005
+    },
+    {
+      "case_index": 20,
+      "data": {
+        "case": {
+          "actor": "balanced_reference",
+          "circuit": "BARCELONA",
+          "downforce": 0.5,
+          "effective_allocation": [
+            20,
+            20,
+            20,
+            20
+          ],
+          "effective_budget": 82,
+          "fixture_id": "craft_engineering:era3-developed",
+          "gear": 0.5,
+          "id": "III/BARCELONA/developed/82/balanced_reference/neutral/2stop",
+          "kind": "field",
+          "mode": "balanced",
+          "policy_id": "rolling-heat-065",
+          "seed": 83017,
+          "strategy": {
+            "pit_laps": [
+              22,
+              44
+            ],
+            "stints": [
+              {
+                "laps": 22,
+                "tire_id": "medium"
+              },
+              {
+                "laps": 22,
+                "tire_id": "hard"
+              },
+              {
+                "laps": 22,
+                "tire_id": "medium"
+              }
+            ]
+          }
+        },
+        "original_physical_input_digest": "sha256:bc2f8022fd4256a2c878ea547319feb8f22cc0a9ec64410be3e52bdcd3209106",
+        "preparation": {
+          "estimated_driving_kg": 126.68940089015706,
+          "estimated_service_kg": 0.0176,
+          "outcome": {
+            "estimated_start_kg": 138.0,
+            "kind": "estimate_exceeds_limit",
+            "maximum_start_kg": 110.0
+          },
+          "pilots": [
+            {
+              "completed_laps": 2,
+              "input_digest": "sha256:c38905f5e9564aef81b2c712dcf1191c6438fc2728270d768de354d527c50b39",
+              "maximum_consumption_kg_per_m": 0.0004115644033283859,
+              "tire_digest": "sha256:25cf604b038c201ecee3b1f73fb24be34a994b5b35d8a706aed05701c7a44def"
+            },
+            {
+              "completed_laps": 2,
+              "input_digest": "sha256:96f6e4fbdff2bca2ef2964c7f06a8fea58b124a9f92b056e75efe207cfb5e616",
+              "maximum_consumption_kg_per_m": 0.00040149909621400057,
+              "tire_digest": "sha256:d8e0fdc31a053f23e2f173ac7d2caada2d3908eb6c4b0015749569b11b5c6294"
+            }
+          ],
+          "policy_digest": "sha256:f1f9eb41f68c86ad23d8665fedcc1d7c422354f1e6b580825abd562b4a5438b3",
+          "prepared_input_digest": null,
+          "schema_version": "pitgun.fuel-preparation/v1",
+          "source_input_digest": "sha256:bc2f8022fd4256a2c878ea547319feb8f22cc0a9ec64410be3e52bdcd3209106"
+        },
+        "prepared_input_available": false,
+        "schema": "pitgun.era3-initial-fuel-estimate/v1",
+        "scope": "Bounded initial-plan estimate only; no GP, capacity identification or model/runtime admission."
+      },
+      "wall_s": 0.5023997910000002
+    },
+    {
+      "case_index": 0,
+      "data": {
+        "case": {
+          "actor": "franz_hermann",
+          "circuit": "BARCELONA",
+          "downforce": 0.5,
+          "effective_allocation": [
+            9,
+            8,
+            9,
+            8
+          ],
+          "effective_budget": 34,
+          "fixture_id": "craft_engineering:era3-developed",
+          "gear": 0.5,
+          "id": "III/BARCELONA/developed/34/franz_hermann/neutral/1stop",
+          "kind": "field",
+          "mode": "balanced",
+          "policy_id": "rolling-heat-065",
+          "seed": 83017,
+          "strategy": {
+            "pit_laps": [
+              33
+            ],
+            "stints": [
+              {
+                "laps": 33,
+                "tire_id": "medium"
+              },
+              {
+                "laps": 33,
+                "tire_id": "hard"
+              }
+            ]
+          }
+        },
+        "original_physical_input_digest": "sha256:d539b136fa30a1b3185540ac75b041e1884a4ba1f40f3d13d66c09c216dc4e27",
+        "preparation": {
+          "estimated_driving_kg": 122.64017693746584,
+          "estimated_service_kg": 0.0088,
+          "outcome": {
+            "estimated_start_kg": 133.5,
+            "kind": "estimate_exceeds_limit",
+            "maximum_start_kg": 110.0
+          },
+          "pilots": [
+            {
+              "completed_laps": 2,
+              "input_digest": "sha256:62c5169a7870ddd42a959c098c60e695e988323d2fcf33fde486c0eb0a029398",
+              "maximum_consumption_kg_per_m": 0.00039841005554299157,
+              "tire_digest": "sha256:25cf604b038c201ecee3b1f73fb24be34a994b5b35d8a706aed05701c7a44def"
+            },
+            {
+              "completed_laps": 2,
+              "input_digest": "sha256:c6a41e4c774dce3174e8f3a580537c4f95be23e32dfd7dcc9e6be6f49353045b",
+              "maximum_consumption_kg_per_m": 0.00038898056124980876,
+              "tire_digest": "sha256:d8e0fdc31a053f23e2f173ac7d2caada2d3908eb6c4b0015749569b11b5c6294"
+            }
+          ],
+          "policy_digest": "sha256:f1f9eb41f68c86ad23d8665fedcc1d7c422354f1e6b580825abd562b4a5438b3",
+          "prepared_input_digest": null,
+          "schema_version": "pitgun.fuel-preparation/v1",
+          "source_input_digest": "sha256:d539b136fa30a1b3185540ac75b041e1884a4ba1f40f3d13d66c09c216dc4e27"
+        },
+        "prepared_input_available": false,
+        "schema": "pitgun.era3-initial-fuel-estimate/v1",
+        "scope": "Bounded initial-plan estimate only; no GP, capacity identification or model/runtime admission."
+      },
+      "wall_s": 0.49646045800000005
+    }
+  ],
+  "exactRepeat": true,
+  "uniqueInputs": 4,
+  "pilotLapsIncludingRepeat": 20,
+  "fullGpComputed": 0,
+  "scope": "Existing110kg operational-limit policy diagnostic; not proof of tank capacity or physical impossibility. No prepared GP or game admission."
+}

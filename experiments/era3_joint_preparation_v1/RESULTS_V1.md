@@ -65,3 +65,33 @@ The first console summary assumed every outcome carried a successful result
 digest; it raised only **after** all22rows and the final archive were durably saved.
 The reporting helper now handles partial outcomes explicitly and has a regression
 test. No GP was recomputed to repair reporting; the raw frozen archive is unchanged.
+
+## Existing automatic-fuel diagnostic — c4f67e2
+
+Four original resolved physical inputs bridge **exactly** to the100kg pilot.
+The unchanged110kg-limit preparation policy makes bounded two-lap-per-compound
+estimates. No full GP is computed in this diagnostic.
+
+| Input | Estimated starting mass, including existing policy reserve/margin | Existing110kg-limit outcome |
+|---|---:|---|
+| Franz, V6T cap34 neutral one-stop |133.5kg|EstimateExceedsLimit|
+| Reference, V6T cap34 neutral one-stop |134.0kg|EstimateExceedsLimit|
+| Reference, actual V8 entry cap24 |89.5kg|Prepared input available|
+| Reference, V6T available82/spent80 two-stop |138.0kg|EstimateExceedsLimit|
+
+One exact repeat of the Franz estimate,20pilot laps including that repeat. Source
+input is never mutated; receipt binds the original input, preparation policy,
+pilot inputs and optional prepared input. Completed-cache resume performs no new
+solver calls and preserves every native receipt/result byte and mtime.
+
+The limit remains an **experimental operational bound**, not a historical tank or
+F1 rule. These estimates are not measured minimum fuel requirements. Prior work
+already demonstrated conservative estimates exceeding a limit even when an actual
+GP could finish at that limit. Neither raising the limit blindly nor reducing
+consumption to make it pass follows from this diagnostic.
+
+Next under#445/#496: compare bounded actual110kg outcomes with estimates on a
+small fixed turbo set, then select/document an era/vehicle-aware automatic initial
+fuel policy and validate finish reserve. Keep capacity, initial charge and reserve
+separate. Only then freeze the full joint era-III field matrix. I/II playtesting
+continues on its unchanged100kgqualified candidate; no player fuel slider is added.
