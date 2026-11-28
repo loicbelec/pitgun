@@ -1,0 +1,17 @@
+{
+  "schema": "pitgun.era3-fuel-estimate-plan/v1",
+  "pilot_archive": "results/pilot-v1.json.gz",
+  "pilot_archive_sha256": "45e60bacd85eb47c572441a1a8978ac2e18fc9e504626eb4d88fe8dd4b6592ba",
+  "pilot_row_indices": [
+    0,
+    12,
+    18,
+    20
+  ],
+  "repeat_row_index": 0,
+  "binary_sha256": "af79cb11b53381fe205542672b38cdc63da0b82f78494f6422f42fb8e3baeb44",
+  "tire_policy": "experiments/thermal_balance_sensitivity_v1/rolling-heat-065.json",
+  "fuel_policy": "experiments/fuel_preparation_v1/profile-v1.json",
+  "fuel_policy_sha256": "e13c107d721e401029d603ceb49d822c080a1fb41bdfbf5c1e723490f35db521",
+  "scope": "Post-pilot diagnosis, not reserved qualification; four original physical inputs must bridge exactly. Existing maximum110kg/reserve1kg/uncertainty8pct, no coefficients changed. At most20pilot laps including one exact repeat; no full GP."
+}

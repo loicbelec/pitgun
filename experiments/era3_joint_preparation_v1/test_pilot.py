@@ -40,4 +40,10 @@ class ExplicitBudgetChecks(unittest.TestCase):
    row['checks']=['changed'];run.write(path,row)
    with self.assertRaises(ValueError):run.EraJournal(root/'journal',native,identity,matrix)
 
+class FailedPilotReport(unittest.TestCase):
+ def test_partial_fuel_outcomes_do_not_require_a_success_digest(self):
+  row={'case':{'id':'incomplete'},'data':{'case':{'id':'incomplete'},'outcome':{'ok':False,'error':'fuel shortfall'},'laps':[],'receipt':{'budget':82,'spent_budget':80}},'wall_s':1.0,'checks':['physical_or_resolution_failure']}
+  summary=run.summarize_rows([row,deepcopy(row)])
+  self.assertEqual(summary['attemptedGP'],2);self.assertEqual(summary['completedGP'],0);self.assertTrue(summary['exactFullOrPartialRepeat']);self.assertEqual(len(summary['failedCases']),2)
+
 if __name__=='__main__':unittest.main()

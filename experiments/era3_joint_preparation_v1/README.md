@@ -51,3 +51,11 @@ See [preregistered pilot acceptance](ACCEPTANCE.md). The complete joint field
 campaign and new reserved review follow pilot interpretation; no candidate is
 selected, admitted or deployed by merely completing these22GP. III, IV and V are
 separate serial lots. Full new-physics staging still requires all five open eras.
+
+## Current result
+
+The fixed100kg pilot is **REFINE**:22attempts/1,315accepted laps, only the two
+actual-entry V8 cases finish; turbo attempts exhaust fuel before66laps. Full
+[failure-preserving interpretation](RESULTS_V1.md). No joint field fitting yet.
+The separate diagnostic reuses the existing bounded automatic-fuel preparer,
+without changing a coefficient, tank limit or game setting.

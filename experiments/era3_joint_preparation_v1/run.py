@@ -97,6 +97,14 @@ class EraJournal(Journal):
         return row
 
 
+def summarize_rows(rows):
+    repeat=rows[0]['data']==rows[-1]['data']
+    summary={'complete':True,'attemptedGP':len(rows),'completedGP':sum(r['data']['outcome']['ok']for r in rows),'laps':sum(len(r['data']['laps'])for r in rows),'failedCases':[{'id':r['case']['id'],'checks':r['checks']}for r in rows if r['checks']],
+        'exactFullOrPartialRepeat':repeat,'nativeWallSeconds':sum(r['wall_s']for r in rows),'rows':[{'id':r['case']['id'],'ok':r['data']['outcome']['ok'],'timeSeconds':r['data']['outcome'].get('time_s'),'nativeWallSeconds':r['wall_s'],'minimumPowerFraction':min((l['minimum_power_fraction']for l in r['data'].get('laps',[])),default=None),'availableCap':r['data'].get('receipt',{}).get('budget'),'spent':r['data'].get('receipt',{}).get('spent_budget')}for r in rows],
+        'qualification':'Pilot diagnostics only; no fixed-nine candidate, reserved review, runtime or model-quality admission.'}
+    return summary
+
+
 def run(plan_path,binary,cache,output,max_new_gp=22,max_wall_seconds=1800):
     plan=load(plan_path);plan['retained_files']=dict(plan['retained_files'])
     for path in list(HERE.glob('*.py'))+[Path(plan_path),HERE/'ACCEPTANCE.md',HERE/'export_career_fixtures.mjs']:
@@ -121,10 +129,7 @@ def run(plan_path,binary,cache,output,max_new_gp=22,max_wall_seconds=1800):
             journal.export(output,{'schema':'pitgun.era3-native-pilot/v1','plan':load(plan_path),'provenance':worker.pin,'source_matrix_sha256':digest})
         elif load(output)['journal_sha256']!=sha(journal.path):
             raise ValueError('retained archive journal differs')
-        data=load(output);rows=data['rows'];repeat=rows[0]['data']['outcome']['result_digest']==rows[-1]['data']['outcome']['result_digest']
-        summary={'complete':True,'gp':len(rows),'laps':sum(len(r['data']['laps'])for r in rows),'numericalFailures':[{'id':r['case']['id'],'checks':r['checks']}for r in rows if r['checks']],
-            'exactRepeat':repeat,'nativeWallSeconds':sum(r['wall_s']for r in rows),'rows':[{'id':r['case']['id'],'ok':r['data']['outcome']['ok'],'timeSeconds':r['data']['outcome'].get('time_s'),'nativeWallSeconds':r['wall_s'],'minimumPowerFraction':min((l['minimum_power_fraction']for l in r['data'].get('laps',[])),default=None),'availableCap':r['data'].get('receipt',{}).get('budget'),'spent':r['data'].get('receipt',{}).get('spent_budget')}for r in rows],
-            'qualification':'Pilot diagnostics only; no fixed-nine candidate, reserved review, runtime or model-quality admission.'}
+        summary=summarize_rows(load(output)['rows'])
         summary_path=Path(output).with_suffix('.summary.json')
         if not summary_path.exists() or load(summary_path)!=summary:write(summary_path,summary)
         return summary

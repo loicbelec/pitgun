@@ -2,7 +2,9 @@
 use pitgun_contract::canonical_json_digest;
 use pitgun_racing_contract::{CompetitorStintStrategy, RacingDrivingMode};
 use pitgun_racing_simulator::{
-    RacingCatalogSnapshot, RunRaceRequest, qualified_career,
+    RacingCatalogSnapshot, RunRaceRequest,
+    fuel_preparation::{FuelPreparationPolicyV1, prepare_fuel_v1},
+    qualified_career,
     thermal_career::resolve_thermal_career_v1,
     thermal_driver::{
         ThermalDriverPolicyV1, apply_thermal_driver_v1, resolve_thermal_driver_resource_v1,
@@ -37,7 +39,17 @@ struct Case {
     strategy: CompetitorStintStrategy,
 }
 
+#[cfg(test)]
 fn execute(policy: &TireOperatingPolicyV1, case: &Case, audit_only: bool) -> Result<Value, String> {
+    execute_with_fuel_estimate(policy, case, audit_only, None)
+}
+
+fn execute_with_fuel_estimate(
+    policy: &TireOperatingPolicyV1,
+    case: &Case,
+    audit_only: bool,
+    fuel_policy: Option<&FuelPreparationPolicyV1>,
+) -> Result<Value, String> {
     let fixtures: Value = serde_json::from_str(include_str!(
         "../../../experiments/era3_joint_preparation_v1/results/career-fixtures-v1.json"
     ))
@@ -210,6 +222,12 @@ fn execute(policy: &TireOperatingPolicyV1, case: &Case, audit_only: bool) -> Res
     };
     apply_thermal_driver_v1(&mut input, &driver)?;
     let physical_digest = canonical_json_digest(&input).map_err(|e| e.to_string())?;
+    if let Some(policy) = fuel_policy {
+        let (receipt, prepared) = prepare_fuel_v1(&input, policy)?;
+        return Ok(
+            json!({"schema":"pitgun.era3-initial-fuel-estimate/v1","case":case,"original_physical_input_digest":physical_digest,"preparation":receipt,"prepared_input_available":prepared.is_some(),"scope":"Bounded initial-plan estimate only; no GP, capacity identification or model/runtime admission."}),
+        );
+    }
     let receipt = json!({"policy_id":case.policy_id,"resolved_compounds":input.thermal_physics_v2.as_ref().unwrap().compounds,"policy_digest":compiled.policy_digest,"physical_input_digest":physical_digest,"request_digest":canonical_json_digest(&request).map_err(|e|e.to_string())?,"laps":laps,"budget":effective_budget,"spent_budget":a.iter().map(|v|u64::from(*v)).sum::<u64>(),"unused_budget":effective_budget-a.iter().map(|v|u64::from(*v)).sum::<u64>(),"fixture_available_effective_budget":fixture_budget,"kind":case.kind,"actor":case.actor,"bonus_offsets":offsets,"points":a,"fixture_id":case.fixture_id,"fixture_digest":canonical_json_digest(fixture).map_err(|e|e.to_string())?,"components":components,"driver":driver,"initial_state":input.state,"engine":input.vehicle.engine,"mechanical":input.mechanical,"pit_loss_s":input.config.pit_time_penalty_s,"stops":input.pit_plan.stops.iter().map(|s|s.lap).collect::<Vec<_>>()});
     if audit_only {
         return Ok(json!({"case":case,"receipt":receipt,"resolved_only":true}));
@@ -324,12 +342,30 @@ fn execute(policy: &TireOperatingPolicyV1, case: &Case, audit_only: bool) -> Res
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args: Vec<_> = std::env::args().skip(1).collect();
-    if args.len() != 2 && !(args.len() == 3 && args[2] == "--resolve-only") {
-        return Err("usage: era3_budget_probe POLICY CASE [--resolve-only]".into());
+    if args.len() != 2
+        && !(args.len() == 3 && args[2] == "--resolve-only")
+        && !(args.len() == 4 && args[2] == "--fuel-estimate")
+    {
+        return Err(
+            "usage: era3_budget_probe POLICY CASE [--resolve-only | --fuel-estimate FUEL_POLICY]"
+                .into(),
+        );
     }
     let policy: TireOperatingPolicyV1 = serde_json::from_slice(&std::fs::read(&args[0])?)?;
     let case: Case = serde_json::from_slice(&std::fs::read(&args[1])?)?;
-    let output = match execute(&policy, &case, args.len() == 3) {
+    let fuel_policy = if args.len() == 4 {
+        Some(serde_json::from_slice::<FuelPreparationPolicyV1>(
+            &std::fs::read(&args[3])?,
+        )?)
+    } else {
+        None
+    };
+    let output = match execute_with_fuel_estimate(
+        &policy,
+        &case,
+        args.len() == 3,
+        fuel_policy.as_ref(),
+    ) {
         Ok(output) => output,
         Err(error) => {
             json!({"schema":"pitgun.era3-joint-native-case/v1","case":case,"outcome":{"ok":false,"phase":"resolution","error":error}})
@@ -435,5 +471,29 @@ mod tests {
             }
         }
         assert_eq!(count, 99);
+    }
+    #[test]
+    fn fuel_estimation_binds_unchanged_physical_input_and_existing_policy() {
+        let c = case();
+        let original = execute(&policy(), &c, true).unwrap();
+        let fuel_policy: FuelPreparationPolicyV1 = serde_json::from_str(include_str!(
+            "../../../experiments/fuel_preparation_v1/profile-v1.json"
+        ))
+        .unwrap();
+        let estimated =
+            execute_with_fuel_estimate(&policy(), &c, false, Some(&fuel_policy)).unwrap();
+        assert_eq!(
+            estimated["original_physical_input_digest"],
+            original["receipt"]["physical_input_digest"]
+        );
+        assert_eq!(
+            estimated["preparation"]["source_input_digest"],
+            original["receipt"]["physical_input_digest"]
+        );
+        assert_eq!(original["receipt"]["initial_state"]["fuel_mass"], 100.0);
+        assert_eq!(
+            estimated["preparation"]["pilots"].as_array().unwrap().len(),
+            2
+        );
     }
 }
