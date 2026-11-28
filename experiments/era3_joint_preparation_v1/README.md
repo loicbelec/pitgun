@@ -65,3 +65,14 @@ one unique one-stop preparation finishes with3.376kg, two two-stop preparations
 still exhaust fuel. The preparer's133.5kg estimate overstates the minimum for the
 finished case. This is now a concrete estimator/initial-load qualification task
 under#445, before the full joint field campaign. No IA fitting has been run.
+
+## Updated owner direction — common conservative charge
+
+Opening all eras takes priority over optimizing fuel estimation. See
+[common fuel bridge](COMMON_FUEL_BRIDGE.md): retain qualified I/II100kg; test
+III160kg as one common candidate for player and all nine, independent of setup
+or strategy, without a pre-session estimator. IV/V get their own frozen common
+charges in their respective lots.160kg is not validated or implemented yet.
+This supersedes the earlier estimator-first next-step recommendation; the old
+pilot/failure/estimate evidence remains intact. Later player load/economy controls
+are a separate feature. No UI, physics coefficient, save or runtime was changed.

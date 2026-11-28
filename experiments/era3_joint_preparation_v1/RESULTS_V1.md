@@ -129,3 +129,11 @@ fuel-preparation identity and the explicit-mass-only comparison. Python:8focused
 and14shared journal/batch tests pass. Strict probe Clippy/fmt pass. Full artifacts:
 `results/ceiling-v1.json.gz`, compact `ceiling-review-v1.json`, frozen
 `ceiling-plan-v1.json` and `CEILING_DIAGNOSTIC.md`.
+
+## Owner prioritization after review —28 November2026
+
+The bridge will use a conservative common era charge rather than make fine fuel
+estimation a prerequisite of IA calibration. Existing I/II100kg remains fixed;
+III160kg is an unqualified screen candidate. Read COMMON_FUEL_BRIDGE.md for the
+finite coverage, reserve and versioning requirements. No result above is changed,
+and no claim that160kg already finishes every legal case follows from this plan.
